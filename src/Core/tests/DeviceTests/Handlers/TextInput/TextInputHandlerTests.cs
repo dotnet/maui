@@ -90,12 +90,14 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = (IPlatformViewHandler)CreateHandler<THandler>(textInput);
+				var platformView = handler.PlatformView;
 
-				await handler.PlatformView.AttachAndRun(async () =>
+				await platformView.AttachAndRun(async () =>
 				{
 					button.Focus();
 					textInput.Focus();
-					await AssertionExtensions.WaitForKeyboardToShow(handler.PlatformView);
+					await AssertionExtensions.WaitForKeyboardToShow(platformView);
+					await AssertionExtensions.HideKeyboardForView(platformView);
 				});
 			});
 		}

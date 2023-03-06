@@ -34,6 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 					textInput.Focus();
 					await AssertionExtensions.WaitForFocused(platformView);
 					await AssertionExtensions.WaitForKeyboardToShow(platformView);
+					await AssertionExtensions.HideKeyboardForView(platformView);
 				});
 			});
 
