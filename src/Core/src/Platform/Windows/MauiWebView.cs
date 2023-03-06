@@ -99,11 +99,16 @@ namespace Microsoft.Maui.Platform
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
 				// Free up memory after we're done with _internalWebView
-				_internalWebView = null;
+				if (_internalWebView.IsValid())
+				{
+					_internalWebView.Close();
+					_internalWebView = null;
+				}
 			};
 
 			// Kick off the initial navigation
-			_internalWebView.NavigateToString(html);
+			if (_internalWebView.IsValid())
+				_internalWebView.NavigateToString(html);
 		}
 
 		public async void LoadUrl(string? url)

@@ -458,22 +458,35 @@ namespace Microsoft.Maui.Controls
 
 		static View BuildDefaultTemplate()
 		{
-			var frame = new Frame
+			Border border = new Border()
 			{
-				HasShadow = false,
 				Padding = 6
 			};
 
 			Brush radioButtonCheckMarkThemeColor = ResolveThemeColor("RadioButtonCheckMarkThemeColor");
 			Brush radioButtonThemeColor = ResolveThemeColor("RadioButtonThemeColor");
 
-			BindToTemplatedParent(frame, BackgroundColorProperty, Microsoft.Maui.Controls.Frame.BorderColorProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
 
+			border.SetBinding(Border.StrokeProperty,
+				new Binding(BorderColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeShapeProperty,
+				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeThicknessProperty,
+				new Binding(BorderWidthProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
 			var grid = new Grid
 			{
+				Padding = 2,
 				RowSpacing = 0,
+				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = GridLength.Star }
@@ -522,11 +535,11 @@ namespace Microsoft.Maui.Controls
 			grid.Add(checkMark);
 			grid.Add(contentPresenter, 1, 0);
 
-			frame.Content = grid;
+			border.Content = grid;
 
 			INameScope nameScope = new NameScope();
-			NameScope.SetNameScope(frame, nameScope);
-			nameScope.RegisterName(TemplateRootName, frame);
+			NameScope.SetNameScope(border, nameScope);
+			nameScope.RegisterName(TemplateRootName, border);
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
@@ -563,9 +576,9 @@ namespace Microsoft.Maui.Controls
 
 			visualStateGroups.Add(checkedStates);
 
-			VisualStateManager.SetVisualStateGroups(frame, visualStateGroups);
+			VisualStateManager.SetVisualStateGroups(border, visualStateGroups);
 
-			return frame;
+			return border;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ContentAsString']/Docs/*" />
@@ -578,6 +591,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return content?.ToString();
+		}
+
+		class CornerRadiusToShape : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				return new RoundRectangle
+				{
+					CornerRadius = (int)value,
+				};
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				throw new NotImplementedException();
+			}
 		}
 	}
 }

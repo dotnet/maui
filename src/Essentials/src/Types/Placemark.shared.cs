@@ -2,15 +2,23 @@ using System;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="Type[@FullName='Microsoft.Maui.Essentials.Placemark']/Docs/*" />
+	/// <summary>
+	/// Represents a user-friendly description of a geographic coordinate. This contains information such as the name of the place, its address, and other information.
+	/// </summary>
 	public class Placemark
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Placemark"/> class.
+		/// </summary>
 		public Placemark()
 		{
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Placemark"/> class.
+		/// </summary>
+		/// <param name="placemark">An instance of <see cref="Placemark"/> that will be used to clone into this instance.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="placemark"/> is <see langword="null"/>.</exception>
 		public Placemark(Placemark placemark)
 		{
 			if (placemark == null)
@@ -33,40 +41,65 @@ namespace Microsoft.Maui.Devices.Sensors
 			AdminArea = placemark.AdminArea;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Location']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the location of the placemark.
+		/// </summary>
 		public Location Location { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryCode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the country ISO standard code.
+		/// </summary>
 		public string CountryCode { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='CountryName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the country name.
+		/// </summary>
 		public string CountryName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='FeatureName']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the feature name.
+		/// </summary>
 		public string FeatureName { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='PostalCode']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the postal code.
+		/// </summary>
 		public string PostalCode { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubLocality']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the sub locality.
+		/// </summary>
 		public string SubLocality { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Thoroughfare']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the street name.
+		/// </summary>
 		public string Thoroughfare { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubThoroughfare']/Docs/*" />
+		/// <summary>
+		/// Gets or sets optional info: sub street or region.
+		/// </summary>
 		public string SubThoroughfare { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='Locality']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the city or town.
+		/// </summary>
 		public string Locality { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='AdminArea']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the administrative area name of the address, for example, "CA", or <see langword="null"/> if it is unknown.
+		/// </summary>
 		public string AdminArea { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='SubAdminArea']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the sub-administrative area name of the address, for example, "Santa Clara County", or <see langword="null"/> if it is unknown.
+		/// </summary>
 		public string SubAdminArea { get; set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Essentials/Placemark.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>
+		/// Returns a string representation of the current values of <see cref="Placemark"/>.
+		/// </summary>
+		/// <returns>A string representation of this instance in the format of <c>Location: {value}, CountryCode: {value}, CountryName: {value}, FeatureName: {value}, PostalCode: {value}, SubLocality: {value}, Thoroughfare: {value}, SubThoroughfare: {value}, Locality: {value}, AdminArea: {value}, SubAdminArea: {value}</c>.</returns>
 		public override string ToString() =>
 			$"{nameof(Location)}: {Location}, {nameof(CountryCode)}: {CountryCode}, " +
 			$"{nameof(CountryName)}: {CountryName}, {nameof(FeatureName)}: {FeatureName}, " +

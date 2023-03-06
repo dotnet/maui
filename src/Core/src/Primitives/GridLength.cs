@@ -82,5 +82,9 @@ namespace Microsoft.Maui
 		{
 			return string.Format("{0}.{1}", Value, GridUnitType);
 		}
+
+		public static bool operator ==(GridLength left, GridLength right) => left.Equals(right);
+
+		public static bool operator !=(GridLength left, GridLength right) => !(left == right);
 	}
 }

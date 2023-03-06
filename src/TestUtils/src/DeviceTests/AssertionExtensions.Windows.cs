@@ -93,25 +93,25 @@ namespace Microsoft.Maui.DeviceTests
 				: WColor.FromArgb(255, pixel.R, pixel.G, pixel.B);
 		}
 
-		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
-			view.AttachAndRun(window => action());
+		public static Task AttachAndRun(this FrameworkElement view, Action action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun(window => action(), mauiContext);
 
-		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action) =>
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action, IMauiContext? mauiContext = null) =>
 			view.AttachAndRun((window) =>
 			{
 				action(window);
 				return Task.FromResult(true);
-			});
+			}, mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRun(window => action());
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext? mauiContext = null) =>
+			view.AttachAndRun(window => action(), mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action) =>
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext? mauiContext = null) =>
 			view.AttachAndRun((window) =>
 			{
 				var result = action(window);
 				return Task.FromResult(result);
-			});
+			}, mauiContext);
 
 		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
 			view.AttachAndRun(window => action());
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
 			view.AttachAndRun(window => action());
 
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action)
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext? mauiContext = null)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
@@ -156,26 +156,27 @@ namespace Microsoft.Maui.DeviceTests
 
 					// attach to the UI
 					Grid grid;
-					var window = new Window
+					var window = (mauiContext?.Services != null) ?
+						Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance<Window>(mauiContext.Services) : new Window();
+
+					window.Content = new Grid
 					{
-						Content = new Grid
+						HorizontalAlignment = HorizontalAlignment.Center,
+						VerticalAlignment = VerticalAlignment.Center,
+						Children =
 						{
-							HorizontalAlignment = HorizontalAlignment.Center,
-							VerticalAlignment = VerticalAlignment.Center,
-							Children =
+							(grid = new Grid
 							{
-								(grid = new Grid
+								Width = view.Width,
+								Height = view.Height,
+								Children =
 								{
-									Width = view.Width,
-									Height = view.Height,
-									Children =
-									{
-										view
-									}
-								})
-							}
+									view
+								}
+							})
 						}
 					};
+
 					window.Activate();
 
 					// wait for element to be loaded
