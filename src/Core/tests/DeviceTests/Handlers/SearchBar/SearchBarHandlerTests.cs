@@ -134,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 				CancelButtonColor = Colors.Yellow,
 			};
 
-			await ValidateHasColor(searchBar, Colors.Yellow, () => searchBar.CancelButtonColor = Colors.Yellow, nameof(searchBar.CancelButtonColor));
+			await ValidateHasColor(searchBar, Colors.Yellow);
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
