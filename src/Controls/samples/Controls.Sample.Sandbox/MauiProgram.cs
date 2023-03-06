@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample
 				.CreateBuilder()
 				.UseMauiMaps()
 				.UseMauiApp<App>()
+				.UseNet7Button()
 				.Build();
 	}
 

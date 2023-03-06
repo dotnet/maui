@@ -10,19 +10,25 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Button
 	{
-		public static void MapImageSource(ButtonHandler handler, Button button) =>
-			MapImageSource((IButtonHandler)handler, button);
+		//public static void MapImageSource(ButtonHandler handler, Button button) =>
+		//	MapImageSource((IButtonHandler)handler, button);
 
 		public static void MapText(IButtonHandler handler, Button button)
 		{
+			if (handler is not IButtonHandlerNET7 buttonHandler)
+				return;
+
 			var text = TextTransformUtilites.GetTransformedText(button.Text, button.TextTransform);
-			handler.PlatformView?.UpdateText(text);
+			buttonHandler.PlatformView?.UpdateText(text);
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)
 		{
-			handler.PlatformView?.UpdateLineBreakMode(button);
+			if (handler is not IButtonHandlerNET7 buttonHandler)
+				return;
+
+			buttonHandler.PlatformView?.UpdateLineBreakMode(button);
 		}
 
 		public static void MapImageSource(IButtonHandler handler, Button button)
@@ -31,7 +37,7 @@ namespace Microsoft.Maui.Controls
 			button.Handler?.UpdateValue(nameof(Button.ContentLayout));
 		}
 
-		public static void MapText(ButtonHandler handler, Button button) =>
-			MapText((IButtonHandler)handler, button);
+		//public static void MapText(ButtonHandler handler, Button button) =>
+		//	MapText((IButtonHandler)handler, button);
 	}
 }

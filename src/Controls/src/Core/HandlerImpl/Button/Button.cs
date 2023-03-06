@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// The property mapper that maps the abstract properties to the platform-specific methods for further processing.
 		/// </summary>
-		public static IPropertyMapper<IButton, ButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, ButtonHandler>(ButtonHandler.Mapper)
+		public static IPropertyMapper<IButton, IButtonHandler> ControlsButtonMapper = new PropertyMapper<Button, IButtonHandler>(ButtonHandler.Mapper)
 		{
 			[nameof(ContentLayout)] = MapContentLayout,
 #if IOS
@@ -41,10 +41,17 @@ namespace Microsoft.Maui.Controls
 		/// <param name="button">The abstract control that is being mapped.</param>
 		public static void MapContentLayout(IButtonHandler handler, Button button)
 		{
+#if WINDOWS
+			if (handler is not IButtonHandlerNET7 buttonHandler)
+				return;
+
+			buttonHandler.PlatformView.UpdateContentLayout(button);
+#else
 			handler.PlatformView.UpdateContentLayout(button);
+#endif
 		}
 
-		public static void MapContentLayout(ButtonHandler handler, Button button) =>
-			MapContentLayout((IButtonHandler)handler, button);
+		//public static void MapContentLayout(ButtonHandler handler, Button button) =>
+		//	MapContentLayout((IButtonHandler)handler, button);
 	}
 }

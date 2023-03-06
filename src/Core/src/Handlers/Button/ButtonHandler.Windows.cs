@@ -1,113 +1,111 @@
+using System;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : ViewHandler<IButton, Button>
+	public partial class ButtonHandler : ViewHandler<IButton, FrameworkElement>
 	{
-		PointerEventHandler? _pointerPressedHandler;
-		PointerEventHandler? _pointerReleasedHandler;
+		ViewHandlerProxy? _proxyHandler;
 
-		protected override Button CreatePlatformView() => new MauiButton();
-
-		protected override void ConnectHandler(Button platformView)
+		partial void InitHandler()
 		{
-			_pointerPressedHandler = new PointerEventHandler(OnPointerPressed);
-			_pointerReleasedHandler = new PointerEventHandler(OnPointerReleased);
+			if (UseNet7)
+			{
+				_proxyHandler = new ButtonHandlerNET7();
+			}
+			else
+			{
+				_proxyHandler = new ButtonHandlerNet8();
+			}
+		}
 
-			platformView.Click += OnClick;
-			platformView.AddHandler(UIElement.PointerPressedEvent, _pointerPressedHandler, true);
-			platformView.AddHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler, true);
+		protected override FrameworkElement CreatePlatformView() => _proxyHandler!.CreatePlatformView();
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			_proxyHandler?.SetVirtualView(view);
+		}
+
+		protected override void ConnectHandler(FrameworkElement platformView)
+		{
 			base.ConnectHandler(platformView);
+			_proxyHandler?.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(Button platformView)
+		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
-			platformView.Click -= OnClick;
-			platformView.RemoveHandler(UIElement.PointerPressedEvent, _pointerPressedHandler);
-			platformView.RemoveHandler(UIElement.PointerReleasedEvent, _pointerReleasedHandler);
-
-			_pointerPressedHandler = null;
-			_pointerReleasedHandler = null;
-
 			base.DisconnectHandler(platformView);
+			_proxyHandler?.DisconnectHandler(platformView);
 		}
 
-		// This is a Windows-specific mapping
+		static IButtonHandler GetHandler(IButtonHandler handler)
+		{
+			if (handler is ButtonHandler buttonHandler &&
+				buttonHandler?._proxyHandler is IButtonHandler returnMe)
+			{
+				return returnMe;
+			}
+
+			return handler;
+		}
+
+		// We could obsolete all of these
+		// These are only here because they are currently public
 		public static void MapBackground(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdateBackground(button);
+			Mapper.UpdateProperty(GetHandler(handler), button, nameof(IButton.Background));
 		}
 
 		public static void MapStrokeColor(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.PlatformView?.UpdateStrokeColor(buttonStroke);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)buttonStroke, nameof(IButtonStroke.StrokeColor));
 		}
 
 		public static void MapStrokeThickness(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.PlatformView?.UpdateStrokeThickness(buttonStroke);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)buttonStroke, nameof(IButtonStroke.StrokeThickness));
 		}
 
 		public static void MapCornerRadius(IButtonHandler handler, IButtonStroke buttonStroke)
 		{
-			handler.PlatformView?.UpdateCornerRadius(buttonStroke);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)buttonStroke, nameof(IButtonStroke.CornerRadius));
 		}
 
 		public static void MapText(IButtonHandler handler, IText button)
 		{
-			handler.PlatformView?.UpdateText(button);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)button, nameof(IText.Text));
 		}
 
 		public static void MapTextColor(IButtonHandler handler, ITextStyle button)
 		{
-			handler.PlatformView?.UpdateTextColor(button);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)button, nameof(ITextStyle.TextColor));
 		}
 
 		public static void MapCharacterSpacing(IButtonHandler handler, ITextStyle button)
 		{
-			handler.PlatformView?.UpdateCharacterSpacing(button);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)button, nameof(ITextStyle.CharacterSpacing));
 		}
 
 		public static void MapFont(IButtonHandler handler, ITextStyle button)
 		{
-			var fontManager = handler.GetRequiredService<IFontManager>();
-
-			handler.PlatformView?.UpdateFont(button, fontManager);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)button, nameof(ITextStyle.Font));
 		}
 
 		public static void MapPadding(IButtonHandler handler, IButton button)
 		{
-			handler.PlatformView?.UpdatePadding(button);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)button, nameof(IButton.Padding));
 		}
 
-		public static void MapImageSource(IButtonHandler handler, IImage image) =>
-			handler
-				.ImageSourceLoader
-				.UpdateImageSourceAsync()
-				.FireAndForget(handler);
-
-		void OnSetImageSource(ImageSource? platformImageSource)
+		public static void MapImageSource(IButtonHandler handler, IImage image)
 		{
-			PlatformView.UpdateImageSource(platformImageSource);
+			Mapper.UpdateProperty(GetHandler(handler), (IElement)image, nameof(IImage.Source));
 		}
 
-		void OnClick(object sender, RoutedEventArgs e)
-		{
-			VirtualView?.Clicked();
-		}
 
-		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+		void OnSetImageSource(ImageSource? obj)
 		{
-			VirtualView?.Pressed();
-		}
-
-		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
-		{
-			VirtualView?.Released();
 		}
 	}
 }

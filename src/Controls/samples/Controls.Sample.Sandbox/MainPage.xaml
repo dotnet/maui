@@ -4,4 +4,10 @@
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
 
+
+    <VerticalStackLayout>
+        <Button Text="Hello there">
+
+        </Button>
+    </VerticalStackLayout>
 </ContentPage>

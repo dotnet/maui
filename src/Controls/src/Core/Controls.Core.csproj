@@ -11,7 +11,7 @@
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0022;RS0017</NoWarn>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 

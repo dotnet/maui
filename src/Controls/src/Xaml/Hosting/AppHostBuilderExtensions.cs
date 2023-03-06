@@ -215,13 +215,22 @@ namespace Microsoft.Maui.Controls.Hosting
 			return builder;
 		}
 
+		public static MauiAppBuilder UseNet7Button(this MauiAppBuilder builder)
+		{
+			ButtonHandler.SetupForNet7();
+			return builder;
+		}
 		internal static MauiAppBuilder RemapForControls(this MauiAppBuilder builder)
 		{
 			// Update the mappings for IView/View to work specifically for Controls
 			Application.RemapForControls();
 			VisualElement.RemapForControls();
 			Label.RemapForControls();
+
+			// need to account for remapping the types as well
 			Button.RemapForControls();
+
+
 			CheckBox.RemapForControls();
 			DatePicker.RemapForControls();
 			RadioButton.RemapForControls();

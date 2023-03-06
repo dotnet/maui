@@ -10,6 +10,7 @@
   <PropertyGroup>
      <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+    <NoWarn>$(NoWarn);CA1416;RS0016</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
@@ -29,7 +30,7 @@
     <SupportedOSPlatformVersion>13.1</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>13.1</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
-    <NoWarn>$(NoWarn);CA1416</NoWarn>
+    <NoWarn>$(NoWarn);CA1416;RS0016</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsmacOS)' == 'True'">
     <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>

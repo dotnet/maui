@@ -30,6 +30,7 @@
     <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsTizen>false</_MauiTargetPlatformIsTizen>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
+    <NoWarn>$(NoWarn);CA1416;RS0016;RS0017</NoWarn>
   </PropertyGroup>
 
   <!-- Try determine which .NET workloads are installed -->

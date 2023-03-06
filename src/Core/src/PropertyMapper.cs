@@ -122,6 +122,8 @@ namespace Microsoft.Maui
 						yield return key;
 			}
 		}
+
+		public virtual Type GetHandlerType() => typeof(IElementHandler);
 	}
 
 	public interface IPropertyMapper
@@ -182,6 +184,11 @@ namespace Microsoft.Maui
 					}
 				}
 			});
+
+		public override Type GetHandlerType()
+		{
+			return typeof(TViewHandler);
+		}
 	}
 
 	public class PropertyMapper<TVirtualView> : PropertyMapper<TVirtualView, IElementHandler>
