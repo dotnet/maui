@@ -1,7 +1,6 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.InteropServices.ComTypes;
@@ -280,9 +279,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		class WeakBackgroundChangedProxy : WeakEventProxy<Brush, PropertyChangedEventHandler>
+		class WeakBackgroundChangedProxy : WeakEventProxy<Brush, EventHandler>
 		{
-			void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
+			void OnBackgroundChanged(object sender, EventArgs e)
 			{
 				if (TryGetHandler(out var handler))
 				{
@@ -294,19 +293,19 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			public override void Subscribe(Brush source, PropertyChangedEventHandler handler)
+			public override void Subscribe(Brush source, EventHandler handler)
 			{
 				if (TryGetSource(out var s))
 				{
 					s.PropertyChanged -= OnBackgroundChanged;
 
 					if (s is GradientBrush g)
-						g.PropertyChanged -= OnBackgroundChanged;
+						g.InvalidateGradientBrushRequested -= OnBackgroundChanged;
 				}
 
 				source.PropertyChanged += OnBackgroundChanged;
 				if (source is GradientBrush gradientBrush)
-					gradientBrush.PropertyChanged += OnBackgroundChanged;
+					gradientBrush.InvalidateGradientBrushRequested += OnBackgroundChanged;
 
 				base.Subscribe(source, handler);
 			}
@@ -318,7 +317,7 @@ namespace Microsoft.Maui.Controls
 					s.PropertyChanged -= OnBackgroundChanged;
 
 					if (s is GradientBrush g)
-						g.PropertyChanged -= OnBackgroundChanged;
+						g.InvalidateGradientBrushRequested -= OnBackgroundChanged;
 				}
 				base.Unsubscribe();
 			}
