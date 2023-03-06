@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				reusableCell = tableView.DequeueReusableCell(id);
 
-			if (reusableCell != null && reusableCell.Hidden)
+			if (reusableCell is not null && reusableCell.Hidden)
 			{
 				// set hidden to false doesn't work
 				// force recreate of the whole cell instead
