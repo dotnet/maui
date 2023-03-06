@@ -802,8 +802,12 @@ namespace Microsoft.Maui.Controls
 			{
 #if ANDROID
 				// TODO: Refactor using mappers for .NET 8
-				if (this is ITextInput && Handler?.PlatformView is not null)
-					KeyboardManager.ShowKeyboard(this.ToPlatform());
+				var platformView = (Handler as IPlatformViewHandler).PlatformView;
+
+				if (this is ITextInput && platformView is not null)
+				{
+					KeyboardManager.ShowKeyboard(platformView);
+				}
 #endif
 				return true;
 			}

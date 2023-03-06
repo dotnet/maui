@@ -12,23 +12,27 @@ namespace Microsoft.Maui.Platform
 	{
 		internal static void HideKeyboard(this AView inputView)
 		{
-			if (inputView?.Context == null)
+			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
 
 			var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
 			AView tokenView = focusedView ?? inputView;
+			var context = tokenView.Context;
 
-			using (var inputMethodManager = (InputMethodManager)tokenView.Context?.GetSystemService(Context.InputMethodService)!)
+			if (context is null)
+				return;
+
+			using (var inputMethodManager = (InputMethodManager)context.GetSystemService(Context.InputMethodService)!)
 			{
 				var windowToken = tokenView.WindowToken;
-				if (windowToken != null && inputMethodManager != null)
+				if (windowToken is not null && inputMethodManager is not null)
 					inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
 		}
 
 		internal static void ShowKeyboard(this TextView inputView)
 		{
-			if (inputView?.Context == null)
+			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
 
 			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
@@ -42,14 +46,14 @@ namespace Microsoft.Maui.Platform
 
 		internal static void ShowKeyboard(this SearchView searchView)
 		{
-			if (searchView?.Context == null || searchView?.Resources == null)
+			if (searchView?.Context is null || searchView?.Resources is null)
 			{
 				throw new ArgumentNullException(nameof(searchView));
 			}
 
 			var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
-			if (queryEditor == null)
+			if (queryEditor is null)
 				return;
 
 			using (var inputMethodManager = (InputMethodManager)searchView.Context.GetSystemService(Context.InputMethodService)!)
@@ -95,7 +99,7 @@ namespace Microsoft.Maui.Platform
 		public static bool IsSoftKeyboardVisible(this AView view)
 		{
 			var insets = ViewCompat.GetRootWindowInsets(view);
-			if (insets == null)
+			if (insets is null)
 				return false;
 
 			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());

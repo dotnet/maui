@@ -88,20 +88,10 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				platformView?.RequestFocus();
-				focusRequested?.Invoke();
+
+				if (platformView?.RequestFocus() == true)
+					focusRequested?.Invoke();
 			}
-		}
-
-		internal static void Focus(this EditText editText, FocusRequest request)
-		{
-			if (editText is null)
-				return;
-
-			editText.Focus(request, () =>
-			{
-				if (editText.ShowSoftInputOnFocus)
-					KeyboardManager.PostShowKeyboard(editText);
-			});
 		}
 
 		public static void Unfocus(this AView platformView, IView view)
