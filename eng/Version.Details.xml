@@ -12,9 +12,9 @@
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>f007593864da0579ff251a745b01b929f59fb043</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.390-net8-p3">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.399-net8-p3">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>b4755a5204a0e84376fe667000703f7c68986423</Sha>
+      <Sha>b4fd14b2f85889f25faf7a416ad201b7fa851784</Sha>
     </Dependency>
     <Dependency Name="Microsoft.macOS.Sdk" Version="13.1.390-net8-p3">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
