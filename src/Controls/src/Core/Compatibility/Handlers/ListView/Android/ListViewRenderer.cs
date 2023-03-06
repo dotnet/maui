@@ -576,12 +576,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
-				if (_child?.PlatformView == null)
-				{
-					return;
-				}
-
-				_child.PlatformView.Layout(l, t, r, b);
+				// should not update platform view layout here
+				// because the top and bottom value from parameters are relative to current scroll position when it is call
+				// this mean top value might be nagative if header are off screen when user scroll back up
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -592,6 +589,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
+				_child.PlatformView.Layout(0, 0, widthMeasureSpec, heightMeasureSpec);
 				_child.PlatformView.Measure(widthMeasureSpec, heightMeasureSpec);
 				SetMeasuredDimension(_child.PlatformView.MeasuredWidth, _child.PlatformView.MeasuredHeight);
 			}
