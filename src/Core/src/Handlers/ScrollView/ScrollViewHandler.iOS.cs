@@ -235,8 +235,7 @@ namespace Microsoft.Maui.Handlers
 			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
 			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
-			var crossPlatformSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
-			var size = crossPlatformSize.AccountForOrientation(widthConstraint, heightConstraint, virtualView);
+			var size = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			// Add the padding back in for the final size
 			size.Width += padding.HorizontalThickness;
