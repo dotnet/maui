@@ -265,8 +265,7 @@ stages:
           TestTargetFrameworks: ${{ parameters.TestTargetFrameworks }}
           condition: or(
             ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'),
-            eq('${{ BuildConfiguration }}', 'Release'))
+            ne(variables['Build.Reason'], 'PullRequest'))
 
   - template: common/security-compliance.yml
 

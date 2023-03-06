@@ -56,7 +56,10 @@ jobs:
             clean: all
           displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
           timeoutInMinutes: 240
-          condition: ${{ parameters.condition}}
+          condition: or(
+              ${{ parameters.condition}},
+              eq('${{ BuildConfiguration }}', 'Release')
+            )
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
