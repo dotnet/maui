@@ -366,6 +366,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
 			_footerRenderer.PlatformView.Frame = platformFrame;
 			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
+			Control.TableFooterView = _footerRenderer.PlatformView;
+
 			BeginInvokeOnMainThread(() =>
 			{
 				if (_headerRenderer != null)
