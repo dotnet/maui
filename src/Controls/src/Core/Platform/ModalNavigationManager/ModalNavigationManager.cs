@@ -185,6 +185,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public async Task<Page?> PopModalAsync(bool animated)
 		{
+			if (_modalPages.Count <= 0)
+				throw new InvalidOperationException("PopModalAsync failed because modal stack is currently empty.");
+
 			Page modal = _modalPages[_modalPages.Count - 1].Page;
 
 			if (_window.OnModalPopping(modal))
