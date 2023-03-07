@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 		readonly HashSet<string> _loadedCookies = new();
 		Window? _window;
 
-		protected override WebView2 CreatePlatformView() => new MauiWebView();
+		protected override WebView2 CreatePlatformView() => new MauiWebView(this);
 
 		internal WebNavigationEvent CurrentNavigationEvent
 		{
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 				NavigationFailed(sender, args);
 		}
 
-		async void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+		void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
 		{
 			if (Uri.TryCreate(args.Uri, UriKind.Absolute, out Uri? uri) && uri is not null)
 			{
@@ -110,8 +110,6 @@ namespace Microsoft.Maui.Handlers
 				// Reset in this case because this is the last event we will get
 				if (cancel)
 					_eventState = WebNavigationEvent.NewPage;
-				else
-					await SyncPlatformCookies(uri.AbsoluteUri);
 			}
 		}
 
@@ -224,7 +222,7 @@ namespace Microsoft.Maui.Handlers
 			await SyncPlatformCookies(url);
 		}
 
-		async Task SyncPlatformCookies(string url)
+		internal async Task SyncPlatformCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
