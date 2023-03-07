@@ -463,9 +463,6 @@ namespace Microsoft.Maui.Controls
 				Padding = 6
 			};
 
-			Brush radioButtonCheckMarkThemeColor = ResolveThemeColor("RadioButtonCheckMarkThemeColor");
-			Brush radioButtonThemeColor = ResolveThemeColor("RadioButtonThemeColor");
-
 			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
@@ -505,13 +502,11 @@ namespace Microsoft.Maui.Controls
 				HeightRequest = 21,
 				WidthRequest = 21,
 				StrokeThickness = 2,
-				Stroke = radioButtonThemeColor,
 				InputTransparent = true
 			};
 
 			var checkMark = new Ellipse
 			{
-				Fill = radioButtonCheckMarkThemeColor,
 				Aspect = Stretch.Uniform,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
@@ -526,6 +521,55 @@ namespace Microsoft.Maui.Controls
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
+
+			object outerEllipseVisualStateLight;
+			object outerEllipseVisualStateDark;
+			object checkMarkVisualStateLight;
+			object checkMarkVisualStateDark;
+
+			// First, Light/Dark App themes for outer ellipse, then for the check mark.
+			// Then check for older themecolor.
+			// If nothing set, use the defaults for light/dark mode.
+			if (Application.Current.TryGetResource("RadioButtonOuterEllipseStrokeLight", out var outerLight) &&
+				Application.Current.TryGetResource("RadioButtonOuterEllipseStrokeDark", out var outerDark))
+			{
+				normalEllipse.SetAppTheme(Ellipse.StrokeProperty, outerLight, outerDark);
+				outerEllipseVisualStateLight = outerLight;
+				outerEllipseVisualStateDark = outerDark;
+			}
+			else if (Application.Current.TryGetResource("RadioButtonThemeColor", out var themeColor))
+			{
+				normalEllipse.SetDynamicResource(Ellipse.StrokeProperty, "RadioButtonThemeColor");
+				outerEllipseVisualStateLight = outerEllipseVisualStateDark = themeColor;
+			}
+			else
+			{
+				normalEllipse.SetAppTheme(Ellipse.StrokeProperty, SolidColorBrush.Black, SolidColorBrush.White);
+				outerEllipseVisualStateLight = SolidColorBrush.Black;
+				outerEllipseVisualStateDark = SolidColorBrush.White;
+			}
+
+			if (Application.Current.TryGetResource("RadioButtonCheckGlyphStrokeLight", out var checkLight) &&
+				Application.Current.TryGetResource("RadioButtonCheckGlyphStrokeDark", out var checkDark))
+			{
+				checkMark.SetAppTheme(Ellipse.StrokeProperty, checkLight, checkDark);
+				checkMark.Fill = (Brush)(Application.Current?.RequestedTheme == AppTheme.Dark ? checkDark : checkLight);
+				checkMarkVisualStateLight = checkLight;
+				checkMarkVisualStateDark = checkDark;
+			}
+			else if (Application.Current.TryGetResource("RadioButtonCheckMarkThemeColor", out var themeColor))
+			{
+				checkMark.SetDynamicResource(Ellipse.StrokeProperty, "RadioButtonCheckMarkThemeColor");
+				checkMark.Fill = (Brush)themeColor;
+				checkMarkVisualStateLight = checkMarkVisualStateDark = themeColor;
+			}
+			else
+			{
+				checkMark.SetAppTheme(Ellipse.StrokeProperty, SolidColorBrush.Black, SolidColorBrush.White);
+				checkMark.Fill = (Application.Current?.RequestedTheme == AppTheme.Dark) ? SolidColorBrush.White : SolidColorBrush.Black;
+				checkMarkVisualStateLight = SolidColorBrush.Black;
+				checkMarkVisualStateDark = SolidColorBrush.White;
+			}
 
 			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
@@ -561,19 +605,28 @@ namespace Microsoft.Maui.Controls
 				{
 					Property = Shape.StrokeProperty,
 					TargetName = UncheckedButton,
-					Value = new AppThemeBinding() { Light = Colors.Black.MultiplyAlpha(0.1f), Dark = Colors.White.MultiplyAlpha(0.1f) }
+					Value = new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
+				});
+			checkedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.StrokeProperty,
+					TargetName = CheckedIndicator,
+					Value = new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
 				});
 			checkedStates.States.Add(checkedVisualState);
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
 			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
+			
 			uncheckedVisualState.Setters.Add(
 				new Setter()
 				{
 					Property = Shape.StrokeProperty,
 					TargetName = UncheckedButton,
-					Value = new AppThemeBinding() { Light = Colors.Black, Dark = Colors.White }
+					Value = new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
 				});
+			
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
