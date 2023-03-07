@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory(DisplayName = "Background Initializes Correctly"
 #if IOS
-			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+			, Skip = "This test is currently invalid on iOS https://github.com/dotnet/maui/issues/13693"
 #endif
 			)]
 		[InlineData(0xFFFF0000)]
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchBar = new SearchBarStub
 			{
 				Background = new SolidPaintStub(expected),
-				Text = "Background"
+				Text = "Background",
 			};
 
 			await ValidateHasColor(searchBar, expected);
@@ -120,16 +120,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
+#if WINDOWS
+			, Skip = "This test currently fails on Windows due to https://github.com/dotnet/maui/issues/13507"
+#endif
+			)]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
 			{
-				CancelButtonColor = Colors.MediumPurple
+				Text = "Search",
+				Width = 200,
+				CancelButtonColor = Colors.Yellow,
 			};
 
-			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+			await ValidateHasColor(searchBar, Colors.Yellow);
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
