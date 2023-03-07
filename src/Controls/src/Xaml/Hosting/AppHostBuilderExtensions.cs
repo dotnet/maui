@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<Application, ApplicationHandler>();
 			handlersCollection.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 			handlersCollection.AddHandler<BoxView, ShapeViewHandler>();
-			handlersCollection.AddHandler<Button, ButtonHandler>();
+			handlersCollection.AddHandler<Button, ButtonHandler2>();
 			handlersCollection.AddHandler<CheckBox, CheckBoxHandler>();
 			handlersCollection.AddHandler<DatePicker, DatePickerHandler>();
 			handlersCollection.AddHandler<Editor, EditorHandler>();
@@ -210,6 +210,16 @@ namespace Microsoft.Maui.Controls.Hosting
 				services.AddService<FontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
 				services.AddService<StreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 				services.AddService<UriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
+
+			return builder;
+		}
+
+		public static MauiAppBuilder UseNet7Handlers(this MauiAppBuilder builder)
+		{
+			builder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler(typeof(Button), typeof(ButtonHandler2));
 			});
 
 			return builder;

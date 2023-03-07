@@ -7,7 +7,7 @@
 		<IsPackable>true</IsPackable>
 		<IsTrimmable>false</IsTrimmable>
 		<_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
-		<NoWarn>$(NoWarn);CA2200;CS1591;RS0041</NoWarn>
+		<NoWarn>$(NoWarn);CA2200;CS1591;RS0041;RS0016</NoWarn>
 		<PackageId>Microsoft.Maui.Controls.Xaml</PackageId>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 	</PropertyGroup>

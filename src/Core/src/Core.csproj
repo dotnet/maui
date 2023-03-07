@@ -9,7 +9,7 @@
     <IsPackable>true</IsPackable>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027;RS0016</NoWarn>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
