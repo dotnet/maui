@@ -90,14 +90,23 @@ namespace Microsoft.Maui.Platform
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
-		public void LoadUrl(string? url)
+		public async void LoadUrl(string? url)
 		{
 			try
 			{
 				var uri = new Uri(url ?? string.Empty);
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-				NSUrlRequest request = new NSUrlRequest(new NSUrl(new Uri(safeHostUri, safeRelativeUri).AbsoluteUri));
+				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
+				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
+
+				_ = _handler.TryGetTarget(out var handler);
+
+				if ((handler?.HasCookiesToLoad(safeFullUri.AbsoluteUri) ?? false) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+					return;
+
+				if (handler is not null)
+					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
 
 				LoadRequest(request);
 			}
