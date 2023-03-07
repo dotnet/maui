@@ -24,5 +24,32 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+
+		[Fact(DisplayName = "Custom RecyclerView Adapter Doesn't Crash")]
+		public async Task CustomRecyclerViewAdapterDoesNotCrash()
+		{
+			SetupBuilder(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<TabbedPage, CustomTestAdapterHandler>();
+				});
+			});
+
+			var tabbedPage = CreateBasicTabbedPage();
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				// If you currently try to modify the children too early.
+				// This will sometimes cause `NotifyDataSourceChanged` on the
+				// adapter to get called while it's already processing
+				await Task.Delay(50);
+
+				tabbedPage.Children.Add(new ContentPage());
+
+				// make sure changes have time to propagate
+				await Task.Delay(50);
+			});
+		}
 	}
 }
