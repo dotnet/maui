@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,7 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
+		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -38,6 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 #endif
 				});
+
+				additionalCreationActions?.Invoke(builder);
 			});
 		}
 

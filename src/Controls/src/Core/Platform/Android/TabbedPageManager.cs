@@ -271,8 +271,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
 			ViewPager2 pager = _viewPager;
-			var adapter = (MultiPageFragmentStateAdapter<Page>)pager.Adapter;
-			adapter.CountOverride = Element.Children.Count;
+
+			if (pager.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			{
+				adapter.CountOverride = Element.Children.Count;
+			}
+
 			if (IsBottomTabPlacement)
 			{
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
