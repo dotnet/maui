@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Hosting
 		{
 			builder.ConfigureMauiHandlers(handlers =>
 			{
-				handlers.AddHandler(typeof(Button), typeof(ButtonHandler2));
+				handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 			});
 
 			return builder;
