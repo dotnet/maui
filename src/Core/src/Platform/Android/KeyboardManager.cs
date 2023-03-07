@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 			if (context is null)
 				return;
 
-			using (var inputMethodManager = (InputMethodManager)context.GetSystemService(Context.InputMethodService)!)
+			using (var inputMethodManager = context.GetSystemService(Context.InputMethodService) as InputMethodManager)
 			{
 				var windowToken = tokenView.WindowToken;
 				if (windowToken is not null && inputMethodManager is not null)
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
 
-			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
+			using (var inputMethodManager = inputView.Context.GetSystemService(Context.InputMethodService) as InputMethodManager)
 			{
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
