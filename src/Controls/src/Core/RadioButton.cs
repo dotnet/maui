@@ -27,6 +27,17 @@ namespace Microsoft.Maui.Controls
 		internal const string GroupNameChangedMessage = "RadioButtonGroupNameChanged";
 		internal const string ValueChangedMessage = "RadioButtonValueChanged";
 
+		// App Theme string constants for Light/Dark modes
+		internal const string RadioButtonOuterEllipseStrokeLight = "RadioButtonOuterEllipseStrokeLight";
+		internal const string RadioButtonOuterEllipseStrokeDark = "RadioButtonOuterEllipseStrokeDark";
+		internal const string RadioButtonCheckGlyphStrokeLight = "RadioButtonCheckGlyphStrokeLight";
+		internal const string RadioButtonCheckGlyphStrokeDark = "RadioButtonCheckGlyphStrokeDark";
+
+		// Older App Theme constants
+		internal const string RadioButtonThemeColor = "RadioButtonThemeColor";
+		internal const string RadioButtonCheckMarkThemeColor = "RadioButtonCheckMarkThemeColor";
+
+
 		// Template Parts
 		TapGestureRecognizer _tapGestureRecognizer;
 		View _templateRoot;
@@ -530,16 +541,16 @@ namespace Microsoft.Maui.Controls
 			// First, Light/Dark App themes for outer ellipse, then for the check mark.
 			// Then check for older themecolor.
 			// If nothing set, use the defaults for light/dark mode.
-			if (Application.Current.TryGetResource("RadioButtonOuterEllipseStrokeLight", out var outerLight) &&
-				Application.Current.TryGetResource("RadioButtonOuterEllipseStrokeDark", out var outerDark))
+			if (Application.Current.TryGetResource(RadioButtonOuterEllipseStrokeLight, out var outerLight) &&
+				Application.Current.TryGetResource(RadioButtonOuterEllipseStrokeDark, out var outerDark))
 			{
 				normalEllipse.SetAppTheme(Ellipse.StrokeProperty, outerLight, outerDark);
 				outerEllipseVisualStateLight = outerLight;
 				outerEllipseVisualStateDark = outerDark;
 			}
-			else if (Application.Current.TryGetResource("RadioButtonThemeColor", out var themeColor))
+			else if (Application.Current.TryGetResource(RadioButtonThemeColor, out var themeColor))
 			{
-				normalEllipse.SetDynamicResource(Ellipse.StrokeProperty, "RadioButtonThemeColor");
+				normalEllipse.SetDynamicResource(Ellipse.StrokeProperty, RadioButtonThemeColor);
 				outerEllipseVisualStateLight = outerEllipseVisualStateDark = themeColor;
 			}
 			else
@@ -549,17 +560,17 @@ namespace Microsoft.Maui.Controls
 				outerEllipseVisualStateDark = SolidColorBrush.White;
 			}
 
-			if (Application.Current.TryGetResource("RadioButtonCheckGlyphStrokeLight", out var checkLight) &&
-				Application.Current.TryGetResource("RadioButtonCheckGlyphStrokeDark", out var checkDark))
+			if (Application.Current.TryGetResource(RadioButtonCheckGlyphStrokeLight, out var checkLight) &&
+				Application.Current.TryGetResource(RadioButtonCheckGlyphStrokeDark, out var checkDark))
 			{
 				checkMark.SetAppTheme(Ellipse.StrokeProperty, checkLight, checkDark);
 				checkMark.Fill = (Brush)(Application.Current?.RequestedTheme == AppTheme.Dark ? checkDark : checkLight);
 				checkMarkVisualStateLight = checkLight;
 				checkMarkVisualStateDark = checkDark;
 			}
-			else if (Application.Current.TryGetResource("RadioButtonCheckMarkThemeColor", out var themeColor))
+			else if (Application.Current.TryGetResource(RadioButtonCheckMarkThemeColor, out var themeColor))
 			{
-				checkMark.SetDynamicResource(Ellipse.StrokeProperty, "RadioButtonCheckMarkThemeColor");
+				checkMark.SetDynamicResource(Ellipse.StrokeProperty, RadioButtonCheckMarkThemeColor);
 				checkMark.Fill = (Brush)themeColor;
 				checkMarkVisualStateLight = checkMarkVisualStateDark = themeColor;
 			}
