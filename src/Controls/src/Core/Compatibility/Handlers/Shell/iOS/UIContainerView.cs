@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IPlatformViewHandler _renderer;
 		UIView _platformView;
 		bool _disposed;
-		private double _measuredHeight;
+		double _measuredHeight;
 
 		internal event EventHandler HeaderSizeChanged;
 
