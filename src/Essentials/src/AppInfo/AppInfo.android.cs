@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Globalization;
 using Android.App;
 using Android.Content;
@@ -13,12 +13,9 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		static readonly Lazy<string> _name = new Lazy<string>(() => Application.Context.ApplicationInfo.LoadLabel(Application.Context.PackageManager));
 		static readonly Lazy<string> _packageName = new Lazy<string>(() => Application.Context.PackageName);
-
 #pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 33: https://developer.android.com/reference/android/content/pm/PackageManager#getPackageInfo(java.lang.String,%20int)
 		static readonly Lazy<PackageInfo> _packageInfo = new Lazy<PackageInfo>(() => Application.Context.PackageManager.GetPackageInfo(_packageName.Value, PackageInfoFlags.MetaData));
 #pragma warning restore CS0618, CA1416, CA1422
-
-		static readonly Lazy<LayoutDirection> _layoutDirection = new Lazy<LayoutDirection>(GetLayoutDirection);
 
 		public string PackageName => _packageName.Value;
 
@@ -45,13 +42,21 @@ namespace Microsoft.Maui.ApplicationModel
 			context.StartActivity(settingsIntent);
 		}
 
-		public AppTheme RequestedTheme
-			=> (Application.Context.Resources.Configuration.UiMode & UiMode.NightMask) switch
+		static AppTheme GetRequestedTheme()
+		{
+			var config = Application.Context.Resources?.Configuration;
+			if (config == null)
+				return AppTheme.Unspecified;
+
+			return (config.UiMode & UiMode.NightMask) switch
 			{
 				UiMode.NightYes => AppTheme.Dark,
 				UiMode.NightNo => AppTheme.Light,
 				_ => AppTheme.Unspecified
 			};
+		}
+
+		public AppTheme RequestedTheme => GetRequestedTheme();
 
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
@@ -65,6 +70,6 @@ namespace Microsoft.Maui.ApplicationModel
 				LayoutDirection.LeftToRight;
 		}
 
-		public LayoutDirection RequestedLayoutDirection => _layoutDirection.Value;
+		public LayoutDirection RequestedLayoutDirection => GetLayoutDirection();
 	}
 }
