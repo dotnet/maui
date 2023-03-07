@@ -7,6 +7,7 @@
 
 using System;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
@@ -43,8 +44,6 @@ internal static class KeyboardAutoManagerScroll
 			if (notification.Object is not null)
 			{
 				View = (UIView)notification.Object;
-				RootController = View.FindResponder<ContainerViewController>()?.View;
-
 				await SetUpTextEdit();
 			}
 		});
@@ -54,8 +53,6 @@ internal static class KeyboardAutoManagerScroll
 			if (notification.Object is not null)
 			{
 				View = (UIView)notification.Object;
-				RootController = View.FindResponder<ContainerViewController>()?.View;
-
 				await SetUpTextEdit();
 			}
 		});
@@ -188,7 +185,7 @@ internal static class KeyboardAutoManagerScroll
 
 		CursorRect = null;
 
-		RootController = View.FindResponder<ContainerViewController>()?.View;
+		RootController = View.SetContainerView();
 
 		// the cursor needs a small amount of time to update the position
 		await Task.Delay(5);
@@ -215,16 +212,15 @@ internal static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
-		DebounceCount++;
+		Interlocked.CompareExchange(ref DebounceCount, 0, 100);
+		Interlocked.Increment(ref DebounceCount);
+
 		var entranceCount = DebounceCount;
 
 		await Task.Delay(10);
 
 		if (entranceCount == DebounceCount)
-		{
 			AdjustPosition();
-			DebounceCount = 0;
-		}
 	}
 
 	// main method to calculate and animate the scrolling
@@ -260,7 +256,7 @@ internal static class KeyboardAutoManagerScroll
 			navigationBarAreaHeight = statusBarHeight;
 		}
 
-		var topLayoutGuide = Math.Max(navigationBarAreaHeight, RootController.LayoutMargins.Bottom) + 5;
+		var topLayoutGuide = Math.Max(navigationBarAreaHeight, RootController.LayoutMargins.Top) + 5;
 
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
 
@@ -442,10 +438,9 @@ internal static class KeyboardAutoManagerScroll
 
 				else
 				{
-					if (innerScrollValue == 0 && cursorRect.Y + cursorNotInViewScroll >= topLayoutGuide && cursorRect.Y + cursorNotInViewScroll <= keyboardYPosition)
-						shouldContinue = false;
-					else
-						shouldContinue = true;
+					shouldContinue = !(innerScrollValue == 0
+						&& cursorRect.Y + cursorNotInViewScroll >= topLayoutGuide
+						&& cursorRect.Y + cursorNotInViewScroll <= keyboardYPosition);
 
 					if (cursorRect.Y - innerScrollValue < topLayoutGuide && !cursorTooHigh)
 						move = cursorRect.Y - innerScrollValue - (nfloat)topLayoutGuide;

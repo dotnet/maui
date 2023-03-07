@@ -6,9 +6,6 @@ Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) 
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.ConnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
-override Microsoft.Maui.Handlers.ScrollViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiScrollView!
-override Microsoft.Maui.Handlers.ScrollViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiScrollView! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.set -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(UIKit.UIButton! platformView) -> void

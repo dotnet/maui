@@ -12,16 +12,16 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, MauiScrollView>
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>
 	{
 		const nint ContentPanelTag = 0x845fed;
 
-		protected override MauiScrollView CreatePlatformView()
+		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
 		}
 
-		protected override void ConnectHandler(MauiScrollView platformView)
+		protected override void ConnectHandler(UIScrollView platformView)
 		{
 			base.ConnectHandler(platformView);
 
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
 		}
 
-		protected override void DisconnectHandler(MauiScrollView platformView)
+		protected override void DisconnectHandler(UIScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
