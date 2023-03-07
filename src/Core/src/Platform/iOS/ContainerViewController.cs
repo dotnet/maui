@@ -90,5 +90,16 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public void Reload() => SetView(CurrentView, true);
+
+		public override void WillMoveToParentViewController(UIViewController? parent)
+		{
+			if (parent == null)
+			{
+				var view = ViewIfLoaded ?? currentPlatformView;
+				view?.ClearSubviews();
+			}
+
+			base.WillMoveToParentViewController(parent);
+		}
 	}
 }
