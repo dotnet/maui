@@ -534,14 +534,12 @@ namespace Microsoft.Maui.Controls
 				// Then we want the window to also reflect RTL
 				// We don't want to force the user to reach into the window
 				// in order to enable RTL Window features on WinUI
-				IFlowDirectionController? pageController = Page;
-				IFlowDirectionController currentPageController = Page.GetCurrentPage();
-
 				if (FlowDirection == FlowDirection.MatchParent)
 				{
-					if (pageController is not null && pageController.EffectiveFlowDirection.IsExplicit())
+					if (Page is IFlowDirectionController pageController && pageController.EffectiveFlowDirection.IsExplicit())
 						return pageController.EffectiveFlowDirection.ToFlowDirection();
-					if (currentPageController.EffectiveFlowDirection.IsExplicit())
+					if (Page.GetCurrentPage() is IFlowDirectionController currentPageController &&
+						currentPageController.EffectiveFlowDirection.IsExplicit())
 						return currentPageController.EffectiveFlowDirection.ToFlowDirection();
 				}
 
