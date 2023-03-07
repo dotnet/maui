@@ -522,6 +522,7 @@ namespace Microsoft.Maui.Controls
 			OnDestroying();
 
 			Application?.RemoveWindow(this);
+			Handler?.DisconnectHandler();
 		}
 
 		void IWindow.Resumed()
