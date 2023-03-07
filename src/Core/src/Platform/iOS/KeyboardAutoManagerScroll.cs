@@ -36,112 +36,110 @@ internal static class KeyboardAutoManagerScroll
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
 
-	// Set up the observers for the keyboard and the UITextField/UITextView
 	internal static void Init()
 	{
-		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextFieldTextDidBeginEditingNotification"), async (notification) =>
+		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextFieldTextDidBeginEditingNotification"), DidUITextBeginEditing);
+
+		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextViewTextDidBeginEditingNotification"), DidUITextBeginEditing);
+
+		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), WillKeyboardShow);
+
+		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
+	}
+
+	static async void DidUITextBeginEditing(NSNotification notification)
+	{
+		if (notification.Object is not null)
 		{
-			if (notification.Object is not null)
-			{
-				View = (UIView)notification.Object;
-				await SetUpTextEdit();
-			}
-		});
+			View = (UIView)notification.Object;
+			await SetUpTextEdit();
+		}
+	}
 
-		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextViewTextDidBeginEditingNotification"), async (notification) =>
+	static async void WillKeyboardShow(NSNotification notification)
+	{
+		var userInfo = notification.UserInfo;
+
+		if (userInfo is not null)
 		{
-			if (notification.Object is not null)
+			if (userInfo.TryGetValue(new NSString("UIKeyboardFrameEndUserInfoKey"), out var frameSize))
 			{
-				View = (UIView)notification.Object;
-				await SetUpTextEdit();
-			}
-		});
-
-		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), async (notification) =>
-		{
-			var userInfo = notification.UserInfo;
-
-			if (userInfo is not null)
-			{
-				if (userInfo.TryGetValue(new NSString("UIKeyboardFrameEndUserInfoKey"), out var frameSize))
-				{
-					var frameSizeRect = DescriptionToCGRect(frameSize?.Description);
-					if (frameSizeRect is not null)
-						KeyboardFrame = (CGRect)frameSizeRect;
-				}
-
-				if (userInfo.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out var curveSize))
-				{
-					var num = (NSNumber)NSObject.FromObject(curveSize);
-					AnimationDuration = (double)num;
-				}
+				var frameSizeRect = DescriptionToCGRect(frameSize?.Description);
+				if (frameSizeRect is not null)
+					KeyboardFrame = (CGRect)frameSizeRect;
 			}
 
-			if (TopViewBeginOrigin == InvalidPoint && RootController is not null)
-				TopViewBeginOrigin = new CGPoint(RootController.Frame.X, RootController.Frame.Y);
-
-			if (!IsKeyboardShowing)
-			{
-				await AdjustPositionDebounce();
-				IsKeyboardShowing = true;
-			}
-		});
-
-		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), (notification) =>
-		{
-			NSObject? curveSize = null;
-
-			var foundAnimationDuration = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out curveSize);
-			if (foundAnimationDuration == true && curveSize is not null)
+			if (userInfo.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out var curveSize))
 			{
 				var num = (NSNumber)NSObject.FromObject(curveSize);
 				AnimationDuration = (double)num;
 			}
+		}
 
-			if (LastScrollView is not null)
+		if (TopViewBeginOrigin == InvalidPoint && RootController is not null)
+			TopViewBeginOrigin = new CGPoint(RootController.Frame.X, RootController.Frame.Y);
+
+		if (!IsKeyboardShowing)
+		{
+			await AdjustPositionDebounce();
+			IsKeyboardShowing = true;
+		}
+	}
+
+	static void WillHideKeyboard(NSNotification notification)
+	{
+		NSObject? curveSize = null;
+
+		var foundAnimationDuration = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out curveSize);
+		if (foundAnimationDuration == true && curveSize is not null)
+		{
+			var num = (NSNumber)NSObject.FromObject(curveSize);
+			AnimationDuration = (double)num;
+		}
+
+		if (LastScrollView is not null)
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
+
+		if (IsKeyboardShowing)
+			RestorePosition();
+
+		IsKeyboardShowing = false;
+		View = null;
+		LastScrollView = null;
+		KeyboardFrame = CGRect.Empty;
+		StartingContentInsets = new UIEdgeInsets();
+		StartingScrollIndicatorInsets = new UIEdgeInsets();
+		StartingContentInsets = new UIEdgeInsets();
+	}
+
+	static void AnimateHidingKeyboard()
+	{
+		if (LastScrollView is not null && LastScrollView.ContentInset != StartingContentInsets)
+		{
+			LastScrollView.ContentInset = StartingContentInsets;
+			LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
+		}
+
+		var superScrollView = LastScrollView;
+		while (superScrollView is not null)
+		{
+			var contentSize = new CGSize(Math.Max(superScrollView.ContentSize.Width, superScrollView.Frame.Width),
+				Math.Max(superScrollView.ContentSize.Height, superScrollView.Frame.Height));
+
+			var minY = contentSize.Height - superScrollView.Frame.Height;
+			if (minY < superScrollView.ContentOffset.Y)
 			{
-				AnimateScroll(() =>
+				var newContentOffset = new CGPoint(superScrollView.ContentOffset.X, minY);
+				if (!superScrollView.ContentOffset.Equals(newContentOffset))
 				{
-					if (LastScrollView.ContentInset != StartingContentInsets)
-					{
-						LastScrollView.ContentInset = StartingContentInsets;
-						LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
-					}
-
-					var superScrollView = LastScrollView;
-					while (superScrollView is not null)
-					{
-						var contentSize = new CGSize(Math.Max(superScrollView.ContentSize.Width, superScrollView.Frame.Width),
-							Math.Max(superScrollView.ContentSize.Height, superScrollView.Frame.Height));
-
-						var minY = contentSize.Height - superScrollView.Frame.Height;
-						if (minY < superScrollView.ContentOffset.Y)
-						{
-							var newContentOffset = new CGPoint(superScrollView.ContentOffset.X, minY);
-							if (!superScrollView.ContentOffset.Equals(newContentOffset))
-							{
-								if (View?.Superview is UIStackView)
-									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
-								else
-									superScrollView.ContentOffset = newContentOffset;
-							}
-						}
-						superScrollView = superScrollView.FindResponder<UIScrollView>();
-					}
-				});
+					if (View?.Superview is UIStackView)
+						superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
+					else
+						superScrollView.ContentOffset = newContentOffset;
+				}
 			}
-
-			if (IsKeyboardShowing)
-				RestorePosition();
-
-			IsKeyboardShowing = false;
-			View = null;
-			LastScrollView = null;
-			KeyboardFrame = CGRect.Empty;
-			StartingContentInsets = new UIEdgeInsets();
-			StartingScrollIndicatorInsets = new UIEdgeInsets();
-			StartingContentInsets = new UIEdgeInsets();
-		});
+			superScrollView = superScrollView.FindResponder<UIScrollView>();
+		}
 	}
 
 	internal static void Destroy()
@@ -317,13 +315,7 @@ internal static class KeyboardAutoManagerScroll
 			if (superScrollView is null)
 			{
 				if (LastScrollView.ContentInset != StartingContentInsets)
-				{
-					AnimateScroll(() =>
-					{
-						LastScrollView.ContentInset = StartingContentInsets;
-						LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
-					});
-				}
+					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateStartingLastScrollView, () => { });
 
 				if (!LastScrollView.ContentOffset.Equals(StartingContentOffset))
 				{
@@ -344,13 +336,7 @@ internal static class KeyboardAutoManagerScroll
 			else if (superScrollView != LastScrollView)
 			{
 				if (LastScrollView.ContentInset != StartingContentInsets)
-				{
-					AnimateScroll(() =>
-					{
-						LastScrollView.ContentInset = StartingContentInsets;
-						LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
-					});
-				}
+					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateStartingLastScrollView, () => { });
 
 				if (!LastScrollView.ContentOffset.Equals(StartingContentOffset))
 				{
@@ -465,7 +451,7 @@ internal static class KeyboardAutoManagerScroll
 					{
 						if (nextScrollView is null)
 						{
-							AnimateScroll(() =>
+							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 							{
 								newContentOffset.Y += innerScrollValue;
 								innerScrollValue = 0;
@@ -474,7 +460,7 @@ internal static class KeyboardAutoManagerScroll
 									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
 								else
 									superScrollView.ContentOffset = newContentOffset;
-							});
+							}, () => { });
 						}
 
 						else
@@ -503,14 +489,11 @@ internal static class KeyboardAutoManagerScroll
 
 			if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
 			{
-				AnimateScroll(() =>
-				{
-					var rect = RootController.Frame;
-					rect.X = rootViewOrigin.X;
-					rect.Y = rootViewOrigin.Y;
+				var rect = RootController.Frame;
+				rect.X = rootViewOrigin.X;
+				rect.Y = rootViewOrigin.Y;
 
-					RootController.Frame = rect;
-				});
+				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 			}
 		}
 
@@ -520,24 +503,28 @@ internal static class KeyboardAutoManagerScroll
 
 			if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
 			{
-				AnimateScroll(() =>
-					{
-						var rect = RootController.Frame;
-						rect.X = rootViewOrigin.X;
-						rect.Y = rootViewOrigin.Y;
+				var rect = RootController.Frame;
+				rect.X = rootViewOrigin.X;
+				rect.Y = rootViewOrigin.Y;
 
-						RootController.Frame = rect;
-					});
+				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 			}
 		}
 	}
 
-	static void AnimateScroll(Action? action)
+	static void AnimateStartingLastScrollView()
 	{
-		UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+		if (LastScrollView is not null)
 		{
-			action?.Invoke();
-		}, () => { });
+			LastScrollView.ContentInset = StartingContentInsets;
+			LastScrollView.ScrollIndicatorInsets = StartingScrollIndicatorInsets;
+		}
+	}
+
+	static void AnimateRootView(CGRect rect)
+	{
+		if (RootController is not null)
+			RootController.Frame = rect;
 	}
 
 	static UIScrollView? FindParentScroll(UIScrollView? view)
@@ -557,14 +544,11 @@ internal static class KeyboardAutoManagerScroll
 	{
 		if (RootController is not null && (RootController.Frame.X != TopViewBeginOrigin.X || RootController.Frame.Y != TopViewBeginOrigin.Y))
 		{
-			AnimateScroll(() =>
-			{
-				var rect = RootController.Frame;
-				rect.X = TopViewBeginOrigin.X;
-				rect.Y = TopViewBeginOrigin.Y;
+			var rect = RootController.Frame;
+			rect.X = TopViewBeginOrigin.X;
+			rect.Y = TopViewBeginOrigin.Y;
 
-				RootController.Frame = rect;
-			});
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 		}
 		View = null;
 		RootController = null;
@@ -572,7 +556,7 @@ internal static class KeyboardAutoManagerScroll
 		CursorRect = null;
 	}
 
-	static NSIndexPath? GetPreviousIndexPath(this UITableView tableView, NSIndexPath indexPath)
+	static NSIndexPath? GetPreviousIndexPath(this UIScrollView scrollView, NSIndexPath indexPath)
 	{
 		var previousRow = indexPath.Row - 1;
 		var previousSection = indexPath.Section;
@@ -580,26 +564,12 @@ internal static class KeyboardAutoManagerScroll
 		if (previousRow < 0)
 		{
 			previousSection -= 1;
-			if (previousSection >= 0)
-				previousRow = (int)(tableView.NumberOfRowsInSection(previousSection) - 1);
-		}
-
-		if (previousRow >= 0 && previousSection >= 0)
-			return NSIndexPath.FromRowSection(previousRow, previousSection);
-		else
-			return null;
-	}
-
-	static NSIndexPath? GetPreviousIndexPath(this UICollectionView collectionView, NSIndexPath indexPath)
-	{
-		var previousRow = indexPath.Row - 1;
-		var previousSection = indexPath.Section;
-
-		if (previousRow < 0)
-		{
-			previousSection -= 1;
-			if (previousSection >= 0)
+			if (previousSection >= 0 && scrollView is UICollectionView collectionView)
 				previousRow = (int)(collectionView.NumberOfItemsInSection(previousSection) - 1);
+			else if (previousSection >= 0 && scrollView is UITableView tableView)
+				previousRow = (int)(tableView.NumberOfRowsInSection(previousSection) - 1);
+			else
+				return null;
 		}
 
 		if (previousRow >= 0 && previousSection >= 0)
