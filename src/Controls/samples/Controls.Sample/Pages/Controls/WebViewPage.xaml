@@ -12,6 +12,7 @@
                     Text="HtmlWebViewSource (String)"
                     Style="{StaticResource Headline}"/>
                 <WebView 
+                    x:Name="HtmlSourceWebView"
                     HeightRequest="150"
                     HorizontalOptions="FillAndExpand">
                     <WebView.Source>
@@ -31,6 +32,9 @@
                         </HtmlWebViewSource>
                     </WebView.Source>
                 </WebView>
+                <Button
+                    Text="Update Source"
+                    Clicked="OnUpdateHtmlSourceClicked"/>
                 <Label
                     Text="HtmlWebViewSource (File)"
                     Style="{StaticResource Headline}"/>

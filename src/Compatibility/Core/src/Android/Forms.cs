@@ -29,9 +29,11 @@ using Trace = System.Diagnostics.Trace;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct InitializationOptions
 	{
 		public struct EffectScope
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;

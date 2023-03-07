@@ -713,11 +713,11 @@ namespace Microsoft.Maui.Controls
 
 			element.Parent = null;
 
-			if (!_logicalChildren.Contains(element))
+			var oldLogicalIndex = _logicalChildren.IndexOf(element);
+			if (oldLogicalIndex == -1)
 				return;
 
-			var oldLogicalIndex = _logicalChildren.IndexOf(element);
-			_logicalChildren.Remove(element);
+			_logicalChildren.RemoveAt(oldLogicalIndex);
 			OnChildRemoved(element, oldLogicalIndex);
 			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
 		}
@@ -1693,7 +1693,14 @@ namespace Microsoft.Maui.Controls
 				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					if (ModalStack.Count > 0)
+					{
+						ModalStack[ModalStack.Count - 1].SendDisappearing();
+					}
+
 					modal.SendAppearing();
+				}
 
 				await base.OnPushModal(modal, animated);
 
