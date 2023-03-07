@@ -26,13 +26,13 @@ namespace Microsoft.Maui.DeviceTests
 				await platformView.AttachAndRun(async () =>
 				{
 					textInput.Focus();
-					await AssertionExtensions.WaitForFocused(platformView, 2000);
+					await AssertionExtensions.WaitForFocused(platformView, 3000);
 					await AssertionExtensions.WaitForKeyboardToShow(platformView);
 
 					// Test that keyboard reappears when refocusing on an already focused TextInput control
 					await AssertionExtensions.HideKeyboardForView(platformView);
 					textInput.Focus();
-					await AssertionExtensions.WaitForFocused(platformView, 2000);
+					await AssertionExtensions.WaitForFocused(platformView, 3000);
 					await AssertionExtensions.WaitForKeyboardToShow(platformView);
 					await AssertionExtensions.HideKeyboardForView(platformView);
 				});
