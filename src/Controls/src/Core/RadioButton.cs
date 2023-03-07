@@ -618,7 +618,7 @@ namespace Microsoft.Maui.Controls
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
 			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
-			
+
 			uncheckedVisualState.Setters.Add(
 				new Setter()
 				{
@@ -626,7 +626,7 @@ namespace Microsoft.Maui.Controls
 					TargetName = UncheckedButton,
 					Value = new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
 				});
-			
+
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
