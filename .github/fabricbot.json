@@ -1351,7 +1351,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "We've moved this issue to the Backlog milestone. This means that it is not going to be worked on for the coming release. We will reassess the backlog following the current release and consider this item at that time. To learn more about our issue management process and to have better expectation regarding different types of issues you can read our [Triage Process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md)."
+              "comment": "We've added this issue to our backlog, and we will work to address it as time and resources allow. If you have any additional information or questions about this issue, please leave a comment. For additional info about issue management, please read our [Triage Process] (https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2720,6 +2720,73 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${issueAuthor}. We have added the \"s/pr-needs-author-input\" label to this issue, which indicates that we have an open question/action for you before we can take further action. This PRwill be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an issue",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 Breaking change detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an PR",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 Breaking change detected @davidbritch FYI"
             }
           }
         ]

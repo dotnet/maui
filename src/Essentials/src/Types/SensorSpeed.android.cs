@@ -2,7 +2,7 @@ using Android.Hardware;
 
 namespace Microsoft.Maui.Devices.Sensors
 {
-	static class SensorSpeedExtensions
+	internal static partial class SensorSpeedExtensions
 	{
 		internal static SensorDelay ToPlatform(this SensorSpeed sensorSpeed)
 		{
