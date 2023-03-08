@@ -14,7 +14,7 @@ parameters:
     type: string
     default: ''
 
- - name: BuildPlatforms
+  - name: BuildPlatforms
     type: object
     default:
     - name: Windows
