@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.SourceGen.Helper;
 
 namespace Microsoft.Maui.Controls.SourceGen
 {
-	[Generator(LanguageNames.CSharp)]
+	//[Generator(LanguageNames.CSharp)]
 	public class RouteSourceGenerator : ISourceGenerator
 	{
 		static readonly string Indent = new string('\x20', 8);

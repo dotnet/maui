@@ -216,45 +216,4 @@ namespace Microsoft.Maui.Controls.SourceGen
 			_ => Singleton
 		};
 	}
-
-	internal class RoutedPage
-	{
-		public RoutedPage(
-			ClassDeclarationSyntax type,
-			IEnumerable<string> routes,
-			string lifetime,
-			bool implicitViewModel = false,
-			TypeSyntax? viewModelType = null)
-		{
-			Type = type;
-			Routes = routes;
-			Lifetime = lifetime;
-			ImplicitViewModel = implicitViewModel;
-			ViewModelType = viewModelType;
-		}
-
-		public ClassDeclarationSyntax Type { get; }
-
-		public IEnumerable<string> Routes { get; }
-
-		public string Lifetime { get; }
-
-		public bool ImplicitViewModel { get; }
-
-		public TypeSyntax? ViewModelType { get; }
-	}
-
-	internal class Service
-	{
-		public Service(ClassDeclarationSyntax type, string lifetime, TypeSyntax? registerFor, bool useTryAdd)
-			=> (Type, Lifetime, RegisterFor, UseTryAdd) = (type, lifetime, registerFor, useTryAdd);
-
-		public ClassDeclarationSyntax Type { get; }
-
-		public string Lifetime { get; }
-
-		public TypeSyntax? RegisterFor { get; }
-
-		public bool UseTryAdd { get; }
-	}
 }
