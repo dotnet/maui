@@ -1,9 +1,4 @@
 ﻿
-
-using System.Diagnostics;
-using Microsoft.Maui.IntegrationTests.Android;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
-
 namespace Microsoft.Maui.IntegrationTests
 {
 	public class BaseBuildTest

@@ -4,14 +4,20 @@ namespace Microsoft.Maui.IntegrationTests
 	public class TemplateTests : BaseBuildTest
 	{
 		[Test]
-		// Parameters: short name, build config, target framework, use pack target
-		[TestCase("maui", "Debug", "net7.0", false)]
-		[TestCase("maui", "Release", "net7.0", false)]
-		[TestCase("maui-blazor", "Debug", "net7.0", false)]
-		[TestCase("maui-blazor", "Release", "net7.0", false)]
-		[TestCase("mauilib", "Debug", "net7.0", true)]
-		[TestCase("mauilib", "Release", "net7.0", true)]
-		public void Build(string id, string config, string framework, bool shouldPack)
+		// Parameters: short name, target framework, build config, use pack target
+		[TestCase("maui", "net6.0", "Debug", false)]
+		[TestCase("maui", "net6.0", "Release", false)]
+		[TestCase("maui", "net7.0", "Debug", false)]
+		[TestCase("maui", "net7.0", "Release", false)]
+		[TestCase("maui-blazor", "net6.0", "Debug", false)]
+		[TestCase("maui-blazor", "net6.0", "Release", false)]
+		[TestCase("maui-blazor", "net7.0", "Debug", false)]
+		[TestCase("maui-blazor", "net7.0", "Release", false)]
+		[TestCase("mauilib", "net6.0", "Debug", true)]
+		[TestCase("mauilib", "net6.0", "Release", true)]
+		[TestCase("mauilib", "net7.0", "Debug", true)]
+		[TestCase("mauilib", "net7.0", "Release", true)]
+		public void Build(string id, string framework, string config, bool shouldPack)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -27,12 +33,15 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		// Parameters: short name, build config, target framework
-		[TestCase("maui", "Debug", "net7.0")]
-		[TestCase("maui", "Release", "net7.0")]
-		[TestCase("maui-blazor", "Debug", "net7.0")]
-		[TestCase("maui-blazor", "Release", "net7.0")]
-		public void BuildUnpackaged(string id, string config, string framework)
+		[TestCase("maui", "net6.0", "Debug")]
+		[TestCase("maui", "net6.0", "Release")]
+		[TestCase("maui", "net7.0", "Debug")]
+		[TestCase("maui", "net7.0", "Release")]
+		[TestCase("maui-blazor", "net6.0", "Debug")]
+		[TestCase("maui-blazor", "net6.0", "Release")]
+		[TestCase("maui-blazor", "net7.0", "Debug")]
+		[TestCase("maui-blazor", "net7.0", "Release")]
+		public void BuildUnpackaged(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -50,15 +59,17 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("Debug", "net7.0")]
-		[TestCase("Release", "net7.0")]
-		public void PackCoreLib(string config, string framework)
+		[TestCase("mauilib", "net6.0", "Debug")]
+		[TestCase("mauilib", "net6.0", "Release")]
+		[TestCase("mauilib", "net7.0", "Debug")]
+		[TestCase("mauilib", "net7.0", "Release")]
+		public void PackCoreLib(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New("mauilib", projectDir, framework),
-				$"Unable to create template mauilib. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.New("id", projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
@@ -67,7 +78,6 @@ namespace Microsoft.Maui.IntegrationTests
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			});
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
-
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
