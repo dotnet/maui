@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			textBlock.Text = text;
-		
+
 			textBlock.Visibility = string.IsNullOrEmpty(text)
 				? UI.Xaml.Visibility.Collapsed
 				: UI.Xaml.Visibility.Visible;
