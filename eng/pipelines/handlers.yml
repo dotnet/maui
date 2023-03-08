@@ -300,10 +300,36 @@ stages:
                   env:
                     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
                     PRIVATE_BUILD: $(PrivateBuild)
-                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="${{ TestTFM.tfm }}" --verbosity=diagnostic
-                  displayName: 'Build .NET MAUI Templates'
-                - pwsh: ./build.ps1 -Script eng/devices/android.cake --target=StopEmulator --boot-on-setup=false
-                  displayName: Stop Android emulator
+                - task: DotNetCoreCLI@2
+                  inputs:
+                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.cs
+                - task: DotNetCoreCLI@2
+                  inputs:
+                    command: test
+                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                    arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
+                    publishTestResults: true
+                    testRunTitle: template build tests
+                  displayName: template build tests
+                  continueOnError: true
+                - task: DotNetCoreCLI@2
+                  inputs:
+                    command: test
+                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                    arguments: --logger "console;verbosity=normal" --filter "Name=RunOnAndroid"
+                    publishTestResults: true
+                    testRunTitle: android run template tests
+                  displayName: android run template tests
+                  continueOnError: true
+                - task: DotNetCoreCLI@2
+                  inputs:
+                    command: test
+                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                    arguments: --logger "console;verbosity=normal" --filter "Name=RunOniOS"
+                    publishTestResults: true
+                    testRunTitle: ios run template tests
+                  displayName: ios run template tests
+                  continueOnError: true
                 - task: PublishBuildArtifacts@1
                   condition: always()
                   displayName: publish artifacts

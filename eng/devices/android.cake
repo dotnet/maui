@@ -27,7 +27,6 @@ string DEVICE_ID = "";
 string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
-bool DEVICE_BOOT_ON_SETUP = Argument("boot-on-setup", true);
 
 // set up env
 var ANDROID_SDK_ROOT = GetAndroidSDKPath();
@@ -55,32 +54,6 @@ if (IsCIBuild())
 AndroidEmulatorProcess emulatorProcess = null;
 
 Setup(context =>
-{
-	if (DEVICE_BOOT_ON_SETUP) {
-		StartEmulator();
-	}
-});
-
-Teardown(context =>
-{
-	if (DEVICE_BOOT_ON_SETUP) {
-		StopEmulator();
-	}
-});
-
-Task("StartEmulator")
-	.Does(() =>
-{
-	StartEmulator();
-});
-
-Task("StopEmulator")
-	.Does(() =>
-{
-	StopEmulator();
-});
-
-void StartEmulator ()
 {
 	Information("Test Device: {0}", TEST_DEVICE);
 
@@ -141,24 +114,9 @@ void StartEmulator ()
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
 		emulatorProcess = AndroidEmulatorStart(ANDROID_AVD, emuSettings);
 	}
+});
 
-	if (DEVICE_BOOT_WAIT) {
-		Information("Waiting for the emulator to finish booting...");
-
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
-}
-
-void StopEmulator ()
+Teardown(context =>
 {
 	// no virtual device was used
 	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
@@ -176,7 +134,9 @@ void StopEmulator ()
 	// delete the AVD
 	try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
 	catch { }
-}
+});
+
+Task("Boot");
 
 Task("Build")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
@@ -271,7 +231,11 @@ Task("Test")
 		Information("Waited {0} seconds for the emulator to boot up.", waited);
 	}
 
-	SetAdbDebugProps();
+	Information("Setting the ADB properties...");
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	Information("{0}", string.Join("\n", lines));
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
@@ -291,35 +255,5 @@ Task("Test")
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
 });
-
-Task("RunTemplate")
-	.Does(() =>
-{
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-	CleanDirectories(TEST_RESULTS);
-
-	SetAdbDebugProps ();
-
-	var settings = new DotNetCoreToolSettings {
-		DiagnosticOutput = true,
-		ArgumentCustomization = args=>args.Append("run xharness android run " +
-			$"--package-name=\"com.companyname.{PROJECT.FullPath}\" " +
-			$"--output-directory=\"{TEST_RESULTS}\" " +
-			$"--expected-exit-code=\"-1\" " +
-			$"--timeout=00:01:30 " +
-			$"--verbosity=\"Debug\" ")
-	};
-
-	DotNetCoreTool("tool", settings);
-});
-
-void SetAdbDebugProps ()
-{
-	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-}
 
 RunTarget(TARGET);

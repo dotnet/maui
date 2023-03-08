@@ -2,14 +2,6 @@
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Util;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace mauitemplate
 {
@@ -40,7 +32,7 @@ namespace mauitemplate
             intent.SetClassName(TargetContext, activityName);
             StartActivitySync(intent);
             Activity currentActivity = WaitForMonitor(monitor);
-            var resultCode = currentActivity != null ? Result.Ok : Result.Canceled;
+            var resultCode = currentActivity is not null ? Result.Ok : Result.Canceled;
             results.PutString("return-code", resultCode.ToString("D"));
             Finish(resultCode, results);
         }
