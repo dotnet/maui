@@ -69,7 +69,7 @@ parameters:
     default:
       - Debug
       - Release
- - name: BuildPlatforms
+  - name: BuildPlatforms
     type: object
     default:
       - name: Windows
