@@ -22,6 +22,7 @@ Microsoft.Maui.Controls.RouteAttribute.Lifetime.set -> void
 Microsoft.Maui.Controls.RouteAttribute.ViewModelType.get -> System.Type?
 Microsoft.Maui.Controls.RouteAttribute.ViewModelType.set -> void
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
+Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
 override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
