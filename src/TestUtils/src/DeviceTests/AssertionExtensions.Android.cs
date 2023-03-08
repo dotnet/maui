@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(10);
 		}
 
-		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message="")
+		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message = "")
 		{
 			try
 			{
@@ -119,7 +119,7 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message="")
+		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
 		{
 			try
 			{
@@ -133,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string message="")
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string message = "")
 		{
 			try
 			{
