@@ -91,30 +91,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(true)]
 		public async Task RemoveLastPage(bool useMaui)
 		{
-			ContentPage initialPage = new ContentPage();
-			ContentPage pushedPage = new ContentPage();
+			var initialPage = new PageLifeCycleTests.LCPage();
+			var pushedPage = new PageLifeCycleTests.LCPage();
 
-			ContentPage initialPageAppearing = null;
-			ContentPage pageDisappeared = null;
-
-			NavigationPage nav = new TestNavigationPage(useMaui, initialPage);
+			var nav = new TestNavigationPage(useMaui, initialPage);
 			_ = new TestWindow(nav);
-			nav.SendAppearing();
-
-			initialPage.Appearing += (sender, _)
-				=> initialPageAppearing = (ContentPage)sender;
-
-			pushedPage.Disappearing += (sender, _)
-				=> pageDisappeared = (ContentPage)sender;
 
 			await nav.PushAsync(pushedPage);
-			Assert.Null(initialPageAppearing);
-			Assert.Null(pageDisappeared);
+			Assert.Equal(1, initialPage.AppearingCount);
+			Assert.Equal(1, pushedPage.AppearingCount);
+			Assert.Equal(0, pushedPage.DisappearingCount);
 
 			nav.Navigation.RemovePage(pushedPage);
+			await nav.NavigatingTask;
 
-			Assert.Equal(initialPageAppearing, initialPage);
-			Assert.Equal(pageDisappeared, pushedPage);
+			Assert.Equal(2, initialPage.AppearingCount);
+			Assert.Equal(1, pushedPage.AppearingCount);
+			Assert.Equal(1, pushedPage.DisappearingCount);
 		}
 
 		[Theory]

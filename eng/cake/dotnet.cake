@@ -95,8 +95,29 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
+Task("android-aar")
+    .Does(() =>
+    {
+        var root = "./src/Core/AndroidNative/";
+
+        var gradlew = root + "gradlew";
+        if (IsRunningOnWindows())
+            gradlew += ".bat";
+
+        var exitCode = StartProcess(
+            MakeAbsolute((FilePath)gradlew),
+            new ProcessSettings
+            {
+                Arguments = $"createAar --rerun-tasks",
+                WorkingDirectory = root
+            });
+        if (exitCode != 0)
+            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+    });
+
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
@@ -162,6 +183,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {

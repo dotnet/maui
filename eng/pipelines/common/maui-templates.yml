@@ -1,0 +1,135 @@
+parameters:
+  - name: condition
+    default: true
+
+  - name: artifactName
+    type: string
+    default: nuget
+
+  - name: artefactItemPattern
+    type: string
+    default: '**/*.nupkg'
+
+  - name: uploadPrefix
+    type: string
+    default: ''
+
+  - name: BuildConfigurations
+    type: object
+    default:
+      - Debug
+      - Release
+
+  - name: BuildPlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+        bootsAndroid: $(Android.Msi)
+        bootsiOS: $(iOS.Msi)
+        artifact: build-windows
+        devicePool:
+          name: $(androidTestsVmPool)
+          vmImage: $(androidTestsVmImage)
+          demands:
+            - macOS.Name -equals Monterey
+            - macOS.Architecture -equals x64
+      - name: macOS
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
+        bootsAndroid: $(Android.Pkg)
+        bootsiOS: $(iOS.Pkg)
+        bootsMacCatalyst: $(MacCatalyst.Pkg)
+        artifact: build-macos
+        devicePool:
+          name: $(iosTestsVmPool)
+          vmImage: $(iosTestsVmImage)
+
+  - name: TestTargetFrameworks
+    type: object
+    default:
+      - name: default
+        tfm: default
+      - name: net6
+        tfm: net6.0
+      - name: net7
+        tfm: net7.0
+
+jobs:
+  - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+    - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+      - ${{ each TestTFM in parameters.TestTargetFrameworks }}:
+        - job: build_${{ TestTFM.name }}_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+          workspace:
+            clean: all
+          displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
+          timeoutInMinutes: 240
+          condition: or(
+              ${{ parameters.condition}},
+              eq('${{ BuildConfiguration }}', 'Release')
+            )
+          pool: ${{ BuildPlatform.devicePool }}
+          steps:
+            - template: provision.yml
+              parameters:
+                platform: ${{ BuildPlatform.name }}
+                poolName: ${{ BuildPlatform.poolName }}
+
+            - task: DownloadBuildArtifacts@0
+              displayName: 'Download Packages'
+              inputs:
+                artifactName: ${{ parameters.artifactName }}
+                itemPattern: ${{ parameters.artefactItemPattern }}
+                downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+
+            - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+              displayName: Move the downloaded artifacts
+
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+              displayName: 'Install .NET (Local Workloads)'
+              retryCountOnTaskFailure: 3
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+
+            - task: DotNetCoreCLI@2
+              inputs:
+                projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.cs
+                displayName: Build Microsoft.Maui.IntegrationTests
+
+            - task: DotNetCoreCLI@2
+              inputs:
+                command: test
+                projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
+                publishTestResults: true
+                testRunTitle: template build tests
+              displayName: Run template build tests
+              continueOnError: true
+
+            - task: DotNetCoreCLI@2
+              inputs:
+                command: test
+                projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                arguments: --logger "console;verbosity=normal" --filter "Name=RunOnAndroid"
+                publishTestResults: true
+                testRunTitle: android run template tests
+              displayName: Run Android template tests
+              continueOnError: true
+
+            - task: DotNetCoreCLI@2
+              inputs:
+                command: test
+                projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                arguments: --logger "console;verbosity=normal" --filter "Name=RunOniOS"
+                publishTestResults: true
+                testRunTitle: ios run template tests
+              displayName: Run iOS template tests
+              continueOnError: true
+
+            - task: PublishBuildArtifacts@1
+              condition: always()
+              displayName: publish artifacts
+              inputs:
+                ArtifactName: '${{ parameters.uploadPrefix }}${{ BuildPlatform.artifact }}'

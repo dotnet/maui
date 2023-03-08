@@ -267,74 +267,14 @@ stages:
     displayName: Build and Run .NET MAUI Templates
     dependsOn: pack_net
     jobs:
-      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - ${{ each TestTFM in parameters.TestTargetFrameworks }}:
-            - job: build_${{ TestTFM.name }}_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-              workspace:
-                clean: all
-              displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
-              timeoutInMinutes: 240
-              condition: or(
-                ${{ parameters.BuildEverything }},
-                ne(variables['Build.Reason'], 'PullRequest'),
-                eq('${{ BuildConfiguration }}', 'Release'))
-              pool: ${{ BuildPlatform.devicePool }}
-              steps:
-                - template: common/provision.yml
-                  parameters:
-                    platform: ${{ BuildPlatform.name }}
-                    poolName: ${{ BuildPlatform.poolName }}
-                    
-                - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Packages'
-                  inputs:
-                    artifactName: nuget
-                    itemPattern: '**/*.nupkg'
-                    downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-                - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-                  displayName: Move the downloaded artifacts
-                - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                  displayName: 'Install .NET (Local Workloads)'
-                  retryCountOnTaskFailure: 3
-                  env:
-                    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-                    PRIVATE_BUILD: $(PrivateBuild)
-                - task: DotNetCoreCLI@2
-                  inputs:
-                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.cs
-                - task: DotNetCoreCLI@2
-                  inputs:
-                    command: test
-                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-                    arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
-                    publishTestResults: true
-                    testRunTitle: template build tests
-                  displayName: template build tests
-                  continueOnError: true
-                - task: DotNetCoreCLI@2
-                  inputs:
-                    command: test
-                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-                    arguments: --logger "console;verbosity=normal" --filter "Name=RunOnAndroid"
-                    publishTestResults: true
-                    testRunTitle: android run template tests
-                  displayName: android run template tests
-                  continueOnError: true
-                - task: DotNetCoreCLI@2
-                  inputs:
-                    command: test
-                    projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-                    arguments: --logger "console;verbosity=normal" --filter "Name=RunOniOS"
-                    publishTestResults: true
-                    testRunTitle: ios run template tests
-                  displayName: ios run template tests
-                  continueOnError: true
-                - task: PublishBuildArtifacts@1
-                  condition: always()
-                  displayName: publish artifacts
-                  inputs:
-                    ArtifactName: ${{ BuildPlatform.artifact }}
+    - template: common/maui-templates.yml
+      parameters:
+        BuildConfigurations: ${{ parameters.BuildConfigurations }}
+        BuildPlatforms: ${{ parameters.BuildPlatforms }}
+        TestTargetFrameworks: ${{ parameters.TestTargetFrameworks }}
+        condition: or(
+          ${{ parameters.BuildEverything }},
+          ne(variables['Build.Reason'], 'PullRequest'))
 
   - template: common/security-compliance.yml
 
