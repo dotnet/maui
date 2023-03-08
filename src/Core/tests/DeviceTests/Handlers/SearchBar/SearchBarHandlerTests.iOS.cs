@@ -11,8 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
-		[Theory(DisplayName = "Gradient Background Initializes Correctly")]
-
+		[Theory(DisplayName = "Gradient Background Initializes Correctly"
+#if IOS || MACCATALYST
+			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+#endif
+		)]
 		[InlineData(0xFFFF0000, 0xFFFE2500)]
 		[InlineData(0xFF00FF00, 0xFF04F800)]
 		[InlineData(0xFF0000FF, 0xFF0432FE)]
