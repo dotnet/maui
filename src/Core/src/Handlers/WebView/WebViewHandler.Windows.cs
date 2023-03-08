@@ -280,9 +280,15 @@ namespace Microsoft.Maui.Handlers
 
 				foreach (CoreWebView2Cookie cookie in existingCookies)
 				{
+					// TODO Ideally we use cookie.ToSystemNetCookie() here, but it's not available for some reason check bac later
 					if (cookies[cookie.Name] is null)
 						myCookieJar.SetCookies(uri,
-							$"{cookie.Name}={cookie.Value}; domain={cookie.Domain}; path={cookie.Path}");
+							new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain)
+							{
+								Expires = DateTimeOffset.FromUnixTimeMilliseconds((long)cookie.Expires).DateTime,
+								HttpOnly = cookie.IsHttpOnly,
+								Secure = cookie.IsSecure,
+							}.ToString());
 				}
 			}
 		}
