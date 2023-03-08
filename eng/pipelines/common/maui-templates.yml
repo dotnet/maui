@@ -31,7 +31,7 @@ parameters:
       bootsMacCatalyst: $(MacCatalyst.Pkg)
       artifact: build-macos
 
- - name: RunPlatforms
+  - name: RunPlatforms
     type: object
     default:
     - name: $(androidTestsVmPool)
