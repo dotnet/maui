@@ -94,7 +94,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
 				}
 
-				pvc.DismissViewController(false,
+				pvc.PresentingViewController.DismissViewController(false,
 					() =>
 					{
 						finishedClosing.Invoke();

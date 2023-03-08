@@ -30,6 +30,12 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
+					if (windowHandler is WindowHandlerStub windowHandlerStub)
+					{
+						if (windowHandlerStub.IsDisconnected)
+							await windowHandlerStub.FinishedDisconnecting;
+					}
+
 					if (windowHandler is not null)
 					{
 						if (window is Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
