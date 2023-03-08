@@ -66,8 +66,9 @@ namespace Microsoft.Maui.ApplicationModel
 			if (config == null)
 				return LayoutDirection.Unknown;
 
-			return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl) ? LayoutDirection.RightToLeft :
-				LayoutDirection.LeftToRight;
+			return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+				? LayoutDirection.RightToLeft
+				: LayoutDirection.LeftToRight;
 		}
 
 		public LayoutDirection RequestedLayoutDirection => GetLayoutDirection();
