@@ -35,3 +35,5 @@ static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, M
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 *REMOVED*static Microsoft.Maui.Handlers.ScrollViewHandler.MapContentSize(Microsoft.Maui.Handlers.IScrollViewHandler! handler, Microsoft.Maui.IScrollView! scrollView) -> void
 *REMOVED*static Microsoft.Maui.Platform.ScrollViewExtensions.UpdateContentSize(this UIKit.UIScrollView! scrollView, Microsoft.Maui.Graphics.Size contentSize) -> void
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
+virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
