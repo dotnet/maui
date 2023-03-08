@@ -190,13 +190,20 @@ namespace Microsoft.Maui.Platform
 
 			if (_hScrollView?.Parent == this && _content is not null)
 			{
-				double scrollViewContentHeight = _content.Height;
+				var scrollViewContentHeight = (int)_content.Height;
 				var hScrollViewHeight = bottom - top;
+				var hScrollViewWidth = right - left;
+
 				//if we are scrolling both ways we need to lay out our MauiHorizontalScrollView with more than the available height
 				//so its parent the NestedScrollView can scroll vertically
-				var newBottom = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
-				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(right - left, MeasureSpecMode.Exactly), MeasureSpec.MakeMeasureSpec(newBottom, MeasureSpecMode.Exactly));
-				_hScrollView.Layout(0, 0, right - left, (int)newBottom);
+				hScrollViewHeight = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
+				
+				// Ensure that the horizontal scrollview has been measured at the actual target size
+				// so that it updates its internal bookkeeping to use the full size
+				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(right - left, MeasureSpecMode.Exactly), 
+					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
+				
+				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
 
 			if (CrossPlatformArrange == null)
