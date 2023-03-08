@@ -82,7 +82,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			catch (Exception ex)
 			{
-				throw new Exception(!string.IsNullOrEmpty(message) ? message : ex.Message);
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
 			}
 		}
 
@@ -129,7 +132,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			catch (Exception ex)
 			{
-				throw new Exception(!string.IsNullOrEmpty(message) ? message : ex.Message);
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
 			}
 		}
 
@@ -143,7 +149,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			catch (Exception ex)
 			{
-				throw new Exception(!string.IsNullOrEmpty(message) ? message : ex.Message);
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
 			}
 		}
 
@@ -156,7 +165,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			catch (Exception ex)
 			{
-				throw new Exception(!string.IsNullOrEmpty(message) ? message : ex.Message);
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
 			}
 		}
 
