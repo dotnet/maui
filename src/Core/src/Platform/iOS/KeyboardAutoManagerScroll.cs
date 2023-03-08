@@ -26,9 +26,9 @@ internal static class KeyboardAutoManagerScroll
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
 	static UIView? View = null;
-	static UIView? RootController = null;
+	static UIView? ContainerView = null;
 	static CGRect? CursorRect = null;
-	static bool IsKeyboardShowing = false;
+	internal static bool IsKeyboardShowing = false;
 	static int TextViewTopDistance = 20;
 	static int DebounceCount = 0;
 	static NSObject? WillShowToken = null;
@@ -52,8 +52,48 @@ internal static class KeyboardAutoManagerScroll
 		if (notification.Object is not null)
 		{
 			View = (UIView)notification.Object;
-			await SetUpTextEdit();
+
+			if (View is null)
+				return;
+
+			CursorRect = null;
+
+			ContainerView = View.SetContainerView();
+
+			// the cursor needs a small amount of time to update the position
+			await Task.Delay(5);
+
+			var localCursor = FindLocalCursorPosition();
+			if (localCursor is CGRect local)
+				CursorRect = View.ConvertRectToView(local, null);
+
+			TextViewTopDistance = localCursor is CGRect cGRect ? 20 + (int)cGRect.Height : 20;
+
+			await AdjustPositionDebounce();
 		}
+	}
+
+	static CGRect? FindLocalCursorPosition()
+	{
+		if (View is IUITextInput textInput)
+		{
+			var selectedTextRange = textInput.SelectedTextRange;
+			if (selectedTextRange is UITextRange selectedRange)
+				return textInput.GetCaretRectForPosition(selectedRange.Start);
+		}
+
+		return null;
+	}
+
+	internal static CGRect? FindCursorPosition()
+	{
+		var localCursor = FindLocalCursorPosition();
+		if (localCursor is CGRect local)
+		{
+			return View?.ConvertRectToView(local, null);
+		}
+
+		return null;
 	}
 
 	static async void WillKeyboardShow(NSNotification notification)
@@ -76,8 +116,8 @@ internal static class KeyboardAutoManagerScroll
 			}
 		}
 
-		if (TopViewBeginOrigin == InvalidPoint && RootController is not null)
-			TopViewBeginOrigin = new CGPoint(RootController.Frame.X, RootController.Frame.Y);
+		if (TopViewBeginOrigin == InvalidPoint && ContainerView is not null)
+			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
 
 		if (!IsKeyboardShowing)
 		{
@@ -176,36 +216,6 @@ internal static class KeyboardAutoManagerScroll
 		return null;
 	}
 
-	static async Task SetUpTextEdit()
-	{
-		if (View is null)
-			return;
-
-		CursorRect = null;
-
-		RootController = View.SetContainerView();
-
-		// the cursor needs a small amount of time to update the position
-		await Task.Delay(5);
-
-		CGRect? localCursor = null;
-
-		if (View is IUITextInput textInput)
-		{
-			var selectedTextRange = textInput.SelectedTextRange;
-			if (selectedTextRange is UITextRange selectedRange)
-			{
-				localCursor = textInput.GetCaretRectForPosition(selectedRange.Start);
-				if (localCursor is CGRect local)
-					CursorRect = View.ConvertRectToView(local, null);
-			}
-		}
-
-		TextViewTopDistance = localCursor is CGRect cGRect ? 20 + (int)cGRect.Height : 20;
-
-		await AdjustPositionDebounce();
-	}
-
 	// Used to debounce calls from different oberservers so we can be sure
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
@@ -227,20 +237,19 @@ internal static class KeyboardAutoManagerScroll
 		if (View is not UITextField field && View is not UITextView)
 			return;
 
-		if (RootController is null)
+		if (ContainerView is null)
 			return;
 
-		var rootViewOrigin = new CGPoint(RootController.Frame.GetMinX(), RootController.Frame.GetMinY());
-		var window = RootController.Window;
+		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
+		var window = ContainerView.Window;
 
-		var kbSize = KeyboardFrame.Size;
 		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
-		kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
+		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
 		nfloat statusBarHeight;
 		nfloat navigationBarAreaHeight;
 
-		if (RootController.GetNavigationController() is UINavigationController navigationController)
+		if (ContainerView.GetNavigationController() is UINavigationController navigationController)
 		{
 			navigationBarAreaHeight = navigationController.NavigationBar.Frame.GetMaxY();
 		}
@@ -254,7 +263,7 @@ internal static class KeyboardAutoManagerScroll
 			navigationBarAreaHeight = statusBarHeight;
 		}
 
-		var topLayoutGuide = Math.Max(navigationBarAreaHeight, RootController.LayoutMargins.Top) + 5;
+		var topLayoutGuide = Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top) + 5;
 
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
 
@@ -262,7 +271,7 @@ internal static class KeyboardAutoManagerScroll
 
 		// readjust contentInset when the textView height is too large for the screen
 		var rootSuperViewFrameInWindow = window.Frame;
-		if (RootController.Superview is UIView v)
+		if (ContainerView.Superview is UIView v)
 			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
 
 		CGRect cursorRect;
@@ -397,7 +406,7 @@ internal static class KeyboardAutoManagerScroll
 						var previousCellRect = tableView.RectForRowAtIndexPath(previousIndexPath);
 						if (!previousCellRect.IsEmpty)
 						{
-							var previousCellRectInRootSuperview = tableView.ConvertRectToView(previousCellRect, RootController.Superview);
+							var previousCellRectInRootSuperview = tableView.ConvertRectToView(previousCellRect, ContainerView.Superview);
 							move = (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topLayoutGuide);
 						}
 					}
@@ -416,7 +425,7 @@ internal static class KeyboardAutoManagerScroll
 
 						if (!previousCellRect.IsEmpty)
 						{
-							var previousCellRectInRootSuperview = collectionView.ConvertRectToView(previousCellRect, RootController.Superview);
+							var previousCellRectInRootSuperview = collectionView.ConvertRectToView(previousCellRect, ContainerView.Superview);
 							move = (nfloat)Math.Min(0, previousCellRectInRootSuperview.GetMaxY() - topLayoutGuide);
 						}
 					}
@@ -487,9 +496,9 @@ internal static class KeyboardAutoManagerScroll
 		{
 			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - TextViewTopDistance));
 
-			if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
+			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
-				var rect = RootController.Frame;
+				var rect = ContainerView.Frame;
 				rect.X = rootViewOrigin.X;
 				rect.Y = rootViewOrigin.Y;
 
@@ -501,9 +510,9 @@ internal static class KeyboardAutoManagerScroll
 		{
 			rootViewOrigin.Y -= move;
 
-			if (RootController.Frame.X != rootViewOrigin.X || RootController.Frame.Y != rootViewOrigin.Y)
+			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
-				var rect = RootController.Frame;
+				var rect = ContainerView.Frame;
 				rect.X = rootViewOrigin.X;
 				rect.Y = rootViewOrigin.Y;
 
@@ -523,8 +532,8 @@ internal static class KeyboardAutoManagerScroll
 
 	static void AnimateRootView(CGRect rect)
 	{
-		if (RootController is not null)
-			RootController.Frame = rect;
+		if (ContainerView is not null)
+			ContainerView.Frame = rect;
 	}
 
 	static UIScrollView? FindParentScroll(UIScrollView? view)
@@ -540,18 +549,30 @@ internal static class KeyboardAutoManagerScroll
 		return null;
 	}
 
+	internal static nfloat FindKeyboardHeight()
+	{
+		if (ContainerView is null)
+			return 0;
+
+		var window = ContainerView.Window;
+		var intersectRect = CGRect.Intersect(KeyboardFrame, window.Frame);
+		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
+
+		return window.Frame.Height - kbSize.Height;
+	}
+
 	static void RestorePosition()
 	{
-		if (RootController is not null && (RootController.Frame.X != TopViewBeginOrigin.X || RootController.Frame.Y != TopViewBeginOrigin.Y))
+		if (ContainerView is not null && (ContainerView.Frame.X != TopViewBeginOrigin.X || ContainerView.Frame.Y != TopViewBeginOrigin.Y))
 		{
-			var rect = RootController.Frame;
+			var rect = ContainerView.Frame;
 			rect.X = TopViewBeginOrigin.X;
 			rect.Y = TopViewBeginOrigin.Y;
 
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 		}
 		View = null;
-		RootController = null;
+		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;
 		CursorRect = null;
 	}
