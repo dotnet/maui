@@ -511,7 +511,7 @@ namespace Microsoft.Maui.DeviceTests
 				Height = 200
 			};
 
-			await ScrollHelper(async () => await ScrollToText(editor),  entry, editor);
+			await ScrollHelper(async () => await ScrollToText(editor), entry, editor);
 		}
 
 		[Fact]
@@ -528,7 +528,7 @@ namespace Microsoft.Maui.DeviceTests
 				Height = 200
 			};
 
-			await ScrollHelper(async () => await ScrollToNext(entry1, entry2) , entry1, entry2);
+			await ScrollHelper(async () => await ScrollToNext(entry1, entry2), entry1, entry2);
 		}
 
 		[Fact]
@@ -579,7 +579,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		async Task ScrollToText (StubBase selectedStub)
+		async Task ScrollToText(StubBase selectedStub)
 		{
 			var uiTextField = selectedStub.ToPlatform();
 			Assert.True(uiTextField.BecomeFirstResponder());
