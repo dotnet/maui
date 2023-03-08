@@ -31,13 +31,15 @@ namespace Microsoft.Maui.IntegrationTests
 				p.StartInfo.UseShellExecute = false;
 				p.StartInfo.RedirectStandardOutput = true;
 				p.StartInfo.RedirectStandardError = true;
-				p.OutputDataReceived += (sender, o) => {
+				p.OutputDataReceived += (sender, o) =>
+				{
 					if (!string.IsNullOrEmpty(o?.Data))
 					{
 						procOutput.AppendLine(o.Data);
 					}
 				};
-				p.ErrorDataReceived += (sender, e) => {
+				p.ErrorDataReceived += (sender, e) =>
+				{
 					if (!string.IsNullOrEmpty(e?.Data))
 					{
 						procOutput.AppendLine(e.Data);
@@ -56,7 +58,7 @@ namespace Microsoft.Maui.IntegrationTests
 				else
 				{
 					exitCode = -1;
-				} 
+				}
 			}
 
 			return procOutput.ToString();

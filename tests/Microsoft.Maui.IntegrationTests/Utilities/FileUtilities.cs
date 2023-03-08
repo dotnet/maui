@@ -10,7 +10,7 @@ namespace Microsoft.Maui.IntegrationTests
 			File.WriteAllText(file, content);
 		}
 
-		public static void ReplaceInFile (string file, Dictionary<string, string> replacements)
+		public static void ReplaceInFile(string file, Dictionary<string, string> replacements)
 		{
 			string content = File.ReadAllText(file);
 			foreach (var r in replacements)
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.IntegrationTests
 			File.WriteAllText(file, content);
 		}
 
-		public static void CreateFileFromResource (string resourceName, string destination)
+		public static void CreateFileFromResource(string resourceName, string destination)
 		{
 			using (var resStream = typeof(TemplateRunTests).Assembly.GetManifestResourceStream(resourceName))
 			{

@@ -13,7 +13,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var args = $"android run --package-name={packageName} --output-directory=\"{resultDir}\" --expected-exit-code={expectedExitCode} --timeout=\"{timeoutString}\" --verbosity=Debug";
 			var androidRunOutput = Run(args, out int exitCode, timeoutInSeconds: launchTimeoutSeconds + 30);
 			//if (exitCode != 0)
-				TestContext.WriteLine(androidRunOutput);
+			TestContext.WriteLine(androidRunOutput);
 
 			return exitCode == 0;
 		}

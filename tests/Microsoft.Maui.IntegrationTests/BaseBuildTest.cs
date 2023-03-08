@@ -40,7 +40,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		[OneTimeSetUp]
-		public void FixtureSetUp() {}
+		public void FixtureSetUp() { }
 
 		[SetUp]
 		public void SetUp()
@@ -50,10 +50,10 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[OneTimeTearDown]
-		public void FixtureTearDown() {}
+		public void FixtureTearDown() { }
 
 		[TearDown]
-		public void TearDown ()
+		public void TearDown()
 		{
 			// Clean up test or attach content from failed tests
 			if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed ||

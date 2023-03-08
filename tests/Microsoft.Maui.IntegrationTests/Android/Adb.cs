@@ -24,7 +24,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			return bootCompleted;
 		}
 
-		public static bool KillEmulator (string deviceId = "")
+		public static bool KillEmulator(string deviceId = "")
 		{
 			var killOutput = Run(GetArgs("emu kill", deviceId), out int exitCode);
 			if (exitCode != 0)

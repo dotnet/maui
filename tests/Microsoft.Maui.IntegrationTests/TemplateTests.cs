@@ -73,7 +73,7 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		void EnableTizen (string projectFile)
+		void EnableTizen(string projectFile)
 		{
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
 			{

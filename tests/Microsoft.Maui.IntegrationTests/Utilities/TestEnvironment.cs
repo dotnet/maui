@@ -32,7 +32,7 @@ namespace Microsoft.Maui.IntegrationTests
 				return GetTopDirRecursive(Directory.GetParent(searchDirectory)?.FullName ?? "", --maxSearchDepth);
 			}
 		}
-		
+
 		static string _testOutputDirectory = "";
 		public static string GetTestDirectoryRoot()
 		{
