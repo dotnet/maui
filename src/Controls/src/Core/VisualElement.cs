@@ -3,10 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
-using System.Runtime.InteropServices.ComTypes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
-//using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Geometry = Microsoft.Maui.Controls.Shapes.Geometry;
 using Rect = Microsoft.Maui.Graphics.Rect;
@@ -249,44 +247,78 @@ namespace Microsoft.Maui.Controls
 					(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
 
+		readonly WeakBackgroundChangedProxy _backgroundProxy = new();
+
+		~VisualElement() => _backgroundProxy.Unsubscribe();
+
 		void NotifyBackgroundChanges()
 		{
-			if (Background is ImmutableBrush)
+			var background = Background;
+			if (background is ImmutableBrush)
 				return;
 
-			if (Background != null)
+			if (background != null)
 			{
-				Background.Parent = this;
-				Background.PropertyChanged += OnBackgroundChanged;
-
-				if (Background is GradientBrush gradientBrush)
-					gradientBrush.InvalidateGradientBrushRequested += InvalidateGradientBrushRequested;
+				SetInheritedBindingContext(background, BindingContext);
+				_backgroundProxy.Subscribe(background, (sender, e) => OnPropertyChanged(nameof(Background)));
 			}
 		}
 
 		void StopNotifyingBackgroundChanges()
 		{
-			if (Background is ImmutableBrush)
+			var background = Background;
+			if (background is ImmutableBrush)
 				return;
 
-			if (Background != null)
+			if (background != null)
 			{
-				Background.Parent = null;
-				Background.PropertyChanged -= OnBackgroundChanged;
-
-				if (Background is GradientBrush gradientBrush)
-					gradientBrush.InvalidateGradientBrushRequested -= InvalidateGradientBrushRequested;
+				SetInheritedBindingContext(background, null);
+				_backgroundProxy.Unsubscribe();
 			}
 		}
 
-		void OnBackgroundChanged(object sender, PropertyChangedEventArgs e)
+		class WeakBackgroundChangedProxy : WeakEventProxy<Brush, EventHandler>
 		{
-			OnPropertyChanged(nameof(Background));
-		}
+			void OnBackgroundChanged(object sender, EventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
 
-		void InvalidateGradientBrushRequested(object sender, EventArgs e)
-		{
-			OnPropertyChanged(nameof(Background));
+			public override void Subscribe(Brush source, EventHandler handler)
+			{
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnBackgroundChanged;
+
+					if (s is GradientBrush g)
+						g.InvalidateGradientBrushRequested -= OnBackgroundChanged;
+				}
+
+				source.PropertyChanged += OnBackgroundChanged;
+				if (source is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += OnBackgroundChanged;
+
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnBackgroundChanged;
+
+					if (s is GradientBrush g)
+						g.InvalidateGradientBrushRequested -= OnBackgroundChanged;
+				}
+				base.Unsubscribe();
+			}
 		}
 
 		internal static readonly BindablePropertyKey BehaviorsPropertyKey = BindableProperty.CreateReadOnly("Behaviors", typeof(IList<Behavior>), typeof(VisualElement), default(IList<Behavior>),
@@ -801,7 +833,14 @@ namespace Microsoft.Maui.Controls
 		public bool Focus()
 		{
 			if (IsFocused)
+			{
+#if ANDROID
+				// TODO: Refactor using mappers for .NET 8
+				if (this is ITextInput && Handler is IPlatformViewHandler platformViewHandler)
+					KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
+#endif
 				return true;
+			}
 
 			if (FocusChangeRequested == null)
 			{
