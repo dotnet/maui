@@ -314,9 +314,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal bool IsDestroyed { get; private set; }
-		internal bool IsCreated { get; private set; }
-
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -468,8 +465,6 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Created()
 		{
-			IsCreated = true;
-
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
 			Application?.SendStart();
@@ -498,13 +493,11 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
-			IsDestroyed = true;
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
 			Application?.RemoveWindow(this);
-			Handler?.DisconnectHandler();
 		}
 
 		void IWindow.Resumed()
