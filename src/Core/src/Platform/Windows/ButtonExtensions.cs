@@ -73,17 +73,14 @@ namespace Microsoft.Maui.Platform
 		// TODO: NET8 make this public
 		internal static void UpdateText(this Button platformButton, string text)
 		{
-			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
-			{
-				textBlock.Text = text;
-				textBlock.Visibility = string.IsNullOrEmpty(text)
-					? UI.Xaml.Visibility.Collapsed
-					: UI.Xaml.Visibility.Visible;
-			}
-			else
-			{
-				platformButton.Content = text;
-			}
+			if (platformButton.GetContent<TextBlock>() is not TextBlock textBlock)
+				return;
+
+			textBlock.Text = text;
+
+			textBlock.Visibility = string.IsNullOrEmpty(text)
+				? UI.Xaml.Visibility.Collapsed
+				: UI.Xaml.Visibility.Visible;
 		}
 
 		public static void UpdateBackground(this Button platformButton, IButton button)
