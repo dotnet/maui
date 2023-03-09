@@ -2,7 +2,6 @@
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
-Microsoft.Maui.Controls.Shapes.EllipseExtensions
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
@@ -32,9 +31,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
-~static Microsoft.Maui.Controls.Shapes.EllipseExtensions.TrySetAppTheme(this Microsoft.Maui.Controls.Shapes.Ellipse ellipse, string lightResourceKey, string darkResourceKey, Microsoft.Maui.Controls.BindableProperty bindableProperty, Microsoft.Maui.Controls.Brush defaultDark, Microsoft.Maui.Controls.Brush defaultLight, out object outerLight, out object outerDark) -> bool
-~static Microsoft.Maui.Controls.Shapes.EllipseExtensions.TrySetDynamicThemeColor(this Microsoft.Maui.Controls.Shapes.Ellipse ellipse, string resourceKey, Microsoft.Maui.Controls.BindableProperty bindableProperty, out object outerColor) -> bool
-~static Microsoft.Maui.Controls.Shapes.EllipseExtensions.TrySetFillFromAppTheme(this Microsoft.Maui.Controls.Shapes.Ellipse ellipse, string lightResourceKey, string darkResourceKey, Microsoft.Maui.Controls.Brush defaultDark, Microsoft.Maui.Controls.Brush defaultLight) -> void
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
