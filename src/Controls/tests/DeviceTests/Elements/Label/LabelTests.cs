@@ -278,7 +278,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(10)]
 		[InlineData(20)]
 		[InlineData(30)]
-		public async Task UpdatingFormattedTextResultsINTheSmaeLayout(double fontSize)
+		public async Task UpdatingFormattedTextResultsInTheSameLayout(double fontSize)
 		{
 			var initialLabel = new Label
 			{
