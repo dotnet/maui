@@ -100,11 +100,12 @@ namespace Microsoft.Maui.Platform
 				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
 				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
 
-				if (_handler.TryGetTarget(out var handler)) {
-				    if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))) 
-				        return;
-				    await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
-				} 
+				if (_handler.TryGetTarget(out var handler))
+				{
+					if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+						return;
+					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+				}
 
 				LoadRequest(request);
 			}
