@@ -557,11 +557,20 @@ namespace Microsoft.Maui.Controls
 					out checkMarkVisualStateDark);
 			}
 
-			checkMark.TrySetFillFromAppTheme(
-				RadioButtonCheckGlyphFillLight,
-				RadioButtonCheckGlyphFillDark,
-				SolidColorBrush.White,
-				SolidColorBrush.Black);
+			if (!checkMark.TrySetDynamicThemeColor(
+				RadioButtonCheckMarkThemeColor,
+				Ellipse.FillProperty,
+				out dynamicCheckMarkThemeColor))
+			{
+				checkMark.TrySetAppTheme(
+					RadioButtonCheckGlyphFillLight,
+					RadioButtonCheckGlyphFillDark,
+					Ellipse.FillProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out _,
+					out _);
+			}
 
 			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
