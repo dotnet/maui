@@ -280,7 +280,7 @@ namespace Microsoft.Maui.Handlers
 
 				foreach (CoreWebView2Cookie cookie in existingCookies)
 				{
-					// TODO Ideally we use cookie.ToSystemNetCookie() here, but it's not available for some reason check bac later
+					// TODO Ideally we use cookie.ToSystemNetCookie() here, but it's not available for some reason check back later
 					if (cookies[cookie.Name] is null)
 						myCookieJar.SetCookies(uri,
 							new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain)
@@ -293,11 +293,9 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		async Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
+		Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
 		{
-			var platformCookies = await PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url);
-
-			return platformCookies;
+			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url);
 		}
 
 		Uri? CreateUriForCookies(string url)
