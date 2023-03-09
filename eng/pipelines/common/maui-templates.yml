@@ -86,7 +86,7 @@ jobs:
 
     - task: DotNetCoreCLI@2
       inputs:
-        projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.cs
+        projects: $(Build.SourcesDirectory)/tests/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
       displayName: Build Microsoft.Maui.IntegrationTests
 
     - task: DotNetCoreCLI@2
