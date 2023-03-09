@@ -53,8 +53,6 @@ namespace Microsoft.Maui.Controls
 
 			_platformAppTheme = AppInfo.RequestedTheme;
 			_lastAppTheme = _platformAppTheme;
-
-			_platformLayoutDirection = AppInfo.RequestedLayoutDirection;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs/*" />
@@ -190,18 +188,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal LayoutDirection PlatformLayoutDirection
-		{
-			get => _platformLayoutDirection;
-			private set
-			{
-				if (_platformLayoutDirection == value)
-					return;
-
-				_platformLayoutDirection = value;
-			}
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs/*" />
 		public AppTheme RequestedTheme =>
 			UserAppTheme != AppTheme.Unspecified
@@ -248,7 +234,6 @@ namespace Microsoft.Maui.Controls
 		AppTheme _platformAppTheme = AppTheme.Unspecified;
 		AppTheme _lastAppTheme = AppTheme.Unspecified;
 		AppTheme _userAppTheme = AppTheme.Unspecified;
-		LayoutDirection _platformLayoutDirection = LayoutDirection.Unknown;
 
 		void TriggerThemeChangedActual()
 		{

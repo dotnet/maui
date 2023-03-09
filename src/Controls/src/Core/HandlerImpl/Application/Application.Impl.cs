@@ -112,7 +112,6 @@ namespace Microsoft.Maui.Controls
 		void IApplication.ThemeChanged()
 		{
 			PlatformAppTheme = AppInfo.RequestedTheme;
-			PlatformLayoutDirection = AppInfo.RequestedLayoutDirection;
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)
