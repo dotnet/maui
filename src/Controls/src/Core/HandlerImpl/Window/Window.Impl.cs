@@ -314,6 +314,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal bool IsDestroyed { get; private set; }
+		internal bool IsCreated { get; private set; }
+
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -465,6 +468,8 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Created()
 		{
+			IsCreated = true;
+
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
 			Application?.SendStart();
@@ -493,11 +498,13 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+			IsDestroyed = true;
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
 			Application?.RemoveWindow(this);
+			Handler?.DisconnectHandler();
 		}
 
 		void IWindow.Resumed()
@@ -534,13 +541,11 @@ namespace Microsoft.Maui.Controls
 				// Then we want the window to also reflect RTL
 				// We don't want to force the user to reach into the window
 				// in order to enable RTL Window features on WinUI
-				if (FlowDirection == FlowDirection.MatchParent)
+				if (FlowDirection == FlowDirection.MatchParent &&
+					Page is IFlowDirectionController controller &&
+					controller.EffectiveFlowDirection.IsExplicit())
 				{
-					if (Page is IFlowDirectionController pageController && pageController.EffectiveFlowDirection.IsExplicit())
-						return pageController.EffectiveFlowDirection.ToFlowDirection();
-					if (Page.GetCurrentPage() is IFlowDirectionController currentPageController &&
-						currentPageController.EffectiveFlowDirection.IsExplicit())
-						return currentPageController.EffectiveFlowDirection.ToFlowDirection();
+					return controller.EffectiveFlowDirection.ToFlowDirection();
 				}
 
 				return _effectiveFlowDirection.ToFlowDirection();
