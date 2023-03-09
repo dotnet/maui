@@ -176,6 +176,10 @@ namespace Microsoft.Maui.Platform
 		// TODO: NET8 make this public for NET8.0
 		internal static void UpdateBackground(this EditText platformView, IView view)
 		{
+			if (platformView is null || platformView.Context is null)
+			{
+				return;
+			}
 			// Remove previous background gradient if any
 			if (platformView.Background is MauiDrawable mauiDrawable)
 			{
@@ -198,10 +202,7 @@ namespace Microsoft.Maui.Platform
 
 			var paint = view.Background;
 
-			Drawable? defaultBackgroundDrawable = null;
-
-			if (platformView.Context != null)
-				defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
+			Drawable? defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
 
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
 
