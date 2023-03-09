@@ -177,6 +177,11 @@
                     x:Name="LineBreakModeButton"
                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
                 <Button
+                    x:Name="ImageLineBreakModeButton"
+                    ContentLayout="Right" 
+                    ImageSource="coffee.png"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
+                <Button
                     Text="Update LineBreakMode"
                     Clicked="OnLineBreakModeButtonClicked"/>
                 <Label
