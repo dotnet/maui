@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Views
@@ -27,6 +28,23 @@ namespace Microsoft.Maui.UnitTests.Views
 			border.Content = content;
 
 			Assert.True(border.BindingContext == bindingContext);
+		}
+
+		[Fact]
+		public void TestStrokeShapeBindingContext()
+		{
+			var context = new object();
+
+			var parent = new Border
+			{
+				BindingContext = context
+			};
+
+			var strokeShape = new Rectangle();
+
+			parent.StrokeShape = strokeShape;
+
+			Assert.Same(context, ((Rectangle)parent.StrokeShape).BindingContext);
 		}
 
 		[Fact]
