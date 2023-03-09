@@ -282,7 +282,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (TryGetSource(out var s))
 					s.PropertyChanged -= OnStrokeShapeChanged;
-				
+
 				source.PropertyChanged += OnStrokeShapeChanged;
 
 				base.Subscribe(source, handler);
@@ -292,7 +292,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (TryGetSource(out var s))
 					s.PropertyChanged -= OnStrokeShapeChanged;
-				
+
 				base.Unsubscribe();
 			}
 		}
