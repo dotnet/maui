@@ -103,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsOn = true
 			};
 
-			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red);
+			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red, updatePropertyValue: nameof(switchStub.ThumbColor));
 		}
 
 		[Fact(DisplayName = "Updating Native Is On property updates Virtual View"
