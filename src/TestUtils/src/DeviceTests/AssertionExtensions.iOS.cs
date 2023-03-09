@@ -19,9 +19,10 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(result);
 		}
 
-		public static Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
+		public static async Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			var result = await Wait(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
+			Assert.True(result);
 		}
 
 		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)

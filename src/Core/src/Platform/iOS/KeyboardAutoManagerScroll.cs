@@ -116,9 +116,6 @@ internal static class KeyboardAutoManagerScroll
 			}
 		}
 
-		if (TopViewBeginOrigin == InvalidPoint && ContainerView is not null)
-			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
-
 		if (!IsKeyboardShowing)
 		{
 			await AdjustPositionDebounce();
@@ -239,6 +236,9 @@ internal static class KeyboardAutoManagerScroll
 
 		if (ContainerView is null)
 			return;
+
+		if (TopViewBeginOrigin == InvalidPoint)
+			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
 
 		var rootViewOrigin = new CGPoint(ContainerView.Frame.GetMinX(), ContainerView.Frame.GetMinY());
 		var window = ContainerView.Window;

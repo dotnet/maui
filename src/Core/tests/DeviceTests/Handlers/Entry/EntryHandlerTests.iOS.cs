@@ -596,6 +596,9 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(rect.Y < keyboardHeight, "cursor position");
 				else
 					Assert.Fail("CursorRect should not be null");
+
+				uiTextField.ResignFirstResponder();
+				await uiTextField.WaitForKeyboardToHide();
 			}
 		}
 
@@ -620,6 +623,9 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(rect.Y < keyboardHeight, "cursor position");
 				else
 					Assert.Fail("CursorRect should not be null");
+
+				nextUIText.ResignFirstResponder();
+				await nextUIText.WaitForKeyboardToHide();
 			}
 		}
 
