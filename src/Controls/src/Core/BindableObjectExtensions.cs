@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			return returnIfNotSet;
 		}
 
-		public static bool TrySetDynamicThemeColor(
+		internal static bool TrySetDynamicThemeColor(
 			this BindableObject bindableObject,
 			string resourceKey,
 			BindableProperty bindableProperty,
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		public static bool TrySetAppTheme(
+		internal static bool TrySetAppTheme(
 			this BindableObject self,
 			string lightResourceKey,
 			string darkResourceKey,

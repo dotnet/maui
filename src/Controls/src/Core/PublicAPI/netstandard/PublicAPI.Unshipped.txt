@@ -31,8 +31,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
-~static Microsoft.Maui.Controls.BindableObjectExtensions.TrySetAppTheme(this Microsoft.Maui.Controls.BindableObject self, string lightResourceKey, string darkResourceKey, Microsoft.Maui.Controls.BindableProperty bindableProperty, Microsoft.Maui.Controls.Brush defaultDark, Microsoft.Maui.Controls.Brush defaultLight, out object outerLight, out object outerDark) -> bool
-~static Microsoft.Maui.Controls.BindableObjectExtensions.TrySetDynamicThemeColor(this Microsoft.Maui.Controls.BindableObject bindableObject, string resourceKey, Microsoft.Maui.Controls.BindableProperty bindableProperty, out object outerColor) -> bool
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
