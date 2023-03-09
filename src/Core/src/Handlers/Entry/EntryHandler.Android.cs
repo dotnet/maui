@@ -128,6 +128,12 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
 		}
 
+		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.PlatformView?.Focus(request);
+		}
+
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			if (VirtualView == null)

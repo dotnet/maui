@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
+		static void MapFocus(IEditorHandler handler, IEditor editor, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.PlatformView?.Focus(request);
+		}
+
 		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
 		{
 			if (PlatformView.IsAlive() && PlatformView.Enabled)
