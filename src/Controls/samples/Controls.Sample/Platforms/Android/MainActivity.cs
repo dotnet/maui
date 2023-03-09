@@ -15,6 +15,7 @@ namespace Maui.Controls.Sample.Platform
 		| ConfigChanges.SmallestScreenSize
 		| ConfigChanges.KeyboardHidden
 		| ConfigChanges.Density
+		| ConfigChanges.Locale
 		| ConfigChanges.LayoutDirection
 		)]
 	[IntentFilter(
