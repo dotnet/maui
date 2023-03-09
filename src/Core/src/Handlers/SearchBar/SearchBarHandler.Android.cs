@@ -117,6 +117,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateKeyboard(searchBar);
+    }
+    
+		static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.QueryEditor?.Focus(request);
 		}
 
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
