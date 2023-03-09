@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Storage
 			}
 		}
 
-		static ISharedPreferences GetEncryptedSharedPreferences()
+		ISharedPreferences GetEncryptedSharedPreferences()
 		{
 			try
 			{
