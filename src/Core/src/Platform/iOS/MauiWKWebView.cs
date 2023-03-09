@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
-		public async void LoadUrl(string? url)
+		private async Task LoadUrlAsync(string? url)
 		{
 			try
 			{
@@ -100,11 +100,16 @@ namespace Microsoft.Maui.Platform
 				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
 				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
 
-				if (_handler.TryGetTarget(out var handler)) {
-				    if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) && !(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))) 
-				        return;
-				    await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
-				} 
+				if (_handler.TryGetTarget(out var handler))
+				{
+					if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) &&
+						!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+					{
+						return;
+					}
+
+					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+				}
 
 				LoadRequest(request);
 			}
@@ -128,6 +133,11 @@ namespace Microsoft.Maui.Platform
 				if (_handler.TryGetTarget(out var handler))
 					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Unable to Load Url {url}: {exc}");
 			}
+		}
+
+		public void LoadUrl(string? url)
+		{
+			LoadUrlAsync(url).FireAndForget();
 		}
 
 		// https://developer.apple.com/forums/thread/99674
