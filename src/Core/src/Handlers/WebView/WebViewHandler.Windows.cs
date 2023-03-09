@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Handlers
 
 		Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
 		{
-			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url);
+			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
 		Uri? CreateUriForCookies(string url)
