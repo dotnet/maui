@@ -77,7 +77,7 @@ jobs:
     - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
       env:
@@ -129,7 +129,7 @@ jobs:
     - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
       env:
