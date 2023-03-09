@@ -180,6 +180,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return;
 			}
+
 			// Remove previous background gradient if any
 			if (platformView.Background is MauiDrawable mauiDrawable)
 			{
