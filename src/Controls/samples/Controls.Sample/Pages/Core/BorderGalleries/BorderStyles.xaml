@@ -7,7 +7,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             
-            <Style TargetType="Border">
+            <Style x:Key="BorderStyle" TargetType="Border">
                 <Setter Property="StrokeShape" Value="RoundRectangle 10,10,10,10"/>
                 <Setter Property="Stroke" Value="Red"/>
                 <Setter Property="StrokeThickness" Value="1"/>
@@ -16,13 +16,34 @@
                 <Setter Property="BackgroundColor" Value="Transparent"/>
             </Style>
             
+            <Style x:Key="StrokeShapeBindingParentBorderStyle" TargetType="Border">
+                <Setter Property="StrokeShape">
+                    <RoundRectangle 
+                        CornerRadius="{Binding Source={RelativeSource AncestorType={x:Type Border}}, Path=Width}" />
+                </Setter>
+                <Setter Property="Stroke" Value="Red"/>
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="HeightRequest" Value="55"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="BackgroundColor" Value="Transparent"/>
+            </Style>
+
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Content>
         <StackLayout 
             Margin="12" 
             Spacing="12">
-            <Border />
+            <Label
+                Text="Default"
+                Style="{StaticResource Headline}"/>
+            <Border
+                Style="{StaticResource BorderStyle}"/>
+            <Label
+                Text="StrokeShape binded to Parent"
+                Style="{StaticResource Headline}"/>
+            <Border
+                Style="{StaticResource StrokeShapeBindingParentBorderStyle}"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

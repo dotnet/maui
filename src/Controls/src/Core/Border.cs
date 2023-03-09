@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
@@ -13,6 +14,10 @@ namespace Microsoft.Maui.Controls
 	{
 		float[]? _strokeDashPattern;
 		ReadOnlyCollection<Element>? _logicalChildren;
+
+		readonly WeakStrokeShapeChangedProxy _strokeShapeProxy = new();
+
+		~Border() => _strokeShapeProxy.Unsubscribe();
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new();
 
@@ -37,7 +42,41 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle());
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.NotifyStrokeShapeChanges();
+				});
+
+		void NotifyStrokeShapeChanges()
+		{
+			var strokeShape = StrokeShape;
+
+			if (strokeShape is VisualElement visualElement)
+			{
+				SetInheritedBindingContext(visualElement, BindingContext);
+				visualElement.Parent = this;
+				_strokeShapeProxy.Subscribe(visualElement, (sender, e) => OnPropertyChanged(nameof(StrokeShape)));
+			}
+		}
+
+		void StopNotifyingStrokeShapeChanges()
+		{
+			var strokeShape = StrokeShape;
+
+			if (strokeShape is VisualElement visualElement)
+			{
+				SetInheritedBindingContext(visualElement, null);
+				visualElement.Parent = null;
+				_strokeShapeProxy.Unsubscribe();
+			}
+		}
 
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
@@ -223,6 +262,39 @@ namespace Microsoft.Maui.Controls
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+		}
+
+		class WeakStrokeShapeChangedProxy : WeakEventProxy<VisualElement, EventHandler>
+		{
+			void OnStrokeShapeChanged(object? sender, EventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public override void Subscribe(VisualElement source, EventHandler handler)
+			{
+				if (TryGetSource(out var s))
+					s.PropertyChanged -= OnStrokeShapeChanged;
+				
+				source.PropertyChanged += OnStrokeShapeChanged;
+
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+					s.PropertyChanged -= OnStrokeShapeChanged;
+				
+				base.Unsubscribe();
+			}
 		}
 	}
 }

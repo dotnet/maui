@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper! commandMapper) -> void
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
