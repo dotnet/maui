@@ -32,7 +32,7 @@ internal static class KeyboardAutoManagerScroll
 	static int TextViewTopDistance = 20;
 	static int DebounceCount = 0;
 	static NSObject? WillShowToken = null;
-	static NSObject? DidHideToken = null;
+	static NSObject? WillHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
 
@@ -44,7 +44,7 @@ internal static class KeyboardAutoManagerScroll
 
 		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), WillKeyboardShow);
 
-		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
+		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
 	}
 
 	static async void DidUITextBeginEditing(NSNotification notification)
@@ -186,8 +186,8 @@ internal static class KeyboardAutoManagerScroll
 	{
 		if (WillShowToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
-		if (DidHideToken is not null)
-			NSNotificationCenter.DefaultCenter.RemoveObserver(DidHideToken);
+		if (WillHideToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(WillHideToken);
 		if (TextFieldToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
 		if (TextViewToken is not null)
@@ -563,7 +563,9 @@ internal static class KeyboardAutoManagerScroll
 
 	static void RestorePosition()
 	{
-		if (ContainerView is not null && (ContainerView.Frame.X != TopViewBeginOrigin.X || ContainerView.Frame.Y != TopViewBeginOrigin.Y))
+		if (ContainerView is not null
+			&& (ContainerView.Frame.X != TopViewBeginOrigin.X || ContainerView.Frame.Y != TopViewBeginOrigin.Y)
+			&& TopViewBeginOrigin != InvalidPoint)
 		{
 			var rect = ContainerView.Frame;
 			rect.X = TopViewBeginOrigin.X;
