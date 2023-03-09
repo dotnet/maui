@@ -34,12 +34,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.KeyUp += OnPlatformKeyUp;
 			platformView.TextChanged += OnPlatformTextChanged;
-			platformView.Loaded += OnPlatformLoaded;
+			platformView.SizeChanged += OnPlatformViewSizeChanged;
 		}
 
 		protected override void DisconnectHandler(TextBox platformView)
 		{
-			platformView.Loaded -= OnPlatformLoaded;
+			platformView.SizeChanged -= OnPlatformViewSizeChanged;
 			platformView.KeyUp -= OnPlatformKeyUp;
 			platformView.TextChanged -= OnPlatformTextChanged;
 
@@ -139,8 +139,8 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
 		}
-
-		void OnPlatformLoaded(object sender, RoutedEventArgs e) =>
+		
+		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
 }

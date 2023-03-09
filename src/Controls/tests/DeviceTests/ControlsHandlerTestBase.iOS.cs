@@ -22,14 +22,15 @@ namespace Microsoft.Maui.DeviceTests
 			mauiContext ??= MauiContext;
 			return InvokeOnMainThreadAsync(async () =>
 			{
+				IElementHandler windowHandler = null;
 				try
 				{
-					_ = window.ToHandler(mauiContext);
+					windowHandler = window.ToHandler(mauiContext);
 					await runTests.Invoke();
 				}
 				finally
 				{
-					if (window.Handler is not null)
+					if (windowHandler is not null)
 					{
 						if (window is Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
 						{
@@ -46,13 +47,15 @@ namespace Microsoft.Maui.DeviceTests
 						}
 					}
 
-					if (window.Handler is WindowHandlerStub whs)
+					if (windowHandler is WindowHandlerStub whs)
 					{
-						window.Handler.DisconnectHandler();
+						if (!whs.IsDisconnected)
+							window.Handler.DisconnectHandler();
+
 						await whs.FinishedDisconnecting;
 					}
 					else
-						window.Handler.DisconnectHandler();
+						window.Handler?.DisconnectHandler();
 
 					var vc =
 						(window.Content?.Handler as IPlatformViewHandler)?
@@ -61,12 +64,10 @@ namespace Microsoft.Maui.DeviceTests
 					vc?.RemoveFromParentViewController();
 					vc?.View?.RemoveFromSuperview();
 
-
 					var rootView = UIApplication.SharedApplication
 									.GetKeyWindow()
 									.RootViewController;
 
-					// If this removes modals
 					bool dangling = false;
 
 					while (rootView?.PresentedViewController is not null)
