@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls
 	class BindableLayoutController
 	{
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
-		readonly WeakCollectionChangedProxy _collectionChangedProxy = new();
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -394,46 +394,6 @@ namespace Microsoft.Maui.Controls
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
 			if (e.Action != NotifyCollectionChangedAction.Reset)
 				UpdateEmptyView(layout);
-		}
-
-		class WeakCollectionChangedProxy
-		{
-			WeakReference<NotifyCollectionChangedEventHandler> _handler;
-			WeakReference<INotifyCollectionChanged> _source;
-
-			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-			{
-				if (_handler.TryGetTarget(out var handler))
-				{
-					handler(sender, e);
-				}
-				else
-				{
-					Unsubscribe();
-				}
-			}
-
-			public void Subscribe(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler handler)
-			{
-				if (_source is not null && _source.TryGetTarget(out var s))
-				{
-					s.CollectionChanged -= OnCollectionChanged;
-				}
-
-				_source = new WeakReference<INotifyCollectionChanged>(source);
-				_handler = new WeakReference<NotifyCollectionChangedEventHandler>(handler);
-				source.CollectionChanged += OnCollectionChanged;
-			}
-
-			public void Unsubscribe()
-			{
-				if (_source is not null && _source.TryGetTarget(out var s))
-				{
-					s.CollectionChanged -= OnCollectionChanged;
-				}
-				_source = null;
-				_handler = null;
-			}
 		}
 	}
 }
