@@ -125,10 +125,16 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public bool Focus() => false;
+		public bool Focus()
+		{
+			FocusRequest focusRequest = new FocusRequest(false);
+			Handler?.Invoke(nameof(IView.Focus), focusRequest);
+			return focusRequest.IsFocused;
+		}
 
 		public void Unfocus()
 		{
+			IsFocused = false;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)
