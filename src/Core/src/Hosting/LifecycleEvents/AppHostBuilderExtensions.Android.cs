@@ -91,6 +91,13 @@ namespace Microsoft.Maui.LifecycleEvents
 						var frame = activity.GetWindowFrame();
 						mauiWindow.FrameChanged(frame);
 					}
+				})
+				.OnApplicationConfigurationChanged((app, newConfig) =>
+				{
+					if (IPlatformApplication.Current is IPlatformApplication platformApplication)
+					{
+						platformApplication.Application?.ThemeChanged();
+					}
 				});
 		}
 	}
