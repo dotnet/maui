@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
-			if (child.Layer == null)
+			if (child.Layer is null)
 				return null;
 
 			return child.Layer;
