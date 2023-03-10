@@ -10,5 +10,18 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.SearchViewExtensions.UpdateText(handler.PlatformView, searchBar);
 		}
+
+		static void MapFocus(IViewHandler handler, IView view, object args)
+		{
+			if (view is not VisualElement ve)
+				return;
+
+			if (ve.IsFocused)
+			{
+				KeyboardManager.ShowKeyboard((handler as IPlatformViewHandler).PlatformView);
+			}
+
+			SearchBarHandler.CommandMapper.Chained?.Invoke(handler, view, nameof(IView.Focus), args);
+		}
 	}
 }
