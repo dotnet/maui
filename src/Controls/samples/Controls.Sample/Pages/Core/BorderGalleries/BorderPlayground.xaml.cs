@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
@@ -114,7 +115,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void UpdateBorderContent()
 		{
-			View content = null;
+			View? content = null;
 
 			switch (BorderContentPicker.SelectedIndex)
 			{
@@ -137,7 +138,7 @@ namespace Maui.Controls.Sample.Pages
 			BorderStartColor.BackgroundColor = startColor;
 			BorderEndColor.BackgroundColor = endColor;
 
-			Shape borderShape = null;
+			Shape? borderShape = null;
 
 			switch (BorderShapePicker.SelectedIndex)
 			{
@@ -178,7 +179,7 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 				var doubleCollectionConverter = new DoubleCollectionConverter();
-				var doubleCollection = (DoubleCollection)doubleCollectionConverter.ConvertFromString(borderDashArrayString);
+				var doubleCollection = doubleCollectionConverter.ConvertFromString(borderDashArrayString) as DoubleCollection;
 				BorderView.StrokeDashArray = doubleCollection;
 			}
 

@@ -1,8 +1,8 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -47,7 +47,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void UpdateBorder()
 		{
-			Shape borderShape = null;
+			Shape? borderShape = null;
 
 			switch (BorderShapePicker.SelectedIndex)
 			{
@@ -74,21 +74,6 @@ namespace Maui.Controls.Sample.Pages
 		void UpdateCornerRadius()
 		{
 			UpdateBorder();
-		}
-
-		Color GetColorFromString(string value)
-		{
-			if (string.IsNullOrEmpty(value))
-				return Colors.Transparent;
-
-			try
-			{
-				return Color.FromArgb(value);
-			}
-			catch (Exception)
-			{
-				return Colors.Transparent;
-			}
 		}
 	}
 }
