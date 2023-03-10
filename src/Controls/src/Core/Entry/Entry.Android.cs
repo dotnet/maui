@@ -36,9 +36,9 @@ namespace Microsoft.Maui.Controls
 			if (view is not VisualElement ve)
 				return;
 
-			if (ve.IsFocused)
+			if (ve.IsFocused && handler is IPlatformViewHandler platformViewHandler)
 			{
-				KeyboardManager.ShowKeyboard((handler as IPlatformViewHandler).PlatformView);
+				KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
 			}
 
 			EntryHandler.CommandMapper.Chained?.Invoke(handler, view, nameof(IView.Focus), args);

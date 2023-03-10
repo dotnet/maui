@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Controls
 			if (ve.IsFocused)
 				return;
 
-			if (ve.FocusChangeRequested == null)
+			if (ve.FocusChangeRequested is null)
 			{
 				FocusRequest focusRequest = new FocusRequest(false);
 				ViewHandler.ViewCommandMapper?.Invoke(handler, view, nameof(IView.Focus), fr);
