@@ -29,7 +29,7 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[TearDown]
-		public void AndroidTemplateTearDown ()
+		public void AndroidTemplateTearDown()
 		{
 			Adb.UninstallPackage(testPackage);
 		}

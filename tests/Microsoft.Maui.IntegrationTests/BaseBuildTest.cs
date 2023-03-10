@@ -66,7 +66,7 @@ namespace Microsoft.Maui.IntegrationTests
 			foreach (var searchPattern in NuGetOnlyPackages)
 			{
 				foreach (var pack in Directory.GetFiles(artifactDir, searchPattern))
-					File.Copy(pack, Path.Combine (extraPacksDir, Path.GetFileName(pack)));
+					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
 			}
 
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig);

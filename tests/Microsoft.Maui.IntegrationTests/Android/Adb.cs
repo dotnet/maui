@@ -29,7 +29,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			return Run(GetArgs("emu kill", deviceId));
 		}
 
-		public static bool UninstallPackage (string package, string deviceId = "")
+		public static bool UninstallPackage(string package, string deviceId = "")
 		{
 			return Run(GetArgs($"uninstall {package}", deviceId));
 		}
