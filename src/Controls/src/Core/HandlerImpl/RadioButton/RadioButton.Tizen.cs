@@ -23,20 +23,32 @@ namespace Microsoft.Maui.Controls
 
 		static View BuildTizenDefaultTemplate()
 		{
-			var frame = new Frame
+			Border border = new Border()
 			{
-				HasShadow = false,
 				Padding = 6
 			};
 
-			BindToTemplatedParent(frame, BackgroundColorProperty, Controls.Frame.BorderColorProperty, Controls.Frame.CornerRadiusProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
 
+			border.SetBinding(Border.StrokeProperty,
+				new Binding(BorderColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeShapeProperty,
+				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeThicknessProperty,
+				new Binding(BorderWidthProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
 			var grid = new Grid
 			{
-				ColumnSpacing = 6,
+				Padding = 2,
 				RowSpacing = 0,
+				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = GridLength.Star }
@@ -72,58 +84,62 @@ namespace Microsoft.Maui.Controls
 			var contentPresenter = new ContentPresenter
 			{
 				HorizontalOptions = LayoutOptions.Fill,
-				VerticalOptions = LayoutOptions.Center
+				VerticalOptions = LayoutOptions.Fill
 			};
 
-			object outerEllipseVisualStateLight;
-			object outerEllipseVisualStateDark;
-			object checkMarkVisualStateLight;
-			object checkMarkVisualStateDark;
+			object dynamicOuterEllipseThemeColor = null;
+			object dynamicCheckMarkThemeColor = null;
+			object outerEllipseVisualStateLight = null;
+			object outerEllipseVisualStateDark = null;
+			object checkMarkVisualStateLight = null;
+			object checkMarkVisualStateDark = null;
 
-			// First, Light/Dark App themes for outer ellipse, then for the check mark.
-			// Then check for older themecolor.
-			// If nothing set, use the defaults for light/dark mode.
-			if (Application.Current.TryGetResource(RadioButtonOuterEllipseStrokeLight, out var outerLight) &&
-				Application.Current.TryGetResource(RadioButtonOuterEllipseStrokeDark, out var outerDark))
+			if (!normalEllipse.TrySetDynamicThemeColor(
+				RadioButtonThemeColor,
+				Ellipse.StrokeProperty,
+				out dynamicOuterEllipseThemeColor))
 			{
-				normalEllipse.SetAppTheme(Ellipse.StrokeProperty, outerLight, outerDark);
-				outerEllipseVisualStateLight = outerLight;
-				outerEllipseVisualStateDark = outerDark;
-			}
-			else if (Application.Current.TryGetResource(RadioButtonThemeColor, out var themeColor))
-			{
-				normalEllipse.SetDynamicResource(Ellipse.StrokeProperty, RadioButtonThemeColor);
-				outerEllipseVisualStateLight = outerEllipseVisualStateDark = themeColor;
-			}
-			else
-			{
-				normalEllipse.SetAppTheme(Ellipse.StrokeProperty, SolidColorBrush.Black, SolidColorBrush.White);
-				outerEllipseVisualStateLight = SolidColorBrush.Black;
-				outerEllipseVisualStateDark = SolidColorBrush.White;
+				normalEllipse.TrySetAppTheme(
+					RadioButtonOuterEllipseStrokeLight,
+					RadioButtonOuterEllipseStrokeDark,
+					Ellipse.StrokeProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out outerEllipseVisualStateLight,
+					out outerEllipseVisualStateDark);
 			}
 
-			if (Application.Current.TryGetResource(RadioButtonCheckGlyphStrokeLight, out var checkLight) &&
-				Application.Current.TryGetResource(RadioButtonCheckGlyphStrokeDark, out var checkDark))
+			if (!checkMark.TrySetDynamicThemeColor(
+				RadioButtonCheckMarkThemeColor,
+				Ellipse.StrokeProperty,
+				out dynamicCheckMarkThemeColor))
 			{
-				checkMark.SetAppTheme(Ellipse.StrokeProperty, checkLight, checkDark);
-				checkMark.Fill = (Brush)(Application.Current?.RequestedTheme == AppTheme.Dark ? checkDark : checkLight);
-				checkMarkVisualStateLight = checkLight;
-				checkMarkVisualStateDark = checkDark;
-			}
-			else if (Application.Current.TryGetResource(RadioButtonCheckMarkThemeColor, out var themeColor))
-			{
-				checkMark.SetDynamicResource(Ellipse.StrokeProperty, RadioButtonCheckMarkThemeColor);
-				checkMark.Fill = (Brush)themeColor;
-				checkMarkVisualStateLight = checkMarkVisualStateDark = themeColor;
-			}
-			else
-			{
-				checkMark.SetAppTheme(Ellipse.StrokeProperty, SolidColorBrush.Black, SolidColorBrush.White);
-				checkMark.Fill = (Application.Current?.RequestedTheme == AppTheme.Dark) ? SolidColorBrush.White : SolidColorBrush.Black;
-				checkMarkVisualStateLight = SolidColorBrush.Black;
-				checkMarkVisualStateDark = SolidColorBrush.White;
+				checkMark.TrySetAppTheme(
+					RadioButtonCheckGlyphStrokeLight,
+					RadioButtonCheckGlyphStrokeDark,
+					Ellipse.StrokeProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out checkMarkVisualStateLight,
+					out checkMarkVisualStateDark);
 			}
 
+			if (!checkMark.TrySetDynamicThemeColor(
+				RadioButtonCheckMarkThemeColor,
+				Ellipse.FillProperty,
+				out dynamicCheckMarkThemeColor))
+			{
+				checkMark.TrySetAppTheme(
+					RadioButtonCheckGlyphFillLight,
+					RadioButtonCheckGlyphFillDark,
+					Ellipse.FillProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out _,
+					out _);
+			}
+
+			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
 				source: RelativeBindingSource.TemplatedParent));
 
@@ -131,11 +147,11 @@ namespace Microsoft.Maui.Controls
 			grid.Add(checkMark);
 			grid.Add(contentPresenter, 1, 0);
 
-			frame.Content = grid;
+			border.Content = grid;
 
 			INameScope nameScope = new NameScope();
-			NameScope.SetNameScope(frame, nameScope);
-			nameScope.RegisterName(TemplateRootName, frame);
+			NameScope.SetNameScope(border, nameScope);
+			nameScope.RegisterName(TemplateRootName, border);
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
@@ -157,33 +173,35 @@ namespace Microsoft.Maui.Controls
 				{
 					Property = Shape.StrokeProperty,
 					TargetName = UncheckedButton,
-					Value = new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
+					Value = dynamicOuterEllipseThemeColor is not null ? dynamicOuterEllipseThemeColor : new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
 				});
 			checkedVisualState.Setters.Add(
 				new Setter()
 				{
 					Property = Shape.StrokeProperty,
 					TargetName = CheckedIndicator,
-					Value = new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
 				});
 			checkedStates.States.Add(checkedVisualState);
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
 			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
+
 			uncheckedVisualState.Setters.Add(
 				new Setter()
 				{
 					Property = Shape.StrokeProperty,
 					TargetName = UncheckedButton,
-					Value = new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
+					Value = dynamicOuterEllipseThemeColor is not null ? dynamicOuterEllipseThemeColor : new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
 				});
+
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
 
-			VisualStateManager.SetVisualStateGroups(frame, visualStateGroups);
+			VisualStateManager.SetVisualStateGroups(border, visualStateGroups);
 
-			return frame;
+			return border;
 		}
 	}
 }
