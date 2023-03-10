@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Platform
 			platformButton.UpdateTextColor(textColor, TextColorResourceKeys);
 		}
 
-		public static void UpdateTextColor(this ButtonBase platformButton, Color textColor, string[] resourceKeys)
+		internal static void UpdateTextColor(this ButtonBase platformButton, Color textColor, string[] resourceKeys)
 		{
 			var brush = textColor?.ToPlatform();
 
