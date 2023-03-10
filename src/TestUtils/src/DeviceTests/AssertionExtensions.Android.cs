@@ -454,7 +454,7 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		static bool IsMatching(Bitmap bitmap1, Bitmap bitmap2) 
+		static bool IsMatching(Bitmap bitmap1, Bitmap bitmap2)
 		{
 			for (int x = 0; x < bitmap1.Width; x++)
 			{
