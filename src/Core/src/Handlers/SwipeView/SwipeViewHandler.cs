@@ -22,9 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISwipeView.TopItems)] = MapTopItems,
 			[nameof(ISwipeView.RightItems)] = MapRightItems,
 			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
-#if ANDROID || IOS || TIZEN || WINDOWS
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
-#endif
 #if ANDROID
 			[nameof(IView.Background)] = MapBackground,
 #endif
