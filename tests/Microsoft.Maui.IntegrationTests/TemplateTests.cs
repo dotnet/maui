@@ -68,7 +68,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New("id", projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);

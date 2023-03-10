@@ -5,6 +5,7 @@ namespace Microsoft.Maui.IntegrationTests
 	public static class DotnetInternal
 	{
 		static readonly string DotnetTool = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet", "dotnet");
+		const int DEFAULT_TIMEOUT = 600;
 
 		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null)
 		{
@@ -28,24 +29,24 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 			}
 
-			var buildOutput = Run("build", $"{buildArgs} -bl:\"{Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName)}\"", out int exitCode);
-			if (exitCode != 0)
-				TestContext.WriteLine(buildOutput);
-
-			return exitCode == 0;
+			return Run("build", $"{buildArgs} -bl:\"{Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName)}\"");
 		}
 
 		public static bool New(string shortName, string outputDirectory, string framework)
 		{
-			var runOutput = Run("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", out int exitcode, 60);
-			if (exitcode != 0)
-				TestContext.WriteLine(runOutput);
-
-			return exitcode == 0;
+			return Run("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", timeoutinSeconds: 60);
 		}
 
+		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
+		{
+			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
+			if (exitCode != 0)
+				TestContext.WriteLine(runOutput);
 
-		public static string Run(string command, string args, out int exitCode, int timeoutInSeconds = 600)
+			return exitCode == 0;
+		}
+
+		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
 			var pinfo = new ProcessStartInfo()
 			{

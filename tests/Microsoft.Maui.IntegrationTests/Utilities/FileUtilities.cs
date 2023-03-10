@@ -22,7 +22,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static void CreateFileFromResource(string resourceName, string destination)
 		{
-			using (var resStream = typeof(TemplateRunTests).Assembly.GetManifestResourceStream(resourceName))
+			using (var resStream = typeof(FileUtilities).Assembly.GetManifestResourceStream(resourceName))
 			{
 				if (resStream != null)
 				{

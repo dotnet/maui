@@ -20,13 +20,15 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public string TestDirectory => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), TestName);
 
+		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
+
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected string[] BuildProps = new[]
+		protected string[] BuildProps => new[]
 		{
 			"RestoreNoCache=true",
 			//"GenerateAppxPackageOnBuild=true",
 			$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
-			$"RestoreConfigFile={Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config")}",
+			$"RestoreConfigFile={TestNuGetConfig}",
 			// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
 			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(),"src", "Templates", "TemplateTestExtraTargets.targets")}",
 			//Try not restore dependencies of 6.0.10
@@ -34,21 +36,62 @@ namespace Microsoft.Maui.IntegrationTests
 		};
 
 
+		/// <summary>
+		/// Copy NuGet packages that would not and set up NuGet.config
+		/// TODO: Should these simply be moved to the library-packs folder for testing?
+		/// </summary>
+		/// <exception cref="DirectoryNotFoundException"></exception>
 		[OneTimeSetUp]
-		public void FixtureSetUp() { }
+		public void BuildTestFxtSetUp()
+		{
+			string[] NuGetOnlyPackages = new string[] {
+				"Microsoft.Maui.Controls.*.nupkg",
+				"Microsoft.Maui.Core.*.nupkg",
+				"Microsoft.Maui.Essentials.*.nupkg",
+				"Microsoft.Maui.Graphics.*.nupkg",
+				"Microsoft.Maui.Maps.*.nupkg",
+				"Microsoft.AspNetCore.Components.WebView.*.nupkg",
+			};
+
+			var artifactDir = Path.Combine(TestEnvironment.GetMauiDirectory(), "artifacts");
+			if (!Directory.Exists(artifactDir))
+				throw new DirectoryNotFoundException($"Build artifact directory '{artifactDir}' was not found.");
+
+			var extraPacksDir = Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "extra-packages");
+			if (Directory.Exists(extraPacksDir))
+				Directory.Delete(extraPacksDir, true);
+
+			Directory.CreateDirectory(extraPacksDir);
+
+			foreach (var searchPattern in NuGetOnlyPackages)
+			{
+				foreach (var pack in Directory.GetFiles(artifactDir, searchPattern))
+					File.Copy(pack, Path.Combine (extraPacksDir, Path.GetFileName(pack)));
+			}
+
+			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig);
+			FileUtilities.ReplaceInFile(TestNuGetConfig,
+				"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+				$"<add key=\"nuget-only\" value=\"{extraPacksDir}\" />");
+		}
 
 		[SetUp]
-		public void SetUp()
+		public void BuildTestSetUp()
 		{
 			if (Directory.Exists(TestDirectory))
 				Directory.Delete(TestDirectory, recursive: true);
+
+			// Write empty Directory.Build.* files to prevent tests from picking one higher in the tree
+			Directory.CreateDirectory(TestDirectory);
+			File.WriteAllText(Path.Combine(TestDirectory, "Directory.Build.props"), "<Project/>");
+			File.WriteAllText(Path.Combine(TestDirectory, "Directory.Build.targets"), "<Project/>");
 		}
 
 		[OneTimeTearDown]
-		public void FixtureTearDown() { }
+		public void BuildTestFxtTearDown() { }
 
 		[TearDown]
-		public void TearDown()
+		public void BuildTestTearDown()
 		{
 			// Clean up test or attach content from failed tests
 			if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed ||
@@ -56,7 +99,8 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				try
 				{
-					Directory.Delete(TestDirectory, recursive: true);
+					if (Directory.Exists(TestDirectory))
+						Directory.Delete(TestDirectory, recursive: true);
 				}
 				catch (IOException)
 				{

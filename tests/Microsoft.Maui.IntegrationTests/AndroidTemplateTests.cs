@@ -3,29 +3,37 @@ using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
 {
-	public class TemplateRunTests : BaseBuildTest
+	public class AndroidTemplateTests : BaseBuildTest
 	{
 		Emulator TestAvd = new Emulator();
+		string testPackage = "";
 
 		[OneTimeSetUp]
-		public void TemplateRunFixtureSetUp()
+		public void AndroidTemplateFxtSetUp()
 		{
 			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720), "Failed to launch Test AVD.");
 		}
 
 		[OneTimeTearDown]
-		public void TemplateRunFixtureTear()
+		public void AndroidTemplateFxtTearDown()
 		{
 			Adb.KillEmulator(TestAvd.Id);
 
 			// adb.exe can lock certain files on windows, kill it after tests complete
 			if (TestEnvironment.IsWindows)
 			{
-				Adb.Run("kill-server", out _);
+				Adb.Run("kill-server", deviceId: TestAvd.Id);
 				foreach (var p in Process.GetProcessesByName("adb.exe"))
 					p.Kill();
 			}
 		}
+
+		[TearDown]
+		public void AndroidTemplateTearDown ()
+		{
+			Adb.UninstallPackage(testPackage);
+		}
+
 
 		[Test]
 		[TestCase("maui", "net6.0", "Debug")]
@@ -49,7 +57,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
-			Assert.IsTrue(XHarness.RunAndroid($"com.companyname.{Path.GetFileName(projectDir).ToLower()}", Path.Combine(projectDir, "xh-results"), -1),
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLower()}";
+			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
@@ -64,23 +73,6 @@ namespace Microsoft.Maui.IntegrationTests
 			FileUtilities.ReplaceInFile(Path.Combine(androidDir, "MainActivity.cs"),
 				"MainLauncher = true",
 				"MainLauncher = true, Name = \"com.microsoft.mauitemplate.MainActivity\"");
-		}
-
-		[Test]
-		[TestCase("maui", "Debug", "net6.0")]
-		[TestCase("maui", "Release", "net6.0")]
-		[TestCase("maui", "Debug", "net7.0")]
-		[TestCase("maui", "Release", "net7.0")]
-		[TestCase("maui-blazor", "Debug", "net6.0")]
-		[TestCase("maui-blazor", "Release", "net6.0")]
-		[TestCase("maui-blazor", "Debug", "net7.0")]
-		[TestCase("maui-blazor", "Release", "net7.0")]
-		public void RunOniOS(string id, string framework, string config)
-		{
-			if (!TestEnvironment.IsMacOS)
-				Assert.Ignore("iOS run template tests only run on macOS.");
-
-			//TODO
 		}
 
 	}
