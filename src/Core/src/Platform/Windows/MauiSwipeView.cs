@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			ManipulationCompleted -= OnSwipeControlManipulationCompleted;
 			Tapped += OnSwipeViewTapped;
 
-			if (_content != null)
+			if (_content is not null)
 				_content.Tapped -= OnContentTapped;
 		}
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Platform
 		
 		internal void OnOpenRequested(SwipeViewOpenRequest e)
 		{
-			if (_content == null)
+			if (_content is null)
 				return;
 
 			var openSwipeItem = e.OpenSwipeItem;
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void UpdateContent()
 		{
-			if (_content != null)
+			if (_content is not null)
 			{
 				_content.Tapped -= OnContentTapped;
 				_container?.Children.Remove(_content);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Platform
 			if (Element?.PresentedContent is IView view)
 				_content = view.ToPlatform(MauiContext);
 
-			if (_content != null)
+			if (_content is not null)
 			{
 				_content.Tapped += OnContentTapped;
 				_container?.Children.Add(_content);
@@ -109,7 +109,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.TryGetValue(item, out object? view);
 
-			if (view != null && view is FrameworkElement)
+			if (view is not null && view is FrameworkElement)
 			{
 				_swipeThreshold = 0;
 				LayoutSwipeItems(GetNativeSwipeItems());
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var swipeItems = new List<FrameworkElement>();
 
-			if (_actionView == null)
+			if (_actionView is null)
 				return swipeItems;
 
 			foreach (var children in _actionView.Children)
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnSwipeControlManipulationStarted(object sender, ManipulationStartedRoutedEventArgs e)
 		{
-			if (_isSwiping || _isTouchDown || _content == null)
+			if (_isSwiping || _isTouchDown || _content is null)
 				return;
 
 			_initialPoint = e.Position;
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Platform
 			if (!_isSwipeEnabled)
 				return;
 
-			if (_content == null || _initialPoint == null)
+			if (_content is null || _initialPoint is null)
 				return;
 
 			var point = e.Position;
@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Platform
 
 		void ResetSwipe()
 		{
-			if (_content == null)
+			if (_content is null)
 				return;
 
 			_isResettingSwipe = true;
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Platform
 
 			var translateTransform = _content.RenderTransform as TranslateTransform;
 
-			if (translateTransform != null)
+			if (translateTransform is not null)
 			{
 				translateTransform.X = 0;
 				translateTransform.Y = 0;
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems.Clear();
 
-			if (_actionView != null)
+			if (_actionView is not null)
 			{
 				_container?.Children.Remove(_actionView);
 				_actionView = null;
@@ -266,12 +266,12 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateSwipeItems()
 		{
-			if (_content == null || _actionView != null)
+			if (_content is null || _actionView is not null)
 				return;
 
 			ISwipeItems? items = GetSwipeItemsByDirection();
 
-			if (items?.Count == 0 || items == null)
+			if (items?.Count == 0 || items is null)
 				return;
 
 			_actionView = new Canvas();
@@ -294,13 +294,13 @@ namespace Microsoft.Maui.Platform
 					_swipeItems.Add(swipeItemMenuItem, swipeItem);
 				}
 
-				if (swipeItem != null)
+				if (swipeItem is not null)
 					swipeItems.Add(swipeItem);
 			}
 
 			_container?.Children.Add(_actionView);
 
-			if (_content != null)
+			if (_content is not null)
 			{
 				int zIndex = Canvas.GetZIndex(_actionView);
 				Canvas.SetZIndex(_content, zIndex + 1);
@@ -327,12 +327,12 @@ namespace Microsoft.Maui.Platform
 
 		void LayoutSwipeItems(List<FrameworkElement> childs)
 		{
-			if (_actionView == null || childs == null || _content == null)
+			if (_actionView is null || childs is null || _content is null)
 				return;
 
 			var items = GetSwipeItemsByDirection();
 
-			if (items == null || items.Count == 0)
+			if (items is null || items.Count == 0)
 				return;
 
 			int i = 0;
@@ -383,14 +383,14 @@ namespace Microsoft.Maui.Platform
 
 		void Swipe()
 		{
-			if (_content == null)
+			if (_content is null)
 				return;
 
 			var offset = ValidateSwipeOffset(_swipeOffset);
 			_isOpen = offset != 0;
 
 			var translateTransform = _content.RenderTransform as TranslateTransform;
-			if (translateTransform == null)
+			if (translateTransform is null)
 				translateTransform = new TranslateTransform();
 			_content.RenderTransform = translateTransform;
 
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Platform
 
 		bool ValidateSwipeDirection()
 		{
-			if (_swipeDirection == null)
+			if (_swipeDirection is null)
 				return false;
 
 			var swipeItems = GetSwipeItemsByDirection();
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
-			return swipeItems != null && swipeItems.Any(GetIsVisible);
+			return swipeItems is not null && swipeItems.Any(GetIsVisible);
 		}
 
 		bool GetIsVisible(ISwipeItem swipeItem)
@@ -488,11 +488,11 @@ namespace Microsoft.Maui.Platform
 		{
 			double swipeOffset = 0;
 
-			if (_content != null)
+			if (_content is not null)
 			{
 				var transform = _content.RenderTransform as UI.Xaml.Media.TranslateTransform;
 
-				if (transform == null)
+				if (transform is null)
 					return swipeOffset;
 
 				switch (_swipeDirection)
@@ -569,7 +569,7 @@ namespace Microsoft.Maui.Platform
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (swipeItems == null)
+			if (swipeItems is null)
 				return 0;
 
 			_swipeThreshold = GetSwipeThreshold(swipeItems);
@@ -579,7 +579,7 @@ namespace Microsoft.Maui.Platform
 
 		double GetSwipeThreshold(ISwipeItems swipeItems)
 		{
-			if (Element == null)
+			if (Element is null)
 				return 0f;
 
 			double threshold = Element.Threshold;
@@ -616,7 +616,7 @@ namespace Microsoft.Maui.Platform
 		double CalculateSwipeThreshold()
 		{
 			var swipeItems = GetSwipeItemsByDirection();
-			if (swipeItems == null)
+			if (swipeItems is null)
 				return SwipeViewExtensions.SwipeThreshold;
 
 			double swipeItemsHeight = 0;
@@ -644,7 +644,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				if (_content != null)
+				if (_content is not null)
 				{
 					var contentWidth = _content.ActualWidth;
 					var contentWidthSwipeThreshold = contentWidth * 0.8f;
@@ -658,7 +658,7 @@ namespace Microsoft.Maui.Platform
 
 		void ValidateSwipeThreshold()
 		{
-			if (_swipeDirection == null)
+			if (_swipeDirection is null)
 				return;
 
 			var swipeThresholdPercent = OpenSwipeThresholdPercentage * GetSwipeThreshold();
@@ -667,7 +667,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var swipeItems = GetSwipeItemsByDirection();
 
-				if (swipeItems == null)
+				if (swipeItems is null)
 					return;
 
 				if (swipeItems.Mode == SwipeMode.Execute)
@@ -692,7 +692,7 @@ namespace Microsoft.Maui.Platform
 
 		double ValidateSwipeThreshold(double swipeThreshold)
 		{
-			if (_content == null)
+			if (_content is null)
 				return swipeThreshold;
 
 			var contentHeight = _content.ActualHeight;
@@ -716,14 +716,14 @@ namespace Microsoft.Maui.Platform
 
 		void SwipeToThreshold()
 		{
-			if (_content == null)
+			if (_content is null)
 				return;
 
 			_swipeOffset = GetSwipeThreshold();
 			var swipeThreshold = _swipeOffset;
 
 			var translateTransform = _content.RenderTransform as TranslateTransform;
-			if (translateTransform == null)
+			if (translateTransform is null)
 				translateTransform = new TranslateTransform();
 			_content.RenderTransform = translateTransform;
 
@@ -751,13 +751,13 @@ namespace Microsoft.Maui.Platform
 
 		Graphics.Size GetSwipeItemSize(ISwipeItem swipeItem)
 		{
-			if (_content == null || Element == null)
+			if (_content is null || Element is null)
 				return Graphics.Size.Zero;
 
 			bool isHorizontal = IsHorizontalSwipe();
 			var items = GetSwipeItemsByDirection();
 
-			if (items == null)
+			if (items is null)
 				return Graphics.Size.Zero;
 
 			double threshold = Element.Threshold;
@@ -813,13 +813,13 @@ namespace Microsoft.Maui.Platform
 
 		double GetSwipeItemHeight()
 		{
-			if (_content == null)
+			if (_content is null)
 				return 0f;
 
 			var contentHeight = _content.ActualHeight;
 			var items = GetSwipeItemsByDirection();
 
-			if (items == null)
+			if (items is null)
 				return 0f;
 
 			if (items.Any(s => s is ISwipeItemView))
@@ -862,14 +862,14 @@ namespace Microsoft.Maui.Platform
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (swipeItems == null || _actionView == null)
+			if (swipeItems is null || _actionView is null)
 				return;
 
 			foreach(var child in _actionView.Children)
 			{
 				var button = child as FrameworkElement;
 
-				if (button != null && button.Visibility == UI.Xaml.Visibility.Visible)
+				if (button is not null && button.Visibility == UI.Xaml.Visibility.Visible)
 				{
 					var swipeItemX = Canvas.GetLeft(button);
 					var swipeItemY = Canvas.GetTop(button);
@@ -900,7 +900,7 @@ namespace Microsoft.Maui.Platform
 
 		void ExecuteSwipeItem(ISwipeItem item)
 		{
-			if (item == null)
+			if (item is null)
 				return;
 
 			bool isEnabled = true;
@@ -945,7 +945,7 @@ namespace Microsoft.Maui.Platform
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (swipeItems == null || swipeItems.Count == 0)
+			if (swipeItems is null || swipeItems.Count == 0)
 				return;
 
 			var swipeThreshold = GetSwipeThreshold();
@@ -974,7 +974,7 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateIsOpen(bool isOpen)
 		{
-			if (Element == null)
+			if (Element is null)
 				return;
 
 			Element.IsOpen = isOpen;
@@ -982,7 +982,7 @@ namespace Microsoft.Maui.Platform
 
 		void RaiseSwipeStarted()
 		{
-			if (_swipeDirection == null || !ValidateSwipeDirection())
+			if (_swipeDirection is null || !ValidateSwipeDirection())
 				return;
 
 			Element?.SwipeStarted(new SwipeViewSwipeStarted(_swipeDirection.Value));
@@ -990,7 +990,7 @@ namespace Microsoft.Maui.Platform
 
 		void RaiseSwipeChanging()
 		{
-			if (_swipeDirection == null)
+			if (_swipeDirection is null)
 				return;
 
 			Element?.SwipeChanging(new SwipeViewSwipeChanging(_swipeDirection.Value, _swipeOffset));
@@ -998,7 +998,7 @@ namespace Microsoft.Maui.Platform
 
 		void RaiseSwipeEnded()
 		{
-			if (_swipeDirection == null || !ValidateSwipeDirection())
+			if (_swipeDirection is null || !ValidateSwipeDirection())
 				return;
 
 			bool isOpen = false;

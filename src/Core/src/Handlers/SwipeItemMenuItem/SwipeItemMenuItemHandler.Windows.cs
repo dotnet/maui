@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var button = sender as Button;
 
-			if (button == null)
+			if (button is null)
 				return;
 
 			if (button.Content is not StackPanel container)
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Handlers
 
 			var image = button.GetContent<Image>();
 
-			if (image == null)
+			if (image is null)
 				return;
 
 			container.Orientation = Orientation.Vertical;
@@ -126,12 +126,12 @@ namespace Microsoft.Maui.Handlers
 
 		double GetIconSize()
 		{
-			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source == null)
+			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source is null)
 				return 0;
 
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
-			if (mauiSwipeView == null || MauiContext == null)
+			if (mauiSwipeView is null || MauiContext is null)
 				return 0;
 
 			double contentHeight = mauiSwipeView.ActualHeight;
