@@ -722,8 +722,7 @@ namespace Microsoft.Maui.Platform
 			_swipeOffset = GetSwipeThreshold();
 			var swipeThreshold = _swipeOffset;
 
-			var translateTransform = _content.RenderTransform as TranslateTransform;
-			if (translateTransform is null)
+			if (_content.RenderTransform is not TranslateTransform translateTransform)
 				translateTransform = new TranslateTransform();
 			_content.RenderTransform = translateTransform;
 

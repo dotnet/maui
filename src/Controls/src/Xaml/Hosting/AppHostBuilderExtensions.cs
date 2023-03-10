@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<RefreshView, RefreshViewHandler>();
 			handlersCollection.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 			handlersCollection.AddHandler<SwipeView, SwipeViewHandler>();
+			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 
 #pragma warning disable CA1416 //  'MenuBarHandler', MenuFlyoutSubItemHandler, MenuFlyoutSubItemHandler, MenuBarItemHandler is only supported on: 'ios' 13.0 and later
 			handlersCollection.AddHandler<MenuBar, MenuBarHandler>();
@@ -122,8 +123,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST || TIZEN || WINDOWS
-			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
+#if ANDROID || IOS || MACCATALYST || TIZEN
 #if ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler<Shell, ShellRenderer>();
 #else
