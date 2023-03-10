@@ -69,7 +69,7 @@ namespace Microsoft.Maui.IntegrationTests
 					File.Copy(pack, Path.Combine(extraPacksDir, Path.GetFileName(pack)));
 			}
 
-			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig);
+			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "NuGet.config"), TestNuGetConfig, true);
 			FileUtilities.ReplaceInFile(TestNuGetConfig,
 				"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
 				$"<add key=\"nuget-only\" value=\"{extraPacksDir}\" />");

@@ -9,12 +9,10 @@ namespace Microsoft.Maui.IntegrationTests
 			string workingDirectory = "",
 			int timeoutInSeconds = 600)
 		{
-			var info = new ProcessStartInfo()
-			{
-				FileName = tool,
-				Arguments = args,
-				WorkingDirectory = workingDirectory,
-			};
+			var info = new ProcessStartInfo(tool, args);
+
+			if (Directory.Exists(workingDirectory))
+				info.WorkingDirectory = workingDirectory;
 
 			return Run(info, out exitCode, timeoutInSeconds);
 		}

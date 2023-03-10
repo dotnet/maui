@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using Microsoft.Maui.IntegrationTests.Android;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -11,6 +12,9 @@ namespace Microsoft.Maui.IntegrationTests
 		[OneTimeSetUp]
 		public void AndroidTemplateFxtSetUp()
 		{
+			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
+				TestAvd.Abi = "arm64-v8a";
+
 			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720), "Failed to launch Test AVD.");
 		}
 
