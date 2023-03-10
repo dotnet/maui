@@ -1,7 +1,7 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using System;
 
 namespace Microsoft.Maui.DeviceTests
 {
