@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -10,6 +12,21 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
+					handlers.AddHandler(typeof(SearchBar), typeof(SearchBarHandler));
+					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Window, WindowHandlerStub>();
+				});
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
@@ -52,6 +69,33 @@ namespace Microsoft.Maui.DeviceTests
 				searchBar.IsReadOnly = true;
 				Assert.True(MauiAutoSuggestBox.GetIsReadOnly(platformControl));
 			});
+		}
+#endif
+
+#if ANDROID
+		[Fact]
+		public async Task SearchBarTakesFullWidth()
+		{
+			SetupBuilder();
+
+			SearchBar searchBar = new();
+
+			ContentPage page = new()
+			{
+				Content = searchBar
+			};
+
+			NavigationPage navPage = new(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(navPage,
+				async (_) =>
+				{
+					await navPage.CurrentPage.Navigation.PushAsync(page);
+				});
+
+			Assert.NotEqual(-1, page.Width);
+			Assert.NotEqual(-1, searchBar.Width);
+			Assert.Equal(page.Width, searchBar.Width);
 		}
 #endif
 	}
