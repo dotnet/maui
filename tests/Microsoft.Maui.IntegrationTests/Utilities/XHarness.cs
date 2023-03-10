@@ -30,13 +30,14 @@ namespace Microsoft.Maui.IntegrationTests
 			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
 
 			var launchLogMatch = false;
-			var launchLog = Path.Combine (resultDir, $"{Path.GetFileNameWithoutExtension(appPath)}.log");
-			if (File.Exists(launchLog)) {
+			var launchLog = Path.Combine(resultDir, $"{Path.GetFileNameWithoutExtension(appPath)}.log");
+			if (File.Exists(launchLog))
+			{
 				var launchLogContent = File.ReadAllText(launchLog);
 				launchLogMatch = Regex.IsMatch(launchLogContent, @"Killing process \d* as it was cancelled");
 			}
 
-			bool didTimeoutAsExpected = xhOutput.Contains ($"Run timed out after {launchTimeoutSeconds} seconds", StringComparison.OrdinalIgnoreCase)
+			bool didTimeoutAsExpected = xhOutput.Contains($"Run timed out after {launchTimeoutSeconds} seconds", StringComparison.OrdinalIgnoreCase)
 				&& launchLogMatch
 				&& exitCode != 0;
 
