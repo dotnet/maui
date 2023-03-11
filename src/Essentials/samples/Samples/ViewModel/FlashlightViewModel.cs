@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -14,7 +15,7 @@ namespace Samples.ViewModel
 		public FlashlightViewModel()
 		{
 			ToggleCommand = new Command(OnToggle);
-			Device.BeginInvokeOnMainThread(this.InitViewModel);
+			Device.BeginInvokeOnMainThread(InitViewModel);
 		}
 
 		public ICommand ToggleCommand { get; }
@@ -31,7 +32,7 @@ namespace Samples.ViewModel
 			set => SetProperty(ref isSupported, value);
 		}
 
-		private async Task InitViewModel()
+		async Task InitViewModel()
 		{
 			IsSupported = await Flashlight.CheckIsSupportedAsync();
 		}
