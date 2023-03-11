@@ -33,7 +33,7 @@ namespace Samples.ViewModel
 
 		private async Task InitViewModel()
 		{
-			IsSupported = await Flashlight.CheckIsSupported();
+			IsSupported = await Flashlight.CheckIsSupportedAsync();
 		}
 
 		public override void OnDisappearing()

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Devices
 		/// Checks if the flashlight is available and can be turned on or off.
 		/// </summary>
 		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
-		public Task<bool> CheckIsSupported()
+		public Task<bool> CheckIsSupportedAsync()
 		{
 			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
 			bool isSupported = captureDevice != null &&
