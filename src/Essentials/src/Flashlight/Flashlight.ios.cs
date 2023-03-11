@@ -13,8 +13,9 @@ namespace Microsoft.Maui.Devices
 		public Task<bool> CheckIsSupported()
 		{
 			var captureDevice = AVCaptureDevice.GetDefaultDevice(AVMediaTypes.Video);
-			return captureDevice != null &&
+			bool isSupported = captureDevice != null &&
 				(captureDevice.HasFlash || captureDevice.HasTorch);
+			return Task.FromResult(isSupported);
 		}
 
 		public Task TurnOnAsync()
