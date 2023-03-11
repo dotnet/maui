@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Devices
 			// find all the back lamps
 			var lampInfo = allLamps.FirstOrDefault(di => di.EnclosureLocation?.Panel == Panel.Back);
 
-			if (lampInfo != null)
+			if (lampInfo is not null)
 			{
 				// get the lamp
 				lamp = await Lamp.FromIdAsync(lampInfo.Id);
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Devices
 
 			lock (locker)
 			{
-				return hasLoadedLamp && lamp != null;
+				return hasLoadedLamp && lamp is not null;
 			}
 		}
 
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Devices
 
 			lock (locker)
 			{
-				if (lamp != null)
+				if (lamp is not null)
 				{
 					lamp.BrightnessLevel = 1.0f;
 					lamp.IsEnabled = true;
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Devices
 		{
 			lock (locker)
 			{
-				if (lamp != null)
+				if (lamp is not null)
 				{
 					lamp.IsEnabled = false;
 					lamp.Dispose();
