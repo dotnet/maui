@@ -8,6 +8,7 @@ Microsoft.Maui.Authentication.WebAuthenticatorOptions.ResponseDecoder.set -> voi
 Microsoft.Maui.Media.IMediaGallery
 Microsoft.Maui.Media.IMediaGallery.CaptureAsync(Microsoft.Maui.Media.MediaFileType type, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 Microsoft.Maui.Media.IMediaGallery.CheckCaptureSupport(Microsoft.Maui.Media.MediaFileType type) -> bool
+Microsoft.Maui.Media.IMediaGallery.GetMultiPickingBehaviour() -> Microsoft.Maui.Media.MultiPickingBehaviour
 Microsoft.Maui.Media.IMediaGallery.IsSupported.get -> bool
 Microsoft.Maui.Media.IMediaGallery.PickAsync(int selectionLimit = 1, params Microsoft.Maui.Media.MediaFileType[]! types) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 Microsoft.Maui.Media.IMediaGallery.PickAsync(Microsoft.Maui.Media.MediaPickRequest! request, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
@@ -26,6 +27,10 @@ Microsoft.Maui.Media.MediaGallery
 Microsoft.Maui.Media.MediaPickRequest
 Microsoft.Maui.Media.MediaPickRequest.PresentationSourceBounds.get -> Microsoft.Maui.Graphics.Rect
 Microsoft.Maui.Media.MediaPickRequest.SelectionLimit.get -> int
+Microsoft.Maui.Media.MultiPickingBehaviour
+Microsoft.Maui.Media.MultiPickingBehaviour.AlwaysSingle = 0 -> Microsoft.Maui.Media.MultiPickingBehaviour
+Microsoft.Maui.Media.MultiPickingBehaviour.Limit = 1 -> Microsoft.Maui.Media.MultiPickingBehaviour
+Microsoft.Maui.Media.MultiPickingBehaviour.UnLimit = 2 -> Microsoft.Maui.Media.MultiPickingBehaviour
 Microsoft.Maui.Storage.MediaFileResult
 Microsoft.Maui.Storage.MediaFileResult.Dispose() -> void
 Microsoft.Maui.Storage.MediaFileResult.Extension.get -> string?
@@ -34,6 +39,7 @@ Microsoft.Maui.Storage.MediaFileResult.Type.get -> Microsoft.Maui.Media.MediaFil
 static Microsoft.Maui.Media.MediaGallery.CaptureAsync(Microsoft.Maui.Media.MediaFileType type, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 static Microsoft.Maui.Media.MediaGallery.CheckCaptureSupport(Microsoft.Maui.Media.MediaFileType type) -> bool
 static Microsoft.Maui.Media.MediaGallery.Default.get -> Microsoft.Maui.Media.IMediaGallery!
+static Microsoft.Maui.Media.MediaGallery.GetMultiPickingBehaviour() -> Microsoft.Maui.Media.MultiPickingBehaviour
 static Microsoft.Maui.Media.MediaGallery.PickAsync(int selectionLimit = 1, params Microsoft.Maui.Media.MediaFileType[]! types) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 static Microsoft.Maui.Media.MediaGallery.PickAsync(Microsoft.Maui.Media.MediaPickRequest! request, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 static Microsoft.Maui.Media.MediaGallery.SaveAsync(Microsoft.Maui.Media.MediaFileType type, byte[]! data, string! fileName) -> System.Threading.Tasks.Task!

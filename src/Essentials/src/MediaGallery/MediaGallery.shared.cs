@@ -191,7 +191,7 @@ namespace Microsoft.Maui.Media
 		async Task CheckPossibilityCamera(MediaFileType type)
 		{
 			CheckSupport();
-			if (CheckCaptureSupport(type))
+			if (!CheckCaptureSupport(type))
 				throw new FeatureNotSupportedException();
 
 
