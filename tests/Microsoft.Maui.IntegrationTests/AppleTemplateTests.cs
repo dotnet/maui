@@ -7,8 +7,8 @@ namespace Microsoft.Maui.IntegrationTests
 	{
 		Simulator TestSimulator = new Simulator();
 
-		[OneTimeSetUp]
-		public void AppleTemplateFxtSetup()
+		[SetUp]
+		public void AppleTemplateSetup()
 		{
 			TestSimulator.Shutdown();
 			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");

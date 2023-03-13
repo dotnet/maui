@@ -9,8 +9,8 @@ namespace Microsoft.Maui.IntegrationTests
 		Emulator TestAvd = new Emulator();
 		string testPackage = "";
 
-		[OneTimeSetUp]
-		public void AndroidTemplateFxtSetUp()
+		[SetUp]
+		public void AndroidTemplateSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
