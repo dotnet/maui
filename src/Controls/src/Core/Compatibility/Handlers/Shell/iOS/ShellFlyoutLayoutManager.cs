@@ -27,6 +27,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		readonly IShellContext _context;
 		Action removeScolledEvent;
 
+
+		// This is the height of the AppBar on Android, which is used
+		// as the default minimum height on `Android`.
+		// We use the same value here on iOS/Catalyst to stay consistent between the two platforms.
+		// Users can set a MinimumHeightRequest if they want this value to be smaller.
+
+		const double MinimumCollapsedHeaderHeight = 56;
 		IShellController ShellController => _context.Shell;
 		public ShellFlyoutLayoutManager(IShellContext context)
 		{
@@ -383,16 +390,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		double MeasuredHeaderViewHeightWithNoMargin
-		{
-			get
-			{
-				if (HeaderView is not null)
-					return HeaderView.MeasuredHeight;
-
-				return HeaderView?.MeasuredHeight ?? 0;
-			}
-		}
+		double MeasuredHeaderViewHeightWithNoMargin =>
+			HeaderView?.MeasuredHeight ?? 0;
 
 		double HeaderMinimumHeight
 		{
@@ -403,7 +402,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					HeaderView.View.MinimumHeightRequest == Dimension.Unset)
 				{
 					if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
-						return 56;
+						return MinimumCollapsedHeaderHeight;
 					else
 						return 0;
 				}
