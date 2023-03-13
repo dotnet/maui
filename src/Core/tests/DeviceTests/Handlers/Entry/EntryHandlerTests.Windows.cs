@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Center)]
 		[InlineData(TextAlignment.End)]
 		public async Task VerticalTextAlignmentWorksCorrectlyWithHiddenEntry(TextAlignment textAlignment)
-		{			
+		{
 			var layout = new LayoutStub();
 
 			var entry = new EntryStub
