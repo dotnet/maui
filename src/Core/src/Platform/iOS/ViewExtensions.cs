@@ -796,8 +796,7 @@ namespace Microsoft.Maui.Platform
 				return index == -1 ? null : table.FindNextView(index + 1, isValidType);
 			}
 
-			else
-				return table.FindNextView(0, isValidType);
+			return null;
 		}
 
 		static int FindTableViewCellIndex(this UIView view, UITableView table)
