@@ -197,8 +197,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		void validateRadioButtonColors(RadioButton button, SolidColorBrush desiredBrush)
 		{
-			var frame = (Frame)button.Children[0];
-			var grid = (Grid)frame.Children[0];
+			var border = (Border)button.Children[0];
+			var grid = (Grid)border.Content;
 			var outerEllipse = (Shapes.Ellipse)grid.Children[0];
 			var innerEllipse = (Shapes.Ellipse)grid.Children[1];
 
