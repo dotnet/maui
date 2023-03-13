@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -384,6 +386,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
+		}
+
+		[Fact]
+		public async Task DoesNotLeak()
+		{
+			WeakReference controllerRef, proxyRef;
+			var list = new ObservableCollection<string> { "Foo", "Bar", "Baz" };
+
+			// Scope for BindableLayout
+			{
+				var layout = new StackLayout { IsPlatformEnabled = true };
+				BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+				BindableLayout.SetItemsSource(layout, list);
+
+				var controller = BindableLayout.GetBindableLayoutController(layout);
+				controllerRef = new WeakReference(controller);
+
+				// BindableLayoutController._collectionChangedProxy
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				var proxy = controller.GetType().GetField("_collectionChangedProxy", flags).GetValue(controller);
+				Assert.NotNull(proxy);
+				proxyRef = new WeakReference(proxy);
+			}
+
+			// First GC
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
+
+			// Second GC
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
 		}
 
 		// Checks if for every item in the items source there's a corresponding view

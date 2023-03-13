@@ -2,6 +2,7 @@
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
@@ -32,3 +33,5 @@ static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKW
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
+virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void

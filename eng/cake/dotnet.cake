@@ -95,8 +95,29 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
+Task("android-aar")
+    .Does(() =>
+    {
+        var root = "./src/Core/AndroidNative/";
+
+        var gradlew = root + "gradlew";
+        if (IsRunningOnWindows())
+            gradlew += ".bat";
+
+        var exitCode = StartProcess(
+            MakeAbsolute((FilePath)gradlew),
+            new ProcessSettings
+            {
+                Arguments = $"createAar --rerun-tasks",
+                WorkingDirectory = root
+            });
+        if (exitCode != 0)
+            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+    });
+
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
@@ -270,6 +291,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -477,7 +499,7 @@ Task("dotnet-diff")
 
 // Tasks for Local Development
 Task("VS")
-    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -492,7 +514,7 @@ Task("VS")
 
         UseLocalNuGetCacheFolder();
 
-        StartVisualStudioForDotNet6();
+        StartVisualStudioForDotNet();
     }); 
 
 // Keeping this for users that are already using this.
@@ -587,7 +609,7 @@ void UseLocalNuGetCacheFolder(bool reset = false)
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
 }
 
-void StartVisualStudioForDotNet6()
+void StartVisualStudioForDotNet()
 {
     string sln = Argument<string>("sln", null);
 
@@ -604,7 +626,7 @@ void StartVisualStudioForDotNet6()
         }
         else
         {
-            sln = "_omnisharp.sln";
+            sln = "./Microsoft.Maui-mac.slnf";
         }
     }
 

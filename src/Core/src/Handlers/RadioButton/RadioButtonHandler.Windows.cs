@@ -1,11 +1,16 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class RadioButtonHandler : ViewHandler<IRadioButton, RadioButton>
 	{
-		protected override RadioButton CreatePlatformView() => new RadioButton();
+		protected override RadioButton CreatePlatformView()
+		{
+			// Note: We set a random GUID as the GroupName as part of the work-around in https://github.com/dotnet/maui/issues/11418
+			return new RadioButton() { GroupName = Guid.NewGuid().ToString() };
+		}
 
 		protected override void ConnectHandler(RadioButton platformView)
 		{
