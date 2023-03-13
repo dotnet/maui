@@ -262,7 +262,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(imageView)
             .load(inputStream);
-        loadInto(builder, imageView, true, callback);
+        loadInto(builder, imageView, false, callback);
     }
 
     public static void loadImageFromFont(ImageView imageView, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
@@ -297,7 +297,7 @@ public class PlatformInterop {
         RequestBuilder<Drawable> builder = Glide
             .with(context)
             .load(inputStream);
-        load(builder, context, true, callback);
+        load(builder, context, false, callback);
     }
 
     public static void loadImageFromFont(Context context, @ColorInt int color, String glyph, Typeface typeface, float textSize, ImageLoaderCallback callback) {
