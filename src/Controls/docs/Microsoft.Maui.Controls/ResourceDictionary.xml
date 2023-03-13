@@ -238,7 +238,7 @@
         <param name="key">The identifier being searched for.</param>
         <summary>Whether the <see cref="T:Microsoft.Maui.Controls.ResourceDictionary" /> contains a key-value pair identified by <paramref name="key" />.</summary>
         <returns>To be added.</returns>
-        <remarks>To be added.</remarks>
+        <remarks>This method will only return true if the key is in the immediate ResourceDictionary; it will not search any merged dictionaries.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Count">

@@ -12,6 +12,7 @@
     <IsTrimmable>true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <DefineConstants>$(DefineConstants);COMPATIBILITY</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
@@ -36,6 +37,9 @@
     <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
     <MauiXaml Remove="**\WPF\**\*.xaml" />
+    <Compile Include ="..\..\..\Core\src\VisualDiagnostics\BootstrapHelper.cs">
+        <Link>Windows\BootstrapHelper.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows')) == true ">
   </ItemGroup>

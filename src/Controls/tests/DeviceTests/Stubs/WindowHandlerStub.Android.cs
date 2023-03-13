@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			{
 				PlatformViewUnderTest.RemoveFromParent();
 
-				farw.AddView(platformView);
+				farw.AddView(platformView, 0);
 				platformView.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 			}
 

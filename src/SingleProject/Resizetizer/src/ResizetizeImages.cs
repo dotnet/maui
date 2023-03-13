@@ -90,7 +90,9 @@ namespace Microsoft.Maui.Resizetizer
 			if (PlatformType == "tizen")
 			{
 				var tizenResourceXmlGenerator = new TizenResourceXmlGenerator(IntermediateOutputPath, Logger);
-				tizenResourceXmlGenerator.Generate();
+				var r = tizenResourceXmlGenerator.Generate();
+				if (r is not null)
+					resizedImages.Add(r);
 			}
 
 			var copiedResources = new List<TaskItem>();
@@ -178,10 +180,13 @@ namespace Microsoft.Maui.Resizetizer
 				if (destinationModified > sourceModified)
 				{
 					Logger.Log($"Skipping `{img.Filename}` => `{destination}` file is up to date.");
+					resizedImages.Add(new ResizedImageInfo() { Dpi = dpi, Filename = destination });
 					continue;
 				}
 
 				appTool.Resize(dpi, destination);
+				var r = appTool.Resize(dpi, destination);
+				resizedImages.Add(r);
 			}
 		}
 

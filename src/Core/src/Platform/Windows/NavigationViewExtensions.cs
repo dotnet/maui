@@ -42,6 +42,8 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundPressed"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundDisabled"] = brush;
 				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
 			}
 
 			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
@@ -70,6 +72,8 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemBackgroundPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemBackgroundPressed"] = brush;
 				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
 			}
 
 			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
@@ -98,6 +102,8 @@ namespace Microsoft.Maui.Platform
 					navigationView.TopNavArea.Resources["TopNavigationViewItemBackgroundSelectedPointerOver"] = brush;
 					navigationView.TopNavArea.Resources["TopNavigationViewItemBackgroundSelectedPressed"] = brush;
 				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
 			}
 
 			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
@@ -111,32 +117,28 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdatePaneBackground(this MauiNavigationView navigationView, Paint? paint)
 		{
-			var rootSplitView = navigationView.RootSplitView;
+			var paneContentGrid = navigationView.PaneContentGrid;
+
+			if (paneContentGrid is null)
+				return;
+
 			var brush = paint?.ToPlatform();
 
-			if (brush == null)
+			if (brush is null)
 			{
-				object? color = null;
+				object? color;
 				if (navigationView.IsPaneOpen)
 					color = navigationView.Resources["NavigationViewExpandedPaneBackground"];
 				else
 					color = navigationView.Resources["NavigationViewDefaultPaneBackground"];
 
-				if (rootSplitView != null)
-				{
-					if (color is WBrush colorBrush)
-						rootSplitView.PaneBackground = colorBrush;
-					else if (color is global::Windows.UI.Color uiColor)
-						rootSplitView.PaneBackground = new WSolidColorBrush(uiColor);
-				}
+				if (color is WBrush colorBrush)
+					paneContentGrid.Background = colorBrush;
+				else if (color is global::Windows.UI.Color uiColor)
+					paneContentGrid.Background = new WSolidColorBrush(uiColor);
 			}
 			else
-			{
-				if (rootSplitView != null)
-				{
-					rootSplitView.PaneBackground = brush;
-				}
-			}
+				paneContentGrid.Background = brush;
 		}
 
 		public static void UpdateFlyoutVerticalScrollMode(this MauiNavigationView navigationView, ScrollMode scrollMode)
