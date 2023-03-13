@@ -139,7 +139,7 @@ namespace Microsoft.Maui.Handlers
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
 		}
-		
+
 		void OnPlatformViewSizeChanged(object sender, SizeChangedEventArgs e) =>
 			MauiTextBox.InvalidateAttachedProperties(PlatformView);
 	}
