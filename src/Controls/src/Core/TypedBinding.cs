@@ -252,13 +252,13 @@ namespace Microsoft.Maui.Controls.Internals
 			readonly BindingBase _binding;
 			PropertyChangedEventHandler handler;
 
-			~PropertyChangedProxy() => Listener?.Unsubscribe(finalizer: true);
+			~PropertyChangedProxy() => Listener?.Unsubscribe();
 
 			public INotifyPropertyChanged Part
 			{
 				get
 				{
-					if (Listener != null && Listener.Source.TryGetTarget(out var target))
+					if (Listener != null && Listener.TryGetSource(out var target))
 						return target;
 					return null;
 				}
@@ -267,12 +267,12 @@ namespace Microsoft.Maui.Controls.Internals
 					if (Listener != null)
 					{
 						//Already subscribed
-						if (Listener.Source.TryGetTarget(out var source) && ReferenceEquals(value, source))
+						if (Listener.TryGetSource(out var source) && ReferenceEquals(value, source))
 							return;
 
 						//clear out previous subscription
 						Listener.Unsubscribe();
-						Listener.SubscribeTo(value, handler);
+						Listener.Subscribe(value, handler);
 					}
 				}
 			}
