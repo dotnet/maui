@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
 
-					if (modalBkgndColor?.Alpha > 0 || modalBkgndColor == Colors.Transparent)
+					if (modalBkgndColor?.Alpha < 1)
 						result = UIKit.UIModalPresentationStyle.OverFullScreen;
 				}
 
