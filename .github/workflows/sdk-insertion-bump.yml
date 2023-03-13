@@ -4,7 +4,9 @@ on:
   # trigger for main and release branches.
   push:
     branches:
-      - '*'
+      - main
+      - net8.0
+      - 'release/**'
   workflow_dispatch:
     inputs:
       brach:
