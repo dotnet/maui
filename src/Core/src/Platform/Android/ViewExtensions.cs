@@ -101,19 +101,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this AView platformView, IView view)
 		{
-			if (platformView is WrapperView wrapperView)
-				wrapperView.UpdateVisibility(view);
-			else
-				platformView.Visibility = view.Visibility.ToPlatformVisibility();
-		}
-
-		internal static void UpdateVisibility(this WrapperView wrapperView, IView view)
-		{
-			wrapperView.Visibility = view.Visibility.ToPlatformVisibility();
-
-			for (int i = 0; i < wrapperView.ChildCount; i++)
-				if (wrapperView.GetChildAt(i) is AView child)
-					child.Visibility = wrapperView.Visibility;
+			platformView.Visibility = view.Visibility.ToPlatformVisibility();
 		}
 
 		public static void UpdateClip(this AView platformView, IView view)

@@ -51,53 +51,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(hiddenButton, expected);
 		}
 
-		[Fact(DisplayName = "IsVisible updates Correctly using WrapperView")]
-		public async Task IsVisibleUpdatesCorrectlyUsingWrapperView()
-		{
-			var expected = Colors.Red;
-
-			var layout = new LayoutStub();
-
-			var hiddenButton = new ButtonStub
-			{
-				Text = "Text",
-				TextColor = expected,
-				Visibility = Visibility.Collapsed,
-				Shadow = new ShadowStub
-				{
-					Paint = new SolidPaintStub(Colors.Black),
-					Offset = new Point(6, 6),
-					Opacity = 1,
-					Radius = 6
-				}
-			};
-
-			var button = new ButtonStub
-			{
-				Text = "Change IsVisible"
-			};
-
-			layout.Add(hiddenButton);
-			layout.Add(button);
-
-			var clicked = false;
-
-			button.Clicked += delegate
-			{
-				hiddenButton.Visibility = Visibility.Visible;
-				clicked = true;
-			};
-
-			await PerformClick(button);
-
-			Assert.True(clicked);
-
-			var result = await GetValueAsync(hiddenButton, GetVisibility);
-			Assert.Equal(hiddenButton.Visibility, result);
-
-			await ValidateHasColor(hiddenButton, expected);
-		}
-
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
