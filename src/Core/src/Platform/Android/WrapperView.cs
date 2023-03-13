@@ -307,10 +307,10 @@ namespace Microsoft.Maui.Platform
 			_shadowBitmap = null;
 		}
 
-		public override ViewStates Visibility 
-		{ 
+		public override ViewStates Visibility
+		{
 			get => base.Visibility;
-			set 
+			set
 			{
 				base.Visibility = value;
 
