@@ -14,6 +14,7 @@ override Microsoft.Maui.Handlers.SwipeViewHandler.ConnectHandler(Microsoft.Maui.
 override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSwipeView!
 override Microsoft.Maui.Handlers.SwipeViewHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiSwipeView! platformView) -> void
 override Microsoft.Maui.Platform.MauiSwipeView.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
+Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void

@@ -37,12 +37,9 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<ISearchBar, ISearchBarHandler> CommandMapper = new(ViewCommandMapper)
 		{
-#if ANDROID
-			[nameof(ISearchBar.Focus)] = MapFocus
-#endif
 		};
 
-		public SearchBarHandler() : this(Mapper)
+		public SearchBarHandler() : base(Mapper)
 		{
 		}
 
