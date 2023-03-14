@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
@@ -63,6 +64,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public IElement Parent => null;
+
+		public AppTheme UserAppTheme { get; set; }
 
 		public void CloseWindow(IWindow window)
 		{
