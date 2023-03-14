@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
-			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,		
+			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (oldvalue != null)
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeProperty']/Docs/*" />
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,	
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (oldvalue != null)
