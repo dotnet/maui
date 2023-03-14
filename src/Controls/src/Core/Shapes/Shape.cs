@@ -8,8 +8,8 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Shape']/Docs/*" />
 	public abstract partial class Shape : View, IShapeView, IShape
 	{
-		WeakBrushChangedProxy? _fillProxy = null;
-		WeakBrushChangedProxy? _strokeProxy = null;
+		WeakNotifyPropertyChangedProxy? _fillProxy = null;
+		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shape()
@@ -440,50 +440,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				// If the shape has never been laid out, then Height won't actually have a value;
 				// use the fallback value instead.
 				return height == -1 ? _fallbackHeight : height;
-			}
-		}
-
-		class WeakBrushChangedProxy : WeakEventProxy<Brush, EventHandler>
-		{
-			void OnBrushChanged(object? sender, EventArgs e)
-			{
-				if (TryGetHandler(out var handler))
-				{
-					handler(sender, e);
-				}
-				else
-				{
-					Unsubscribe();
-				}
-			}
-
-			public override void Subscribe(Brush source, EventHandler handler)
-			{
-				if (TryGetSource(out var s))
-				{
-					s.PropertyChanged -= OnBrushChanged;
-
-					if (s is GradientBrush g)
-						g.InvalidateGradientBrushRequested -= OnBrushChanged;
-				}
-
-				source.PropertyChanged += OnBrushChanged;
-				if (source is GradientBrush gradientBrush)
-					gradientBrush.InvalidateGradientBrushRequested += OnBrushChanged;
-
-				base.Subscribe(source, handler);
-			}
-
-			public override void Unsubscribe()
-			{
-				if (TryGetSource(out var s))
-				{
-					s.PropertyChanged -= OnBrushChanged;
-
-					if (s is GradientBrush g)
-						g.InvalidateGradientBrushRequested -= OnBrushChanged;
-				}
-				base.Unsubscribe();
 			}
 		}
 	}
