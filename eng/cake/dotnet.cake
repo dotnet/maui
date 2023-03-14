@@ -136,7 +136,7 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        var tempDir = PrepareSeparateBuildContext("samplesTest", false);
+        var tempDir = PrepareSeparateBuildContext("samplesTest");
 
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = "true",
@@ -153,7 +153,10 @@ Task("dotnet-templates")
 
         var dn = localDotnet ? dotnetPath : "dotnet";
 
-        var tempDir = PrepareSeparateBuildContext("templatesTest", true);
+        var tempDir = PrepareSeparateBuildContext(
+            "templatesTest",
+            props: "./src/Templates/tests/Directory.Build.props",
+            targets: "./src/Templates/tests/Directory.Build.targets");
 
         // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
         var designTime = new Dictionary<string, string> {
@@ -744,7 +747,7 @@ void RunTestWithLocalDotNet(string csproj)
         });
 }
 
-DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectoryProps = false)
+DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
 {
     var dir = GetTempDirectory().Combine(dirName);
     EnsureDirectoryExists(dir);
@@ -768,9 +771,15 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
         $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
         $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
 
-    // Create empty Directory.Build.props/targets
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    // Create empty or copy test Directory.Build.props/targets
+    if (string.IsNullOrEmpty(props))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+    else
+        CopyFile(props, dir.CombineWithFilePath("Directory.Build.props"));
+    if (string.IsNullOrEmpty(targets))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    else
+        CopyFile(targets, dir.CombineWithFilePath("Directory.Build.targets"));
 
     return MakeAbsolute(dir);
 }
