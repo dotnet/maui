@@ -28,3 +28,5 @@ static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.We
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
+override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
