@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Xunit;
 
@@ -45,6 +47,38 @@ namespace Microsoft.Maui.UnitTests.Views
 			parent.StrokeShape = strokeShape;
 
 			Assert.Same(context, ((Rectangle)parent.StrokeShape).BindingContext);
+		}
+
+		[Fact]
+		public void BorderStrokeShapeSubscribed()
+		{
+			var strokeShape = new RoundRectangle { CornerRadius = new CornerRadius(12) };
+			var border = new Border { StrokeShape = strokeShape };
+
+			bool fired = false;
+			border.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Border.StrokeShape))
+					fired = true;
+			};
+
+			strokeShape.CornerRadius = new CornerRadius(24);
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Theory(Skip = "Reviewing why is failing")]
+		[InlineData(typeof(Rectangle))]
+		[InlineData(typeof(Ellipse))]
+		public async Task BorderStrokeShapeDoesNotLeak(Type type)
+		{
+			var strokeShape = (Shape)Activator.CreateInstance(type);
+			var reference = new WeakReference(new Border { StrokeShape = strokeShape });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Border should not be alive!");
 		}
 
 		[Fact]

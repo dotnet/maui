@@ -15,9 +15,9 @@ namespace Microsoft.Maui.Controls
 		float[]? _strokeDashPattern;
 		ReadOnlyCollection<Element>? _logicalChildren;
 
-		readonly WeakStrokeShapeChangedProxy _strokeShapeProxy = new();
+		WeakStrokeShapeChangedProxy? _strokeShapeProxy = null;
 
-		~Border() => _strokeShapeProxy.Unsubscribe();
+		~Border() => _strokeShapeProxy?.Unsubscribe();
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new();
 
@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Controls
 			{
 				SetInheritedBindingContext(visualElement, BindingContext);
 				visualElement.Parent = this;
-				_strokeShapeProxy.Subscribe(visualElement, (sender, e) => OnPropertyChanged(nameof(StrokeShape)));
+				var proxy = _strokeShapeProxy ??= new();
+				proxy.Subscribe(visualElement, (sender, e) => OnPropertyChanged(nameof(StrokeShape)));
 			}
 		}
 
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			{
 				SetInheritedBindingContext(visualElement, null);
 				visualElement.Parent = null;
-				_strokeShapeProxy.Unsubscribe();
+				_strokeShapeProxy?.Unsubscribe();
 			}
 		}
 
