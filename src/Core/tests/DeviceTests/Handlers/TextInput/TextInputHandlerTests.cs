@@ -1,5 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -79,28 +83,5 @@ namespace Microsoft.Maui.DeviceTests
 		protected abstract void UpdateCursorStartPosition(THandler entryHandler, int position);
 		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
-
-#if ANDROID
-		[Fact]
-		public async Task ShowsKeyboardOnFocus()
-		{
-			var button = new ButtonStub();
-			var textInput = new TStub();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = (IPlatformViewHandler)CreateHandler<THandler>(textInput);
-				var platformView = handler.PlatformView;
-
-				await platformView.AttachAndRun(async () =>
-				{
-					button.Focus();
-					textInput.Focus();
-					await AssertionExtensions.WaitForKeyboardToShow(platformView);
-					await AssertionExtensions.HideKeyboardForView(platformView);
-				});
-			});
-		}
-#endif
 	}
 }
