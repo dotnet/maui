@@ -310,6 +310,7 @@ namespace Microsoft.Maui.Platform
 		public MauiHorizontalScrollView(Context? context, MauiScrollView parentScrollView) : base(context)
 		{
 			_parentScrollView = parentScrollView;
+			Tag = "Microsoft.Maui.Android.HorizontalScrollView";
 		}
 
 		public MauiHorizontalScrollView(Context? context, IAttributeSet? attrs) : base(context, attrs)
