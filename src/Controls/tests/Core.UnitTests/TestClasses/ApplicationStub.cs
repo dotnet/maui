@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -13,6 +14,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
 
 		public string Property { get; set; } = "Default";
+
+		public AppTheme UserAppTheme { get; set; }
 
 		public IWindow CreateWindow(IActivationState activationState)
 		{

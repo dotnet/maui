@@ -51,7 +51,8 @@ namespace Microsoft.Maui.Controls
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 
-			_lastAppTheme = PlatformAppTheme;
+			_platformAppTheme = AppInfo.RequestedTheme;
+			_lastAppTheme = _platformAppTheme;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs/*" />
@@ -164,15 +165,34 @@ namespace Microsoft.Maui.Controls
 			get => _userAppTheme;
 			set
 			{
+				if (_userAppTheme == value)
+					return;
+
 				_userAppTheme = value;
+
 				TriggerThemeChangedActual();
 			}
 		}
 
-		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+		public AppTheme PlatformAppTheme
+		{
+			get => _platformAppTheme;
+			private set
+			{
+				if (_platformAppTheme == value)
+					return;
+
+				_platformAppTheme = value;
+
+				TriggerThemeChangedActual();
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs/*" />
-		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
+		public AppTheme RequestedTheme =>
+			UserAppTheme != AppTheme.Unspecified
+				? UserAppTheme
+				: PlatformAppTheme;
 
 		static Color? _accentColor;
 		public static Color? AccentColor
@@ -211,6 +231,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool _themeChangedFiring;
+		AppTheme _platformAppTheme = AppTheme.Unspecified;
 		AppTheme _lastAppTheme = AppTheme.Unspecified;
 		AppTheme _userAppTheme = AppTheme.Unspecified;
 

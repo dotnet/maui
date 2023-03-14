@@ -127,9 +127,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool Focus()
 		{
-			FocusRequest focusRequest = new FocusRequest(false);
-			Handler?.Invoke(nameof(IView.Focus), focusRequest);
-			return focusRequest.IsFocused;
+			IsFocused = true;
+
+			return true;
 		}
 
 		public void Unfocus()
