@@ -401,14 +401,14 @@ namespace Microsoft.Maui.Platform
 
 		void ShowPickerWindow()
 		{
+			int x = 0;
+			int y = 0;
+
+			Window.GetOrigin(out x, out y);
+			y += Allocation.Height;
+
 			if (_pickerWindow is null)
 			{
-				int x = 0;
-				int y = 0;
-
-				Window.GetOrigin(out x, out y);
-				y += Allocation.Height;
-
 				var picker = new DatePickerWindow();
 				picker.Move(x, y);
 				picker.SelectedDate = Date;
@@ -416,11 +416,11 @@ namespace Microsoft.Maui.Platform
 				picker.MaximumDate = MaxDate;
 				picker.OnDateTimeChanged += OnPopupDateChanged;
 				picker.Destroyed += OnPickerClosed;
-
 				_pickerWindow = picker;
 			}
 			else
 			{
+				_pickerWindow.Move(x, y);
 				_pickerWindow.ShowCalendar();
 			}
 		}
