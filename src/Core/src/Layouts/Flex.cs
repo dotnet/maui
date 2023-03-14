@@ -888,6 +888,28 @@ namespace Microsoft.Maui.Layouts.Flex
 
 				layout.lines_sizes += line.size;
 			}
+
+			if (layout.reverse && layout.size_dim == 0)
+			{
+				// Handle reversed layouts when there was no fixed size in the first place. All of the positions will be flipped
+				// across the axis. Luckily the pos variable is already tracking how far negative the values were in this situation,
+				// so we can just offset the distance by that amount and get the desired value
+
+				for (int i = child_begin; i < child_end; i++)
+				{
+					Item child = layout.child_at(item, i);
+					if (!child.IsVisible)
+						continue;
+
+					if (child.Position == Position.Absolute)
+					{
+						// Not helpful for this
+						continue;
+					}
+
+					child.Frame[layout.frame_pos_i] = child.Frame[layout.frame_pos_i] - pos;
+				}
+			}
 		}
 
 		static float absolute_size(float val, float pos1, float pos2, float dim) =>
