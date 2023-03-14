@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -11,6 +12,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		public IElement Parent { get; set; }
 
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
+
+		public AppTheme UserAppTheme { get; set; }
 
 		public IWindow CreateWindow(IActivationState state)
 		{
