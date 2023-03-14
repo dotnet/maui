@@ -100,6 +100,9 @@ namespace Microsoft.Maui.Controls
 		{
 			var stroke = Stroke;
 
+			if (stroke is ImmutableBrush)
+				return;
+
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
@@ -111,6 +114,9 @@ namespace Microsoft.Maui.Controls
 		void StopNotifyingStrokeChanges()
 		{
 			var stroke = Stroke;
+
+			if (stroke is ImmutableBrush)
+				return;
 
 			if (stroke is not null)
 			{
