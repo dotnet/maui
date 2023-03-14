@@ -115,11 +115,7 @@ namespace Microsoft.Maui.Controls
 			return _innerList.GetEnumerator();
 		}
 
-#if NETSTANDARD2_1_OR_GREATER
 		internal bool TryGetValue(Page page, [NotNullWhen(true)] out NavigationStepRequest? request)
-#else
-		internal bool TryGetValue(Page page, out NavigationStepRequest request)
-#endif
 		{
 			for (var i = 0; i < _innerList.Count; i++)
 			{
@@ -132,11 +128,8 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-#if NETSTANDARD2_1_OR_GREATER
 			request = null;
-#else
-			request = null!;
-#endif
+
 			return false;
 		}
 	}
