@@ -70,7 +70,7 @@ namespace Microsoft.Maui.UnitTests.Views
 		[Fact]
 		public void BorderStrokeSubscribed()
 		{
-			var stroke = new SolidColorBrush(Colors.Red);	
+			var stroke = new SolidColorBrush(Colors.Red);
 			var border = new Border { Stroke = stroke };
 
 			bool fired = false;
