@@ -24,6 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
 				{
+					Entry testEntry = null;
 					try
 					{
 						window.UpdateWindowSoftInputModeAdjust(panSize.ToPlatform());
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						// Locate the lowest visible entry
 						var pageBoundingBox = modalPage.GetBoundingBox();
-						Entry testEntry = entries[0];
+						testEntry = entries[0];
 						foreach (var entry in entries)
 						{
 							var entryBox = entry.GetBoundingBox();
@@ -108,6 +109,9 @@ namespace Microsoft.Maui.DeviceTests
 					finally
 					{
 						window.UpdateWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize.ToPlatform());
+
+						if (testEntry is not null)
+							await AssertionExtensions.HideKeyboardForView(testEntry);
 					}
 				});
 		}

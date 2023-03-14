@@ -25,16 +25,24 @@ namespace Microsoft.Maui.DeviceTests
 
 				await platformView.AttachAndRun(async () =>
 				{
-					textInput.Focus();
-					await AssertionExtensions.WaitForFocused(platformView, 2000, $"WaitForFocused failed after first focus on {controlType}");
-					await AssertionExtensions.WaitForKeyboardToShow(platformView, message: $"WaitForKeyboardToShow failed after first focus on {controlType}");
+					try
+					{
+						await AssertionExtensions.HideKeyboardForView(platformView, message: $"Make sure keyboard starts out closed {controlType}");
 
-					// Test that keyboard reappears when refocusing on an already focused TextInput control
-					await AssertionExtensions.HideKeyboardForView(platformView, message: $"HideKeyboardForView failed after first keyboard show on {controlType}");
-					textInput.Focus();
-					await AssertionExtensions.WaitForFocused(platformView, message: $"WaitForFocused failed after second focus on {controlType}");
-					await AssertionExtensions.WaitForKeyboardToShow(platformView, message: $"WaitForKeyboardToShow failed after second focus on {controlType}");
-					await AssertionExtensions.HideKeyboardForView(platformView, message: $"HideKeyboardForView failed after second keyboard show on {controlType}");
+						textInput.Focus();
+						await AssertionExtensions.WaitForFocused(platformView, 2000, $"WaitForFocused failed after first focus on {controlType}");
+						await AssertionExtensions.WaitForKeyboardToShow(platformView, message: $"WaitForKeyboardToShow failed after first focus on {controlType}");
+
+						// Test that keyboard reappears when refocusing on an already focused TextInput control
+						await AssertionExtensions.HideKeyboardForView(platformView, message: $"HideKeyboardForView failed after first keyboard show on {controlType}");
+						textInput.Focus();
+						await AssertionExtensions.WaitForFocused(platformView, message: $"WaitForFocused failed after second focus on {controlType}");
+						await AssertionExtensions.WaitForKeyboardToShow(platformView, message: $"WaitForKeyboardToShow failed after second focus on {controlType}");
+					}
+					finally
+					{
+						await AssertionExtensions.HideKeyboardForView(platformView, message: $"HideKeyboardForView after test has finished {controlType}");
+					}
 				});
 			});
 		}
