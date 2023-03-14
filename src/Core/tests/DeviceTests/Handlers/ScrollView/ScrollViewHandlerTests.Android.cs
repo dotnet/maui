@@ -105,7 +105,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task MauiScrollViewGetsFullHeightInHorizontalOrientation()
 		{
-			await InvokeOnMainThreadAsync(() => {
+			await InvokeOnMainThreadAsync(() =>
+			{
 				var sv = new MauiScrollView(MauiContext.Context);
 				sv.SetOrientation(ScrollOrientation.Horizontal);
 				var content = new Button(MauiContext.Context);
