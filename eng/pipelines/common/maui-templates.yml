@@ -105,6 +105,13 @@ jobs:
       inputs:
         ArtifactName: '${{ parameters.uploadPrefix }}${{ BuildPlatform.artifact }}'
 
+    - pwsh: |
+        Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
+        if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
+            Write-Host "##vso[task.complete result=Failed;]DONE"
+        }
+      displayName: Fail if any issues occurred
+
 - ${{ each RunPlatform in parameters.RunPlatforms }}:
   - job: run_${{ RunPlatform.testName }}
     workspace:
@@ -159,3 +166,10 @@ jobs:
       displayName: publish artifacts
       inputs:
         ArtifactName: '${{ parameters.uploadPrefix }}${{ RunPlatform.artifact }}'
+
+    - pwsh: |
+        Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
+        if ($env:AGENT_JOBSTATUS -eq "SucceededWithIssues") {
+            Write-Host "##vso[task.complete result=Failed;]DONE"
+        }
+      displayName: Fail if any issues occurred

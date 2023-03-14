@@ -15,6 +15,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
+			TestAvd.InstallAvd();
 			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720), "Failed to launch Test AVD.");
 		}
 

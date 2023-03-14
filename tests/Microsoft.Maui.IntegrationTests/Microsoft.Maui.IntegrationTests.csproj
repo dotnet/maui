@@ -19,10 +19,5 @@
       <LogicalName>%(FileName)%(Extension)</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Apple\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Apple\" />
-  </ItemGroup>
+
 </Project>
