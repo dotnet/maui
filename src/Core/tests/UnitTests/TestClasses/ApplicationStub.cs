@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.UnitTests
 {
@@ -11,6 +12,8 @@ namespace Microsoft.Maui.UnitTests
 		public IElement Parent { get; set; }
 
 		public IReadOnlyList<IWindow> Windows => _windows.AsReadOnly();
+
+		public AppTheme UserAppTheme { get; set; }
 
 		public string Property { get; set; } = "Default";
 
