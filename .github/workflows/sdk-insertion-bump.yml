@@ -51,7 +51,7 @@ jobs:
         if: ${{ github.event_name == 'push' }}
         run: |
           Write-Host "Commit message is $Env:COMMIT_MESSAGE"
-          $title = ($Env:COMMIT_MESSAGE -split '\n')[0]
+          $title = ($Env:COMMIT_MESSAGE -split '\n')[0] | ConvertTo-Json
           "COMMIT_TITLE=$title" >> $env:GITHUB_OUTPUT
         env:
           COMMIT_MESSAGE: "${{ github.event.head_commit.message }}"
