@@ -510,13 +510,11 @@ namespace Microsoft.Maui.Controls
 
 			var checkMark = new Ellipse
 			{
-				Fill = RadioButtonCheckMarkThemeColor,
 				Aspect = Stretch.Uniform,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				HeightRequest = 11,
 				WidthRequest = 11,
-				Opacity = 0,
 				InputTransparent = true
 			};
 
@@ -554,12 +552,11 @@ namespace Microsoft.Maui.Controls
 			var checkedStates = new VisualStateGroup() { Name = "CheckedStates" };
 
 			VisualState checkedVisualState = new VisualState() { Name = CheckedVisualState };
-			checkedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 1 });
-			checkedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = RadioButtonCheckMarkThemeColor });
+			checkedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = CheckedIndicator, Value = RadioButtonCheckMarkThemeColor });
+			checkedVisualState.Setters.Add(new Setter() { Property = Shape.FillProperty, TargetName = CheckedIndicator, Value = RadioButtonCheckMarkThemeColor });
 			checkedStates.States.Add(checkedVisualState);
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
-			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
 			uncheckedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = RadioButtonThemeColor });
 			checkedStates.States.Add(uncheckedVisualState);
 
