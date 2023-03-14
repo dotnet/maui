@@ -352,21 +352,30 @@ namespace Microsoft.Maui.Platform
 		internal static void RemoveContainer(AView platformView, Context context, AView containerView, Action clearWrapperView)
 		{
 			if (context == null || platformView == null || containerView == null || platformView.Parent != containerView)
+			{
+				CleanupContainerView(containerView, clearWrapperView);
 				return;
+			}
 
 			var oldParent = (ViewGroup)containerView.Parent;
 
 			var oldIndex = oldParent?.IndexOfChild(containerView);
 			oldParent?.RemoveView(containerView);
 
-			((ViewGroup)containerView).RemoveAllViews();
-			containerView = null;
-			clearWrapperView.Invoke();
+			CleanupContainerView(containerView, clearWrapperView);
 
 			if (oldIndex is int idx && idx >= 0)
 				oldParent?.AddView(platformView, idx);
 			else
 				oldParent?.AddView(platformView);
+
+			void CleanupContainerView(AView containerView, Action clearWrapperView)
+			{
+				if (containerView is ViewGroup vg)
+					vg.RemoveAllViews();
+
+				clearWrapperView.Invoke();
+			}
 		}
 	}
 }
