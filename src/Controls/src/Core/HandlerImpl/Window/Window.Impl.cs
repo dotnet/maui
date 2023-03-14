@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -562,7 +563,8 @@ namespace Microsoft.Maui.Controls
 
 			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
 			{
-				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
+				var flowDirection = AppInfo.Current.RequestedLayoutDirection.ToFlowDirection();
+				FlowController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection(true);
 			}
 		}
 
