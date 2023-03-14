@@ -1,41 +1,39 @@
 using System;
+using Android.App;
 using Android.Content;
+using Android.OS;
+using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
-using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.Platform
 {
 	internal static class KeyboardManager
 	{
-		internal static void HideKeyboard(this AView inputView)
+		internal static void HideKeyboard(this AView inputView, bool overrideValidation = false)
 		{
-			if (inputView?.Context is null)
+			if (inputView?.Context == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
 
-			var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
-			AView tokenView = focusedView ?? inputView;
-			var context = tokenView.Context;
-
-			if (context is null)
-				return;
-
-			using (var inputMethodManager = context.GetSystemService(Context.InputMethodService) as InputMethodManager)
+			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
 			{
-				var windowToken = tokenView.WindowToken;
-				if (windowToken is not null && inputMethodManager is not null)
+				if (!overrideValidation && !(inputView is EditText || inputView is TextView || inputView is SearchView))
+					throw new ArgumentException("inputView should be of type EditText, SearchView, or TextView");
+
+				var windowToken = inputView.WindowToken;
+				if (windowToken != null && inputMethodManager != null)
 					inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
 		}
 
 		internal static void ShowKeyboard(this TextView inputView)
 		{
-			if (inputView?.Context is null)
+			if (inputView?.Context == null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
 
-			using (var inputMethodManager = inputView.Context.GetSystemService(Context.InputMethodService) as InputMethodManager)
+			using (var inputMethodManager = (InputMethodManager)inputView.Context.GetSystemService(Context.InputMethodService)!)
 			{
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
@@ -46,22 +44,34 @@ namespace Microsoft.Maui.Platform
 
 		internal static void ShowKeyboard(this SearchView searchView)
 		{
-			if (searchView?.Context is null || searchView?.Resources is null)
+			if (searchView?.Context == null || searchView?.Resources == null)
 			{
 				throw new ArgumentNullException(nameof(searchView));
 			}
 
-			var queryEditor = searchView.GetFirstChildOfType<EditText>();
+			// Dig into the SearchView and find the actual TextView that we want to show keyboard input for
+			int searchViewTextViewId = searchView.Resources.GetIdentifier("android:id/search_src_text", null, null);
 
-			if (queryEditor is null)
+			if (searchViewTextViewId == 0)
+			{
+				// Cannot find the resource Id; nothing else to do
 				return;
+			}
+
+			var textView = searchView.FindViewById(searchViewTextViewId);
+
+			if (textView == null)
+			{
+				// Cannot find the TextView; nothing else to do
+				return;
+			}
 
 			using (var inputMethodManager = (InputMethodManager)searchView.Context.GetSystemService(Context.InputMethodService)!)
 			{
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
 				// Apparently there's no named value for zero in this case
-				inputMethodManager?.ShowSoftInput(queryEditor, 0);
+				inputMethodManager?.ShowSoftInput(textView, 0);
 			}
 		}
 
@@ -77,7 +87,6 @@ namespace Microsoft.Maui.Platform
 					break;
 			}
 		}
-
 
 		internal static void PostShowKeyboard(this AView view)
 		{
@@ -99,7 +108,7 @@ namespace Microsoft.Maui.Platform
 		public static bool IsSoftKeyboardVisible(this AView view)
 		{
 			var insets = ViewCompat.GetRootWindowInsets(view);
-			if (insets is null)
+			if (insets == null)
 				return false;
 
 			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
