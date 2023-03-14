@@ -14,7 +14,6 @@ using Xunit;
 using Xunit.Sdk;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -48,45 +47,25 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(10);
 		}
 
-		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message = "")
+		public static async Task WaitForFocused(this AView view, int timeout = 1000)
 		{
-			try
+			if (!view.IsFocused)
 			{
-				if (view is SearchView searchView)
-				{
-					var queryEditor = searchView.GetFirstChildOfType<EditText>();
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.FocusChange += OnFocused;
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
-					if (queryEditor is null)
+				// Even thuogh the event fires focus hasn't fully been achieved
+				await Task.Delay(10);
+
+				void OnFocused(object? sender, AView.FocusChangeEventArgs e)
+				{
+					if (!e.HasFocus)
 						return;
 
-					view = queryEditor;
+					view.FocusChange -= OnFocused;
+					focusSource.SetResult();
 				}
-
-				if (!view.IsFocused)
-				{
-					TaskCompletionSource focusSource = new TaskCompletionSource();
-					view.FocusChange += OnFocused;
-					await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
-
-					// Even though the event fires focus hasn't fully been achieved
-					await Task.Delay(10);
-
-					void OnFocused(object? sender, AView.FocusChangeEventArgs e)
-					{
-						if (!e.HasFocus)
-							return;
-
-						view.FocusChange -= OnFocused;
-						focusSource.SetResult();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
 			}
 		}
 
@@ -123,54 +102,25 @@ namespace Microsoft.Maui.DeviceTests
 			return Task.CompletedTask;
 		}
 
-		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000)
 		{
-			try
-			{
-				await view.FocusView(timeout);
-				KeyboardManager.ShowKeyboard(view);
-				await view.WaitForKeyboardToShow(timeout);
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+			await view.FocusView(timeout);
+			KeyboardManager.ShowKeyboard(view);
+			await view.WaitForKeyboardToShow(timeout);
 		}
 
-		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000)
 		{
-			try
-			{
-				await view.FocusView(timeout);
-				KeyboardManager.HideKeyboard(view);
-				await view.WaitForKeyboardToHide(timeout);
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+			await view.FocusView(timeout);
+			KeyboardManager.HideKeyboard(view);
+			await view.WaitForKeyboardToHide(timeout);
 		}
 
-		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000, string message = "")
+		public static async Task WaitForKeyboardToShow(this AView view, int timeout = 1000)
 		{
-			try
-			{
-				var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
-				Assert.True(result);
-			}
-			catch (Exception ex)
-			{
-				if (!string.IsNullOrEmpty(message))
-					throw new Exception(message, ex);
-				else
-					throw;
-			}
+			var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
+			Assert.True(result);
+
 		}
 
 		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
