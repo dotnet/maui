@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 		float[]? _strokeDashPattern;
 		ReadOnlyCollection<Element>? _logicalChildren;
 
-		WeakStrokeShapeChangedProxy? _strokeShapeProxy = null;
+		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
 
 		~Border() => _strokeShapeProxy?.Unsubscribe();
 
@@ -263,39 +263,6 @@ namespace Microsoft.Maui.Controls
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
-		}
-
-		class WeakStrokeShapeChangedProxy : WeakEventProxy<VisualElement, EventHandler>
-		{
-			void OnStrokeShapeChanged(object? sender, EventArgs e)
-			{
-				if (TryGetHandler(out var handler))
-				{
-					handler(sender, e);
-				}
-				else
-				{
-					Unsubscribe();
-				}
-			}
-
-			public override void Subscribe(VisualElement source, EventHandler handler)
-			{
-				if (TryGetSource(out var s))
-					s.PropertyChanged -= OnStrokeShapeChanged;
-
-				source.PropertyChanged += OnStrokeShapeChanged;
-
-				base.Subscribe(source, handler);
-			}
-
-			public override void Unsubscribe()
-			{
-				if (TryGetSource(out var s))
-					s.PropertyChanged -= OnStrokeShapeChanged;
-
-				base.Unsubscribe();
-			}
 		}
 	}
 }
