@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 			_brush = new SolidColorBrush();
 			UpdateBrush();
 
-			MyLine.Stroke = MyButton.Background =_brush;
+			MyLine.Stroke = MyButton.Background = _brush;
 		}
 
 		protected override void OnAppearing()

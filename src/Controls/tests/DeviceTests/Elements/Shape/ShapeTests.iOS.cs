@@ -14,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		UIButton GetNativeButton(ButtonHandler buttonHandler) =>	
+		UIButton GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 	}
 }
