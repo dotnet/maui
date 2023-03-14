@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Views
@@ -63,6 +64,23 @@ namespace Microsoft.Maui.UnitTests.Views
 			};
 
 			strokeShape.CornerRadius = new CornerRadius(24);
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
+		public void BorderStrokeSubscribed()
+		{
+			var stroke = new SolidColorBrush(Colors.Red);	
+			var border = new Border { Stroke = stroke };
+
+			bool fired = false;
+			border.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Border.Stroke))
+					fired = true;
+			};
+
+			stroke.Color = Colors.Green;
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
@@ -16,8 +15,13 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
+		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
 
-		~Border() => _strokeShapeProxy?.Unsubscribe();
+		~Border()
+		{
+			_strokeShapeProxy?.Unsubscribe();
+			_strokeProxy?.Unsubscribe();
+		}
 
 		internal ObservableCollection<Element> InternalChildren { get; } = new();
 
@@ -80,7 +84,40 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null, 
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.StopNotifyingStrokeChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.NotifyStrokeChanges();
+				});
+
+		void NotifyStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, BindingContext);
+				var proxy = _strokeProxy ??= new();
+				proxy.Subscribe(stroke, (sender, e) => OnPropertyChanged(nameof(Stroke)));
+			}
+		}
+
+		void StopNotifyingStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, null);
+				_strokeProxy?.Unsubscribe();
+			}
+		}
 
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
