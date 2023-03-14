@@ -2,6 +2,8 @@
 using Android.App;
 using Android.Content;
 using Android.OS;
+using AndroidX.AppCompat.App;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
 
@@ -59,6 +61,25 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return userInfo;
+		}
+
+		public static void UpdateNightMode(this IApplication application)
+		{
+			if (application is null)
+				return;
+
+			switch (application.UserAppTheme)
+			{
+				case AppTheme.Light:
+					AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightNo;
+					break;
+				case AppTheme.Dark:
+					AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightYes;
+					break;
+				default:
+					AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightFollowSystem;
+					break;
+			}
 		}
 	}
 }
