@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null, 
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
 				{
 					if (newvalue is not null)
