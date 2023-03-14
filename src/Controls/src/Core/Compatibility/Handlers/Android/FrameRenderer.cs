@@ -11,11 +11,11 @@ using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using static Android.Icu.Text.CaseMap;
+using static Microsoft.Maui.Primitives.Dimension;
 using AColor = Android.Graphics.Color;
 using ARect = Android.Graphics.Rect;
 using AView = Android.Views.View;
 using Color = Microsoft.Maui.Graphics.Color;
-using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
