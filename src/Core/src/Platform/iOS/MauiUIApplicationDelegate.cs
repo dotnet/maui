@@ -143,6 +143,12 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<iOSLifecycle.ApplicationSignificantTimeChange>(del => del(application));
 		}
 
+		[Export("application:performFetchWithCompletionHandler:")]
+		public virtual void PerformFetch(UIApplication application, Action<UIBackgroundFetchResult> completionHandler)
+		{
+			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
+		}
+
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]
