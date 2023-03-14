@@ -21,4 +21,4 @@ jobs:
         uses: rolfbjarne/autoformat-push@v0.2
         with:
           githubToken: ${{ secrets.GITHUB_TOKEN }}
-          commentContents: 'Thank you for your pull request. We are auto-formating your source code to follow our code guidelines.'
+          commentContents: 'Thank you for your pull request. We are auto-formatting your source code to follow our code guidelines.'

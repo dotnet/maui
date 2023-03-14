@@ -20,6 +20,11 @@ namespace Microsoft.Maui.Authentication
 
 			var extras = savedInstanceState ?? Intent.Extras;
 
+			if (extras == null)
+			{
+				return;
+			}
+
 			// read the values
 			launched = extras.GetBoolean(launchedExtra, false);
 #pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/android/os/Bundle#getParcelable(java.lang.String,%20java.lang.Class%3CT%3E)

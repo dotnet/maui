@@ -1,11 +1,13 @@
 #nullable enable
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
+Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -21,8 +23,12 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Micr
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.ApplicationExtensions.UpdateNightMode(this Microsoft.Maui.IApplication! application) -> void
+static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
+override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void

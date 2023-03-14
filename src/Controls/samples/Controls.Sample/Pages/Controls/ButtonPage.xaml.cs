@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnLineBreakModeButtonClicked(object sender, System.EventArgs e)
 		{
-			LineBreakModeButton.LineBreakMode = SelectLineBreakMode();
+			LineBreakModeButton.LineBreakMode = ImageLineBreakModeButton.LineBreakMode = SelectLineBreakMode();
 		}
 
 		LineBreakMode SelectLineBreakMode()
