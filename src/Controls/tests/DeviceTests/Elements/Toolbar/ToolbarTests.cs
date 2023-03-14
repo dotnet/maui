@@ -84,8 +84,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var window = new Window(page);
 
-			var context1 = new ContextStub(MauiContext.Services);
-			var context2 = new ContextStub(MauiContext.Services);
+			var context1 = ContextStub.CreateNew(MauiContext);
+			var context2 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, (handler) =>
 			{

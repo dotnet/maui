@@ -258,53 +258,14 @@ stages:
     displayName: Build .NET MAUI Templates
     dependsOn: pack_net
     jobs:
-      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - ${{ each TestTFM in parameters.TestTargetFrameworks }}:
-            - job: build_${{ TestTFM.name }}_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-              workspace:
-                clean: all
-              displayName: ${{ BuildPlatform.name }} ${{ TestTFM.tfm }} (${{ BuildConfiguration }})
-              timeoutInMinutes: 240
-              condition: or(
-                ${{ parameters.BuildEverything }},
-                ne(variables['Build.Reason'], 'PullRequest'),
-                eq('${{ BuildConfiguration }}', 'Release'))
-              pool:
-                name: ${{ BuildPlatform.poolName }}
-                vmImage: ${{ BuildPlatform.vmImage }}
-                demands:
-                  - macOS.Name -equals Monterey
-                  - macOS.Architecture -equals x64
-                  - Agent.HasDevices -equals False
-                  - Agent.IsPaired -equals False
-              steps:
-                - template: common/provision.yml
-                  parameters:
-                    platform: ${{ BuildPlatform.name }}
-                    poolName: ${{ BuildPlatform.poolName }}
-                    
-                - task: DownloadBuildArtifacts@0
-                  displayName: 'Download Packages'
-                  inputs:
-                    artifactName: nuget
-                    itemPattern: '**/*.nupkg'
-                    downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-                - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-                  displayName: Move the downloaded artifacts
-                - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                  displayName: 'Install .NET (Local Workloads)'
-                  retryCountOnTaskFailure: 3
-                  env:
-                    DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-                    PRIVATE_BUILD: $(PrivateBuild)
-                - pwsh: ./build.ps1 --target=dotnet-templates --configuration="${{ BuildConfiguration }}" --testtfm="${{ TestTFM.tfm }}" --verbosity=diagnostic
-                  displayName: 'Build .NET MAUI Templates'
-                - task: PublishBuildArtifacts@1
-                  condition: always()
-                  displayName: publish artifacts
-                  inputs:
-                    ArtifactName: ${{ BuildPlatform.artifact }}
+      - template: common/maui-templates.yml
+        parameters:
+          BuildConfigurations: ${{ parameters.BuildConfigurations }}
+          BuildPlatforms: ${{ parameters.BuildPlatforms }}
+          TestTargetFrameworks: ${{ parameters.TestTargetFrameworks }}
+          condition: or(
+            ${{ parameters.BuildEverything }},
+            ne(variables['Build.Reason'], 'PullRequest'))
 
   - template: common/security-compliance.yml
 
