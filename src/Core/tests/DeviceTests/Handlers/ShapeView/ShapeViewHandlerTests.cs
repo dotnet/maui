@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var rectangle = new ShapeViewStub()
 			{
-				Shape = new RectangleStub(),
+				Shape = new RectangleShapeStub(),
 				Fill = new SolidPaintStub(Colors.Red),
 				Height = double.NaN, // Have to explicitly reset this because StubBase sets H,W to 50/50
 				Width = double.NaN
@@ -187,7 +187,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var polygon = new ShapeViewStub()
 			{
-				Shape = new PolygonStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Shape = new PolygonShapeStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
 				Fill = new SolidPaintStub(Colors.Lime),
 				Stroke = new SolidPaintStub(Colors.Black),
 				StrokeThickness = 4,
@@ -197,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var line = new ShapeViewStub()
 			{
-				Shape = new LineStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 0 },
+				Shape = new LineShapeStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 0 },
 				Stroke = new SolidPaintStub(Colors.Purple),
 				StrokeThickness = 0.6,
 				Height = double.NaN,
