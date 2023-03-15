@@ -510,7 +510,8 @@ namespace Microsoft.Maui.Controls
 				VerticalOptions = LayoutOptions.Center,
 				HeightRequest = 11,
 				WidthRequest = 11,
-				InputTransparent = true
+				Opacity = 0,
+				InputTransparent = false
 			};
 
 			var contentPresenter = new ContentPresenter
@@ -540,7 +541,7 @@ namespace Microsoft.Maui.Controls
 					out outerEllipseVisualStateLight,
 					out outerEllipseVisualStateDark);
 			}
-
+			
 			if (!checkMark.TrySetDynamicThemeColor(
 				RadioButtonCheckMarkThemeColor,
 				Ellipse.StrokeProperty,
@@ -555,7 +556,7 @@ namespace Microsoft.Maui.Controls
 					out checkMarkVisualStateLight,
 					out checkMarkVisualStateDark);
 			}
-
+			
 			if (!checkMark.TrySetDynamicThemeColor(
 				RadioButtonCheckMarkThemeColor,
 				Ellipse.FillProperty,
@@ -599,14 +600,6 @@ namespace Microsoft.Maui.Controls
 			var checkedStates = new VisualStateGroup() { Name = "CheckedStates" };
 
 			VisualState checkedVisualState = new VisualState() { Name = CheckedVisualState };
-<<<<<<< HEAD
-			checkedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = CheckedIndicator, Value = RadioButtonCheckMarkThemeColor });
-			checkedVisualState.Setters.Add(new Setter() { Property = Shape.FillProperty, TargetName = CheckedIndicator, Value = RadioButtonCheckMarkThemeColor });
-			checkedStates.States.Add(checkedVisualState);
-
-			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
-			uncheckedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = RadioButtonThemeColor });
-=======
 			checkedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 1 });
 			checkedVisualState.Setters.Add(
 				new Setter()
@@ -619,6 +612,13 @@ namespace Microsoft.Maui.Controls
 				new Setter()
 				{
 					Property = Shape.StrokeProperty,
+					TargetName = CheckedIndicator,
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+				});
+			checkedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.FillProperty,
 					TargetName = CheckedIndicator,
 					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
 				});
@@ -635,7 +635,6 @@ namespace Microsoft.Maui.Controls
 					Value = dynamicOuterEllipseThemeColor is not null ? dynamicOuterEllipseThemeColor : new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
 				});
 
->>>>>>> main
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
