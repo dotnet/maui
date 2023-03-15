@@ -541,7 +541,7 @@ namespace Microsoft.Maui.Controls
 					out outerEllipseVisualStateLight,
 					out outerEllipseVisualStateDark);
 			}
-			
+
 			if (!checkMark.TrySetDynamicThemeColor(
 				RadioButtonCheckMarkThemeColor,
 				Ellipse.StrokeProperty,
@@ -556,7 +556,7 @@ namespace Microsoft.Maui.Controls
 					out checkMarkVisualStateLight,
 					out checkMarkVisualStateDark);
 			}
-			
+
 			if (!checkMark.TrySetDynamicThemeColor(
 				RadioButtonCheckMarkThemeColor,
 				Ellipse.FillProperty,
