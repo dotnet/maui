@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -314,6 +315,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		internal bool IsDestroyed { get; private set; }
+		internal bool IsCreated { get; private set; }
+
 		IFlowDirectionController FlowController => this;
 
 		public FlowDirection FlowDirection
@@ -465,6 +469,8 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Created()
 		{
+			IsCreated = true;
+
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
 			Application?.SendStart();
@@ -493,11 +499,13 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+			IsDestroyed = true;
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
 			Application?.RemoveWindow(this);
+			Handler?.DisconnectHandler();
 		}
 
 		void IWindow.Resumed()
@@ -554,7 +562,8 @@ namespace Microsoft.Maui.Controls
 
 			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
 			{
-				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
+				var flowDirection = AppInfo.Current.RequestedLayoutDirection.ToFlowDirection();
+				FlowController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection(true);
 			}
 		}
 

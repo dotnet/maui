@@ -11,7 +11,7 @@
             <ResourceDictionary Source="./AppResources/Colors.xaml" x:Key="Colors" />
             <ResourceDictionary Source="./AppResources/CompiledColors.xaml" x:Key="CompiledColors" />
             <ResourceDictionary Source="/AppResources/Colors.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests" x:Key="inCurrentAssembly" />
-            <ResourceDictionary Source="/AppResources.xaml;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery" x:Key="inOtherAssembly" />
+            <ResourceDictionary Source="/AppResources.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests.ExternalAssembly" x:Key="inOtherAssembly" />
         </ResourceDictionary>
     </ContentPage.Resources>
     <Label x:Name="label" Style="{StaticResource sharedfoo}"/>

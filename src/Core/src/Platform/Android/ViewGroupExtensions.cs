@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
 
@@ -45,6 +46,12 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		public static bool TryGetFirstChildOfType<T>(this AViewGroup viewGroup, [NotNullWhen(true)] out T? result) where T : AView
+		{
+			result = viewGroup.GetFirstChildOfType<T>();
+			return result is not null;
 		}
 	}
 }
