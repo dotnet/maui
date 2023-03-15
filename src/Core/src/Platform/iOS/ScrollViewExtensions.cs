@@ -51,23 +51,8 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 			var result = scrollView.CrossPlatformMeasure(widthConstraint, heightConstraint);
-			var contentSize = result.AccountForOrientation(widthConstraint, heightConstraint, scrollView);
+			var contentSize = ScrollViewHandler.AccountForOrientation(result, widthConstraint, heightConstraint, scrollView.Orientation);
 			platformScrollView.ContentSize = contentSize;
-		}
-
-		internal static Size AccountForOrientation(this Size size, double widthConstraint, double heightConstraint, IScrollView view)
-		{
-			if (view.Orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
-			{
-				size.Width = widthConstraint;
-			}
-
-			if (view.Orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
-			{
-				size.Height = heightConstraint;
-			}
-
-			return size;
 		}
 	}
 }

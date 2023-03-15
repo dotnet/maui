@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Handlers
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
 				var crossPlatformSize = internalArrange(rect);
-				var contentSize = crossPlatformSize.AccountForOrientation(scrollViewBounds.Width, scrollViewBounds.Height, scrollView);
+				var contentSize = AccountForOrientation(crossPlatformSize, scrollViewBounds.Width, scrollViewBounds.Height, scrollView.Orientation);
 				platformScrollView.ContentSize = contentSize;
 				return contentSize;
 			};
@@ -279,6 +279,21 @@ namespace Microsoft.Maui.Handlers
 		{
 			// Remove the padding from the constraint, but don't allow it to go negative
 			return Math.Max(0, constraint - padding);
+		}
+
+		internal static Size AccountForOrientation(Size size, double widthConstraint, double heightConstraint, ScrollOrientation orientation)
+		{
+			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
+			{
+				size.Width = widthConstraint;
+			}
+
+			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
+			{
+				size.Height = heightConstraint;
+			}
+
+			return size;
 		}
 	}
 }
