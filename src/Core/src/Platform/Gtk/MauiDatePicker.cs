@@ -419,6 +419,10 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+				if (_pickerWindow.SelectedDate != Date)
+					_pickerWindow.SelectedDate = Date;
+				_pickerWindow.MinimumDate = MinDate;
+				_pickerWindow.MaximumDate = MaxDate;
 				_pickerWindow.Move(x, y);
 				_pickerWindow.ShowCalendar();
 			}
