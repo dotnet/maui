@@ -28,6 +28,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ModalsWireUpInCorrectOrderWhenShellIsBuiltAfterModalPush()
+		{
+			var shell = new Shell();
+			var mainPage = new ContentPage() { Title = "Main Page 1" };
+			var modal1 = new ContentPage() { Title = "Modal 1" };
+			var modal2 = new ContentPage() { Title = "Modal 2" };
+
+			await mainPage.Navigation.PushModalAsync(modal1);
+			await modal1.Navigation.PushModalAsync(modal2);
+
+			shell.Items.Add(new ShellContent { Content = mainPage });
+			TestWindow testWindow = new TestWindow(shell);
+
+			Assert.Equal(modal1, testWindow.Navigation.ModalStack[0]);
+			Assert.Equal(modal2, testWindow.Navigation.ModalStack[1]);
+			Assert.Equal(2, testWindow.Navigation.ModalStack.Count);
+		}
+
+		[Fact]
 		public void CurrentNullWhenEmpty()
 		{
 			var navModel = new NavigationModel();
