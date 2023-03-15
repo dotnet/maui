@@ -8,6 +8,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
@@ -214,14 +215,17 @@ namespace Microsoft.Maui.Platform
 			Drawable? defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
 
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
+			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
 
-			if (previousDrawable is not null)
+			if (previousDrawable is null)
+				platformView.Background = backgroundDrawable;
+			else
 			{
 				if (paint.IsNullOrEmpty())
 					platformView.Background = previousDrawable;
 				else
 				{
-					var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+
 					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
 					platformView.Background = layer;
 				}
