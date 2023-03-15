@@ -80,9 +80,11 @@ namespace Microsoft.Maui.Platform
 
 		public event DateEventHandler? OnDateTimeChanged;
 
-		public DatePickerWindow(DateTime initialDate)
+		public DatePickerWindow(DateTime initialDate, Window? parentWindow)
 			: base(WindowType.Popup)
 		{
+			if (parentWindow is not null)
+				TransientFor = parentWindow;
 			Title = "DatePicker";
 			TypeHint = Gdk.WindowTypeHint.Desktop;
 			WindowPosition = WindowPosition.Mouse;
@@ -409,7 +411,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_pickerWindow is null)
 			{
-				var picker = new DatePickerWindow(Date);
+				var picker = new DatePickerWindow(Date, this.Toplevel as Window);
 				picker.Move(x, y);
 				picker.MinimumDate = MinDate;
 				picker.MaximumDate = MaxDate;
@@ -423,8 +425,8 @@ namespace Microsoft.Maui.Platform
 					_pickerWindow.SelectedDate = Date;
 				_pickerWindow.MinimumDate = MinDate;
 				_pickerWindow.MaximumDate = MaxDate;
-				_pickerWindow.Move(x, y);
 				_pickerWindow.ShowCalendar();
+				_pickerWindow.Move(x, y);
 			}
 		}
 
