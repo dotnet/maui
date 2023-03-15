@@ -500,7 +500,7 @@ namespace Microsoft.Maui.Controls
 				HeightRequest = 21,
 				WidthRequest = 21,
 				StrokeThickness = 2,
-				InputTransparent = true
+				InputTransparent = false
 			};
 
 			var checkMark = new Ellipse
