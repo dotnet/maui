@@ -22,14 +22,14 @@ parameters:
       vmImage: $(windowsNet6VmImage)
       bootsAndroid: $(Android.Msi)
       bootsiOS: $(iOS.Msi)
-      artifact: build-windows
+      artifact: templates-windows
     - name: macOS
       poolName: $(macOSXNet6VmPool)
       vmImage: $(macOSXNet6VmImage)
       bootsAndroid: $(Android.Pkg)
       bootsiOS: $(iOS.Pkg)
       bootsMacCatalyst: $(MacCatalyst.Pkg)
-      artifact: build-macos
+      artifact: templates-macos
 
   - name: RunPlatforms
     type: object
@@ -40,11 +40,11 @@ parameters:
         - macOS.Name -equals Monterey
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
-      artifact: template-run-android
+      artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
       testName: RunOniOS
-      artifact: template-run-android
+      artifact: templates-run-ios
 
 jobs:
 - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
@@ -98,12 +98,6 @@ jobs:
         testRunTitle: ${{ BuildPlatform.name }} template build tests
       displayName: ${{ BuildPlatform.name }} template build tests
       continueOnError: true
-
-    - task: PublishBuildArtifacts@1
-      condition: always()
-      displayName: publish artifacts
-      inputs:
-        ArtifactName: '${{ parameters.uploadPrefix }}${{ BuildPlatform.artifact }}'
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
@@ -160,12 +154,6 @@ jobs:
         testRunTitle: ${{ RunPlatform.testName }} template run tests
       displayName: ${{ RunPlatform.testName }} template run tests
       continueOnError: true
-
-    - task: PublishBuildArtifacts@1
-      condition: always()
-      displayName: publish artifacts
-      inputs:
-        ArtifactName: '${{ parameters.uploadPrefix }}${{ RunPlatform.artifact }}'
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"

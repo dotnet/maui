@@ -40,15 +40,15 @@ namespace Microsoft.Maui.IntegrationTests
 				return _testOutputDirectory;
 
 			// Set when running on Azure Pipelines https://docs.microsoft.com/en-us/azure/devops/pipelines/build/variables
-			var rootDir = Environment.GetEnvironmentVariable("BUILD_STAGINGDIRECTORY");
-			if (!Directory.Exists(rootDir))
-			{
-				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", "test-intg");
-			}
-			else
+			var rootDir = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
+			if (Directory.Exists(rootDir))
 			{
 				var timeStamp = DateTime.UtcNow.ToString("MM-dd_HH.mm.ss");
 				_testOutputDirectory = Path.Combine(rootDir, $"test-intg", timeStamp);
+			}
+			else
+			{
+				_testOutputDirectory = Path.Combine(GetMauiDirectory(), "bin", "test-intg");
 			}
 
 			Directory.CreateDirectory(_testOutputDirectory);
