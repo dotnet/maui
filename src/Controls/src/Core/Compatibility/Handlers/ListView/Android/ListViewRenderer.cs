@@ -576,6 +576,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			protected override void OnLayout(bool changed, int l, int t, int r, int b)
 			{
+				if (_child?.PlatformView == null)
+				{
+					return;
+				}
+
 				_child.PlatformView.Layout(0, 0, r - l, b - t);
 			}
 
