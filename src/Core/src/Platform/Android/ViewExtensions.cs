@@ -215,13 +215,16 @@ namespace Microsoft.Maui.Platform
 
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
 
-			if (paint.IsNullOrEmpty())
-				platformView.Background = previousDrawable;
-			else
+			if (previousDrawable is not null)
 			{
-				var backgroundDrawable = paint!.ToDrawable(platformView.Context);
-				LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
-				platformView.Background = layer;
+				if (paint.IsNullOrEmpty())
+					platformView.Background = previousDrawable;
+				else
+				{
+					var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+					platformView.Background = layer;
+				}
 			}
 
 			// Apply previous padding
