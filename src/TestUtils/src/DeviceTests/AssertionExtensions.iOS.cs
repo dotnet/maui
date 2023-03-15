@@ -241,11 +241,11 @@ namespace Microsoft.Maui.DeviceTests
 			return pixel;
 		}
 
-		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
+		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y, double? tolerance = null)
 		{
 			var cap = bitmap.ColorAtPoint(x, y);
 
-			if (!ColorComparison.ARGBEquivalent(cap, expectedColor))
+			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
 				Assert.Equal(cap, expectedColor, new ColorComparison());
 
 			return bitmap;
@@ -313,19 +313,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, double? tolerance = null)
 		{
 			var bitmap = await view.ToBitmap();
-			return bitmap.AssertContainsColor(expectedColor);
+			return bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), tolerance: tolerance);
 
-		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
-			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier));
+		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier, tolerance: tolerance));
 
-		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
 
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
 				{
-					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor))
+					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor, tolerance))
 					{
 						return bitmap;
 					}

@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.UnitTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this AView view, AColor expectedColor)
+		public static Bitmap AssertContainsColor(this AView view, AColor expectedColor, double? tolerance = null)
 		{
 			var bitmap = view.ToBitmap();
 

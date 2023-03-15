@@ -30,9 +30,9 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		public static void AssertContainsColor(this IView view, Color color)
+		public static void AssertContainsColor(this IView view, Color color, double? tolerance)
 		{
-			view.ToPlatform().AssertContainsColor(color);
+			view.ToPlatform().AssertContainsColor(color, tolerance: tolerance);
 		}
 	}
 }

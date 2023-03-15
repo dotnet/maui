@@ -157,7 +157,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null)
+		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null, double? tolerance = null)
 		{
 #if !TIZEN
 			return InvokeOnMainThreadAsync(async () =>
@@ -170,7 +170,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color);
+				await plaformView.AssertContainsColor(color, tolerance);
 			});
 #else
 			throw new NotImplementedException();
