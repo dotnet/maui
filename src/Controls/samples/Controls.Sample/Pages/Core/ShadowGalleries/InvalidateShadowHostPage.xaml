@@ -7,13 +7,60 @@
     Title="Invalidate Shadow Host">
     <Grid
         RowDefinitions="Auto, *">
-        <VerticalStackLayout>
+        <VerticalStackLayout
+            Padding="12">
             <Label
                 Text="Host"
                 Style="{StaticResource Headline}"/>
             <Button 
                 Text="Update Host Size"
                 Clicked="OnUpdateHostSizeClicked"/>
+            <Label
+                Text="Shadow"
+                Style="{StaticResource Headline}"/>
+            <Label
+                Text="Shadow Offset"
+                Style="{StaticResource InfoStyle}"/>
+            <Label 
+                Text="{Binding Source={x:Reference ShadowOffsetXSlider}, Path=Value, StringFormat='{}Offset X: {0}'}"
+                Style="{StaticResource InfoStyle}" />
+            <Slider
+                x:Name="ShadowOffsetXSlider"
+                Minimum="-20"
+                Maximum="20"
+                Value="10" 
+                ValueChanged="OnShadowOffsetXChanged"/>
+            <Label 
+                Text="{Binding Source={x:Reference ShadowOffsetYSlider}, Path=Value, StringFormat='{}Offset Y: {0}'}"
+                Style="{StaticResource InfoStyle}" />
+            <Slider
+                x:Name="ShadowOffsetYSlider"
+                Minimum="-20"
+                Maximum="20"
+                Value="10"
+                ValueChanged="OnShadowOffsetYChanged"/>
+            <Label
+                Text="Shadow Radius"
+                Style="{StaticResource InfoStyle}"/>
+            <Label 
+                Text="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value, StringFormat='{}Radius: {0}'}"
+                Style="{StaticResource InfoStyle}" />
+            <Slider
+                x:Name="ShadowRadiusSlider"
+                Minimum="0"
+                Maximum="20"
+                Value="10"/>
+            <Label
+                Text="Shadow Opacity"
+                Style="{StaticResource InfoStyle}"/>
+            <Label 
+                Text="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value, StringFormat='{}Opacity: {0}'}"
+                Style="{StaticResource InfoStyle}" />
+            <Slider
+                x:Name="ShadowOpacitySlider"
+                Minimum="0"
+                Maximum="1"
+                Value="1"/>
         </VerticalStackLayout>
         <Grid
             Grid.Row="1"
@@ -30,9 +77,8 @@
                 <Border.Shadow>
                     <Shadow 
                         Brush="Red"
-                        Radius="12"
-                        Offset="12, 12"
-                        Opacity="0.8"/>
+                        Radius="{Binding Source={x:Reference ShadowRadiusSlider}, Path=Value }"
+                        Opacity="{Binding Source={x:Reference ShadowOpacitySlider}, Path=Value }"/>
                 </Border.Shadow>
             </Border>
         </Grid>
