@@ -111,8 +111,14 @@ Task("android-aar")
                 Arguments = $"createAar --rerun-tasks",
                 WorkingDirectory = root
             });
+
         if (exitCode != 0)
-            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+        {
+            if (IsCIBuild() || target == "android-aar")
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
     });
 
 Task("dotnet-build")
