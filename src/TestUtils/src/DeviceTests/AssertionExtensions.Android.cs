@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
 			try
 			{
