@@ -84,13 +84,16 @@ namespace Microsoft.Maui.UnitTests.Views
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 
-		[Theory(Skip = "Reviewing why is failing")]
+		[Theory]
 		[InlineData(typeof(Rectangle))]
+		[InlineData(typeof(RoundRectangle))]
 		[InlineData(typeof(Ellipse))]
 		public async Task BorderStrokeShapeDoesNotLeak(Type type)
 		{
 			var strokeShape = (Shape)Activator.CreateInstance(type);
 			var reference = new WeakReference(new Border { StrokeShape = strokeShape });
+
+			strokeShape = null;
 
 			await Task.Yield();
 			GC.Collect();
