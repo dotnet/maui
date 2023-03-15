@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			BeginInvokeOnMainThread(() =>
 			{
-				if (_headerRenderer != null)
+				if (_footerRenderer != null)
 					Control.TableFooterView = _footerRenderer.PlatformView;
 			});
 		}
