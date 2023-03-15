@@ -306,21 +306,18 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyShadowChanges()
 		{
-			if (Shadow != null)
+			var shadow = Shadow;
+
+			if (shadow is not null)
 			{
-				Shadow.Parent = this;
-				Shadow.PropertyChanged += OnShadowChanged;
+				var proxy = _shadowProxy ??= new();
+				proxy.Subscribe(shadow, (sender, e) => OnPropertyChanged(nameof(Shadow)));
 			}
 		}
 
 		void StopNotifyingShadowChanges()
 		{
-			if (Shadow != null)
-			{
-				Shadow.Parent = null;
-				Shadow.PropertyChanged -= OnShadowChanged;
-
-			}
+			_clipProxy?.Unsubscribe();
 		}
 
 		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)

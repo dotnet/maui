@@ -175,5 +175,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			geometry.Rect = new Rect(1, 2, 3, 4);
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
+
+		[Fact]
+		public async Task ShadowDoesNotLeak()
+		{
+			var shadow = new Shadow
+			{
+				Brush = new SolidColorBrush(Colors.Black),
+				Radius = 12
+			};
+
+			var reference = new WeakReference(new VisualElement { Shadow = shadow });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+		}
 	}
 }
