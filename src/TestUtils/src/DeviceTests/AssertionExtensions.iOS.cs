@@ -318,9 +318,17 @@ namespace Microsoft.Maui.DeviceTests
 			var bitmap = await view.ToBitmap();
 			return bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
 		}
+		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor)
+		{
+			var bitmap = await view.ToBitmap();
+			return bitmap.AssertDoesNotContainColor(unexpectedColor);
+		}
 
 		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, double? tolerance = null) =>
 			AssertContainsColor(view, expectedColor.ToPlatform(), tolerance: tolerance);
+
+		public static Task<UIImage> AssertDoesNotContainColor(this UIView view, Microsoft.Maui.Graphics.Color unexpectedColor) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
 
 		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier, tolerance: tolerance));
@@ -343,9 +351,30 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			throw new XunitException($"Color {expectedColor} not found.");
+		}
+
+		public static UIImage AssertDoesNotContainColor(this UIImage bitmap, UIColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+		{
+			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			{
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				{
+					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
+					{
+						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+					}
+				}
+			}
+
 			return bitmap;
 		}
+
 
 		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{
