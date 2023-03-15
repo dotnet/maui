@@ -47,6 +47,10 @@
         ],
         "replaces": "DOTNET_TFM",
         "defaultValue": "DOTNET_TFM_VALUE"
+      },
+      "HostIdentifier": {
+          "type": "bind",
+          "binding": "HostIdentifier"
       }
     },
     "defaultName": "MauiLib1"
