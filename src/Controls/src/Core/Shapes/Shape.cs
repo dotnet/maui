@@ -198,7 +198,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (fill is not null)
 			{
 				SetInheritedBindingContext(fill, BindingContext);
-				SetBrushParent(fill);
 				var proxy = _fillProxy ??= new();
 				proxy.Subscribe(fill, (sender, e) => OnPropertyChanged(nameof(Fill)));
 			}
@@ -214,7 +213,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (fill is not null)
 			{
 				SetInheritedBindingContext(fill, null);
-				fill.Parent = null;
 				_fillProxy?.Unsubscribe();
 			}
 		}
@@ -229,7 +227,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				SetBrushParent(stroke);
 				var proxy = _strokeProxy ??= new();
 				proxy.Subscribe(stroke, (sender, e) => OnPropertyChanged(nameof(Stroke)));
 			}
@@ -245,15 +242,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, null);
-				stroke.Parent = null;
 				_strokeProxy?.Unsubscribe();
 			}
-		}
-
-		void SetBrushParent(Brush brush)
-		{
-			if (brush is not null && brush is not ImmutableBrush)
-				brush.Parent = this;
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)

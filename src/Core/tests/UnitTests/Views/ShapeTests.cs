@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Xunit;
@@ -26,6 +28,19 @@ namespace Microsoft.Maui.UnitTests.Views
 		}
 
 		[Fact]
+		public async Task ShapeFillDoesNotLeak()
+		{
+			var fill = new SolidColorBrush(Colors.Red);	
+			var reference = new WeakReference(new Rectangle { Fill = fill });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Shape should not be alive!");
+		}
+
+		[Fact]
 		public void ShapeStrokeSubscribed()
 		{
 			var stroke = new SolidColorBrush { Color = Colors.Red };
@@ -40,6 +55,19 @@ namespace Microsoft.Maui.UnitTests.Views
 
 			stroke.Color = Colors.Green;
 			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
+		public async Task ShapeStrokeDoesNotLeak()
+		{
+			var stroke = new SolidColorBrush(Colors.Red);
+			var reference = new WeakReference(new Rectangle { Stroke = stroke });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Shape should not be alive!");
 		}
 	}
 }
