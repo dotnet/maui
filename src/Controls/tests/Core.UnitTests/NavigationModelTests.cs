@@ -12,6 +12,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class NavigationModelTests : BaseTestFixture
 	{
 		[Fact]
+		public async Task ModalsWireUpInCorrectOrderWhenPushedBeforeWindowHasBeenCreated()
+		{
+			var mainPage = new ContentPage() { Title = "Main Page" };
+			var modal1 = new ContentPage() { Title = "Modal 1" };
+			var modal2 = new ContentPage() { Title = "Modal 2" };
+
+			await mainPage.Navigation.PushModalAsync(modal1);
+			await modal1.Navigation.PushModalAsync(modal2);
+
+			TestWindow testWindow = new TestWindow(mainPage);
+
+			Assert.Equal(modal1, testWindow.Navigation.ModalStack[0]);
+			Assert.Equal(modal2, testWindow.Navigation.ModalStack[1]);
+		}
+
+		[Fact]
 		public void CurrentNullWhenEmpty()
 		{
 			var navModel = new NavigationModel();
