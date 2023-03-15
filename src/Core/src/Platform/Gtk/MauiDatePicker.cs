@@ -27,34 +27,14 @@ namespace Microsoft.Maui.Platform
 
 	public class GrabHelper
 	{
-		private static uint CURRENT_TIME = 0;
-
 		public static void GrabWindow(Window window)
 		{
 			window.GrabFocus();
 
 			Grab.Add(window);
-			// error CS0612: 'Pointer.Grab(Window, bool, EventMask, Window, Cursor, uint)' is obsolete
-#pragma warning disable 612
 			Gdk.GrabStatus grabbed =
-				Gdk.Pointer.Grab(window.Window, true,
-				Gdk.EventMask.ButtonPressMask
-				| Gdk.EventMask.ButtonReleaseMask
-				| Gdk.EventMask.PointerMotionMask, null, null, CURRENT_TIME);
-#pragma warning restore 612
-			if (grabbed == Gdk.GrabStatus.Success)
-			{
-				// error CS0612: 'Keyboard.Grab(Window, bool, uint)' is obsolete
-#pragma warning disable 612
-				grabbed = Gdk.Keyboard.Grab(window.Window, true, CURRENT_TIME);
-#pragma warning restore 612
-				if (grabbed != Gdk.GrabStatus.Success)
-				{
-					Grab.Remove(window);
-					window.Destroy();
-				}
-			}
-			else
+				Gdk.Display.Default.DefaultSeat.Grab(window.Window, Gdk.SeatCapabilities.All, true, null, null, null);
+			if (grabbed != Gdk.GrabStatus.Success)
 			{
 				Grab.Remove(window);
 				window.Destroy();
@@ -64,17 +44,13 @@ namespace Microsoft.Maui.Platform
 		public static void RemoveGrab(Window window)
 		{
 			Grab.Remove(window);
-			// error CS0612: 'Pointer.Ungrab(uint)' is obsolete && error CS0612: 'Keyboard.Ungrab(uint)' is obsolete
-#pragma warning disable 612
-			Gdk.Pointer.Ungrab(CURRENT_TIME);
-			Gdk.Keyboard.Ungrab(CURRENT_TIME);
-#pragma warning restore 612
+			Gdk.Display.Default.DefaultSeat.Ungrab();
 		}
 	}
 
 	public partial class DatePickerWindow : Window
 	{
-		VBox _datebox;
+		Box _datebox;
 		RangeCalendar _calendar;
 		public delegate void DateEventHandler(object sender, DateEventArgs args);
 
@@ -87,18 +63,14 @@ namespace Microsoft.Maui.Platform
 				TransientFor = parentWindow;
 			Title = "DatePicker";
 			TypeHint = Gdk.WindowTypeHint.Desktop;
-			WindowPosition = WindowPosition.Mouse;
+			WindowPosition = WindowPosition.None;
 			BorderWidth = 1;
 			Resizable = false;
 			Decorated = false;
 			DestroyWithParent = true;
 			SkipPagerHint = true;
 			SkipTaskbarHint = true;
-			// error CS0612: 'VBox.VBox()' is obsolete
-#pragma warning disable 612
-			_datebox = new VBox();
-#pragma warning restore 612
-			_datebox.Spacing = 6;
+			_datebox = new Box(Orientation.Vertical, 6);
 			_datebox.BorderWidth = 3;
 
 			_calendar = new RangeCalendar();
@@ -267,32 +239,18 @@ namespace Microsoft.Maui.Platform
 		}
 	}
 
-	public class CustomComboBox : Gtk.HBox
+	public class CustomComboBox : Gtk.Box
 	{
 		private Gtk.Entry _entry;
-		private Gtk.Button _button;
-		private Gtk.Arrow _arrow;
 		private Color _color = Colors.Black;
 
-		// error CS0612: 'HBox.HBox()' is obsolete 
-#pragma warning disable 612
-		public CustomComboBox()
+		public CustomComboBox() : base(Orientation.Horizontal, 0)
 		{
-#pragma warning restore 612
 			_entry = new Gtk.Entry();
 			_entry.CanFocus = true;
 			_entry.IsEditable = true;
+			_entry.SetIconFromIconName(Gtk.EntryIconPosition.Secondary, "pan-down-symbolic");
 			PackStart(_entry, true, true, 0);
-
-			_button = new Gtk.Button();
-			_button.WidthRequest = 30;
-			_button.CanFocus = true;
-			// error CS0612: 'Arrow.Arrow(ArrowType, ShadowType)' is obsolete
-#pragma warning disable 612
-			_arrow = new Gtk.Arrow(Gtk.ArrowType.Down, Gtk.ShadowType.EtchedOut);
-#pragma warning restore 612
-			_button.Add(_arrow);
-			PackEnd(_button, false, false, 0);
 		}
 
 		public Gtk.Entry Entry
@@ -300,14 +258,6 @@ namespace Microsoft.Maui.Platform
 			get
 			{
 				return _entry;
-			}
-		}
-
-		public Gtk.Button PopupButton
-		{
-			get
-			{
-				return _button;
 			}
 		}
 
@@ -319,15 +269,6 @@ namespace Microsoft.Maui.Platform
 				_color = value;
 				Entry.UpdateTextColor(_color);
 			}
-		}
-
-		public void SetBackgroundColor(Gdk.Color color)
-		{
-			// error CS0612: 'Widget.ModifyBg(StateType, Color)' is obsolete && error CS0612: 'Widget.OverrideBackgroundColor(StateFlags, RGBA)' is obsolete
-#pragma warning disable 612
-			ModifyBg(Gtk.StateType.Normal, Colors.Red.ToGdkColor());
-			Entry.OverrideBackgroundColor(Gtk.StateFlags.Normal, Colors.Blue.ToGdkRgba());
-#pragma warning restore 612
 		}
 	}
 
@@ -363,7 +304,7 @@ namespace Microsoft.Maui.Platform
 			_comboBox.Entry.CanFocus = false;
 			_comboBox.Entry.IsEditable = false;
 			_comboBox.Entry.FocusGrabbed += new EventHandler(OnEntryFocused);
-			_comboBox.PopupButton.Clicked += new EventHandler(OnBtnShowCalendarClicked);
+			_comboBox.Entry.IconPress += new Gtk.IconPressHandler(OnBtnShowCalendarClicked);
 		}
 
 		public DateTime Date
@@ -394,11 +335,6 @@ namespace Microsoft.Maui.Platform
 				_dateFormat = value;
 				UpdateEntryText();
 			}
-		}
-
-		public void SetBackgroundColor(Gdk.Color color)
-		{
-			_comboBox.SetBackgroundColor(color);
 		}
 
 		void ShowPickerWindow()
