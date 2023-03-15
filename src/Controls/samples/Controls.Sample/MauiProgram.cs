@@ -12,12 +12,9 @@ using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
+#if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Devices;
-using Microsoft.Maui.Foldable;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
+#endif
 
 
 #if NET6_0_OR_GREATER
