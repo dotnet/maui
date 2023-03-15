@@ -30,7 +30,7 @@ namespace Microsoft.Maui.UnitTests.Views
 		[Fact]
 		public async Task ShapeFillDoesNotLeak()
 		{
-			var fill = new SolidColorBrush(Colors.Red);	
+			var fill = new SolidColorBrush(Colors.Red);
 			var reference = new WeakReference(new Rectangle { Fill = fill });
 
 			await Task.Yield();
