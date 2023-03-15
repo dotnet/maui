@@ -228,10 +228,10 @@ namespace Microsoft.Maui.Controls.Platform
 		public async Task PushModalAsync(Page modal, bool animated)
 		{
 			_window.OnModalPushing(modal);
-			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
-			modal.Parent = _window;
 
 			var previousPage = CurrentPage;
+			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
+			modal.Parent = _window;
 
 			if (FireLifeCycleEvents)
 			{
