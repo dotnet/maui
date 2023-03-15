@@ -111,8 +111,10 @@ internal static class KeyboardAutoManagerScroll
 
 			if (userInfo.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out var curveSize))
 			{
-				var num = (NSNumber)NSObject.FromObject(curveSize);
-				AnimationDuration = (double)num;
+				var curveNum = (NSNumber)NSObject.FromObject(curveSize);
+				var num = (double)curveNum;
+				if (num != 0)
+					AnimationDuration = num;
 			}
 		}
 
@@ -130,8 +132,10 @@ internal static class KeyboardAutoManagerScroll
 		var foundAnimationDuration = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out curveSize);
 		if (foundAnimationDuration == true && curveSize is not null)
 		{
-			var num = (NSNumber)NSObject.FromObject(curveSize);
-			AnimationDuration = (double)num;
+			var curveNum = (NSNumber)NSObject.FromObject(curveSize);
+			var num = (double)curveNum;
+			if (num != 0)
+				AnimationDuration = num;
 		}
 
 		if (LastScrollView is not null)
@@ -339,38 +343,8 @@ internal static class KeyboardAutoManagerScroll
 				StartingContentOffset = new CGPoint(0, 0);
 				LastScrollView = null;
 			}
-
-			// if we have different LastScrollView and superScrollViews, set the LastScrollView to the original frame
-			// and set the LastScrollView as the superScrolView
-			else if (superScrollView != LastScrollView)
-			{
-				if (LastScrollView.ContentInset != StartingContentInsets)
-					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateStartingLastScrollView, () => { });
-
-				if (!LastScrollView.ContentOffset.Equals(StartingContentOffset))
-				{
-					if (View.FindResponder<UIStackView>() is not null)
-						LastScrollView.SetContentOffset(StartingContentOffset, UIView.AnimationsEnabled);
-					else
-						LastScrollView.ContentOffset = StartingContentOffset;
-				}
-
-				LastScrollView = superScrollView;
-				if (superScrollView is not null)
-				{
-					StartingContentInsets = superScrollView.ContentInset;
-					StartingContentOffset = superScrollView.ContentOffset;
-
-					if (OperatingSystem.IsIOSVersionAtLeast(11, 1))
-						StartingScrollIndicatorInsets = superScrollView.VerticalScrollIndicatorInsets;
-					else
-						StartingScrollIndicatorInsets = superScrollView.ScrollIndicatorInsets;
-				}
-			}
 		}
 
-		// If there was no LastScrollView, but there is a superScrollView,
-		// set the LastScrollView to be the superScrollView
 		else if (superScrollView is not null)
 		{
 			LastScrollView = superScrollView;
@@ -458,7 +432,10 @@ internal static class KeyboardAutoManagerScroll
 
 					if (!superScrollView.ContentOffset.Equals(newContentOffset) || innerScrollValue != 0)
 					{
-						if (nextScrollView is null)
+						// if we can scroll the superScrollView and still not be above keyboard, pass scrolling to the parent
+						var superScrollViewRect = superScrollView.ConvertRectToView(superScrollView.Bounds, window);
+
+						if (nextScrollView is null && superScrollViewRect.Y < keyboardYPosition)
 						{
 							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 							{
@@ -490,6 +467,8 @@ internal static class KeyboardAutoManagerScroll
 					break;
 				}
 			}
+
+			move += innerScrollValue;
 		}
 
 		if (move >= 0)
