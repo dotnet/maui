@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateContentSize(this UIScrollView scrollView, Size contentSize)
 		{
 			var nativeContentSize = contentSize.ToCGSize();
+
 			if (nativeContentSize != scrollView.ContentSize)
 			{
 				scrollView.ContentSize = nativeContentSize;

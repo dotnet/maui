@@ -175,17 +175,17 @@ namespace Microsoft.Maui.Handlers
 					// cross-platform layout logic makes sense and the contents don't arrange outside the 
 					// container. (Everything will look correct if they do, but hit testing won't work properly.)
 
+					var scrollViewBounds = uiScrollView.Bounds;
 					var containerBounds = container.Bounds;
-					var scrollViewBounds = platformScrollView.Bounds;
 
 					container.Bounds = new CGRect(0, 0,
 						Math.Max(containerBounds.Width, scrollViewBounds.Width),
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-				var crossPlatformSize = internalArrange(rect);
-				var contentSize = SetContentSizeForOrientation(platformScrollView, scrollView.Orientation, crossPlatformSize);
-				return contentSize;
+				var contentSize = internalArrange(rect);
+				var size = SetContentSizeForOrientation(platformScrollView, scrollView.Orientation, contentSize);
+				return size;
 			};
 		}
 
