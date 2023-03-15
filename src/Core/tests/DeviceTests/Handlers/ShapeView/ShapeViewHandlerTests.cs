@@ -162,7 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(polyline, expected);
 		}
-		
+
 		[Theory]
 		[ClassData(typeof(IntrinsicSizeTestCases))]
 		public async Task ShapesDoNotHaveIntrinsicSize(IShapeView shape)
