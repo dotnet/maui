@@ -15,7 +15,7 @@ namespace Samples.ViewModel
 		public FlashlightViewModel()
 		{
 			ToggleCommand = new Command(OnToggle);
-			Device.BeginInvokeOnMainThread(InitViewModel);
+			App.Current.Dispatcher.Dispatch(async () => await InitViewModel());
 		}
 
 		public ICommand ToggleCommand { get; }
