@@ -9,14 +9,20 @@ namespace Microsoft.Maui.IntegrationTests
 		Emulator TestAvd = new Emulator();
 		string testPackage = "";
 
-		[SetUp]
-		public void AndroidTemplateSetUp()
+		[OneTimeSetUp]
+		public void AndroidTemplateFxtSetUp()
 		{
 			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
 				TestAvd.Abi = "arm64-v8a";
 
 			TestAvd.InstallAvd();
-			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720), "Failed to launch Test AVD.");
+		}
+
+		[SetUp]
+		public void AndroidTemplateSetUp()
+		{
+			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720, emulatorLog), "Failed to launch Test AVD.");
 		}
 
 		[OneTimeTearDown]

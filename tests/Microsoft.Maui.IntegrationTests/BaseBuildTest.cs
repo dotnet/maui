@@ -3,7 +3,7 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public class BaseBuildTest
 	{
-		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.' };
+		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
 
 		public string TestName
 		{
