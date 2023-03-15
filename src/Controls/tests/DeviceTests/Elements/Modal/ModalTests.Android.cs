@@ -110,8 +110,8 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						window.UpdateWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize.ToPlatform());
 
-						if (testEntry is not null)
-							await AssertionExtensions.HideKeyboardForView(testEntry);
+						if (testEntry?.Handler is IPlatformViewHandler testEntryHandler)
+							KeyboardManager.HideKeyboard(testEntryHandler.PlatformView);
 					}
 				});
 		}

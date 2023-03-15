@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -35,9 +36,13 @@ namespace Microsoft.Maui.DeviceTests
 
 						// Test that keyboard reappears when refocusing on an already focused TextInput control
 						await AssertionExtensions.HideKeyboardForView(platformView, message: $"HideKeyboardForView failed after first keyboard show on {controlType}");
+						await Task.Delay(2000);
 						textInput.Focus();
+						await Task.Delay(2000);
 						await AssertionExtensions.WaitForFocused(platformView, message: $"WaitForFocused failed after second focus on {controlType}");
+						await Task.Delay(2000);
 						await AssertionExtensions.WaitForKeyboardToShow(platformView, message: $"WaitForKeyboardToShow failed after second focus on {controlType}");
+						await Task.Delay(2000);
 					}
 					finally
 					{
