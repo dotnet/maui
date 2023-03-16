@@ -293,18 +293,18 @@ namespace Microsoft.Maui.Controls
 				proxy.Subscribe(background, (sender, e) => OnPropertyChanged(nameof(Background)));
 			}
 
-		void StopNotifyingBackgroundChanges()
-		{
-			var background = Background;
-			if (background is ImmutableBrush)
-				return;
-
-			if (background != null)
+			void StopNotifyingBackgroundChanges()
 			{
-				SetInheritedBindingContext(background, null);
-				_backgroundProxy?.Unsubscribe();
+				var background = Background;
+				if (background is ImmutableBrush)
+					return;
+
+				if (background != null)
+				{
+					SetInheritedBindingContext(background, null);
+					_backgroundProxy?.Unsubscribe();
+				}
 			}
-		}
 
 		class WeakBackgroundChangedProxy : WeakEventProxy<Brush, EventHandler>
 		{
