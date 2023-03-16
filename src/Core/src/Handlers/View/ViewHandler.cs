@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
+
+#if ANDROID
+				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties
+#endif
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -130,17 +134,14 @@ namespace Microsoft.Maui.Handlers
 			OnCreatePlatformView();
 
 #if ANDROID
-		// This sets up AndroidBatchPropertyMapper
-		public override void SetVirtualView(IElement element)
-		{
-			base.SetVirtualView(element);
 
-			if (element is IView view)
-			{
-				((PlatformView?)PlatformView)?.Initialize(view);
-			}
+		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
+		{
+			if (handler.PlatformView is PlatformView pv)
+				pv.Initialize(view);
 		}
 #endif
+
 
 #if !(NETSTANDARD || !PLATFORM)
 		private protected abstract void OnConnectHandler(PlatformView platformView);

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -36,6 +36,29 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
 		}
 
+		[Theory(DisplayName = "Is Text Prediction Enabled")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
+		{
+			var searchBar = new SearchBarStub()
+			{
+				IsTextPredictionEnabled = isEnabled
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var searchBarHandler = CreateHandler(searchBar);
+				await searchBarHandler.PlatformView.AttachAndRun(async () =>
+				{
+					await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.Width != 0);
+				});
+			});
+
+			var nativeIsTextPredictionEnabled = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);
+			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
+		}
+
 		static AutoSuggestBox GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
 			searchBarHandler.PlatformView;
 
@@ -59,6 +82,20 @@ namespace Microsoft.Maui.DeviceTests
 		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
 		{
 			return GetNativeSearchBar(searchBarHandler).ActualHeight;
+		}
+
+		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
+		{
+			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
+
+			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
+
+			if (textBox is not null)
+			{
+				return textBox.IsTextPredictionEnabled;
+			}
+
+			return false;
 		}
 
 		Color GetNativeCancelButtonColor(SearchBarHandler searchBarHandler)
