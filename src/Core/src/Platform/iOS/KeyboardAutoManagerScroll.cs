@@ -66,6 +66,8 @@ internal static class KeyboardAutoManagerScroll
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
 		if (TextViewToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
+
+		IsCurrentlyScrolling = false;
 	}
 
 	static async void DidUITextBeginEditing(NSNotification notification)
