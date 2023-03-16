@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapData(IShapeViewHandler handler, Path path)
 		{
-			handler.PlatformView?.InvalidateShape(path);
+			handler.PlatformView?.UpdateShape(path);
 		}
 
 		public static void MapRenderTransform(IShapeViewHandler handler, Path path)
