@@ -1,6 +1,5 @@
-﻿#nullable enable
+#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -114,6 +113,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
+				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}
