@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		IPlatformViewHandler _renderer;
 		UIView _platformView;
 		bool _disposed;
+		double _measuredHeight;
+
 		internal event EventHandler HeaderSizeChanged;
 
 		public UIContainerView(View view)
@@ -27,7 +29,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void UpdatePlatformView()
 		{
-			_renderer = (IPlatformViewHandler)_view.ToHandler(_view.FindMauiContext());
+			_renderer = _view.ToHandler(_view.FindMauiContext());
 			_platformView = _view.ToPlatform();
 
 			if (_platformView.Superview != this)
@@ -46,7 +48,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal bool MatchHeight { get; set; }
 
-		internal double MeasuredHeight { get; private set; }
+		internal double MeasuredHeight
+		{
+			get
+			{
+				if (MatchHeight && Height != null)
+					return Height.Value;
+
+				return _measuredHeight;
+			}
+
+			private set => _measuredHeight = value;
+		}
 
 		internal double? Height
 		{
@@ -60,29 +73,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set;
 		}
 
-		internal bool MeasureIfNeeded()
-		{
-			if (!IsPlatformViewValid())
-				return false;
-
-			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
-			{
-				ReMeasure();
-				return true;
-			}
-
-			return false;
-		}
-
 		public virtual Thickness Margin
 		{
 			get;
 		}
 
-		void ReMeasure()
+		private protected void OnHeaderSizeChanged()
 		{
-			if (!IsPlatformViewValid())
-				return;
+			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		public override CGSize SizeThatFits(CGSize size)
+		{
+			var measuredSize = (_view as IView).Measure(size.Width, size.Height);
 
 			if (Height != null && MatchHeight)
 			{
@@ -90,26 +93,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 			else
 			{
-				var request = (_view as IView).Measure(Frame.Width, double.PositiveInfinity);
-				MeasuredHeight = request.Height;
+				MeasuredHeight = measuredSize.Height;
 			}
 
-			HeaderSizeChanged?.Invoke(this, EventArgs.Empty);
-		}
-
-		void OnMeasureInvalidated(object sender, System.EventArgs e)
-		{
-			if (!IsPlatformViewValid())
-				return;
-
-			ReMeasure();
-			LayoutSubviews();
-		}
-
-		public override void WillMoveToSuperview(UIView newSuper)
-		{
-			base.WillMoveToSuperview(newSuper);
-			ReMeasure();
+			return new CGSize(size.Width, MeasuredHeight);
 		}
 
 		public override void WillRemoveSubview(UIView uiview)
@@ -120,9 +107,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		public override void AddSubview(UIView view)
 		{
-			if (view == _platformView)
-				_view.MeasureInvalidated += OnMeasureInvalidated;
-
 			base.AddSubview(view);
 
 		}
@@ -132,10 +116,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (!IsPlatformViewValid())
 				return;
 
-			var platformFrame = new Rect(0, 0, Width ?? Frame.Width, Height ?? MeasuredHeight);
-
-			var width = Width ?? Frame.Width;
 			var height = Height ?? MeasuredHeight;
+			var width = Width ?? Frame.Width;
+
+			if (double.IsNaN(height))
+				return;
+
+			var platformFrame = new Rect(0, 0, width, height);
+
 
 			if (MatchHeight)
 			{
@@ -147,8 +135,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		internal void Disconnect()
 		{
-			if (_view != null)
-				_view.MeasureInvalidated -= OnMeasureInvalidated;
 		}
 
 		protected override void Dispose(bool disposing)
