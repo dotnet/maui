@@ -157,7 +157,7 @@ internal static class KeyboardAutoManagerScroll
 		IsCurrentlyScrolling = false;
 	}
 
-	static NSObject? FindValue (this NSDictionary dict, string key)
+	static NSObject? FindValue(this NSDictionary dict, string key)
 	{
 		using var keyName = new NSString(key);
 		var isFound = dict.TryGetValue(keyName, out var obj);
