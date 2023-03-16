@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					pagesAdded++;
 			};
 
+			SurfaceGCBugs();
+
 			container.Children.Add(CreateContainedPage());
 			container.Children.Add(CreateContainedPage());
 
@@ -49,6 +51,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			int removeCount = 0;
 			page.ChildAdded += (sender, args) => childCount++;
 			page.ChildRemoved += (sender, args) => removeCount++;
+
+			SurfaceGCBugs();
 
 			foreach (var child in page.Children.ToArray())
 				page.Children.Remove((T)child);
@@ -76,6 +80,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					property = true;
 			};
 
+			SurfaceGCBugs();
+
 			page.Children.Add(child);
 
 			Assert.Same(page.CurrentPage, child);
@@ -98,6 +104,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					property = true;
 			};
 
+			SurfaceGCBugs();
+
 			page.Children.Remove(child);
 
 			Assert.Same(page.CurrentPage, child2);
@@ -118,6 +126,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					property = true;
 			};
 
+			SurfaceGCBugs();
+
 			page.Children.Remove(child);
 
 			Assert.Null(page.CurrentPage);
@@ -136,6 +146,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				p.Content.SetBinding(Label.TextProperty, new Binding("."));
 				return p;
 			});
+
+			SurfaceGCBugs();
 
 			page.ItemsSource = new[] { "Foo", "Bar" };
 
@@ -174,6 +186,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					selected = true;
 			};
 
+			SurfaceGCBugs();
+
 			items.Add("foo");
 
 			Assert.Same(page.SelectedItem, items.First());
@@ -201,6 +215,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					selected = true;
 			};
 
+			SurfaceGCBugs();
+
 			items.Remove("foo");
 
 			Assert.Null(page.SelectedItem);
@@ -223,6 +239,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				else if (e.PropertyName == "SelectedItem")
 					selected = true;
 			};
+
+			SurfaceGCBugs();
 
 			page.ItemsSource = new[] { "foo" };
 
@@ -309,6 +327,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
 
+			SurfaceGCBugs();
+
 			items.Add("Baz");
 
 			var pages = page.Children.ToArray();
@@ -351,9 +371,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (e.Action != NotifyCollectionChangedAction.Add)
 					return;
 
-				addedCount++;
+				addedCount += 1;
 				Assert.Equal(2, e.NewItems.Count);
 			};
+
+			SurfaceGCBugs();
 
 			items.AddRange(new[] { "Baz", "Bam" });
 
@@ -394,6 +416,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
 
+			SurfaceGCBugs();
+
 			items.Insert(1, "Baz");
 
 			var pages = page.Children.ToArray();
@@ -429,6 +453,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.IsType<Label>(cp.Content);
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
+
+			SurfaceGCBugs();
 
 			items.InsertRange(1, new[] { "Baz", "Bam" });
 
@@ -467,6 +493,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
 
+			SurfaceGCBugs();
+
 			items.Remove("Foo");
 
 			var pages = page.Children.ToArray();
@@ -500,6 +528,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.IsType<Label>(cp.Content);
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
+
+			SurfaceGCBugs();
 
 			items.RemoveAt(1, 2);
 
@@ -537,6 +567,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
 
+			SurfaceGCBugs();
+
 			items.Move(0, 1);
 
 			var pages = page.Children.ToArray();
@@ -571,6 +603,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.IsType<Label>(cp.Content);
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
+
+			SurfaceGCBugs();
 
 			items.Move(1, 4, 2);
 
@@ -610,6 +644,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.IsType<Label>(cp.Content);
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
+
+			SurfaceGCBugs();
 
 			items.Move(4, 1, 2);
 
@@ -651,6 +687,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.Equal(((Label)cp.Content).Text, s);
 			};
 
+			SurfaceGCBugs();
+
 			items[0] = "Baz";
 
 			var pages = page.Children.ToArray();
@@ -684,6 +722,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			page.ItemsSource = new ObservableCollection<string> { "Baz", "Bar" };
+
+			SurfaceGCBugs();
 
 			var pages = page.Children.ToArray();
 			Assert.Equal(2, pages.Length);
@@ -725,6 +765,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fail++;
 			};
 
+			SurfaceGCBugs();
+
 			page.ItemsSource = new[] { "Foo", "Bar" };
 
 			Assert.Equal(1, reset); // "PagesChanged wasn't raised or was raised too many times for Reset"
@@ -747,6 +789,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				else
 					fail++;
 			};
+
+			SurfaceGCBugs();
 
 			page.ItemTemplate = new DataTemplate(() => new ContentPage
 			{
@@ -822,6 +866,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			page.CurrentPage = page.Children[1];
 
 			Assert.True(raised);
+		}
+
+		static void SurfaceGCBugs()
+		{
+			// Ensure a GC happens here to make sure we don't have any missing references to 
+			// the collection changed handlers in ListProxy; without the GC calls if we introduce
+			// a reference bug the tests will still usually pass on Debug builds and only intermittently
+			// fail on Release builds. We don't want these bugs to accidentally slip by.
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 		}
 	}
 }
