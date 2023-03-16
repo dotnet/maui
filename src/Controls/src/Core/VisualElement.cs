@@ -103,8 +103,9 @@ namespace Microsoft.Maui.Controls
 			var clip = Clip;
 			if (clip != null)
 			{
-				var proxy = _clipProxy ??= new();
-				proxy.Subscribe(clip, (sender, e) => OnPropertyChanged(nameof(Clip)));
+				_clipChanged ??= (sender, e) => OnPropertyChanged(nameof(Clip));
+				_clipProxy ??= new();
+				_clipProxy.Subscribe(clip, _clipChanged);
 			}
 		}
 
@@ -276,8 +277,9 @@ namespace Microsoft.Maui.Controls
 					(bindable as VisualElement)?.NotifyBackgroundChanges();
 			});
 
-		WeakBackgroundChangedProxy _backgroundProxy = null;
-		WeakClipChangedProxy _clipProxy = null;
+		WeakBackgroundChangedProxy _backgroundProxy;
+		WeakClipChangedProxy _clipProxy;
+		EventHandler _backgroundChanged, _clipChanged;
 
 		~VisualElement()
 		{
@@ -294,8 +296,9 @@ namespace Microsoft.Maui.Controls
 			if (background != null)
 			{
 				SetInheritedBindingContext(background, BindingContext);
-				var proxy = _backgroundProxy ??= new();
-				proxy.Subscribe(background, (sender, e) => OnPropertyChanged(nameof(Background)));
+				_backgroundChanged ??= (sender, e) => OnPropertyChanged(nameof(Background));
+				_backgroundProxy ??= new();
+				_backgroundProxy.Subscribe(background, _backgroundChanged);
 			}
 		}
 

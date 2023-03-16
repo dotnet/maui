@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GradientBrushSubscribed()
+		public async Task GradientBrushSubscribed()
 		{
 			var gradient = new LinearGradientBrush
 			{
@@ -139,6 +139,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (e.PropertyName == nameof(VisualElement.Background))
 					fired = true;
 			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
 			Assert.True(fired, "PropertyChanged did not fire!");
@@ -160,7 +164,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void RectangleGeometrySubscribed()
+		public async Task RectangleGeometrySubscribed()
 		{
 			var geometry = new RectangleGeometry();
 			var visual = new VisualElement { Clip = geometry };
@@ -171,6 +175,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (e.PropertyName == nameof(VisualElement.Clip))
 					fired = true;
 			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			geometry.Rect = new Rect(1, 2, 3, 4);
 			Assert.True(fired, "PropertyChanged did not fire!");
