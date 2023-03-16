@@ -20,6 +20,7 @@ static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void
