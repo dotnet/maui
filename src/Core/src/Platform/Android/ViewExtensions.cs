@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Platform
 				else
 				{
 
-					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
+					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable });
 					platformView.Background = layer;
 				}
 			}
