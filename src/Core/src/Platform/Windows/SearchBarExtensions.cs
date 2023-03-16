@@ -130,7 +130,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			// AutoSuggestBox does not support this property
+			var textBox = platformControl.GetFirstDescendant<TextBox>();
+
+			if (textBox is null)
+				return;
+
+			textBox.UpdateIsTextPredictionEnabled(searchBar);
 		}
 	}
 }

@@ -2752,7 +2752,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "🚨 Breaking change detected @davidbritch FYI"
+              "comment": "🚨 API change(s) detected @davidbritch FYI"
             }
           }
         ]
@@ -2786,7 +2786,58 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "🚨 Breaking change detected @davidbritch FYI"
+              "comment": "🚨 API change(s) detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssueCommentResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/try-latest-version"
+              }
+            },
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": {
+                  "type": "author"
+                }
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "activitySenderHasPermissions",
+                  "parameters": {
+                    "permissions": "write"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "taskName": "Remove 's/try-latest-version' when new reply from author comes in",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "s/try-latest-version"
             }
           }
         ]

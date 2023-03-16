@@ -53,6 +53,16 @@
 			Text="Microsoft.Maui requires .NETFramework >= v4.6.1. You have '$(TargetFrameworkVersion)'" />
 	</Target>
 
+	<Target
+		Name="_ValidateMauiDoesNotHaveXamarinForms"
+		BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+		Condition="'$(MauiDisableXamarinFormsValidation)' != 'True'">
+		<Error
+			Code="MA001"
+			Text="This project or a dependency has imported the Xamarin.Forms packages. .NET MAUI is not compatible with Xamarin.Forms and is unable to build. Please remove Xamarin.Forms or the project/package dependency that is using Xamarin.Forms."
+			Condition="'$(_XFTargetsImported)' == 'true'"/>
+	</Target>
+
 
   <!-- Inject MauiXaml and MauiCss as AdditionalFiles for partial type generation-->
   <Target Name="_MauiInjectXamlCssAdditionalFiles"
