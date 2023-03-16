@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
 
-				adapter.NotifyDataSetChanged();
+				pager.Adapter?.NotifyDataSetChanged();
 
 				if (Element.Children.Count == 0)
 				{
@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				TabLayout tabs = _tabLayout;
 
-				adapter.NotifyDataSetChanged();
+				pager.Adapter?.NotifyDataSetChanged();
 				if (Element.Children.Count == 0)
 				{
 					tabs.RemoveAllTabs();
