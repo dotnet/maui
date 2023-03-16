@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 
 			list.Add("a");
-			
+
 			Assert.True(fired);
 		}
 
