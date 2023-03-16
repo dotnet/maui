@@ -8,7 +8,7 @@
 
 namespace System.Diagnostics.CodeAnalysis
 {
-#if !NETCOREAPP
+#if !NETCOREAPP && !NETSTANDARD2_1_OR_GREATER
 
 	/// <summary>Specifies that null is allowed as an input even if the corresponding type disallows it.</summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property, Inherited = false)]
