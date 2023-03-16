@@ -65,11 +65,6 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this AView platformView, FocusRequest request)
 		{
-			platformView?.Focus(request, null);
-		}
-
-		internal static void Focus(this AView platformView, FocusRequest request, Action? focusRequested)
-		{
 			request.IsFocused = true;
 
 			// Android does the actual focus/unfocus work on the main looper
@@ -89,9 +84,6 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				platformView?.RequestFocus();
-
-				if (platformView?.RequestFocus() == true)
-					focusRequested?.Invoke();
 			}
 		}
 

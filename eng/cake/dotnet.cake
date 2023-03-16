@@ -111,8 +111,14 @@ Task("android-aar")
                 Arguments = $"createAar --rerun-tasks",
                 WorkingDirectory = root
             });
+
         if (exitCode != 0)
-            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+        {
+            if (IsCIBuild() || target == "android-aar")
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
     });
 
 Task("dotnet-build")
@@ -267,6 +273,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -622,7 +629,7 @@ void StartVisualStudioForDotNet()
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui.sln";
+            sln = "./Microsoft.Maui-windows.slnf";
         }
         else
         {

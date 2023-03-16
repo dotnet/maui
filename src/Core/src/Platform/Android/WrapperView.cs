@@ -306,5 +306,25 @@ namespace Microsoft.Maui.Platform
 			_shadowPaint = null;
 			_shadowBitmap = null;
 		}
+
+		public override ViewStates Visibility
+		{
+			get => base.Visibility;
+			set
+			{
+				base.Visibility = value;
+
+				if (value != ViewStates.Visible)
+				{
+					return;
+				}
+
+				for (int n = 0; n < this.ChildCount; n++)
+				{
+					var child = GetChildAt(n);
+					child.Visibility = ViewStates.Visible;
+				}
+			}
+		}
 	}
 }
