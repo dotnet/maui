@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 				// So, when the modal page is parented to the window
 				// we make sure to set the NavProxy on the modal page to the
 				// Shell wrapper
-				if (Parent is Window w && 
+				if (Parent is Window w &&
 					w.Page is Shell shell &&
 					this is not Shell)
 				{
