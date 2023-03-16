@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 				Content = content
 			};
 
-			var handler = await CreateHandlerAsync(swipeView);
+			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
 			var platformView = (MauiSwipeView)handler.PlatformView;
 
 			await InvokeOnMainThreadAsync(async () =>
