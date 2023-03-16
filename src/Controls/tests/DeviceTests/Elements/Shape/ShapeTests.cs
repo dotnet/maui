@@ -44,6 +44,8 @@ namespace Microsoft.Maui.DeviceTests
 				Y1 = 0,
 				X2 = 100,
 				Y2 = 100,
+				HeightRequest = 100,
+				WidthRequest = 100,
 				Stroke = Colors.Black
 			};
 
@@ -69,7 +71,23 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			await ValidateHasColor(line, expected, typeof(ShapeViewHandler));
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAndAddToWindow<LineHandler>(line, (handler) =>
+				{
+					var mauiShapeView = handler.PlatformView;
+					Assert.NotNull(mauiShapeView);
+					var shapeDrawable = mauiShapeView.Drawable as ShapeDrawable;
+					Assert.NotNull(shapeDrawable);
+					var shape = shapeDrawable.ShapeView.Shape as Shape;
+					Assert.NotNull(shape);
+
+					var shapeStroke = shape.Stroke as SolidColorBrush;
+					Assert.Equal(expected, shapeStroke?.Color);
+
+					return Task.CompletedTask;
+				});
+			});
 		}
 	}
 }
