@@ -2398,7 +2398,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// and the single view does not have an explicit height, then there should have been at least
 			// one measurement with an unconstrained height
 			view0.Received().Measure(Arg.Any<double>(), double.PositiveInfinity);
-			
+
 			// The Auto column has no Views, so we expect it to have zero width; the single view should
 			// be arranged at the top left corner
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
