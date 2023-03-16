@@ -29,7 +29,7 @@
     <Using Include="BenchmarkDotNet.Order" />
     <Using Include="BenchmarkDotNet.Running" />
     <PackageReference Include="BenchmarkDotNet" Version="0.13.3" />
-    <PackageReference Include="Xamarin.Android.Glide" Version="4.13.2.2" />
+    <PackageReference Include="Xamarin.Android.Glide" Version="4.14.2.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
