@@ -6,6 +6,7 @@ using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 
@@ -134,14 +135,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.TraitCollectionDidChange(previousTraitCollection);
 
-			var currentItem = ShellSection.CurrentItem;
-
-			if (!_renderers.TryGetValue(currentItem, out var currentItemHandler))
-				return;
-
-			var application = currentItemHandler.GetRequiredService<IApplication>();
+			var application = _shellContext?.Shell?.FindMauiContext().Services.GetService<IApplication>();
 			application?.ThemeChanged();
-
 		}
 
 		void IDisconnectable.Disconnect()
