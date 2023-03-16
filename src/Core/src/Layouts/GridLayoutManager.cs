@@ -954,7 +954,7 @@ namespace Microsoft.Maui.Layouts
 					measureWidth += _columns[column].Size;
 				}
 
-				cell.MeasureWidth = measureWidth; 
+				cell.MeasureWidth = measureWidth;
 			}
 
 			void UpdateKnownMeasureHeight(Cell cell)
@@ -996,7 +996,7 @@ namespace Microsoft.Maui.Layouts
 				// For all other situations, we'll have to wait until we've measured the Auto rows
 			}
 
-			bool TreatCellWidthAsAuto(Cell cell) 
+			bool TreatCellWidthAsAuto(Cell cell)
 			{
 				if (cell.IsColumnSpanAuto)
 				{
@@ -1012,10 +1012,10 @@ namespace Microsoft.Maui.Layouts
 				return false;
 			}
 
-			bool TreatCellHeightAsAuto(Cell cell) 
+			bool TreatCellHeightAsAuto(Cell cell)
 			{
 				if (cell.IsRowSpanAuto)
-				{ 
+				{
 					return true;
 				}
 
