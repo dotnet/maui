@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		readonly IList _list;
 		readonly int _windowSize;
 		readonly WeakNotifyCollectionChangedProxy _proxy;
+		readonly NotifyCollectionChangedEventHandler _collectionChangedDelegate;
 
 		IEnumerator _enumerator;
 		int _enumeratorIndex;
@@ -44,7 +45,10 @@ namespace Microsoft.Maui.Controls
 				_list = new ReadOnlyListAdapter((IReadOnlyList<object>)enumerable);
 
 			if (enumerable is INotifyCollectionChanged changed)
-				_proxy = new WeakNotifyCollectionChangedProxy(changed, OnCollectionChanged);
+			{
+				_collectionChangedDelegate = OnCollectionChanged;
+				_proxy = new WeakNotifyCollectionChangedProxy(changed, _collectionChangedDelegate);
+			}
 		}
 
 		~ListProxy() => _proxy?.Unsubscribe();
