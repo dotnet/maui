@@ -21,7 +21,8 @@ namespace Microsoft.Maui
 				case Gtk.ComboBox box:
 
 				default:
-					mainNode = nativeView.StyleContext.Path.ToString().Split(':')[0];
+					var pathSegments = nativeView.StyleContext.Path.ToString().Split(' ');
+					mainNode = pathSegments[pathSegments.Length - 1].Split(':')[0];
 
 					break;
 			}
