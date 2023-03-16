@@ -48,11 +48,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static string RunForOutput(string command, string args, out int exitCode, int timeoutInSeconds = DEFAULT_TIMEOUT)
 		{
-			var pinfo = new ProcessStartInfo()
-			{
-				FileName = DotnetTool,
-				Arguments = $"{command} {args}",
-			};
+			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);

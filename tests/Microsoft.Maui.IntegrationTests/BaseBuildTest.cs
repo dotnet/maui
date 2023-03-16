@@ -37,8 +37,9 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		/// <summary>
-		/// Copy NuGet packages that would not and set up NuGet.config
-		/// TODO: Should these simply be moved to the library-packs folder for testing?
+		/// Copy NuGet packages that are not installed as part of the workload and set up NuGet.config
+		/// See: `PrepareSeparateBuildContext` in `eng/cake/dotnet.cake`.
+		/// TODO: Should these be moved to a library-packs workload folder for testing?
 		/// </summary>
 		/// <exception cref="DirectoryNotFoundException"></exception>
 		[OneTimeSetUp]

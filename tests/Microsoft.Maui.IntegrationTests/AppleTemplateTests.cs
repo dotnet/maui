@@ -10,6 +10,9 @@ namespace Microsoft.Maui.IntegrationTests
 		[SetUp]
 		public void AppleTemplateSetup()
 		{
+			if (!TestEnvironment.IsMacOS)
+				Assert.Ignore("Running Apple templates is only supported on macOS.");
+
 			TestSimulator.Shutdown();
 			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
 			TestSimulator.ShowWindow();
@@ -32,9 +35,6 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "Release", "net7.0")]
 		public void RunOniOS(string id, string config, string framework)
 		{
-			if (!TestEnvironment.IsMacOS)
-				Assert.Ignore("iOS run template tests only run on macOS.");
-
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 

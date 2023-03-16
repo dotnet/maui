@@ -33,14 +33,16 @@ namespace Microsoft.Maui.IntegrationTests
 				{
 					if (!string.IsNullOrEmpty(o?.Data))
 					{
-						procOutput.AppendLine(o.Data);
+						lock (procOutput)
+							procOutput.AppendLine(o.Data);
 					}
 				};
 				p.ErrorDataReceived += (sender, e) =>
 				{
 					if (!string.IsNullOrEmpty(e?.Data))
 					{
-						procOutput.AppendLine(e.Data);
+						lock (procOutput)
+							procOutput.AppendLine(e.Data);
 					}
 				};
 
