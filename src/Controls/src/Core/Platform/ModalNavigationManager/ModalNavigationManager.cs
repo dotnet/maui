@@ -245,13 +245,17 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (ModalStack.Count == 0)
 				{
-					modal.NavigationProxy.Inner = _window.Navigation;
+					if (modal.NavigationProxy.Inner is null)
+						modal.NavigationProxy.Inner = _window.Navigation;
+
 					await PushModalPlatformAsync(modal, animated);
 				}
 				else
 				{
 					await PushModalPlatformAsync(modal, animated);
-					modal.NavigationProxy.Inner = _window.Navigation;
+
+					if (modal.NavigationProxy.Inner is null)
+						modal.NavigationProxy.Inner = _window.Navigation;
 				}
 			}
 

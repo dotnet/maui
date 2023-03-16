@@ -1710,24 +1710,28 @@ namespace Microsoft.Maui.Controls
 
 				await base.OnPushModal(modal, animated);
 
-				modal.NavigationProxy.Inner = new NavigationImplWrapper(modal.NavigationProxy.Inner, this);
-			}
-
-			class NavigationImplWrapper : NavigationProxy
-			{
-				readonly INavigation _shellProxy;
-
-				public NavigationImplWrapper(INavigation proxy, INavigation shellProxy)
+				if (modal.NavigationProxy.Inner is not ShellNavigationImplWrapper &&
+					modal.NavigationProxy.Inner is not null)
 				{
-					Inner = proxy;
-					_shellProxy = shellProxy;
-
+					modal.NavigationProxy.Inner = new ShellNavigationImplWrapper(modal.NavigationProxy.Inner, this);
 				}
-
-				protected override Task<Page> OnPopModal(bool animated) => _shellProxy.PopModalAsync(animated);
-
-				protected override Task OnPushModal(Page modal, bool animated) => _shellProxy.PushModalAsync(modal, animated);
 			}
+		}
+
+		internal class ShellNavigationImplWrapper : NavigationProxy
+		{
+			readonly INavigation _shellProxy;
+
+			public ShellNavigationImplWrapper(INavigation proxy, INavigation shellProxy)
+			{
+				Inner = proxy;
+				_shellProxy = shellProxy;
+
+			}
+
+			protected override Task<Page> OnPopModal(bool animated) => _shellProxy.PopModalAsync(animated);
+
+			protected override Task OnPushModal(Page modal, bool animated) => _shellProxy.PushModalAsync(modal, animated);
 		}
 	}
 }

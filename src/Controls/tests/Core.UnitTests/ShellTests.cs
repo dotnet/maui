@@ -1238,6 +1238,34 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task CurrentPageReturnsCorrectModalPage()
+		{
+			var windowPage = new ContentPage();
+			var modalPage1 = new ContentPage();
+			var modalPage2 = new ContentPage();
+
+			var shell = new TestShell(new ShellContent { Content = windowPage });
+
+			await windowPage.Navigation.PushModalAsync(modalPage1);
+			await windowPage.Navigation.PushModalAsync(modalPage2);
+
+			Assert.Equal(shell.Window.Navigation.ModalStack[0], modalPage1);
+			Assert.Equal(shell.Window.Navigation.ModalStack[1], modalPage2);
+			Assert.Equal(2, shell.Window.Navigation.ModalStack.Count);
+			Assert.Equal(modalPage2, shell.CurrentPage);
+
+			await windowPage.Navigation.PopModalAsync();
+
+			Assert.Equal(shell.Window.Navigation.ModalStack[0], modalPage1);
+			Assert.Equal(1, shell.Window.Navigation.ModalStack.Count);
+			Assert.Equal(modalPage1, shell.CurrentPage);
+
+			await windowPage.Navigation.PopModalAsync();
+
+			Assert.Equal(windowPage, shell.CurrentPage);
+		}
+
+		[Fact]
 		public async Task HotReloadStaysOnActiveItem()
 		{
 			Shell shell = new Shell();

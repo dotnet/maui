@@ -88,7 +88,21 @@ namespace Microsoft.Maui.Controls
 
 			if (navProxy != null)
 			{
-				NavigationProxy.Inner = navProxy.NavigationProxy;
+				// Modal navigation needs to all proxy through Shell
+				// So, when the modal page is parented to the window
+				// we make sure to set the NavProxy on the modal page to the
+				// Shell wrapper
+				if (Parent is Window w && 
+					w.Page is Shell shell &&
+					this is not Shell)
+				{
+					if (NavigationProxy.Inner is not Shell.ShellNavigationImplWrapper)
+						NavigationProxy.Inner = new Shell.ShellNavigationImplWrapper(navProxy.NavigationProxy, shell.Navigation);
+				}
+				else
+				{
+					NavigationProxy.Inner = navProxy.NavigationProxy;
+				}
 			}
 			else
 			{

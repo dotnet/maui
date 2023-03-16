@@ -53,10 +53,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (Navigation.ModalStack.Count > 0)
 				{
-					if (Navigation.ModalStack[Navigation.ModalStack.Count - 1] is NavigationPage np)
+					var currentModalPage = Navigation.ModalStack[Navigation.ModalStack.Count - 1];
+
+					if (currentModalPage is NavigationPage np)
 						return np.Navigation.NavigationStack[np.Navigation.NavigationStack.Count - 1];
 
-					return Navigation.ModalStack[0];
+					return currentModalPage;
 				}
 
 				if (_navStack.Count > 1)

@@ -35,27 +35,69 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 
+					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Entry, EntryHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
 				});
 			});
 		}
+
+		[Fact]
+		public async Task AppearingAndDisappearingFireWhenShellCreatedBeforeWindow()
+		{
+			SetupBuilder();
+			var windowPage = new ContentPage();
+			var modalPage1 = new ContentPage();
+			var modalPage2 = new ContentPage();
+			var shell = new Shell();
+
+			int modal1Appearing = 0;
+			int modal1Disappearing = 0;
+			int modal2Appearing = 0;
+			int modal2Disappearing = 0;
+			int windowAppearing = 0;
+			int windowDisappearing = 0;
+			int shellAppearing = 0;
+
+			shell.Appearing += (_, _) => shellAppearing++;
+			modalPage1.Appearing += (_, _) => modal1Appearing++;
+			modalPage1.Disappearing += (_, _) => modal1Disappearing++;
+
+			modalPage2.Appearing += (_, _) => modal2Appearing++;
+			modalPage2.Disappearing += (_, _) => modal2Disappearing++;
+
+			windowPage.Appearing += (_, _) => windowAppearing++;
+			windowPage.Disappearing += (_, _) => windowDisappearing++;
+
+			shell.Items.Add(new ShellContent { Content = windowPage });
+
+			await windowPage.Navigation.PushModalAsync(modalPage1);
+			await windowPage.Navigation.PushModalAsync(modalPage2);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(shell),
+				async (_) =>
+				{
+					await windowPage.Navigation.PopModalAsync();
+					await windowPage.Navigation.PopModalAsync();
+				});
+
+			// These values should match up with AppearingAndDisappearingFireWhenShellCreatedBeforeWindow
+			// in the ShellModalTests on the unit tests
+			Assert.Equal(1, modal1Appearing);
+			Assert.Equal(1, modal1Disappearing);
+
+			Assert.Equal(1, modal2Appearing);
+			Assert.Equal(1, modal2Disappearing);
+
+			Assert.Equal(1, windowAppearing);
+			Assert.Equal(0, windowDisappearing);
+		}
+
 
 		[Theory]
 		[InlineData(true)]

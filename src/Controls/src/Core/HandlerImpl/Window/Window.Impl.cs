@@ -419,6 +419,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Navigation.ModalStack.Count == 0)
 				Page?.SendAppearing();
+			else if (Page is Shell shell)
+				shell.SendAppearing();
 		}
 
 		void SendWindowDisppearing()
