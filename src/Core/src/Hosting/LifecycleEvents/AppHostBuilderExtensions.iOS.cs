@@ -19,13 +19,13 @@ namespace Microsoft.Maui.LifecycleEvents
 					.OnPlatformWindowCreated((window) =>
 					{
 						window.GetWindow()?.Created();
-						KeyboardAutoManagerScroll.Init();
+						KeyboardAutoManagerScroll.Connect();
 					})
 					.WillTerminate(app =>
 					{
 						// By this point if we were a multi window app, the GetWindow would be null anyway
 						app.GetWindow()?.Destroying();
-						KeyboardAutoManagerScroll.Destroy();
+						KeyboardAutoManagerScroll.Disconnect();
 					})
 					.WillEnterForeground(app =>
 					{

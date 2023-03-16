@@ -10,10 +10,12 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		// overriding this method it does not automatically scroll large UITextFields.
-		// Save the scrolling for KeyboardAutoManagerScroll.cs
+		// overriding this method so it does not automatically scroll large UITextFields
+		// while the KeyboardAutoManagerScroll is scrolling.
 		public override void ScrollRectToVisible(CGRect rect, bool animated)
 		{
+			if (!KeyboardAutoManagerScroll.IsCurrentlyScrolling)
+				base.ScrollRectToVisible(rect, animated);
 		}
 	}
 }

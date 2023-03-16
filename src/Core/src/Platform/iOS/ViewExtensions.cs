@@ -814,7 +814,7 @@ namespace Microsoft.Maui.Platform
 				newView.BecomeFirstResponder();
 		}
 
-		internal static UIView? SetContainerView(this UIView? startingPoint)
+		internal static UIView? GetContainerView(this UIView? startingPoint)
 		{
 			var rootView = startingPoint?.FindResponder<ContainerViewController>()?.View;
 

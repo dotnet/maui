@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform;
 
 internal static class KeyboardAutoManagerScroll
 {
+	internal static bool IsCurrentlyScrolling;
 	static UIScrollView? LastScrollView;
 	static CGPoint StartingContentOffset;
 	static UIEdgeInsets StartingScrollIndicatorInsets;
@@ -33,11 +34,15 @@ internal static class KeyboardAutoManagerScroll
 	static int DebounceCount = 0;
 	static NSObject? WillShowToken = null;
 	static NSObject? WillHideToken = null;
+	static NSObject? DidHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
 
-	internal static void Init()
+	internal static void Connect()
 	{
+		if (TextFieldToken is not null)
+			return;
+
 		TextFieldToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextFieldTextDidBeginEditingNotification"), DidUITextBeginEditing);
 
 		TextViewToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UITextViewTextDidBeginEditingNotification"), DidUITextBeginEditing);
@@ -45,20 +50,38 @@ internal static class KeyboardAutoManagerScroll
 		WillShowToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillShowNotification"), WillKeyboardShow);
 
 		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
+
+		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
+	}
+
+	internal static void Disconnect()
+	{
+		if (WillShowToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
+		if (WillHideToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(WillHideToken);
+		if (DidHideToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(DidHideToken);
+		if (TextFieldToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
+		if (TextViewToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
 	}
 
 	static async void DidUITextBeginEditing(NSNotification notification)
 	{
+		IsCurrentlyScrolling = true;
+
 		if (notification.Object is not null)
 		{
-			View = (UIView)notification.Object;
+			View = notification.Object as UIView;
 
 			if (View is null)
 				return;
 
 			CursorRect = null;
 
-			ContainerView = View.SetContainerView();
+			ContainerView = View.GetContainerView();
 
 			// the cursor needs a small amount of time to update the position
 			await Task.Delay(5);
@@ -67,7 +90,7 @@ internal static class KeyboardAutoManagerScroll
 			if (localCursor is CGRect local)
 				CursorRect = View.ConvertRectToView(local, null);
 
-			TextViewTopDistance = localCursor is CGRect cGRect ? 20 + (int)cGRect.Height : 20;
+			TextViewTopDistance = ((int?)localCursor?.Height ?? 0) + 20;
 
 			await AdjustPositionDebounce();
 		}
@@ -75,23 +98,16 @@ internal static class KeyboardAutoManagerScroll
 
 	static CGRect? FindLocalCursorPosition()
 	{
-		if (View is IUITextInput textInput)
-		{
-			var selectedTextRange = textInput.SelectedTextRange;
-			if (selectedTextRange is UITextRange selectedRange)
-				return textInput.GetCaretRectForPosition(selectedRange.Start);
-		}
-
-		return null;
+		var textInput = View as IUITextInput;
+		var selectedTextRange = textInput?.SelectedTextRange;
+		return selectedTextRange is not null ? textInput?.GetCaretRectForPosition(selectedTextRange.Start) : null;
 	}
 
 	internal static CGRect? FindCursorPosition()
 	{
 		var localCursor = FindLocalCursorPosition();
 		if (localCursor is CGRect local)
-		{
 			return View?.ConvertRectToView(local, null);
-		}
 
 		return null;
 	}
@@ -102,20 +118,12 @@ internal static class KeyboardAutoManagerScroll
 
 		if (userInfo is not null)
 		{
-			if (userInfo.TryGetValue(new NSString("UIKeyboardFrameEndUserInfoKey"), out var frameSize))
-			{
-				var frameSizeRect = DescriptionToCGRect(frameSize?.Description);
-				if (frameSizeRect is not null)
-					KeyboardFrame = (CGRect)frameSizeRect;
-			}
+			var frameSize = userInfo.FindValue("UIKeyboardFrameEndUserInfoKey");
+			var frameSizeRect = DescriptionToCGRect(frameSize?.Description);
+			if (frameSizeRect is not null)
+				KeyboardFrame = (CGRect)frameSizeRect;
 
-			if (userInfo.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out var curveSize))
-			{
-				var curveNum = (NSNumber)NSObject.FromObject(curveSize);
-				var num = (double)curveNum;
-				if (num != 0)
-					AnimationDuration = num;
-			}
+			userInfo.SetAnimationDuration();
 		}
 
 		if (!IsKeyboardShowing)
@@ -127,16 +135,7 @@ internal static class KeyboardAutoManagerScroll
 
 	static void WillHideKeyboard(NSNotification notification)
 	{
-		NSObject? curveSize = null;
-
-		var foundAnimationDuration = notification.UserInfo?.TryGetValue(new NSString("UIKeyboardAnimationDurationUserInfoKey"), out curveSize);
-		if (foundAnimationDuration == true && curveSize is not null)
-		{
-			var curveNum = (NSNumber)NSObject.FromObject(curveSize);
-			var num = (double)curveNum;
-			if (num != 0)
-				AnimationDuration = num;
-		}
+		notification.UserInfo?.SetAnimationDuration();
 
 		if (LastScrollView is not null)
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, AnimateHidingKeyboard, () => { });
@@ -151,6 +150,27 @@ internal static class KeyboardAutoManagerScroll
 		StartingContentInsets = new UIEdgeInsets();
 		StartingScrollIndicatorInsets = new UIEdgeInsets();
 		StartingContentInsets = new UIEdgeInsets();
+	}
+
+	static void DidHideKeyboard(NSNotification notification)
+	{
+		IsCurrentlyScrolling = false;
+	}
+
+	static NSObject? FindValue (this NSDictionary dict, string key)
+	{
+		using var keyName = new NSString(key);
+		var isFound = dict.TryGetValue(keyName, out var obj);
+		return obj;
+	}
+
+	static void SetAnimationDuration(this NSDictionary dict)
+	{
+		var durationObj = dict.FindValue("UIKeyboardAnimationDurationUserInfoKey");
+		var durationNum = (NSNumber)NSObject.FromObject(durationObj);
+		var num = (double)durationNum;
+		if (num != 0)
+			AnimationDuration = num;
 	}
 
 	static void AnimateHidingKeyboard()
@@ -183,18 +203,6 @@ internal static class KeyboardAutoManagerScroll
 		}
 	}
 
-	internal static void Destroy()
-	{
-		if (WillShowToken is not null)
-			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
-		if (WillHideToken is not null)
-			NSNotificationCenter.DefaultCenter.RemoveObserver(WillHideToken);
-		if (TextFieldToken is not null)
-			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
-		if (TextViewToken is not null)
-			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
-	}
-
 	// Used to get the numeric values from the UserInfo dictionary's NSObject value to CGRect.
 	// Doing manually since CGRectFromString is not yet bound
 	static CGRect? DescriptionToCGRect(string? description)
@@ -208,8 +216,8 @@ internal static class KeyboardAutoManagerScroll
 		var temp = Regex.Replace(description, @"[^0-9,]", "");
 		var dimensions = temp.Split(',');
 
-		if (int.TryParse(dimensions[0], out var x) && int.TryParse(dimensions[1], out var y)
-			&& int.TryParse(dimensions[2], out var width) && int.TryParse(dimensions[3], out var height))
+		if (nfloat.TryParse(dimensions[0], out var x) && nfloat.TryParse(dimensions[1], out var y)
+			&& nfloat.TryParse(dimensions[2], out var width) && nfloat.TryParse(dimensions[3], out var height))
 		{
 			return new CGRect(x, y, width, height);
 		}
@@ -221,7 +229,6 @@ internal static class KeyboardAutoManagerScroll
 	// all the fields are updated before calling AdjustPostition()
 	internal static async Task AdjustPositionDebounce()
 	{
-		Interlocked.CompareExchange(ref DebounceCount, 0, 100);
 		Interlocked.Increment(ref DebounceCount);
 
 		var entranceCount = DebounceCount;
@@ -278,12 +285,10 @@ internal static class KeyboardAutoManagerScroll
 		if (ContainerView.Superview is UIView v)
 			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
 
-		CGRect cursorRect;
-
-		if (CursorRect is CGRect cRect)
-			cursorRect = cRect;
-		else
+		if (CursorRect is null)
 			return;
+
+		var cursorRect = (CGRect)CursorRect;
 
 		nfloat cursorNotInViewScroll = 0;
 		nfloat move = 0;
@@ -312,10 +317,10 @@ internal static class KeyboardAutoManagerScroll
 			return;
 
 		else if (cursorRect.Y > keyboardYPosition)
-			move = cursorRect.Y - keyboardYPosition - cursorNotInViewScroll;
+			move = cursorRect.Y - keyboardYPosition;
 
 		else if (cursorRect.Y <= topLayoutGuide)
-			move = cursorRect.Y - (nfloat)topLayoutGuide - cursorNotInViewScroll;
+			move = cursorRect.Y - (nfloat)topLayoutGuide;
 
 		// Find the next parent ScrollView that is scrollable
 		var superView = View.FindResponder<UIScrollView>();
