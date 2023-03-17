@@ -36,13 +36,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var proxy = new WeakNotifyCollectionChangedProxy();
 
 			bool fired = false;
-			// NOTE: this test wouldn't pass if we didn't save this in a variable
+			// NOTE: this test wouldn't pass if we didn't save this and GC.KeepAlive() it
 			NotifyCollectionChangedEventHandler handler = (s, e) => fired = true;
 			proxy.Subscribe(list, handler);
 
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(handler);
 
 			list.Add("a");
 

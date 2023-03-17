@@ -143,6 +143,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
 
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
 			Assert.True(fired, "PropertyChanged did not fire!");
@@ -179,6 +180,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
 
 			geometry.Rect = new Rect(1, 2, 3, 4);
 			Assert.True(fired, "PropertyChanged did not fire!");
