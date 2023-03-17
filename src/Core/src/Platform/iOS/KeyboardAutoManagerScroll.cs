@@ -218,8 +218,11 @@ internal static class KeyboardAutoManagerScroll
 		var temp = Regex.Replace(description, @"[^0-9,]", "");
 		var dimensions = temp.Split(',');
 
-		if (nfloat.TryParse(dimensions[0], out var x) && nfloat.TryParse(dimensions[1], out var y)
-			&& nfloat.TryParse(dimensions[2], out var width) && nfloat.TryParse(dimensions[3], out var height))
+		if (dimensions.Length == 4
+			&& nfloat.TryParse(dimensions[0], out var x)
+			&& nfloat.TryParse(dimensions[1], out var y)
+			&& nfloat.TryParse(dimensions[2], out var width)
+			&& nfloat.TryParse(dimensions[3], out var height))
 		{
 			return new CGRect(x, y, width, height);
 		}
