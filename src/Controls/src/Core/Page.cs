@@ -14,7 +14,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IVisualTreeElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
@@ -623,6 +623,8 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
+			VisualDiagnostics.OnChildRemoved(this, oldTitleView, ((IVisualTreeElement)this).GetVisualChildren().IndexOf(oldTitleView));
+
 			if (oldTitleView != null)
 				oldTitleView.Parent = null;
 
@@ -630,6 +632,18 @@ namespace Microsoft.Maui.Controls
 				newTitleView.Parent = this;
 
 			_titleView = newTitleView;
+
+			VisualDiagnostics.OnChildAdded(this, newTitleView);
+		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			if (_titleView is not null)
+			{
+				return new List<Element>(LogicalChildrenInternal) { _titleView }.AsReadOnly();
+			}
+
+			return LogicalChildrenInternal;
 		}
 	}
 }

@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
-	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IVisualTreeElement
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => GetVisiblePage() as Page;
@@ -393,6 +393,16 @@ namespace Microsoft.Maui.Controls
 			// the flyout behavior
 			if (GetVisiblePage() != null)
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
+		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			if (GetTitleView(this) is View view)
+			{
+				return new List<Element>(LogicalChildrenInternal) { view }.AsReadOnly();
+			}
+
+			return LogicalChildrenInternal;
 		}
 
 		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
