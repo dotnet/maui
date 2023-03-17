@@ -150,6 +150,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void ViewDidDisappear(bool animated)
 		{
+			CompletePendingNavigation(false);
+
 			base.ViewDidDisappear(animated);
 
 			if (!_appeared || Element == null)
@@ -379,9 +381,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_parentFlyoutPage = flyoutDetail;
 		}
 
+		TaskCompletionSource<bool> _pendingNavigationRequest;
+		ActionDisposable _removeLifecycleEvents;
+
+		void CompletePendingNavigation(bool success)
+		{
+			if (_pendingNavigationRequest is null)
+				return;
+
+			_removeLifecycleEvents?.Dispose();
+			_removeLifecycleEvents = null;
+
+			var pendingNavigationRequest = _pendingNavigationRequest;
+			_pendingNavigationRequest = null;
+
+			BeginInvokeOnMainThread(() =>
+			{
+				pendingNavigationRequest?.TrySetResult(success);
+				pendingNavigationRequest = null;
+			});
+		}
+
 		Task<bool> GetAppearedOrDisappearedTask(Page page)
 		{
-			var tcs = new TaskCompletionSource<bool>();
+			CompletePendingNavigation(false);
+
+			_pendingNavigationRequest = new TaskCompletionSource<bool>();
 
 			_ = page.ToPlatform(MauiContext);
 			var renderer = (IPlatformViewHandler)page.Handler;
@@ -392,24 +417,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			EventHandler appearing = null, disappearing = null;
 			appearing = (s, e) =>
 			{
-				parentViewController.Appearing -= appearing;
-				parentViewController.Disappearing -= disappearing;
-
-				BeginInvokeOnMainThread(() => { tcs.SetResult(true); });
+				CompletePendingNavigation(true);
 			};
 
 			disappearing = (s, e) =>
 			{
+				CompletePendingNavigation(false);
+			};
+
+			_removeLifecycleEvents = new ActionDisposable(() =>
+			{
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
-
-				BeginInvokeOnMainThread(() => { tcs.SetResult(false); });
-			};
+			});
 
 			parentViewController.Appearing += appearing;
 			parentViewController.Disappearing += disappearing;
 
-			return tcs.Task;
+			return _pendingNavigationRequest.Task;
 		}
 
 		void HandlePropertyChanged(object sender, PropertyChangedEventArgs e)

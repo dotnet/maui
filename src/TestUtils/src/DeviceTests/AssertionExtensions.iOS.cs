@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task HideKeyboardForView(this UIView view, int timeout = 1000)
+		public static Task HideKeyboardForView(this UIView view, int timeout = 1000, string? message = null)
 		{
 			throw new NotImplementedException();
 		}
@@ -142,6 +142,14 @@ namespace Microsoft.Maui.DeviceTests
 			if (window.RootViewController is not UIViewController viewController)
 			{
 				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
+			}
+
+			while (viewController.PresentedViewController is not null)
+			{
+				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
+					throw new InvalidOperationException("Modal Window Is Still Present");
+
+				viewController = viewController.PresentedViewController;
 			}
 
 			if (viewController == null)
