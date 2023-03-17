@@ -1327,14 +1327,14 @@ namespace Microsoft.Maui.Controls
 
 			if (oldView != null)
 			{
-				VisualDiagnostics.OnChildRemoved((Shell)bindable, oldView, ((IVisualTreeElement)bindable).GetVisualChildren().IndexOf(oldView));
+				VisualDiagnostics.OnChildRemoved((Page)bindable, oldView, ((IVisualTreeElement)bindable).GetVisualChildren().IndexOf(oldView));
 				oldView.Parent = null;
 			}
 
 			if (newView != null)
 			{
 				newView.Parent = owner;
-				VisualDiagnostics.OnChildAdded((Shell)bindable, newView);
+				VisualDiagnostics.OnChildAdded((Page)bindable, newView);
 			}
 		}
 
