@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	{
 		WeakBrushChangedProxy? _fillProxy = null;
 		WeakBrushChangedProxy? _strokeProxy = null;
+		EventHandler? _fillChanged, _strokeChanged;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shape()
@@ -198,8 +199,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (fill is not null)
 			{
 				SetInheritedBindingContext(fill, BindingContext);
-				var proxy = _fillProxy ??= new();
-				proxy.Subscribe(fill, (sender, e) => OnPropertyChanged(nameof(Fill)));
+				_fillChanged ??= (sender, e) => OnPropertyChanged(nameof(Fill));
+				_fillProxy ??= new();
+				_fillProxy.Subscribe(fill, _fillChanged);
 			}
 		}
 
@@ -227,8 +229,9 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				var proxy = _strokeProxy ??= new();
-				proxy.Subscribe(stroke, (sender, e) => OnPropertyChanged(nameof(Stroke)));
+				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
+				_strokeProxy ??= new();
+				_strokeProxy.Subscribe(stroke, _strokeChanged);
 			}
 		}
 

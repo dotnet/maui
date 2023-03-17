@@ -11,7 +11,7 @@ namespace Microsoft.Maui.UnitTests.Views
 	public class ShapeTests
 	{
 		[Fact]
-		public void ShapeFillSubscribed()
+		public async Task ShapeFillSubscribed()
 		{
 			var fill = new SolidColorBrush { Color = Colors.Red };
 			var shape = new Rectangle { Fill = fill };
@@ -23,7 +23,12 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
 			fill.Color = Colors.Green;
+
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 
@@ -41,7 +46,7 @@ namespace Microsoft.Maui.UnitTests.Views
 		}
 
 		[Fact]
-		public void ShapeStrokeSubscribed()
+		public async Task ShapeStrokeSubscribed()
 		{
 			var stroke = new SolidColorBrush { Color = Colors.Red };
 			var shape = new Rectangle { Stroke = stroke };
@@ -53,7 +58,12 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
 			stroke.Color = Colors.Green;
+
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 
