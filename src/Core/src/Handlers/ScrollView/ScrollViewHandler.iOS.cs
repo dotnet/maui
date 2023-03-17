@@ -5,6 +5,7 @@ using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Size = Microsoft.Maui.Graphics.Size;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIScrollView CreatePlatformView()
 		{
-			return new UIScrollView();
+			return new MauiScrollView();
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
