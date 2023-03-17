@@ -142,9 +142,15 @@
                     <Label
                         Text="Platform Specifics"
                         Style="{StaticResource Headline}"/>
+                    <Label
+                        Text="Mixed Content Mode"
+                        Style="{StaticResource Headline}"/>
                     <Button
                         Text="Allow MixedContentMode"
                         Clicked="OnAllowMixedContentClicked"/>
+                    <Label
+                        Text="Zoom Controls"
+                        Style="{StaticResource Headline}"/>
                     <Button
                         Text="Enable Zoom Controls"
                         Clicked="OnEnableZoomControlsClicked"/>
