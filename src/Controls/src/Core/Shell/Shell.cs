@@ -1326,10 +1326,16 @@ namespace Microsoft.Maui.Controls
 			var newView = (View)newValue;
 
 			if (oldView != null)
+			{
+				VisualDiagnostics.OnChildRemoved((Shell)bindable, oldView, ((IVisualTreeElement)bindable).GetVisualChildren().IndexOf(oldView));
 				oldView.Parent = null;
+			}
 
 			if (newView != null)
+			{
 				newView.Parent = owner;
+				VisualDiagnostics.OnChildAdded((Shell)bindable, newView);
+			}
 		}
 
 		internal FlyoutBehavior GetEffectiveFlyoutBehavior()

@@ -623,17 +623,19 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			VisualDiagnostics.OnChildRemoved(this, oldTitleView, ((IVisualTreeElement)this).GetVisualChildren().IndexOf(oldTitleView));
-
 			if (oldTitleView != null)
+			{
+				VisualDiagnostics.OnChildRemoved(this, oldTitleView, ((IVisualTreeElement)this).GetVisualChildren().IndexOf(oldTitleView));
 				oldTitleView.Parent = null;
-
-			if (newTitleView != null)
-				newTitleView.Parent = this;
+			}
 
 			_titleView = newTitleView;
 
-			VisualDiagnostics.OnChildAdded(this, newTitleView);
+			if (newTitleView != null)
+			{
+				newTitleView.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, newTitleView);
+			}
 		}
 
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
