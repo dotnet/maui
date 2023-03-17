@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -160,5 +162,60 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor(polyline, expected);
 		}
+
+		[Theory]
+		[ClassData(typeof(IntrinsicSizeTestCases))]
+		public async Task ShapesDoNotHaveIntrinsicSize(IShapeView shape)
+		{
+			var size = await InvokeOnMainThreadAsync(() => CreateHandler(shape).GetDesiredSize(100, 100));
+			Assert.Equal(0, size.Width);
+			Assert.Equal(0, size.Height);
+		}
+	}
+
+	public class IntrinsicSizeTestCases : IEnumerable<object[]>
+	{
+		public IntrinsicSizeTestCases()
+		{
+			var rectangle = new ShapeViewStub()
+			{
+				Shape = new RectangleShapeStub(),
+				Fill = new SolidPaintStub(Colors.Red),
+				Height = double.NaN, // Have to explicitly reset this because StubBase sets H,W to 50/50
+				Width = double.NaN
+			};
+
+			var polygon = new ShapeViewStub()
+			{
+				Shape = new PolygonShapeStub { Points = new PointCollectionStub() { new Point(10, 10), new Point(100, 50), new Point(50, 90) } },
+				Fill = new SolidPaintStub(Colors.Lime),
+				Stroke = new SolidPaintStub(Colors.Black),
+				StrokeThickness = 4,
+				Height = double.NaN,
+				Width = double.NaN
+			};
+
+			var line = new ShapeViewStub()
+			{
+				Shape = new LineShapeStub { X1 = 0, Y1 = 0, X2 = 90, Y2 = 0 },
+				Stroke = new SolidPaintStub(Colors.Purple),
+				StrokeThickness = 0.6,
+				Height = double.NaN,
+				Width = double.NaN
+			};
+
+			_data = new()
+			{
+				new object[] { rectangle },
+				new object[] { polygon },
+				new object[] { line }
+			};
+		}
+
+		private readonly List<object[]> _data;
+
+		public IEnumerator<object[]> GetEnumerator() => _data.GetEnumerator();
+
+		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 }
