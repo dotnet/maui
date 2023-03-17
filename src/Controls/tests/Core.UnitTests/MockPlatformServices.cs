@@ -84,6 +84,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public MockApplication()
 		{
 		}
+
+		public void NotifyThemeChanged() =>
+			(this as IApplication).ThemeChanged();
 	}
 
 	internal class MockTicker : Ticker

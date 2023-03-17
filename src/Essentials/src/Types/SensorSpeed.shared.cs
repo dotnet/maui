@@ -1,15 +1,30 @@
 namespace Microsoft.Maui.Devices.Sensors
 {
-	/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="Type[@FullName='Microsoft.Maui.Essentials.SensorSpeed']/Docs/*" />
+	/// <summary>
+	/// Represents the sensor speed to monitor device sensors for changes.
+	/// </summary>
 	public enum SensorSpeed
 	{
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="//Member[@MemberName='Default']/Docs/*" />
+		/// <summary>The device default sensor speed.</summary>
 		Default = 0,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="//Member[@MemberName='UI']/Docs/*" />
+
+		/// <summary>Rate suitable for general user interface.</summary>
 		UI = 1,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="//Member[@MemberName='Game']/Docs/*" />
+
+		/// <summary>Rate suitable for games.</summary>
 		Game = 2,
-		/// <include file="../../docs/Microsoft.Maui.Essentials/SensorSpeed.xml" path="//Member[@MemberName='Fastest']/Docs/*" />
+
+		/// <summary>Get the sensor data as fast as possible.</summary>
 		Fastest = 3,
+	}
+
+	internal static partial class SensorSpeedExtensions
+	{
+		// Timing intervals to match Android sensor speeds in milliseconds
+		// https://developer.android.com/guide/topics/sensors/sensors_overview
+		internal const uint sensorIntervalDefault = 200;
+		internal const uint sensorIntervalUI = 60;
+		internal const uint sensorIntervalGame = 20;
+		internal const uint sensorIntervalFastest = 5;
 	}
 }

@@ -268,7 +268,8 @@ namespace Microsoft.Maui.Platform
 					else
 					{
 						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
-						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
+						var density = Context.GetDisplayDensity();
+						var path = Clip.PathForBounds(bounds)?.AsAndroidPath(scaleX: density, scaleY: density);
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
 
@@ -304,6 +305,26 @@ namespace Microsoft.Maui.Platform
 			_shadowCanvas = null;
 			_shadowPaint = null;
 			_shadowBitmap = null;
+		}
+
+		public override ViewStates Visibility
+		{
+			get => base.Visibility;
+			set
+			{
+				base.Visibility = value;
+
+				if (value != ViewStates.Visible)
+				{
+					return;
+				}
+
+				for (int n = 0; n < this.ChildCount; n++)
+				{
+					var child = GetChildAt(n);
+					child.Visibility = ViewStates.Visible;
+				}
+			}
 		}
 	}
 }

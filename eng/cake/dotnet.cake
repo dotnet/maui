@@ -95,19 +95,45 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
+Task("android-aar")
+    .Does(() =>
+    {
+        var root = "./src/Core/AndroidNative/";
+
+        var gradlew = root + "gradlew";
+        if (IsRunningOnWindows())
+            gradlew += ".bat";
+
+        var exitCode = StartProcess(
+            MakeAbsolute((FilePath)gradlew),
+            new ProcessSettings
+            {
+                Arguments = $"createAar --rerun-tasks",
+                WorkingDirectory = root
+            });
+
+        if (exitCode != 0)
+        {
+            if (IsCIBuild() || target == "android-aar")
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
+    });
+
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         }
         else
         {
-            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
         }
     });
@@ -121,7 +147,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1, binlogPrefix: "sample-");
+        }, binlogPrefix: "sample-");
     });
 
 Task("dotnet-templates")
@@ -246,6 +272,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -270,6 +297,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -477,7 +505,7 @@ Task("dotnet-diff")
 
 // Tasks for Local Development
 Task("VS")
-    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -490,7 +518,9 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
-        StartVisualStudioForDotNet6();
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioForDotNet();
     }); 
 
 // Keeping this for users that are already using this.
@@ -568,7 +598,24 @@ void SetDotNetEnvironmentVariables()
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
-void StartVisualStudioForDotNet6()
+void UseLocalNuGetCacheFolder(bool reset = false)
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    EnsureDirectoryExists(packages);
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioForDotNet()
 {
     string sln = Argument<string>("sln", null);
 
@@ -581,11 +628,11 @@ void StartVisualStudioForDotNet6()
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui.sln";
+            sln = "./Microsoft.Maui-windows.slnf";
         }
         else
         {
-            sln = "_omnisharp.sln";
+            sln = "./Microsoft.Maui-mac.slnf";
         }
     }
 

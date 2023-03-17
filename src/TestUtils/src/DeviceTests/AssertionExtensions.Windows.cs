@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000, string? message = null)
 		{
 			throw new NotImplementedException();
 		}
@@ -287,6 +287,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (withinRectModifier is not null)
 				imageRect = withinRectModifier.Invoke(imageRect);
+
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
 
 			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 

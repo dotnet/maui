@@ -12,20 +12,36 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public IEnumerator<object[]> GetEnumerator()
 		{
-			yield return new object[] { (Shell shell, object newContent) => {
-				shell.FlyoutHeader = newContent;
-				return "Flyout Header";
-			} };
-			yield return new object[] { (Shell shell, object newContent) => {
-				shell.FlyoutContent = newContent;
-				return "Flyout Content";
-			} };
-			yield return new object[] { (Shell shell, object newContent) => {
-				shell.FlyoutFooter = newContent;
-				return "Flyout Footer";
-			} };
+			yield return new object[] { "Flyout Header" };
+			yield return new object[] { "Flyout Content" };
+			yield return new object[] { "Flyout Footer" };
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+		// The Runner parses tests names better if the inputs are primitives
+		public static Action<Shell, object> GetTest(string name)
+		{
+			switch (name)
+			{
+				case "Flyout Header":
+					return (Shell shell, object newContent) =>
+					{
+						shell.FlyoutHeader = newContent;
+					};
+				case "Flyout Content":
+					return (Shell shell, object newContent) =>
+					{
+						shell.FlyoutContent = newContent;
+					};
+				case "Flyout Footer":
+					return (Shell shell, object newContent) =>
+					{
+						shell.FlyoutFooter = newContent;
+					};
+			}
+
+			throw new ArgumentException(nameof(name));
+		}
 	}
 }

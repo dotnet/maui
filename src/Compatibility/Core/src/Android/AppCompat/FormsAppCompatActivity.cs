@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		DisableSetStatusBarColor = 1 << 0,
 	}
 
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct ActivationOptions
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		public ActivationOptions(Bundle bundle)
 		{
@@ -292,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnPause()
 		{
-			_layout.HideKeyboard(true);
+			_layout.HideKeyboard();
 
 			// Stop animations or other ongoing actions that could consume CPU
 			// Commit unsaved changes, build only if users expect such changes to be permanently saved when thy leave such as a draft email
