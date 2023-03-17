@@ -8,7 +8,7 @@
         <VerticalStackLayout Padding="12" Spacing="6">
 
             <Label
-                Text="Default (Using BackgroundColor)"
+                Text="Default"
                 Style="{StaticResource Headline}"/>
             <BoxView
                 BackgroundColor="CornflowerBlue"
