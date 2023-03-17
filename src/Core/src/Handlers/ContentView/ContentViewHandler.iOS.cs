@@ -58,6 +58,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.CrossPlatformMeasure = null;
 			platformView.CrossPlatformArrange = null;
+			platformView.RemoveFromSuperview();
 			base.DisconnectHandler(platformView);
 		}
 	}

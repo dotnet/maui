@@ -1156,16 +1156,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				base.ViewWillAppear(animated);
 			}
 
-			public override void WillMoveToParentViewController(UIViewController parent)
-			{
-				base.WillMoveToParentViewController(parent);
-
-				foreach (var child in ChildViewControllers)
-				{
-					child.WillMoveToParentViewController(parent);
-				}
-			}
-
 			protected override void Dispose(bool disposing)
 			{
 				if (_disposed)
