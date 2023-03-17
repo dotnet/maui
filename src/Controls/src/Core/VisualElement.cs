@@ -277,6 +277,7 @@ namespace Microsoft.Maui.Controls
 		WeakBackgroundChangedProxy _backgroundProxy = null;
 		WeakClipChangedProxy _clipProxy = null;
 		WeakNotifyPropertyChangedProxy _shadowProxy = null;
+		PropertyChangedEventHandler _shadowChanged;
 
 		~VisualElement()
 		{

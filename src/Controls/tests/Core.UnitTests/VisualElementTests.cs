@@ -177,6 +177,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ShadowSubscribed()
+		{
+			var shadow = new Shadow { Brush = new SolidColorBrush(Colors.Red) };
+			var visualElement = new VisualElement { Shadow = shadow };
+
+			bool fired = false;
+			visualElement.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(VisualElement.Shadow))
+					fired = true;
+			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			shadow.Brush = new SolidColorBrush(Colors.Green);
+
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
 		public async Task ShadowDoesNotLeak()
 		{
 			var shadow = new Shadow

@@ -310,14 +310,22 @@ namespace Microsoft.Maui.Controls
 
 			if (shadow is not null)
 			{
-				var proxy = _shadowProxy ??= new();
-				proxy.Subscribe(shadow, (sender, e) => OnPropertyChanged(nameof(Shadow)));
+				SetInheritedBindingContext(shadow, BindingContext);
+				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
+				_shadowProxy ??= new();
+				_shadowProxy.Subscribe(shadow, _shadowChanged);
 			}
 		}
 
 		void StopNotifyingShadowChanges()
 		{
-			_clipProxy?.Unsubscribe();
+			var shadow = Shadow;
+
+			if (shadow is not null)
+			{
+				SetInheritedBindingContext(shadow, null);
+				_shadowProxy?.Unsubscribe();
+			}
 		}
 
 		void OnShadowChanged(object? sender, PropertyChangedEventArgs e)
