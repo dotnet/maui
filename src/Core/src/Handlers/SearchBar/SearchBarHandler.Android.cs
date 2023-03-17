@@ -114,6 +114,12 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.QueryEditor?.Focus(request);
+		}
+
 		void OnQueryTextSubmit(object? sender, QueryTextSubmitEventArgs e)
 		{
 			VirtualView.SearchButtonPressed();
