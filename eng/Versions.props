@@ -9,7 +9,7 @@
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>8.0.0-preview.2.23128.3</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>8.0.0-preview.2.23128.3</MicrosoftExtensionsServicingPackageVersion>
-    <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
+    <SystemCodeDomPackageVersion>8.0.0-preview.2.23128.3</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.3.205</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
@@ -46,7 +46,7 @@
     <SystemMemoryPackageVersion>4.5.5</SystemMemoryPackageVersion>
     <SystemBuffersPackageVersion>4.5.1</SystemBuffersPackageVersion>
     <SystemTextJsonPackageVersion>7.0.2</SystemTextJsonPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>7.0.0</SystemTextEncodingsWebPackageVersion>
+    <SystemTextEncodingsWebPackageVersion>8.0.0-preview.2.23128.3</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>7.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
