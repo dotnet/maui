@@ -115,8 +115,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
 			view.ToPlatform().ShowKeyboardForView(timeout);
-		public static Task HideKeyboardForView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().HideKeyboardForView(timeout);
+		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
+			view.ToPlatform().HideKeyboardForView(timeout, message);
 
 		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
 			view.ToPlatform().WaitForFocused(timeout);
