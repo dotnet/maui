@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Platform
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
-		private async Task LoadUrlAsync(string? url)
+		async Task LoadUrlAsync(string? url)
 		{
 			try
 			{
