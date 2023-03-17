@@ -202,6 +202,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visualElement);
 
 			shadow.Brush = new SolidColorBrush(Colors.Green);
 
