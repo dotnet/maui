@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Primitives;
 using NSubstitute;
+using NSubstitute.ReceivedExtensions;
 using Xunit;
 using static Microsoft.Maui.UnitTests.Layouts.LayoutTestHelpers;
 using LayoutAlignment = Microsoft.Maui.Primitives.LayoutAlignment;
@@ -2377,6 +2378,54 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			_ = MeasureAndArrange(grid);
 
 			AssertArranged(view0, new Rect(0, 0, 100, 120));
+		}
+
+		[Fact]
+		public void AutoStarColumnsRespectUnconstrainedHeight()
+		{
+			var grid = CreateGridLayout(columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.Start);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 1);
+
+			_ = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
+
+			// The Grid only has one view; since we're measuring the Grid without height constraints,
+			// and the single view does not have an explicit height, then there should have been at least
+			// one measurement with an unconstrained height
+			view0.Received().Measure(Arg.Any<double>(), double.PositiveInfinity);
+
+			// The Auto column has no Views, so we expect it to have zero width; the single view should
+			// be arranged at the top left corner
+			AssertArranged(view0, new Rect(0, 0, 20, 20));
+		}
+
+		[Fact]
+		public void AutoStarRowsRespectUnconstrainedWidth()
+		{
+			var grid = CreateGridLayout(rows: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+			view0.HorizontalLayoutAlignment.Returns(LayoutAlignment.Start);
+			view0.VerticalLayoutAlignment.Returns(LayoutAlignment.Start);
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 1);
+
+			_ = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
+
+			// The Grid only has one view; since we're measuring the Grid without width constraints,
+			// and the single view does not have an explicit width, then there should have been at least
+			// one measurement with an unconstrained width
+			view0.Received().Measure(double.PositiveInfinity, Arg.Any<double>());
+
+			// The Auto row has no Views, so we expect it to have zero height; the single view should
+			// be arranged at the top left corner
+			AssertArranged(view0, new Rect(0, 0, 20, 20));
 		}
 	}
 }
