@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Add(button);
 
 			var clicked = false;
-			
+
 			var pathGeometry2 = new PathGeometry();
 
 			button.Clicked += delegate
