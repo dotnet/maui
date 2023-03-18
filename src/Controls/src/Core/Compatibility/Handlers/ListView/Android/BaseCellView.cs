@@ -170,7 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetMainTextColor(Color color)
 		{
-			Color defaultColorToSet = _defaultMainTextColor == null ? _androidDefaultTextColor : _defaultMainTextColor;
+			Color defaultColorToSet = _defaultMainTextColor ?? _androidDefaultTextColor;
 
 			_mainTextColor = color;
 			_mainText.SetTextColor(color.ToPlatform(defaultColorToSet));
