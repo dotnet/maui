@@ -34,9 +34,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetAppearance(ShellAppearance appearance)
 		{
-			SetValues(appearance.BackgroundColor == null ? _defaultBackgroundColor : appearance.BackgroundColor,
-				appearance.ForegroundColor == null ? _defaultForegroundColor : appearance.ForegroundColor,
-				appearance.UnselectedColor == null ? _defaultUnselectedColor : appearance.UnselectedColor);
+			SetValues(appearance.BackgroundColor ?? _defaultBackgroundColor,
+				appearance.ForegroundColor ?? _defaultForegroundColor,
+				appearance.UnselectedColor ?? _defaultUnselectedColor);
 		}
 
 		void SetValues(Color backgroundColor, Color foregroundColor, Color unselectedColor)

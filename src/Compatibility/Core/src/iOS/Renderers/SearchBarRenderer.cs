@@ -340,8 +340,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			}
 			else
 			{
-				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: targetColor == null
-					? ColorExtensions.PlaceholderColor.ToColor() : targetColor);
+				_textField.AttributedPlaceholder = formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: targetColor ?? ColorExtensions.PlaceholderColor.ToColor());
 				_textField.AttributedPlaceholder.WithCharacterSpacing(Element.CharacterSpacing);
 			}
 		}
