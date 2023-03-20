@@ -1,9 +1,6 @@
-﻿using System;
-using System.Threading.Tasks;
+using System;
 using Android.Graphics.Drawables;
-using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Graphics;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 using ATextAlignment = Android.Views.TextAlignment;
 using AView = Android.Views.View;
@@ -15,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(AView platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
 		void OnViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
@@ -102,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 			if (mauiSwipeView == null || MauiContext?.Context == null)
 				return 0;
 
-			int contentHeight = mauiSwipeView.Height;
+			int contentHeight = mauiSwipeView.MeasuredHeight;
 			int contentWidth = (int)MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
 
 			return Math.Min(contentHeight, contentWidth) / 2;
@@ -115,22 +112,22 @@ namespace Microsoft.Maui.Handlers
 			if (mauiSwipeView == null)
 				return;
 
-			var contentHeight = mauiSwipeView.Height;
+			var contentHeight = mauiSwipeView.MeasuredHeight;
 
 			var swipeView = VirtualView?.FindParentOfType<ISwipeView>();
+			float density = mauiSwipeView.Context.GetDisplayDensity();
 
 			if (swipeView?.Content is IView content)
 			{
-				float density = mauiSwipeView.Context.GetDisplayDensity();
 				var verticalThickness = (int)(content.Margin.VerticalThickness * density);
 				contentHeight -= verticalThickness;
 			}
 
-			var textSize = 0;
+			var lineHeight = 0;
 
 			if (PlatformView is TextView textView)
 			{
-				textSize = !string.IsNullOrEmpty(textView.Text) ? (int)textView.TextSize : 0;
+				lineHeight = !string.IsNullOrEmpty(textView.Text) ? (int)textView.LineHeight : 0;
 				var icons = textView.GetCompoundDrawables();
 				if (icons.Length > 1 && icons[1] != null)
 				{
@@ -139,7 +136,8 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var iconSize = GetIconSize();
-			var buttonPadding = (contentHeight - (iconSize + textSize + 6)) / 2;
+			var textPadding = 2 * density;
+			var buttonPadding = (int)((contentHeight - (iconSize + lineHeight + textPadding)) / 2);
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
