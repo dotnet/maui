@@ -13,7 +13,7 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.4.33103.184" />
+    <PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
     <ProjectReference Include="..\..\src\Core.Design\Controls.Core.Design.csproj" />
   </ItemGroup>
   <ItemGroup>

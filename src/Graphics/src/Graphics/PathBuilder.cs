@@ -197,7 +197,7 @@ namespace Microsoft.Maui.Graphics
 			}
 			catch (Exception exc)
 			{
-				System.Diagnostics.Debug.WriteLine("=== An error occured parsing the path. ===", exc);
+				System.Diagnostics.Debug.WriteLine("=== An error occurred parsing the path. ===", exc);
 				System.Diagnostics.Debug.WriteLine(pathAsString);
 #if DEBUG
 				throw;

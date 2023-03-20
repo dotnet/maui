@@ -518,7 +518,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if IOS || MACCATALYST
 		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
 		public async Task TitleViewSetOnShellWorksAfterNavigation()
 		{
@@ -585,7 +584,6 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-#endif
 
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
@@ -798,8 +796,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Toolbar Title Initializes")]
-		public async Task ToolbarTitleIntializes()
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
 		{
 			SetupBuilder();
 			var navPage = new Shell()

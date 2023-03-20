@@ -1679,11 +1679,17 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
+				if (_shell.CurrentSection is null)
+				{
+					await base.OnPushModal(modal, animated);
+					return;
+				}
+
 				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
 				{
 					// This will route the modal push through the shell section which is setup
 					// to update the shell state after a modal push
-					await _shell.CurrentItem.CurrentItem.Navigation.PushModalAsync(modal, animated);
+					await _shell.CurrentSection.Navigation.PushModalAsync(modal, animated);
 					return;
 				}
 

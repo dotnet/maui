@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
-				textBlock?.UpdateLineBreakMode(button.LineBreakMode);
+				textBlock.UpdateLineBreakMode(button.LineBreakMode);
 			}
 		}
 	}

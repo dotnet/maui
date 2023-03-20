@@ -41,6 +41,12 @@
                     BackgroundColor="Blue"
                     Text="Button"/>
                 <Label
+                     Text="BackgroundColor (Binding)"
+                     Style="{StaticResource Headline}" />
+                 <Button 
+                     Text="Button"
+                     BackgroundColor="{Binding ButtonBackground}" />
+                <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Button 
@@ -171,6 +177,11 @@
                     x:Name="LineBreakModeButton"
                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
                 <Button
+                    x:Name="ImageLineBreakModeButton"
+                    ContentLayout="Right" 
+                    ImageSource="coffee.png"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
+                <Button
                     Text="Update LineBreakMode"
                     Clicked="OnLineBreakModeButtonClicked"/>
                 <Label
@@ -178,6 +189,18 @@
                     Style="{StaticResource Headline}"/>
                 <local:CustomButton
                     Text="Custom Button" />
+                <Label
+                    Text="HorizontalOptions"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Start"
+                    HorizontalOptions="Start" />
+                <Button
+                    Text="Center"
+                    HorizontalOptions="Center" />
+                <Button
+                    Text="End"
+                    HorizontalOptions="End" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
