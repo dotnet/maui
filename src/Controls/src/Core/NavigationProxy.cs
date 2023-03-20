@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Internals
 	public class NavigationProxy : INavigation
 	{
 		INavigation _inner;
-		Lazy<List<Page>> _modalStack = new Lazy<List<Page>>(() => new List<Page>());
+		Lazy<NavigatingStepRequestList> _modalStack = new Lazy<NavigatingStepRequestList>(() => new NavigatingStepRequestList());
 
 		Lazy<List<Page>> _pushStack = new Lazy<List<Page>>(() => new List<Page>());
 
@@ -34,14 +34,14 @@ namespace Microsoft.Maui.Controls.Internals
 				// reverse so that things go into the new stack in the same order
 				// null out to release memory that will likely never be needed again
 
-				if (ReferenceEquals(_inner, null))
+				if (_inner is null)
 				{
 					_pushStack = new Lazy<List<Page>>(() => new List<Page>());
-					_modalStack = new Lazy<List<Page>>(() => new List<Page>());
+					_modalStack = new Lazy<NavigatingStepRequestList>(() => new NavigatingStepRequestList());
 				}
 				else
 				{
-					if (_pushStack != null && _pushStack.IsValueCreated)
+					if (_pushStack is not null && _pushStack.IsValueCreated)
 					{
 						foreach (Page page in _pushStack.Value)
 						{
@@ -49,11 +49,11 @@ namespace Microsoft.Maui.Controls.Internals
 						}
 					}
 
-					if (_modalStack != null && _modalStack.IsValueCreated)
+					if (_modalStack is not null && _modalStack.IsValueCreated)
 					{
-						foreach (Page page in _modalStack.Value)
+						foreach (var request in _modalStack.Value)
 						{
-							_inner.PushModalAsync(page);
+							_inner.PushModalAsync(request.Page, request.IsAnimated);
 						}
 					}
 
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushAsync'][2]/Docs/*" />
 		public Task PushAsync(Page root, bool animated)
 		{
-			if (root.RealParent != null)
+			if (root.RealParent is not null)
 				throw new InvalidOperationException("Page must not already have a parent.");
 			return OnPushAsync(root, animated);
 		}
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.Controls.Internals
 		/// <include file="../../docs/Microsoft.Maui.Controls.Internals/NavigationProxy.xml" path="//Member[@MemberName='PushModalAsync'][2]/Docs/*" />
 		public Task PushModalAsync(Page modal, bool animated)
 		{
-			if (modal.RealParent != null && modal.RealParent is not IWindow)
+			if (modal.RealParent is not null && modal.RealParent is not IWindow)
 				throw new InvalidOperationException("Page must not already have a parent.");
 			return OnPushModal(modal, animated);
 		}
@@ -154,19 +154,19 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual IReadOnlyList<Page> GetModalStack()
 		{
 			INavigation currentInner = Inner;
-			return currentInner == null ? _modalStack.Value : currentInner.ModalStack;
+			return currentInner is null ? _modalStack.Value.Pages : currentInner.ModalStack;
 		}
 
 		protected virtual IReadOnlyList<Page> GetNavigationStack()
 		{
 			INavigation currentInner = Inner;
-			return currentInner == null ? _pushStack.Value : currentInner.NavigationStack;
+			return currentInner is null ? _pushStack.Value : currentInner.NavigationStack;
 		}
 
 		protected virtual void OnInsertPageBefore(Page page, Page before)
 		{
 			INavigation currentInner = Inner;
-			if (currentInner == null)
+			if (currentInner is null)
 			{
 				int index = _pushStack.Value.IndexOf(before);
 				if (index == -1)
@@ -182,19 +182,19 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual Task<Page> OnPopAsync(bool animated)
 		{
 			INavigation inner = Inner;
-			return inner == null ? Task.FromResult(Pop()) : inner.PopAsync(animated);
+			return inner is null ? Task.FromResult(Pop()) : inner.PopAsync(animated);
 		}
 
 		protected virtual Task<Page> OnPopModal(bool animated)
 		{
 			INavigation innerNav = Inner;
-			return innerNav == null ? Task.FromResult(PopModal()) : innerNav.PopModalAsync(animated);
+			return innerNav is null ? Task.FromResult(PopModal()) : innerNav.PopModalAsync(animated);
 		}
 
 		protected virtual Task OnPopToRootAsync(bool animated)
 		{
 			INavigation currentInner = Inner;
-			if (currentInner == null)
+			if (currentInner is null)
 			{
 				if (_pushStack.Value.Count == 0)
 					return Task.FromResult<Page>(null);
@@ -210,7 +210,7 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual Task OnPushAsync(Page page, bool animated)
 		{
 			INavigation currentInner = Inner;
-			if (currentInner == null)
+			if (currentInner is null)
 			{
 				_pushStack.Value.Add(page);
 				return Task.FromResult(page);
@@ -221,9 +221,9 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual Task OnPushModal(Page modal, bool animated)
 		{
 			INavigation currentInner = Inner;
-			if (currentInner == null)
+			if (currentInner is null)
 			{
-				_modalStack.Value.Add(modal);
+				_modalStack.Value.Add(new NavigationStepRequest(modal, true, animated));
 				return Task.FromResult<object>(null);
 			}
 			return currentInner.PushModalAsync(modal, animated);
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls.Internals
 		protected virtual void OnRemovePage(Page page)
 		{
 			INavigation currentInner = Inner;
-			if (currentInner == null)
+			if (currentInner is null)
 			{
 				_pushStack.Value.Remove(page);
 			}
@@ -254,12 +254,12 @@ namespace Microsoft.Maui.Controls.Internals
 
 		Page PopModal()
 		{
-			List<Page> list = _modalStack.Value;
+			var list = _modalStack.Value;
 			if (list.Count == 0)
 				return null;
-			Page result = list[list.Count - 1];
+			var result = list[list.Count - 1];
 			list.RemoveAt(list.Count - 1);
-			return result;
+			return result.Page;
 		}
 	}
 }
