@@ -124,5 +124,17 @@ namespace Microsoft.Maui.Platform
 			if (label.LineHeight >= 0)
 				textView.SetLineSpacing(0, (float)label.LineHeight);
 		}
+
+		internal static void Focus(this TextView textView, FocusRequest request)
+		{
+			if (textView is null)
+				return;
+
+			textView.Focus(request, () =>
+			{
+				if (textView.ShowSoftInputOnFocus)
+					KeyboardManager.PostShowKeyboard(textView);
+			});
+		}
 	}
 }

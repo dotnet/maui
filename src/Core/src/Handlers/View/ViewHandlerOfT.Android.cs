@@ -17,52 +17,10 @@ namespace Microsoft.Maui.Handlers
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
-		protected override void SetupContainer()
-		{
-			if (Context == null || PlatformView == null || ContainerView != null)
-				return;
+		protected override void SetupContainer() =>
+			WrapperView.SetupContainer(PlatformView, Context, ContainerView, (cv) => ContainerView = cv);
 
-			var oldParent = (ViewGroup?)PlatformView.Parent;
-
-			var oldIndex = oldParent?.IndexOfChild(PlatformView);
-			oldParent?.RemoveView(PlatformView);
-
-			ContainerView ??= new WrapperView(Context);
-			((ViewGroup)ContainerView).AddView(PlatformView);
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(ContainerView, idx);
-			else
-				oldParent?.AddView(ContainerView);
-		}
-
-		protected override void RemoveContainer()
-		{
-			if (Context == null || PlatformView == null || ContainerView == null || PlatformView.Parent != ContainerView)
-			{
-				CleanupContainerView(ContainerView);
-				ContainerView = null;
-				return;
-			}
-
-			var oldParent = (ViewGroup?)ContainerView.Parent;
-
-			var oldIndex = oldParent?.IndexOfChild(ContainerView);
-			oldParent?.RemoveView(ContainerView);
-
-			CleanupContainerView(ContainerView);
-			ContainerView = null;
-
-			if (oldIndex is int idx && idx >= 0)
-				oldParent?.AddView(PlatformView, idx);
-			else
-				oldParent?.AddView(PlatformView);
-
-			void CleanupContainerView(View? containerView)
-			{
-				if (containerView is ViewGroup vg)
-					vg.RemoveAllViews();
-			}
-		}
+		protected override void RemoveContainer() =>
+			WrapperView.RemoveContainer(PlatformView, Context, ContainerView, () => ContainerView = null);
 	}
 }

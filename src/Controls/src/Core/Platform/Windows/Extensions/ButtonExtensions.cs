@@ -60,25 +60,5 @@ namespace Microsoft.Maui.Controls.Platform
 				textBlock.UpdateLineBreakMode(button.LineBreakMode);
 			}
 		}
-
-		internal static void UpdateContentSize(this Microsoft.UI.Xaml.Controls.Button platformButton, Button button)
-		{
-			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
-			{
-				var buttonPadding = platformButton.Padding;
-				var horizontalSpace = buttonPadding.Left + buttonPadding.Right;
-
-				var image = platformButton.GetContent<UI.Xaml.Controls.Image>();
-
-				if (image is not null)
-				{
-					var imageMargin = image.Margin.Left + image.Margin.Right;
-					horizontalSpace += image.ActualWidth + imageMargin;
-				}
-
-				if (platformButton.ActualWidth > horizontalSpace)
-					textBlock.MaxWidth = platformButton.ActualWidth - horizontalSpace;
-			}
-		}
 	}
 }
