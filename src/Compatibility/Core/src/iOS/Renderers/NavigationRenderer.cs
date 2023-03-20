@@ -662,7 +662,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void UpdateBackgroundColor()
 		{
-			var color = Element.BackgroundColor == null ? Maui.Platform.ColorExtensions.BackgroundColor.ToColor() : Element.BackgroundColor;
+			var color = Element.BackgroundColor ?? Maui.Platform.ColorExtensions.BackgroundColor.ToColor();
 			View.BackgroundColor = color.ToPlatform();
 		}
 
