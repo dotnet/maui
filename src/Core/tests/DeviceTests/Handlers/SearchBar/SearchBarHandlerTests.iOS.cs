@@ -178,6 +178,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact] public async Task SearchBarUnFocusedIsWorking()
+		{ 
+			var searchBar = new SearchBarStub 
+			{ 
+				Text = "SearchBar" 
+			};
+			
+			await InvokeOnMainThreadAsync(async () => 
+			{ 
+				var searchBarHandler = CreateHandler(searchBar); 
+				await searchBarHandler.PlatformView.AttachAndRun(async () => 
+				{
+					searchBar.Handler.Invoke(nameof(IView.Focus), new FocusRequest(false)); 
+					await searchBar.WaitForFocused(); 		
+					Assert.True(searchBar.IsFocused);
+
+					searchBar.Handler.Invoke(nameof(IView.Unfocus), new FocusRequest(false)); 
+					await searchBar.WaitForUnFocused(); 
+					Assert.False(searchBar.IsFocused); 
+				}); 
+			}); 
+		}
+
 		double GetInputFieldHeight(SearchBarHandler searchBarHandler)
 		{
 			return GetNativeSearchBar(searchBarHandler).Bounds.Height;
