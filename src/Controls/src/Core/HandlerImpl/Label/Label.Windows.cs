@@ -74,27 +74,30 @@ namespace Microsoft.Maui.Controls
 				var platformView = labelHandler.PlatformView;
 				var virtualView = labelHandler.VirtualView as Label;
 
-				FormattedString formatted = virtualView.FormattedText;
-
-				if (formatted is not null)
+				if (virtualView is not null)
 				{
-					var fontManager = virtualView.RequireFontManager();
-					platformView.Inlines.Clear();
+					FormattedString formatted = virtualView.FormattedText;
 
-					// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
-					platformView.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
-
-					var heights = new List<double>();
-					for (var i = 0; i < formatted.Spans.Count; i++)
+					if (formatted is not null)
 					{
-						var span = formatted.Spans[i];
+						var fontManager = virtualView.RequireFontManager();
+						platformView.Inlines.Clear();
 
-						var run = span.ToRunAndColorsTuple(fontManager).Item1;
-						heights.Add(platformView.FindDefaultLineHeight(run));
-						platformView.Inlines.Add(run);
+						// Have to implement a measure here, otherwise inline.ContentStart and ContentEnd will be null, when used in RecalculatePositions
+						platformView.Measure(new global::Windows.Foundation.Size(double.MaxValue, double.MaxValue));
+
+						var heights = new List<double>();
+						for (var i = 0; i < formatted.Spans.Count; i++)
+						{
+							var span = formatted.Spans[i];
+
+							var run = span.ToRunAndColorsTuple(fontManager).Item1;
+							heights.Add(platformView.FindDefaultLineHeight(run));
+							platformView.Inlines.Add(run);
+						}
+
+						inlineHeights = heights;
 					}
-
-					inlineHeights = heights;
 				}
 			}
 
