@@ -4,9 +4,7 @@ using Android.Content;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
-using Android.Views.Animations;
 using AndroidX.CardView.Widget;
-using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -30,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Frame.BorderColorProperty.PropertyName] = (h, _) => h.UpdateBorderColor(),
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
 				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
-				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v),
+				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v)
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
@@ -48,6 +46,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IMauiContext? _mauiContext;
 		ViewHandlerDelegator<Frame> _viewHandlerWrapper;
 		Frame? _element;
+		bool _hasContainer;
+		AView? _wrapperView;
+
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
@@ -351,9 +352,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		#region IPlatformViewHandler
-		bool IViewHandler.HasContainer { get => false; set { } }
 
-		object? IViewHandler.ContainerView => null;
+		bool IViewHandler.HasContainer
+		{
+			get => _hasContainer;
+			set
+			{
+				if (_hasContainer == value)
+					return;
+
+				_hasContainer = value;
+
+				if (value)
+					SetupContainer();
+				else
+					RemoveContainer();
+			}
+		}
+
+		void SetupContainer() =>
+			WrapperView.SetupContainer(this, Context, _wrapperView, (cv) => _wrapperView = cv);
+
+		void RemoveContainer() =>
+			WrapperView.RemoveContainer(this, Context, _wrapperView, () => _wrapperView = null);
+
+		object? IViewHandler.ContainerView => _wrapperView;
 
 		IView? IViewHandler.VirtualView => Element;
 
@@ -365,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		AView IPlatformViewHandler.PlatformView => this;
 
-		AView? IPlatformViewHandler.ContainerView => this;
+		AView? IPlatformViewHandler.ContainerView => _wrapperView;
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect) =>
 			this.PlatformArrangeHandler(rect);
@@ -396,6 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_viewHandlerWrapper.DisconnectHandler();
 		}
+
 		#endregion
 	}
 }

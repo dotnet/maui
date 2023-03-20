@@ -202,6 +202,7 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
 		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -220,6 +221,7 @@ namespace Microsoft.Maui.Controls
 		public BindableLayoutController(IBindableLayout layout)
 		{
 			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
+			_collectionChangedEventHandler = ItemsSourceCollectionChanged;
 		}
 
 		~BindableLayoutController() => _collectionChangedProxy.Unsubscribe();
@@ -246,7 +248,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_itemsSource is INotifyCollectionChanged c)
 			{
-				_collectionChangedProxy.Subscribe(c, ItemsSourceCollectionChanged);
+				_collectionChangedProxy.Subscribe(c, _collectionChangedEventHandler);
 			}
 
 			if (!_isBatchUpdate)

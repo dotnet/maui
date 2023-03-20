@@ -30,6 +30,12 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
+					if (windowHandler is WindowHandlerStub windowHandlerStub)
+					{
+						if (windowHandlerStub.IsDisconnected)
+							await windowHandlerStub.FinishedDisconnecting;
+					}
+
 					if (windowHandler is not null)
 					{
 						if (window is Window controlsWindow && controlsWindow.Navigation.ModalStack.Count > 0)
@@ -81,10 +87,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		internal ModalWrapper GetModalWrapper(Page modalPage)
+		internal ControlsModalWrapper GetModalWrapper(Page modalPage)
 		{
 			var pageVC = (modalPage.Handler as IPlatformViewHandler).ViewController;
-			return (ModalWrapper)pageVC.ParentViewController;
+			return (ControlsModalWrapper)pageVC.ParentViewController;
 		}
 
 		protected bool IsBackButtonVisible(IElementHandler handler)
