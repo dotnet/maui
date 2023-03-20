@@ -144,11 +144,6 @@ namespace Microsoft.Maui.Platform
 				UpdateCursorSelection(textField, entry);
 		}
 
-		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
-		{
-			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
-		}
-
 		/* Updates both the IEntry.CursorPosition and IEntry.SelectionLength properties. */
 		static void UpdateCursorSelection(this UITextField textField, IEntry entry)
 		{
@@ -187,6 +182,11 @@ namespace Microsoft.Maui.Platform
 				entry.SelectionLength = newSelectionLength;
 
 			return end;
+		}
+
+		public static void UpdateClearButtonVisibility(this UITextField textField, IEntry entry)
+		{
+			textField.ClearButtonMode = entry.ClearButtonVisibility == ClearButtonVisibility.WhileEditing ? UITextFieldViewMode.WhileEditing : UITextFieldViewMode.Never;
 		}
 	}
 }
