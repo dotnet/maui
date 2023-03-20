@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Devices
 		/// Checks if the flashlight is available and can be turned on or off.
 		/// </summary>
 		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
-		public Task<bool> CheckIsSupportedAsync() => Task.FromResult(IsSupported);
+		public Task<bool> IsSupportedAsync() => Task.FromResult(IsSupported);
 
 		public Task TurnOnAsync()
 		{
