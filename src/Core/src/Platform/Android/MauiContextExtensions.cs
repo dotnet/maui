@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view.Handler?.MauiContext is MauiContext scopedMauiContext)
 			{
-				// If this handler becomes to a different activity then we need to 
+				// If this handler belongs to a different activity then we need to 
 				// recreate the view.
 				// If it's the same activity we just update the layout inflater
 				// and the fragment manager so that the platform view doesn't recreate

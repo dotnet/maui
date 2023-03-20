@@ -111,8 +111,14 @@ Task("android-aar")
                 Arguments = $"createAar --rerun-tasks",
                 WorkingDirectory = root
             });
+
         if (exitCode != 0)
-            throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+        {
+            if (IsCIBuild() || target == "android-aar")
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
     });
 
 Task("dotnet-build")
@@ -124,11 +130,10 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         }
         else
         {
-            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
         }
     });
@@ -142,7 +147,7 @@ Task("dotnet-samples")
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1, binlogPrefix: "sample-");
+        }, binlogPrefix: "sample-");
     });
 
 Task("dotnet-templates")
@@ -267,6 +272,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -622,7 +628,7 @@ void StartVisualStudioForDotNet()
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui.sln";
+            sln = "./Microsoft.Maui-windows.slnf";
         }
         else
         {

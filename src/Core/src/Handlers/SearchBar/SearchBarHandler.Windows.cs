@@ -1,6 +1,5 @@
-﻿#nullable enable
+#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -100,6 +99,11 @@ namespace Microsoft.Maui.Handlers
 			// AutoSuggestBox does not support this property
 		}
 
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateKeyboard(searchBar);
+		}
+
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			if (VirtualView != null)
@@ -109,6 +113,8 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
+				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
+				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}
 
