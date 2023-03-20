@@ -8,6 +8,9 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class PickerPage
 	{
+		int _horizontalOptionsIndex;
+		int _verticalOptionsIndex;
+
 		public PickerPage()
 		{
 			InitializeComponent();
@@ -15,7 +18,7 @@ namespace Maui.Controls.Sample.Pages
 			UpdatePickerBackground();
 			UpdatePickerBindingContext();
 
-			this.BindingContext = this;
+			BindingContext = this;
 
 			Loaded += (s, e) =>
 			{
@@ -111,6 +114,41 @@ namespace Maui.Controls.Sample.Pages
 					new PickerData { Name = $"Item {random.Next(0, 100)}" },
 				}
 			};
+		}
+
+		void OnUpdateHorizontalOptionsClicked(object sender, EventArgs e)
+		{
+			AlignmentPicker.HorizontalOptions = GetLayoutOptions(_horizontalOptionsIndex);
+			UpdateIndex(ref _horizontalOptionsIndex);
+		}
+
+		void OnUpdateVerticalOptionsClicked(object sender, EventArgs e)
+		{
+			AlignmentPicker.VerticalOptions = GetLayoutOptions(_verticalOptionsIndex);
+			UpdateIndex(ref _verticalOptionsIndex);
+		}
+
+		void UpdateIndex(ref int index)
+		{
+			index++;
+			if (index == 4)
+				index = 0;
+		}
+
+		LayoutOptions GetLayoutOptions(int index)
+		{
+			switch (index)
+			{
+				default:
+				case 0:
+					return LayoutOptions.Start;
+				case 1:
+					return LayoutOptions.Center;
+				case 2:
+					return LayoutOptions.End;
+				case 3:
+					return LayoutOptions.Fill;
+			}
 		}
 	}
 

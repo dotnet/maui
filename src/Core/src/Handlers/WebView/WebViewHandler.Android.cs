@@ -149,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 			if (url == AssetBaseUrl)
 				return false;
 
-			// TODO: Sync Cookies
+			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 
 			// if the user disconnects from the handler we want to exit
