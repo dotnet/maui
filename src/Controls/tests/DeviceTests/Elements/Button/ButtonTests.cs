@@ -28,10 +28,16 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
-		[Fact(DisplayName = "LineBreakMode Initializes Correctly")]
-		public async Task LineBreakModeInitializesCorrectly()
+		[Theory(DisplayName = "LineBreakMode Initializes Correctly")]
+		[InlineData(LineBreakMode.MiddleTruncation)]
+		[InlineData(LineBreakMode.HeadTruncation)]
+		[InlineData(LineBreakMode.TailTruncation)]
+		[InlineData(LineBreakMode.WordWrap)]
+		[InlineData(LineBreakMode.CharacterWrap)]
+		[InlineData(LineBreakMode.NoWrap)]
+		public async Task LineBreakModeInitializesCorrectly(LineBreakMode lineBreakMode)
 		{
-			var xplatLineBreakMode = LineBreakMode.TailTruncation;
+			var xplatLineBreakMode = lineBreakMode;
 
 			var button = new Button()
 			{

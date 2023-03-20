@@ -11,21 +11,27 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
-		[Theory(DisplayName = "Gradient Background Initializes Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+		[Theory(DisplayName = "Gradient Background Initializes Correctly"
+#if IOS || MACCATALYST
+			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+#endif
 		)]
-		[InlineData(0xFFFF0000)]
-		[InlineData(0xFF00FF00)]
-		[InlineData(0xFF0000FF)]
-		public async Task GradientBackgroundInitializesCorrectly(uint color)
+		[InlineData(0xFFFF0000, 0xFFFE2500)]
+		[InlineData(0xFF00FF00, 0xFF04F800)]
+		[InlineData(0xFF0000FF, 0xFF0432FE)]
+		public async Task GradientBackgroundInitializesCorrectly(uint colorToSet, uint expectedColor)
 		{
-			var expected = Color.FromUint(color);
+			var color = Color.FromUint(colorToSet);
+			var expected = Color.FromUint(expectedColor);
 
-			var brush = new LinearGradientPaintStub(Colors.Black, expected);
+			var brush = new LinearGradientPaintStub(Colors.Black, color);
 
 			var searchBar = new SearchBarStub
 			{
 				Background = brush,
+				Height = 71,
+				Width = 256,
+				Text = "Background"
 			};
 
 			await ValidateHasColor(searchBar, expected);
@@ -161,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return Colors.Transparent;
 
 			return textField.TextColor.ToColor();
@@ -175,7 +181,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return UITextAlignment.Left;
 
 			return textField.TextAlignment;
@@ -186,7 +192,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return UIControlContentVerticalAlignment.Center;
 
 			return textField.VerticalAlignment;
@@ -205,7 +211,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return -1;
 
 			return textField.Font.PointSize;
@@ -216,6 +222,76 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 
 			return !uiSearchBar.UserInteractionEnabled;
+		}
+
+		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.DecimalPad;
+		}
+
+		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.EmailAddress;
+		}
+
+		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.PhonePad;
+		}
+
+		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.Url;
+		}
+
+		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.No;
 		}
 	}
 }

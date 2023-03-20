@@ -65,7 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 			var dispatcher = platformViewHandler.MauiContext!.GetDispatcher();
 			return dispatcher.DispatchAsync(async () =>
 			{
-				if (platformView.XamlRoot == null)
+				if (platformView.XamlRoot is null)
 				{
 					if (!expectation)
 						await AttachAndRun(platformView, RunAssertions);
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 			void RunAssertions()
 			{
 				Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
-				Assert.Equal(expectation, view.Handler?.ContainerView != null);
+				Assert.Equal(expectation, view.Handler?.ContainerView is not null);
 				var parentView = platformView?.GetParent();
 				Assert.Equal(expectation, parentView is WrapperView);
 			}
@@ -114,8 +114,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
 			view.ToPlatform().ShowKeyboardForView(timeout);
-		public static Task HideKeyboardForView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().HideKeyboardForView(timeout);
+		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
+			view.ToPlatform().HideKeyboardForView(timeout, message);
 
 		public static Task WaitForUnFocused(this IView view, int timeout = 1000) =>
 			view.ToPlatform().WaitForUnFocused(timeout);
@@ -133,5 +133,48 @@ namespace Microsoft.Maui.DeviceTests
 			view.ToPlatform().IsExcludedWithChildren();
 #endif
 
+
+		public static IDisposable OnUnloaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView is not null)
+			{
+				return platformViewHandler.PlatformView.OnUnloaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
+		public static IDisposable OnLoaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView is not null)
+			{
+				return platformViewHandler.PlatformView.OnLoaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
+		public static bool IsLoadedOnPlatform(this IElement element)
+		{
+
+#if PLATFORM
+			if (element.Handler is not IPlatformViewHandler pvh)
+				return false;
+
+			return pvh.PlatformView?.IsLoaded() == true;
+#else
+			return true;
+#endif
+		}
 	}
 }
