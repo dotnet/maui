@@ -94,10 +94,16 @@ namespace Microsoft.Maui.DeviceTests
 
 				await platformView.AttachAndRun(async () =>
 				{
-					button.Focus();
-					textInput.Focus();
-					await AssertionExtensions.WaitForKeyboardToShow(platformView);
-					await AssertionExtensions.HideKeyboardForView(platformView);
+					try
+					{
+						button.Focus();
+						textInput.Focus();
+						await AssertionExtensions.WaitForKeyboardToShow(platformView);
+					}
+					finally
+					{
+						await AssertionExtensions.HideKeyboardForView(platformView);
+					}
 				});
 			});
 		}

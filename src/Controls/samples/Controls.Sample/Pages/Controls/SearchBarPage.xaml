@@ -107,6 +107,11 @@
                         </LinearGradientBrush>
                     </SearchBar.Background>
                 </SearchBar>
+                <Label
+                    Text="Keyboard"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    Keyboard="Numeric"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

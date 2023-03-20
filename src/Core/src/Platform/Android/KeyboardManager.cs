@@ -2,6 +2,7 @@ using System;
 using Android.Content;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class KeyboardManager
 	{
-		internal static void HideKeyboard(this AView inputView)
+		internal static bool HideKeyboard(this AView inputView)
 		{
 			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
@@ -20,17 +21,19 @@ namespace Microsoft.Maui.Platform
 			var context = tokenView.Context;
 
 			if (context is null)
-				return;
+				return false;
 
 			using (var inputMethodManager = context.GetSystemService(Context.InputMethodService) as InputMethodManager)
 			{
 				var windowToken = tokenView.WindowToken;
 				if (windowToken is not null && inputMethodManager is not null)
-					inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
+					return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
+
+			return false;
 		}
 
-		internal static void ShowKeyboard(this TextView inputView)
+		internal static bool ShowKeyboard(this TextView inputView)
 		{
 			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be shown.");
@@ -40,11 +43,11 @@ namespace Microsoft.Maui.Platform
 				// The zero value for the second parameter comes from 
 				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
 				// Apparently there's no named value for zero in this case
-				inputMethodManager?.ShowSoftInput(inputView, 0);
+				return inputMethodManager?.ShowSoftInput(inputView, 0) == true;
 			}
 		}
 
-		internal static void ShowKeyboard(this SearchView searchView)
+		internal static bool ShowKeyboard(this SearchView searchView)
 		{
 			if (searchView?.Context is null || searchView?.Resources is null)
 			{
@@ -53,31 +56,22 @@ namespace Microsoft.Maui.Platform
 
 			var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
-			if (queryEditor is null)
-				return;
-
-			using (var inputMethodManager = (InputMethodManager)searchView.Context.GetSystemService(Context.InputMethodService)!)
-			{
-				// The zero value for the second parameter comes from 
-				// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
-				// Apparently there's no named value for zero in this case
-				inputMethodManager?.ShowSoftInput(queryEditor, 0);
-			}
+			return queryEditor?.ShowKeyboard() == true;
+			;
 		}
 
-		internal static void ShowKeyboard(this AView view)
+		internal static bool ShowKeyboard(this AView view)
 		{
 			switch (view)
 			{
 				case SearchView searchView:
-					searchView.ShowKeyboard();
-					break;
+					return searchView.ShowKeyboard();
 				case TextView textView:
-					textView.ShowKeyboard();
-					break;
+					return textView.ShowKeyboard();
 			}
-		}
 
+			return false;
+		}
 
 		internal static void PostShowKeyboard(this AView view)
 		{
@@ -98,12 +92,20 @@ namespace Microsoft.Maui.Platform
 
 		public static bool IsSoftKeyboardVisible(this AView view)
 		{
-			var insets = ViewCompat.GetRootWindowInsets(view);
+			var rootView = view.Context?.GetActivity()?.Window?.DecorView;
+
+			if (rootView is null)
+				return false;
+
+			var insets = ViewCompat.GetRootWindowInsets(rootView);
 			if (insets is null)
 				return false;
 
-			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
-			return result;
+			var size = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+			var isVisible = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+			var hasSize = size.Top > 0 || size.Bottom > 0;
+
+			return hasSize || isVisible;
 		}
 	}
 }

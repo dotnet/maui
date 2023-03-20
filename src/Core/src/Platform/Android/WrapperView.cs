@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
@@ -305,6 +306,76 @@ namespace Microsoft.Maui.Platform
 			_shadowCanvas = null;
 			_shadowPaint = null;
 			_shadowBitmap = null;
+		}
+
+		public override ViewStates Visibility
+		{
+			get => base.Visibility;
+			set
+			{
+				base.Visibility = value;
+
+				if (value != ViewStates.Visible)
+				{
+					return;
+				}
+
+				for (int n = 0; n < this.ChildCount; n++)
+				{
+					var child = GetChildAt(n);
+					child.Visibility = ViewStates.Visible;
+				}
+			}
+		}
+
+		internal static void SetupContainer(AView platformView, Context context, AView containerView, Action<AView> setWrapperView)
+		{
+			if (context == null || platformView == null || containerView != null)
+				return;
+
+			var oldParent = (ViewGroup)platformView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(platformView);
+			oldParent?.RemoveView(platformView);
+
+			containerView ??= new WrapperView(context);
+			setWrapperView.Invoke(containerView);
+
+			((ViewGroup)containerView).AddView(platformView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(containerView, idx);
+			else
+				oldParent?.AddView(containerView);
+		}
+
+		internal static void RemoveContainer(AView platformView, Context context, AView containerView, Action clearWrapperView)
+		{
+			if (context == null || platformView == null || containerView == null || platformView.Parent != containerView)
+			{
+				CleanupContainerView(containerView, clearWrapperView);
+				return;
+			}
+
+			var oldParent = (ViewGroup)containerView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(containerView);
+			oldParent?.RemoveView(containerView);
+
+			CleanupContainerView(containerView, clearWrapperView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(platformView, idx);
+			else
+				oldParent?.AddView(platformView);
+
+			void CleanupContainerView(AView containerView, Action clearWrapperView)
+			{
+				if (containerView is ViewGroup vg)
+					vg.RemoveAllViews();
+
+				clearWrapperView.Invoke();
+			}
 		}
 	}
 }
