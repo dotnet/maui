@@ -6,6 +6,9 @@ Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matr
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRenderer.ViewDidDisappear(bool animated) -> void
+override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+*REMOVED*~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillMoveToSuperview(UIKit.UIView newSuper) -> void
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
 override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
 static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
@@ -17,6 +20,7 @@ static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.AddSubview(UIKit.UIView view) -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.UIContainerView.WillRemoveSubview(UIKit.UIView uiview) -> void

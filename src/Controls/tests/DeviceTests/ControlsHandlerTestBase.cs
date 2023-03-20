@@ -311,7 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Loaded += loaded;
 			}
 
-			return source.Task.WaitAsync(timeOut.Value);
+			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
 		}
 
 		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
@@ -344,7 +344,27 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Unloaded += unloaded;
 			}
 
-			return source.Task.WaitAsync(timeOut.Value);
+			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
+		}
+
+		// Modal Page's appear to currently not fire loaded/unloaded
+		async Task HandleLoadedUnloadedIssue(Task task, TimeSpan timeOut, Func<bool> isConditionValid)
+		{
+			try
+			{
+				await task.WaitAsync(timeOut);
+			}
+			catch (TimeoutException)
+			{
+				if (isConditionValid())
+				{
+					return;
+				}
+				else
+				{
+					throw;
+				}
+			}
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)

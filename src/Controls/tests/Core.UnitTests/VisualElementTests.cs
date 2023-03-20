@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 using Xunit;
@@ -120,7 +121,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GradientBrushSubscribed()
+		public async Task GradientBrushSubscribed()
 		{
 			var gradient = new LinearGradientBrush
 			{
@@ -139,7 +140,49 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
+
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Theory]
+		[InlineData(typeof(RectangleGeometry))]
+		[InlineData(typeof(EllipseGeometry))]
+		public async Task ClipDoesNotLeak(Type type)
+		{
+			var geometry = (Geometry)Activator.CreateInstance(type);
+			var reference = new WeakReference(new VisualElement { Clip = geometry });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+		}
+
+		[Fact]
+		public async Task RectangleGeometrySubscribed()
+		{
+			var geometry = new RectangleGeometry();
+			var visual = new VisualElement { Clip = geometry };
+
+			bool fired = false;
+			visual.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(VisualElement.Clip))
+					fired = true;
+			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
+
+			geometry.Rect = new Rect(1, 2, 3, 4);
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 	}

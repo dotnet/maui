@@ -5,6 +5,7 @@ using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
+using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 using Size = Microsoft.Maui.Graphics.Size;
@@ -17,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override UIScrollView CreatePlatformView()
 		{
-			return new UIScrollView();
+			return new MauiScrollView();
 		}
 
 		protected override void ConnectHandler(UIScrollView platformView)
@@ -58,12 +59,12 @@ namespace Microsoft.Maui.Handlers
 		// We don't actually have this mapped because we don't need it, but we can't remove it because it's public
 		public static void MapContentSize(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.UpdateContentSize(scrollView.ContentSize);
+			handler.PlatformView?.UpdateContentSize(scrollView.ContentSize);
 		}
 
 		public static void MapIsEnabled(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			handler.PlatformView.UpdateIsEnabled(scrollView);
+			handler.PlatformView?.UpdateIsEnabled(scrollView);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
@@ -78,7 +79,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			// Nothing to do here for now, but we might need to make adjustments for FlowDirection when the orientation is set to Horizontal
+			if (GetContentView(handler.PlatformView) is ContentView currentContentContainer)
+			{
+				currentContentContainer.SetNeedsLayout();
+			}
 		}
 
 		public static void MapRequestScrollTo(IScrollViewHandler handler, IScrollView scrollView, object? args)
@@ -155,24 +159,24 @@ namespace Microsoft.Maui.Handlers
 				Tag = ContentPanelTag
 			};
 
-			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView);
+			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView, scrollView);
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
 		}
 
-		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView)
+		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView, IScrollView scrollView)
 		{
 			return (rect) =>
 			{
-				if (container.Superview is UIScrollView scrollView)
+				if (container.Superview is UIScrollView uiScrollView)
 				{
 					// Ensure the container is at least the size of the UIScrollView itself, so that the 
 					// cross-platform layout logic makes sense and the contents don't arrange outside the 
 					// container. (Everything will look correct if they do, but hit testing won't work properly.)
 
-					var scrollViewBounds = scrollView.Bounds;
+					var scrollViewBounds = uiScrollView.Bounds;
 					var containerBounds = container.Bounds;
 
 					container.Bounds = new CGRect(0, 0,
@@ -180,10 +184,9 @@ namespace Microsoft.Maui.Handlers
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-
 				var contentSize = internalArrange(rect);
-				platformScrollView.ContentSize = contentSize;
-				return contentSize;
+				var size = SetContentSizeForOrientation(platformScrollView, scrollView.Orientation, contentSize);
+				return size;
 			};
 		}
 
@@ -241,13 +244,13 @@ namespace Microsoft.Maui.Handlers
 			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
 			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
-			var size = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var crossPlatformSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			// Add the padding back in for the final size
-			size.Width += padding.HorizontalThickness;
-			size.Height += padding.VerticalThickness;
+			crossPlatformSize.Width += padding.HorizontalThickness;
+			crossPlatformSize.Height += padding.VerticalThickness;
 
-			platformView.ContentSize = size;
+			var size = SetContentSizeForOrientation(platformView, virtualView.Orientation, crossPlatformSize);
 
 			var finalWidth = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
 			var finalHeight = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
@@ -285,6 +288,29 @@ namespace Microsoft.Maui.Handlers
 		{
 			// Remove the padding from the constraint, but don't allow it to go negative
 			return Math.Max(0, constraint - padding);
+		}
+
+		static Size SetContentSizeForOrientation(UIScrollView platformScrollView, ScrollOrientation orientation, Size crossPlatformSize)
+		{
+			CGRect scrollViewBounds = platformScrollView.Bounds;
+			var contentSize = AccountForOrientation(crossPlatformSize, scrollViewBounds.Width, scrollViewBounds.Height, orientation);
+			platformScrollView.ContentSize = contentSize;
+			return contentSize;
+		}
+
+		internal static Size AccountForOrientation(Size size, double widthConstraint, double heightConstraint, ScrollOrientation orientation)
+		{
+			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
+			{
+				size.Width = widthConstraint;
+			}
+
+			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
+			{
+				size.Height = heightConstraint;
+			}
+
+			return size;
 		}
 	}
 }

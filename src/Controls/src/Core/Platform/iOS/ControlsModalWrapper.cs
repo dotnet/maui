@@ -1,28 +1,26 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Threading.Tasks;
 using Foundation;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
-	internal class ModalWrapper : UIViewController, IUIAdaptivePresentationControllerDelegate
+	internal class ControlsModalWrapper : ModalWrapper, IUIAdaptivePresentationControllerDelegate
 	{
-		IPlatformViewHandler _modal;
+		IPlatformViewHandler? _modal;
 		bool _isDisposed;
+		Page Page => ((Page?)_modal?.VirtualView) ?? throw new InvalidOperationException("Page cannot be null here");
 
-		internal ModalWrapper(IPlatformViewHandler modal)
+		internal ControlsModalWrapper(IPlatformViewHandler modal)
 		{
 			_modal = modal;
 
-			var elementConfiguration = modal.VirtualView as IElementConfiguration<Page>;
-			if (elementConfiguration?.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
+			if (_modal.VirtualView is IElementConfiguration<Page> elementConfiguration &&
+				elementConfiguration.On<PlatformConfiguration.iOS>()?.ModalPresentationStyle() is PlatformConfiguration.iOSSpecific.UIModalPresentationStyle style)
 			{
 				var result = style.ToPlatformModalPresentationStyle();
 
@@ -43,23 +41,29 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			UpdateBackgroundColor();
-			View.AddSubview(modal.ViewController.View);
+			_ = modal?.ViewController?.View ?? throw new InvalidOperationException("View Controller Not Initialized on Modal Page");
+
+			View!.AddSubview(modal.ViewController.View);
 			TransitioningDelegate = modal.ViewController.TransitioningDelegate;
 			AddChildViewController(modal.ViewController);
 
 			modal.ViewController.DidMoveToParentViewController(this);
 
-			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
+			if (PresentationController != null &&
+				(OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13)))
+			{
 				PresentationController.Delegate = this;
+			}
 
-			((Page)modal.VirtualView).PropertyChanged += OnModalPagePropertyChanged;
+			if (modal.VirtualView is Page page)
+				page.PropertyChanged += OnModalPagePropertyChanged;
 		}
 
 		[Export("presentationControllerDidDismiss:")]
 		[Microsoft.Maui.Controls.Internals.Preserve(Conditional = true)]
 		public void DidDismiss(UIPresentationController _)
 		{
-			var window = (_modal.VirtualView as Page)?.Window;
+			var window = (_modal?.VirtualView as Page)?.Window;
 			if (window?.Page is Shell shell)
 			{
 				// The modal page might have a NavigationPage so it's not enough to just send
@@ -78,10 +82,10 @@ namespace Microsoft.Maui.Controls.Platform
 				shell.NavigationManager.GoToAsync(result).FireAndForget();
 			}
 			else
-				((Page)_modal.VirtualView).Navigation.PopModalAsync(false).FireAndForget();
+				Page.Navigation.PopModalAsync(false).FireAndForget();
 		}
 
-		public override void DismissViewController(bool animated, Action completionHandler)
+		public override void DismissViewController(bool animated, Action? completionHandler)
 		{
 			base.DismissViewController(animated, completionHandler);
 		}
@@ -105,7 +109,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return base.PreferredInterfaceOrientationForPresentation();
 		}
 
-		// TODO: [UnsupportedOSPlatform("ios6.0")]
+		// TODO: [UnsupportedOSPlatform("ios16.0")]
 #pragma warning disable CA1416, CA1422
 		public override bool ShouldAutorotate()
 		{
@@ -118,7 +122,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool ShouldAutorotateToInterfaceOrientation(UIInterfaceOrientation toInterfaceOrientation)
 		{
-
 			if ((ChildViewControllers != null) && (ChildViewControllers.Length > 0))
 			{
 				return ChildViewControllers[0].ShouldAutorotateToInterfaceOrientation(toInterfaceOrientation);
@@ -132,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public override void ViewDidLayoutSubviews()
 		{
 			base.ViewDidLayoutSubviews();
-			_modal?.PlatformArrange(new Rect(0, 0, View.Bounds.Width, View.Bounds.Height));
+			_modal?.PlatformArrange(new Rect(0, 0, View!.Bounds.Width, View.Bounds.Height));
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -172,10 +175,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override UIViewController ChildViewControllerForStatusBarStyle()
 		{
-			return ChildViewControllers?.LastOrDefault();
+			return ChildViewControllers.Last();
 		}
 
-		void OnModalPagePropertyChanged(object sender, PropertyChangedEventArgs e)
+		void OnModalPagePropertyChanged(object? sender, PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == Page.BackgroundColorProperty.PropertyName)
 				UpdateBackgroundColor();
@@ -188,12 +191,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (ModalPresentationStyle == UIKit.UIModalPresentationStyle.FullScreen)
 			{
-				Color modalBkgndColor = ((Page)_modal.VirtualView).BackgroundColor;
-				View.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
+				Color modalBkgndColor = Page.BackgroundColor;
+				View!.BackgroundColor = modalBkgndColor?.ToPlatform() ?? Maui.Platform.ColorExtensions.BackgroundColor;
 			}
 			else
 			{
-				View.BackgroundColor = UIColor.Clear;
+				View!.BackgroundColor = UIColor.Clear;
 			}
 		}
 	}
