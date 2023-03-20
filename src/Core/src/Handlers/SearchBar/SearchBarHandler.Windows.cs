@@ -99,6 +99,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
 		}
 
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateKeyboard(searchBar);
+		}
+
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
 			if (VirtualView != null)
@@ -110,6 +115,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateIsReadOnly(VirtualView);
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
+				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}
 
