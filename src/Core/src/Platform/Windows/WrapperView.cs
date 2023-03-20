@@ -246,12 +246,12 @@ namespace Microsoft.Maui.Platform
 				if (height <= 0)
 					height = (float)frameworkElement.ActualHeight;
 
-				if (_shadowVisual != null)
+				if (_shadowVisual is not null)
 				{
 					_shadowVisual.Size = new Vector2(width, height);
 				}
 
-				if (_shadowHost != null)
+				if (_shadowHost is not null)
 				{
 					_shadowHost.Width = width;
 					_shadowHost.Height = height;
