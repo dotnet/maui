@@ -249,8 +249,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
-		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
-		public void LayoutIsGarbageCollectedAfterItsRemoved()
+		[Fact]
+		public async Task LayoutIsGarbageCollectedAfterItsRemoved()
 		{
 			var layout = new StackLayout
 			{
@@ -268,6 +268,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			pageRoot.Children.Remove(layout);
 			layout = null;
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
@@ -421,6 +422,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
+		}
+
+		[Fact("BindableLayout Still Updates after a GC")]
+		public async Task UpdatesAfterGC()
+		{
+			var list = new ObservableCollection<string> { "Foo", "Bar" };
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			Assert.Equal(2, layout.Children.Count);
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			list.Add("Baz");
+			Assert.Equal(3, layout.Children.Count);
 		}
 
 		// Checks if for every item in the items source there's a corresponding view
