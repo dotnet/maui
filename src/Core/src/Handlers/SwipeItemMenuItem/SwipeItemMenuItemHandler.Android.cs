@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Handlers
 			if (mauiSwipeView == null || MauiContext?.Context == null)
 				return 0;
 
-			int contentHeight = mauiSwipeView.Height;
+			int contentHeight = mauiSwipeView.MeasuredHeight;
 			int contentWidth = (int)MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
 
 			return Math.Min(contentHeight, contentWidth) / 2;
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.Handlers
 			if (mauiSwipeView == null)
 				return;
 
-			var contentHeight = mauiSwipeView.Height;
+			var contentHeight = mauiSwipeView.MeasuredHeight;
 
 			var swipeView = VirtualView?.FindParentOfType<ISwipeView>();
 			float density = mauiSwipeView.Context.GetDisplayDensity();
