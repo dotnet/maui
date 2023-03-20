@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -15,7 +16,9 @@ namespace Microsoft.Maui.Controls
 		ReadOnlyCollection<Element>? _logicalChildren;
 
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
+		PropertyChangedEventHandler? _strokeShapeChanged;
 		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
+		PropertyChangedEventHandler? _strokeChanged;
 
 		~Border()
 		{
@@ -66,8 +69,9 @@ namespace Microsoft.Maui.Controls
 			{
 				SetInheritedBindingContext(visualElement, BindingContext);
 				visualElement.Parent = this;
-				var proxy = _strokeShapeProxy ??= new();
-				proxy.Subscribe(visualElement, (sender, e) => OnPropertyChanged(nameof(StrokeShape)));
+				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
+				_strokeShapeProxy ??= new();
+				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
 			}
 		}
 
@@ -106,8 +110,9 @@ namespace Microsoft.Maui.Controls
 			if (stroke is not null)
 			{
 				SetInheritedBindingContext(stroke, BindingContext);
-				var proxy = _strokeProxy ??= new();
-				proxy.Subscribe(stroke, (sender, e) => OnPropertyChanged(nameof(Stroke)));
+				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
+				_strokeProxy ??= new();
+				_strokeProxy.Subscribe(stroke, _strokeChanged);
 			}
 		}
 

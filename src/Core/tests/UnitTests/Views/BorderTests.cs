@@ -51,7 +51,7 @@ namespace Microsoft.Maui.UnitTests.Views
 		}
 
 		[Fact]
-		public void BorderStrokeShapeSubscribed()
+		public async Task BorderStrokeShapeSubscribed()
 		{
 			var strokeShape = new RoundRectangle { CornerRadius = new CornerRadius(12) };
 			var border = new Border { StrokeShape = strokeShape };
@@ -63,12 +63,18 @@ namespace Microsoft.Maui.UnitTests.Views
 					fired = true;
 			};
 
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(border);
+
 			strokeShape.CornerRadius = new CornerRadius(24);
+
 			Assert.True(fired, "PropertyChanged did not fire!");
 		}
 
 		[Fact]
-		public void BorderStrokeSubscribed()
+		public async Task BorderStrokeSubscribed()
 		{
 			var stroke = new SolidColorBrush(Colors.Red);
 			var border = new Border { Stroke = stroke };
@@ -79,6 +85,11 @@ namespace Microsoft.Maui.UnitTests.Views
 				if (e.PropertyName == nameof(Border.Stroke))
 					fired = true;
 			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(border);
 
 			stroke.Color = Colors.Green;
 			Assert.True(fired, "PropertyChanged did not fire!");
