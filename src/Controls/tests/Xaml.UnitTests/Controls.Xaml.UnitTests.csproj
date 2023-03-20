@@ -20,7 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.3.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="System.CodeDom" Version="7.0.0" />
     <PackageReference Include="Microsoft.Build" Version="16.9.0" />
@@ -31,14 +31,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Compatibility\ControlGallery\src\Core\Compatibility.ControlGallery.Core.csproj" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Build.Tasks\Controls.Build.Tasks.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
+    <ProjectReference Include="..\Xaml.UnitTests.ExternalAssembly\Controls.Xaml.UnitTests.ExternalAssembly.csproj" />
   </ItemGroup>
 
   <ItemGroup>

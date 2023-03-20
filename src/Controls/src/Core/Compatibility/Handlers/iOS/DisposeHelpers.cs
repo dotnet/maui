@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				{
 					if (renderer.ViewController != null)
 					{
-						if (renderer.ViewController.ParentViewController is Platform.ModalWrapper modalWrapper)
+						if (renderer.ViewController.ParentViewController is Platform.ControlsModalWrapper modalWrapper)
 							modalWrapper.Dispose();
 					}
 

@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000, string? message = null)
 		{
 			throw new NotImplementedException();
 		}
