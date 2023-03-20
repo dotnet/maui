@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Platform
 			if (_shadowCanvas == null)
 				return;
 
-			if (_shadowHost != null)
+			if (_shadowHost is not null)
 				ElementCompositionPreview.SetElementChildVisual(_shadowHost, null);
 
 			if (_shadowCanvas.Children.Count > 0)
