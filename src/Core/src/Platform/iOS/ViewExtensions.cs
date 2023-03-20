@@ -863,5 +863,23 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		internal static UIView? FindFirstResponder(this UIView? superview)
+		{
+			if (superview is null)
+				return null;
+
+			if (superview.IsFirstResponder)
+				return superview;
+
+			foreach (var subview in superview.Subviews)
+			{
+				var subviewFirstResponder = subview.FindFirstResponder();
+				if (subviewFirstResponder is not null)
+					return subviewFirstResponder;
+			}
+
+			return null;
+		}
 	}
 }
