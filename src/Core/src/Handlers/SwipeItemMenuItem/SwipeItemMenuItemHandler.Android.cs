@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(AView platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView.ViewAttachedToWindow += OnViewAttachedToWindow;
+			platformView.ViewAttachedToWindow += OnViewAttachedToWindow;
 		}
 
 		void OnViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
