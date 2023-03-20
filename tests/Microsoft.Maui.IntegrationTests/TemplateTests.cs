@@ -3,6 +3,16 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public class TemplateTests : BaseBuildTest
 	{
+		[SetUp]
+		public void TemplateTestsSetUp()
+		{
+			Directory.CreateDirectory(TestDirectory);
+			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
+				Path.Combine(TestDirectory, "Directory.Build.props"), true);
+			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.targets"),
+				Path.Combine(TestDirectory, "Directory.Build.targets"), true);
+		}
+
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
 		[TestCase("maui", "net6.0", "Debug", false)]

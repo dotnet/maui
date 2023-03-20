@@ -20,7 +20,7 @@ internal static class KeyboardAutoManager
 			return;
 		}
 
-		var superview = customSuperView ?? view.FindResponder<ContainerViewController>()?.View;
+		var superview = customSuperView ?? view.GetContainerView();
 		if (superview is null)
 		{
 			view.ResignFirstResponder();

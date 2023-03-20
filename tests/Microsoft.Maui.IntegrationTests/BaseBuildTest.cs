@@ -81,11 +81,6 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (Directory.Exists(TestDirectory))
 				Directory.Delete(TestDirectory, recursive: true);
-
-			// Write empty Directory.Build.* files to prevent tests from picking one higher in the tree
-			Directory.CreateDirectory(TestDirectory);
-			File.WriteAllText(Path.Combine(TestDirectory, "Directory.Build.props"), "<Project/>");
-			File.WriteAllText(Path.Combine(TestDirectory, "Directory.Build.targets"), "<Project/>");
 		}
 
 		[OneTimeTearDown]

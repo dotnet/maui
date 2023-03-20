@@ -35,6 +35,10 @@ namespace Maui.Controls.Sample.ViewModels
 				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25),
 					ContentBackground = Colors.LightBlue, VerticalAlignment = LayoutOptions.Fill }),
 
+			new SectionModel(typeof(ScrollViewOrientationPage), "Orientation",
+				"Lock the orientation of your ScrollView",
+				new ScrollViewTemplatePageModel{ VerticalAlignment = LayoutOptions.Fill }),
+
 
 		};
 	}

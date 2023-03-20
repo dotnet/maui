@@ -97,7 +97,7 @@ namespace Microsoft.Maui
 		/// <include file="../../docs/Microsoft.Maui/Font.xml" path="//Member[@MemberName='Equals']/Docs/*" />
 		public override bool Equals(object? obj)
 		{
-			if (ReferenceEquals(null, obj))
+			if (obj is null)
 			{
 				return false;
 			}
