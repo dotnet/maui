@@ -22,7 +22,31 @@
         <StackLayout 
             Margin="12" 
             Spacing="12">
+            <Label
+                Text="Using Styles"
+                Style="{StaticResource Headline}"/>
             <Border />
+            <Label
+                Text="Shadow"
+                Style="{StaticResource Headline}"/>
+            <Border
+                StrokeThickness="10">
+                <Border.Shadow>
+                    <Shadow 
+                        Brush="Orange"
+                        Radius="10"
+                        Offset="10, 10" />
+                </Border.Shadow>
+            </Border>
+            <Border
+                BackgroundColor="LightBlue">
+                <Border.Shadow>
+                    <Shadow 
+                        Brush="Orange"
+                        Radius="10"
+                        Offset="10, 10" />
+                </Border.Shadow>
+            </Border>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
