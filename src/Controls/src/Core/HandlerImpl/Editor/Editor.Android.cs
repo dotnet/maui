@@ -21,10 +21,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFocus(IViewHandler handler, IView view, object args)
 		{
-			if (view is not VisualElement ve)
-				return;
-
-			if (ve.IsFocused && handler is IPlatformViewHandler platformViewHandler)
+			if (view.IsFocused && handler is IPlatformViewHandler platformViewHandler)
 			{
 				KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
 			}
