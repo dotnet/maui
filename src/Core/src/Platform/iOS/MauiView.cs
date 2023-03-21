@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -8,7 +9,13 @@ namespace Microsoft.Maui.Platform
 	{
 		static bool? _respondsToSafeArea;
 
-		public IView? View { get; set; }
+		WeakReference<IView>? _reference;
+
+		public IView? View
+		{
+			get => _reference != null && _reference.TryGetTarget(out var v) ? v : null;
+			set => _reference = value == null ? null : new(value);
+		}
 
 		bool RespondsToSafeArea()
 		{
