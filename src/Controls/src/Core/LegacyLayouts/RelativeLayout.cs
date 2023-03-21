@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,6 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				new PlatformConfigurationRegistry<RelativeLayout>(this));
 		}
 
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, RelativeLayout> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

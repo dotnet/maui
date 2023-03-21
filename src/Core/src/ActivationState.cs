@@ -64,7 +64,9 @@ namespace Microsoft.Maui
 			{
 				foreach (var k in keyset)
 				{
+#pragma warning disable 618 // TODO: one day use the API 33+ version: https://developer.android.com/reference/kotlin/android/os/BaseBundle?hl=en#get
 					dict[k] = state?.Get(k)?.ToString();
+#pragma warning restore 618
 				}
 			}
 

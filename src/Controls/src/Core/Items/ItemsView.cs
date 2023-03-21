@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -139,6 +140,15 @@ namespace Microsoft.Maui.Controls
 			_logicalChildren.Remove(element);
 			OnChildRemoved(element, oldLogicalIndex);
 			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
+		}
+
+		internal void ClearLogicalChildren()
+		{
+			// Reverse for-loop, so children can be removed while iterating
+			for (int i = _logicalChildren.Count - 1; i >= 0; i--)
+			{
+				RemoveLogicalChild(_logicalChildren[i]);
+			}
 		}
 
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();

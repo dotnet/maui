@@ -8,6 +8,8 @@
     <SingleProject>true</SingleProject>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,12 +32,15 @@
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" ExcludeAssets="runtime" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -659,7 +659,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var imageSize = button.ImageView.Image.Size;
 
 			var titleEdgeInsets = new UIEdgeInsets(spacing, -imageSize.Width, -imageSize.Height, 0.0f);
-#pragma warning disable CA1416 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: TitleEdgeInsets, StringSize(...), ImageEdgeInsets unsupported on: 'ios' 15.0 and later
 			button.TitleEdgeInsets = titleEdgeInsets;
 
 			var labelString = button.TitleLabel.Text ?? string.Empty;
@@ -669,7 +669,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 #pragma warning restore BI1234 // Type or member is obsolete
 			var imageEdgeInsets = new UIEdgeInsets(-(titleSize.Height + spacing), 0.0f, 0.0f, -titleSize.Width);
 			button.ImageEdgeInsets = imageEdgeInsets;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 		}
 
 		Color GetSwipeItemColor(Color backgroundColor)

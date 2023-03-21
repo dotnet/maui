@@ -32,22 +32,28 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
-			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor
+			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor,
+			[nameof(ISearchBar.Keyboard)] = MapKeyboard
 		};
 
 		public static CommandMapper<ISearchBar, ISearchBarHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if ANDROID
+			[nameof(ISearchBar.Focus)] = MapFocus
+#endif
 		};
 
-		static SearchBarHandler()
+		public SearchBarHandler() : this(Mapper)
 		{
 		}
 
-		public SearchBarHandler() : base(Mapper)
+		public SearchBarHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		public SearchBarHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public SearchBarHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

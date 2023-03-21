@@ -50,7 +50,13 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public ImageButtonHandler(IPropertyMapper mapper) : base(mapper ?? Mapper)
+		public ImageButtonHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public ImageButtonHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

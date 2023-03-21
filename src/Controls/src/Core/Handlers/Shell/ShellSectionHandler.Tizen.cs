@@ -1,13 +1,11 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager>, IDisposable
+	public partial class ShellSectionHandler : ElementHandler<ShellSection, ShellSectionStackManager>, IAppearanceObserver, IDisposable
 	{
 		bool _disposedValue;
 		Page? _dummyPage;
@@ -56,24 +54,26 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		protected override void ConnectHandler(ShellSectionStackManager platformView)
+		public override void SetVirtualView(IElement view)
 		{
-			if (VirtualView is IShellSectionController shellSectionController)
+			base.SetVirtualView(view);
+
+			if (view is IShellSectionController shellSectionController)
 			{
 				shellSectionController.NavigationRequested += OnNavigationRequested;
 			}
 
+			(view.FindParentOfType<Shell>() as IShellController)?.AddAppearanceObserver(this, VirtualView);
+		}
+
+		protected override void ConnectHandler(ShellSectionStackManager platformView)
+		{
 			platformView.Connect(VirtualView);
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(ShellSectionStackManager platformView)
 		{
-			if (VirtualView is IShellSectionController shellSectionController)
-			{
-				shellSectionController.NavigationRequested -= OnNavigationRequested;
-			}
-
 			platformView.Disconnect();
 			base.DisconnectHandler(platformView);
 		}
@@ -98,6 +98,12 @@ namespace Microsoft.Maui.Controls.Handlers
 							thandler.Dispose();
 						}
 					}
+
+					if (VirtualView is IShellSectionController shellSectionController)
+						shellSectionController.NavigationRequested -= OnNavigationRequested;
+
+					(VirtualView.FindParentOfType<Shell>() as IShellController)?.RemoveAppearanceObserver(this);
+
 					(this as IElementHandler)?.DisconnectHandler();
 					platformView?.Dispose();
 				}
@@ -128,6 +134,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			(VirtualView as IStackNavigation).RequestNavigation(new NavigationRequest(pageStack, animated));
+		}
+
+		void IAppearanceObserver.OnAppearanceChanged(ShellAppearance appearance)
+		{
+			var backgroundColor = appearance.BackgroundColor;
+			var titleColor = appearance.TitleColor;
+			var foregroundColor = appearance.ForegroundColor;
+			var unselectedColor = appearance.UnselectedColor;
+
+			PlatformView?.UpdateTopTabBarColors(foregroundColor, backgroundColor, titleColor, unselectedColor);
 		}
 	}
 

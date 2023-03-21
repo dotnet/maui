@@ -4,12 +4,13 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Entry)]
-	public partial class EntryHandlerTests : HandlerTestBase<EntryHandler, EntryStub>
+	public partial class EntryHandlerTests : CoreHandlerTestBase<EntryHandler, EntryStub>
 	{
 		[Fact(DisplayName = "Text Initializes Correctly")]
 		public async Task TextInitializesCorrectly()
@@ -101,8 +102,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "TextColor Updates Correctly")]
-		[InlineData(0xFF0000, 0x0000FF)]
-		[InlineData(0x0000FF, 0xFF0000)]
+		[InlineData(0xFFFF0000, 0xFF0000FF)]
+		[InlineData(0xFF0000FF, 0xFFFF0000)]
 		public async Task TextColorUpdatesCorrectly(uint setValue, uint unsetValue)
 		{
 			var entry = new EntryStub();
@@ -505,6 +506,126 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isSpellCheckEnabled);
+		}
+
+		[Theory(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalTextAlignmentInitializesCorrectly(TextAlignment textAlignment)
+		{
+			var entry = new EntryStub
+			{
+				VerticalTextAlignment = textAlignment
+			};
+
+			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
+
+			// attach for windows because it uses control templates
+			var values = await GetValueAsync(entry, (handler) =>
+				handler.PlatformView.AttachAndRun(() =>
+					new
+					{
+						ViewValue = entry.VerticalTextAlignment,
+						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+					}));
+
+			Assert.Equal(textAlignment, values.ViewValue);
+			Assert.Equal(platformAlignment, values.PlatformViewValue);
+		}
+
+#if ANDROID
+		[Fact]
+		public async Task NextMovesToNextEntrySuccessfully()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			layout.Add(entry1);
+			layout.Add(entry2);
+
+			layout.Width = 100;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				await contentViewHandler.PlatformView.AttachAndRun(async () =>
+				{
+					await entry1.SendKeyboardReturnType(ReturnType.Next);
+					await entry2.WaitForFocused();
+					Assert.True(entry2.IsFocused);
+				});
+			});
+		}
+
+		[Fact]
+		public async Task DoneClosesKeyboard()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Done
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Done
+			};
+
+			layout.Add(entry1);
+			layout.Add(entry2);
+
+			layout.Width = 100;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					await entry1.SendKeyboardReturnType(ReturnType.Done);
+					await entry1.WaitForKeyboardToHide();
+				});
+			});
+		}
+#endif
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
+		{
 		}
 	}
 }

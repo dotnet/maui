@@ -3,18 +3,18 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 using Windows.UI.Text;
-using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Controls.Compatibility.Platform.UAP;
-using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Specifics = Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label;
 using WRect = Windows.Foundation.Rect;
 using WThickness = Microsoft.UI.Xaml.Thickness;
-using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Microsoft.Maui.Controls
@@ -10,5 +11,8 @@ namespace Microsoft.Maui.Controls
 			if (handler is PickerHandler ph)
 				ph.UpdateImmediately = picker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
 		}
+
+		public static void MapUpdateMode(PickerHandler handler, Picker picker) =>
+			MapUpdateMode((IPickerHandler)handler, picker);
 	}
 }

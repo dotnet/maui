@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.ComponentModel;
 using Android.Content;
@@ -7,7 +5,6 @@ using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
 using AndroidX.CardView.Widget;
-using AndroidX.Core.View;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
@@ -19,6 +16,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
+		const int FrameBorderThickness = 3;
+
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
 			{
@@ -28,12 +27,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				[Frame.CornerRadiusProperty.PropertyName] = (h, _) => h.UpdateCornerRadius(),
 				[Frame.BorderColorProperty.PropertyName] = (h, _) => h.UpdateBorderColor(),
 				[Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty.PropertyName] = (h, _) => h.UpdateClippedToBounds(),
-				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent()
+				[Frame.ContentProperty.PropertyName] = (h, _) => h.UpdateContent(),
+				[nameof(IView.AutomationId)] = (h, v) => ViewHandler.MapAutomationId(h, v)
 			};
 
 		public static CommandMapper<Frame, FrameRenderer> CommandMapper
 			= new CommandMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererCommandMapper);
-
 
 		float _defaultElevation = -1f;
 		float _defaultCornerRadius = -1f;
@@ -44,32 +43,68 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		readonly Controls.Compatibility.Platform.Android.MotionEventHelper2 _motionEventHelper = new Controls.Compatibility.Platform.Android.MotionEventHelper2();
 		bool _disposed;
 		GradientDrawable? _backgroundDrawable;
-		private IMauiContext? _mauiContext;
+		IMauiContext? _mauiContext;
 		ViewHandlerDelegator<Frame> _viewHandlerWrapper;
+		Frame? _element;
+		bool _hasContainer;
+		AView? _wrapperView;
+
 		public event EventHandler<VisualElementChangedEventArgs>? ElementChanged;
 		public event EventHandler<PropertyChangedEventArgs>? ElementPropertyChanged;
 
-		public FrameRenderer(Context context) : base(context)
+		const double LegacyMinimumFrameSize = 20;
+
+		public FrameRenderer(Context context) : this(context, Mapper)
 		{
-			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(Mapper, CommandMapper, this);
+		}
+
+		public FrameRenderer(Context context, IPropertyMapper mapper)
+			: this(context, mapper, CommandMapper)
+		{
+		}
+
+		public FrameRenderer(Context context, IPropertyMapper mapper, CommandMapper commandMapper) : base(context)
+		{
+			_viewHandlerWrapper = new ViewHandlerDelegator<Frame>(mapper, commandMapper, this);
 		}
 
 		protected CardView Control => this;
 
 		protected Frame? Element
 		{
-			get { return _viewHandlerWrapper.Element; }
+			get { return _viewHandlerWrapper.Element ?? _element; }
 			set
 			{
 				if (value != null)
 					(this as IPlatformViewHandler).SetVirtualView(value);
+
+				_element = value;
 			}
 		}
 
-		Size IViewHandler.GetDesiredSize(double widthMeasureSpec, double heightMeasureSpec)
+		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthMeasureSpec, heightMeasureSpec,
-				new Size(20, 20));
+			var virtualView = (this as IViewHandler)?.VirtualView;
+			if (virtualView is null)
+			{
+				return Size.Zero;
+			}
+
+			var minWidth = virtualView.MinimumWidth;
+			var minHeight = virtualView.MinimumHeight;
+
+			if (!Primitives.Dimension.IsExplicitSet(minWidth))
+			{
+				minWidth = LegacyMinimumFrameSize;
+			}
+
+			if (!Primitives.Dimension.IsExplicitSet(minHeight))
+			{
+				minHeight = LegacyMinimumFrameSize;
+			}
+
+			return VisualElementRenderer<Frame>.GetDesiredSize(this, widthConstraint, heightConstraint,
+				new Size(minWidth, minHeight));
 		}
 
 		protected override void Dispose(bool disposing)
@@ -125,8 +160,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element?.Handler is IPlatformViewHandler pvh &&
 				Element is IContentView cv)
 			{
-				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
-				SetMeasuredDimension((int)size.Width, (int)size.Height);
+				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+
+				var size = pvh.MeasureVirtualView(
+					widthMeasureSpec - borderThickness,
+					heightMeasureSpec - borderThickness,
+					cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)size.Width + borderThickness, (int)size.Height + borderThickness);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -202,8 +242,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null)
 				return;
 
-			var shouldClip = Element.IsSet(Microsoft.Maui.Controls.Compatibility.Layout.IsClippedToBoundsProperty)
-					? Element.IsClippedToBounds : Element.CornerRadius > 0f;
+			var shouldClip = Element.IsClippedToBoundsSet(Element.CornerRadius > 0f);
 
 			this.SetClipToOutline(shouldClip);
 		}
@@ -257,7 +296,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else
-				_backgroundDrawable.SetStroke(3, borderColor.ToPlatform());
+				_backgroundDrawable.SetStroke(FrameBorderThickness, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()
@@ -300,24 +339,44 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateContent()
 		{
+			if (ChildCount == 1)
+				RemoveViewAt(0);
+
 			var content = Element?.Content;
 
 			if (content == null || _mauiContext == null)
-			{
-				if (ChildCount == 1)
-					RemoveViewAt(0);
-
 				return;
-			}
 
 			var platformView = content.ToPlatform(_mauiContext);
 			AddView(platformView);
 		}
 
 		#region IPlatformViewHandler
-		bool IViewHandler.HasContainer { get => false; set { } }
 
-		object? IViewHandler.ContainerView => null;
+		bool IViewHandler.HasContainer
+		{
+			get => _hasContainer;
+			set
+			{
+				if (_hasContainer == value)
+					return;
+
+				_hasContainer = value;
+
+				if (value)
+					SetupContainer();
+				else
+					RemoveContainer();
+			}
+		}
+
+		void SetupContainer() =>
+			WrapperView.SetupContainer(this, Context, _wrapperView, (cv) => _wrapperView = cv);
+
+		void RemoveContainer() =>
+			WrapperView.RemoveContainer(this, Context, _wrapperView, () => _wrapperView = null);
+
+		object? IViewHandler.ContainerView => _wrapperView;
 
 		IView? IViewHandler.VirtualView => Element;
 
@@ -329,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		AView IPlatformViewHandler.PlatformView => this;
 
-		AView? IPlatformViewHandler.ContainerView => this;
+		AView? IPlatformViewHandler.ContainerView => _wrapperView;
 
 		void IViewHandler.PlatformArrange(Graphics.Rect rect) =>
 			this.PlatformArrangeHandler(rect);
@@ -337,8 +396,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.SetMauiContext(IMauiContext mauiContext) =>
 			_mauiContext = mauiContext;
 
-		void IElementHandler.SetVirtualView(Maui.IElement view) =>
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
 			_viewHandlerWrapper.SetVirtualView(view, OnElementChanged, false);
+			_element = view as Frame;
+		}
 
 		void IElementHandler.UpdateValue(string property)
 		{
@@ -357,6 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_viewHandlerWrapper.DisconnectHandler();
 		}
+
 		#endregion
 	}
 }

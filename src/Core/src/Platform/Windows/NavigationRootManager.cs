@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		WindowRootView _rootView;
 		bool _disconnected = true;
 		bool _isActiveRootManager;
+		bool _applyTemplateFinished;
 
 		public NavigationRootManager(Window platformWindow)
 		{
@@ -40,6 +41,8 @@ namespace Microsoft.Maui.Platform
 				_platformWindow.ExtendsContentIntoTitleBar = true;
 				UpdateAppTitleBar(true);
 			}
+
+			_applyTemplateFinished = true;
 		}
 
 		void OnAppTitleBarChanged(object? sender, EventArgs e)
@@ -59,6 +62,9 @@ namespace Microsoft.Maui.Platform
 		{
 			if (_rootView.Content != null)
 			{
+				// Clear out the toolbar that was set from the previous content
+				SetToolbar(null);
+
 				// We need to make sure to clear out the root view content 
 				// before creating the new view.
 				// Otherwise the new view might try to act on the old content.
@@ -94,11 +100,15 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_disconnected = false;
+
+			if (_applyTemplateFinished)
+				OnApplyTemplateFinished(_rootView, EventArgs.Empty);
 		}
 
 		public virtual void Disconnect()
 		{
 			_platformWindow.Activated -= OnWindowActivated;
+			SetToolbar(null);
 			_rootView.Content = null;
 			_disconnected = true;
 		}

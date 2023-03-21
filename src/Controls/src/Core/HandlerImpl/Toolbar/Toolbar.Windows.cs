@@ -1,14 +1,12 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
-using WImage = Microsoft.UI.Xaml.Controls.Image;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
+using WImage = Microsoft.UI.Xaml.Controls.Image;
 
 namespace Microsoft.Maui.Controls
 {
@@ -75,6 +73,38 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarTextColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarBackground((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarItems((IToolbarHandler)arg1, arg2);
+
+		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIconColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleView((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleIcon((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIsVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarPlacement(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarPlacement((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarDynamicOverflowEnabled(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarDynamicOverflowEnabled((IToolbarHandler)arg1, arg2);
 
 		public static void MapToolbarPlacement(IToolbarHandler arg1, Toolbar arg2)
 		{
@@ -110,6 +140,10 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateIconColor(arg2);
 		}
 
+		public static void MapIcon(ToolbarHandler arg1, Toolbar arg2)
+		{
+		}
+
 		public static void MapIcon(IToolbarHandler arg1, Toolbar arg2)
 		{
 		}
@@ -128,6 +162,10 @@ namespace Microsoft.Maui.Controls
 		{
 			arg1.PlatformView.UpdateBackButton(arg2);
 		}
+
+		public static void MapBackButtonEnabled(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonEnabled((IToolbarHandler)arg1, arg2);
+
 
 		public static void MapBackButtonEnabled(IToolbarHandler arg1, Toolbar arg2)
 		{

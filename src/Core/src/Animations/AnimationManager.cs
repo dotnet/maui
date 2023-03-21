@@ -3,12 +3,17 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.Animations
 {
+	/// <inheritdoc/>
 	public class AnimationManager : IAnimationManager, IDisposable
 	{
 		readonly List<Animation> _animations = new();
 		long _lastUpdate;
 		bool _disposedValue;
 
+		/// <summary>
+		/// Instantiate a new <see cref="AnimationManager"/> object.
+		/// </summary>
+		/// <param name="ticker">An instance of <see cref="ITicker"/> that will be used to time the animations.</param>
 		public AnimationManager(ITicker ticker)
 		{
 			_lastUpdate = GetCurrentTick();
@@ -17,12 +22,16 @@ namespace Microsoft.Maui.Animations
 			Ticker.Fire = OnFire;
 		}
 
+		/// <inheritdoc/>
 		public ITicker Ticker { get; }
 
+		/// <inheritdoc/>
 		public double SpeedModifier { get; set; } = 1;
 
+		/// <inheritdoc/>
 		public bool AutoStartTicker { get; set; } = true;
 
+		/// <inheritdoc/>
 		public void Add(Animation animation)
 		{
 			// If animations are disabled, don't do anything
@@ -35,6 +44,7 @@ namespace Microsoft.Maui.Animations
 				Start();
 		}
 
+		/// <inheritdoc/>
 		public void Remove(Animation animation)
 		{
 			_animations.TryRemove(animation);
@@ -97,6 +107,7 @@ namespace Microsoft.Maui.Animations
 			}
 		}
 
+		/// <inheritdoc/>
 		public void Dispose()
 		{
 			Dispose(disposing: true);

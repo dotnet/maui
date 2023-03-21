@@ -1,4 +1,5 @@
 ﻿using System;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
@@ -48,7 +49,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 					{
 						this.FadeTo(0.1);
 						this.TranslateTo(X, Y - 1000);
-						MessagingCenter.Send(this, "remove");
+						WeakReferenceMessenger.Default.Send(this, "remove");
 					}
 					else
 					{

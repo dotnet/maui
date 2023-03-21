@@ -200,6 +200,12 @@ namespace Samples.ViewModel
 					"Securely store data.",
 					new[] { "settings", "preferences", "prefs", "security", "storage" }),
 				new SampleItem(
+					"🐊",
+					"Semantic Screen Reader",
+					typeof(SemanticScreenReaderPage),
+					"Read out the semanic contents of a screen.",
+					new[] { "accessibility", "a11y", "screen reader", "semantic" }),
+				new SampleItem(
 					"📲",
 					"Share",
 					typeof(SharePage),

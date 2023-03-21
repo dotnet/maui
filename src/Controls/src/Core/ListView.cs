@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -444,20 +445,23 @@ namespace Microsoft.Maui.Controls
 				viewCell.View.ComputedConstraint = LayoutConstraint.None;
 
 			if (content != null)
+			{
 				_logicalChildren.Add(content);
-
-			content.Parent = this;
-			VisualDiagnostics.OnChildAdded(this, content);
+				content.Parent = this;
+				VisualDiagnostics.OnChildAdded(this, content);
+			}
 		}
 
 		protected override void UnhookContent(Cell content)
 		{
 			base.UnhookContent(content);
 
-			if (content == null || !_logicalChildren.Contains(content))
+			if (content == null)
 				return;
 			var index = _logicalChildren.IndexOf(content);
-			_logicalChildren.Remove(content);
+			if (index == -1)
+				return;
+			_logicalChildren.RemoveAt(index);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
 
@@ -739,7 +743,7 @@ namespace Microsoft.Maui.Controls
 			return template.CreateContent() is View;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, ListView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

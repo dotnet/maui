@@ -1,5 +1,3 @@
-#nullable enable
-
 using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Platform

@@ -1,5 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
@@ -15,8 +16,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 			InitializeComponent();
 			BindingContext = new SwipeViewGalleryViewModel();
 
-			MessagingCenter.Subscribe<SwipeViewGalleryViewModel>(this, "favourite", sender => { DisplayAlert("SwipeView", "Favourite", "Ok"); });
-			MessagingCenter.Subscribe<SwipeViewGalleryViewModel>(this, "delete", sender => { DisplayAlert("SwipeView", "Delete", "Ok"); });
+			WeakReferenceMessenger.Default.Register<SwipeViewGalleryViewModel, string>(this, "favourite", (_, sender) => { DisplayAlert("SwipeView", "Favourite", "Ok"); });
+			WeakReferenceMessenger.Default.Register<SwipeViewGalleryViewModel, string>(this, "delete", (_, sender) => { DisplayAlert("SwipeView", "Delete", "Ok"); });
 		}
 	}
 
@@ -64,17 +65,17 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 		void OnFavourite()
 		{
-			MessagingCenter.Send(this, "favourite");
+			WeakReferenceMessenger.Default.Send(this, "favourite");
 		}
 
 		void OnDelete()
 		{
-			MessagingCenter.Send(this, "delete");
+			WeakReferenceMessenger.Default.Send(this, "delete");
 		}
 
 		void OnTap()
 		{
-			MessagingCenter.Send(this, "tap");
+			WeakReferenceMessenger.Default.Send(this, "tap");
 		}
 	}
 }

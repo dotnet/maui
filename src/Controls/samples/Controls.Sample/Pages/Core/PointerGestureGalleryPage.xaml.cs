@@ -23,6 +23,8 @@ namespace Maui.Controls.Sample.Pages
 		void HoverMoved(object sender, PointerEventArgs e)
 		{
 			positionLabel.Text = $"Pointer position is at: {e.GetPosition((View)sender)}";
+			positionToWindow.Text = $"Pointer position inside window: {e.GetPosition(null)}";
+			positionToThisLabel.Text = $"Pointer position relative to this label: {e.GetPosition(positionToThisLabel)}";
 		}
 	}
 }

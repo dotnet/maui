@@ -1,9 +1,9 @@
-using Foundation;
-using CoreGraphics;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using System;
 using System.Runtime.InteropServices;
+using CoreGraphics;
+using Foundation;
+using Microsoft.Maui.Graphics;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.DeviceTests;

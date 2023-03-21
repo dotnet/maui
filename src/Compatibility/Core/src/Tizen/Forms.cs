@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Controls.Internals;
-using Tizen.Applications;
 using Microsoft.Maui.Devices;
+using Tizen.Applications;
 using Color = Microsoft.Maui.Graphics.Color;
 using NView = Tizen.NUI.BaseComponents.View;
-using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 using Size = Microsoft.Maui.Graphics.Size;
+using TDeviceInfo = Tizen.UIExtensions.Common.DeviceInfo;
 
 namespace Microsoft.Maui.Controls.Compatibility
 {
@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 	}
 
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public class InitializationOptions
 	{
 		public CoreApplication Context { get; set; }
@@ -47,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		public DisplayResolutionUnit DisplayResolutionUnit { get; set; }
 
 		public struct EffectScope
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;

@@ -1,19 +1,19 @@
 #pragma warning disable CA1416 // Validate platform compatibility
 using System;
-using System.ComponentModel;
-using Windows.UI.Core;
-using Microsoft.Maui.Controls.Internals;
-using static System.String;
-using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
-using System.Threading.Tasks;
-using System.Net;
-using Windows.Web.Http;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
-using Microsoft.UI.Xaml.Controls;
-using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
-using Microsoft.Maui.Controls.Platform;
+using System.Net;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
+using Microsoft.UI.Xaml.Controls;
+using Windows.UI.Core;
+using Windows.Web.Http;
+using static System.String;
+using WWebView = Microsoft.UI.Xaml.Controls.WebView2;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

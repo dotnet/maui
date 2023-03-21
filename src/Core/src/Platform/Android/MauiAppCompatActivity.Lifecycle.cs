@@ -1,3 +1,4 @@
+using System;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -18,7 +19,12 @@ namespace Microsoft.Maui
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnActivityResult>(del => del(this, requestCode, resultCode, data));
 		}
 
+		// TODO: Investigate whether the new AndroidX way is actually useful:
+		//       https://developer.android.com/reference/android/app/Activity#onBackPressed()
+		[Obsolete]
+#pragma warning disable 809
 		public override void OnBackPressed()
+#pragma warning restore 809
 		{
 			var preventBackPropagation = false;
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnBackPressed>(del =>
@@ -27,7 +33,11 @@ namespace Microsoft.Maui
 			});
 
 			if (!preventBackPropagation)
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 				base.OnBackPressed();
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 		}
 
 		public override void OnConfigurationChanged(Configuration newConfig)

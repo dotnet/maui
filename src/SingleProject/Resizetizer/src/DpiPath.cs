@@ -142,11 +142,30 @@ namespace Microsoft.Maui.Resizetizer
 			public static DpiPath[] Logo
 				=> new[]
 				{
+					// normal
 					new DpiPath(OutputPath, 1.00m, "Logo", ".scale-100", new SKSize(44, 44)),
 					new DpiPath(OutputPath, 1.25m, "Logo", ".scale-125", new SKSize(44, 44)),
 					new DpiPath(OutputPath, 1.50m, "Logo", ".scale-150", new SKSize(44, 44)),
 					new DpiPath(OutputPath, 2.00m, "Logo", ".scale-200", new SKSize(44, 44)),
 					new DpiPath(OutputPath, 4.00m, "Logo", ".scale-400", new SKSize(44, 44)),
+					// targetsize
+					new DpiPath(OutputPath, 1.00m, "Logo", ".targetsize-16", new SKSize(16, 16)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".targetsize-24", new SKSize(24, 24)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".targetsize-32", new SKSize(32, 32)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".targetsize-48", new SKSize(48, 48)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".targetsize-256", new SKSize(256, 256)),
+					// altform-unplated_targetsize
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-unplated_targetsize-16", new SKSize(16, 16)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-unplated_targetsize-24", new SKSize(24, 24)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-unplated_targetsize-32", new SKSize(32, 32)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-unplated_targetsize-48", new SKSize(48, 48)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-unplated_targetsize-256", new SKSize(256, 256)),
+					// altform-lightunplated_targetsize
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-lightunplated_targetsize-16", new SKSize(16, 16)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-lightunplated_targetsize-24", new SKSize(24, 24)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-lightunplated_targetsize-32", new SKSize(32, 32)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-lightunplated_targetsize-48", new SKSize(48, 48)),
+					new DpiPath(OutputPath, 1.00m, "Logo", ".altform-lightunplated_targetsize-256", new SKSize(256, 256)),
 				};
 
 			// Store Logo

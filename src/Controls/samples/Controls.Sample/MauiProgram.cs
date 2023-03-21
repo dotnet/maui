@@ -17,7 +17,9 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Controls.Compatibility;
+#if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
+#endif
 
 
 #if NET6_0_OR_GREATER
@@ -117,6 +119,9 @@ namespace Maui.Controls.Sample
 #else
 				logging.AddConsole();
 #endif
+
+				// Enable maximum logging for BlazorWebView
+				logging.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
 			});
 
 			services.AddSingleton<ITextService, TextService>();

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -63,7 +64,7 @@ namespace Microsoft.Maui.Controls
 
 		double IBorderElement.BorderWidthDefaultValue => -1d;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Frame> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
@@ -82,5 +83,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 
 		bool IBorderElement.IsBorderWidthSet() => false;
+	}
+
+	internal static class FrameExtensions
+	{
+		internal static bool IsClippedToBoundsSet(this Frame frame, bool defaultValue) =>
+			frame.IsSet(Compatibility.Layout.IsClippedToBoundsProperty) ? frame.IsClippedToBounds : defaultValue;
 	}
 }

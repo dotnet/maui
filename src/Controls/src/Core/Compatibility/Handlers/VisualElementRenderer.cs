@@ -1,5 +1,4 @@
-﻿#nullable enable
-#if WINDOWS || ANDROID || IOS || TIZEN
+﻿#if WINDOWS || ANDROID || IOS || TIZEN
 
 using System;
 using System.Collections.Generic;
@@ -36,9 +35,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			[nameof(VisualElement.BackgroundColor)] = MapBackgroundColor,
 			[AutomationProperties.IsInAccessibleTreeProperty.PropertyName] = MapAutomationPropertiesIsInAccessibleTree,
 #if WINDOWS
+#pragma warning disable CS0618 // Type or member is obsolete
 			[AutomationProperties.NameProperty.PropertyName] = MapAutomationPropertiesName,
 			[AutomationProperties.HelpTextProperty.PropertyName] = MapAutomationPropertiesHelpText,
 			[AutomationProperties.LabeledByProperty.PropertyName] = MapAutomationPropertiesLabeledBy,
+#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 		};
 

@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		IMauiContext _mauiContext;
 		Frame? _navigationFrame;
 		Action? _pendingNavigationFinished;
+		bool _connected;
 
 		protected NavigationRootManager WindowManager => _mauiContext.GetNavigationRootManager();
 		internal IStackNavigation? NavigationView { get; private set; }
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Connect(IStackNavigation navigationView, Frame navigationFrame)
 		{
+			_connected = true;
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.Platform
 
 		public virtual void Disconnect(IStackNavigation navigationView, Frame navigationFrame)
 		{
+			_connected = false;
 			if (_navigationFrame != null)
 				_navigationFrame.Navigated -= OnNavigated;
 
@@ -79,7 +82,7 @@ namespace Microsoft.Maui.Platform
 			NavigationTransitionInfo? transition = GetNavigationTransition(args);
 			_currentPage = newPageStack[newPageStack.Count - 1];
 
-			_ = _currentPage ?? throw new InvalidOperationException("Navigatoin Request Contains Null Elements");
+			_ = _currentPage ?? throw new InvalidOperationException("Navigation Request Contains Null Elements");
 			if (previousNavigationStack.Count < args.NavigationStack.Count)
 			{
 				Type destinationPageType = GetDestinationPageType();
@@ -196,7 +199,7 @@ namespace Microsoft.Maui.Platform
 					pc.OnLoaded(FireNavigationFinished);
 				}
 
-				if (NavigationView is IView view)
+				if (NavigationView is IView view && _connected)
 				{
 					view.Arrange(fe);
 				}

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Linq;
 using System.Numerics;
@@ -15,8 +14,10 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public abstract PathF GetPath();
+
+		double _fallbackWidth;
+		double _fallbackHeight;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
@@ -154,7 +155,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineJoin.Round
 			};
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashPattern']/Docs/*" />
 		public float[] StrokeDashPattern
 			=> StrokeDashArray.Select(a => (float)a).ToArray();
 
@@ -169,16 +169,14 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		void UpdateBrushParent(Brush brush)
 		{
-			if (brush != null)
+			if (brush != null && brush is not ImmutableBrush)
 				brush.Parent = this;
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				Frame = viewBounds;
-			}
+			_fallbackHeight = viewBounds.Height;
+			_fallbackWidth = viewBounds.Width;
 
 			var path = GetPath();
 
@@ -194,11 +192,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			viewBounds.Height -= StrokeThickness;
 
 			Matrix3x2 transform;
+
 			if (Aspect == Stretch.None)
 			{
-				transform = Matrix3x2.CreateTranslation(
-					(float)(viewBounds.Left - pathBounds.Left),
-					(float)(viewBounds.Top - pathBounds.Top));
+				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
+				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+
+				if (requireAdjustX || requireAdjustY)
+				{
+					transform = Matrix3x2.CreateTranslation(
+						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
+						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+				}
+				else
+				{
+					transform = Matrix3x2.Identity;
+				}
 			}
 			else
 			{
@@ -257,6 +266,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			if (result.Width != 0 && result.Height != 0)
 			{
 				return result;
@@ -264,7 +274,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+			RectF pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			SizeF boundsByFlattening = pathBounds.Size;
+
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
@@ -279,6 +291,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			switch (Aspect)
 			{
 				case Stretch.None:
+					result.Height += pathBounds.Y;
+					result.Width += pathBounds.X;
 					break;
 
 				case Stretch.Fill:
@@ -320,6 +334,30 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			DesiredSize = result;
 			return result;
+		}
+
+		internal double WidthForPathComputation
+		{
+			get
+			{
+				var width = Width;
+
+				// If the shape has never been laid out, then Width won't actually have a value;
+				// use the fallback value instead.
+				return width == -1 ? _fallbackWidth : width;
+			}
+		}
+
+		internal double HeightForPathComputation
+		{
+			get
+			{
+				var height = Height;
+
+				// If the shape has never been laid out, then Height won't actually have a value;
+				// use the fallback value instead.
+				return height == -1 ? _fallbackHeight : height;
+			}
 		}
 	}
 }

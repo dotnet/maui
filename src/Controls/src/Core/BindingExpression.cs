@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -605,51 +606,39 @@ namespace Microsoft.Maui.Controls
 			public object Source { get; private set; }
 		}
 
-		internal class WeakPropertyChangedProxy
+		internal class WeakPropertyChangedProxy : WeakEventProxy<INotifyPropertyChanged, PropertyChangedEventHandler>
 		{
-			readonly WeakReference<INotifyPropertyChanged> _source = new WeakReference<INotifyPropertyChanged>(null);
-			readonly WeakReference<PropertyChangedEventHandler> _listener = new WeakReference<PropertyChangedEventHandler>(null);
-			readonly PropertyChangedEventHandler _handler;
-			readonly EventHandler _bchandler;
-			internal WeakReference<INotifyPropertyChanged> Source => _source;
+			public WeakPropertyChangedProxy() { }
 
-			public WeakPropertyChangedProxy()
+			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
 			{
-				_handler = new PropertyChangedEventHandler(OnPropertyChanged);
-				_bchandler = new EventHandler(OnBCChanged);
+				Subscribe(source, listener);
 			}
 
-			public WeakPropertyChangedProxy(INotifyPropertyChanged source, PropertyChangedEventHandler listener) : this()
+
+
+			public override void Subscribe(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
 			{
-				SubscribeTo(source, listener);
+				source.PropertyChanged += OnPropertyChanged;
+				if (source is BindableObject bo)
+					bo.BindingContextChanged += OnBCChanged;
+
+				base.Subscribe(source, listener);
 			}
 
-			public void SubscribeTo(INotifyPropertyChanged source, PropertyChangedEventHandler listener)
+			public override void Unsubscribe()
 			{
-				source.PropertyChanged += _handler;
-				var bo = source as BindableObject;
-				if (bo != null)
-					bo.BindingContextChanged += _bchandler;
-				_source.SetTarget(source);
-				_listener.SetTarget(listener);
-			}
+				if (TryGetSource(out var source))
+					source.PropertyChanged -= OnPropertyChanged;
+				if (source is BindableObject bo)
+					bo.BindingContextChanged -= OnBCChanged;
 
-			public void Unsubscribe()
-			{
-				INotifyPropertyChanged source;
-				if (_source.TryGetTarget(out source) && source != null)
-					source.PropertyChanged -= _handler;
-				var bo = source as BindableObject;
-				if (bo != null)
-					bo.BindingContextChanged -= _bchandler;
-
-				_source.SetTarget(null);
-				_listener.SetTarget(null);
+				base.Unsubscribe();
 			}
 
 			void OnPropertyChanged(object sender, PropertyChangedEventArgs e)
 			{
-				if (_listener.TryGetTarget(out var handler) && handler != null)
+				if (TryGetHandler(out var handler))
 					handler(sender, e);
 				else
 					Unsubscribe();
@@ -657,7 +646,7 @@ namespace Microsoft.Maui.Controls
 
 			void OnBCChanged(object sender, EventArgs e)
 			{
-				OnPropertyChanged(sender, new PropertyChangedEventArgs("BindingContext"));
+				OnPropertyChanged(sender, new PropertyChangedEventArgs(nameof(BindableObject.BindingContext)));
 			}
 		}
 
@@ -666,6 +655,8 @@ namespace Microsoft.Maui.Controls
 			readonly BindingExpression _expression;
 			readonly PropertyChangedEventHandler _changeHandler;
 			WeakPropertyChangedProxy _listener;
+
+			~BindingExpressionPart() => _listener?.Unsubscribe();
 
 			public BindingExpressionPart(BindingExpression expression, string content, bool isIndexer = false)
 			{
@@ -680,7 +671,7 @@ namespace Microsoft.Maui.Controls
 			public void Subscribe(INotifyPropertyChanged handler)
 			{
 				INotifyPropertyChanged source;
-				if (_listener != null && _listener.Source.TryGetTarget(out source) && ReferenceEquals(handler, source))
+				if (_listener != null && _listener.TryGetSource(out source) && ReferenceEquals(handler, source))
 					// Already subscribed
 					return;
 

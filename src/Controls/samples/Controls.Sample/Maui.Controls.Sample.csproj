@@ -8,12 +8,13 @@
     <AssemblyName>Maui.Controls.Sample</AssemblyName>
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
     <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
-    <ApplicationIdGuid>f9e4fa3e-3505-4742-9b2b-d1acdaff4ec8</ApplicationIdGuid>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
@@ -37,6 +38,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
     <!--<PackageReference Include="Microsoft.Maui.Graphics.Skia" />-->
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -55,7 +57,7 @@
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+    <ProjectReference Condition="'$(IncludeCompatibilityProjects)' == 'true'" Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
   </ItemGroup>
@@ -63,6 +65,7 @@
   <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
     <PackageReference Include="Microsoft.Maui.Controls.Foldable" Version="$(MauiVersion)" />
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -72,7 +75,7 @@
     <MauiImage Update="Resources\Images\*.gif" Resize="false" />
     <MauiIcon Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" />
     <MauiFont Include="Resources\Fonts\*" />
-    <MauiSplashScreen Include="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" />
+    <MauiSplashScreen Include="Resources\Splash\dotnet_splash.svg" Color="#FFFFFF" />
   </ItemGroup>
 
   <ItemGroup>

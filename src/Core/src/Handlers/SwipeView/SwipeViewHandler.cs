@@ -41,14 +41,14 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected SwipeViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
-			: base(mapper, commandMapper ?? ViewCommandMapper)
+		protected SwipeViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		public SwipeViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		protected SwipeViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
-
 		}
 
 		ISwipeView ISwipeViewHandler.VirtualView => VirtualView;

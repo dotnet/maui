@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
 namespace Microsoft.Maui.Controls
@@ -10,5 +11,8 @@ namespace Microsoft.Maui.Controls
 			if (handler is DatePickerHandler dph)
 				dph.UpdateImmediately = datePicker.OnThisPlatform().UpdateMode() == UpdateMode.Immediately;
 		}
+
+		public static void MapUpdateMode(DatePickerHandler handler, DatePicker datePicker) =>
+			MapUpdateMode((IDatePickerHandler)handler, datePicker);
 	}
 }

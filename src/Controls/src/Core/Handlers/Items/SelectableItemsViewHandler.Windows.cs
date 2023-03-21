@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -44,7 +45,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
-			var oldListViewBase = ListViewBase;
+			var oldListViewBase = platformView;
+
 			if (oldListViewBase != null)
 			{
 				oldListViewBase.ClearValue(ListViewBase.SelectionModeProperty);
@@ -55,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				ItemsView.SelectionChanged -= VirtualSelectionChanged;
 			}
-
 
 			base.DisconnectHandler(platformView);
 		}

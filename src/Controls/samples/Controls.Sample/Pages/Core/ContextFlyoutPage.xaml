@@ -12,6 +12,8 @@
                         <MenuFlyout>
                             <MenuFlyoutItem Text="Increment by 10" Clicked="OnIncrementMenuItemClicked" CommandParameter="10"></MenuFlyoutItem>
                             <MenuFlyoutItem Text="Increment by 20" Clicked="OnIncrementMenuItemClicked" CommandParameter="20"></MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Increment by 30 (disabled)" Clicked="OnIncrementMenuItemClicked" CommandParameter="30" x:Name="bbb"></MenuFlyoutItem>
+                            <MenuFlyoutItem Text="Increment by 40 (dynamic enabled/disabled)" Command="{Binding DynamicEnabledCommand}" CommandParameter="40"></MenuFlyoutItem>
                             <MenuFlyoutSubItem Text="More options">
                                 <MenuFlyoutItem Text="Increment by 1,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000"></MenuFlyoutItem>
                                 <MenuFlyoutItem Text="Increment by 1,000,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000000"></MenuFlyoutItem>
@@ -20,13 +22,18 @@
                     </FlyoutBase.ContextFlyout>
                 </Button>
                 <Label Text="{Binding CounterValue}" FontSize="30" VerticalOptions="Center"></Label>
+                <Label Padding="0,0,50,0" Text="Is dynamic menu enabled?" FontSize="30" VerticalOptions="Center"></Label>
+                <Switch IsToggled="{Binding IsDynamicCommandEnabled}" />
             </HorizontalStackLayout>
 
             <Label Text="Right-click and add additional menus (currently quirky on Windows and Catalyst)">
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
-                        <MenuFlyoutItem Text="Add Menu" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
-                        <MenuFlyoutSubItem Text="Add Sub Menu" Clicked="OnSubMenuClicked"></MenuFlyoutSubItem>
+                        <MenuFlyoutItem Text="Add top-level menu items" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
+                        <MenuFlyoutSubItem Text="Sub menu items go in here">
+                            <MenuFlyoutItem Text="Add sub menu items below here" Clicked="OnAddSubMenuClicked"></MenuFlyoutItem>
+                            <MenuFlyoutSeparator />
+                        </MenuFlyoutSubItem>
                     </MenuFlyout>
                 </FlyoutBase.ContextFlyout>
             </Label>

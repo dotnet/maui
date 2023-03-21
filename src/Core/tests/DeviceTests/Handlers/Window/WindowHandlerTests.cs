@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Window)]
-	public partial class WindowHandlerTests : HandlerTestBase
+	public partial class WindowHandlerTests : CoreHandlerTestBase
 	{
 		//TODO: Fix this test on Android, it fails a lot of times
 #if !ANDROID
@@ -208,8 +208,10 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await Task.Delay(100);
 				}
+#elif WINDOWS
+				// If we don't wait for the content to load then the CloseWindow call crashes
+				await ((IPlatformViewHandler)window.Page.Handler).PlatformView.OnLoadedAsync();
 #endif
-
 				try
 				{
 					await action(windowHandler);

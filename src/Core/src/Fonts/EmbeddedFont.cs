@@ -1,15 +1,21 @@
 #nullable enable
-using System;
 using System.IO;
 
 namespace Microsoft.Maui
 {
-	/// <include file="../../docs/Microsoft.Maui/EmbeddedFont.xml" path="Type[@FullName='Microsoft.Maui.EmbeddedFont']/Docs/*" />
+	/// <summary>
+	/// Represents a font that is added as an embedded resource in the application.
+	/// </summary>
 	public class EmbeddedFont
 	{
-		/// <include file="../../docs/Microsoft.Maui/EmbeddedFont.xml" path="//Member[@MemberName='FontName']/Docs/*" />
+		/// <summary>
+		/// The name of this font.
+		/// </summary>
 		public string? FontName { get; set; }
-		/// <include file="../../docs/Microsoft.Maui/EmbeddedFont.xml" path="//Member[@MemberName='ResourceStream']/Docs/*" />
+
+		/// <summary>
+		/// A <see cref="Stream"/> with which the contents of this font can be accessed.
+		/// </summary>
 		public Stream? ResourceStream { get; set; }
 	}
 }

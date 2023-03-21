@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<ToggledEventArgs> Toggled;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Switch> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

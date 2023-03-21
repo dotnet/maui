@@ -51,7 +51,9 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
-			// If we're being disconnected from the xplat element, then we should no longer be managing its chidren
+			// If we're being disconnected from the xplat element, then we should no longer be managing its children
+			platformView.CrossPlatformMeasure = null;
+			platformView.CrossPlatformArrange = null;
 			platformView.RemoveAllViews();
 			base.DisconnectHandler(platformView);
 		}

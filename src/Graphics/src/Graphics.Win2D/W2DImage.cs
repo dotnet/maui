@@ -1,8 +1,8 @@
-﻿using Microsoft.Graphics.Canvas;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Graphics.Canvas;
 using Windows.Storage.Streams;
 
 namespace Microsoft.Maui.Graphics.Win2D
@@ -72,6 +72,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public void Save(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
+			if (quality < 0 || quality > 1)
+				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+
 			switch (format)
 			{
 				case ImageFormat.Jpeg:
@@ -85,6 +88,9 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public async Task SaveAsync(Stream stream, ImageFormat format = ImageFormat.Png, float quality = 1)
 		{
+			if (quality < 0 || quality > 1)
+				throw new ArgumentOutOfRangeException(nameof(quality), "quality must be in the range of 0..1");
+
 			switch (format)
 			{
 				case ImageFormat.Jpeg:

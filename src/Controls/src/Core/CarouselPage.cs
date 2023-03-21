@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<CarouselPage>>(() => new PlatformConfigurationRegistry<CarouselPage>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CarouselPage.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, CarouselPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

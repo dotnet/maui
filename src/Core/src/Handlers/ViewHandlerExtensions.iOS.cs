@@ -23,7 +23,13 @@ namespace Microsoft.Maui
 			}
 
 			bounds = bounds ?? platformView.Bounds;
-			if (virtualView is ISafeAreaView sav && !sav.IgnoreSafeArea && (System.OperatingSystem.IsIOSVersionAtLeast(11) || System.OperatingSystem.IsTvOSVersionAtLeast(11)))
+
+			if (virtualView is ISafeAreaView sav && !sav.IgnoreSafeArea
+				&& (System.OperatingSystem.IsIOSVersionAtLeast(11) || System.OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+				))
 			{
 				bounds = platformView.SafeAreaInsets.InsetRect(bounds.Value);
 			}

@@ -1,8 +1,9 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
-using WListView = Microsoft.UI.Xaml.Controls.ListView;
 using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
+using WListView = Microsoft.UI.Xaml.Controls.ListView;
 
 namespace Microsoft.Maui.Controls.Platform
 {

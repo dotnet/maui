@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Controls
 			public const string Focused = "Focused";
 			public const string Selected = "Selected";
 			public const string PointerOver = "PointerOver";
+			internal const string Unfocused = "Unfocused";
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='VisualStateGroupsProperty']/Docs/*" />
@@ -662,6 +664,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return actual;
+		}
+
+		internal static bool HasVisualState(this VisualElement element, string name)
+		{
+			IList<VisualStateGroup> list = VisualStateManager.GetVisualStateGroups(element);
+			for (var i = 0; i < list.Count; i++)
+			{
+				VisualStateGroup group = list[i];
+				for (var j = 0; j < group.States.Count; j++)
+				{
+					if (group.States[j].Name == name)
+						return true;
+				}
+			}
+
+			return false;
 		}
 	}
 

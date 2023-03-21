@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -247,8 +249,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
-		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
-		public void LayoutIsGarbageCollectedAfterItsRemoved()
+		[Fact]
+		public async Task LayoutIsGarbageCollectedAfterItsRemoved()
 		{
 			var layout = new StackLayout
 			{
@@ -266,6 +268,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			pageRoot.Children.Remove(layout);
 			layout = null;
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
@@ -384,6 +387,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(itemTemplateSelector, BindableLayout.GetItemTemplateSelector(layout));
 			Assert.Equal(itemTemplateSelector, layout.GetValue(BindableLayout.ItemTemplateSelectorProperty));
+		}
+
+		[Fact]
+		public async Task DoesNotLeak()
+		{
+			WeakReference controllerRef, proxyRef;
+			var list = new ObservableCollection<string> { "Foo", "Bar", "Baz" };
+
+			// Scope for BindableLayout
+			{
+				var layout = new StackLayout { IsPlatformEnabled = true };
+				BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+				BindableLayout.SetItemsSource(layout, list);
+
+				var controller = BindableLayout.GetBindableLayoutController(layout);
+				controllerRef = new WeakReference(controller);
+
+				// BindableLayoutController._collectionChangedProxy
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				var proxy = controller.GetType().GetField("_collectionChangedProxy", flags).GetValue(controller);
+				Assert.NotNull(proxy);
+				proxyRef = new WeakReference(proxy);
+			}
+
+			// First GC
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(controllerRef.IsAlive, "BindableLayoutController should not be alive!");
+
+			// Second GC
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(proxyRef.IsAlive, "WeakCollectionChangedProxy should not be alive!");
+		}
+
+		[Fact("BindableLayout Still Updates after a GC")]
+		public async Task UpdatesAfterGC()
+		{
+			var list = new ObservableCollection<string> { "Foo", "Bar" };
+			var layout = new StackLayout { IsPlatformEnabled = true };
+			BindableLayout.SetItemTemplate(layout, new DataTemplate(() => new Label()));
+			BindableLayout.SetItemsSource(layout, list);
+
+			Assert.Equal(2, layout.Children.Count);
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			list.Add("Baz");
+			Assert.Equal(3, layout.Children.Count);
 		}
 
 		// Checks if for every item in the items source there's a corresponding view

@@ -1,6 +1,6 @@
 ﻿using System;
-using Tizen.UIExtensions.NUI;
 using Tizen.UIExtensions.Common;
+using Tizen.UIExtensions.NUI;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using TSize = Tizen.UIExtensions.Common.Size;
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Platform
 		Size _measureCache;
 
 		bool _needMeasureUpdate;
+		internal int IsLayoutUpdating { get; set; } = 0;
 
 		public LayoutViewGroup(IView view)
 		{
@@ -28,6 +29,10 @@ namespace Microsoft.Maui.Platform
 		{
 			_needMeasureUpdate = true;
 			MarkChanged();
+			if (IsLayoutUpdating == 0)
+			{
+				Layout.RequestLayout();
+			}
 		}
 
 		public void ClearNeedMeasureUpdate()
@@ -64,6 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		void OnLayoutUpdated(object? sender, LayoutEventArgs e)
 		{
+			IsLayoutUpdating++;
 			var platformGeometry = this.GetBounds().ToDP();
 
 			if (_needMeasureUpdate || _measureCache != platformGeometry.Size)
@@ -76,6 +82,7 @@ namespace Microsoft.Maui.Platform
 				platformGeometry.Y = 0;
 				CrossPlatformArrange?.Invoke(platformGeometry);
 			}
+			IsLayoutUpdating--;
 		}
 	}
 }

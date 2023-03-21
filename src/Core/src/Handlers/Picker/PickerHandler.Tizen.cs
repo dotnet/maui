@@ -1,9 +1,9 @@
 ﻿using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using NColor = Tizen.NUI.Color;
+using NEntry = Tizen.UIExtensions.NUI.Entry;
 using NPosition = Tizen.NUI.Position;
 using NView = Tizen.NUI.BaseComponents.View;
-using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 		}
 
-		// Uncomment me on NET7 [Obsolete]
+		// TODO Uncomment me on NET8 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) => Reload(handler);
 
 		internal static void MapItems(IPickerHandler handler, IPicker picker) => Reload(handler);

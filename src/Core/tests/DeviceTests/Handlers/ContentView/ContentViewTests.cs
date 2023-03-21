@@ -5,7 +5,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests.Handlers.ContentView
 {
 	[Category(TestCategory.ContentView)]
-	public partial class ContentViewTests : HandlerTestBase<ContentViewHandler, ContentViewStub>
+	public partial class ContentViewTests : CoreHandlerTestBase<ContentViewHandler, ContentViewStub>
 	{
 		[Fact]
 		public async Task MeasureMatchesExplicitValues()

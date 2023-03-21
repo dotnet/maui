@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -376,13 +377,6 @@ namespace Microsoft.Maui.Controls
 			return base.OnBackButtonPressed();
 		}
 
-		internal void InitialNativeNavigationStackLoaded()
-		{
-			SendNavigated(null);
-		}
-
-
-
 		void SendNavigated(Page previousPage)
 		{
 			previousPage?.SendNavigatedFrom(new NavigatedFromEventArgs(CurrentPage));
@@ -425,7 +419,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly Lazy<PlatformConfigurationRegistry<NavigationPage>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, NavigationPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				new PlatformConfigurationRegistry<AbsoluteLayout>(this));
 		}
 
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, AbsoluteLayout> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -3,7 +3,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using static Microsoft.Maui.DeviceTests.HandlerTestBase;
+using static Microsoft.Maui.DeviceTests.ControlsHandlerTestBase;
 using AActivity = Android.App.Activity;
 using AView = Android.Views.View;
 using AViewGroup = Android.Views.ViewGroup;
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			{
 				PlatformViewUnderTest.RemoveFromParent();
 
-				farw.AddView(platformView);
+				farw.AddView(platformView, 0);
 				platformView.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 			}
 
@@ -44,8 +44,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		protected override void DisconnectHandler(AActivity platformView)
 		{
 			base.DisconnectHandler(platformView);
-			var windowManager = MauiContext.GetNavigationRootManager();
-			windowManager.Disconnect();
+			WindowHandler.DisconnectHandler(MauiContext.GetNavigationRootManager());
 		}
 
 		public WindowHandlerStub()

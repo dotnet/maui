@@ -38,6 +38,52 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		[Fact(DisplayName = "Corner radius is rounded by default")]
+		public async Task RoundedCornersDefault()
+		{
+			var flatCornerRadius = 0;
+			var button = new ButtonStub()
+			{
+				// assign the default value
+				CornerRadius = -1
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.CornerRadius,
+					ContainsResource = handler.PlatformView.Resources.Keys.Contains("ControlCornerRadius")
+				};
+			});
+
+			Assert.False(values.ContainsResource);
+			Assert.NotEqual(flatCornerRadius, values.ViewValue);
+		}
+
+		[Fact(DisplayName = "Corner Radius Set Correctly")]
+		public async Task CornerRadiusSetCorrectly()
+		{
+			var cornerRadius = 8;
+			var button = new ButtonStub()
+			{
+				CornerRadius = cornerRadius
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				var ret = new
+				{
+					ViewValue = button.CornerRadius,
+					ContainsResource = handler.PlatformView.Resources.Keys.Contains("ControlCornerRadius")
+				};
+				return ret;
+			});
+
+			Assert.True(values.ContainsResource);
+			Assert.Equal(cornerRadius, values.ViewValue);
+		}
+
 		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
 			buttonHandler.PlatformView;
 

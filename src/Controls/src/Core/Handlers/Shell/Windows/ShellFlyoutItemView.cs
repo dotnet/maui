@@ -1,3 +1,4 @@
+#nullable disable
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
@@ -52,7 +53,13 @@ namespace Microsoft.Maui.Controls.Platform
 				_content = null;
 			}
 
-			var bo = (BindableObject)args.NewValue;
+			BindableObject bo = null;
+
+			if (args.NewValue is NavigationViewItemViewModel vm && vm.Data is BindableObject bindableObject)
+				bo = bindableObject;
+			else
+				bo = (BindableObject)args.NewValue;
+
 			var element = bo as Element;
 			_shell = element?.FindParentOfType<Shell>();
 			DataTemplate dataTemplate = (_shell as IShellController)?.GetFlyoutItemDataTemplate(bo);

@@ -1,5 +1,6 @@
-using Microsoft.UI.Xaml;
+#nullable disable
 using System.ComponentModel;
+using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Platform
 {

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Foundation;
 using ObjCRuntime;
@@ -24,7 +25,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (_renderer == null)
 			{
-				_renderer = (IPlatformViewHandler)view.ToHandler(shell.FindMauiContext());
+				_renderer = (IPlatformViewHandler)view.ToHandler(view.FindMauiContext() ?? shell.FindMauiContext());
 			}
 
 			ContentView.AddSubview(_renderer.PlatformView);

@@ -6,8 +6,6 @@ namespace Microsoft.Maui.Graphics
 	public interface ICanvas
 	{
 		public float DisplayScale { get; set; }
-		public float RetinaScale { get; set; }
-
 		public float StrokeSize { set; }
 		public float MiterLimit { set; }
 		public Color StrokeColor { set; }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Text;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -32,6 +33,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapLineBreakMode(LabelHandler handler, Label label) => MapLineBreakMode((ILabelHandler)handler, label);
+
+
 		public static void MapTextType(ILabelHandler handler, Label label)
 		{
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
@@ -42,7 +48,7 @@ namespace Microsoft.Maui.Controls
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 
-		// TODO: NET7 make this public
+		// TODO: NET8 make this public
 		internal static void MapTextColor(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateTextColor(label);

@@ -1,11 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Windows.UI.ViewManagement;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using Microsoft.Maui.Controls.Platform;
+using Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 {

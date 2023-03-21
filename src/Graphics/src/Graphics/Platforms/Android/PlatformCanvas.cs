@@ -1,10 +1,10 @@
-using Microsoft.Maui.Graphics.Platform.Text;
-using Microsoft.Maui.Graphics.Text;
+using System;
+using System.Numerics;
 using Android.Content;
 using Android.Graphics;
 using Android.Text;
-using System;
-using System.Numerics;
+using Microsoft.Maui.Graphics.Platform.Text;
+using Microsoft.Maui.Graphics.Text;
 
 namespace Microsoft.Maui.Graphics.Platform
 {
@@ -539,9 +539,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void SubtractFromClip(float x, float y, float width, float height)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CA1416, CA1422 // clipRect(Region.Op) method deprecated in API 26 https://developer.android.com/reference/android/graphics/Canvas#clipRect(float,%20float,%20float,%20float,%20android.graphics.Region.Op)
 			_canvas.ClipRect(x, y, x + width, y + height, Region.Op.Difference);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CA1416, CA1422 // clipRect(Region.Op) method deprecated
 		}
 
 		protected override void PlatformDrawPath(PathF aPath)
@@ -602,6 +602,8 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			_canvas.Save();
 			_canvas.Translate(x, y - CurrentState.ScaledFontSize);
+#pragma warning disable CA1416 // Validate platform compatibility
+#pragma warning disable CA1422 // Validate platform compatibility
 			var layout = new StaticLayout(
 				value,
 				CurrentState.FontPaint,
@@ -610,6 +612,8 @@ namespace Microsoft.Maui.Graphics.Platform
 				1f,
 				0f,
 				false);
+#pragma warning restore CA1422 // Validate platform compatibility
+#pragma warning restore CA1416 // Validate platform compatibility
 			layout.Draw(_canvas);
 			_canvas.Restore();
 		}
@@ -731,7 +735,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
+#pragma warning disable CS0618 // getMatrix() method deprecated in API 16 https://developer.android.com/reference/android/graphics/Canvas#getMatrix()
 			var matrix = new Matrix(_canvas.Matrix);
+#pragma warning restore CS0618 // getMatrix() method deprecated
 			matrix.PostConcat(transform.AsMatrix());
 			_canvas.Matrix = matrix;
 		}

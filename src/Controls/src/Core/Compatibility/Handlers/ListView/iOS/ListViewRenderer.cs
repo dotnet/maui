@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -34,7 +35,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IPlatformViewHandler _headerRenderer;
 		IPlatformViewHandler _footerRenderer;
 
-		KeyboardInsetTracker _insetTracker;
 		RectangleF _previousFrame;
 		ScrollToRequestedEventArgs _requestedScroll;
 
@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			double height = Bounds.Height;
@@ -87,10 +86,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (_previousFrame != Frame)
-			{
 				_previousFrame = Frame;
-				_insetTracker?.UpdateInsets();
-			}
 		}
 
 		protected override void SetBackground(Brush brush)
@@ -137,12 +133,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
-				if (_insetTracker != null)
-				{
-					_insetTracker.Dispose();
-					_insetTracker = null;
-				}
-
 				if (Element != null)
 				{
 					var templatedItems = TemplatedItemsView.TemplatedItems;
@@ -221,7 +211,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (Control == null)
 				{
-					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11))
+					if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+						|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+					)
 					{
 						var parentNav = e.NewElement.FindParentOfType<NavigationPage>();
 						_usingLargeTitles = (parentNav != null && parentNav.OnThisPlatform().PrefersLargeTitles());
@@ -229,17 +223,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					_tableViewController = new FormsUITableViewController(e.NewElement, _usingLargeTitles);
 					SetNativeControl(_tableViewController.TableView);
 
-					if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
+					if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsMacCatalystVersionAtLeast(15)
+#if TVOS
+						|| OperatingSystem.IsTvOSVersionAtLeast(15)
+#endif
+					)
 						_tableViewController.TableView.SectionHeaderTopPadding = new nfloat(0);
 
 					_backgroundUIView = _tableViewController.TableView.BackgroundView;
-
-					_insetTracker = new KeyboardInsetTracker(_tableViewController.TableView, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
-					{
-						var offset = Control.ContentOffset;
-						offset.Y += point.Y;
-						Control.SetContentOffset(offset, true);
-					}, this);
 				}
 
 				var listView = e.NewElement;
@@ -357,9 +348,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var platformFrame = new RectangleF(0, 0, size.Width, size.Height);
 			_footerRenderer.PlatformView.Frame = platformFrame;
 			_footerRenderer.VirtualView.Arrange(platformFrame.ToRectangle());
+			Control.TableFooterView = _footerRenderer.PlatformView;
+
 			BeginInvokeOnMainThread(() =>
 			{
-				if (_headerRenderer != null)
+				if (_footerRenderer != null)
 					Control.TableFooterView = _footerRenderer.PlatformView;
 			});
 		}
@@ -961,7 +954,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (_prototype != null)
 				{
 					var element = _prototype.VirtualView;
-					element.Handler?.DisconnectHandler();
+					element?.Handler?.DisconnectHandler();
 					//_prototype?.Dispose();
 					//_prototype = null;
 				}

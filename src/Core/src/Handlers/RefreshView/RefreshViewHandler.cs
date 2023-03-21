@@ -31,7 +31,13 @@ namespace Microsoft.Maui.Handlers
 		{
 		}
 
-		public RefreshViewHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public RefreshViewHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public RefreshViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

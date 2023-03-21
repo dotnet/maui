@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
 	{
@@ -6,5 +7,8 @@
 		{
 			Platform.TextExtensions.UpdateText(handler.PlatformView.Entry, searchBar);
 		}
+
+		public static void MapText(SearchBarHandler handler, SearchBar searchBar) =>
+			MapText((ISearchBarHandler)handler, searchBar);
 	}
 }

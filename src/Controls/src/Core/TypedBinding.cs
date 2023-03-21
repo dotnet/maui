@@ -1,3 +1,4 @@
+#nullable disable
 #define DO_NOT_CHECK_FOR_BINDING_REUSE
 
 using System;
@@ -248,29 +249,31 @@ namespace Microsoft.Maui.Controls.Internals
 			public Func<TSource, object> PartGetter { get; }
 			public string PropertyName { get; }
 			public BindingExpression.WeakPropertyChangedProxy Listener { get; }
-			WeakReference<INotifyPropertyChanged> _weakPart = new WeakReference<INotifyPropertyChanged>(null);
 			readonly BindingBase _binding;
 			PropertyChangedEventHandler handler;
+
+			~PropertyChangedProxy() => Listener?.Unsubscribe();
+
 			public INotifyPropertyChanged Part
 			{
 				get
 				{
-					INotifyPropertyChanged target;
-					if (_weakPart.TryGetTarget(out target))
+					if (Listener != null && Listener.TryGetSource(out var target))
 						return target;
 					return null;
 				}
 				set
 				{
-					if (Listener != null && Listener.Source.TryGetTarget(out var source) && ReferenceEquals(value, source))
+					if (Listener != null)
+					{
 						//Already subscribed
-						return;
+						if (Listener.TryGetSource(out var source) && ReferenceEquals(value, source))
+							return;
 
-					//clear out previous subscription
-					Listener?.Unsubscribe();
-
-					_weakPart.SetTarget(value);
-					Listener.SubscribeTo(value, handler);
+						//clear out previous subscription
+						Listener.Unsubscribe();
+						Listener.Subscribe(value, handler);
+					}
 				}
 			}
 

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Drawing;
+using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
 
@@ -88,14 +90,54 @@ namespace Microsoft.Maui.Platform
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
+		async Task LoadUrlAsync(string? url)
+		{
+			try
+			{
+				var uri = new Uri(url ?? string.Empty);
+				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
+				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
+				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
+				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
+
+				if (_handler.TryGetTarget(out var handler))
+				{
+					if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) &&
+						!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+					{
+						return;
+					}
+
+					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+				}
+
+				LoadRequest(request);
+			}
+			catch (UriFormatException formatException)
+			{
+				// If we got a format exception trying to parse the URI, it might be because
+				// someone is passing in a local bundled file page. If we can find a better way
+				// to detect that scenario, we should use it; until then, we'll fall back to 
+				// local file loading here and see if that works:
+				if (!string.IsNullOrEmpty(url))
+				{
+					if (!LoadFile(url))
+					{
+						if (_handler.TryGetTarget(out var handler))
+							handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Unable to Load Url {url}: {formatException}");
+					}
+				}
+			}
+			catch (Exception exc)
+			{
+				if (_handler.TryGetTarget(out var handler))
+					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Unable to Load Url {url}: {exc}");
+			}
+		}
+
 		public void LoadUrl(string? url)
 		{
-			var uri = new Uri(url ?? string.Empty);
-			var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
-			var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-			NSUrlRequest request = new NSUrlRequest(new Uri(safeHostUri, safeRelativeUri)!);
-
-			LoadRequest(request);
+			LoadUrlAsync(url).FireAndForget();
 		}
 
 		// https://developer.apple.com/forums/thread/99674
@@ -105,14 +147,53 @@ namespace Microsoft.Maui.Platform
 		// It also has to be shared at the point you call init
 		public static WKWebViewConfiguration CreateConfiguration()
 		{
+			// By default, setting inline media playback to allowed, including autoplay
+			// and picture in picture, since these things MUST be set during the webview
+			// creation, and have no effect if set afterwards.
+			// A custom handler factory delegate could be set to disable these defaults
+			// but if we do not set them here, they cannot be changed once the
+			// handler's platform view is created, so erring on the side of wanting this
+			// capability by default.
 			var config = new WKWebViewConfiguration();
-
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
 			if (SharedPool == null)
 				SharedPool = config.ProcessPool;
 			else
 				config.ProcessPool = SharedPool;
 
 			return config;
+		}
+
+		bool LoadFile(string url)
+		{
+			try
+			{
+				var file = Path.GetFileNameWithoutExtension(url);
+				var ext = Path.GetExtension(url);
+
+				var nsUrl = NSBundle.MainBundle.GetUrlForResource(file, ext);
+
+				if (nsUrl == null)
+				{
+					return false;
+				}
+
+				LoadFileUrl(nsUrl, nsUrl);
+
+				return true;
+			}
+			catch (Exception ex)
+			{
+				if (_handler.TryGetTarget(out var handler))
+					handler.MauiContext?.CreateLogger<MauiWKWebView>()?.LogWarning(nameof(MauiWKWebView), $"Could not load {url} as local file: {ex}");
+			}
+
+			return false;
 		}
 	}
 }

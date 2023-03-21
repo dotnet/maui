@@ -29,9 +29,11 @@ using Trace = System.Diagnostics.Trace;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct InitializationOptions
 	{
 		public struct EffectScope
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public ExportEffectAttribute[] Effects;
@@ -65,12 +67,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static bool _ColorButtonNormalSet;
 		static Color _ColorButtonNormal = null;
 		public static Color ColorButtonNormalOverride { get; set; }
-
-		[SupportedOSPlatformGuard("android23.0")]
-		internal static readonly bool IsMarshmallowOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.M);
-
-		[SupportedOSPlatformGuard("android24.0")]
-		internal static readonly bool IsNougatOrNewer = OperatingSystem.IsAndroidVersionAtLeast((int)BuildVersionCodes.N);
 
 		public static float GetFontSizeNormal(Context context)
 		{

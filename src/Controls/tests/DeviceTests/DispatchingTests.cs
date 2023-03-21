@@ -15,7 +15,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Dispatcher)]
-	public class DispatchingTests : HandlerTestBase
+	public class DispatchingTests : ControlsHandlerTestBase
 	{
 		[Fact]
 		public async Task DispatchFromBackgroundThread()

@@ -1,6 +1,6 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Application : IApplication
 	{
-		const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
+		internal const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
 
 		readonly List<Window> _windows = new();
-		readonly Dictionary<string, Window> _requestedWindows = new();
+		readonly Dictionary<string, WeakReference<Window>> _requestedWindows = new();
 		ILogger<Application>? _logger;
 
 		ILogger<Application>? Logger =>
@@ -30,8 +30,14 @@ namespace Microsoft.Maui.Controls
 			// try get the window that is pending
 			if (activationState?.State?.TryGetValue(MauiWindowIdKey, out var requestedWindowId) ?? false)
 			{
-				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var w))
-					window = w;
+				if (requestedWindowId != null && _requestedWindows.TryGetValue(requestedWindowId, out var r))
+				{
+					if (r.TryGetTarget(out var w))
+					{
+						window = w;
+					}
+					_requestedWindows.Remove(requestedWindowId);
+				}
 			}
 
 			// create a new one if there is no pending windows
@@ -77,7 +83,7 @@ namespace Microsoft.Maui.Controls
 			if (window is Element windowElement)
 			{
 				var oldIndex = InternalChildren.IndexOf(windowElement);
-				InternalChildren.Remove(windowElement);
+				InternalChildren.RemoveAt(oldIndex);
 				windowElement.Parent = null;
 				OnChildRemoved(windowElement, oldIndex);
 			}
@@ -87,9 +93,8 @@ namespace Microsoft.Maui.Controls
 
 		public virtual void OpenWindow(Window window)
 		{
-			var id = Guid.NewGuid().ToString();
-
-			_requestedWindows[id] = window;
+			var id = Guid.NewGuid().ToString("n");
+			_requestedWindows.Add(id, new WeakReference<Window>(window));
 
 			var state = new PersistedState
 			{
@@ -106,10 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		void IApplication.ThemeChanged()
 		{
-			if (UserAppTheme != AppTheme.Unspecified)
-				return;
-
-			TriggerThemeChangedActual();
+			PlatformAppTheme = AppInfo.RequestedTheme;
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)

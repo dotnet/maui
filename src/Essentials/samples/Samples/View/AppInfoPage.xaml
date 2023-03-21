@@ -8,10 +8,10 @@
         <viewmodels:AppInfoViewModel />
     </views:BasePage.BindingContext>
 
-    <StackLayout>
+    <Grid RowDefinitions="Auto,*">
         <Label Text="Find out about the app with ease." FontAttributes="Bold" Margin="12" />
 
-        <ScrollView>
+        <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="App Info:" FontAttributes="Bold" Margin="0,6,0,0" />
                 <Label Text="{Binding AppName, StringFormat='Name: {0}'}" />
@@ -26,6 +26,6 @@
                 <Button Text="Open Settings" Command="{Binding ShowSettingsUICommand}"/>
             </StackLayout>
         </ScrollView>
-    </StackLayout>
+    </Grid>
 
 </views:BasePage>

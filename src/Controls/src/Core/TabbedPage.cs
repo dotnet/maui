@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<TabbedPage>>(() => new PlatformConfigurationRegistry<TabbedPage>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public new IPlatformElementConfiguration<T, TabbedPage> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

@@ -1,4 +1,3 @@
-#nullable enable
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -58,7 +57,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (platformButton.GetContent<TextBlock>() is TextBlock textBlock)
 			{
-				textBlock?.UpdateLineBreakMode(button.LineBreakMode);
+				textBlock.UpdateLineBreakMode(button.LineBreakMode);
 			}
 		}
 	}

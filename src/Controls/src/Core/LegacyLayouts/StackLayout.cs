@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				new PlatformConfigurationRegistry<StackLayout>(this));
 		}
 
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, StackLayout> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

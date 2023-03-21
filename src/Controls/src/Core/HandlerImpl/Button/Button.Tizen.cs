@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Platform;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
 using Tizen.NUI;
 
 namespace Microsoft.Maui.Controls
@@ -9,6 +10,9 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateText(button);
 		}
+
+		public static void MapText(ButtonHandler handler, Button button) =>
+			MapText((IButtonHandler)handler, button);
 
 		public static void MapLineBreakMode(IButtonHandler handler, Button button)
 		{

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -7,13 +8,17 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
-	public partial class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
+	public partial class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>, ICommandElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommandProperty']/Docs/*" />
-		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
+		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create(
+			"SearchCommand", typeof(ICommand), typeof(SearchBar), null,
+			propertyChanging: CommandElement.OnCommandChanging, propertyChanged: CommandElement.OnCommandChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommandParameterProperty']/Docs/*" />
-		public static readonly BindableProperty SearchCommandParameterProperty = BindableProperty.Create("SearchCommandParameter", typeof(object), typeof(SearchBar), null);
+		public static readonly BindableProperty SearchCommandParameterProperty = BindableProperty.Create(
+			"SearchCommandParameter", typeof(object), typeof(SearchBar), null,
+			propertyChanged: CommandElement.OnCommandParameterChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
@@ -36,16 +41,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='IsTextPredictionEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(SearchBar), true, BindingMode.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CursorPositionProperty']/Docs/*" />
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SelectionLengthProperty']/Docs/*" />
 		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
@@ -97,11 +98,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(SearchCommandParameterProperty, value); }
 		}
 
-		bool IsEnabledCore
-		{
-			set { SetValueCore(IsEnabledProperty, value); }
-		}
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />
 		public FontAttributes FontAttributes
 		{
@@ -109,21 +105,18 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontAttributesProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*" />
 		public bool IsTextPredictionEnabled
 		{
 			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
 			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CursorPosition']/Docs/*" />
 		public int CursorPosition
 		{
 			get { return (int)GetValue(CursorPositionProperty); }
 			set { SetValue(CursorPositionProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SelectionLength']/Docs/*" />
 		public int SelectionLength
 		{
 			get { return (int)GetValue(SelectionLengthProperty); }
@@ -145,7 +138,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -181,6 +173,16 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SearchBar>>(() => new PlatformConfigurationRegistry<SearchBar>(this));
 		}
 
+		ICommand ICommandElement.Command => SearchCommand;
+
+		object ICommandElement.CommandParameter => SearchCommandParameter;
+
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='OnSearchButtonPressed']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void OnSearchButtonPressed()
@@ -194,36 +196,7 @@ namespace Microsoft.Maui.Controls
 			SearchButtonPressed?.Invoke(this, EventArgs.Empty);
 		}
 
-		void CommandCanExecuteChanged(object sender, EventArgs eventArgs)
-		{
-			ICommand cmd = SearchCommand;
-			if (cmd != null)
-				IsEnabledCore = cmd.CanExecute(SearchCommandParameter);
-		}
-
-		static void OnCommandChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var self = (SearchBar)bindable;
-			var newCommand = (ICommand)newValue;
-			var oldCommand = (ICommand)oldValue;
-
-			if (oldCommand != null)
-			{
-				oldCommand.CanExecuteChanged -= self.CommandCanExecuteChanged;
-			}
-
-			if (newCommand != null)
-			{
-				newCommand.CanExecuteChanged += self.CommandCanExecuteChanged;
-				self.CommandCanExecuteChanged(self, EventArgs.Empty);
-			}
-			else
-			{
-				self.IsEnabledCore = true;
-			}
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, SearchBar> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

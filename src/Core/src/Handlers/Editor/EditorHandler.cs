@@ -31,18 +31,30 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEditor.Keyboard)] = MapKeyboard,
 			[nameof(IEditor.CursorPosition)] = MapCursorPosition,
-			[nameof(IEditor.SelectionLength)] = MapSelectionLength
+			[nameof(IEditor.SelectionLength)] = MapSelectionLength,
+#if IOS
+			[nameof(IEditor.IsEnabled)] = MapIsEnabled,
+#endif
 		};
 
 		public static CommandMapper<IEditor, IEditorHandler> CommandMapper = new(ViewCommandMapper)
 		{
+#if ANDROID
+			[nameof(IEditor.Focus)] = MapFocus
+#endif
 		};
 
-		public EditorHandler() : base(Mapper)
+		public EditorHandler() : this(Mapper)
 		{
 		}
 
-		public EditorHandler(IPropertyMapper? mapper = null) : base(mapper ?? Mapper)
+		public EditorHandler(IPropertyMapper? mapper)
+			: base(mapper ?? Mapper, CommandMapper)
+		{
+		}
+
+		public EditorHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
 

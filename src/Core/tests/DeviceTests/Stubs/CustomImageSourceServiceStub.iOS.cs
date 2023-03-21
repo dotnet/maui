@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class CustomImageSourceServiceStub : IImageSourceService<ICustomImageSourceStub>
+	public class CustomImageSourceServiceStub : IImageSourceService<ICustomImageSourceStub>
 	{
 		readonly CustomImageCacheStub _cache;
 

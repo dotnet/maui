@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui
 {
@@ -30,6 +31,15 @@ namespace Microsoft.Maui
 		/// </summary>
 		/// <param name="window">The window to close.</param>
 		void CloseWindow(IWindow window);
+
+		/// <summary>
+		/// Gets the current requested theme by the system for your application. 
+		/// The return value will be one of the following:
+		/// - Unspecified
+		/// - Light
+		/// - Dark
+		/// </summary>
+		AppTheme UserAppTheme { get; }
 
 		/// <summary>
 		/// Notify a theme change.

@@ -1,9 +1,9 @@
 ﻿using System;
 using Android.Animation;
-using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Animations
 {
+	/// <inheritdoc/>
 	public class PlatformTicker : Ticker, IDisposable, IEnergySaverListener
 	{
 		readonly IEnergySaverListenerManager _manager;
@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Animations
 		bool _systemEnabled;
 		bool _disposedValue;
 
+		/// <summary>
+		/// Creates a new Android <see cref="PlatformTicker"/> object. 
+		/// </summary>
+		/// <param name="manager">Reference to an <see cref="IEnergySaverListenerManager"/> object to determine the energy saving status of the device.</param>
 		public PlatformTicker(IEnergySaverListenerManager manager)
 		{
 			_manager = manager;
@@ -23,14 +27,19 @@ namespace Microsoft.Maui.Animations
 			_manager.Add(this);
 		}
 
+		/// <inheritdoc/>
 		public override bool IsRunning => _val.IsStarted;
 
+		/// <inheritdoc/>
 		public override bool SystemEnabled => _systemEnabled;
 
+		/// <inheritdoc/>
 		public override void Start() => _val.Start();
 
+		/// <inheritdoc/>
 		public override void Stop() => _val.Cancel();
 
+		/// <inheritdoc/>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (!_disposedValue)
@@ -42,6 +51,7 @@ namespace Microsoft.Maui.Animations
 			}
 		}
 
+		/// <inheritdoc/>
 		public void Dispose()
 		{
 			Dispose(disposing: true);

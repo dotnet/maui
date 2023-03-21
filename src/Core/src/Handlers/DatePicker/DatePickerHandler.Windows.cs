@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView.Date = args.NewDate.Value.Date;
 		}
 
-		// TODO NET7 add to public API
+		// TODO NET8 add to public API
 		internal static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateBackground(datePicker);

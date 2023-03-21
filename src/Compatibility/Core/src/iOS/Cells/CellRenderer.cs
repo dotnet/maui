@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			WireUpForceUpdateSizeRequested(item, tvc, tv);
 
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tvc.TextLabel.Text = item.ToString();
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 
 			UpdateBackground(tvc, item);
 
@@ -68,9 +68,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)
 		{
-#pragma warning disable CA1416 // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
+#pragma warning disable CA1416, CA1422  // TODO: 'UITableViewCell.TextLabel' is unsupported on: 'ios' 14.0 and later
 			tableViewCell.TextLabel.BackgroundColor = color;
-#pragma warning restore CA1416
+#pragma warning restore CA1416, CA1422
 			tableViewCell.ContentView.BackgroundColor = color;
 			tableViewCell.BackgroundColor = color;
 		}

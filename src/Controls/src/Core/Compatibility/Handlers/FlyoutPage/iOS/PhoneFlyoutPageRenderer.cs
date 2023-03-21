@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	{
 		UIView _clickOffView;
 		UIViewController _detailController;
-
+		VisualElement _element;
 		bool _disposed;
 
 		UIViewController _flyoutController;
@@ -64,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		public VisualElement Element => _viewHandlerWrapper.Element;
+		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
 
 		public event EventHandler<VisualElementChangedEventArgs> ElementChanged;
 
@@ -80,6 +81,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void SetElement(VisualElement element)
 		{
+
 			var flyoutPage = element as FlyoutPage;
 
 			_flyoutController = new ChildViewController();
@@ -88,6 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView = new UIView();
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
+			_element = element;
 			Presented = ((FlyoutPage)element).IsPresented;
 			Element.SizeChanged += PageOnSizeChanged;
 		}
@@ -274,15 +277,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (animated)
 			{
-				UIView.BeginAnimations("Flyout");
-				var view = _detailController.View;
-				view.Frame = target;
-				detailView.Layer.Opacity = (float)opacity;
-#pragma warning disable CA1416 // TODO:  'UIView.SetAnimationCurve(UIViewAnimationCurve)' is unsupported on: 'ios' 13.0 and later
-				UIView.SetAnimationCurve(UIViewAnimationCurve.EaseOut);
-				UIView.SetAnimationDuration(250);
-				UIView.CommitAnimations();
-#pragma warning restore CA1416
+				UIView.Animate(250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					var view = _detailController.View;
+					view.Frame = target;
+					detailView.Layer.Opacity = (float)opacity;
+				}, () => { });
 			}
 			else
 			{

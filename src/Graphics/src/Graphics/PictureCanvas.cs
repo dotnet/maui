@@ -33,8 +33,6 @@ namespace Microsoft.Maui.Graphics
 
 		public float DisplayScale { get; set; } = 1;
 
-		public float RetinaScale { get; set; } = 1;
-
 		public float StrokeSize
 		{
 			set

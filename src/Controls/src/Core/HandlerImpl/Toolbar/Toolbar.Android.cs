@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Android.Content;
@@ -32,8 +30,6 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_platformTitleView != null)
 					_platformTitleView.Child = null;
-
-				_platformTitleViewHandler?.DisconnectHandler();
 
 				Controls.Platform.ToolbarExtensions.DisposeMenuItems(
 					oldHandler?.PlatformView as AToolbar,
@@ -75,47 +71,63 @@ namespace Microsoft.Maui.Controls
 			_ = MauiContext.Context ?? throw new ArgumentNullException(nameof(MauiContext.Context));
 
 			VisualElement titleView = TitleView;
-			if (_platformTitleViewHandler != null)
-			{
-				Type? rendererType = null;
-
-				if (titleView != null)
-					rendererType = MauiContext.Handlers.GetHandlerType(titleView.GetType());
-
-				if (titleView == null || titleView.Handler?.GetType() != rendererType)
-				{
-					if (_platformTitleView != null)
-						_platformTitleView.Child = null;
-
-					if (_platformTitleViewHandler?.VirtualView != null)
-						_platformTitleViewHandler.VirtualView.Handler = null;
-
-					_platformTitleViewHandler = null;
-				}
-			}
 
 			if (titleView == null)
-				return;
-
-			if (_platformTitleViewHandler != null)
-				_platformTitleViewHandler.SetVirtualView(titleView);
-			else
 			{
-				titleView.ToPlatform(MauiContext);
-				_platformTitleViewHandler = titleView.Handler;
-
-				if (_platformTitleView == null)
-				{
-					var context = MauiContext.Context!;
-					_platformTitleView = new Container(context);
-					var layoutParams = new MaterialToolbar.LayoutParams(LP.MatchParent, LP.MatchParent);
-					_platformTitleView.LayoutParameters = layoutParams;
-					PlatformView.AddView(_platformTitleView);
-				}
-
-				_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
+				_platformTitleView?.RemoveFromParent();
+				return;
 			}
+
+			titleView.ToPlatform(MauiContext);
+			_platformTitleViewHandler = titleView.Handler;
+
+			if (_platformTitleView == null)
+			{
+				var context = MauiContext.Context!;
+				_platformTitleView = new Container(context);
+				var layoutParams = new MaterialToolbar.LayoutParams(LP.MatchParent, LP.MatchParent);
+				_platformTitleView.LayoutParameters = layoutParams;
+			}
+
+			if (_platformTitleView.Parent != PlatformView)
+			{
+				PlatformView.AddView(_platformTitleView);
+			}
+
+			_platformTitleView.Child = (IPlatformViewHandler?)_platformTitleViewHandler;
 		}
+
+		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarTextColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapBarBackground(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBarBackground((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapToolbarItems(ToolbarHandler arg1, Toolbar arg2) =>
+			MapToolbarItems((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitle(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitle((IToolbarHandler)arg1, arg2);
+
+		public static void MapIconColor(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIconColor((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleView(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleView((IToolbarHandler)arg1, arg2);
+
+		public static void MapTitleIcon(ToolbarHandler arg1, Toolbar arg2) =>
+			MapTitleIcon((IToolbarHandler)arg1, arg2);
+
+		public static void MapBackButtonVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapBackButtonVisible((IToolbarHandler)arg1, arg2);
+
+		public static void MapIsVisible(ToolbarHandler arg1, Toolbar arg2) =>
+			MapIsVisible((IToolbarHandler)arg1, arg2);
+
+
 
 		public static void MapBarTextColor(IToolbarHandler arg1, Toolbar arg2)
 		{
@@ -167,6 +179,10 @@ namespace Microsoft.Maui.Controls
 			arg1.PlatformView.UpdateIsVisible(arg2);
 		}
 
+
+
+
+
 		internal class Container : ViewGroup
 		{
 			IPlatformViewHandler? _child;
@@ -179,7 +195,6 @@ namespace Microsoft.Maui.Controls
 			{
 				set
 				{
-					_child?.DisconnectHandler();
 					RemoveAllViews();
 
 					_child = value;

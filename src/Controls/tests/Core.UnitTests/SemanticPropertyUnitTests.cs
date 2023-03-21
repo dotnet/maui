@@ -72,5 +72,59 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			destDescription = SemanticProperties.GetDescription(content);
 			Assert.Equal("semantic title", destDescription);
 		}
+
+		[Fact]
+		public void SemanticPropertyUpdatesBeforePropertyChangePropagates()
+		{
+			var semanticHandlerStub = new SemanticHandlerStub();
+			Button button = new Button();
+			button.Handler = semanticHandlerStub;
+
+			SemanticProperties.SetDescription(button, "start");
+			SemanticProperties.SetHeadingLevel(button, SemanticHeadingLevel.None);
+			SemanticProperties.SetHint(button, "startHint");
+
+			string desc = string.Empty;
+			string hint = String.Empty;
+			SemanticHeadingLevel semanticHeadingLevel = SemanticHeadingLevel.None;
+
+			button.PropertyChanged += (_, args) =>
+			{
+				desc = (button as IView).Semantics.Description;
+				hint = (button as IView).Semantics.Hint;
+				semanticHeadingLevel = (button as IView).Semantics.HeadingLevel;
+			};
+
+			SemanticProperties.SetDescription(button, "finish");
+			SemanticProperties.SetHeadingLevel(button, SemanticHeadingLevel.Level8);
+			SemanticProperties.SetHint(button, "finishHint");
+
+			Assert.Equal("finish", desc);
+			Assert.Equal("finishHint", hint);
+			Assert.Equal(SemanticHeadingLevel.Level8, semanticHeadingLevel);
+
+			Assert.Equal("finish", semanticHandlerStub.SemanticDescription);
+			Assert.Equal("finishHint", semanticHandlerStub.SemanticHint);
+			Assert.Equal(SemanticHeadingLevel.Level8, semanticHandlerStub.SemanticHeadingLevel);
+		}
+
+		class SemanticHandlerStub : HandlerStub
+		{
+			public string SemanticDescription { get; private set; }
+			public string SemanticHint { get; private set; }
+			public SemanticHeadingLevel SemanticHeadingLevel { get; private set; }
+
+			public override void UpdateValue(string property)
+			{
+				if ((VirtualView as IView).Semantics is Semantics semantics)
+				{
+					SemanticDescription = semantics.Description;
+					SemanticHint = semantics.Hint;
+					SemanticHeadingLevel = semantics.HeadingLevel;
+				}
+
+				base.UpdateValue(property);
+			}
+		}
 	}
 }

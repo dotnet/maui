@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -321,13 +322,9 @@ namespace Microsoft.Maui.Controls.Internals
 	{
 		public enum DisposeMethod
 		{
-			/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFBitmap.xml" path="//Member[@MemberName='NoAction']/Docs/*" />
 			NoAction = 0,
-			/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFBitmap.xml" path="//Member[@MemberName='LeaveInPlace']/Docs/*" />
 			LeaveInPlace = 1,
-			/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFBitmap.xml" path="//Member[@MemberName='RestoreToBackground']/Docs/*" />
 			RestoreToBackground = 2,
-			/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/GIFBitmap.xml" path="//Member[@MemberName='RestoreToPrevious']/Docs/*" />
 			RestoreToPrevious = 3
 		};
 

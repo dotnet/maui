@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Dispatching
 				return;
 
 			IsRunning = true;
-			// set interval separarately to prevent calling callback before `timer' is assigned
+			// set interval separately to prevent calling callback before `timer' is assigned
 			_timer.Change(Interval, Interval);
 		}
 

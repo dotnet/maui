@@ -9,15 +9,12 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class ThicknessTypeConverter : TypeConverter
 	{
-		/// <inheritdoc/>
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
-		/// <inheritdoc/>
 		public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType)
 			=> destinationType == typeof(string);
 
-		/// <inheritdoc/>
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
 			var strValue = value?.ToString();
@@ -80,7 +77,6 @@ namespace Microsoft.Maui.Converters
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Thickness)}");
 		}
 
-		/// <inheritdoc/>
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
 			if (value is not Thickness t)

@@ -177,11 +177,11 @@ namespace Microsoft.Maui.Platform
 			editText.SetCursorVisible(isReadOnly);
 		}
 
-		// TODO: NET7 hartez - Remove this, nothing uses it
+		// TODO: NET8 hartez - Remove this, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Drawable? clearButtonDrawable) =>
 			UpdateClearButtonVisibility(editText, entry, () => clearButtonDrawable);
 
-		// TODO: NET7 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
+		// TODO: NET8 hartez - Remove the getClearButtonDrawable parameter, nothing uses it
 		public static void UpdateClearButtonVisibility(this EditText editText, IEntry entry, Func<Drawable?>? getClearButtonDrawable)
 		{
 			if (entry?.Handler is not EntryHandler entryHandler)
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Platform
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetCursorPosition(this EditText editText, int cursorOffset = 0)
 		{
 			var newCursorPosition = editText.SelectionStart + cursorOffset;
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			return end;
 		}
 
-		// TODO: NET7 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
+		// TODO: NET8 issoto - Revisit this, marking this method as `internal` to avoid breaking public API changes
 		internal static int GetSelectedTextLength(this EditText editText)
 		{
 			var selectedLength = editText.SelectionEnd - editText.SelectionStart;
@@ -312,8 +312,6 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			bool hasPassword = false;
-
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
 				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
@@ -321,8 +319,6 @@ namespace Microsoft.Maui.Platform
 
 				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
 					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-
-				hasPassword = true;
 			}
 
 			editText.InputType = nativeInputTypeToUpdate;
@@ -330,7 +326,7 @@ namespace Microsoft.Maui.Platform
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
 
-			if (hasPassword && textInput is IElement element)
+			if (textInput is IElement element)
 			{
 				var services = element.Handler?.MauiContext?.Services;
 
@@ -371,16 +367,16 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent is null)
 				return false;
 
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 			var buttonWidth = rBounds?.Width();
 
 			if (buttonWidth <= 0)
 				return false;
 
-			if (motionEvent.Action != MotionEventActions.Up)
-				return false;
-
-			var x = motionEvent.RawX;
+			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 
 			var flowDirection = platformView.LayoutDirection;

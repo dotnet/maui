@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='On']/Docs/*" />
+		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, CheckBox> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();

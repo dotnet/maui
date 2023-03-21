@@ -8,7 +8,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Switch)]
-	public partial class SwitchHandlerTests : HandlerTestBase<SwitchHandler, SwitchStub>
+	public partial class SwitchHandlerTests : CoreHandlerTestBase<SwitchHandler, SwitchStub>
 	{
 		[Fact(DisplayName = "Is Toggled Initializes Correctly")]
 		public async Task IsToggledInitializesCorrectly()
@@ -103,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsOn = true
 			};
 
-			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red);
+			await ValidateThumbColor(switchStub, Colors.Red, () => switchStub.ThumbColor = Colors.Red, updatePropertyValue: nameof(switchStub.ThumbColor));
 		}
 
 		[Fact(DisplayName = "Updating Native Is On property updates Virtual View"
