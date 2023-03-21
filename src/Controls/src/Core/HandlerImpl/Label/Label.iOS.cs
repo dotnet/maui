@@ -153,10 +153,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Handler is LabelHandler labelHandler)
 			{
-				var platformView = labelHandler.PlatformView as UILabel;
-				var virtualView = labelHandler.VirtualView as Label;
-
-				if (platformView is null || virtualView is null)
+				if (labelHandler.PlatformView is not UILabel platformView || labelHandler.VirtualView is not Label virtualView)
 					return;
 
 				platformView.RecalculateSpanPositions(virtualView);

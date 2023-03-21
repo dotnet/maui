@@ -151,8 +151,6 @@ namespace Microsoft.Maui.Controls.Platform
 			if (inline is null)
 				return;
 
-			var range = new NSRange(0, inline.Length);
-
 			NSTextStorage textStorage = new NSTextStorage();
 			textStorage.SetString(inline);
 
@@ -165,8 +163,6 @@ namespace Microsoft.Maui.Controls.Platform
 			};
 
 			layoutManager.AddTextContainer(textContainer);
-
-			var labelWidth = finalSize.Width;
 
 			var currentLocation = 0;
 
@@ -182,9 +178,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
 				var endRect = GetCharacterBounds(new NSRange(location + length, 1), layoutManager, textContainer);
-
-				var startLineHeight = startRect.Bottom - startRect.Top;
-				var endLineHeight = endRect.Bottom - endRect.Top;
 
 				var defaultLineHeight = control.FindDefaultLineHeight(location, length);
 
