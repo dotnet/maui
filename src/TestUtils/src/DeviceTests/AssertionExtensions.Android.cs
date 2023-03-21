@@ -11,6 +11,7 @@ using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 
@@ -296,7 +297,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor)
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+
+		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
+
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
 			for (int x = 0; x < bitmap.Width; x++)
 			{
@@ -309,17 +316,46 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			throw new XunitException($"Color {expectedColor} not found.");
+		}
+
+		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		{
+			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			{
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				{
+					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
+					{
+						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+					}
+				}
+			}
+
 			return bitmap;
 		}
 
 		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
+		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
+
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return AssertContainsColor(bitmap, expectedColor);
+		}
+
+		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor)
+		{
+			var bitmap = await view.ToBitmap();
+			return AssertDoesNotContainColor(bitmap, unexpectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
