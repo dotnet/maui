@@ -1,24 +1,15 @@
 using System;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -71,6 +62,16 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
+
+		protected IElementHandler CreateHandler(IElement view)
+		{
+			var handler = view.ToHandler(MauiContext);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+		}
+
+		protected async Task<IElementHandler> CreateHandlerAsync(IElement view) =>
+			await InvokeOnMainThreadAsync(() => CreateHandler(view));
 
 		protected Task<TValue> GetValueAsync<TValue, THandler>(IElement view, Func<THandler, TValue> func)
 			 where THandler : IElementHandler, new()
