@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var child = Subviews[0];
-				
+
 			if (child is MauiScrollView mauiScrollView)
 			{
 				return;
