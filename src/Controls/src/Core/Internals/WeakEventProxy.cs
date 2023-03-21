@@ -107,7 +107,7 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// A "proxy" class for subscribing INotifyPropertyChanged via WeakReference.
 	/// General usage is to store this in a member variable and call Subscribe()/Unsubscribe() appropriately.
-	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyCollectionChangedProxy objects from leaking.
+	/// Your class should have a finalizer that calls Unsubscribe() to prevent WeakNotifyPropertyChangedProxy objects from leaking.
 	/// </summary>
 	class WeakNotifyPropertyChangedProxy : WeakEventProxy<INotifyPropertyChanged, PropertyChangedEventHandler>
 	{
