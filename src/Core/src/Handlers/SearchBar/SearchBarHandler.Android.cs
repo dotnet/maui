@@ -1,4 +1,4 @@
-﻿using Android.Content;
+using Android.Content;
 using Android.Content.Res;
 using Android.Views;
 using Android.Widget;
@@ -112,6 +112,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
+		}
+
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
 		static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)

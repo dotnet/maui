@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 		}
 
-		public Color BackgroundColor => BorderElement.BackgroundColor == null ? _defaultColor : BorderElement.BackgroundColor;
+		public Color BackgroundColor => BorderElement.BackgroundColor ?? _defaultColor;
 		public Color PressedBackgroundColor => BackgroundColor.AddLuminosity(-.12f);//<item name="highlight_alpha_material_light" format="float" type="dimen">0.12</item>
 
 		protected override void Dispose(bool disposing)

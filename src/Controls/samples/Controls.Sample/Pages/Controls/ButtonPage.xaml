@@ -189,6 +189,18 @@
                     Style="{StaticResource Headline}"/>
                 <local:CustomButton
                     Text="Custom Button" />
+                <Label
+                    Text="HorizontalOptions"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Start"
+                    HorizontalOptions="Start" />
+                <Button
+                    Text="Center"
+                    HorizontalOptions="Center" />
+                <Button
+                    Text="End"
+                    HorizontalOptions="End" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

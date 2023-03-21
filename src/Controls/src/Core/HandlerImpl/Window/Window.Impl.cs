@@ -5,6 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
@@ -416,16 +417,19 @@ namespace Microsoft.Maui.Controls
 
 		void SendWindowAppearing()
 		{
-			Page?.SendAppearing();
+			if (Navigation.ModalStack.Count == 0)
+				Page?.SendAppearing();
 		}
 
 		void SendWindowDisppearing()
 		{
-			Page?.SendDisappearing();
+			if (Navigation.ModalStack.Count == 0)
+				Page?.SendDisappearing();
+
 			IsActivated = false;
 		}
 
-		void OnModalPopped(Page modalPage)
+		internal void OnModalPopped(Page modalPage)
 		{
 			int index = _visualChildren.IndexOf(modalPage);
 			_visualChildren.Remove(modalPage);
@@ -437,7 +441,7 @@ namespace Microsoft.Maui.Controls
 			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
 		}
 
-		bool OnModalPopping(Page modalPage)
+		internal bool OnModalPopping(Page modalPage)
 		{
 			var args = new ModalPoppingEventArgs(modalPage);
 			ModalPopping?.Invoke(this, args);
@@ -445,7 +449,7 @@ namespace Microsoft.Maui.Controls
 			return args.Cancel;
 		}
 
-		void OnModalPushed(Page modalPage)
+		internal void OnModalPushed(Page modalPage)
 		{
 			_visualChildren.Add(modalPage);
 			var args = new ModalPushedEventArgs(modalPage);
@@ -454,21 +458,25 @@ namespace Microsoft.Maui.Controls
 			VisualDiagnostics.OnChildAdded(this, modalPage);
 		}
 
-		void OnModalPushing(Page modalPage)
+		internal void OnModalPushing(Page modalPage)
 		{
 			var args = new ModalPushingEventArgs(modalPage);
 			ModalPushing?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 		}
 
-		void OnPopCanceled()
+		internal void OnPopCanceled()
 		{
 			PopCanceled?.Invoke(this, EventArgs.Empty);
 		}
 
 		void IWindow.Created()
 		{
+			if (IsCreated)
+				throw new InvalidOperationException("Window was already created");
+
 			IsCreated = true;
+			IsDestroyed = false;
 
 			Created?.Invoke(this, EventArgs.Empty);
 			OnCreated();
@@ -477,6 +485,9 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Activated()
 		{
+			if (IsActivated)
+				throw new InvalidOperationException("Window was already activated");
+
 			IsActivated = true;
 			Activated?.Invoke(this, EventArgs.Empty);
 			OnActivated();
@@ -484,6 +495,9 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Deactivated()
 		{
+			if (!IsActivated)
+				throw new InvalidOperationException("Window was already deactivated");
+
 			IsActivated = false;
 			Deactivated?.Invoke(this, EventArgs.Empty);
 			OnDeactivated();
@@ -498,7 +512,12 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.Destroying()
 		{
+			if (IsDestroyed)
+				throw new InvalidOperationException("Window was already destroyed");
+
 			IsDestroyed = true;
+			IsCreated = false;
+
 			SendWindowDisppearing();
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
@@ -561,7 +580,8 @@ namespace Microsoft.Maui.Controls
 
 			if (FlowDirection == FlowDirection.MatchParent && mauiContext != null)
 			{
-				FlowController.EffectiveFlowDirection = mauiContext.GetFlowDirection().ToEffectiveFlowDirection(true);
+				var flowDirection = AppInfo.Current.RequestedLayoutDirection.ToFlowDirection();
+				FlowController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection(true);
 			}
 		}
 
@@ -596,6 +616,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldPage != null)
 			{
+				_menuBarTracker.Target = null;
 				InternalChildren.Remove(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
@@ -610,8 +631,6 @@ namespace Microsoft.Maui.Controls
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 			}
-
-			ModalNavigationManager.SettingNewPage();
 
 			if (newPage != null)
 			{
@@ -674,58 +693,14 @@ namespace Microsoft.Maui.Controls
 				return _owner.ModalNavigationManager.ModalStack;
 			}
 
-			protected override async Task<Page?> OnPopModal(bool animated)
+			protected override Task<Page?> OnPopModal(bool animated)
 			{
-				Page modal = _owner.ModalNavigationManager.ModalStack[_owner.ModalNavigationManager.ModalStack.Count - 1];
-				if (_owner.OnModalPopping(modal))
-				{
-					_owner.OnPopCanceled();
-					return null;
-				}
-
-				Page? nextPage;
-				if (modal.NavigationProxy.ModalStack.Count == 1)
-				{
-					nextPage = _owner.Page;
-				}
-				else
-				{
-					nextPage = _owner.ModalNavigationManager.ModalStack[_owner.ModalNavigationManager.ModalStack.Count - 2];
-				}
-
-				Page result = await _owner.ModalNavigationManager.PopModalAsync(animated);
-				result.Parent = null;
-				_owner.OnModalPopped(result);
-
-				modal.SendNavigatedFrom(new NavigatedFromEventArgs(nextPage));
-				nextPage?.SendNavigatedTo(new NavigatedToEventArgs(modal));
-
-				return result;
+				return _owner.ModalNavigationManager.PopModalAsync(animated);
 			}
 
-			protected override async Task OnPushModal(Page modal, bool animated)
+			protected override Task OnPushModal(Page modal, bool animated)
 			{
-				_owner.OnModalPushing(modal);
-
-				modal.Parent = _owner;
-
-				if (modal.NavigationProxy.ModalStack.Count == 0)
-				{
-					modal.NavigationProxy.Inner = this;
-					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
-					_owner.Page?.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
-					modal.SendNavigatedTo(new NavigatedToEventArgs(_owner.Page));
-				}
-				else
-				{
-					var previousModalPage = modal.NavigationProxy.ModalStack[modal.NavigationProxy.ModalStack.Count - 1];
-					await _owner.ModalNavigationManager.PushModalAsync(modal, animated);
-					modal.NavigationProxy.Inner = this;
-					previousModalPage.SendNavigatedFrom(new NavigatedFromEventArgs(modal));
-					modal.SendNavigatedTo(new NavigatedToEventArgs(previousModalPage));
-				}
-
-				_owner.OnModalPushed(modal);
+				return _owner.ModalNavigationManager.PushModalAsync(modal, animated);
 			}
 		}
 	}

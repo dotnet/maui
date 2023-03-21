@@ -143,5 +143,20 @@ namespace Microsoft.Maui.Platform
 				editText.Enabled = searchBar.IsEnabled;
 			}
 		}
+
+		public static void UpdateKeyboard(this SearchView searchView, ISearchBar searchBar)
+		{
+			searchView.SetInputType(searchBar);
+		}
+
+		internal static void SetInputType(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			editText.SetInputType(searchBar);
+		}
 	}
 }

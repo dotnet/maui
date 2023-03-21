@@ -29,10 +29,12 @@
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
+		public const string Path = "Path";
 		public const string Picker = "Picker";
 		public const string RadioButton = "RadioButton";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
+		public const string Shape = "Shape";
 		public const string Shell = "Shell";
 		public const string TabbedPage = "TabbedPage";
 		public const string TextInput = "TextInput";

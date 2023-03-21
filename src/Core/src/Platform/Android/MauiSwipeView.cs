@@ -51,7 +51,6 @@ namespace Microsoft.Maui.Platform
 
 			_swipeItems = new Dictionary<ISwipeItem, object>();
 
-			this.SetClipToOutline(Element?.Shadow is not null);
 			SetClipChildren(false);
 			SetClipToPadding(false);
 
@@ -64,6 +63,9 @@ namespace Microsoft.Maui.Platform
 		internal void SetElement(ISwipeView swipeView)
 		{
 			Element = swipeView;
+
+			bool clipToOutline = Element?.Shadow is null && (Element?.Content as IView)?.Shadow is null;
+			this.SetClipToOutline(clipToOutline);
 		}
 
 		protected override void OnAttachedToWindow()

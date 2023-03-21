@@ -11,6 +11,7 @@ using Android.Widget;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using Xunit.Sdk;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -56,7 +57,7 @@ namespace Microsoft.Maui.DeviceTests
 					var queryEditor = searchView.GetFirstChildOfType<EditText>();
 
 					if (queryEditor is null)
-						return;
+						throw new Exception("Unable to locate EditText on SearchView");
 
 					view = queryEditor;
 				}
@@ -65,10 +66,21 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					TaskCompletionSource focusSource = new TaskCompletionSource();
 					view.FocusChange += OnFocused;
-					await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+					try
+					{
+						await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+					}
+					catch
+					{
+						view.FocusChange -= OnFocused;
+
+						if (!view.IsFocused)
+							throw;
+					}
 
 					// Even though the event fires focus hasn't fully been achieved
-					await Task.Delay(10);
+					await Task.Yield();
 
 					void OnFocused(object? sender, AView.FocusChangeEventArgs e)
 					{
@@ -95,6 +107,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				TaskCompletionSource focusSource = new TaskCompletionSource();
 				view.FocusChange += OnUnFocused;
+
+				try
+				{
+					await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+				}
+				catch
+				{
+					view.FocusChange -= OnUnFocused;
+
+					if (view.IsFocused)
+						throw;
+				}
+
 				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
 
 				// Even though the event fires unfocus hasn't fully been achieved
@@ -124,10 +149,15 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
 		{
+			if (KeyboardManager.IsSoftKeyboardVisible(view))
+				return;
+
 			try
 			{
 				await view.FocusView(timeout);
-				KeyboardManager.ShowKeyboard(view);
+				if (!KeyboardManager.ShowKeyboard(view))
+					throw new Exception("ShowKeyboard operation failed");
+
 				await view.WaitForKeyboardToShow(timeout);
 			}
 			catch (Exception ex)
@@ -139,12 +169,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string message = "")
+		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
+			if (!KeyboardManager.IsSoftKeyboardVisible(view))
+				return;
+
 			try
 			{
-				await view.FocusView(timeout);
-				KeyboardManager.HideKeyboard(view);
+				if (!KeyboardManager.HideKeyboard(view))
+					throw new Exception("HideKeyboard operation failed");
+
 				await view.WaitForKeyboardToHide(timeout);
 			}
 			catch (Exception ex)
@@ -162,6 +196,10 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
 				Assert.True(result);
+
+				// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
+				// If you try to call hide too quickly after showing, sometimes it will just show and then pop back down.
+				await Task.Delay(100);
 			}
 			catch (Exception ex)
 			{
@@ -176,6 +214,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
 			Assert.True(result);
+
+			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
+			// If you try to call hide too quickly after showing, sometimes it will just hide and then pop back up.
+			await Task.Delay(100);
 		}
 
 		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
@@ -374,6 +416,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
 
+		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
+
 		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
@@ -392,17 +437,46 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			throw new XunitException($"Color {expectedColor} not found.");
+		}
+
+		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		{
+			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			{
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				{
+					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
+					{
+						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+					}
+				}
+			}
+
 			return bitmap;
 		}
 
 		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
 			AssertContainsColor(view, expectedColor.ToPlatform());
 
+		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
+
 		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
 		{
 			var bitmap = await view.ToBitmap();
 			return AssertContainsColor(bitmap, expectedColor);
+		}
+
+		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor)
+		{
+			var bitmap = await view.ToBitmap();
+			return AssertDoesNotContainColor(bitmap, unexpectedColor);
 		}
 
 		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
@@ -448,25 +522,41 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(new Size(bitmap.Width, bitmap.Height), new Size(other.Width, other.Height));
 
-			Assert.True(IsMatching(), CreateEqualError(bitmap, other, $"Images did not match."));
+			Assert.True(IsMatching(bitmap, other), CreateEqualError(bitmap, other, $"Images did not match."));
 
 			return Task.CompletedTask;
+		}
 
-			bool IsMatching()
+		static bool IsMatching(Bitmap bitmap1, Bitmap bitmap2)
+		{
+			for (int x = 0; x < bitmap1.Width; x++)
 			{
-				for (int x = 0; x < bitmap.Width; x++)
+				for (int y = 0; y < bitmap1.Height; y++)
 				{
-					for (int y = 0; y < bitmap.Height; y++)
-					{
-						var first = bitmap.ColorAtPoint(x, y, true);
-						var second = other.ColorAtPoint(x, y, true);
+					var first = bitmap1.ColorAtPoint(x, y, true);
+					var second = bitmap2.ColorAtPoint(x, y, true);
 
-						if (!first.IsEquivalent(second))
-							return false;
-					}
+					if (!first.IsEquivalent(second))
+						return false;
 				}
-				return true;
 			}
+
+			return true;
+		}
+
+		public static Task AssertNotEqualAsync(this Bitmap bitmap, Bitmap other)
+		{
+			Assert.NotNull(bitmap);
+			Assert.NotNull(other);
+
+			Assert.NotEqual(new Size(bitmap.Width, bitmap.Height), new Size(other.Width, other.Height));
+
+			if (IsMatching(bitmap, other))
+			{
+				throw new XunitException(CreateEqualError(bitmap, other, $"Images did not match."));
+			}
+
+			return Task.CompletedTask;
 		}
 
 		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>
