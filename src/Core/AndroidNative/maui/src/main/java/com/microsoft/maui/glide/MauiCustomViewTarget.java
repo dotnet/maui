@@ -27,7 +27,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
-		this.view.setImageDrawable(placeholder);
+		post(() -> this.view.setImageDrawable(placeholder));
     }
 
     @Override
@@ -46,11 +46,13 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
             return;
         this.completed = true;
 
-        // set the image
-        this.view.setImageDrawable(resource);
+        post(() -> {
+            // set the image
+            this.view.setImageDrawable(resource);
 
-        // trigger the callback out of this target
-        post(() -> callback.onComplete(true, resource, this::clear));
+            // trigger the callback out of this target
+            callback.onComplete(true, resource, this::clear);
+        });
     }
 
     private void post(Runnable runnable) {
