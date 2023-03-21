@@ -16,6 +16,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentPanelTag = 0x845fed;
 
+		public override bool NeedsContainer => true;
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();

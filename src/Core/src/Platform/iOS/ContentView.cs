@@ -116,13 +116,6 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
-			var child = Subviews[0];
-				
-			if (child is MauiScrollView mauiScrollView)
-			{
-				return;
-			}
-
 			var mask = ChildMaskLayer;
 
 			if (mask == null && Clip == null)
