@@ -77,6 +77,40 @@
                 HeightRequest="160"
                 VerticalOptions="Center"
                 HorizontalOptions="Center" />
+            
+            <Label
+                Text="Clip"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="Pink"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" >
+                <BoxView.Clip>
+                    <EllipseGeometry
+                        Center="80, 80"
+                        RadiusX="80"
+                        RadiusY="80"/>
+                </BoxView.Clip>
+            </BoxView>
+            
+            <Label
+                Text="Shadow"
+                Style="{StaticResource Headline}"/>
+            <BoxView
+                Color="Pink"
+                WidthRequest="160"
+                HeightRequest="160"
+                VerticalOptions="Center"
+                HorizontalOptions="Center" >
+                <BoxView.Shadow>
+                    <Shadow 
+                        Radius="6"
+                        Offset="6, 6"
+                        Brush="Red"/>
+                </BoxView.Shadow>
+            </BoxView>
 
         </VerticalStackLayout>
     </ScrollView>
