@@ -249,9 +249,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Core.UnitTest
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.ExternalAssembly", "src\Controls\tests\Xaml.UnitTests.ExternalAssembly\Controls.Xaml.UnitTests.ExternalAssembly.csproj", "{F2ADA552-6328-4B2D-8D48-FCDD32C4AF60}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{6158EDD8-289F-4B80-A24C-92230CA40023}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "tests\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{1C899C94-8744-4E2A-8E23-1660393236FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{1C899C94-8744-4E2A-8E23-1660393236FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -744,7 +742,7 @@ Global
 		{34969E49-FA6E-41BB-9813-5689BB14021E} = {936C47A9-A7EA-4FBD-8733-CED1D4100E69}
 		{13A1AFD2-78D3-4463-9977-C8B642BCE2E2} = {85EBD2BA-EA5A-4B1F-AF16-81FBD58579DF}
 		{F2ADA552-6328-4B2D-8D48-FCDD32C4AF60} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
-		{1C899C94-8744-4E2A-8E23-1660393236FD} = {6158EDD8-289F-4B80-A24C-92230CA40023}
+		{1C899C94-8744-4E2A-8E23-1660393236FD} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

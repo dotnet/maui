@@ -43,8 +43,7 @@ namespace Microsoft.Maui.IntegrationTests
 			var rootDir = Environment.GetEnvironmentVariable("AGENT_TEMPDIRECTORY");
 			if (Directory.Exists(rootDir))
 			{
-				var timeStamp = DateTime.UtcNow.ToString("MM-dd_HH.mm.ss");
-				_testOutputDirectory = Path.Combine(rootDir, $"test-intg", timeStamp);
+				_testOutputDirectory = Path.Combine(rootDir, $"test-intg");
 			}
 			else
 			{
