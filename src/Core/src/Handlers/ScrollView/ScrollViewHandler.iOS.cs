@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				//if we are being wrapped by a BorderView we need a container
 				//so we can handle masks and clip shapes
-				if (VirtualView.Parent is IBorderView)
+				if (VirtualView?.Parent is IBorderView)
 				{
 					return true;
 				}
