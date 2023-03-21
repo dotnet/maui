@@ -6,7 +6,7 @@
     Title="Border using Styles">
     <ContentPage.Resources>
         <ResourceDictionary>
-            
+
             <Style x:Key="BorderStyle" TargetType="Border">
                 <Setter Property="StrokeShape" Value="RoundRectangle 10,10,10,10"/>
                 <Setter Property="Stroke" Value="Red"/>
@@ -15,7 +15,7 @@
                 <Setter Property="Padding" Value="10"/>
                 <Setter Property="BackgroundColor" Value="Transparent"/>
             </Style>
-            
+
             <Style x:Key="StrokeShapeBindingParentBorderStyle" TargetType="Border">
                 <Setter Property="StrokeShape">
                     <RoundRectangle 
@@ -44,6 +44,33 @@
                 Style="{StaticResource Headline}"/>
             <Border
                 Style="{StaticResource StrokeShapeBindingParentBorderStyle}"/>
+            <Label
+                Text="Update StrokeShape"
+                Style="{StaticResource Headline}"/>
+            <Border 
+                x:Name="UpdateStrokeShapeBorder"  
+                WidthRequest="400"
+                HeightRequest="200"  
+                HorizontalOptions="Start"
+                Background="Yellow" 
+                Stroke="Red"
+                StrokeThickness="2">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10" />
+                </Border.StrokeShape>
+                <Label 
+                    x:Name="UpdateStrokeShapeInfo" />
+            </Border>
+            <Button 
+                Text="Increase CornerRadius" 
+                Clicked="OnIncreaseCornerRadius"
+                Margin="6" 
+                HorizontalOptions="Start" />
+            <Button 
+                Text="Decrease CornerRadius" 
+                Clicked="OnDecreaseCornerRadius"
+                Margin="6" 
+                HorizontalOptions="Start" />
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
