@@ -78,7 +78,7 @@ internal static class KeyboardAutoManagerScroll
 		{
 			View = notification.Object as UIView;
 
-			if (View is null)
+			if (View is null || View.FindResponder<UIAlertController>() is not null)
 				return;
 
 			CursorRect = null;
