@@ -1,4 +1,5 @@
-﻿using Android.Content.Res;
+﻿using Android.App;
+using Android.Content.Res;
 
 namespace Microsoft.Maui.Platform
 {
@@ -44,6 +45,16 @@ namespace Microsoft.Maui.Platform
 				platformPicker.Text = null;
 			else
 				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
+		}
+
+		internal static void UpdateFlowDirection(this AlertDialog alertDialog, MauiPicker platformPicker)
+		{
+			// Propagate the MauiPicker LayoutDirection to the AlertDialog
+			if (alertDialog.Window?.DecorView is not null)
+				alertDialog.Window.DecorView.LayoutDirection = platformPicker.LayoutDirection;
+
+			if (alertDialog.ListView is not null)
+				alertDialog.ListView.TextDirection = platformPicker.LayoutDirection.ToTextDirection();
 		}
 	}
 }
