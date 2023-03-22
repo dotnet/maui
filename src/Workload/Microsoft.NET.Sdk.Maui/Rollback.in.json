@@ -7,6 +7,6 @@
   "microsoft.net.sdk.tvos": "@MicrosofttvOSSdkPackageVersion@/@DotNetMaciOSManifestVersionBand@",
   "microsoft.net.workload.mono.toolchain.net7": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
   "microsoft.net.workload.mono.toolchain.current": "@MicrosoftNETCoreAppRefPackageVersion@/@DotNetMonoManifestVersionBand@",
-  "microsoft.net.workload.emscripten.net6": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@",
-  "microsoft.net.workload.emscripten.net7": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@"
+  "microsoft.net.workload.emscripten.net7": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@",
+  "microsoft.net.workload.emscripten.current": "@MicrosoftNETWorkloadEmscriptenPackageVersion@/@DotNetEmscriptenManifestVersionBand@"
 }
