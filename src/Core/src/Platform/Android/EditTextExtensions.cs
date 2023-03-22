@@ -293,13 +293,12 @@ namespace Microsoft.Maui.Platform
 
 				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 				{
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					if (!nativeInputTypeToUpdate.HasFlag(InputTypes.TextFlagNoSuggestions))
 					{
 						if (!textInput.IsSpellCheckEnabled)
 							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
 					}
-
-					if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+					if (!nativeInputTypeToUpdate.HasFlag(InputTypes.TextFlagNoSuggestions))
 					{
 						if (!textInput.IsTextPredictionEnabled)
 							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
