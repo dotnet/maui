@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Text;
 
 namespace Microsoft.Maui.Controls
@@ -7,11 +8,13 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	public partial class SwipeView : ISwipeView
 	{
+		const float SwipeMinimumDelta = 10f;
+
 		bool _isOpen;
 		double _previousScrollX;
 		double _previousScrollY;
 		View? _scrollParent;
-		const float SwipeMinimumDelta = 10f;
+		SwipeDirection? _swipeDirection;
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
@@ -26,10 +29,17 @@ namespace Microsoft.Maui.Controls
 			get => _isOpen;
 			set
 			{
-				_isOpen = value;
-				Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
+				if (_isOpen != value)
+				{
+					_isOpen = value;
+					UpdateLogicalChildren();
+					Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
+				}
 			}
 		}
+
+		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
+		internal override IReadOnlyList<Element> LogicalChildrenInternal => new ReadOnlyCollection<Element>(_logicalChildren);
 
 #if IOS
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode =>
@@ -123,6 +133,91 @@ namespace Microsoft.Maui.Controls
 				swipeView.RequestClose(new SwipeViewCloseRequest(false));
 		}
 
+		void UpdateLogicalChildren()
+		{
+			if (!_isOpen)
+			{
+				ClearLogicalChildren();
+				return;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection(_swipeDirection);
+
+			if (swipeItems is null)
+				return;
+
+			foreach (var swipeItem in swipeItems)
+				AddLogicalChild((Element)swipeItem);
+		}
+
+		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
+		{
+			SwipeItems? swipeItems = null;
+
+			switch (swipeDirection)
+			{
+				case SwipeDirection.Left:
+					swipeItems = RightItems;
+					break;
+				case SwipeDirection.Right:
+					swipeItems = LeftItems;
+					break;
+				case SwipeDirection.Up:
+					swipeItems = BottomItems;
+					break;
+				case SwipeDirection.Down:
+					swipeItems = TopItems;
+					break;
+			}
+
+			return swipeItems;
+		}
+
+		internal void AddLogicalChild(Element element)
+		{
+			if (element is null)
+			{
+				return;
+			}
+
+			if (_logicalChildren.Contains(element))
+				return;
+
+			_logicalChildren.Add(element);
+			element.Parent = this;
+			OnChildAdded(element);
+			VisualDiagnostics.OnChildAdded(this, element);
+		}
+
+		internal void ClearLogicalChildren()
+		{
+			// Reverse for-loop, so children can be removed while iterating
+			for (int i = _logicalChildren.Count - 1; i >= 0; i--)
+			{
+				RemoveLogicalChildByIndex(i);
+			}
+		}
+
+		void RemoveLogicalChildByIndex(int index)
+		{
+			if (_logicalChildren.Count < index)
+			{
+				return;
+			}
+
+			var element = _logicalChildren[index];
+
+			if (element is null)
+			{
+				return;
+			}
+
+			element.Parent = null;
+			_logicalChildren.RemoveAt(index);
+			OnChildRemoved(element, index);
+			VisualDiagnostics.OnChildRemoved(this, element, index);
+		}
+
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
 		{
 			var horizontalDelta = e.ScrollX - _previousScrollX;
@@ -143,6 +238,7 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)
 		{
+			_swipeDirection = swipeStarted.SwipeDirection;
 			var swipeStartedEventArgs = new SwipeStartedEventArgs(swipeStarted.SwipeDirection);
 			((ISwipeViewController)this).SendSwipeStarted(swipeStartedEventArgs);
 		}
@@ -155,6 +251,7 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeView.SwipeEnded(SwipeViewSwipeEnded swipeEnded)
 		{
+			_swipeDirection = swipeEnded.SwipeDirection;
 			var swipeEndedEventArgs = new SwipeEndedEventArgs(swipeEnded.SwipeDirection, swipeEnded.IsOpen);
 			((ISwipeViewController)this).SendSwipeEnded(swipeEndedEventArgs);
 		}
