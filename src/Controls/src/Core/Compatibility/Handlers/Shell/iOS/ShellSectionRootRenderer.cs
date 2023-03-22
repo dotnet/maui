@@ -181,11 +181,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var oldRenderer = renderer.Value;
 
-					if (oldRenderer.PlatformView != null)
-						oldRenderer.PlatformView.RemoveFromSuperview();
-
-					if (oldRenderer.ViewController != null)
-						oldRenderer.ViewController.RemoveFromParentViewController();
+					oldRenderer.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
+					oldRenderer.ViewController?.RemoveFromParentViewController();
 
 					var element = oldRenderer.VirtualView;
 					oldRenderer?.DisconnectHandler();
@@ -351,21 +348,21 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			int newIndex,
 			UIView containerView)
 		{
-			containerView.AddSubview(newRenderer.PlatformView);
+			containerView.AddSubview(newRenderer.ViewController.View);
 			// -1 == slide left, 1 ==  slide right
 			int motionDirection = newIndex > oldIndex ? -1 : 1;
 
-			newRenderer.PlatformView.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+			newRenderer.ViewController.View.Frame = new CGRect(-motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
-			if (oldRenderer.PlatformView != null)
-				oldRenderer.PlatformView.Frame = containerView.Bounds;
+			if (oldRenderer.ViewController.View != null)
+				oldRenderer.ViewController.View.Frame = containerView.Bounds;
 
 			return new UIViewPropertyAnimator(0.25, UIViewAnimationCurve.EaseOut, () =>
 			{
-				newRenderer.PlatformView.Frame = containerView.Bounds;
+				newRenderer.ViewController.View.Frame = containerView.Bounds;
 
-				if (oldRenderer.PlatformView != null)
-					oldRenderer.PlatformView.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
+				if (oldRenderer.ViewController.View != null)
+					oldRenderer.ViewController.View.Frame = new CGRect(motionDirection * View.Bounds.Width, 0, View.Bounds.Width, View.Bounds.Height);
 
 			});
 		}
@@ -388,14 +385,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var oldContent = r.Key;
 					var oldRenderer = r.Value;
 
-					r.Value.PlatformView.RemoveFromSuperview();
+					r.Value.ViewController?.ViewIfLoaded?.RemoveFromSuperview();
 
 					if (!sectionItems.Contains(oldContent) && _renderers.ContainsKey(oldContent))
 					{
 						removeMe = removeMe ?? new List<ShellContent>();
 						removeMe.Add(oldContent);
 
-						if (oldRenderer.PlatformView != null)
+						if (oldRenderer.PlatformView is not null)
 						{
 							oldRenderer.ViewController.RemoveFromParentViewController();
 							oldRenderer.DisconnectHandler();
@@ -482,7 +479,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						_currentIndex--;
 
 					_renderers.Remove(oldItem);
-					oldRenderer.PlatformView.RemoveFromSuperview();
+					oldRenderer.ViewController.ViewIfLoaded?.RemoveFromSuperview();
 					oldRenderer.ViewController.RemoveFromParentViewController();
 					oldRenderer.DisconnectHandler();
 				}
