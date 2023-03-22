@@ -11,6 +11,7 @@ override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Ma
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
 static Microsoft.Maui.FontSize.operator !=(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
