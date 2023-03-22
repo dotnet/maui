@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Platform
 
 			if (dv is not null)
 				dv.LayoutDirection = platformLayoutDirection;
-			
+
 			var lv = alertDialog?.ListView;
 
 			if (lv is not null)
