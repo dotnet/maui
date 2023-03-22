@@ -8,6 +8,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -32,7 +33,42 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 				});
+			});
+		}
+
+		[Fact]
+		public async Task PageLayoutDoesNotExceedWindowBounds()
+		{
+			SetupBuilder();
+
+			var button = new Button()
+			{
+				Text = "Test me"
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = button
+			};
+
+			var shell = new Shell()
+			{
+				CurrentItem = contentPage,
+				FlyoutBehavior = FlyoutBehavior.Disabled
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				var pageBounds = contentPage.GetBoundingBox();
+				var window = contentPage.Window;
+
+				Assert.True(pageBounds.X >= 0);
+				Assert.True(pageBounds.Y >= 0);
+				Assert.True(pageBounds.Width <= window.Width);
+				Assert.True(pageBounds.Height <= window.Height);
 			});
 		}
 
