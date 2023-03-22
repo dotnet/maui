@@ -2045,32 +2045,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BindingUnsubscribesForDeadTarget()
+		public async Task BindingUnsubscribesForDeadTarget()
 		{
-			TestViewModel viewmodel = new TestViewModel();
+			var viewmodel = new TestViewModel();
 
-			int i = 0;
-			Action create = null;
-			create = () =>
 			{
-				if (i++ < 1024)
-				{
-					create();
-					return;
-				}
-
 				var button = new Button();
 				button.SetBinding(Button.TextProperty, "Foo");
 				button.BindingContext = viewmodel;
-			};
-
-			create();
+			}
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			GC.Collect();
 
 			viewmodel.OnPropertyChanged("Foo");
 
@@ -2080,7 +2069,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
-			TestViewModel viewModel = new TestViewModel();
+			var viewModel = new TestViewModel();
 			WeakReference bindingRef;
 
 			{
@@ -2095,10 +2084,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			//NOTE: this was the only way I could "for sure" get the binding to get GC'd
+			await Task.Yield();
 			GC.Collect();
-			await Task.Delay(10);
-			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
 		}

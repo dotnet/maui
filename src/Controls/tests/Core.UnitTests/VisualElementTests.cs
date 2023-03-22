@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void GradientBrushSubscribed()
+		public async Task GradientBrushSubscribed()
 		{
 			var gradient = new LinearGradientBrush
 			{
@@ -139,6 +139,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (e.PropertyName == nameof(VisualElement.Background))
 					fired = true;
 			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
 
 			gradient.GradientStops.Add(new GradientStop(Colors.CornflowerBlue, 1));
 			Assert.True(fired, "PropertyChanged did not fire!");
@@ -160,7 +165,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void RectangleGeometrySubscribed()
+		public async Task RectangleGeometrySubscribed()
 		{
 			var geometry = new RectangleGeometry();
 			var visual = new VisualElement { Clip = geometry };
@@ -172,8 +177,54 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					fired = true;
 			};
 
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visual);
+
 			geometry.Rect = new Rect(1, 2, 3, 4);
 			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
+		public async Task ShadowSubscribed()
+		{
+			var shadow = new Shadow { Brush = new SolidColorBrush(Colors.Red) };
+			var visualElement = new VisualElement { Shadow = shadow };
+
+			bool fired = false;
+			visualElement.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(VisualElement.Shadow))
+					fired = true;
+			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(visualElement);
+
+			shadow.Brush = new SolidColorBrush(Colors.Green);
+
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
+		public async Task ShadowDoesNotLeak()
+		{
+			var shadow = new Shadow
+			{
+				Brush = new SolidColorBrush(Colors.Black),
+				Radius = 12
+			};
+
+			var reference = new WeakReference(new VisualElement { Shadow = shadow });
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
 		}
 	}
 }
