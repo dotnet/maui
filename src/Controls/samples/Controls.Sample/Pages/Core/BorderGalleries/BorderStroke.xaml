@@ -47,6 +47,56 @@
                             BackgroundColor="Orange"/>
                     </Border>
                 </Grid>
+                <Label
+                    Text="Updating the Content Height"
+                    Style="{StaticResource Headline}"/>
+                <Slider
+                    x:Name="ContentHeightSlider"
+                    Minimum="40"
+                    Value="60"
+                    Maximum="100"/>
+                <Grid
+                    RowDefinitions="*,*,*">
+                    <Border
+                        Border.StrokeShape="Rectangle"
+                        Border.Stroke="Red"
+                        Border.StrokeThickness="1"
+                        Grid.Row="0">
+                        <Label
+                            Text="1"
+                            MinimumHeightRequest="40"
+                            HeightRequest="{Binding Value, Source={x:Reference ContentHeightSlider}}"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            BackgroundColor="Orange"/>
+                    </Border>
+                    <Border
+                        Border.StrokeShape="Rectangle"
+                        Border.Stroke="Red"
+                        Border.StrokeThickness="5"
+                        Grid.Row="1">
+                        <Label
+                            Text="5"
+                            MinimumHeightRequest="40"
+                            HeightRequest="{Binding Value, Source={x:Reference ContentHeightSlider}}"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            BackgroundColor="Orange"/>
+                    </Border>
+                    <Border
+                        Border.StrokeShape="Rectangle"
+                        Border.Stroke="Red"
+                        Border.StrokeThickness="10"
+                        Grid.Row="2">
+                        <Label
+                            Text="10"
+                            MinimumHeightRequest="40"
+                            HeightRequest="{Binding Value, Source={x:Reference ContentHeightSlider}}"
+                            HorizontalTextAlignment="Center"
+                            VerticalTextAlignment="Center"
+                            BackgroundColor="Orange"/>
+                    </Border>
+                </Grid>
             </VerticalStackLayout>
         </ScrollView>
     </ContentPage.Content>
