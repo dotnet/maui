@@ -2,6 +2,7 @@
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.BrushExtensions
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
@@ -15,6 +16,12 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.BrushExtensions.ChangeBrushBrightness(this Microsoft.UI.Xaml.Media.Brush! brush, double correctionFactor) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.BrushExtensions.Darker(this Microsoft.UI.Xaml.Media.Brush! brush) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.BrushExtensions.Lighter(this Microsoft.UI.Xaml.Media.Brush! brush) -> Microsoft.UI.Xaml.Media.Brush?
+static Microsoft.Maui.Platform.ColorExtensions.ChangeColorBrightness(this Windows.UI.Color color, double correctionFactor) -> Windows.UI.Color
+static Microsoft.Maui.Platform.ColorExtensions.Darker(this Windows.UI.Color color) -> Windows.UI.Color
+static Microsoft.Maui.Platform.ColorExtensions.Lighter(this Windows.UI.Color color) -> Windows.UI.Color
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
