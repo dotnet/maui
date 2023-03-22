@@ -20,5 +20,3 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Micr
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
-Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
-static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void

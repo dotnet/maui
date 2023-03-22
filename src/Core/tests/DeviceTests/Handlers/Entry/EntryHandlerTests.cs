@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -493,19 +493,6 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeHorizontalTextAlignment,
 				nameof(IEntry.CharacterSpacing),
 				() => entry.CharacterSpacing = newSize);
-		}
-
-		[Theory(DisplayName = "Is Spell Check Enabled")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task IsSpellCheckEnabledCorrectly(bool isSpellCheckEnabled)
-		{
-			var entry = new EntryStub()
-			{
-				IsSpellCheckEnabled = isSpellCheckEnabled
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isSpellCheckEnabled);
 		}
 
 		[Theory(DisplayName = "Vertical TextAlignment Initializes Correctly")]

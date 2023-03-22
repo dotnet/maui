@@ -306,7 +306,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			Control.Font = Element.ToUIFont();
 		}
 
-		[PortHandler]
 		void UpdateKeyboard()
 		{
 			var keyboard = Element.Keyboard;

@@ -16,11 +16,6 @@ namespace Microsoft.Maui
 		bool IsTextPredictionEnabled { get; }
 
 		/// <summary>
-		/// Gets a value that controls whether spell checking is enabled.
-		/// </summary>
-		bool IsSpellCheckEnabled { get; }
-
-		/// <summary>
 		/// Gets a value indicating whether or not the view is read-only.
 		/// </summary>
 		bool IsReadOnly { get; }
