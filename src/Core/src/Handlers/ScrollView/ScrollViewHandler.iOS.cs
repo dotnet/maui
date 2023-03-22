@@ -314,12 +314,12 @@ namespace Microsoft.Maui.Handlers
 
 		internal static Size AccountForOrientation(Size size, double widthConstraint, double heightConstraint, ScrollOrientation orientation)
 		{
-			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
+			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither && widthConstraint > 0)
 			{
 				size.Width = widthConstraint;
 			}
 
-			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
+			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither && heightConstraint > 0)
 			{
 				size.Height = heightConstraint;
 			}
