@@ -752,7 +752,7 @@ namespace Microsoft.Maui.Layouts
 				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
 					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill && targetSize.Height > MeasuredGridHeight();
 
-				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth) 
+				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
 					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill && targetSize.Width > MeasuredGridWidth();
 
 				if (decompressVertical)

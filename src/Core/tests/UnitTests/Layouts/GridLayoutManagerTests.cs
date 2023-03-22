@@ -2445,7 +2445,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view2 = CreateTestView(new Size(20, 60));
 
 			SubstituteChildren(grid, view0, view1, view2);
-			
+
 			SetLocation(grid, view0, row: 0);
 			SetLocation(grid, view1, row: 1);
 			SetLocation(grid, view2, row: 2);
@@ -2490,7 +2490,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Since we're arranging it at that same width, there's reason for it to expand the items
 			// so we expect them to be arranged at the same widths
 			var measure = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
-			
+
 			Assert.Equal(120, measure.Width);
 
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
