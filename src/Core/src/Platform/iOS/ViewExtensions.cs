@@ -609,22 +609,22 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			var observers = new List<IDisposable>(2);
 			ActionDisposable? disposable = null;
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
 				foreach (var observer in observers)
 				{
-					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
-					observers.Remove(observer.Key);
+					observer.Dispose();
 				}
+				observers.Clear();
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
+			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
 
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
@@ -665,22 +665,22 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			var observers = new List<IDisposable>(2);
 			ActionDisposable? disposable = null;
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
 				foreach (var observer in observers)
 				{
-					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
-					observers.Remove(observer.Key);
+					observer.Dispose();
 				}
+				observers.Clear();
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
 			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.	
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			observers.Add(uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
 
 			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
