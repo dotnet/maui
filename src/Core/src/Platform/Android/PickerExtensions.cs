@@ -49,12 +49,21 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateFlowDirection(this AlertDialog alertDialog, MauiPicker platformPicker)
 		{
-			// Propagate the MauiPicker LayoutDirection to the AlertDialog
-			if (alertDialog.Window?.DecorView is not null)
-				alertDialog.Window.DecorView.LayoutDirection = platformPicker.LayoutDirection;
+			var platformLayoutDirection = platformPicker.LayoutDirection;
 
-			if (alertDialog.ListView is not null)
-				alertDialog.ListView.TextDirection = platformPicker.LayoutDirection.ToTextDirection();
+			// Propagate the MauiPicker LayoutDirection to the AlertDialog
+			var dv = alertDialog.Window?.DecorView;
+
+			if (dv is not null)
+				dv.LayoutDirection = platformLayoutDirection;
+			
+			var lv = alertDialog?.ListView;
+
+			if (lv is not null)
+			{
+				lv.LayoutDirection = platformLayoutDirection;
+				lv.TextDirection = platformLayoutDirection.ToTextDirection();
+			}
 		}
 	}
 }
