@@ -977,7 +977,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(pageBounds.Height, window.Height);
 			});
 		}
-		
+
 		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{

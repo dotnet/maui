@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						if (content is FlyoutPage fp)
 							content = fp.Detail;
-							
+
 						if (window is Window w && w.Navigation.ModalStack.Count > 0)
 							content = w.Navigation.ModalStack.Last();
 
