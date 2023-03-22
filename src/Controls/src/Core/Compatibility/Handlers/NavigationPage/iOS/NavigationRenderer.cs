@@ -1505,38 +1505,74 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!_navigation.TryGetTarget(out n))
 					return;
 
-				var currentChild = this.Child;
+				var currentPage = Child;
 				var firstPage = n.NavPageController.Pages.FirstOrDefault();
 
-
-				if (n._parentFlyoutPage == null)
-					return;
-
-				if (firstPage != pageBeingRemoved && currentChild != firstPage && NavigationPage.GetHasBackButton(currentChild))
+				if (firstPage != pageBeingRemoved && currentPage != firstPage && NavigationPage.GetHasBackButton(currentPage))
 				{
-					NavigationItem.LeftBarButtonItem = null;
-					return;
+					if (OperatingSystem.IsIOSVersionAtLeast(16))
+					{
+						// it took them 16 version to add an override back action
+						NavigationItem.BackAction = UIAction.Create(handler =>
+						{
+							if (currentPage.Parent is NavigationPage navPage)
+							{
+								navPage.SendBackButtonPressed();
+							}
+						});
+					}
+					else if (OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+						// for iOS 13+,
+						// create a custom back button to with ability to override the back button action
+						// hide the original back button
+						NavigationItem.SetHidesBackButton(true, false);
+
+						var backButtonImage = UIImage.GetSystemImage("chevron.left");
+						var backBarButtonItem = new UIBarButtonItem(backButtonImage, UIBarButtonItemStyle.Plain, (sender, e) =>
+						{
+							if (currentPage.Parent is NavigationPage navPage)
+							{
+								navPage.SendBackButtonPressed();
+							}
+						});
+
+						if (currentPage.IsSet(NavigationPage.BackButtonTitleProperty))
+						{
+							backBarButtonItem.Title = NavigationPage.GetBackButtonTitle(currentPage);
+						}
+						
+						NavigationItem.SetLeftBarButtonItem(backBarButtonItem, true);
+					}
+					else
+					{
+						// for iOS 12 and below,
+						// too much trouble to provude a custom back image so no override back button action
+						var backButtonText = NavigationPage.GetBackButtonTitle(currentPage);
+						bool isBackButtonTextSet = currentPage.IsSet(NavigationPage.BackButtonTitleProperty);
+
+						// on iOS 10 if the user hasn't set the back button text
+						// we set it to an empty string so it's consistent with iOS 11
+						if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
+							backButtonText = string.Empty;
+
+						if (!string.IsNullOrEmpty(backButtonText))
+							NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonText, Style = UIBarButtonItemStyle.Plain };
+						else
+							NavigationItem.BackBarButtonItem = null;
+					}
 				}
-
-				SetFlyoutLeftBarButton(this, n._parentFlyoutPage);
+				else if (NavigationPage.GetHasBackButton(currentPage))
+				{
+					if (n._parentFlyoutPage is not null)
+					{
+						// show hamburger menu button
+						SetFlyoutLeftBarButton(this, n._parentFlyoutPage);
+					}
+				}
 			}
-
 
 			public bool NeedsTitleViewContainer(Page page) => NavigationPage.GetTitleIconImageSource(page) != null || NavigationPage.GetTitleView(page) != null;
-
-			internal void UpdateBackButtonTitle(Page page) => UpdateBackButtonTitle(page.Title, NavigationPage.GetBackButtonTitle(page));
-
-			internal void UpdateBackButtonTitle(string title, string backButtonTitle)
-			{
-				if (!string.IsNullOrWhiteSpace(title))
-					NavigationItem.Title = title;
-
-				if (backButtonTitle != null)
-					// adding a custom event handler to UIBarButtonItem for navigating back seems to be ignored.
-					NavigationItem.BackBarButtonItem = new UIBarButtonItem { Title = backButtonTitle, Style = UIBarButtonItemStyle.Plain };
-				else
-					NavigationItem.BackBarButtonItem = null;
-			}
 
 			internal void UpdateTitleArea(Page page)
 			{
@@ -1547,19 +1583,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				View titleView = NavigationPage.GetTitleView(page);
 				bool needContainer = titleView != null || titleIcon != null;
 
-				string backButtonText = NavigationPage.GetBackButtonTitle(page);
-				bool isBackButtonTextSet = page.IsSet(NavigationPage.BackButtonTitleProperty);
-
-				// on iOS 10 if the user hasn't set the back button text
-				// we set it to an empty string so it's consistent with iOS 11
-				if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)) && !isBackButtonTextSet)
-					backButtonText = "";
+				if (!string.IsNullOrWhiteSpace(page.Title))
+					NavigationItem.Title = page.Title;
 
 				_navigation.TryGetTarget(out NavigationRenderer n);
 
 				// First page and we have a flyout detail to contend with
 				UpdateLeftBarButtonItem();
-				UpdateBackButtonTitle(page.Title ?? n?.NavPage.Title, backButtonText);
 
 				//var hadTitleView = NavigationItem.TitleView != null;
 				ClearTitleViewContainer();
