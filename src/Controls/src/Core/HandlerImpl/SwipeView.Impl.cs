@@ -56,8 +56,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
-			if (e.PropertyName == VisualElement.IsEnabledProperty.PropertyName)
+			if (e.PropertyName == IsEnabledProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IsEnabled));
+			else if (e.PropertyName == MarginProperty.PropertyName)
+				UpdateMargin();
 		}
 
 		private protected override void OnParentChangedCore()
@@ -112,6 +114,15 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		void UpdateMargin()
+		{
+			if (this is not ISwipeView swipeView)
+				return;
+
+			if (swipeView.IsOpen)
+				swipeView.RequestClose(new SwipeViewCloseRequest(false));
+		}
+
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
 		{
 			var horizontalDelta = e.ScrollX - _previousScrollX;
@@ -140,7 +151,6 @@ namespace Microsoft.Maui.Controls
 		{
 			var swipeChangingEventArgs = new SwipeChangingEventArgs(swipeChanging.SwipeDirection, swipeChanging.Offset);
 			((ISwipeViewController)this).SendSwipeChanging(swipeChangingEventArgs);
-
 		}
 
 		void ISwipeView.SwipeEnded(SwipeViewSwipeEnded swipeEnded)

@@ -5,11 +5,15 @@ Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Andro
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
+Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
 override Microsoft.Maui.Controls.Shapes.Matrix.GetHashCode() -> int
+override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
+Microsoft.Maui.Controls.Handlers.BoxViewHandler
+Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool

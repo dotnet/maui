@@ -33,6 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<Label, LabelHandler>();
 				});
 			});
 		}
@@ -285,6 +286,48 @@ namespace Microsoft.Maui.DeviceTests
 						new ContentPage()
 					}
 				};
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			WeakReference pageReference = null;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage { Title = "Page 2" };
+				pageReference = new WeakReference(page);
+				await navPage.Navigation.PushAsync(page);
+				await navPage.Navigation.PopAsync();
+			});
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.NotNull(pageReference);
+			Assert.False(pageReference.IsAlive, "Page should not be alive!");
+		}
+
+		[Fact(DisplayName = "Can Reuse Pages")]
+		public async Task CanReusePages()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+			var reusedPage = new ContentPage
+			{
+				Content = new Label()
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(reusedPage);
+				await navPage.Navigation.PopAsync();
+				await navPage.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
 			});
 		}
 	}
