@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ShapesGalleries.ShapeBackgroundGallery"
+    Title="Shape Background Gallery">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Ellipse">
+                <Setter Property="HorizontalOptions" Value="Start" />
+                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="WidthRequest" Value="100" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout
+                Padding="12">
+                <Label
+                    Text="Fill (without Background)"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse 
+                    Fill="Red"/>
+                <Label
+                    Text="Background (without Fill)"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse  
+                    Background="Red"/>
+                <Label
+                    Text="Background with Fill"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse
+                    Background="Yellow"
+                    Fill="Red"/>
+                <Label
+                    Text="Shadows using Fill"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse
+                    Fill="Red">
+                    <Ellipse.Shadow>
+                        <Shadow  
+                            Offset="10, 10"
+                            Radius="10"
+                            Brush="Violet"/>
+                    </Ellipse.Shadow>
+                </Ellipse>
+                <Label
+                    Text="Shadows using Background"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse
+                    Background="Red">
+                    <Ellipse.Shadow>
+                        <Shadow  
+                            Offset="10, 10"
+                            Radius="10"
+                            Brush="Violet"/>
+                    </Ellipse.Shadow>
+                </Ellipse>
+                <Label
+                    Text="Shadows using Background with Fill"
+                    Style="{StaticResource Headline}"/>
+                <Ellipse
+                    Background="Yellow"
+                    Fill="Red">
+                    <Ellipse.Shadow>
+                        <Shadow  
+                            Offset="10, 10"
+                            Radius="10"
+                            Brush="Violet"/>
+                    </Ellipse.Shadow>
+                </Ellipse>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
