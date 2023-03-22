@@ -1,44 +1,48 @@
 parameters:
   platform : ''
-  skipXcode: false
   poolName: ''
+  skipXcode: false
+  skipVS: true
+  skipProvisioning: $(skipProvisionator)
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  provisionatorPath: $(provisionator.path)
+  provisionatorXCodePath: $(provisionator.xcode)
+  provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
+  provisionatorExtraArguments: $(provisionator.extraArguments)
+  gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
 
 steps:
-  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
-    inputs:
-      packageType: sdk
-      version: 6.0.x
-
-  - pwsh: |
-      dotnet --version
-      dotnet --list-sdks
-    displayName: 'Show .NET SDK info'
-
   # Prepare macOS
   - ${{ if eq(parameters.platform, 'macos') }}:
+    - template: agent-cleanser/v1.yml@yaml-templates
+      parameters:
+        UninstallMono: false
+        UninstallXamarinMac: false
+        CleanseAgentToolsDotNet: true           # Cleanse all .NET versions under the agent tools directory and use only those provisioned by the pipeline
+        SelfHealPowerShell: false
+        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
-      - task: xamops.azdevex.provisionator-task.provisionator@1
+      - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
-        condition: ne(variables['REQUIRED_XCODE'], '')
         inputs:
-          provisioning_script: $(provisionator.xcode)
-          provisioning_extra_args: $(provisionator.extraArguments)
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Additional Software'
-      condition: eq(variables['provisioning'], 'true')
-      inputs:
-        provisioning_script: $(provisionator.path)
-        provisioning_extra_args: $(provisionator.extraArguments)
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+    - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Additional Software'
+        continueOnError: true 
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
     # Setup SDK Paths
     - bash: |
@@ -49,6 +53,7 @@ steps:
     # Setup JDK Paths
     - bash: |
         echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
+        echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
       displayName: 'Setup JDK Paths'
     # Configure VS Mac for Xcode
     - bash: |
@@ -81,7 +86,6 @@ steps:
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
 
-
   # Prepare Windows
   - ${{ if eq(parameters.platform, 'windows') }}:
     - powershell: |
@@ -93,21 +97,76 @@ steps:
           msiexec.exe /package $output /quiet ADD_EXPLORER_CONTEXT_MENU_OPENPOWERSHELL=1 ENABLE_PSREMOTING=1 REGISTER_MANIFEST=1
         }
       displayName: 'Install PowerShell Core'
-    - task: xamops.azdevex.provisionator-task.provisionator@1
-      displayName: 'Provision Visual Studio'
-      condition: eq(variables['provisioningVS'], 'true')
-      inputs:
-        provisioning_script: $(provisionator.vs)
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+    - ${{ if ne(parameters.skipVS, 'true') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Visual Studio'
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorVSPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+      - pwsh: |
+          $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
+          echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
+        displayName: 'Setup MSBuild Paths'
+
+    # Provision Additional Software
+    - ${{ if ne(parameters.skipProvisioning, 'true') }}:
+      - task: xamops.azdevex.provisionator-task.provisionator@2
+        displayName: 'Provision Additional Software'
+        inputs:
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
+        env:
+          PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
 
     - pwsh: |
-        $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
-        echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
-      displayName: 'Setup MSBuild Paths'
-      condition: eq(variables['provisioningVS'], 'true')
+        if ($env:JAVA_HOME_11_X64) {
+          $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+        } else {
+          $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+          if ($path -and (Test-Path $path)) {
+            $env:JAVA_HOME = $path.Directory.Parent.FullName
+          }
+        }
+        if ($env:JAVA_HOME) {
+          echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+          echo "JAVA_HOME set to '$env:JAVA_HOME'"
+        } else {
+          echo "Unable to set JAVA_HOME"
+        }
+      displayName: 'Setup JDK Paths'
+
+    - pwsh: |
+        if ($env:ANDROID_SDK_ROOT) {
+          echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
+        } else {
+          if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
+            $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
+          }
+          if ($env:ANDROID_SDK_ROOT) {
+            echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
+            echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
+          } else {
+            echo "Unable to set ANDROID_SDK_ROOT"
+          }
+        }
+      displayName: 'Setup ANDROID_SDK_ROOT Paths'
 
   # Prepare Both
+  - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
+    displayName: 'Use .NET SDK 7'
+    inputs:
+      packageType: sdk
+      version: $(DOTNET_VERSION)
+
+  - pwsh: |
+      dotnet --version
+      dotnet --list-sdks
+    displayName: 'Show .NET SDK info'
+
   - pwsh: ./build.ps1 --target provision
     displayName: 'Cake Provision'
     condition: eq(variables['provisioningCake'], 'true')
@@ -123,16 +182,15 @@ steps:
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
 
-
   # Prepare for Reunion packages
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-    - task: NuGetAuthenticate@0
-      displayName: 'Authenticate Reunion NuGet sources'
-      inputs:
-        nuGetServiceConnections: Project.Reunion.nuget.internal
-    - pwsh: |
-        $path = '$(Build.SourcesDirectory)\NuGet.config'
-        [xml]$xml = Get-Content $path
-        $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
-        $xml.Save($path)
-      displayName: 'Add "wasdk-internal" to NuGet.config'
+  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  #   - task: NuGetAuthenticate@0
+  #     displayName: 'Authenticate Reunion NuGet sources'
+  #     inputs:
+  #       nuGetServiceConnections: Project.Reunion.nuget.internal
+  #   - pwsh: |
+  #       $path = '$(Build.SourcesDirectory)\NuGet.config'
+  #       [xml]$xml = Get-Content $path
+  #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
+  #       $xml.Save($path)
+  #     displayName: 'Add "wasdk-internal" to NuGet.config'

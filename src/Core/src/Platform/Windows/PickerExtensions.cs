@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 
@@ -20,10 +20,8 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = picker.Background?.ToPlatform();
 
-			if (brush == null)
-			{
+			if (platformBrush == null)
 				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
-			}
 			else
 			{
 				nativeComboBox.Resources.SetValueForKey(ComboBoxBackground, brush);

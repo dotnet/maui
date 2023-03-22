@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public partial class Application
 	{
@@ -6,6 +7,8 @@
 			new PropertyMapper<Application, ApplicationHandler>(ApplicationHandler.Mapper)
 			{
 #if ANDROID
+				// There is also a mapper on Window for this property since this property is relevant at the window level for
+				// Android not the application level
 				[PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName] = MapWindowSoftInputModeAdjust,
 #endif
 			};

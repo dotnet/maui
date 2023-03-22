@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Numerics;
+using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
-using System.Numerics;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Media;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Shapes;
 using WSize = Windows.Foundation.Size;
 
@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Platform
 			Children.Add(_borderPath);
 		}
 
+		long _visibilityDependencyPropertyCallbackToken;
 		public FrameworkElement? Child
 		{
 			get { return _child; }
@@ -41,6 +42,7 @@ namespace Microsoft.Maui.Platform
 				if (_child != null)
 				{
 					_child.SizeChanged -= OnChildSizeChanged;
+					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					Children.Remove(_child);
 				}
 
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.Platform
 
 				_child = value;
 				_child.SizeChanged += OnChildSizeChanged;
+				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				Children.Add(_child);
 			}
 		}
@@ -140,6 +143,16 @@ namespace Microsoft.Maui.Platform
 			UpdateClip();
 			UpdateBorder();
 			UpdateShadow();
+		}
+
+		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
+		{
+			// OnChildSizeChanged does not fire for Visibility changes to child
+			if (sender is FrameworkElement child && _shadowCanvas.Children.Count > 0)
+			{
+				var shadowHost = _shadowCanvas.Children[0];
+				shadowHost.Visibility = child.Visibility;
+			}
 		}
 
 		void DisposeShadow()

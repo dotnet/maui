@@ -4,12 +4,16 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Tizen.Applications;
 using Tizen.NUI;
+using IOPath = System.IO.Path;
 using NView = Tizen.NUI.BaseComponents.View;
+using TApplication = Tizen.Applications.Application;
 
 namespace Microsoft.Maui
 {
 	public abstract class MauiApplication : NUIApplication, IPlatformApplication
 	{
+		const string _fontCacheFolderName = "fonts";
+
 		internal Func<bool>? _handleBackButtonPressed;
 
 		IMauiContext _applicationContext = null!;
@@ -27,6 +31,9 @@ namespace Microsoft.Maui
 			base.OnPreCreate();
 			FocusManager.Instance.EnableDefaultAlgorithm(true);
 			NView.SetDefaultGrabTouchAfterLeave(true);
+
+			var fontResourcePath = IOPath.Combine(TApplication.Current.DirectoryInfo.Resource, _fontCacheFolderName);
+			FontClient.Instance.AddCustomFontDirectory(fontResourcePath);
 
 			var mauiApp = CreateMauiApp();
 			var rootContext = new MauiContext(mauiApp.Services);

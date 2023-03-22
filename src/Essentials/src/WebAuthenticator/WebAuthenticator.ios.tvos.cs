@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Authentication
 		TaskCompletionSource<WebAuthenticatorResult> tcsResponse;
 		UIViewController currentViewController;
 		Uri redirectUri;
+		WebAuthenticatorOptions currentOptions;
 
 #if __IOS__
 		ASWebAuthenticationSession was;
@@ -37,6 +38,7 @@ namespace Microsoft.Maui.Authentication
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(WebAuthenticatorOptions webAuthenticatorOptions)
 		{
+			currentOptions = webAuthenticatorOptions;
 			var url = webAuthenticatorOptions?.Url;
 			var callbackUrl = webAuthenticatorOptions?.CallbackUrl;
 			var prefersEphemeralWebBrowserSession = webAuthenticatorOptions?.PrefersEphemeralWebBrowserSession ?? false;
@@ -95,6 +97,7 @@ namespace Microsoft.Maui.Authentication
 			if (prefersEphemeralWebBrowserSession)
 				ClearCookies();
 
+#pragma warning disable CA1422 // 'SFAuthenticationSession' is obsoleted on: 'ios' 12.0 and later
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				sf = new SFAuthenticationSession(WebUtils.GetNativeUrl(url), scheme, AuthSessionCallback);
@@ -104,6 +107,7 @@ namespace Microsoft.Maui.Authentication
 					return await tcsResponse.Task;
 				}
 			}
+#pragma warning restore CA1422
 
 			// This is only on iOS9+ but we only support 10+ in Essentials anyway
 			var controller = new SFSafariViewController(WebUtils.GetNativeUrl(url), false)
@@ -165,11 +169,12 @@ namespace Microsoft.Maui.Authentication
 				currentViewController?.DismissViewControllerAsync(true);
 				currentViewController = null;
 
-				tcsResponse.TrySetResult(new WebAuthenticatorResult(uri));
+				tcsResponse.TrySetResult(new WebAuthenticatorResult(uri, currentOptions?.ResponseDecoder));
 				return true;
 			}
 			catch (Exception ex)
 			{
+				// TODO change this to ILogger?
 				Console.WriteLine(ex);
 			}
 			return false;

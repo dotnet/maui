@@ -1,5 +1,5 @@
-using UIKit;
 using CoreGraphics;
+using UIKit;
 
 namespace Microsoft.Maui.Graphics.Platform
 {

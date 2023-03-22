@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -51,7 +52,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
@@ -90,7 +90,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -248,6 +247,8 @@ namespace Microsoft.Maui.Controls
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
+
+			Handler?.UpdateValue(nameof(IPicker.Items));
 		}
 
 		static void OnItemsSourceChanged(BindableObject bindable, object oldValue, object newValue)
@@ -339,27 +340,27 @@ namespace Microsoft.Maui.Controls
 		{
 			if (ItemsSource != null)
 			{
-				SelectedIndex = ItemsSource.IndexOf(selectedItem);
+				SetValueCore(SelectedIndexProperty, ItemsSource.IndexOf(selectedItem));
 				return;
 			}
-			SelectedIndex = Items.IndexOf(selectedItem);
+			SetValueCore(SelectedIndexProperty, Items.IndexOf(selectedItem));
 		}
 
 		void UpdateSelectedItem(int index)
 		{
 			if (index == -1)
 			{
-				SelectedItem = null;
+				SetValueCore(SelectedItemProperty, null);
 				return;
 			}
 
 			if (ItemsSource != null)
 			{
-				SelectedItem = ItemsSource[index];
+				SetValueCore(SelectedItemProperty, ItemsSource[index]);
 				return;
 			}
 
-			SelectedItem = Items[index];
+			SetValueCore(SelectedItemProperty, Items[index]);
 		}
 
 		/// <inheritdoc/>

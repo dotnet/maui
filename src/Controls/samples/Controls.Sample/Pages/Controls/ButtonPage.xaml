@@ -14,7 +14,8 @@
                 <Button
                     Text="Button"/>
                 <Button
-                    Text="Button with Tooltip" ToolTipProperties.Text="This is a tooltip!" />
+                    Text="Button with Tooltip" 
+                    ToolTipProperties.Text="This is a tooltip!" />
                 <Label
                     Text="Disabled"
                     Style="{StaticResource Headline}"/>
@@ -40,10 +41,19 @@
                     BackgroundColor="Blue"
                     Text="Button"/>
                 <Label
+                     Text="BackgroundColor (Binding)"
+                     Style="{StaticResource Headline}" />
+                 <Button 
+                     Text="Button"
+                     BackgroundColor="{Binding ButtonBackground}" />
+                <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Button 
-                    Text="Background">
+                    x:Name="BackgroundButton"
+                    Text="Background"
+                    HorizontalOptions="Center"
+                    Clicked="OnBackgroundButtonClicked">
                     <Button.Background>
                         <LinearGradientBrush EndPoint="1,0">
                             <GradientStop Color="Yellow"
@@ -125,7 +135,7 @@
                     Style="{StaticResource Headline}"/>
                 <Button 
                     x:Name="positionChange" ContentLayout="Top" TextColor="White" Background="Black" 
-                    ImageSource="settings.png" Text="settings" />
+                    ImageSource="settings.png" Text="settings" Clicked="OnPositionChange" />
                 <Button 
                     WidthRequest="200"  HorizontalOptions="Fill" x:Name="decreaseSpacing" Text="Decrease Spacing" 
                     Clicked="OnDecreaseSpacing" TextColor="White" Background="Black" ></Button>
@@ -167,6 +177,11 @@
                     x:Name="LineBreakModeButton"
                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
                 <Button
+                    x:Name="ImageLineBreakModeButton"
+                    ContentLayout="Right" 
+                    ImageSource="coffee.png"
+                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."/>
+                <Button
                     Text="Update LineBreakMode"
                     Clicked="OnLineBreakModeButtonClicked"/>
                 <Label
@@ -174,6 +189,18 @@
                     Style="{StaticResource Headline}"/>
                 <local:CustomButton
                     Text="Custom Button" />
+                <Label
+                    Text="HorizontalOptions"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Start"
+                    HorizontalOptions="Start" />
+                <Button
+                    Text="Center"
+                    HorizontalOptions="Center" />
+                <Button
+                    Text="End"
+                    HorizontalOptions="End" />
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

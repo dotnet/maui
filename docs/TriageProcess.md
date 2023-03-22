@@ -38,7 +38,7 @@ If it's immediately clear, that the issue is related to a bug in the framework, 
 
 At this point, we will try to make a call regarding it's impact and severity. If the issue is critical, we may choose to include it in our current milestone for immediate handling or potentially patching.
 If the bug is relatively high impact, we will move the issue into the `.NET V Planning` (where V is the .NET version we're planning this for) milestone to review during our [sprint planning](#milestone-planning) meeting.
-If the impact is unclear or the is a very corner case scenario, we may move it to a next `.NET V Planning` or `Backlog` milestone to further evaluate the impact by reviewing customer upvotes / comments at a later time.
+If the impact is unclear or the is a very corner case scenario, we may move it to a next `.NET V Planning` or `Backlog` milestone to further evaluate the impact by reviewing customer up-votes / comments at a later time.
 
 ### Investigations
 
@@ -58,7 +58,7 @@ If we identify a documentation issue which too many customers are having trouble
 Our milestones are usually a month long.
 Before each milestone we have one or more planning meetings, where we look through all the accumulated issues in the `.NET V Planning` (where V is the .NET version we're planning this for) milestone and choose the most important and impactful ones to handle during the next milestone. This will be a mixture of feature requests, bug fixes, documentation issues as well as some investigations.
 
-Note, that we will investigate only issues, which have accumulated more than certain number of upvotes and/or comments, which will indicate that there is some wider impact associated with it.
+Note, that we will investigate only issues, which have accumulated more than certain number of up-votes and/or comments, which will indicate that there is some wider impact associated with it.
 We may not investigate issues which haven't received many votes/comments and choose to close these. The reason is that the impact is very scoped and potentially something is wrong in the user code. Consider asking these questions on StackOverflow, or if a bug is super important to you, please consider contributing to our project yourself.
 
 For some feature requests and bug reports, depending on the user involvement, we may choose to move these to the backlog at this point. What this means, is that they will not be looked at again up until the next major release planning.
@@ -67,7 +67,7 @@ For some feature requests and bug reports, depending on the user involvement, we
 
 Once we approach to the end of the release cycle (.NET Core 3, .NET 5) we will look through the accumulated issues in the `Backlog` milestone. This is a long process as the amount of issues accumulated in this milestone is quite large.
 
-We will try to prioritize issues with most community requests / upvotes assuming these are aligned with our goals.
+We will try to prioritize issues with most community requests / up-votes assuming these are aligned with our goals.
 Issues, which we will think are candidates for the upcoming release, will be moved to the `.NET V Planning` (where V is the .NET version we're planning this for) milestone. This process is documented in more details in the [Release Planning](ReleasePlanning.md) document.
 
 ## Cleanup

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 #endif
 {
 	internal class BlazorWebViewDeveloperTools
-{
-	public bool Enabled { get; set; } = false;
-}
+	{
+		public bool Enabled { get; set; } = false;
+	}
 }

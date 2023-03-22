@@ -1,8 +1,8 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
+using WSwipeBehaviorOnInvoked = Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked;
 using WSwipeItem = Microsoft.UI.Xaml.Controls.SwipeItem;
 using WSwipeMode = Microsoft.UI.Xaml.Controls.SwipeMode;
-using WSwipeBehaviorOnInvoked = Microsoft.UI.Xaml.Controls.SwipeBehaviorOnInvoked;
 
 
 namespace Microsoft.Maui.Platform

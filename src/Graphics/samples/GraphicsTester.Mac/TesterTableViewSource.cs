@@ -1,7 +1,7 @@
 using System;
 using AppKit;
-using GraphicsTester.Scenarios;
 using Foundation;
+using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
 
 namespace GraphicsTester.Mac
@@ -19,7 +19,7 @@ namespace GraphicsTester.Mac
 		{
 			return ScenarioList.Scenarios.Count;
 		}
-
+#pragma warning disable CA1416, CA1422
 		public override void SelectionDidChange(NSNotification notification)
 		{
 			if (ScenarioSelected != null)
@@ -36,5 +36,6 @@ namespace GraphicsTester.Mac
 				}
 			}
 		}
+#pragma warning restore CA1416, CA1422
 	}
 }

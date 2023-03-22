@@ -11,6 +11,7 @@ If you're unsure about how to document a certain element, have a look the [.NET 
 These are the tags that we would like to see when applicable: `<summary>`, `<remarks>`, `<returns>`, `<param>`, `<exception>`, `<inheritdoc>`, `<see>`, `<c>`.
 
 * All public members should have at the very least a `<summary>`
+* Add "This is a bindable property." to the end of the summary of the regular C# properties that are bindable properties.
 * Keep the descriptions short and concise
   * 1-2 lines typically, no screenshots or long code-blocks (those belong in the conceptual docs)
 * Make sure the spelling is correct

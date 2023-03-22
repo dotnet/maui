@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TranslateTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.TranslateTransform']/Docs/*" />

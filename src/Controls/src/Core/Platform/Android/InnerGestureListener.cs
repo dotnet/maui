@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,7 +162,12 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_disposed)
 				return false;
 
-			if (!HasDoubleTapHandler())
+			// The secondary button state only surfaces inside `OnSingleTapConfirmed`
+			// Inside 'OnSingleTap' the e.ButtonState doesn't indicate a secondary click
+			// So, if the gesture recognizer here has primary/secondary we want to ignore
+			// the _tapDelegate call that accounts for secondary clicks
+			if (!HasDoubleTapHandler() &&
+				(!e.IsSecondary() || HasSingleTapHandlerWithPrimaryAndSecondary()))
 			{
 				// We're not worried about double-tap, so OnSingleTapUp has already run the delegate
 				// there's nothing for us to do here
@@ -236,6 +242,21 @@ namespace Microsoft.Maui.Controls.Platform
 			_isScrolling = false;
 		}
 
+		bool HasSingleTapHandlerWithPrimaryAndSecondary()
+		{
+			if (_tapGestureRecognizers == null)
+				return false;
+
+			var check = ButtonsMask.Primary | ButtonsMask.Secondary;
+			foreach (var gesture in _tapGestureRecognizers(1))
+			{
+				if ((gesture.Buttons & check) == check)
+					return true;
+			}
+
+			return false;
+		}
+
 		bool HasDoubleTapHandler()
 		{
 			if (_tapGestureRecognizers == null)
@@ -247,6 +268,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_tapGestureRecognizers == null)
 				return false;
+
 			return _tapGestureRecognizers(1).Any();
 		}
 	}

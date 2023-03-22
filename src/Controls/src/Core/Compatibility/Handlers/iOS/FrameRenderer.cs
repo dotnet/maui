@@ -1,16 +1,16 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.ComponentModel;
-using System.Drawing;
-using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
+		const int FrameBorderThickness = 1;
+
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);
 
@@ -25,6 +25,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_actualView = new FrameView();
 			AddSubview(_actualView);
+		}
+
+		public FrameRenderer(IPropertyMapper mapper)
+			: this(mapper, CommandMapper)
+		{
+		}
+
+		public FrameRenderer(IPropertyMapper mapper, CommandMapper commandMapper) : base(mapper, commandMapper)
+		{
+			AutoPackage = false;
 		}
 
 		public override void AddSubview(UIView view)
@@ -43,7 +53,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				_actualView.CrossPlatformArrange = (e.NewElement as IContentView).CrossPlatformArrange;
 				_actualView.CrossPlatformMeasure = (e.NewElement as IContentView).CrossPlatformMeasure;
+
 				SetupLayer();
+				UpdateShadow();
 			}
 		}
 
@@ -54,11 +66,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName ||
 				e.PropertyName == VisualElement.BackgroundProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.BorderColorProperty.PropertyName ||
-				e.PropertyName == Microsoft.Maui.Controls.Frame.HasShadowProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.CornerRadiusProperty.PropertyName ||
 				e.PropertyName == Microsoft.Maui.Controls.Frame.IsClippedToBoundsProperty.PropertyName ||
 				e.PropertyName == VisualElement.IsVisibleProperty.PropertyName)
 				SetupLayer();
+			else if (e.PropertyName == Controls.Frame.HasShadowProperty.PropertyName)
+				UpdateShadow();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -107,11 +120,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (Element.BorderColor == null)
+			{
 				_actualView.Layer.BorderColor = UIColor.Clear.CGColor;
+				_actualView.Layer.BorderWidth = 0;
+			}
 			else
 			{
 				_actualView.Layer.BorderColor = Element.BorderColor.ToCGColor();
-				_actualView.Layer.BorderWidth = 1;
+				_actualView.Layer.BorderWidth = FrameBorderThickness;
 			}
 
 			Layer.RasterizationScale = UIScreen.MainScreen.Scale;
@@ -120,21 +136,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_actualView.Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			_actualView.Layer.ShouldRasterize = true;
-			_actualView.Layer.MasksToBounds = Element.IsClippedToBounds;
+			_actualView.Layer.MasksToBounds = Element.IsClippedToBoundsSet(true);
+		}
+
+		void UpdateShadow()
+		{
+			if (Element is IElement element)
+				element.Handler?.UpdateValue(nameof(IView.Shadow));
 		}
 
 		public override void LayoutSubviews()
 		{
 			if (_previousSize != Bounds.Size)
+			{
 				SetNeedsDisplay();
+				this.UpdateBackgroundLayer();
+			}
 
 			base.LayoutSubviews();
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			var result = _actualView.SizeThatFits(size);
-			return result;
+			var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+
+			var availableSize = new CGSize(size.Width - borderThickness, size.Height - borderThickness);
+			var result = _actualView.SizeThatFits(availableSize);
+
+			return new CGSize(result.Width + borderThickness, result.Height + borderThickness);
 		}
 
 		public override void Draw(CGRect rect)

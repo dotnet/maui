@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class WindowHandlerTests : HandlerTestBase
+	public partial class WindowHandlerTests : CoreHandlerTestBase
 	{
 #if MACCATALYST
 		[Fact]

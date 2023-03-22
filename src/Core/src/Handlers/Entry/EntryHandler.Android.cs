@@ -14,7 +14,7 @@ using static Android.Widget.TextView;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET7 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
+	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
 	// This type adds support to the SelectionChanged event
 	public partial class EntryHandler : ViewHandler<IEntry, AppCompatEditText>
 	{
@@ -36,14 +36,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (!_set && PlatformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
 			platformView.TextChanged += OnTextChanged;
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.EditorAction += OnEditorAction;
 		}
 
-		// TODO: NET7 issoto - Change the return type to MauiAppCompatEditText
+		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Touch -= OnTouch;
 			platformView.EditorAction -= OnEditorAction;
 
-			// TODO: NET7 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
+			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
 				editText.SelectionChanged -= OnSelectionChanged;
 
@@ -128,6 +128,12 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
 		}
 
+		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.PlatformView.Focus(request);
+		}
+
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			if (VirtualView == null)
@@ -135,7 +141,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+
 			MapClearButtonVisibility(this, VirtualView);
 		}
 
@@ -169,16 +181,16 @@ namespace Microsoft.Maui.Handlers
 				}
 			}
 
-			e.Handled = true;
+			e.Handled = false;
 		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
-			var cursorPostion = PlatformView.GetCursorPosition();
+			var cursorPosition = PlatformView.GetCursorPosition();
 			var selectedTextLength = PlatformView.GetSelectedTextLength();
 
-			if (VirtualView.CursorPosition != cursorPostion)
-				VirtualView.CursorPosition = cursorPostion;
+			if (VirtualView.CursorPosition != cursorPosition)
+				VirtualView.CursorPosition = cursorPosition;
 
 			if (VirtualView.SelectionLength != selectedTextLength)
 				VirtualView.SelectionLength = selectedTextLength;
@@ -193,14 +205,15 @@ namespace Microsoft.Maui.Handlers
 
 			var drawable = GetClearButtonDrawable();
 
-			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
-			{
-				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-			}
+			if (VirtualView?.TextColor is not null)
+				drawable?.SetColorFilter(VirtualView.TextColor.ToPlatform(), FilterMode.SrcIn);
 			else
-			{
+				drawable?.ClearColorFilter();
+
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+			else
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-			}
 
 			_clearButtonVisible = true;
 		}

@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+#nullable disable
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -10,15 +11,11 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			base.OnPropertyChanged(propertyName);
 
-			if (propertyName == PointsProperty.PropertyName)
-				this.HeightRequest = this.WidthRequest = double.NaN;
-
 			if (propertyName == PointsProperty.PropertyName ||
 				propertyName == FillRuleProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polyline.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
 		public override PathF GetPath()
 		{
 			var path = new PathF();

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -117,7 +118,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsVisibleProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutItemIsVisible']/Docs/*" />
 		public bool FlyoutItemIsVisible
 		{
 			get => (bool)GetValue(Shell.FlyoutItemIsVisibleProperty);

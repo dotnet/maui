@@ -1,11 +1,11 @@
 using System;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Android;
-using Android.Runtime;
 using Android.Content;
+using Android.Runtime;
 using Android.Views;
 using Android.Widget;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Android;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace GraphicsTester.Android

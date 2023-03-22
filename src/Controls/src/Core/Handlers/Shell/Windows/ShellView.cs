@@ -1,11 +1,12 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -154,17 +155,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 				foreach (var item in group)
 				{
+					bool foundExistingVM = false;
+
 					// Check to see if this element already has a VM counter part
 					foreach (var navItem in FlyoutItems)
 					{
 						if (navItem is NavigationViewItemViewModel viewModel && viewModel.Data == item)
+						{
+							foundExistingVM = true;
 							yield return viewModel;
+						}
 					}
 
-					yield return new NavigationViewItemViewModel()
+					if (!foundExistingVM)
 					{
-						Data = item
-					};
+						yield return new NavigationViewItemViewModel()
+						{
+							Data = item
+						};
+					}
 				}
 			}
 		}

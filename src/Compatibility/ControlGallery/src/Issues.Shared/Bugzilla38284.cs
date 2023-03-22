@@ -1,10 +1,9 @@
 ﻿using System;
-
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Maps;
-using Microsoft.Maui.Maps;
 using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Maps;
 
 namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 {

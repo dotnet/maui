@@ -6,7 +6,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.DatePicker)]
-	public partial class DatePickerHandlerTests : HandlerTestBase<DatePickerHandler, DatePickerStub>
+	public partial class DatePickerHandlerTests : CoreHandlerTestBase<DatePickerHandler, DatePickerStub>
 	{
 		[Fact(DisplayName = "Date Initializes Correctly")]
 		public async Task DateInitializesCorrectly()
@@ -40,6 +40,16 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await CreateHandlerAsync(datePicker);
+		}
+
+		[Category(TestCategory.DatePicker)]
+		public class DatePickerTextStyleTests : TextStyleHandlerTests<DatePickerHandler, DatePickerStub>
+		{
+
+			protected override void SetText(DatePickerStub stub)
+			{
+				stub.Date = new DateTime(2042, 1, 1);
+			}
 		}
 	}
 }

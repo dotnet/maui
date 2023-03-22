@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
@@ -26,12 +27,23 @@ namespace Microsoft.Maui.Controls
 		internal const string GroupNameChangedMessage = "RadioButtonGroupNameChanged";
 		internal const string ValueChangedMessage = "RadioButtonValueChanged";
 
+		// App Theme string constants for Light/Dark modes
+		internal const string RadioButtonOuterEllipseStrokeLight = "RadioButtonOuterEllipseStrokeLight";
+		internal const string RadioButtonOuterEllipseStrokeDark = "RadioButtonOuterEllipseStrokeDark";
+		internal const string RadioButtonCheckGlyphStrokeLight = "RadioButtonCheckGlyphStrokeLight";
+		internal const string RadioButtonCheckGlyphStrokeDark = "RadioButtonCheckGlyphStrokeDark";
+		internal const string RadioButtonCheckGlyphFillLight = "RadioButtonCheckGlyphFillLight";
+		internal const string RadioButtonCheckGlyphFillDark = "RadioButtonCheckGlyphFillDark";
+
+		// Older App Theme constants
+		internal const string RadioButtonThemeColor = "RadioButtonThemeColor";
+		internal const string RadioButtonCheckMarkThemeColor = "RadioButtonCheckMarkThemeColor";
+
+
 		// Template Parts
 		TapGestureRecognizer _tapGestureRecognizer;
 		View _templateRoot;
 
-		static readonly Brush RadioButtonCheckMarkThemeColor = ResolveThemeColor("RadioButtonCheckMarkThemeColor");
-		static readonly Brush RadioButtonThemeColor = ResolveThemeColor("RadioButtonThemeColor");
 		static ControlTemplate s_defaultTemplate;
 
 		readonly Lazy<PlatformConfigurationRegistry<RadioButton>> _platformConfigurationRegistry;
@@ -76,7 +88,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAutoScalingEnabledProperty']/Docs/*" />
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
@@ -166,7 +177,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(FontSizeProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAutoScalingEnabled']/Docs/*" />
 		public bool FontAutoScalingEnabled
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
@@ -334,21 +344,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		static Brush ResolveThemeColor(string key)
-		{
-			if (Application.Current.TryGetResource(key, out object color))
-			{
-				return (Brush)color;
-			}
-
-			if (Application.Current?.RequestedTheme == AppTheme.Dark)
-			{
-				return Brush.White;
-			}
-
-			return Brush.Black;
-		}
-
 		void ApplyIsCheckedState()
 		{
 			if (IsChecked)
@@ -392,13 +387,15 @@ namespace Microsoft.Maui.Controls
 			{
 				return;
 			}
-
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			MessagingCenter.Send(this, ValueChangedMessage,
 						new RadioButtonValueChanged(RadioButtonGroup.GetVisualRoot(this)));
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		void OnGroupNamePropertyChanged(string oldGroupName, string newGroupName)
 		{
+#pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
 			if (!string.IsNullOrEmpty(newGroupName))
 			{
 				if (string.IsNullOrEmpty(oldGroupName))
@@ -420,6 +417,7 @@ namespace Microsoft.Maui.Controls
 					MessagingCenter.Unsubscribe<Element, RadioButtonGroupValueChanged>(this, RadioButtonGroup.GroupValueChangedMessage);
 				}
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 
 		bool MatchesScope(RadioButtonScopeMessage message)
@@ -458,19 +456,32 @@ namespace Microsoft.Maui.Controls
 
 		static View BuildDefaultTemplate()
 		{
-			var frame = new Frame
+			Border border = new Border()
 			{
-				HasShadow = false,
 				Padding = 6
 			};
 
-			BindToTemplatedParent(frame, BackgroundColorProperty, Microsoft.Maui.Controls.Frame.BorderColorProperty, HorizontalOptionsProperty,
+			BindToTemplatedParent(border, BackgroundColorProperty, HorizontalOptionsProperty,
 				MarginProperty, OpacityProperty, RotationProperty, ScaleProperty, ScaleXProperty, ScaleYProperty,
 				TranslationYProperty, TranslationXProperty, VerticalOptionsProperty);
 
+			border.SetBinding(Border.StrokeProperty,
+				new Binding(BorderColorProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeShapeProperty,
+				new Binding(CornerRadiusProperty.PropertyName, converter: new CornerRadiusToShape(),
+							source: RelativeBindingSource.TemplatedParent));
+
+			border.SetBinding(Border.StrokeThicknessProperty,
+				new Binding(BorderWidthProperty.PropertyName,
+							source: RelativeBindingSource.TemplatedParent));
+
 			var grid = new Grid
 			{
+				Padding = 2,
 				RowSpacing = 0,
+				ColumnSpacing = 6,
 				ColumnDefinitions = new ColumnDefinitionCollection {
 					new ColumnDefinition { Width = GridLength.Auto },
 					new ColumnDefinition { Width = GridLength.Star }
@@ -489,20 +500,18 @@ namespace Microsoft.Maui.Controls
 				HeightRequest = 21,
 				WidthRequest = 21,
 				StrokeThickness = 2,
-				Stroke = RadioButtonThemeColor,
-				InputTransparent = true
+				InputTransparent = false
 			};
 
 			var checkMark = new Ellipse
 			{
-				Fill = RadioButtonCheckMarkThemeColor,
 				Aspect = Stretch.Uniform,
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
 				HeightRequest = 11,
 				WidthRequest = 11,
 				Opacity = 0,
-				InputTransparent = true
+				InputTransparent = false
 			};
 
 			var contentPresenter = new ContentPresenter
@@ -510,6 +519,58 @@ namespace Microsoft.Maui.Controls
 				HorizontalOptions = LayoutOptions.Fill,
 				VerticalOptions = LayoutOptions.Fill
 			};
+
+			object dynamicOuterEllipseThemeColor = null;
+			object dynamicCheckMarkThemeColor = null;
+			object outerEllipseVisualStateLight = null;
+			object outerEllipseVisualStateDark = null;
+			object checkMarkVisualStateLight = null;
+			object checkMarkVisualStateDark = null;
+
+			if (!normalEllipse.TrySetDynamicThemeColor(
+				RadioButtonThemeColor,
+				Ellipse.StrokeProperty,
+				out dynamicOuterEllipseThemeColor))
+			{
+				normalEllipse.TrySetAppTheme(
+					RadioButtonOuterEllipseStrokeLight,
+					RadioButtonOuterEllipseStrokeDark,
+					Ellipse.StrokeProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out outerEllipseVisualStateLight,
+					out outerEllipseVisualStateDark);
+			}
+
+			if (!checkMark.TrySetDynamicThemeColor(
+				RadioButtonCheckMarkThemeColor,
+				Ellipse.StrokeProperty,
+				out dynamicCheckMarkThemeColor))
+			{
+				checkMark.TrySetAppTheme(
+					RadioButtonCheckGlyphStrokeLight,
+					RadioButtonCheckGlyphStrokeDark,
+					Ellipse.StrokeProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out checkMarkVisualStateLight,
+					out checkMarkVisualStateDark);
+			}
+
+			if (!checkMark.TrySetDynamicThemeColor(
+				RadioButtonCheckMarkThemeColor,
+				Ellipse.FillProperty,
+				out dynamicCheckMarkThemeColor))
+			{
+				checkMark.TrySetAppTheme(
+					RadioButtonCheckGlyphFillLight,
+					RadioButtonCheckGlyphFillDark,
+					Ellipse.FillProperty,
+					SolidColorBrush.White,
+					SolidColorBrush.Black,
+					out _,
+					out _);
+			}
 
 			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
 			contentPresenter.SetBinding(BackgroundColorProperty, new Binding(BackgroundColorProperty.PropertyName,
@@ -519,11 +580,11 @@ namespace Microsoft.Maui.Controls
 			grid.Add(checkMark);
 			grid.Add(contentPresenter, 1, 0);
 
-			frame.Content = grid;
+			border.Content = grid;
 
 			INameScope nameScope = new NameScope();
-			NameScope.SetNameScope(frame, nameScope);
-			nameScope.RegisterName(TemplateRootName, frame);
+			NameScope.SetNameScope(border, nameScope);
+			nameScope.RegisterName(TemplateRootName, border);
 			nameScope.RegisterName(UncheckedButton, normalEllipse);
 			nameScope.RegisterName(CheckedIndicator, checkMark);
 			nameScope.RegisterName("ContentPresenter", contentPresenter);
@@ -540,19 +601,47 @@ namespace Microsoft.Maui.Controls
 
 			VisualState checkedVisualState = new VisualState() { Name = CheckedVisualState };
 			checkedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 1 });
-			checkedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = RadioButtonCheckMarkThemeColor });
+			checkedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.StrokeProperty,
+					TargetName = UncheckedButton,
+					Value = dynamicOuterEllipseThemeColor is not null ? dynamicOuterEllipseThemeColor : new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
+				});
+			checkedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.StrokeProperty,
+					TargetName = CheckedIndicator,
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+				});
+			checkedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.FillProperty,
+					TargetName = CheckedIndicator,
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+				});
 			checkedStates.States.Add(checkedVisualState);
 
 			VisualState uncheckedVisualState = new VisualState() { Name = UncheckedVisualState };
 			uncheckedVisualState.Setters.Add(new Setter() { Property = OpacityProperty, TargetName = CheckedIndicator, Value = 0 });
-			uncheckedVisualState.Setters.Add(new Setter() { Property = Shape.StrokeProperty, TargetName = UncheckedButton, Value = RadioButtonThemeColor });
+
+			uncheckedVisualState.Setters.Add(
+				new Setter()
+				{
+					Property = Shape.StrokeProperty,
+					TargetName = UncheckedButton,
+					Value = dynamicOuterEllipseThemeColor is not null ? dynamicOuterEllipseThemeColor : new AppThemeBinding() { Light = outerEllipseVisualStateLight, Dark = outerEllipseVisualStateDark }
+				});
+
 			checkedStates.States.Add(uncheckedVisualState);
 
 			visualStateGroups.Add(checkedStates);
 
-			VisualStateManager.SetVisualStateGroups(frame, visualStateGroups);
+			VisualStateManager.SetVisualStateGroups(border, visualStateGroups);
 
-			return frame;
+			return border;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ContentAsString']/Docs/*" />
@@ -565,6 +654,22 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return content?.ToString();
+		}
+
+		class CornerRadiusToShape : IValueConverter
+		{
+			public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				return new RoundRectangle
+				{
+					CornerRadius = (int)value,
+				};
+			}
+
+			public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+			{
+				throw new NotImplementedException();
+			}
 		}
 	}
 }

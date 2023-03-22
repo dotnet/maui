@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Handlers;
 using static Microsoft.Maui.Controls.Button;

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Windows.Input;
 
@@ -24,7 +25,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsEnabledProperty =
 			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneTime);
 
@@ -60,7 +60,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IsVisible']/Docs/*" />
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }

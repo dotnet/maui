@@ -1,4 +1,6 @@
+using AndroidX.AppCompat.App;
 using AndroidX.Window.Layout;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Hosting;
 
@@ -17,7 +19,7 @@ namespace Microsoft.Maui.LifecycleEvents
 			android
 				.OnPostCreate((activity, bundle) =>
 				{
-					// OnCreate is only ever called once when the activity is initally created
+					// OnCreate is only ever called once when the activity is initially created
 					activity.GetWindow()?.Created();
 				})
 				.OnRestart(activity =>
@@ -76,7 +78,10 @@ namespace Microsoft.Maui.LifecycleEvents
 				{
 					if (IPlatformApplication.Current is IPlatformApplication platformApplication)
 					{
-						platformApplication.Application?.ThemeChanged();
+						var application = platformApplication.Application;
+
+						application?.UpdateNightMode();
+						application?.ThemeChanged();
 					}
 
 					var mauiWindow = activity.GetWindow();

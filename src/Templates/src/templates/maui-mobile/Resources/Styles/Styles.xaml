@@ -20,7 +20,7 @@
     </Style>
 
     <Style TargetType="BoxView">
-        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray950}, Dark={StaticResource Gray200}}" />
     </Style>
 
     <Style TargetType="Button">
@@ -28,6 +28,7 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="BorderWidth" Value="0"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="14,10"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
@@ -42,6 +43,7 @@
                             <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}" />
                         </VisualState.Setters>
                     </VisualState>
+                    <VisualState x:Name="PointerOver" />
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>
@@ -152,6 +154,7 @@
                             <Setter Property="Opacity" Value="0.5" />
                         </VisualState.Setters>
                     </VisualState>
+                    <VisualState x:Name="PointerOver" />
                 </VisualStateGroup>
             </VisualStateGroupList>
         </Setter>

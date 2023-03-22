@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -5,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -82,6 +84,7 @@ namespace Microsoft.Maui.Controls
 
 		protected internal View()
 		{
+			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
 				void AddItems(IEnumerable<IElementDefinition> elements)
@@ -158,25 +161,29 @@ namespace Microsoft.Maui.Controls
 		{
 			get
 			{
-				if (_compositeGestureRecognizers is not null)
-					return _compositeGestureRecognizers;
-
-				_recognizerForPointerOverState = new PointerGestureRecognizer();
-
-				_recognizerForPointerOverState.PointerEntered += (s, e) =>
+				if (_compositeGestureRecognizers == null)
 				{
-					IsPointerOver = true;
-				};
+					_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>();
+					CheckPointerOver();
+				}
 
-				_recognizerForPointerOverState.PointerExited += (s, e) =>
-				{
-					IsPointerOver = false;
-				};
-
-				_compositeGestureRecognizers = new ObservableCollection<IGestureRecognizer>() { _recognizerForPointerOverState };
 				return _compositeGestureRecognizers;
 			}
 		}
+
+		protected internal override void ChangeVisualState()
+		{
+			CheckPointerOver();
+
+			if (_recognizerForPointerOverState == null && IsPointerOver)
+				SetPointerOver(false, false);
+
+			base.ChangeVisualState();
+		}
+
+		void CheckPointerOver() =>
+			PointerGestureRecognizer
+				.SetupForPointerOverVSM(this, (result) => SetPointerOver(result), ref _recognizerForPointerOverState);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
 		public virtual IList<GestureElement> GetChildElements(Point point)

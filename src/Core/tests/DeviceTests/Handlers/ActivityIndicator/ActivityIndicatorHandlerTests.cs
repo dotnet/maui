@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ActivityIndicator)]
-	public partial class ActivityIndicatorHandlerTests : HandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
+	public partial class ActivityIndicatorHandlerTests : CoreHandlerTestBase<ActivityIndicatorHandler, ActivityIndicatorStub>
 	{
 		[Theory(DisplayName = "IsRunning Initializes Correctly")]
 		[InlineData(true)]
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsRunning = true
 			};
 
-			await ValidateHasColor(activityIndicator, Colors.Yellow, () => activityIndicator.Background = new SolidPaintStub(Colors.Yellow));
+			await ValidateHasColor(activityIndicator, Colors.Yellow, () => activityIndicator.Background = new SolidPaintStub(Colors.Yellow), nameof(activityIndicator.Background));
 		}
 	}
 }

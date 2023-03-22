@@ -146,15 +146,23 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			}
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Bugzilla40911>(this, Bugzilla40911.ReadyToSetUp40911Test, SetUp40911Test);
+#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<Issue5503>(this, Issue5503.ChangeUITableViewAppearanceBgColor, (s) =>
 			{
 				UITableView.Appearance.BackgroundColor = UITableView.Appearance.BackgroundColor == null ? UIColor.Red : null;
 			});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
+#pragma warning disable CS0618 // Type or member is obsolete
 			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
@@ -174,6 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				"I am a native UILabel with considerably more text. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
 
 #pragma warning disable CA1416 // TODO: UILabel.MinimumFontSize has [UnsupportedOSPlatform("ios6.0")]
+#pragma warning disable CA1422 // Validate platform compatibility
 			var uilabel = new UILabel
 			{
 				MinimumFontSize = 14f,
@@ -235,6 +244,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				LineBreakMode = UILineBreakMode.WordWrap,
 				Font = UIFont.FromName("Helvetica", 24f)
 			};
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 
 			// Add a misbehaving control
@@ -277,6 +287,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			int width = (int)sl.Width;
 			int heightCustomLabelView = 100;
 
+#pragma warning disable CA1422 // Validate platform compatibility
 			var uilabel = new UILabel(new CGRect(0, 0, width, heightCustomLabelView))
 			{
 #pragma warning disable CA1416 // TODO: UILabel.MinimumFontSize has [UnsupportedOSPlatform("ios6.0")]
@@ -287,6 +298,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 				Font = UIFont.FromName("Helvetica", 24f),
 				Text = "DefaultText"
 			};
+#pragma warning restore CA1422 // Validate platform compatibility
 
 			var uibuttonColor = new UIButton(UIButtonType.System);
 			uibuttonColor.SetTitle("Toggle Text Color Binding", UIControlState.Normal);
@@ -344,7 +356,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			};
 
 #pragma warning disable CA1416 // TODO: 'UIApplication.KeyWindow' is unsupported on: 'ios' 13.0 and later
+#pragma warning disable CA1422 // Validate platform compatibility
 			var window = UIApplication.SharedApplication.KeyWindow;
+#pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416
 			var vc = window.RootViewController;
 			while (vc.PresentedViewController != null)

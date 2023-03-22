@@ -13,9 +13,9 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		static readonly Lazy<string> _name = new Lazy<string>(() => Application.Context.ApplicationInfo.LoadLabel(Application.Context.PackageManager));
 		static readonly Lazy<string> _packageName = new Lazy<string>(() => Application.Context.PackageName);
+#pragma warning disable CS0618, CA1416, CA1422 // Deprecated in API 33: https://developer.android.com/reference/android/content/pm/PackageManager#getPackageInfo(java.lang.String,%20int)
 		static readonly Lazy<PackageInfo> _packageInfo = new Lazy<PackageInfo>(() => Application.Context.PackageManager.GetPackageInfo(_packageName.Value, PackageInfoFlags.MetaData));
-		static readonly Lazy<AppTheme> _requestedTheme = new Lazy<AppTheme>(GetRequestedTheme);
-		static readonly Lazy<LayoutDirection> _layoutDirection = new Lazy<LayoutDirection>(GetLayoutDirection);
+#pragma warning restore CS0618, CA1416, CA1422
 
 		public string PackageName => _packageName.Value;
 
@@ -37,21 +37,26 @@ namespace Microsoft.Maui.ApplicationModel
 			settingsIntent.SetData(global::Android.Net.Uri.Parse("package:" + PackageName));
 
 			var flags = ActivityFlags.NewTask | ActivityFlags.NoHistory | ActivityFlags.ExcludeFromRecents;
-			if (OperatingSystem.IsAndroidVersionAtLeast(24))
-				flags |= ActivityFlags.LaunchAdjacent;
 			settingsIntent.SetFlags(flags);
 
 			context.StartActivity(settingsIntent);
 		}
 
-		static AppTheme GetRequestedTheme() => (Application.Context.Resources.Configuration.UiMode & UiMode.NightMask) switch
+		static AppTheme GetRequestedTheme()
 		{
-			UiMode.NightYes => AppTheme.Dark,
-			UiMode.NightNo => AppTheme.Light,
-			_ => AppTheme.Unspecified
-		};
+			var config = Application.Context.Resources?.Configuration;
+			if (config == null)
+				return AppTheme.Unspecified;
 
-		public AppTheme RequestedTheme => _requestedTheme.Value;
+			return (config.UiMode & UiMode.NightMask) switch
+			{
+				UiMode.NightYes => AppTheme.Dark,
+				UiMode.NightNo => AppTheme.Light,
+				_ => AppTheme.Unspecified
+			};
+		}
+
+		public AppTheme RequestedTheme => GetRequestedTheme();
 
 		public AppPackagingModel PackagingModel => AppPackagingModel.Packaged;
 
@@ -61,10 +66,11 @@ namespace Microsoft.Maui.ApplicationModel
 			if (config == null)
 				return LayoutDirection.Unknown;
 
-			return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl) ? LayoutDirection.RightToLeft :
-				LayoutDirection.LeftToRight;
+			return (config.LayoutDirection == Android.Views.LayoutDirection.Rtl)
+				? LayoutDirection.RightToLeft
+				: LayoutDirection.LeftToRight;
 		}
 
-		public LayoutDirection RequestedLayoutDirection => _layoutDirection.Value;
+		public LayoutDirection RequestedLayoutDirection => GetLayoutDirection();
 	}
 }

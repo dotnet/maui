@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(expectedWidth, view1.Bounds.X);
 		}
 
-		static IEnumerable<object[]> ExpansionYCases()
+		public static IEnumerable<object[]> ExpansionYCases()
 		{
 			yield return new object[] { LayoutOptions.StartAndExpand, 0 };
 			yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaHeight / 2) - TestViewHeight };
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			yield return new object[] { LayoutOptions.FillAndExpand, 0 };
 		}
 
-		static IEnumerable<object[]> ExpansionXCases()
+		public static IEnumerable<object[]> ExpansionXCases()
 		{
 			yield return new object[] { LayoutOptions.StartAndExpand, 0 };
 			yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaWidth / 2) - TestViewWidth };
@@ -316,6 +316,113 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 
 			Assert.Equal(testText, view0.Text);
 			Assert.Equal(vm, view0.BindingContext);
+		}
+
+		[Fact]
+		public void EnsuresMeasure()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand
+			};
+
+			var layout = new StackLayout();
+			layout.Add(view0);
+
+			(layout as Maui.ILayout).CrossPlatformArrange(new Rect(0, 0, 100, 100));
+		}
+
+		[Fact]
+		public void InvisibleViewsDoNotCreateColumns()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Horizontal, view0, view1);
+
+			Assert.Equal(0, view1.Bounds.Left);
+		}
+
+		[Fact]
+		public void InvisibleViewsDoNotCreateRows()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Vertical, view0, view1);
+
+			Assert.Equal(0, view1.Bounds.Top);
+		}
+
+		[Fact]
+		public void RevisibleViewsDoCreateColumns()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				HorizontalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Horizontal, view0, view1);
+
+			view0.IsVisible = true;
+			MeasureAndArrange(layout);
+			Assert.Equal(TestAreaWidth / 2, view1.Bounds.Left);
+		}
+
+		[Fact]
+		public void RevisibleViewsDoCreateRows()
+		{
+			var view0 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = false
+			};
+
+			var view1 = new TestView
+			{
+				Text = "Hello",
+				VerticalOptions = LayoutOptions.FillAndExpand,
+				IsVisible = true
+			};
+
+			var layout = SetUpTestLayout(StackOrientation.Vertical, view0, view1);
+
+			view0.IsVisible = true;
+			MeasureAndArrange(layout);
+			Assert.Equal(TestAreaHeight / 2, view1.Bounds.Top);
 		}
 	}
 }

@@ -26,6 +26,7 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 						GalleryBuilder.NavButton("CollectionView using VisualStates Gallery", () => new SwipeViewVisualStatesCollectionGallery(), Navigation),
 						GalleryBuilder.NavButton("CarouselView Gallery", () => new SwipeCarouselViewGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView GestureRecognizer Gallery", () => new SwipeViewGestureRecognizerGallery(), Navigation),
+						GalleryBuilder.NavButton("SwipeView Shadow Gallery", () => new SwipeViewShadowGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeBehaviorOnInvoked Gallery", () => new SwipeBehaviorOnInvokedGallery(), Navigation),
 						GalleryBuilder.NavButton("Custom SwipeItem Galleries", () => new CustomSwipeItemGallery(), Navigation),
 						GalleryBuilder.NavButton("SwipeView BindingContext Gallery", () => new SwipeViewBindingContextGallery(), Navigation),

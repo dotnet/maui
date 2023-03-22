@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Tizen.Applications;
 
@@ -46,11 +47,17 @@ namespace Microsoft.Maui.Storage
 
 		public void Set<T>(string key, T value, string sharedName)
 		{
+			Preferences.CheckIsSupportedType<T>();
+
 			lock (locker)
 			{
 				var fullKey = GetFullKey(key, sharedName);
 				if (value == null)
 					Preference.Remove(fullKey);
+				else if (value is DateTime dt)
+				{
+					Preference.Set(fullKey, dt.ToBinary());
+				}
 				else
 					Preference.Set(fullKey, value);
 			}
@@ -73,6 +80,10 @@ namespace Microsoft.Maui.Storage
 						case float f:
 						case string s:
 							value = Preference.Get<T>(fullKey);
+							break;
+						case DateTime dt:
+							var encodedValue = Preference.Get<long>(fullKey);
+							value = (T)(object)DateTime.FromBinary(encodedValue);
 							break;
 						default:
 							// the case when the string is null

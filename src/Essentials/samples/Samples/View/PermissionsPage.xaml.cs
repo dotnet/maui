@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -22,15 +23,17 @@ namespace Samples.View
 		{
 			base.OnAppearing();
 
-			MessagingCenter.Subscribe<PermissionItem, Exception>(this, nameof(PermissionException), async (p, ex) =>
-				await DisplayAlert("Permission Error", ex.Message, "OK"));
+			WeakReferenceMessenger.Default.Register<Exception, string>(
+				this,
+				nameof(PermissionException),
+				async (p, ex) => await DisplayAlert("Permission Error", ex.Message, "OK"));
 		}
 
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
 
-			MessagingCenter.Unsubscribe<PermissionItem, Exception>(this, nameof(PermissionException));
+			WeakReferenceMessenger.Default.Unregister<Exception, string>(this, nameof(PermissionException));
 		}
 	}
 }

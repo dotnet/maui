@@ -71,6 +71,11 @@ namespace Microsoft.Maui.Handlers
 			ProcessSourceWhenReady(handler, webView);
 		}
 
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView.UpdateUserAgent(webView);
+		}
+
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
@@ -144,7 +149,7 @@ namespace Microsoft.Maui.Handlers
 			if (url == AssetBaseUrl)
 				return false;
 
-			// TODO: Sync Cookies
+			SyncPlatformCookies(url);
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 
 			// if the user disconnects from the handler we want to exit

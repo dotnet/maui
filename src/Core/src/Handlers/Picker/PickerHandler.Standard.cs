@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		// Uncomment me on NET7 [Obsolete]
+		// TODO Uncomment me on NET8 [Obsolete]
 		public static void MapReload(IPickerHandler handler, IPicker picker, object? args) { }
 		internal static void MapItems(IPickerHandler handler, IPicker picker) { }
 

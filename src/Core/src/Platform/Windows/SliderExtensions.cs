@@ -1,7 +1,11 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -9,7 +13,14 @@ namespace Microsoft.Maui.Platform
 	{
 		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
 		{
-			double stepping = Math.Min((slider.Maximum - slider.Minimum) / 1000, 1);
+			var difference = slider.Maximum - slider.Minimum;
+
+			double stepping = 1;
+
+			// Setting the Slider SmallChange property to 0 would throw an System.ArgumentException.
+			if (difference != 0)
+				stepping = Math.Min((difference) / 1000, 1);
+
 			nativeSlider.StepFrequency = stepping;
 			nativeSlider.SmallChange = stepping;
 		}
@@ -92,13 +103,22 @@ namespace Microsoft.Maui.Platform
 			"SliderThumbBackgroundDisabled",
 		};
 
-		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider)
+		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider, Size? defaultThumbSize)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 
 			if (thumbImageSource == null)
 			{
 				nativeSlider.ThumbImageSource = null;
+
+				var thumb = nativeSlider.GetFirstDescendant<Thumb>();
+
+				if (defaultThumbSize.HasValue && thumb is not null)
+				{
+					thumb.Height = defaultThumbSize.Value.Height;
+					thumb.Width = defaultThumbSize.Value.Width;
+				}
+
 				return;
 			}
 
@@ -106,6 +126,28 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
 				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
+				var nativeThumbImage = nativeThumbImageSource?.Value;
+
+				// BitmapImage is a special case that has an event when the image is loaded
+				// when this happens, we want to resize the thumb
+				if (nativeThumbImage is BitmapImage bitmapImage)
+				{
+					bitmapImage.ImageOpened += OnImageOpened;
+
+					void OnImageOpened(object sender, RoutedEventArgs e)
+					{
+						bitmapImage.ImageOpened -= OnImageOpened;
+
+						if (nativeSlider.TryGetFirstDescendant<Thumb>(out var thumb))
+						{
+							thumb.Height = bitmapImage.PixelHeight;
+							thumb.Width = bitmapImage.PixelWidth;
+						}
+
+						if (nativeSlider.Parent is FrameworkElement frameworkElement)
+							frameworkElement.InvalidateMeasure();
+					};
+				}
 
 				nativeSlider.ThumbImageSource = nativeThumbImageSource?.Value;
 			}

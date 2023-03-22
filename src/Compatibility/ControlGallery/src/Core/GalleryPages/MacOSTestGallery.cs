@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 			scroller.Scrolled += (sender, e) =>
 			{
-				lbl.Text = $"Current postion {scroller.ScrollY}";
+				lbl.Text = $"Current Position {scroller.ScrollY}";
 			};
 
 			scroller.Content = mainStck;

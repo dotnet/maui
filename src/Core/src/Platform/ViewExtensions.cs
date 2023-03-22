@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Numerics;
 using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
@@ -38,7 +38,6 @@ namespace Microsoft.Maui.Platform
 
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
-		/// <include file="../../docs/Microsoft.Maui/ViewExtensions.xml" path="//Member[@MemberName='ToHandler']/Docs/*" />
 
 		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
@@ -101,6 +100,36 @@ namespace Microsoft.Maui.Platform
 		}
 #endif
 
+		internal static IDisposable OnUnloaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView != null)
+			{
+				return platformViewHandler.PlatformView.OnUnloaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
+		internal static IDisposable OnLoaded(this IElement element, Action action)
+		{
+#if PLATFORM
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView != null)
+			{
+				return platformViewHandler.PlatformView.OnLoaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+#else
+			throw new NotImplementedException();
+#endif
+		}
+
 #if PLATFORM
 		internal static Task OnUnloadedAsync(this PlatformView platformView, TimeSpan? timeOut = null)
 		{
@@ -118,5 +147,17 @@ namespace Microsoft.Maui.Platform
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif
+		internal static bool IsLoadedOnPlatform(this IElement element)
+		{
+			if (element.Handler is not IPlatformViewHandler pvh)
+				return false;
+
+#if PLATFORM
+			return pvh.PlatformView?.IsLoaded() == true;
+#else
+			return true;
+#endif
+
+		}
 	}
 }

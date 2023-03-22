@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Color expected = Colors.Yellow;
 
-			var brush = new LinearGradientPaintStub(Colors.Blue, expected);
+			var brush = new SolidPaintStub(expected);
 
 			var imageButton = new ImageButtonStub
 			{
@@ -42,16 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 				shapeableImageView.ContentPaddingTop,
 				shapeableImageView.ContentPaddingRight,
 				shapeableImageView.ContentPaddingBottom);
-		}
-
-		Task ValidateHasColor(IImageButton imageButton, Color color, Action action = null)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformImageButton = GetPlatformImageButton(CreateHandler(imageButton));
-				action?.Invoke();
-				platformImageButton.AssertContainsColor(color);
-			});
 		}
 
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>

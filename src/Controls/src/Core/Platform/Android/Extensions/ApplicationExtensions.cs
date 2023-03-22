@@ -1,5 +1,7 @@
-﻿using Android.App;
+﻿#nullable disable
+using Android.App;
 using Android.Content;
+using Android.Media;
 using Android.Views;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using AApplication = Android.App.Application;
@@ -10,32 +12,24 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		public static void UpdateWindowSoftInputModeAdjust(this AApplication platformView, Application application)
 		{
-			var adjust = SoftInput.AdjustPan;
-
-			if (Application.Current != null)
+			if (application is IApplication app)
 			{
-				WindowSoftInputModeAdjust elementValue = Application.Current.OnThisPlatform().GetWindowSoftInputModeAdjust();
-
-				switch (elementValue)
-				{
-					case WindowSoftInputModeAdjust.Resize:
-						adjust = SoftInput.AdjustResize;
-						break;
-					case WindowSoftInputModeAdjust.Unspecified:
-						adjust = SoftInput.AdjustUnspecified;
-						break;
-					default:
-						adjust = SoftInput.AdjustPan;
-						break;
-				}
+				foreach (var window in app.Windows)
+					window?.Handler?.UpdateValue(PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName);
 			}
+		}
 
-			IMauiContext mauiContext = application.FindMauiContext(true);
-			Context context = mauiContext?.Context;
-			Activity activity = context.GetActivity();
-
-			activity?.Window?.SetSoftInputMode(adjust);
-
+		internal static SoftInput ToPlatform(this WindowSoftInputModeAdjust windowSoftInputModeAdjust)
+		{
+			switch (windowSoftInputModeAdjust)
+			{
+				case WindowSoftInputModeAdjust.Resize:
+					return SoftInput.AdjustResize;
+				case WindowSoftInputModeAdjust.Unspecified:
+					return SoftInput.AdjustUnspecified;
+				default:
+					return SoftInput.AdjustPan;
+			}
 		}
 	}
 }

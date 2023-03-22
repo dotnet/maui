@@ -13,7 +13,7 @@ using Xunit;
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.ScrollView)]
-	public partial class ScrollViewTests : HandlerTestBase
+	public partial class ScrollViewTests : ControlsHandlerTestBase
 	{
 		[Theory]
 		[InlineData(ScrollOrientation.Vertical)]

@@ -4,7 +4,7 @@ Versions of .NET MAUI are being released in sync with new .NET versions. More in
 
 ## Past .NET MAUI Releases
 
-Below you can find a list of all the previous releases of .NET MAUI, excluding prereleases.
+Below you can find a list of all the previous releases of .NET MAUI, excluding pre-releases.
 For a full list, including release notes, please refer to our [Releases page](https://github.com/dotnet/maui/releases).
 
 | Version | Release Date |

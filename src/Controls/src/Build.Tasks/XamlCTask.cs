@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using Microsoft.Build.Utilities;
 using Microsoft.Maui.Controls.Xaml;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
-using Microsoft.Build.Utilities;
 using static Microsoft.Build.Framework.MessageImportance;
 using static Mono.Cecil.Cil.OpCodes;
 using IOPath = System.IO.Path;
@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	public class XamlCTask : XamlTask
 	{
+		readonly XamlCache cache = new();
 		bool hasCompiledXamlResources;
 		public bool KeepXamlResources { get; set; }
 		public bool OptimizeIL { get; set; } = true;
@@ -110,7 +111,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 						{
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Resource: {resource.Name}");
 							string classname;
-							if (!resource.IsXaml(module, out classname))
+							if (!resource.IsXaml(cache, module, out classname))
 							{
 								LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}skipped.");
 								continue;
@@ -260,11 +261,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				var module = body.Method.Module;
 				body.InitLocals = true;
 				var il = body.GetILProcessor();
-				var resourcePath = GetPathForType(module, initComp.DeclaringType);
+				var resourcePath = GetPathForType(cache, module, initComp.DeclaringType);
 
 				il.Emit(Nop);
 
-				var visitorContext = new ILContext(il, body, module)
+				var visitorContext = new ILContext(il, body, module, cache)
 				{
 					XamlFilePath = xamlFilePath,
 					LoggingHelper = loggingHelper,
@@ -293,11 +294,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 		}
 
-		internal static string GetPathForType(ModuleDefinition module, TypeReference type)
+		internal static string GetPathForType(XamlCache cache, ModuleDefinition module, TypeReference type)
 		{
 			foreach (var ca in type.Module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (!TypeRefComparer.Default.Equals(ca.ConstructorArguments[2].Value as TypeReference, type))
 					continue;
@@ -306,11 +307,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			return null;
 		}
 
-		internal static string GetResourceIdForPath(ModuleDefinition module, string path)
+		internal static string GetResourceIdForPath(XamlCache cache, ModuleDefinition module, string path)
 		{
 			foreach (var ca in module.GetCustomAttributes())
 			{
-				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
+				if (!TypeRefComparer.Default.Equals(ca.AttributeType, module.ImportReference(cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.Xaml", "XamlResourceIdAttribute"))))
 					continue;
 				if (ca.ConstructorArguments[1].Value as string != path)
 					continue;

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Tizen.NUI;
@@ -7,8 +6,8 @@ using Tizen.UIExtensions.NUI;
 using GColor = Microsoft.Maui.Graphics.Color;
 using GColors = Microsoft.Maui.Graphics.Colors;
 using NCollectionView = Tizen.UIExtensions.NUI.CollectionView;
-using NLayoutParamPolicies = Tizen.NUI.BaseComponents.LayoutParamPolicies;
 using NItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
+using NLayoutParamPolicies = Tizen.NUI.BaseComponents.LayoutParamPolicies;
 using NView = Tizen.NUI.BaseComponents.View;
 using XLabel = Microsoft.Maui.Controls.Label;
 

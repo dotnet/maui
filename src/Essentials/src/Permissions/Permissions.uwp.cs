@@ -16,6 +16,11 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	public static partial class Permissions
 	{
+		/// <summary>
+		/// Checks if the capability specified in <paramref name="capabilityName"/> is declared in the application's <c>AppxManifest.xml</c> file.
+		/// </summary>
+		/// <param name="capabilityName">The capability to check for specification in the <c>AppxManifest.xml</c> file.</param>
+		/// <returns><see langword="true"/> when the capability is specified, otherwise <see langword="false"/>.</returns>
 		public static bool IsCapabilityDeclared(string capabilityName)
 		{
 			var docPath = FileSystemUtils.PlatformGetFullAppPackageFilePath(PlatformUtils.AppManifestFilename);
@@ -31,19 +36,28 @@ namespace Microsoft.Maui.ApplicationModel
 				(doc.Root.XPathSelectElements($"//uap:Capability[@Name='{capabilityName}']", namespaceManager)?.Any() ?? false);
 		}
 
+		/// <summary>
+		/// Represents the platform-specific abstract base class for all permissions on this platform.
+		/// </summary>
 		public abstract partial class BasePlatformPermission : BasePermission
 		{
+			/// <summary>
+			/// Gets the required entries that need to be present in the application's <c>AppxManifest.xml</c> file for this permission.
+			/// </summary>
 			protected virtual Func<IEnumerable<string>> RequiredDeclarations { get; } = () => Array.Empty<string>();
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
 				return Task.FromResult(PermissionStatus.Granted);
 			}
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> RequestAsync()
 				=> CheckStatusAsync();
 
+			/// <inheritdoc/>
 			public override void EnsureDeclared()
 			{
 				foreach (var d in RequiredDeclarations())
@@ -53,10 +67,15 @@ namespace Microsoft.Maui.ApplicationModel
 				}
 			}
 
+			/// <inheritdoc/>
 			public override bool ShouldShowRationale() => false;
 		}
 
 		public partial class Battery : BasePlatformPermission
+		{
+		}
+
+		public partial class Bluetooth : BasePlatformPermission
 		{
 		}
 
@@ -74,6 +93,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class ContactsRead : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override async Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -88,6 +108,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class ContactsWrite : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override async Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -110,6 +131,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class LocationWhenInUse : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -133,6 +155,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public partial class LocationAlways : BasePlatformPermission
 		{
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				EnsureDeclared();
@@ -172,6 +195,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 			static readonly Guid activitySensorClassId = new Guid("9D9E0118-1807-4F2E-96E4-2CE57142E196");
 
+			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
 			{
 				// Determine if the user has allowed access to activity sensors

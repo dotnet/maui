@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.CheckBox)]
-	public partial class CheckBoxTests : HandlerTestBase
+	public partial class CheckBoxTests : ControlsHandlerTestBase
 	{
 		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property")]
 		[InlineData("#FF0000")]
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			checkBox.BackgroundColor = color;
 
-			await ValidateHasColor(checkBox, color);
+			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
 		}
 	}
 }

@@ -4,6 +4,8 @@
     <TargetFrameworks>$(WindowsMauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</RootNamespace>
     <AssemblyName>Microsoft.Maui.Graphics.Win2D.WinUI.Desktop</AssemblyName>
+    <IsTrimmable>false</IsTrimmable>
+    <NoWarn>$(NoWarn);RS0026;RS0041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,6 +17,8 @@
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
   </ItemGroup>
 
-  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

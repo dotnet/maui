@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		{
 			var type = module.ImportReference(typeof(NonGenericClass));
 			TypeReference declaringTypeReference;
-			FieldDefinition field = type.GetField(fd => fd.Name == "Field", out declaringTypeReference);
+			FieldDefinition field = type.GetField(new XamlCache(), fd => fd.Name == "Field", out declaringTypeReference);
 			Assert.DoesNotThrow(() => field.ResolveGenericParameters(declaringTypeReference));
 		}
 
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		{
 			var type = module.ImportReference(typeof(Inheritor));
 			TypeReference declaringTypeReference;
-			FieldDefinition field = type.GetField(fd => fd.Name == "NonGenericField", out declaringTypeReference);
+			FieldDefinition field = type.GetField(new XamlCache(), fd => fd.Name == "NonGenericField", out declaringTypeReference);
 			Assert.AreEqual("NonGenericField", field.Name);
 			Assert.AreEqual("Microsoft.Maui.Controls.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field.DeclaringType.FullName);
 			Assert.False(field.DeclaringType.IsGenericInstance);
@@ -71,10 +71,11 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 		[Test]
 		public void GenericFieldOnGenericType()
 		{
+			var cache = new XamlCache();
 			var type = module.ImportReference(typeof(Inheritor));
 			TypeReference declaringTypeReference;
 
-			FieldDefinition field1 = type.GetField(fd => fd.Name == "GenericField1", out declaringTypeReference);
+			FieldDefinition field1 = type.GetField(cache, fd => fd.Name == "GenericField1", out declaringTypeReference);
 			Assert.AreEqual("GenericField1", field1.Name);
 			Assert.AreEqual("Microsoft.Maui.Controls.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field1.DeclaringType.FullName);
 			Assert.False(field1.DeclaringType.IsGenericInstance);
@@ -88,7 +89,7 @@ namespace Microsoft.Maui.Controls.XamlcUnitTests
 			Assert.False(genericField1.FieldType.IsGenericParameter);
 			Assert.AreEqual("System.String", genericField1.FieldType.FullName);
 
-			FieldDefinition field2 = type.GetField(fd => fd.Name == "GenericField2", out declaringTypeReference);
+			FieldDefinition field2 = type.GetField(cache, fd => fd.Name == "GenericField2", out declaringTypeReference);
 			Assert.AreEqual("GenericField2", field2.Name);
 			Assert.AreEqual("Microsoft.Maui.Controls.XamlcUnitTests.FieldReferenceExtensionsTests/GenericClass`2", field2.DeclaringType.FullName);
 			Assert.False(field2.DeclaringType.IsGenericInstance);

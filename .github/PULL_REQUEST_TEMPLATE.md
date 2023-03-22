@@ -10,12 +10,5 @@
 Fixes #
 
 <!--
-Are you targeting the right branch?
-
-- net6.0
-  - This PR should be part of a .NET 6 service release.
-- main (start here if you don't know what to use)
-  - This PR should wait until .NET 7 is released.
-- net7.0
-  - This PR is very specific to .NET 7 SDK updates and wouldn't compile if they were to target main.
+Are you targeting main? All PRs should target the main branch unless otherwise noted.
 -->

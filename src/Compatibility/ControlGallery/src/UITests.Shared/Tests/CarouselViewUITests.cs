@@ -331,25 +331,25 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			{
 				App.WaitForElement("lblPosition");
 
-				string GetPostion()
+				string GetPosition()
 				{
 					return App.Query(c => c.Marked("lblPosition")).First().Text;
 				}
 
-				Assert.AreEqual("0", GetPostion());
+				Assert.AreEqual("0", GetPosition());
 				App.Tap("btnNewObservable");
-				Assert.AreEqual("0", GetPostion());
+				Assert.AreEqual("0", GetPosition());
 
 				SwipeRightToLeft();
 
 				App.Tap("btnAddObservable");
-				Assert.AreEqual("0", GetPostion());
+				Assert.AreEqual("0", GetPosition());
 
 				SwipeRightToLeft();
-				Assert.AreEqual("1", GetPostion());
+				Assert.AreEqual("1", GetPosition());
 
 				SwipeRightToLeft();
-				Assert.AreEqual("2", GetPostion());
+				Assert.AreEqual("2", GetPosition());
 			}
 			finally
 			{

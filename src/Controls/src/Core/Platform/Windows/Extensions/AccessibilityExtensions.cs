@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
@@ -19,7 +20,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_defaultAutomationPropertiesName == null)
 				_defaultAutomationPropertiesName = (string)Control.GetValue(NativeAutomationProperties.NameProperty);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (string)Element.GetValue(AutomationProperties.NameProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
 				Control.SetValue(NativeAutomationProperties.NameProperty, elemValue);
@@ -59,7 +62,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (_defaultAutomationPropertiesHelpText == null)
 				_defaultAutomationPropertiesHelpText = (string)Control.GetValue(NativeAutomationProperties.HelpTextProperty);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (!string.IsNullOrWhiteSpace(elemValue))
 				Control.SetValue(NativeAutomationProperties.HelpTextProperty, elemValue);
@@ -84,16 +89,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (_defaultAutomationPropertiesLabeledBy == null)
 				_defaultAutomationPropertiesLabeledBy = (UIElement)Control.GetValue(NativeAutomationProperties.LabeledByProperty);
-
+#pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (VisualElement)Element.GetValue(AutomationProperties.LabeledByProperty);
-
+#pragma warning restore CS0618 // Type or member is obsolete
 			FrameworkElement nativeElement = null;
 
 			if (mauiContext != null)
 				nativeElement = (elemValue as IView)?.ToHandler(mauiContext)?.PlatformView as FrameworkElement;
 
 			if (nativeElement != null)
+#pragma warning disable CS0618 // Type or member is obsolete
 				Control.SetValue(AutomationProperties.LabeledByProperty, nativeElement);
+#pragma warning restore CS0618 // Type or member is obsolete
 			else
 				Control.SetValue(NativeAutomationProperties.LabeledByProperty, _defaultAutomationPropertiesLabeledBy);
 
@@ -116,10 +123,11 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			string separator;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
 
 			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
-
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
 				separator = "";

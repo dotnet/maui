@@ -21,7 +21,7 @@ using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFl
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Toolbar)]
-	public partial class ToolbarTests : HandlerTestBase
+	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
 		void SetupBuilder()
 		{
@@ -84,8 +84,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var window = new Window(page);
 
-			var context1 = new ContextStub(MauiContext.Services);
-			var context2 = new ContextStub(MauiContext.Services);
+			var context1 = ContextStub.CreateNew(MauiContext);
+			var context2 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, (handler) =>
 			{

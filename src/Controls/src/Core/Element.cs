@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -360,7 +361,7 @@ namespace Microsoft.Maui.Controls
 		{
 			child.Parent = null;
 
-			ChildRemoved?.Invoke(child, new ElementEventArgs(child));
+			ChildRemoved?.Invoke(this, new ElementEventArgs(child));
 
 			VisualDiagnostics.OnChildRemoved(this, child, oldLogicalIndex);
 

@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.UI.Xaml.Controls;
 using UWPApp = Microsoft.UI.Xaml.Application;
 using UWPDataTemplate = Microsoft.UI.Xaml.DataTemplate;

@@ -1,8 +1,6 @@
-#nullable enable
 using System;
 using System.Linq;
 using System.Numerics;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -10,23 +8,53 @@ namespace Microsoft.Maui.Controls.Shapes
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Shape']/Docs/*" />
 	public abstract partial class Shape : View, IShapeView, IShape
 	{
+		WeakBrushChangedProxy? _fillProxy = null;
+		WeakBrushChangedProxy? _strokeProxy = null;
+		EventHandler? _fillChanged, _strokeChanged;
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shape()
 		{
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='GetPath']/Docs/*" />
+		~Shape()
+		{
+			_fillProxy?.Unsubscribe();
+			_strokeProxy?.Unsubscribe();
+		}
+
 		public abstract PathF GetPath();
+
+		double _fallbackWidth;
+		double _fallbackHeight;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
-				propertyChanged: OnBrushChanged);
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (oldvalue != null)
+						(bindable as Shape)?.StopNotifyingFillChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue != null)
+						(bindable as Shape)?.NotifyFillChanges();
+				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeProperty']/Docs/*" />
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
-				propertyChanged: OnBrushChanged);
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (oldvalue != null)
+						(bindable as Shape)?.StopNotifyingStrokeChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue != null)
+						(bindable as Shape)?.NotifyStrokeChanges();
+				});
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeThicknessProperty']/Docs/*" />
 		public static readonly BindableProperty StrokeThicknessProperty =
@@ -154,7 +182,6 @@ namespace Microsoft.Maui.Controls.Shapes
 				_ => LineJoin.Round
 			};
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashPattern']/Docs/*" />
 		public float[] StrokeDashPattern
 			=> StrokeDashArray.Select(a => (float)a).ToArray();
 
@@ -162,23 +189,70 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		float IStroke.StrokeMiterLimit => (float)StrokeMiterLimit;
 
-		static void OnBrushChanged(BindableObject bindable, object oldValue, object newValue)
+		void NotifyFillChanges()
 		{
-			((Shape)bindable).UpdateBrushParent((Brush)newValue);
+			var fill = Fill;
+
+			if (fill is ImmutableBrush)
+				return;
+
+			if (fill is not null)
+			{
+				SetInheritedBindingContext(fill, BindingContext);
+				_fillChanged ??= (sender, e) => OnPropertyChanged(nameof(Fill));
+				_fillProxy ??= new();
+				_fillProxy.Subscribe(fill, _fillChanged);
+			}
 		}
 
-		void UpdateBrushParent(Brush brush)
+		void StopNotifyingFillChanges()
 		{
-			if (brush != null)
-				brush.Parent = this;
+			var fill = Fill;
+
+			if (fill is ImmutableBrush)
+				return;
+
+			if (fill is not null)
+			{
+				SetInheritedBindingContext(fill, null);
+				_fillProxy?.Unsubscribe();
+			}
+		}
+
+		void NotifyStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is ImmutableBrush)
+				return;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, BindingContext);
+				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
+				_strokeProxy ??= new();
+				_strokeProxy.Subscribe(stroke, _strokeChanged);
+			}
+		}
+
+		void StopNotifyingStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is ImmutableBrush)
+				return;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, null);
+				_strokeProxy?.Unsubscribe();
+			}
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
 		{
-			if (HeightRequest < 0 && WidthRequest < 0)
-			{
-				Frame = viewBounds;
-			}
+			_fallbackHeight = viewBounds.Height;
+			_fallbackWidth = viewBounds.Width;
 
 			var path = GetPath();
 
@@ -194,11 +268,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			viewBounds.Height -= StrokeThickness;
 
 			Matrix3x2 transform;
+
 			if (Aspect == Stretch.None)
 			{
-				transform = Matrix3x2.CreateTranslation(
-					(float)(viewBounds.Left - pathBounds.Left),
-					(float)(viewBounds.Top - pathBounds.Top));
+				bool requireAdjustX = viewBounds.Left > pathBounds.Left;
+				bool requireAdjustY = viewBounds.Top > pathBounds.Top;
+
+				if (requireAdjustX || requireAdjustY)
+				{
+					transform = Matrix3x2.CreateTranslation(
+						(float)(pathBounds.X + viewBounds.Left - pathBounds.Left),
+						(float)(pathBounds.Y + viewBounds.Top - pathBounds.Top));
+				}
+				else
+				{
+					transform = Matrix3x2.Identity;
+				}
 			}
 			else
 			{
@@ -254,9 +339,26 @@ namespace Microsoft.Maui.Controls.Shapes
 			return path;
 		}
 
+		protected override void OnBindingContextChanged()
+		{
+			PropagateBindingContextToBrush();
+
+			base.OnBindingContextChanged();
+		}
+
+		void PropagateBindingContextToBrush()
+		{
+			if (Fill is not null)
+				SetInheritedBindingContext(Fill, BindingContext);
+
+			if (Stroke is not null)
+				SetInheritedBindingContext(Stroke, BindingContext);
+		}
+
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var result = base.MeasureOverride(widthConstraint, heightConstraint);
+
 			if (result.Width != 0 && result.Height != 0)
 			{
 				return result;
@@ -264,7 +366,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
-			SizeF boundsByFlattening = this.GetPath().GetBoundsByFlattening(1).Size;
+			RectF pathBounds = this.GetPath().GetBoundsByFlattening(1);
+			SizeF boundsByFlattening = pathBounds.Size;
+
 			result.Height = boundsByFlattening.Height;
 			result.Width = boundsByFlattening.Width;
 
@@ -279,6 +383,8 @@ namespace Microsoft.Maui.Controls.Shapes
 			switch (Aspect)
 			{
 				case Stretch.None:
+					result.Height += pathBounds.Y;
+					result.Width += pathBounds.X;
 					break;
 
 				case Stretch.Fill:
@@ -320,6 +426,74 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			DesiredSize = result;
 			return result;
+		}
+
+		internal double WidthForPathComputation
+		{
+			get
+			{
+				var width = Width;
+
+				// If the shape has never been laid out, then Width won't actually have a value;
+				// use the fallback value instead.
+				return width == -1 ? _fallbackWidth : width;
+			}
+		}
+
+		internal double HeightForPathComputation
+		{
+			get
+			{
+				var height = Height;
+
+				// If the shape has never been laid out, then Height won't actually have a value;
+				// use the fallback value instead.
+				return height == -1 ? _fallbackHeight : height;
+			}
+		}
+
+		class WeakBrushChangedProxy : WeakEventProxy<Brush, EventHandler>
+		{
+			void OnBrushChanged(object? sender, EventArgs e)
+			{
+				if (TryGetHandler(out var handler))
+				{
+					handler(sender, e);
+				}
+				else
+				{
+					Unsubscribe();
+				}
+			}
+
+			public override void Subscribe(Brush source, EventHandler handler)
+			{
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnBrushChanged;
+
+					if (s is GradientBrush g)
+						g.InvalidateGradientBrushRequested -= OnBrushChanged;
+				}
+
+				source.PropertyChanged += OnBrushChanged;
+				if (source is GradientBrush gradientBrush)
+					gradientBrush.InvalidateGradientBrushRequested += OnBrushChanged;
+
+				base.Subscribe(source, handler);
+			}
+
+			public override void Unsubscribe()
+			{
+				if (TryGetSource(out var s))
+				{
+					s.PropertyChanged -= OnBrushChanged;
+
+					if (s is GradientBrush g)
+						g.InvalidateGradientBrushRequested -= OnBrushChanged;
+				}
+				base.Unsubscribe();
+			}
 		}
 	}
 }

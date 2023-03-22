@@ -1,9 +1,11 @@
+#nullable disable
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Controls
 {
+
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellNavigatingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellNavigatingEventArgs']/Docs/*" />
 	public class ShellNavigatingEventArgs : EventArgs
 	{

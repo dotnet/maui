@@ -1,7 +1,9 @@
 ﻿using System;
+using Android.Content;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.Fragment.App;
+using Java.Util.Zip;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Devices;
 
@@ -16,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var layoutInflater = mauiContext.Services.GetService<LayoutInflater>();
 
-			if (layoutInflater == null && mauiContext.Context != null)
+			if (!layoutInflater.IsAlive() && mauiContext.Context != null)
 			{
 				var activity = mauiContext.Context.GetActivity();
 
@@ -66,6 +68,32 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return scopedContext;
+		}
+
+		internal static View ToPlatform(
+			this IView view,
+			IMauiContext fragmentMauiContext,
+			Android.Content.Context context,
+			LayoutInflater layoutInflater,
+			FragmentManager childFragmentManager)
+		{
+			if (view.Handler?.MauiContext is MauiContext scopedMauiContext)
+			{
+				// If this handler belongs to a different activity then we need to 
+				// recreate the view.
+				// If it's the same activity we just update the layout inflater
+				// and the fragment manager so that the platform view doesn't recreate
+				// underneath the users feet
+				if (scopedMauiContext.GetActivity() == context.GetActivity() &&
+					view.Handler.PlatformView is View platformView)
+				{
+					scopedMauiContext.AddWeakSpecific(layoutInflater);
+					scopedMauiContext.AddWeakSpecific(childFragmentManager);
+					return platformView;
+				}
+			}
+
+			return view.ToPlatform(fragmentMauiContext.MakeScoped(layoutInflater: layoutInflater, fragmentManager: childFragmentManager));
 		}
 
 		internal static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)

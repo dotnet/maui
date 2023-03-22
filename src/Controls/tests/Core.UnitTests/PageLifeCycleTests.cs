@@ -6,14 +6,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 	public class PageLifeCycleTests : BaseTestFixture
 	{
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
-		public void NavigationPageInitialPage(bool useMaui)
+		[Fact]
+		// This test isn't valid for non handler based
+		// navigation because the initial navigated event
+		// fires from the legacy code instead of the
+		// new handler code
+		// We have device tests to also verify this works on 
+		// each platform
+		public async Task NavigationPageInitialPage()
 		{
 			var lcPage = new LCPage();
-			NavigationPage navigationPage = new TestNavigationPage(useMaui, lcPage);
-			navigationPage.InitialNativeNavigationStackLoaded();
+			var navigationPage = new TestNavigationPage(true, lcPage);
+			await navigationPage.NavigatingTask;
 			Assert.Null(lcPage.NavigatingFromArgs);
 			Assert.Null(lcPage.NavigatedFromArgs);
 			Assert.NotNull(lcPage.NavigatedToArgs);
@@ -211,7 +215,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, firstModalPage.AppearingCount);
 		}
 
-		class LCPage : ContentPage
+		public class LCPage : ContentPage
 		{
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }
 			public NavigatingFromEventArgs NavigatingFromArgs { get; private set; }

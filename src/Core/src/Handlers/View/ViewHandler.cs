@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
+
+#if ANDROID
+				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties
+#endif
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -70,6 +74,8 @@ namespace Microsoft.Maui.Handlers
 		};
 
 		bool _hasContainer;
+
+		internal DataFlowDirection DataFlowDirection { get; set; }
 
 		protected ViewHandler(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 			: base(mapper, commandMapper ?? ViewCommandMapper)
@@ -91,6 +97,11 @@ namespace Microsoft.Maui.Handlers
 				else
 					RemoveContainer();
 			}
+		}
+
+		public virtual bool NeedsContainer
+		{
+			get => VirtualView.NeedsContainer();
 		}
 
 		protected abstract void SetupContainer();
@@ -123,17 +134,14 @@ namespace Microsoft.Maui.Handlers
 			OnCreatePlatformView();
 
 #if ANDROID
-		// This sets up AndroidBatchPropertyMapper
-		public override void SetVirtualView(IElement element)
-		{
-			base.SetVirtualView(element);
 
-			if (element is IView view)
-			{
-				((PlatformView?)PlatformView)?.Initialize(view);
-			}
+		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
+		{
+			if (handler.PlatformView is PlatformView pv)
+				pv.Initialize(view);
 		}
 #endif
+
 
 #if !(NETSTANDARD || !PLATFORM)
 		private protected abstract void OnConnectHandler(PlatformView platformView);
@@ -238,26 +246,14 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapClip(IViewHandler handler, IView view)
 		{
-			var clipShape = view.Clip;
-
-			if (clipShape != null)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateClip(view);
 		}
 
 		public static void MapShadow(IViewHandler handler, IView view)
 		{
-			var shadow = view.Shadow;
-
-			UpdateHasContainer(handler, shadow != null);
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
 			((PlatformView?)handler.ContainerView)?.UpdateShadow(view);
 		}
@@ -279,23 +275,25 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
+			else
+				handler.HasContainer = view.NeedsContainer();
+
+			UpdateInputTransparentOnContainerView(handler, view);
+		}
+
+		static void UpdateInputTransparentOnContainerView(IViewHandler handler, IView view)
+		{
+#if ANDROID
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.InputTransparent = view.InputTransparent;
+#endif
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
 		{
-			var border = (view as IBorder)?.Border;
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 
-			if (border != null)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
-
- 			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
+			((PlatformView?)handler.ContainerView)?.UpdateBorder(view);
 		}
 
 		static partial void MappingFrame(IViewHandler handler, IView view);
@@ -329,14 +327,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapInputTransparent(IViewHandler handler, IView view)
 		{
 #if ANDROID
-			var inputTransparent = view.InputTransparent;
-
-			UpdateHasContainer(handler, inputTransparent);
-
-			if (handler.ContainerView is WrapperView wrapper)
-			{
-				wrapper.InputTransparent = inputTransparent;
-			}
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			UpdateInputTransparentOnContainerView(handler, view);
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif
@@ -353,19 +345,6 @@ namespace Microsoft.Maui.Handlers
 			if (view is IToolTipElement tooltipContainer)
 				handler.ToPlatform().UpdateToolTip(tooltipContainer.ToolTip);
 #endif
-		}
-
-		static void UpdateHasContainer(IViewHandler handler, bool definitelyNeedsContainer)
-		{
-			if (definitelyNeedsContainer)
-			{
-				handler.HasContainer = true;
-			}
-			else
-			{
-				if (handler is ViewHandler viewHandler)
-					handler.HasContainer = viewHandler.NeedsContainer;
-			}
 		}
 	}
 }

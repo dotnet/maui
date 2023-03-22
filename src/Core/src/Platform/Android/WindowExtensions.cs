@@ -1,5 +1,7 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.Res;
+using Android.Views;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Platform;
 
@@ -19,6 +21,16 @@ namespace Microsoft.Maui
 				Orientation.Square => DisplayOrientation.Portrait,
 				_ => DisplayOrientation.Unknown
 			};
+		}
+
+		internal static void UpdateWindowSoftInputModeAdjust(this IWindow platformView, SoftInput inputMode)
+		{
+			var activity = platformView?.Handler?.PlatformView as Activity ??
+							platformView?.Handler?.MauiContext?.GetPlatformWindow();
+
+			activity?
+				.Window?
+				.SetSoftInputMode(inputMode);
 		}
 	}
 }
