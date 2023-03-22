@@ -191,11 +191,11 @@ namespace Microsoft.Maui.DeviceTests
 				var searchBarHandler = CreateHandler(searchBar);
 				await searchBarHandler.PlatformView.AttachAndRun(async () =>
 				{
-					searchBar.Handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+					searchBarHandler.PlatformView.Focus(new FocusRequest(false));
 					await searchBar.WaitForFocused();
 					Assert.True(searchBar.IsFocused);
 
-					searchBar.Handler.Invoke(nameof(IView.Unfocus), new FocusRequest(false));
+					searchBarHandler.PlatformView.Unfocus(searchBar);
 					await searchBar.WaitForUnFocused();
 					Assert.False(searchBar.IsFocused);
 				});
