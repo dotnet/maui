@@ -68,6 +68,11 @@ namespace Microsoft.Maui.Platform
 			editText.SetInputType(entry);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEntry entry)
+		{
+			editText.SetInputType(entry);
+		}
+
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
@@ -288,8 +293,16 @@ namespace Microsoft.Maui.Platform
 
 				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 				{
-					if (!textInput.IsTextPredictionEnabled)
-						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					if (!nativeInputTypeToUpdate.HasFlag(InputTypes.TextFlagNoSuggestions))
+					{
+						if (!textInput.IsSpellCheckEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					}
+					if (!nativeInputTypeToUpdate.HasFlag(InputTypes.TextFlagNoSuggestions))
+					{
+						if (!textInput.IsTextPredictionEnabled)
+							nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+					}
 				}
 			}
 

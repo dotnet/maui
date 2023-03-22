@@ -76,6 +76,9 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(entry);
 
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) =>
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(entry);
+
 		public static void MapMaxLength(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateMaxLength(entry);
 

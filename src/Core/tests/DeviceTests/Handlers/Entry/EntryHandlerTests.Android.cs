@@ -4,10 +4,7 @@ using Android.Text;
 using Android.Text.Method;
 using Android.Views.InputMethods;
 using AndroidX.AppCompat.Widget;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
 
@@ -326,5 +323,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			return -1;
 		}
+
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
+			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 	}
 }

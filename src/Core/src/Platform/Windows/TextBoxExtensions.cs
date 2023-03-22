@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Platform
 			textBox.UpdateInputScope(textInput);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this TextBox textBox, ITextInput textInput)
+		{
+			textBox.UpdateInputScope(textInput);
+		}
+
 		public static void UpdateKeyboard(this TextBox textBox, ITextInput textInput)
 		{
 			textBox.UpdateInputScope(textInput);

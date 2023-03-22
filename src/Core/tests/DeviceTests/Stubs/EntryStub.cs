@@ -21,6 +21,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
+		public bool IsSpellCheckEnabled { get; set; } = true;
+
 		public string Placeholder { get; set; }
 
 		public Color PlaceholderColor { get; set; }

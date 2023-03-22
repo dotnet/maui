@@ -100,6 +100,8 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdatePlaceholderColor(entry);
 
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
+
 		public static void MapFont(IEntryHandler handler, IEntry entry) =>
 			handler.PlatformView?.UpdateFont(entry, handler.GetRequiredService<IFontManager>());
 
