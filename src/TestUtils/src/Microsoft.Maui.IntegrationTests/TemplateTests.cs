@@ -6,7 +6,6 @@ namespace Microsoft.Maui.IntegrationTests
 		[SetUp]
 		public void TemplateTestsSetUp()
 		{
-			Directory.CreateDirectory(TestDirectory);
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
 				Path.Combine(TestDirectory, "Directory.Build.props"), true);
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.targets"),

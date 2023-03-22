@@ -81,6 +81,8 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			if (Directory.Exists(TestDirectory))
 				Directory.Delete(TestDirectory, recursive: true);
+
+			Directory.CreateDirectory(TestDirectory);
 		}
 
 		[OneTimeTearDown]
