@@ -749,7 +749,13 @@ namespace Microsoft.Maui.Layouts
 
 			public void DecompressStars(Size targetSize)
 			{
-				if (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridHeight))
+				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
+					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill && targetSize.Height > MeasuredGridHeight();
+
+				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
+					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill && targetSize.Width > MeasuredGridWidth();
+
+				if (decompressVertical)
 				{
 					// Reset the size on all star rows
 					ZeroOutStarSizes(_rows);
@@ -758,7 +764,7 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(targetSize.Height, true);
 				}
 
-				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
+				if (decompressHorizontal)
 				{
 					// Reset the size on all star columns
 					ZeroOutStarSizes(_columns);
