@@ -53,11 +53,11 @@
                 <Slider
                     x:Name="ContentHeightSlider"
                     Minimum="40"
-                    Value="60"
                     Maximum="100"/>
                 <Grid
                     RowDefinitions="*,*,*">
                     <Border
+                        x:Name="RectangleHeight01"
                         Border.StrokeShape="Rectangle"
                         Border.Stroke="Red"
                         Border.StrokeThickness="1"
@@ -70,7 +70,8 @@
                             VerticalTextAlignment="Center"
                             BackgroundColor="Orange"/>
                     </Border>
-                    <Border
+                    <Border 
+                        x:Name="RectangleHeight02"
                         Border.StrokeShape="Rectangle"
                         Border.Stroke="Red"
                         Border.StrokeThickness="5"
@@ -83,7 +84,8 @@
                             VerticalTextAlignment="Center"
                             BackgroundColor="Orange"/>
                     </Border>
-                    <Border
+                    <Border 
+                        x:Name="RectangleHeight03"
                         Border.StrokeShape="Rectangle"
                         Border.Stroke="Red"
                         Border.StrokeThickness="10"
