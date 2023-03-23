@@ -93,9 +93,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView scrollView)
 		{
-			if (GetContentView(handler.PlatformView) is ContentView currentContentContainer)
+			if (handler?.PlatformView is UIScrollView uiScrollView)
 			{
-				currentContentContainer.SetNeedsLayout();
+				var fullContentSize = scrollView.PresentedContent?.DesiredSize ?? Size.Zero;
+				var viewportWidth = uiScrollView.Bounds.Width;
+				var viewportHeight = uiScrollView.Bounds.Height;
+				SetContentSizeForOrientation(uiScrollView, viewportWidth, viewportHeight, scrollView.Orientation, fullContentSize);
 			}
 		}
 
@@ -198,9 +201,12 @@ namespace Microsoft.Maui.Handlers
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
+				
 				var contentSize = internalArrange(rect);
-				var size = SetContentSizeForOrientation(platformScrollView, scrollView.Orientation, contentSize);
-				return size;
+				
+				SetContentSizeForOrientation(platformScrollView, platformScrollView.Bounds.Width, platformScrollView.Bounds.Height, scrollView.Orientation, contentSize);
+
+				return contentSize;
 			};
 		}
 
@@ -258,16 +264,19 @@ namespace Microsoft.Maui.Handlers
 			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
 			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
-			var crossPlatformSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var crossPlatformContentSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			// Add the padding back in for the final size
-			crossPlatformSize.Width += padding.HorizontalThickness;
-			crossPlatformSize.Height += padding.VerticalThickness;
+			crossPlatformContentSize.Width += padding.HorizontalThickness;
+			crossPlatformContentSize.Height += padding.VerticalThickness;
 
-			var size = SetContentSizeForOrientation(platformView, virtualView.Orientation, crossPlatformSize);
+			var viewportWidth = Math.Min(crossPlatformContentSize.Width, widthConstraint);
+			var viewportHeight = Math.Min(crossPlatformContentSize.Height, heightConstraint);
 
-			var finalWidth = ViewHandlerExtensions.ResolveConstraints(size.Width, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
-			var finalHeight = ViewHandlerExtensions.ResolveConstraints(size.Height, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
+			SetContentSizeForOrientation(platformView, widthConstraint, heightConstraint, virtualView.Orientation, crossPlatformContentSize);
+
+			var finalWidth = ViewHandlerExtensions.ResolveConstraints(viewportWidth, virtualView.Width, virtualView.MinimumWidth, virtualView.MaximumWidth);
+			var finalHeight = ViewHandlerExtensions.ResolveConstraints(viewportHeight, virtualView.Height, virtualView.MinimumHeight, virtualView.MaximumHeight);
 
 			return new Size(finalWidth, finalHeight);
 		}
@@ -304,27 +313,19 @@ namespace Microsoft.Maui.Handlers
 			return Math.Max(0, constraint - padding);
 		}
 
-		static Size SetContentSizeForOrientation(UIScrollView platformScrollView, ScrollOrientation orientation, Size crossPlatformSize)
+		static void SetContentSizeForOrientation(UIScrollView uiScrollView, double viewportWidth, double viewportHeight, ScrollOrientation orientation, Size contentSize)
 		{
-			CGRect scrollViewBounds = platformScrollView.Bounds;
-			var contentSize = AccountForOrientation(crossPlatformSize, scrollViewBounds.Width, scrollViewBounds.Height, orientation);
-			platformScrollView.ContentSize = contentSize;
-			return contentSize;
-		}
-
-		internal static Size AccountForOrientation(Size size, double widthConstraint, double heightConstraint, ScrollOrientation orientation)
-		{
-			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither && widthConstraint > 0)
+			if (orientation is ScrollOrientation.Vertical or ScrollOrientation.Neither)
 			{
-				size.Width = widthConstraint;
+				contentSize.Width = Math.Min(contentSize.Width, viewportWidth);
 			}
 
-			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither && heightConstraint > 0)
+			if (orientation is ScrollOrientation.Horizontal or ScrollOrientation.Neither)
 			{
-				size.Height = heightConstraint;
+				contentSize.Height = Math.Min(contentSize.Height, viewportHeight);
 			}
 
-			return size;
+			uiScrollView.ContentSize = contentSize;
 		}
 	}
 }
