@@ -105,6 +105,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+			Control?.Measure(availableSize);
+
 			if (Element is IContentView cv)
 			{
 				// If there's a border specified, include the thickness in our measurements
