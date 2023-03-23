@@ -11,12 +11,7 @@ namespace Controls.Sample.Converters
 
 		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
-			if (value is bool boolValue)
-			{
-				return boolValue ? ValueIfTrue : ValueIfFalse;
-			}
-
-			return ValueIfFalse;
+			return value is bool boolValue && boolValue ? ValueIfTrue : ValueIfFalse;
 		}
 
 		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
