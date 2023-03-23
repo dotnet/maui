@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		readonly Canvas _shadowCanvas;
 		SpriteVisual? _shadowVisual;
 		DropShadow? _dropShadow;
+		UI.Xaml.Shapes.Rectangle? _shadowHost;
 		WSize _shadowHostSize;
 		Path? _borderPath;
 
@@ -160,10 +161,8 @@ namespace Microsoft.Maui.Platform
 			if (_shadowCanvas == null)
 				return;
 
-			var shadowHost = _shadowCanvas.Children[0];
-
-			if (shadowHost != null)
-				ElementCompositionPreview.SetElementChildVisual(shadowHost, null);
+			if (_shadowHost is not null)
+				ElementCompositionPreview.SetElementChildVisual(_shadowHost, null);
 
 			if (_shadowCanvas.Children.Count > 0)
 				_shadowCanvas.Children.RemoveAt(0);
@@ -192,32 +191,22 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			double width = _shadowHostSize.Width;
-
-			if (width <= 0)
-				width = (float)ActualWidth;
-
 			double height = _shadowHostSize.Height;
-
-			if (height <= 0)
-				height = (float)ActualHeight;
-
-			if (height <= 0 && width <= 0)
-				return;
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
-			var shadowHost = new UI.Xaml.Shapes.Rectangle()
+			_shadowHost = new UI.Xaml.Shapes.Rectangle()
 			{
 				Fill = new SolidColorBrush(UI.Colors.Transparent),
 				Width = width,
 				Height = height
 			};
 
-			Canvas.SetLeft(shadowHost, offset.X);
-			Canvas.SetTop(shadowHost, offset.Y);
+			Canvas.SetLeft(_shadowHost, offset.X);
+			Canvas.SetTop(_shadowHost, offset.Y);
 
-			_shadowCanvas.Children.Insert(0, shadowHost);
+			_shadowCanvas.Children.Insert(0, _shadowHost);
 
 			var hostVisual = ElementCompositionPreview.GetElementVisual(_shadowCanvas);
 			var compositor = hostVisual.Compositor;
@@ -232,7 +221,7 @@ namespace Microsoft.Maui.Platform
 
 			_shadowVisual.Shadow = _dropShadow;
 
-			ElementCompositionPreview.SetElementChildVisual(shadowHost, _shadowVisual);
+			ElementCompositionPreview.SetElementChildVisual(_shadowHost, _shadowVisual);
 		}
 
 		void UpdateShadow()
@@ -245,21 +234,30 @@ namespace Microsoft.Maui.Platform
 
 		void UpdateShadowSize()
 		{
-			if (_shadowVisual != null)
+			if (Child is FrameworkElement frameworkElement)
 			{
-				if (Child is FrameworkElement frameworkElement)
+				float width = (float)_shadowHostSize.Width;
+
+				if (width <= 0)
+					width = (float)frameworkElement.ActualWidth;
+
+				float height = (float)_shadowHostSize.Height;
+
+				if (height <= 0)
+					height = (float)frameworkElement.ActualHeight;
+
+				if (_shadowVisual is not null)
 				{
-					float width = (float)_shadowHostSize.Width;
-
-					if (width <= 0)
-						width = (float)frameworkElement.ActualWidth;
-
-					float height = (float)_shadowHostSize.Height;
-
-					if (height <= 0)
-						height = (float)frameworkElement.ActualHeight;
-
 					_shadowVisual.Size = new Vector2(width, height);
+				}
+
+				if (_shadowHost is not null)
+				{
+					_shadowHost.Width = width;
+					_shadowHost.Height = height;
+
+					Canvas.SetLeft(_shadowHost, Child.ActualOffset.X);
+					Canvas.SetTop(_shadowHost, Child.ActualOffset.Y);
 				}
 			}
 		}
