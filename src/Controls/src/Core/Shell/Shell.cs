@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
-	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IVisualTreeElement
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => GetVisiblePage() as Page;
@@ -393,16 +393,6 @@ namespace Microsoft.Maui.Controls
 			// the flyout behavior
 			if (GetVisiblePage() != null)
 				observer.OnFlyoutBehaviorChanged(GetEffectiveFlyoutBehavior());
-		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
-		{
-			if (GetTitleView(this) is View view)
-			{
-				return new List<Element>(LogicalChildrenInternal) { view }.AsReadOnly();
-			}
-
-			return LogicalChildrenInternal;
 		}
 
 		void UpdateToolbarAppearanceFeatures(Element pivot, ShellAppearance appearance)
@@ -1324,17 +1314,18 @@ namespace Microsoft.Maui.Controls
 
 			var oldView = (View)oldValue;
 			var newView = (View)newValue;
+			var shell = bindable as Shell;
 
 			if (oldView != null)
 			{
-				VisualDiagnostics.OnChildRemoved((Page)bindable, oldView, ((IVisualTreeElement)bindable).GetVisualChildren().IndexOf(oldView));
+				shell?.RemoveLogicalChild(oldView);
 				oldView.Parent = null;
 			}
 
 			if (newView != null)
 			{
 				newView.Parent = owner;
-				VisualDiagnostics.OnChildAdded((Page)bindable, newView);
+				shell?.AddLogicalChild(newView);
 			}
 		}
 
