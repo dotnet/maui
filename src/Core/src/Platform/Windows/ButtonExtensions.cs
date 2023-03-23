@@ -109,19 +109,24 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateTextColor(this ButtonBase platformButton, Color textColor)
 		{
+			platformButton.UpdateTextColor(textColor, TextColorResourceKeys);
+		}
+
+		internal static void UpdateTextColor(this ButtonBase platformButton, Color textColor, string[] resourceKeys)
+		{
 			var brush = textColor?.ToPlatform();
 
 			if (brush is null)
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				platformButton.Resources.RemoveKeys(TextColorResourceKeys);
+				platformButton.Resources.RemoveKeys(resourceKeys);
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.ClearValue(Button.ForegroundProperty);
 			}
 			else
 			{
 				// Windows.Foundation.UniversalApiContract < 5
-				platformButton.Resources.SetValueForAllKey(TextColorResourceKeys, brush);
+				platformButton.Resources.SetValueForAllKey(resourceKeys, brush);
 				// Windows.Foundation.UniversalApiContract >= 5
 				platformButton.Foreground = brush;
 			}

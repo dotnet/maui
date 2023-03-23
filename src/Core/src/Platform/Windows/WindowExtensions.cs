@@ -175,6 +175,9 @@ namespace Microsoft.Maui.Platform
 					return window;
 			}
 
+			if (platformWindow is MauiWinUIWindow mauiWindow)
+				return mauiWindow?.Window;
+
 			return null;
 		}
 
@@ -196,6 +199,27 @@ namespace Microsoft.Maui.Platform
 				return 1.0f;
 
 			return PlatformMethods.GetDpiForWindow(hwnd) / DeviceDisplay.BaseLogicalDpi;
+		}
+
+		internal static void Minimize(this UI.Xaml.Window platformWindow)
+		{
+			PlatformMethods
+				.ShowWindow(platformWindow.GetWindowHandle(),
+							PlatformMethods.ShowWindowFlags.SW_MINIMIZE);
+		}
+
+		internal static void Maximize(this UI.Xaml.Window platformWindow)
+		{
+			PlatformMethods
+				.ShowWindow(platformWindow.GetWindowHandle(),
+							PlatformMethods.ShowWindowFlags.SW_MAXIMIZE);
+		}
+
+		internal static void Restore(this UI.Xaml.Window platformWindow)
+		{
+			PlatformMethods
+				.ShowWindow(platformWindow.GetWindowHandle(),
+							PlatformMethods.ShowWindowFlags.SW_RESTORE);
 		}
 
 		public static UI.Windowing.AppWindow? GetAppWindow(this UI.Xaml.Window platformWindow)
