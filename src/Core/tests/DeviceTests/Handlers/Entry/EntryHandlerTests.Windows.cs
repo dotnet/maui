@@ -1,4 +1,4 @@
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
@@ -187,8 +187,5 @@ namespace Microsoft.Maui.DeviceTests
 				ip?.Invoke();
 			});
 		}
-		
-		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).IsTextPredictionEnabled;
 	}
 }
