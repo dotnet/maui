@@ -968,7 +968,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage { Title = "Page 2", Content = new VerticalStackLayout { new Label() } };
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+					}
+				};
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
