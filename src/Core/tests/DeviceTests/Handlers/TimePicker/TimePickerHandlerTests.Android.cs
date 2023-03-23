@@ -62,7 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					if (clicked && mauiTimePicker is not null)
 						mauiTimePicker.ShowPicker.Invoke();
-					
+
 					// Wait to complete the Dialog animation and invoke the OnDialogShown event
 					await Task.Delay(100);
 					Assert.True(timePicker.IsFocused);
