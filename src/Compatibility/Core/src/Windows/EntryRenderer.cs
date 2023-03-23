@@ -260,7 +260,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			Control.ClearButtonVisible = Element.ClearButtonVisibility == ClearButtonVisibility.WhileEditing;
 		}
 
-		[PortHandler]
 		void UpdateInputScope()
 		{
 			Entry entry = Element;
