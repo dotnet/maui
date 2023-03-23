@@ -49,7 +49,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			Assert.True(datePicker.IsFocused);
+			var handler = await CreateHandlerAsync(datePicker);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var mauiDatePicker = handler.PlatformView;
+
+					if (clicked && mauiDatePicker is not null)
+						mauiDatePicker.ShowPicker.Invoke();
+
+					// Wait to complete the Dialog animation and invoke the OnDialogShown event
+					await Task.Delay(100);
+					Assert.True(datePicker.IsFocused);
+
+					if (clicked && mauiDatePicker is not null)
+						mauiDatePicker.HidePicker.Invoke();
+				});
+			});
 		}
 
 		[Fact(DisplayName = "Minimum Date Initializes Correctly")]

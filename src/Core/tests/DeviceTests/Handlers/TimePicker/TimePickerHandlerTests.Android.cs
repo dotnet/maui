@@ -52,7 +52,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			Assert.True(timePicker.IsFocused);
+			var handler = await CreateHandlerAsync(timePicker);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await handler.PlatformView.AttachAndRun(async () =>
+				{
+					var mauiTimePicker = handler.PlatformView;
+
+					if (clicked && mauiTimePicker is not null)
+						mauiTimePicker.ShowPicker.Invoke();
+					
+					// Wait to complete the Dialog animation and invoke the OnDialogShown event
+					await Task.Delay(100);
+					Assert.True(timePicker.IsFocused);
+
+					if (clicked && mauiTimePicker is not null)
+						mauiTimePicker.HidePicker.Invoke();
+				});
+			});
 		}
 
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
