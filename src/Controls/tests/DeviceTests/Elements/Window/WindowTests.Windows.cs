@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
@@ -133,6 +134,42 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				}
 			});
+		}
+
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		public class WindowTestsRunInNewWindowCollection : ControlsHandlerTestBase
+		{
+			[Fact]
+			public async Task MinimizeAndThenMaximizingWorks()
+			{
+				var window = new Window(new ContentPage());
+
+				int activated = 0;
+				int deactivated = 0;
+				int resumed = 0;
+
+				window.Activated += (_, _) => activated++;
+				window.Deactivated += (_, _) => deactivated++;
+				window.Resumed += (_, _) => resumed++;
+
+				await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+				{
+					var platformWindow = window.Handler.PlatformView as UI.Xaml.Window;
+
+					await Task.Yield();
+
+					for (int i = 0; i < 2; i++)
+					{
+						platformWindow.Restore();
+						await Task.Yield();
+						platformWindow.Minimize();
+					}
+				});
+
+				Assert.Equal(2, activated);
+				Assert.Equal(1, resumed);
+				Assert.Equal(2, deactivated);
+			}
 		}
 	}
 }
