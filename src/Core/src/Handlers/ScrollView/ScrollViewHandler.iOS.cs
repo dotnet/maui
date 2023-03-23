@@ -201,9 +201,9 @@ namespace Microsoft.Maui.Handlers
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-				
+
 				var contentSize = internalArrange(rect);
-				
+
 				SetContentSizeForOrientation(platformScrollView, platformScrollView.Bounds.Width, platformScrollView.Bounds.Height, scrollView.Orientation, contentSize);
 
 				return contentSize;
