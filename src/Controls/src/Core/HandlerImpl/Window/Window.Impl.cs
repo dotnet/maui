@@ -616,6 +616,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (oldPage != null)
 			{
+				_menuBarTracker.Target = null;
 				InternalChildren.Remove(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
