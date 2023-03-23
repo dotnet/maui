@@ -576,7 +576,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				_child.PlatformView.Layout(l, t, r, b);
+				_child.PlatformView.Layout(0, 0, r - l, b - t);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
