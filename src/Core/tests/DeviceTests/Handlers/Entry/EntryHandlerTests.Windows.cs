@@ -187,7 +187,7 @@ namespace Microsoft.Maui.DeviceTests
 				ip?.Invoke();
 			});
 		}
-		
+
 		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).IsTextPredictionEnabled;
 	}
