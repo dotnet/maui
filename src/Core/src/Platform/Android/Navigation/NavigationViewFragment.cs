@@ -78,6 +78,14 @@ namespace Microsoft.Maui.Platform
 			base.OnResume();
 		}
 
+		public override void OnDestroy()
+		{
+			_currentView = null;
+			_fragmentContainerView = null;
+
+			base.OnDestroy();
+		}
+
 		public override Animation OnCreateAnimation(int transit, bool enter, int nextAnim)
 		{
 			int id = 0;

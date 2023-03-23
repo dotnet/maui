@@ -101,13 +101,11 @@ namespace Microsoft.Maui.Platform
 			if (insets is null)
 				return false;
 
-			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
 			var size = insets.GetInsets(WindowInsetsCompat.Type.Ime());
+			var isVisible = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+			var hasSize = size.Top > 0 || size.Bottom > 0;
 
-			if (!result && size.Top == 0 && size.Bottom == 0)
-				return false;
-
-			return result && (size.Top > 0 || size.Bottom > 0);
+			return hasSize || isVisible;
 		}
 	}
 }

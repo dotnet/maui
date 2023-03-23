@@ -7,6 +7,7 @@ using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Scrolling is now handled by KeyboardAutoManagerScroll.")]
 	internal class KeyboardInsetTracker : IDisposable
 	{
 		readonly Func<UIWindow> _fetchWindow;
