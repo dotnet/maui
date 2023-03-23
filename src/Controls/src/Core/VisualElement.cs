@@ -278,11 +278,14 @@ namespace Microsoft.Maui.Controls
 		WeakBackgroundChangedProxy _backgroundProxy;
 		WeakClipChangedProxy _clipProxy;
 		EventHandler _backgroundChanged, _clipChanged;
+		WeakNotifyPropertyChangedProxy _shadowProxy = null;
+		PropertyChangedEventHandler _shadowChanged;
 
 		~VisualElement()
 		{
 			_clipProxy?.Unsubscribe();
 			_backgroundProxy?.Unsubscribe();
+			_shadowProxy?.Unsubscribe();
 		}
 
 		void NotifyBackgroundChanges()
