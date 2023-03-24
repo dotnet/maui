@@ -164,6 +164,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 
+#if !WINDOWS
 						if (window is Window controlsWindow)
 						{
 							if (!controlsWindow.IsActivated)
@@ -174,6 +175,8 @@ namespace Microsoft.Maui.DeviceTests
 							controlsWindow = null;
 							window.Activated();
 						}
+#endif
+
 #if WINDOWS
 						await Task.Delay(10);
 #endif
@@ -187,6 +190,7 @@ namespace Microsoft.Maui.DeviceTests
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
 
+#if !WINDOWS
 						bool isActivated = controlsWindow?.IsActivated ?? false;
 						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
 
@@ -195,6 +199,8 @@ namespace Microsoft.Maui.DeviceTests
 
 						if (!isDestroyed)
 							window.Destroying();
+#endif
+
 					}, mauiContext);
 				}
 				finally

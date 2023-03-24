@@ -88,14 +88,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
-			if (Window is not null)
+			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
 			{
-				if (!Window.IsActivated)
+				if (Window is not null)
+				{
+					if (!Window.IsActivated)
+						_window.Activated();
+				}
+				else
+				{
 					_window.Activated();
-			}
-			else
-			{
-				_window.Activated();
+				}
 			}
 		}
 
