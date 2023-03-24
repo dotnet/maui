@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Internals
 				// reverse so that things go into the new stack in the same order
 				// null out to release memory that will likely never be needed again
 
-				if (ReferenceEquals(_inner, null))
+				if (_inner is null)
 				{
 					_pushStack = new Lazy<List<Page>>(() => new List<Page>());
 					_modalStack = new Lazy<NavigatingStepRequestList>(() => new NavigatingStepRequestList());
