@@ -53,9 +53,6 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
-    <_MauiRequiredImplicitPackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" PrivateAssets="all" />
-  </ItemGroup>
   <!-- Always install the required dependecies, such as build tools for the SDK itself -->
   <ItemGroup>
     <_MauiRequiredImplicitPackageReference Remove="@(PackageReference)" />

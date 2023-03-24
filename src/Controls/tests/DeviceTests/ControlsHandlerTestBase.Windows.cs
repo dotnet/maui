@@ -40,10 +40,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					window.Handler.DisconnectHandler();
+					window.Handler?.DisconnectHandler();
 					await Task.Delay(10);
 					newWindow?.Close();
-					appStub.Handler.DisconnectHandler();
+					appStub.Handler?.DisconnectHandler();
 				}
 			});
 		}

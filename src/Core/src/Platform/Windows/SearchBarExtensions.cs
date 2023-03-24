@@ -147,5 +147,22 @@ namespace Microsoft.Maui.Platform
 
 			queryTextBox.UpdateInputScope(searchBar);
 		}
+
+		private static readonly string[] CancelButtonColorKeys =
+		{
+			"TextControlButtonForeground",
+			"TextControlButtonForegroundPointerOver",
+			"TextControlButtonForegroundPressed",
+		};
+
+		internal static void UpdateCancelButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
+
+			if (cancelButton is null)
+				return;
+
+			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
+		}
 	}
 }
