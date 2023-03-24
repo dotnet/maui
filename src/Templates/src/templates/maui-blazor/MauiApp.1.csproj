@@ -5,6 +5,14 @@
         <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
         <!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
         <!-- <TargetFrameworks>$(TargetFrameworks);DOTNET_TFM-tizen</TargetFrameworks> -->
+
+         <!-- Note for MacCatalyst:
+            The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
+            When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifer>.
+            The App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
+            either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
+         <!-- ex. <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+
         <OutputType>Exe</OutputType>
         <RootNamespace>MauiApp._1</RootNamespace>
         <UseMaui>true</UseMaui>
@@ -52,4 +60,41 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
     </ItemGroup>
 
+    <!-- Notes for Publishing on the Mac App Store:
+    1. For macOS it's possible to sign both the app bundle (EnableCodesigning=true) and the package (*.pkg) (EnablePackageSigning=true),
+       and these are signed separately and with different certificates.
+          CodesignKey: this is the signing key used for the app bundle
+          PackageSigningKey: this is the signing key used for the package
+    2. Publishing to the App Store requires signing both the app bundle and the package.
+          Must be 'Apple Distribution: ...' for the app bundle. Note that apps signed like this will not execute locally.
+          They have to be published to the App Store and then downloaded (Apple will resign the app with a different signing identity that allows for local execution).
+          Must be '3rd Party Mac Developer Installer: ...' for the pkg
+    3. Publishing outside of the App Store (i.e. only notarizing) requires:
+          Must be 'Developer ID Application: ...' for the app bundle
+          Must be 'Developer ID Installer: ...' for the pkg
+    4. During development, use the 'Apple Development: ...' signing key (typically to verify that the app works when is signed and entitlements are enforced).
+    5. Depending on the entitlements the app needs, a specific provisioning profile (CodesignProvision) might be needed.
+    6. UseHardenedRuntime must be set to true when app sandbox is enabled in Info.plist.
+    -->
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
+    <!--
+    <CodesignProvision>YOUR PROFILE NAME</CodesignProvision>
+    <CodesignKey>Apple Development: YOURNAME (*******)</CodesignKey>
+    -->
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+    <EnableCodeSigning>True</EnableCodeSigning>
+    <ProvisionType>Manual</ProvisionType>
+    <CreatePackage>true</CreatePackage>
+    <EnablePackageSigning>true</EnablePackageSigning>
+    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
+    <UseHardenedRuntime>true</UseHardenedRuntime>
+    <!--
+    <CodesignKey>Apple Development: YOURNAME (*******)</CodesignKey>
+    <CodesignProvision>YOUR PROFILE NAME</CodesignProvision>
+    <PackageSigningKey>3rd Party Mac Developer Installer: YOURNAME (*******)</PackageSigningKey>
+    -->
+  </PropertyGroup>
 </Project>

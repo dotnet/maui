@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+    <dict>
+        <!-- Enable this value to use broswer developer tools with Blazor.  while debugging in order to use Dev tools.-->
+        <!-- See https://learn.microsoft.com/en-us/aspnet/core/blazor/hybrid/developer-tools?view=aspnetcore-7.0&pivots=macos -->
+        <key>com.apple.security.get-task-allow</key>
+        <true/>
+    </dict>
+</plist>
