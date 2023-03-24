@@ -2,9 +2,19 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.ButtonPage"
+    xmlns:converters="clr-namespace:Controls.Sample.Converters"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:local="clr-namespace:Maui.Controls.Sample"
     Title="Button">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            <converters:BoolToCustomValueConverter 
+                x:Key="BoolToColorConverter"
+                ValueIfTrue="Green"
+                ValueIfFalse="Red"/>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Margin="12" Spacing="6">
@@ -46,6 +56,14 @@
                  <Button 
                      Text="Button"
                      BackgroundColor="{Binding ButtonBackground}" />
+                <Label
+                    Text="Changing BackgroundColor from Converter"
+                    Style="{StaticResource Headline}"/>
+                <CheckBox 
+                    IsChecked="{Binding ChangeButtonColor, Mode=TwoWay}"/>
+                <Button 
+                    Text="Button"
+                    BackgroundColor="{Binding ChangeButtonColor, Converter={StaticResource BoolToColorConverter}}" />
                 <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
