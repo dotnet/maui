@@ -15,7 +15,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
-internal static class KeyboardAutoManagerScroll
+public static class KeyboardAutoManagerScroll
 {
 	internal static bool IsCurrentlyScrolling;
 	static UIScrollView? LastScrollView;
@@ -38,7 +38,7 @@ internal static class KeyboardAutoManagerScroll
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
 
-	internal static void Connect()
+	public static void Connect()
 	{
 		if (TextFieldToken is not null)
 			return;
@@ -54,7 +54,7 @@ internal static class KeyboardAutoManagerScroll
 		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
 	}
 
-	internal static void Disconnect()
+	public static void Disconnect()
 	{
 		if (WillShowToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
