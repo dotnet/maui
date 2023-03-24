@@ -17,8 +17,6 @@ namespace Samples.Droid
 		protected override void OnCreate(Bundle bundle)
 		{
 			base.OnCreate(bundle);
-
-			Microsoft.Maui.ApplicationModel.Platform.Init(this, bundle);
 			Microsoft.Maui.ApplicationModel.Platform.ActivityStateChanged += Platform_ActivityStateChanged;
 		}
 

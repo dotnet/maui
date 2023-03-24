@@ -37,6 +37,8 @@
     <Compile Include="**\*.android.*.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <AndroidResource Include="Resources\xml\*.xml" />
     <PackageReference Include="Xamarin.AndroidX.Browser" />
+    <PackageReference Include="Xamarin.AndroidX.Activity" Version="1.6.1.1" />
+    <PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.0.1" />
     <PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" />
     <PackageReference Include="Xamarin.Google.Crypto.Tink.Android" />
   </ItemGroup>

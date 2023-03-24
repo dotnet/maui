@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Media;
 using Microsoft.Maui.Storage;
@@ -78,6 +79,8 @@ namespace Samples.ViewModel
 		{
 			try
 			{
+				if(await Permissions.RequestAsync<Permissions.Camera>() != PermissionStatus.Granted)
+					return;
 				var photo = await MediaPicker.CapturePhotoAsync();
 
 				await LoadPhotoAsync(photo);

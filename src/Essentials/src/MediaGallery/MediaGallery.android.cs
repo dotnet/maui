@@ -9,6 +9,9 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Provider;
 using Android.Webkit;
+using AndroidX.Activity.Result;
+using AndroidX.Activity.Result.Contract;
+using AndroidX.Core.App;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 using Environment = Android.OS.Environment;
@@ -26,8 +29,7 @@ namespace Microsoft.Maui.Media
 {
 	partial class MediaGalleryImplementation : IMediaGallery
 	{
-		static TaskCompletionSource<(Intent, Result)> TcsPick;
-		static TaskCompletionSource<(Intent, Result)> TcsCamera;
+		static TaskCompletionSource<ActivityResultContractResult> TcsPick;
 
 		public bool IsSupported => OperatingSystem.IsAndroidVersionAtLeast(21);
 
@@ -39,97 +41,54 @@ namespace Microsoft.Maui.Media
 			return PlatformUtils.IsIntentSupported(intent);
 		}
 
-		public async Task<IEnumerable<MediaFileResult>> PlatformCaptureAsync(MediaFileType type, CancellationToken token = default)
-		{
-			token.ThrowIfCancellationRequested();
-			Intent intent = null;
-			Uri outputUri = null;
-
-			try
-			{
-				TcsCamera = new TaskCompletionSource<(Intent, Result)>(TaskCreationOptions.RunContinuationsAsynchronously);
-				intent = GetCameraIntent(type);
-
-				var fileName = $"{GetNewImageName()}.jpg";
-				var tempFilePath = GetFilePath(fileName);
-				using var file = new File(tempFilePath);
-				if (!file.Exists())
-					file.CreateNewFile();
-				outputUri = FileProvider.GetUriForFile(file);
-				intent.PutExtra(MediaStore.ExtraOutput, outputUri);
-
-				CancelTaskIfRequested(token, TcsCamera);
-
-				StartActivity(intent, PlatformUtils.requestCodeMediaCapture, token, TcsCamera);
-
-				CancelTaskIfRequested(token, TcsCamera, false);
-				var result = await TcsCamera.Task.ConfigureAwait(false);
-				if (result.Item2 == Result.Ok)
-					return new[] { new MediaFileResult(fileName, outputUri, tempFilePath) };
-
-				outputUri?.Dispose();
-				return null;
-			}
-			catch
-			{
-				outputUri?.Dispose();
-				throw;
-			}
-			finally
-			{
-				intent?.Dispose();
-				intent = null;
-				TcsCamera = null;
-			}
-		}
-
-		public async Task<IEnumerable<MediaFileResult>> PlatformPickAsync(MediaPickRequest request, CancellationToken token = default)
-		{
-			token.ThrowIfCancellationRequested();
-			Intent intent = null;
-
-			try
-			{
-				TcsPick = new TaskCompletionSource<(Intent, Result)>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-				CancelTaskIfRequested(token, TcsPick, false);
-
-				intent = GetPickerIntent(request);
-
-				CancelTaskIfRequested(token, TcsPick);
-
-				StartActivity(intent, PlatformUtils.requestCodeMediaPicker, token, TcsPick);
-
-				CancelTaskIfRequested(token, TcsPick, false);
-				var result = await TcsPick.Task.ConfigureAwait(false);
-				return GetFilesFromIntent(result.Item1);
-			}
-			finally
-			{
-				intent?.Dispose();
-				intent = null;
-				TcsPick = null;
-			}
-		}
-
 		public MultiPickingBehaviour GetMultiPickingBehaviour()
 			=> ActionPickImagesIsSupported()
 				? MultiPickingBehaviour.Limit
 				: MultiPickingBehaviour.UnLimit;
 
-		public async Task PlatformSaveAsync(MediaFileType type, byte[] data, string fileName)
+		async Task<IEnumerable<MediaFileResult>> PlatformCaptureAsync(MediaFileType type, CancellationToken token = default)
+		{
+			string tempFilePath = string.Empty, fileName = string.Empty;
+			Uri outputUri = null;
+			var res = await StartIntentAsync(GetIntent, token);
+			return res.ResultCode == (int)Result.Ok && System.IO.File.Exists(tempFilePath)
+				?  new[] { new MediaFileResult(fileName, outputUri, tempFilePath) }
+				: null;
+
+			Intent GetIntent(Context context)
+			{
+				var intent = GetCameraIntent(type);
+
+				fileName = $"{GetNewImageName()}.jpg";
+				tempFilePath = GetFilePath(fileName);
+				using var file = new File(tempFilePath);
+				if (!file.Exists())
+					file.CreateNewFile();
+				outputUri = FileProvider.GetUriForFile(file);
+				intent.PutExtra(MediaStore.ExtraOutput, outputUri);
+				return intent;
+			}
+		}
+
+		async Task<IEnumerable<MediaFileResult>> PlatformPickAsync(MediaPickRequest request, CancellationToken token = default)
+		{
+			var res = await StartIntentAsync(_ => GetPickerIntent(request), token);
+			return GetFilesFromIntent(res.Intent);
+		}
+
+		async Task PlatformSaveAsync(MediaFileType type, byte[] data, string fileName)
 		{
 			using var ms = new MemoryStream(data);
 			await SaveAsync(type, ms, fileName).ConfigureAwait(false);
 		}
 
-		public async Task PlatformSaveAsync(MediaFileType type, string filePath)
+		async Task PlatformSaveAsync(MediaFileType type, string filePath)
 		{
 			await using var fileStream = System.IO.File.OpenRead(filePath);
 			await SaveAsync(type, fileStream, Path.GetFileName(filePath)).ConfigureAwait(false);
 		}
 
-		public async Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
+		async Task PlatformSaveAsync(MediaFileType type, Stream fileStream, string fileName)
 		{
 			var albumName = AppInfo.Name;
 
@@ -191,7 +150,39 @@ namespace Microsoft.Maui.Media
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 		}
+		
+		public async Task<ActivityResultContractResult> StartIntentAsync(Func<Context,Intent> getIntent, CancellationToken token = default)
+		{
+			token.ThrowIfCancellationRequested();
+			
+			try
+			{
+				TcsPick = new (TaskCreationOptions.RunContinuationsAsynchronously);
+				CancelTaskIfRequested(token, TcsPick, false);
 
+				if (token.CanBeCanceled)
+				{
+					token.Register(() =>
+					{
+						var tcs = TcsPick;
+						Platform.CurrentActivity?.FinishActivity(Platform.MediaPickerActivityLauncher!.GetHashCode());
+						tcs?.TrySetCanceled(token);
+					});
+				}
+
+				Platform.MediaPickerActivityLauncher?.Launch(new ActivityResultContractIntent(getIntent));
+
+				return await TcsPick.Task.ConfigureAwait(false);
+			}
+			finally
+			{
+				TcsPick = null;
+			}
+		}
+		
+		internal static void OnActivityResult(ActivityResultContractResult result)
+			=> TcsPick.TrySetResult(result);
+		
 		static Intent GetPickerIntent(MediaPickRequest request)
 		{
 #if ANDROID33_0_OR_GREATER
@@ -251,27 +242,13 @@ namespace Microsoft.Maui.Media
 				_ => MediaStore.ActionImageCapture,
 			});
 
-		static void CancelTaskIfRequested(CancellationToken token, TaskCompletionSource<(Intent, Result)> tcs, bool needThrow = true)
+		static void CancelTaskIfRequested(CancellationToken token, TaskCompletionSource<ActivityResultContractResult> tcs, bool needThrow = true)
 		{
 			if (!token.IsCancellationRequested)
 				return;
 			tcs?.TrySetCanceled(token);
 			if (needThrow)
 				token.ThrowIfCancellationRequested();
-		}
-
-		static void StartActivity(Intent intent, int requestCode, CancellationToken token, TaskCompletionSource<(Intent, Result)> tcs)
-		{
-			if (token.CanBeCanceled)
-			{
-				token.Register(() =>
-				{
-					Platform.CurrentActivity?.FinishActivity(requestCode);
-					tcs?.TrySetCanceled(token);
-				});
-			}
-
-			Platform.CurrentActivity?.StartActivityForResult(intent, requestCode);
 		}
 
 		static IEnumerable<MediaFileResult> GetFilesFromIntent(Intent intent)
@@ -324,6 +301,14 @@ namespace Microsoft.Maui.Media
 			{
 				return null;
 			}
+		}
+	}
+	
+	class MediaGalleryActivityResultCallback : CommonActivityResultCallback
+	{
+		internal MediaGalleryActivityResultCallback()
+			: base(MediaGalleryImplementation.OnActivityResult)
+		{
 		}
 	}
 }

@@ -37,6 +37,7 @@ Microsoft.Maui.Storage.MediaFileResult.Dispose() -> void
 Microsoft.Maui.Storage.MediaFileResult.Extension.get -> string?
 Microsoft.Maui.Storage.MediaFileResult.NameWithoutExtension.get -> string?
 Microsoft.Maui.Storage.MediaFileResult.Type.get -> Microsoft.Maui.Media.MediaFileType?
+static Microsoft.Maui.ApplicationModel.Platform.MediaPickerActivityLauncher -> AndroidX.Activity.Result.ActivityResultLauncher?
 static Microsoft.Maui.Media.MediaGallery.CaptureAsync(Microsoft.Maui.Media.MediaFileType type, System.Threading.CancellationToken token = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.Media.MediaFilesResult!>!
 static Microsoft.Maui.Media.MediaGallery.CheckCaptureSupport(Microsoft.Maui.Media.MediaFileType type) -> bool
 static Microsoft.Maui.Media.MediaGallery.Default.get -> Microsoft.Maui.Media.IMediaGallery!

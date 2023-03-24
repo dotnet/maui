@@ -3,7 +3,11 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Authentication;
-using Microsoft.Maui.Devices.Sensors;
+using Microsoft.Maui.Media;
+#if ANDROID
+using AndroidX.Activity.Result;
+using AndroidX.AppCompat.App;
+#endif
 
 namespace Microsoft.Maui.ApplicationModel
 {
@@ -29,12 +33,13 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		public static Android.Content.Context AppContext => Android.App.Application.Context;
 
+		public static ActivityResultLauncher? MediaPickerActivityLauncher;
+
 		// ActivityStateManager
 
 		/// <inheritdoc cref="IActivityStateManager.GetCurrentActivity"/>
 		public static Android.App.Activity? CurrentActivity =>
 			ActivityStateManager.Default.GetCurrentActivity();
-
 
 		/// <inheritdoc cref="IActivityStateManager.ActivityStateChanged"/>
 		public static event EventHandler<ActivityStateChangedEventArgs>? ActivityStateChanged
@@ -52,8 +57,16 @@ namespace Microsoft.Maui.ApplicationModel
 			ActivityStateManager.Default.Init(application);
 
 		/// <inheritdoc cref="IActivityStateManager.Init(Android.App.Activity, Android.OS.Bundle?)"/>
-		public static void Init(Android.App.Activity activity, Android.OS.Bundle? bundle) =>
+		public static void Init(Android.App.Activity activity, Android.OS.Bundle? bundle)
+		{
 			ActivityStateManager.Default.Init(activity, bundle);
+			if (activity is AppCompatActivity appCompatActivity)
+			{
+				MediaPickerActivityLauncher = appCompatActivity.RegisterForActivityResult(
+					new CommonActivityResultContract(), 
+					new MediaGalleryActivityResultCallback());	
+			}		
+		}
 
 		// Permissions
 

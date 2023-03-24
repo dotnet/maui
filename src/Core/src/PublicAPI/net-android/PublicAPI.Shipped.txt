@@ -3161,7 +3161,6 @@ virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.Connect
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.DisconnectHandler(TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetVirtualView(Microsoft.Maui.IView! view) -> void
 virtual Microsoft.Maui.ImageSourceService.LoadDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Widget.ImageView! imageView, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult?>!
-virtual Microsoft.Maui.MauiAppCompatActivity.AllowFragmentRestore.get -> bool
 virtual Microsoft.Maui.MauiViewGroup.InputTransparent.get -> bool
 virtual Microsoft.Maui.MauiViewGroup.InputTransparent.set -> void
 virtual Microsoft.Maui.MauiViewGroup.MeasureAndLayout(int widthMeasureSpec, int heightMeasureSpec, int l, int t, int r, int b) -> void
