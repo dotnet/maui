@@ -4,9 +4,9 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
-	public partial class ShadowPage
+	public partial class ShadowPlaygroundPage
 	{
-		public ShadowPage()
+		public ShadowPlaygroundPage()
 		{
 			InitializeComponent();
 			UpdateShadowOffset();
