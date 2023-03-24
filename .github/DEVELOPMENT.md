@@ -100,6 +100,15 @@ These are tests that will not run on a device. This is useful for testing device
 │   │   ├── Essentials.UnitTests
 ```
 
+### Integration Tests
+
+The Integration test project under `src/TestUtils/src/Microsoft.Maui.IntegrationTests` contains tests which build and/or run MAUI templates or other projects.
+
+These tests can be ran using the test explorer in VS, or from command line with `dotnet test`. Here's how to run an individual test with parameters from command line:
+
+```bash
+dotnet test src/TestUtils/src/Microsoft.Maui.IntegrationTests --logger "console;verbosity=diagnostic" --filter "Name=Build\(%22maui%22,%22net7.0%22,%22Debug%22,False\)"
+```
 
 ### Additional Cake Commands
 
