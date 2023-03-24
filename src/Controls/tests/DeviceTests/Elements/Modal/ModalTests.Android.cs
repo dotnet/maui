@@ -58,7 +58,10 @@ namespace Microsoft.Maui.DeviceTests
 							testEntry = entry;
 						}
 
-						await AssertionExtensions.HideKeyboardForView(testEntry);
+						// Ensure that the keyboard is closed before we start
+						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Ensure that the keyboard is closed before we start");
+
+						// determine the screen dimensions with no keyboard open
 						var rootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;
 						var modalOffsetY = modalPage.GetLocationOnScreen().Value.Y;
 						var originalModalPageSize = modalPage.GetBoundingBox();
@@ -82,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						Assert.True(offsetMatchesWhenKeyboardOpened, "Modal page has an invalid offset when open");
 
-						await AssertionExtensions.HideKeyboardForView(testEntry);
+						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Close Keyboard to see if sizes adjust back");
 
 						bool offsetMatchesWhenKeyboardClosed = await AssertionExtensions.Wait(() =>
 						{
