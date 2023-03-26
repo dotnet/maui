@@ -1,12 +1,12 @@
 using System;
 using Android.App;
-using Android.Content;
-using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
+using AndroidX.Lifecycle;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.LifecycleEvents.Android;
 
 namespace Microsoft.Maui
 {
@@ -23,6 +23,7 @@ namespace Microsoft.Maui
 		public override void OnCreate()
 		{
 			RegisterActivityLifecycleCallbacks(new ActivityLifecycleCallbacks());
+			ProcessLifecycleOwner.Get().Lifecycle.AddObserver(new LifecycleObserver(this));
 
 			var mauiApp = CreateMauiApp();
 
@@ -43,27 +44,6 @@ namespace Microsoft.Maui
 			base.OnCreate();
 		}
 
-		public override void OnLowMemory()
-		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationLowMemory>(del => del(this));
-
-			base.OnLowMemory();
-		}
-
-		public override void OnTrimMemory(TrimMemory level)
-		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationTrimMemory>(del => del(this, level));
-
-			base.OnTrimMemory(level);
-		}
-
-		public override void OnConfigurationChanged(Configuration newConfig)
-		{
-			Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnApplicationConfigurationChanged>(del => del(this, newConfig));
-
-			base.OnConfigurationChanged(newConfig);
-		}
-
 		public static MauiApplication Current { get; private set; } = null!;
 
 		public IServiceProvider Services { get; protected set; } = null!;
@@ -72,8 +52,11 @@ namespace Microsoft.Maui
 
 		public class ActivityLifecycleCallbacks : Java.Lang.Object, IActivityLifecycleCallbacks
 		{
-			public void OnActivityCreated(Activity activity, Bundle? savedInstanceState) =>
+			public void OnActivityCreated(Activity activity, Bundle? savedInstanceState)
+			{
+				activity.RegisterComponentCallbacks(new ActivityComponentCallbacks(activity));
 				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnCreate>(del => del(activity, savedInstanceState));
+			}
 
 			public void OnActivityStarted(Activity activity) =>
 				Current.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnStart>(del => del(activity));

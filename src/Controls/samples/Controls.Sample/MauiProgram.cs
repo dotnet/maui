@@ -188,6 +188,7 @@ namespace Maui.Controls.Sample
 						.OnActivityResult((a, b, c, d) => LogEvent(nameof(AndroidLifecycle.OnActivityResult), b.ToString()))
 						.OnBackPressed((a) => LogEvent(nameof(AndroidLifecycle.OnBackPressed)) && false)
 						.OnConfigurationChanged((a, b) => LogEvent(nameof(AndroidLifecycle.OnConfigurationChanged)))
+						.OnApplicationLowMemory((a)=> LogEvent(nameof(AndroidLifecycle.OnApplicationLowMemory)))
 						.OnCreate((a, b) => LogEvent(nameof(AndroidLifecycle.OnCreate)))
 						.OnDestroy((a) => LogEvent(nameof(AndroidLifecycle.OnDestroy)))
 						.OnNewIntent((a, b) => LogEvent(nameof(AndroidLifecycle.OnNewIntent)))
@@ -200,7 +201,11 @@ namespace Maui.Controls.Sample
 						.OnResume((a) => LogEvent(nameof(AndroidLifecycle.OnResume)))
 						.OnSaveInstanceState((a, b) => LogEvent(nameof(AndroidLifecycle.OnSaveInstanceState)))
 						.OnStart((a) => LogEvent(nameof(AndroidLifecycle.OnStart)))
-						.OnStop((a) => LogEvent(nameof(AndroidLifecycle.OnStop))));
+						.OnStop((a) => LogEvent(nameof(AndroidLifecycle.OnStop)))
+						.OnApplicationStart((a) => LogEvent(nameof(AndroidLifecycle.OnApplicationStart)))
+						.OnApplicationResume((a) => LogEvent(nameof(AndroidLifecycle.OnApplicationResume)))
+						.OnApplicationPause((a) => LogEvent(nameof(AndroidLifecycle.OnApplicationPause)))
+						.OnApplicationStop((a) => LogEvent(nameof(AndroidLifecycle.OnApplicationStop))));
 
 					// Add some cool features/things
 					var shouldPreventBack = 1;

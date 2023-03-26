@@ -11,9 +11,16 @@ namespace Microsoft.Maui.LifecycleEvents
 		// Events called by the Application
 		public delegate void OnApplicationCreating(Application application);
 		public delegate void OnApplicationCreate(Application application);
+		public delegate void OnApplicationStart(Application application);
+		public delegate void OnApplicationResume(Application application);
+		public delegate void OnApplicationPause(Application application);
+		public delegate void OnApplicationStop(Application application);
+
+		// Events called by IComponentCallbacks2
 		public delegate void OnApplicationLowMemory(Application application);
 		public delegate void OnApplicationTrimMemory(Application application, TrimMemory level);
 		public delegate void OnApplicationConfigurationChanged(Application application, Configuration newConfig);
+		public delegate void OnConfigurationChanged(Activity activity, Configuration newConfig);
 
 		// Events called by the ActivityLifecycleCallbacks
 		public delegate void OnCreate(Activity activity, Bundle? savedInstanceState);
@@ -32,7 +39,6 @@ namespace Microsoft.Maui.LifecycleEvents
 		// Events called by Activity overrides (calling base is optional)
 		public delegate void OnActivityResult(Activity activity, int requestCode, Result resultCode, Intent? data);
 		public delegate bool OnBackPressed(Activity activity);
-		public delegate void OnConfigurationChanged(Activity activity, Configuration newConfig);
 		public delegate void OnNewIntent(Activity activity, Intent? intent);
 		public delegate void OnRequestPermissionsResult(Activity activity, int requestCode, string[] permissions, Permission[] grantResults);
 		public delegate void OnRestoreInstanceState(Activity activity, Bundle savedInstanceState);

@@ -1535,15 +1535,6 @@ Microsoft.Maui.LockableObservableListWrapper.this[int index].set -> void
 Microsoft.Maui.MauiAppCompatActivity
 Microsoft.Maui.MauiAppCompatActivity.MauiAppCompatActivity() -> void
 Microsoft.Maui.MauiApplication
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.ActivityLifecycleCallbacks() -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityCreated(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityDestroyed(Android.App.Activity! activity) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityPaused(Android.App.Activity! activity) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityResumed(Android.App.Activity! activity) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivitySaveInstanceState(Android.App.Activity! activity, Android.OS.Bundle! outState) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStarted(Android.App.Activity! activity) -> void
-Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStopped(Android.App.Activity! activity) -> void
 Microsoft.Maui.MauiApplication.Application.get -> Microsoft.Maui.IApplication!
 Microsoft.Maui.MauiApplication.Application.set -> void
 Microsoft.Maui.MauiApplication.MauiApplication(nint handle, Android.Runtime.JniHandleOwnership ownership) -> void
@@ -2217,7 +2208,6 @@ override Microsoft.Maui.Layouts.VerticalStackLayoutManager.ArrangeChildren(Micro
 override Microsoft.Maui.Layouts.VerticalStackLayoutManager.Measure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.MauiAppCompatActivity.OnActivityResult(int requestCode, Android.App.Result resultCode, Android.Content.Intent? data) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnBackPressed() -> void
-override Microsoft.Maui.MauiAppCompatActivity.OnConfigurationChanged(Android.Content.Res.Configuration! newConfig) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnNewIntent(Android.Content.Intent? intent) -> void
@@ -2226,10 +2216,7 @@ override Microsoft.Maui.MauiAppCompatActivity.OnPostResume() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnRequestPermissionsResult(int requestCode, string![]! permissions, Android.Content.PM.Permission[]! grantResults) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnRestart() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnRestoreInstanceState(Android.OS.Bundle! savedInstanceState) -> void
-override Microsoft.Maui.MauiApplication.OnConfigurationChanged(Android.Content.Res.Configuration! newConfig) -> void
 override Microsoft.Maui.MauiApplication.OnCreate() -> void
-override Microsoft.Maui.MauiApplication.OnLowMemory() -> void
-override Microsoft.Maui.MauiApplication.OnTrimMemory(Android.Content.TrimMemory level) -> void
 override Microsoft.Maui.MauiViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.MauiViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.MauiViewGroup.ThresholdClass.get -> nint

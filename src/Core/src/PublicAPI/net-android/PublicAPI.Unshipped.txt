@@ -3,6 +3,19 @@ Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationPause
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationResume
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStart
+Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStop
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.ActivityLifecycleCallbacks() -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityCreated(Android.App.Activity! activity, Android.OS.Bundle? savedInstanceState) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityDestroyed(Android.App.Activity! activity) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityPaused(Android.App.Activity! activity) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityResumed(Android.App.Activity! activity) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivitySaveInstanceState(Android.App.Activity! activity, Android.OS.Bundle! outState) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStarted(Android.App.Activity! activity) -> void
+Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStopped(Android.App.Activity! activity) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
@@ -28,6 +41,10 @@ Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateNightMode(this Microsoft.Maui.IApplication! application) -> void
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationPause(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationPause! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationResume(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationResume! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationStart(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStart! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationStop(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStop! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
 static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
