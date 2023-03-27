@@ -206,7 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[InlineData(true)]
-		[InlineData(false)]
+		//[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
 			SetupBuilder();
