@@ -8,8 +8,12 @@
         <StackLayout 
             Margin="12" 
             Spacing="12">
-          <Border
-                StrokeThickness="20"
+            <Slider
+                x:Name="BorderWidthSlider"
+                Minimum="1"
+                Maximum="40"/>
+            <Border
+                StrokeThickness="{Binding Value, Source={x:Reference BorderWidthSlider}}"
                 Stroke="Silver"
                 Background="White"
                 Margin="0"

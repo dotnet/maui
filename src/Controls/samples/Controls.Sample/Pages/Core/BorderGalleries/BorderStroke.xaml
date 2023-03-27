@@ -4,6 +4,15 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.BorderStroke"
     Title="Border Stroke options">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Border">
+                <Setter Property="Margin" Value="0, 6" />
+            </Style>
+            
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ContentPage.Content>
         <ScrollView>
             <VerticalStackLayout

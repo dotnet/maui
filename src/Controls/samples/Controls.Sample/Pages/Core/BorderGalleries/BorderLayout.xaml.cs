@@ -8,5 +8,12 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 		}
+
+		protected override void OnAppearing()
+		{
+			base.OnAppearing();
+
+			BorderWidthSlider.Value = 4;
+		}
 	}
 }
