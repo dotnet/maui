@@ -12,6 +12,8 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- Do not include any assemblies from this project as we will do it manually -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- ILRepack this assembly and add a strong name and version -->
+    <ILRepackThisAssembly>true</ILRepackThisAssembly>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,13 +25,11 @@
     <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
-    <PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
   </ItemGroup>
 
   <Import Project="ResizetizerPackages.projitems" />
 
   <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
-  <Target Name="ILRepackThisAssembly" BeforeTargets="CopyFilesToOutputDirectory" DependsOnTargets="ILRepack" />
 
   <ItemGroup>
     <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" />

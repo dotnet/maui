@@ -21,7 +21,6 @@
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
-		<PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -33,7 +32,7 @@
 	<ItemGroup>
 		<None Include="$(OutputPath)Mono.Cecil.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="$(OutputPath)System.CodeDom.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="$(OutputPath)ILRepacked\$(AssemblyName).*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(OutputPath)ILRepacked\*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
@@ -61,23 +60,22 @@
 		<Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
 	</Target>
 
-	<ItemGroup>
-		<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Graphics.dll" />
-		<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Essentials.dll" />
-		<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.dll" />
-		<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Controls.dll" />
-		<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Controls.Xaml.dll" />
-	</ItemGroup>
-
 	<Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
 	<Target Name="ILRepackThisAssemblyDependencies">
 		<PropertyGroup>
-			<ILRepackPrimaryAssemblyOutput>$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackPrimaryAssemblyOutput>
+			<ILRepackAssemblyOutput>$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackAssemblyOutput>
 		</PropertyGroup>
+		<ItemGroup>
+			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Graphics.dll" />
+			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Essentials.dll" />
+			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.dll" />
+			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Controls.dll" />
+			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Controls.Xaml.dll" />
+		</ItemGroup>
 	</Target>
 	<Target Name="ILRepackThisAssembly" AfterTargets="Build" DependsOnTargets="ILRepackThisAssemblyDependencies;ILRepack">
 		<ItemGroup>
-			<FileWrites Include="$(ILRepackPrimaryAssemblyOutput)" />
+			<FileWrites Include="$(ILRepackAssemblyOutput)" />
 		</ItemGroup>
 	</Target>
 

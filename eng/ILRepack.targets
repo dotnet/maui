@@ -1,10 +1,14 @@
 <Project>
 
+	<ItemGroup>
+		<PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
+	</ItemGroup>
+
 	<Target Name="_ILRepackDependencies">
 
 		<PropertyGroup>
 			<ILRepackPrimaryAssembly Condition="'$(ILRepackPrimaryAssembly)' == ''">$(IntermediateOutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
-			<ILRepackPrimaryAssemblyOutput Condition="'$(ILRepackPrimaryAssemblyOutput)' == ''">$(ILRepackPrimaryAssembly)</ILRepackPrimaryAssemblyOutput>
+			<ILRepackOutputAssembly Condition="'$(ILRepackOutputAssembly)' == ''">$(ILRepackPrimaryAssembly)</ILRepackOutputAssembly>
 		</PropertyGroup>
 
 	</Target>
@@ -12,20 +16,27 @@
 	<Target
 		Name="_ILRepack"
 		Inputs="$(MSBuildAllProjects);@(ILRepackInputAssemblies);@(ILRepackPrimaryAssembly)"
-		Outputs="$(IntermediateOutputPath)ILRepacker.stamp;$(ILRepackPrimaryAssemblyOutput)">
+		Outputs="$(IntermediateOutputPath)ILRepacker.stamp;$(ILRepackOutputAssembly)">
 
 		<ItemGroup>
+			<_ILRepackOutputAssembly Include="$(ILRepackOutputAssembly)" />
+			<_ILRepackOutputAssemblyPdb Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
+			<_ILRepackOutputAssemblyPath Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)')" />
 			<_ILRepackInputAssembliesThatExist Include="@(ILRepackInputAssemblies)" Condition="Exists('%(Identity)')" />
 			<_NetstandardPath Include="@(ReferencePath->'%(RootDir)%(Directory)')" Condition="'%(FileName)%(Extension)' == 'netstandard.dll'" />
 		</ItemGroup>
 		<PropertyGroup>
-			<ManagedRuntime Condition=" '$(ManagedRuntime)' == '' And '$(OS)' != 'Windows_NT' ">mono</ManagedRuntime>
-			<ManagedRuntimeArgs Condition=" '$(ManagedRuntimeArgs)' == '' And '$(ManagedRuntime)' == 'mono' ">--debug=casts</ManagedRuntimeArgs>
+			<_ILRepackOutputAssemblyDir>@(_ILRepackOutputAssemblyPath)</_ILRepackOutputAssemblyDir>
 			<_NetstandardDir>@(_NetstandardPath)</_NetstandardDir>
 		</PropertyGroup>
 
 		<PropertyGroup>
-			<_ILRepackArgs>/out:"$(MSBuildProjectDirectory)/$(ILRepackPrimaryAssemblyOutput)"</_ILRepackArgs>
+			<_ILRepackPerformRepack Condition="'$(OS)' == 'Windows_NT'">true</_ILRepackPerformRepack>
+			<!-- <_ILRepackPerformRepack>false</_ILRepackPerformRepack> -->
+		</PropertyGroup>
+
+		<PropertyGroup>
+			<_ILRepackArgs>/out:"$(MSBuildProjectDirectory)/$(ILRepackOutputAssembly)"</_ILRepackArgs>
 			<_ILRepackArgs>$(_ILRepackArgs) /ver:$(FileVersion)</_ILRepackArgs>
 			<_ILRepackArgs>$(_ILRepackArgs) /internalize</_ILRepackArgs>
 			<_ILRepackArgs>$(_ILRepackArgs) /keyfile:"$(StrongNamerKeyFile)"</_ILRepackArgs>
@@ -34,11 +45,22 @@
 			<_ILRepackArgs>$(_ILRepackArgs) /lib:"$(_NetstandardDir.TrimEnd('\'))"</_ILRepackArgs>
 		</PropertyGroup>
 
-		<Exec Command="$(ManagedRuntime) $(ManagedRuntimeArgs) &quot;$(ILRepack)&quot; $(_ILRepackArgs)" WorkingDirectory="$(TargetDir)" />
+		<Exec
+			Command="$(ManagedRuntime) $(ManagedRuntimeArgs) &quot;$(ILRepack)&quot; $(_ILRepackArgs)"
+			WorkingDirectory="$(TargetDir)"
+			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
+
+		<Copy
+			SourceFiles="$(MSBuildProjectDirectory)/$(ILRepackPrimaryAssembly);@(_ILRepackInputAssembliesThatExist)"
+			DestinationFolder="$(_ILRepackOutputAssemblyDir)"
+			Condition="'$(_ILRepackPerformRepack)' != 'true'">
+			<Output TaskParameter="CopiedFiles" ItemName="_ILRepackCopiedFiles" />
+		</Copy>
 
 		<Touch Files="$(IntermediateOutputPath)ILRepacker.stamp" AlwaysCreate="True" />
 		<ItemGroup>
-			<FileWrites Include="$(IntermediateOutputPath)ILRepacker.stamp" />
+			<_ILRepackCopiedFiles Include="$(_ILRepackOutputAssembly);@(_ILRepackOutputAssemblyPdb)" />
+			<FileWrites Include="$(IntermediateOutputPath)ILRepacker.stamp;@(_ILRepackCopiedFiles)" />
 		</ItemGroup>
 
 	</Target>
@@ -46,5 +68,11 @@
 	<Target
 		Name="ILRepack"
 		DependsOnTargets="_ILRepackDependencies;_ILRepack" />
+
+	<Target
+		Name="ILRepackThisAssembly"
+		BeforeTargets="CopyFilesToOutputDirectory"
+		DependsOnTargets="ILRepack"
+		Condition="'$(ILRepackThisAssembly)' == 'True'" />
 
 </Project>

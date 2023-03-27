@@ -27,8 +27,6 @@
     <PackageReference Include="System.Numerics.Vectors" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" GeneratePathProperty="true" PrivateAssets="all" />
-    <!-- "temporary" build hacks -->
-    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.1.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
