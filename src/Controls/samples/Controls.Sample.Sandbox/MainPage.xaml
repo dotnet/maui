@@ -3,5 +3,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
-
+    <VerticalStackLayout VerticalOptions="Center" BackgroundColor="AliceBlue">
+        <Frame Margin="5" x:Name="framer" CornerRadius="0" Padding="5" BackgroundColor="Grey" BorderColor="Red">
+            <Label Margin="25" Text="Label that should wrap around when the screen gets smaller. Label that should wrap around when the screen gets smaller" />
+        </Frame>
+        <Border Margin="5" Padding="5" StrokeThickness="1">
+            <Label BackgroundColor="Green" Margin="25" Text="Label that should wrap around when the screen gets smaller. Label that should wrap around when the screen gets smaller" />
+        </Border>
+        <Button Text="Make Label smaller"/>
+    </VerticalStackLayout>
 </ContentPage>

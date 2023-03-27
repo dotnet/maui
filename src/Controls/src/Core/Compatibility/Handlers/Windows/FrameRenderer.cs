@@ -87,7 +87,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdatePadding()
 		{
-			Control.Padding = Element.Padding.ToPlatform();
+			//Control.Padding = Element.Padding.ToPlatform();
+			//Control.Padding = new UI.Xaml.Thickness(25);
+			//Control.Padding = new UI.Xaml.Thickness(26);
+			//Control.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
@@ -100,32 +103,49 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				finalSize = cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
 			}
 
+			System.Diagnostics.Debug.WriteLine($"FrameRenderer: {finalSize} content: {(Element.Content as IView)!.Frame}");
 			return new global::Windows.Foundation.Size(Math.Max(0, finalSize.Width), Math.Max(0, finalSize.Height));
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
+			Control?.Measure(availableSize);
+
+			//if (Control is not null)
+			//{
+			//	return Control.DesiredSize;
+			//}
+			//Control?.Measure(availableSize);
 			if (Element is IContentView cv)
 			{
 				// If there's a border specified, include the thickness in our measurements
 				// multiplied by 2 to account for both sides (left/right or top/bot)
-				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+			//	var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+				//borderThickness += (int)Element.Padding.VerticalThickness;
 
 				// Measure content but subtract border from available space
 				var measureContent = cv.CrossPlatformMeasure(
-					availableSize.Width - borderThickness,
-					availableSize.Height - borderThickness).ToPlatform();
+					availableSize.Width,
+					availableSize.Height).ToPlatform();
 
 				// Add the border space to the final calculation
-				measureContent = new Size(
-					measureContent.Width + borderThickness,
-					measureContent.Height + borderThickness).ToPlatform();
+				//measureContent = new Size(
+				//	measureContent.Width + borderThickness,
+				//	measureContent.Height + borderThickness).ToPlatform();
 
 				return measureContent;
 			}
 
 			return MinimumSize().ToPlatform();
 		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 
 		protected override void UpdateBackgroundColor()
 		{
@@ -155,7 +175,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 			}
 
-			Control.Child = Element.Content.ToPlatform(MauiContext);
+			var view = new ContentPanel
+			{
+				CrossPlatformMeasure = ((IContentView)Element).CrossPlatformMeasure,
+				CrossPlatformArrange = ((IContentView)Element).CrossPlatformArrange
+			};
+
+			view.Content = Element.Content.ToPlatform(MauiContext);
+			Control.Child = view;
 		}
 
 		void UpdateBorder()

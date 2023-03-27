@@ -12,6 +12,19 @@ namespace Microsoft.Maui.Handlers
 			(VirtualView != null && VirtualView.VerticalTextAlignment != TextAlignment.Start) ||
 			base.NeedsContainer;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void SetVirtualView(IView view)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.SetVirtualView(view);
+			PlatformView.SizeChanged += PlatformView_SizeChanged;
+		}
+
+		private void PlatformView_SizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
+		{
+			System.Diagnostics.Debug.WriteLine($"{e.NewSize}");
+		}
+
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
