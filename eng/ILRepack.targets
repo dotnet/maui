@@ -1,0 +1,50 @@
+<Project>
+
+	<Target Name="_ILRepackDependencies">
+
+		<PropertyGroup>
+			<ILRepackPrimaryAssembly Condition="'$(ILRepackPrimaryAssembly)' == ''">$(IntermediateOutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
+			<ILRepackPrimaryAssemblyOutput Condition="'$(ILRepackPrimaryAssemblyOutput)' == ''">$(ILRepackPrimaryAssembly)</ILRepackPrimaryAssemblyOutput>
+		</PropertyGroup>
+
+	</Target>
+
+	<Target
+		Name="_ILRepack"
+		Inputs="$(MSBuildAllProjects);@(ILRepackInputAssemblies);@(ILRepackPrimaryAssembly)"
+		Outputs="$(IntermediateOutputPath)ILRepacker.stamp;$(ILRepackPrimaryAssemblyOutput)">
+
+		<ItemGroup>
+			<_ILRepackInputAssembliesThatExist Include="@(ILRepackInputAssemblies)" Condition="Exists('%(Identity)')" />
+			<_NetstandardPath Include="@(ReferencePath->'%(RootDir)%(Directory)')" Condition="'%(FileName)%(Extension)' == 'netstandard.dll'" />
+		</ItemGroup>
+		<PropertyGroup>
+			<ManagedRuntime Condition=" '$(ManagedRuntime)' == '' And '$(OS)' != 'Windows_NT' ">mono</ManagedRuntime>
+			<ManagedRuntimeArgs Condition=" '$(ManagedRuntimeArgs)' == '' And '$(ManagedRuntime)' == 'mono' ">--debug=casts</ManagedRuntimeArgs>
+			<_NetstandardDir>@(_NetstandardPath)</_NetstandardDir>
+		</PropertyGroup>
+
+		<PropertyGroup>
+			<_ILRepackArgs>/out:"$(MSBuildProjectDirectory)/$(ILRepackPrimaryAssemblyOutput)"</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) /ver:$(FileVersion)</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) /internalize</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) /keyfile:"$(StrongNamerKeyFile)"</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) "$(MSBuildProjectDirectory)/$(ILRepackPrimaryAssembly)"</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) @(_ILRepackInputAssembliesThatExist->'"%(Identity)"', ' ')</_ILRepackArgs>
+			<_ILRepackArgs>$(_ILRepackArgs) /lib:"$(_NetstandardDir.TrimEnd('\'))"</_ILRepackArgs>
+		</PropertyGroup>
+
+		<Exec Command="$(ManagedRuntime) $(ManagedRuntimeArgs) &quot;$(ILRepack)&quot; $(_ILRepackArgs)" WorkingDirectory="$(TargetDir)" />
+
+		<Touch Files="$(IntermediateOutputPath)ILRepacker.stamp" AlwaysCreate="True" />
+		<ItemGroup>
+			<FileWrites Include="$(IntermediateOutputPath)ILRepacker.stamp" />
+		</ItemGroup>
+
+	</Target>
+
+	<Target
+		Name="ILRepack"
+		DependsOnTargets="_ILRepackDependencies;_ILRepack" />
+
+</Project>
