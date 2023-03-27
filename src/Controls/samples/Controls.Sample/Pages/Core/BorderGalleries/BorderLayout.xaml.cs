@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			base.OnAppearing();
 
-			BorderWidthSlider.Value = 4;
+			BorderWidthSlider.Value = 5;
 		}
 	}
 }

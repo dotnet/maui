@@ -28,6 +28,7 @@
                         Border.StrokeThickness="1"
                         Grid.Row="0">
                         <Label
+                            MinimumHeightRequest="20"
                             Text="1"
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"
@@ -39,6 +40,7 @@
                         Border.StrokeThickness="5"
                         Grid.Row="1">
                         <Label
+                            MinimumHeightRequest="20"
                             Text="5"
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"
@@ -50,6 +52,7 @@
                         Border.StrokeThickness="10"
                         Grid.Row="2">
                         <Label
+                            MinimumHeightRequest="20"
                             Text="10"
                             VerticalTextAlignment="Center"
                             HorizontalTextAlignment="Center"

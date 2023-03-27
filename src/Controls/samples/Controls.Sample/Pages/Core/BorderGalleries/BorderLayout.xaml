@@ -10,7 +10,7 @@
             Spacing="12">
             <Slider
                 x:Name="BorderWidthSlider"
-                Minimum="1"
+                Minimum="0"
                 Maximum="40"/>
             <Border
                 StrokeThickness="{Binding Value, Source={x:Reference BorderWidthSlider}}"
