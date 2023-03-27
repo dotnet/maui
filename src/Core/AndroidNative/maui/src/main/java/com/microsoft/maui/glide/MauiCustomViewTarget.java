@@ -27,7 +27,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
-		post(() -> this.view.setImageDrawable(placeholder));
+		this.view.setImageDrawable(placeholder);
     }
 
     @Override
