@@ -63,7 +63,7 @@
 	<Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
 	<Target Name="ILRepackThisAssemblyDependencies">
 		<PropertyGroup>
-			<ILRepackAssemblyOutput>$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackAssemblyOutput>
+			<ILRepackOutputAssembly>$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackOutputAssembly>
 		</PropertyGroup>
 		<ItemGroup>
 			<ILRepackInputAssemblies Include="$(TargetDir)Microsoft.Maui.Graphics.dll" />
@@ -75,7 +75,7 @@
 	</Target>
 	<Target Name="ILRepackThisAssembly" AfterTargets="Build" DependsOnTargets="ILRepackThisAssemblyDependencies;ILRepack">
 		<ItemGroup>
-			<FileWrites Include="$(ILRepackAssemblyOutput)" />
+			<None Include="$(OutputPath)ILRepacked\*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		</ItemGroup>
 	</Target>
 

@@ -53,6 +53,7 @@
 		<Copy
 			SourceFiles="$(MSBuildProjectDirectory)/$(ILRepackPrimaryAssembly);@(_ILRepackInputAssembliesThatExist)"
 			DestinationFolder="$(_ILRepackOutputAssemblyDir)"
+			SkipUnchangedFiles="true"
 			Condition="'$(_ILRepackPerformRepack)' != 'true'">
 			<Output TaskParameter="CopiedFiles" ItemName="_ILRepackCopiedFiles" />
 		</Copy>
