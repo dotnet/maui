@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Handlers
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-				
+
 				var contentSize = internalArrange(rect);
 
 				// The UIScrollView's bounds are available, so we can use them to make sure the ContentSize makes sense
