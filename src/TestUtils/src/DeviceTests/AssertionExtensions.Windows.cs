@@ -272,10 +272,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
-
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor)
+		
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
+			
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
-			var colors = bitmap.GetPixelColors();
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
+
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 
 			foreach (var c in colors)
 			{
