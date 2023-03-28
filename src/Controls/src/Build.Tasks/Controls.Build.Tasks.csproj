@@ -16,7 +16,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="all" />
+		<PackageReference Include="Mono.Cecil" Version="0.11.4" PrivateAssets="all" GeneratePathProperty="true" />
+		<PackageReference Include="System.CodeDom" Version="7.0.0" PrivateAssets="all" GeneratePathProperty="true" />
 		<PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
@@ -30,10 +31,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="$(OutputPath)Mono.Cecil.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="$(OutputPath)System.CodeDom.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="$(OutputPath)ILRepacked\*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
-		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Mdb.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Pdb.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgMono_Cecil)\lib\netstandard2.0\Mono.Cecil.Rocks.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="$(PkgSystem_CodeDom)\lib\netstandard2.0\System.CodeDom.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.dll" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+		<None Include="..\SourceGen\bin\$(Configuration)\netstandard2.0\Microsoft.Maui.Controls.SourceGen.pdb" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
 		<None Remove="$(OutputPath)*.xml" />
 		<None Include="nuget\**" PackagePath="" Pack="true" Exclude="nuget\**\*.aotprofile.txt" />
 	</ItemGroup>
@@ -63,6 +71,7 @@
 	<Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
 	<Target Name="ILRepackThisAssemblyDependencies">
 		<PropertyGroup>
+			<ILRepackPrimaryAssembly>$(OutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
 			<ILRepackOutputAssembly>$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackOutputAssembly>
 		</PropertyGroup>
 		<ItemGroup>
@@ -75,7 +84,8 @@
 	</Target>
 	<Target Name="ILRepackThisAssembly" AfterTargets="Build" DependsOnTargets="ILRepackThisAssemblyDependencies;ILRepack">
 		<ItemGroup>
-			<None Include="$(OutputPath)ILRepacked\*" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0" />
+			<_FilesToPack Include="$(TargetDir)ILRepacked\**" />
+			<None Include="@(_FilesToPack)" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0\%(RecursiveDir)%(Filename)%(Extension)" />
 		</ItemGroup>
 	</Target>
 
