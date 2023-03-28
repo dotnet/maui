@@ -41,56 +41,66 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		[Fact]
-		public async Task ScrollSkipsAlert()
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		public class ScrollTests : ControlsHandlerTestBase
 		{
-			var entry = new Entry();
-
-			EnsureHandlerCreated(builder =>
+			[Fact]
+			public async Task ScrollSkipsAlert()
 			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handler.AddHandler<Entry, EntryHandler>();
-				});
-			});
+				var entry = new Entry();
 
-			var layout = new VerticalStackLayout
+				EnsureHandlerCreated(builder =>
+				{
+					builder.ConfigureMauiHandlers(handler =>
+					{
+						handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+						handler.AddHandler<Entry, EntryHandler>();
+					});
+				});
+
+				var layout = new VerticalStackLayout
 			{
 				entry
 			};
 
-			layout.WidthRequest = 300;
-			layout.HeightRequest = 800;
+				layout.WidthRequest = 300;
+				layout.HeightRequest = 800;
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(async () =>
+				await InvokeOnMainThreadAsync(async () =>
 				{
-					var layoutPlat = layout.ToPlatform();
-					var win = layoutPlat.Window;
-					if (win is UIWindow uIWindow)
+					var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+					await contentViewHandler.PlatformView.AttachAndRun(async () =>
 					{
-						var alert = UIAlertController.Create("Popup Alert", "This is a popup", UIAlertControllerStyle.Alert);
-
-						alert.AddTextField((textfield) =>
+						var entryBoxFunc = entry.GetBoundingBox;
+						var initialEntryBox = entryBoxFunc.Invoke();
+						var layoutPlat = layout.ToPlatform();
+						var win = layoutPlat.Window;
+						if (win is UIWindow uIWindow)
 						{
-							textfield.Placeholder = "Placeholder Text";
-						});
+							var alert = UIAlertController.Create("Popup Alert", "This is a popup", UIAlertControllerStyle.Alert);
 
-						_ = uIWindow.RootViewController.PresentViewControllerAsync(alert, true);
+							alert.AddTextField((textfield) =>
+							{
+								textfield.Placeholder = "Placeholder Text";
+							});
 
-						var taskCompletion = new TaskCompletionSource<bool>();
+							await uIWindow.RootViewController.PresentViewControllerAsync(alert, true);
 
-						uIWindow.RootViewController.DismissViewController(true, () => { taskCompletion.SetResult(true); });
+							var finalEntryBoxFunc = entry.GetBoundingBox;
+							var finalEntryBox = finalEntryBoxFunc.Invoke();
 
-						await taskCompletion.Task;
-					}
+							var taskCompletion = new TaskCompletionSource<bool>();
 
-					Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+							uIWindow.RootViewController.DismissViewController(true, () => { taskCompletion.SetResult(true); });
+
+							await taskCompletion.Task;
+
+							Assert.True(initialEntryBox == finalEntryBox);
+							Assert.False(KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling);
+						}
+					});
 				});
-			});
+			}
 		}
 	}
 }
