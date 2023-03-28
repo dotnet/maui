@@ -101,10 +101,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null, TimeSpan? timeOut = null)
 			where THandler : class, IElementHandler
 		{
 			mauiContext ??= MauiContext;
+
+			timeOut ??= TimeSpan.FromSeconds(15);
 
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -180,14 +182,19 @@ namespace Microsoft.Maui.DeviceTests
 #if WINDOWS
 						await Task.Delay(10);
 #endif
+
+						THandler handler;
+
 						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
-							await action((THandler)window.Handler);
+							handler = (THandler)window.Handler;
 						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
-							await action((THandler)window.Content.Handler);
+							handler = (THandler)window.Content.Handler;
 						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
-							await action((THandler)cp.Content.Handler);
+							handler = (THandler)cp.Content.Handler;
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
+
+						await action(handler).WaitAsync(timeOut.Value);
 
 
 #if !WINDOWS
