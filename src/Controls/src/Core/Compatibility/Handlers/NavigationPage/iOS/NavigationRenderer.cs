@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _navigating = false;
 		VisualElement _element;
 		bool _uiRequestedPop; // User tapped the back button or swiped to navigate back
+		MauiNavigationDelegate NavigationDelegate => Delegate as MauiNavigationDelegate;
 
 		[Internals.Preserve(Conditional = true)]
 		public NavigationRenderer() : base(typeof(MauiControlsNavigationBar), null)
@@ -425,10 +426,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				CompletePendingNavigation(false);
 			};
 
+			if (NavigationDelegate is not null)
+				NavigationDelegate.WaitingForNavigationToFinish = true;
+
 			_removeLifecycleEvents = new ActionDisposable(() =>
 			{
+				// This ensures that we don't cause multiple calls to CompletePendingNavigation.
+				// Depending on circumstances (covered by modal page) CompletePendingNavigation 
+				// might get called from the Delegate vs the DidAppear/DidDisappear methods
+				// on the ParentingViewController.
 				parentViewController.Appearing -= appearing;
 				parentViewController.Disappearing -= disappearing;
+				if (NavigationDelegate is not null)
+					NavigationDelegate.WaitingForNavigationToFinish = false;
 			});
 
 			parentViewController.Appearing += appearing;
@@ -1008,6 +1018,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			bool _finishedWithInitialNavigation;
 			readonly WeakReference<NavigationRenderer> _navigation;
 
+			public bool WaitingForNavigationToFinish { get; internal set; }
+
 			public MauiNavigationDelegate(NavigationRenderer navigationRenderer)
 			{
 				_navigation = new WeakReference<NavigationRenderer>(navigationRenderer);
@@ -1029,7 +1041,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						np.SendNavigatedFromHandler(null);
 					}
 
-					r.CompletePendingNavigation(true);
+					if (WaitingForNavigationToFinish)
+						r.CompletePendingNavigation(true);
 				}
 			}
 
