@@ -29,6 +29,7 @@
 		<ItemGroup>
 			<_ILRepackAllAssemblies Include="@(_ILRepackPrimaryAssembly->'%(RootDir)%(Directory)%(Filename)%(Extension)')" />
 			<_ILRepackAllAssemblies Include="@(_ILRepackInputAssemblies->'%(RootDir)%(Directory)%(Filename)%(Extension)')" />
+			<_ILRepackAllAssembliesPdb Include="@(_ILRepackAllAssemblies->'%(RootDir)%(Directory)%(Filename).pdb')" />
 			<_ILRepackOutputAssemblyPdb Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
 			<_ILRepackOutputAssemblyPath Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)')" />
 			<_NetstandardPath Include="@(ReferencePath->'%(RootDir)%(Directory)')" Condition="'%(FileName)%(Extension)' == 'netstandard.dll'" />
@@ -99,7 +100,7 @@
 			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
 
 		<Copy
-			SourceFiles="@(_ILRepackAllAssemblies)"
+			SourceFiles="@(_ILRepackAllAssemblies);@(_ILRepackAllAssembliesPdb)"
 			DestinationFolder="$(_ILRepackOutputAssemblyDir)"
 			SkipUnchangedFiles="true"
 			Condition="'$(_ILRepackPerformRepack)' != 'true'">
