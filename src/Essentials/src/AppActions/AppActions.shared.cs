@@ -231,7 +231,7 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		public string Id { get; set; }
 
-		string _icon;
+		string? _icon;
 		internal string? Icon 
 		{ 
 			get
