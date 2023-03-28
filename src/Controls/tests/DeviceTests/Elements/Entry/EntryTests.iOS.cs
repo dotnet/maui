@@ -163,6 +163,7 @@ namespace Microsoft.Maui.DeviceTests
 			[ClassData(typeof(ControlsPageTypesTestCases))]
 			public async Task NextMovesToNextEntry(string page)
 			{
+				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
 				{
 					ControlsPageTypesTestCases.Setup(builder);
@@ -194,15 +195,15 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				Page rootPage = ControlsPageTypesTestCases.CreatePageType(page, contentPage);
-				Page hostPage = new ContentPage();
 
-				await CreateHandlerAndAddToWindow(hostPage, async () =>
+				await CreateHandlerAndAddToWindow(rootPage, async () =>
 				{
-					await hostPage.Navigation.PushModalAsync(rootPage);
 					KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
 					await AssertionExtensions.Wait(() => entry2.IsFocused);
-					Assert.True(entry2.IsFocused);
+					isFocused = entry2.IsFocused;
 				});
+
+				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
 			}
 		}
 	}
