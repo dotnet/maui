@@ -16,7 +16,7 @@
     <MicrosoftMacCatalystSdkPackageVersion>16.2.8510-net8-p4</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.1.8510-net8-p4</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>16.2.8514-net8-p4</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.1.9298-net8-p4</MicrosofttvOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.1.9302-net8-p4</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.107</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
