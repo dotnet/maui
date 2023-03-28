@@ -6,10 +6,12 @@ Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
+Microsoft.Maui.Platform.KeyboardAutoManagerScroll
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
+override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.set -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
@@ -28,6 +30,8 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Connect() -> void
+static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Disconnect() -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField = null) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 override Microsoft.Maui.Platform.MauiTextField.WillMoveToWindow(UIKit.UIWindow? window) -> void

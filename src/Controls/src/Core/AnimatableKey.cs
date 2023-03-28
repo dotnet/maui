@@ -29,20 +29,20 @@ namespace Microsoft.Maui.Controls
 		public override bool Equals(object obj)
 		{
 
-/* Unmerged change from project 'Controls.Core(net7.0-windows10.0.20348)'
-Before:
-			if (ReferenceEquals(null, obj))
-			{
-				return false;
-			}
-			if (ReferenceEquals(this, obj))
-			{
-				return true;
-			}
-			if (obj.GetType() != GetType())
-After:
-			if (obj is null)
-*/
+			/* Unmerged change from project 'Controls.Core(net7.0-windows10.0.20348)'
+			Before:
+						if (ReferenceEquals(null, obj))
+						{
+							return false;
+						}
+						if (ReferenceEquals(this, obj))
+						{
+							return true;
+						}
+						if (obj.GetType() != GetType())
+			After:
+						if (obj is null)
+			*/
 			if (obj is null)
 			{
 				return false;

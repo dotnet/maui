@@ -526,6 +526,8 @@ namespace Microsoft.Maui.Controls
 			object outerEllipseVisualStateDark = null;
 			object checkMarkVisualStateLight = null;
 			object checkMarkVisualStateDark = null;
+			object checkMarkFillVisualStateLight = null;
+			object checkMarkFillVisualStateDark = null;
 
 			if (!normalEllipse.TrySetDynamicThemeColor(
 				RadioButtonThemeColor,
@@ -568,8 +570,8 @@ namespace Microsoft.Maui.Controls
 					Ellipse.FillProperty,
 					SolidColorBrush.White,
 					SolidColorBrush.Black,
-					out _,
-					out _);
+					out checkMarkFillVisualStateLight,
+					out checkMarkFillVisualStateDark);
 			}
 
 			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
@@ -620,7 +622,7 @@ namespace Microsoft.Maui.Controls
 				{
 					Property = Shape.FillProperty,
 					TargetName = CheckedIndicator,
-					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkFillVisualStateLight, Dark = checkMarkFillVisualStateDark }
 				});
 			checkedStates.States.Add(checkedVisualState);
 

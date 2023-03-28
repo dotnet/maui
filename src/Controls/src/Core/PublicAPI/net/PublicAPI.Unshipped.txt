@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
