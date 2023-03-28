@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-		
+
 		[Category(TestCategory.Entry)]
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 		public partial class EntryTestsWithWindow : ControlsHandlerTestBase
