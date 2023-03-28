@@ -55,7 +55,8 @@
 	<Target
 		Name="_ILRepackSatelliteAssemblies"
 		Outputs="%(_ILRepackSatelliteLanguage.Identity)"
-		DependsOnTargets="_ILRepackProperties">
+		DependsOnTargets="_ILRepackProperties"
+		Condition="@(_ILRepackSatellite->Count()) > 0">
 
 		<PropertyGroup>
 			<_ILRepackLanguage>%(_ILRepackSatelliteLanguage.RecursiveDir)</_ILRepackLanguage>
