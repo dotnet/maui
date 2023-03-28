@@ -4,16 +4,30 @@
 		<PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
 	</ItemGroup>
 
+	<!--
+		======================================================================
+		This target ensures that the input is valid.
+		======================================================================
+	-->
 	<Target Name="_ILRepackParameters">
 
 		<PropertyGroup>
+			<!-- The primary assmbly is used for the attributes, TFM, version, and filenames -->
 			<ILRepackPrimaryAssembly Condition="'$(ILRepackPrimaryAssembly)' == ''">$(OutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
+			<!-- The output file location, all satellite assemblies will be named this and in this folder -->
 			<ILRepackOutputAssembly Condition="'$(ILRepackOutputAssembly)' == ''">$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackOutputAssembly>
+			<!-- The output folder for all the related files -->
 			<ILRepackOutputPath>$([System.IO.Path]::GetDirectoryName($(ILRepackOutputAssembly)))</ILRepackOutputPath>
 		</PropertyGroup>
 
 	</Target>
 
+	<!--
+		======================================================================
+		This target takes all the imput files and and collects and/or
+		calculate various related inputs as well as all the outputs.
+		======================================================================
+	-->
 	<Target Name="_ILRepackProperties">
 	
 		<PropertyGroup>
@@ -21,29 +35,33 @@
 			<_ILRepackPerformRepack Condition="'$(OS)' == 'Windows_NT'">true</_ILRepackPerformRepack>
 		</PropertyGroup>
 
+		<!-- Determine the primary and output assembly names/paths -->
 		<ItemGroup>
 			<_ILRepackPrimaryAssembly Include="$(ILRepackPrimaryAssembly)" />
 			<_ILRepackInputAssemblies Include="@(ILRepackInputAssemblies)" />
 			<_ILRepackOutputAssembly Include="$(ILRepackOutputAssembly)" />
 		</ItemGroup>
-
 		<ItemGroup>
 			<_ILRepackAllAssemblies Include="@(_ILRepackPrimaryAssembly->'%(RootDir)%(Directory)%(Filename)%(Extension)')" />
 			<_ILRepackAllAssemblies Include="@(_ILRepackInputAssemblies->'%(RootDir)%(Directory)%(Filename)%(Extension)')" />
 			<_ILRepackAllAssembliesPdb Include="@(_ILRepackAllAssemblies->'%(RootDir)%(Directory)%(Filename).pdb')" />
 			<_ILRepackOutputAssemblyPdb Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename).pdb')" />
-			<_ILRepackOutputAssemblyPath Include="@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)')" />
+		</ItemGroup>
+
+		<!-- Locate the .NET Standard assembly -->
+		<ItemGroup>
 			<_NetstandardPath Include="@(ReferencePath->'%(RootDir)%(Directory)')" Condition="'%(FileName)%(Extension)' == 'netstandard.dll'" />
 		</ItemGroup>
 		<PropertyGroup>
-			<_ILRepackOutputAssemblyDir>@(_ILRepackOutputAssemblyPath)</_ILRepackOutputAssemblyDir>
 			<_NetstandardDir>@(_NetstandardPath)</_NetstandardDir>
 		</PropertyGroup>
 
+		<!-- Generate the ILRepack args that are common for all assemblies -->
 		<PropertyGroup>
 			<_ILRepackCommonArgs>/ver:$(FileVersion) /internalize /keyfile:"$(StrongNamerKeyFile)" /lib:"$(_NetstandardDir.TrimEnd('\'))"</_ILRepackCommonArgs>
 		</PropertyGroup>
 
+		<!-- Collect all the satallite assemblies and "group" into language folders -->
 		<CreateItem Include="@(_ILRepackAllAssemblies->'%(RootDir)%(Directory)*\%(Filename).resources.dll')">
 			<Output TaskParameter="Include" ItemName="_ILRepackSatellite" />
 		</CreateItem>
@@ -54,27 +72,35 @@
 
 	</Target>
 
+	<!--
+		======================================================================
+		This target generates all the merged satellite assemblies.
+		======================================================================
+	-->
 	<Target Name="_ILRepackSatelliteAssemblies"
 		Outputs="%(_ILRepackSatelliteLanguage.Identity)"
 		DependsOnTargets="_ILRepackProperties"
 		Condition="@(_ILRepackSatellite->Count()) > 0">
 
+		<!-- Calculate the output paths -->
 		<PropertyGroup>
 			<_ILRepackLanguage>%(_ILRepackSatelliteLanguage.RecursiveDir)</_ILRepackLanguage>
 			<_ILRepackLanguageOutput>@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)$(_ILRepackLanguage)%(Filename).resources.dll')</_ILRepackLanguageOutput>
 			<_ILRepackLanguageOutputDir>@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)$(_ILRepackLanguage)')</_ILRepackLanguageOutputDir>
 		</PropertyGroup>
 
+		<!-- Collect all the assemblies for this language -->
 		<ItemGroup>
 			<_ILRepackSatelliteForLanguage Remove="@(_ILRepackSatelliteForLanguage)" />
 			<_ILRepackSatelliteForLanguage Include="@(_ILRepackAllSatellites)" Condition="'%(_ILRepackAllSatellites.RecursiveDir)' == '$(_ILRepackLanguage)'" />
 		</ItemGroup>
 
+		<!-- Merge the assemblies, if we can -->
 		<Exec
 			Command="&quot;$(ILRepack)&quot; /out:&quot;$(_ILRepackLanguageOutput)&quot; @(_ILRepackSatelliteForLanguage->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
 			WorkingDirectory="$(TargetDir)"
 			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
-
+		<!-- Otherwise, just copy to the output foler -->
 		<Copy
 			SourceFiles="@(_ILRepackSatelliteForLanguage)"
 			DestinationFolder="$(_ILRepackLanguageOutputDir)"
@@ -90,17 +116,24 @@
 
 	</Target>
 
+	<!--
+		======================================================================
+		This target generates the merged primary assembly.
+		======================================================================
+	-->
 	<Target Name="_ILRepackAssemblies"
 		DependsOnTargets="_ILRepackProperties">
 
+		<!-- Merge the assemblies, if we can -->
 		<Exec
 			Command="&quot;$(ILRepack)&quot; /out:&quot;@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename)%(Extension)')&quot; @(_ILRepackAllAssemblies->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
 			WorkingDirectory="$(TargetDir)"
 			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
 
+		<!-- Otherwise, just copy to the output foler -->
 		<Copy
 			SourceFiles="@(_ILRepackAllAssemblies);@(_ILRepackAllAssembliesPdb)"
-			DestinationFolder="$(_ILRepackOutputAssemblyDir)"
+			DestinationFolder="$(ILRepackOutputPath)"
 			SkipUnchangedFiles="true"
 			Condition="'$(_ILRepackPerformRepack)' != 'true'">
 			<Output TaskParameter="CopiedFiles" ItemName="_ILRepackCopiedFiles" />
@@ -114,12 +147,16 @@
 
 	</Target>
 
+	<!--
+		======================================================================
+		This target initiates the merge of both the primary and
+		satellite assemblies.
+		======================================================================
+	-->
 	<Target Name="_ILRepack"
 		Inputs="$(MSBuildAllProjects);@(ILRepackPrimaryAssembly);@(ILRepackInputAssemblies)"
 		Outputs="$(IntermediateOutputPath)ILRepacker.stamp"
-		DependsOnTargets="_ILRepackAssemblies;_ILRepackSatelliteAssemblies" />
-
-	<Target Name="_ILRepackAfterRepack">
+		DependsOnTargets="_ILRepackAssemblies;_ILRepackSatelliteAssemblies">
 
 		<ItemGroup>
 			<ILRepackOutput Include="$(ILRepackOutputPath)\**" />
@@ -127,13 +164,36 @@
 
 	</Target>
 
+	<!--
+		======================================================================
+		This target is meant to be replaced by a project-specific target
+		and will run before any merging takes place.
+		======================================================================
+	-->
 	<Target Name="BeforeILRepack" />
 
+	<!--
+		======================================================================
+		This target is meant to be replaced by a project-specific target
+		and will run after all merging has taken place.
+		======================================================================
+	-->
 	<Target Name="AfterILRepack" />
 
+	<!--
+		======================================================================
+		This target is the main entrypoint for doing assembly merges.
+		======================================================================
+	-->
 	<Target Name="ILRepack"
-		DependsOnTargets="BeforeILRepack;_ILRepackParameters;_ILRepack;_ILRepackAfterRepack;AfterILRepack" />
+		DependsOnTargets="BeforeILRepack;_ILRepackParameters;_ILRepack;AfterILRepack" />
 
+	<!--
+		======================================================================
+		This target can be used to automatically enable merging as part of
+		the build process using the `$(ILRepackBeforePack)` property.
+		======================================================================
+	-->
 	<Target Name="_ILRepackBeforeNuGetPack"
 		AfterTargets="Build"
 		Condition="'$(ILRepackBeforePack)' == 'True'"
