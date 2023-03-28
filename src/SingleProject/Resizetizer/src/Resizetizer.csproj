@@ -32,7 +32,7 @@
   <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
   <Target Name="AfterILRepack">
     <ItemGroup>
-      <None Include="@(ILRepackOutput)" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0\%(RecursiveDir)%(Filename)%(Extension)" />
+      <None Include="@(ILRepackOutput)" Visible="false" Pack="true" PackagePath="buildTransitive\%(RecursiveDir)%(Filename)%(Extension)" />
     </ItemGroup>
   </Target>
 
