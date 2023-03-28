@@ -1028,6 +1028,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_finishedWithInitialNavigation = true;
 						np.SendNavigatedFromHandler(null);
 					}
+
+					r.CompletePendingNavigation(true);
 				}
 			}
 
