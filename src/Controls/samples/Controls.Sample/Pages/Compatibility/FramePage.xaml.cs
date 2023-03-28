@@ -46,5 +46,10 @@ namespace Maui.Controls.Sample.Pages
 		{
 			ContentFrame.Content = null;
 		}
+
+		void OnCollectionViewSelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+			DisplayAlert("Frame", "Propagate Touch events correctly", "OK");
+		}
 	}
 }

@@ -3,6 +3,13 @@ Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.MauiViewGroup
+Microsoft.Maui.Platform.MauiViewGroup.MauiViewGroup(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiViewGroup.MauiViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs) -> void
+Microsoft.Maui.Platform.MauiViewGroup.MauiViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr) -> void
+Microsoft.Maui.Platform.MauiViewGroup.MauiViewGroup(Android.Content.Context! context, Android.Util.IAttributeSet! attrs, int defStyleAttr, int defStyleRes) -> void
+Microsoft.Maui.Platform.MauiViewGroup.MauiViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.Platform.MauiViewGroup.NotReallyHandled.get -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
@@ -11,6 +18,8 @@ override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Ma
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.MauiViewGroup.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.MauiViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int

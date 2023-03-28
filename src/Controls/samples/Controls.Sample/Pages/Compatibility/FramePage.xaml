@@ -135,7 +135,36 @@
                         <!-- Empty on purpose -->
                     </Frame>
                 </Grid>
-                
+                <Label
+                    Text="Propagate Touch events"
+                    Style="{StaticResource Headline}"/>
+                <CollectionView
+                    SelectionMode="Single"
+                    SelectionChanged="OnCollectionViewSelectionChanged">
+                    <CollectionView.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Item 1</x:String>
+                            <x:String>Item 2</x:String>
+                        </x:Array>
+                    </CollectionView.ItemsSource>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <ContentView 
+                                Padding="10">
+                                <Frame 
+                                    BackgroundColor="#E5F7FF"
+                                    CornerRadius="20"
+                                    HasShadow="False"
+                                    IsEnabled="false">
+                                    <Label 
+                                        HorizontalOptions="Center"
+                                        VerticalOptions="Center"
+                                        Text="{Binding}"/>
+                                </Frame>
+                            </ContentView>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

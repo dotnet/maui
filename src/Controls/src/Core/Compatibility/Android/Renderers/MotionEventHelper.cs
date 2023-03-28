@@ -23,6 +23,17 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return false;
 			}
 
+			if (ShouldPassThroughElement())
+			{
+				return false;
+			}
+
+			// Let the container know that we're "fake" handling this event
+			if (parent is Maui.Platform.MauiViewGroup mauiViewGroup)
+			{
+				mauiViewGroup.NotifyFakeHandling();
+			}
+
 			return true;
 		}
 

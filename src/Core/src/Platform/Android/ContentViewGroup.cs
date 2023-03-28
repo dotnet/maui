@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Platform;
 namespace Microsoft.Maui.Platform
 {
 	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
-	public class ContentViewGroup : ViewGroup
+	public class ContentViewGroup : MauiViewGroup
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;

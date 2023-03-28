@@ -11,7 +11,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup
+	public class LayoutViewGroup : MauiViewGroup
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
