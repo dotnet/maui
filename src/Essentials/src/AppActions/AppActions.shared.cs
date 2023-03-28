@@ -231,6 +231,23 @@ namespace Microsoft.Maui.ApplicationModel
 		/// </summary>
 		public string Id { get; set; }
 
-		internal string? Icon { get; set; }
+		string _icon;
+		internal string? Icon 
+		{ 
+			get
+			{
+				return _icon;
+			}
+#if ANDROID
+			set
+			{
+				_icon = Path.GetFileNameWithoutExtension(value);
+			}
+#else
+			set
+			{
+				_icon = value;
+			}
+#endif
 	}
 }
