@@ -4,11 +4,12 @@
 		<PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
 	</ItemGroup>
 
-	<Target Name="_ILRepackDependencies">
+	<Target Name="_ILRepackParameters">
 
 		<PropertyGroup>
-			<ILRepackPrimaryAssembly Condition="'$(ILRepackPrimaryAssembly)' == ''">$(IntermediateOutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
-			<ILRepackOutputAssembly Condition="'$(ILRepackOutputAssembly)' == ''">$(ILRepackPrimaryAssembly)</ILRepackOutputAssembly>
+			<ILRepackPrimaryAssembly Condition="'$(ILRepackPrimaryAssembly)' == ''">$(OutputPath)$(AssemblyName).dll</ILRepackPrimaryAssembly>
+			<ILRepackOutputAssembly Condition="'$(ILRepackOutputAssembly)' == ''">$(OutputPath)ILRepacked\$(AssemblyName).dll</ILRepackOutputAssembly>
+			<ILRepackOutputPath>$([System.IO.Path]::GetDirectoryName($(ILRepackOutputAssembly)))</ILRepackOutputPath>
 		</PropertyGroup>
 
 	</Target>
@@ -53,8 +54,7 @@
 
 	</Target>
 
-	<Target
-		Name="_ILRepackSatelliteAssemblies"
+	<Target Name="_ILRepackSatelliteAssemblies"
 		Outputs="%(_ILRepackSatelliteLanguage.Identity)"
 		DependsOnTargets="_ILRepackProperties"
 		Condition="@(_ILRepackSatellite->Count()) > 0">
@@ -90,8 +90,7 @@
 
 	</Target>
 
-	<Target
-		Name="_ILRepackAssemblies"
+	<Target Name="_ILRepackAssemblies"
 		DependsOnTargets="_ILRepackProperties">
 
 		<Exec
@@ -115,20 +114,29 @@
 
 	</Target>
 
-	<Target
-		Name="_ILRepack"
+	<Target Name="_ILRepack"
 		Inputs="$(MSBuildAllProjects);@(ILRepackPrimaryAssembly);@(ILRepackInputAssemblies)"
 		Outputs="$(IntermediateOutputPath)ILRepacker.stamp"
 		DependsOnTargets="_ILRepackAssemblies;_ILRepackSatelliteAssemblies" />
 
-	<Target
-		Name="ILRepack"
-		DependsOnTargets="_ILRepackDependencies;_ILRepack" />
+	<Target Name="_ILRepackAfterRepack">
 
-	<Target
-		Name="_ILRepackThisAssembly"
-		BeforeTargets="CopyFilesToOutputDirectory"
-		DependsOnTargets="ILRepack"
-		Condition="'$(ILRepackThisAssembly)' == 'True'" />
+		<ItemGroup>
+			<ILRepackOutput Include="$(ILRepackOutputPath)\**" />
+		</ItemGroup>
+
+	</Target>
+
+	<Target Name="BeforeILRepack" />
+
+	<Target Name="AfterILRepack" />
+
+	<Target Name="ILRepack"
+		DependsOnTargets="BeforeILRepack;_ILRepackParameters;_ILRepack;_ILRepackAfterRepack;AfterILRepack" />
+
+	<Target Name="_ILRepackBeforeNuGetPack"
+		AfterTargets="Build"
+		Condition="'$(ILRepackBeforePack)' == 'True'"
+		DependsOnTargets="ILRepack" />
 
 </Project>

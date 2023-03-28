@@ -13,7 +13,7 @@
     <!-- Do not include any assemblies from this project as we will do it manually -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- ILRepack this assembly and add a strong name and version -->
-    <ILRepackThisAssembly>true</ILRepackThisAssembly>
+    <ILRepackBeforePack>true</ILRepackBeforePack>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,11 +30,14 @@
   <Import Project="ResizetizerPackages.projitems" />
 
   <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
+  <Target Name="AfterILRepack">
+    <ItemGroup>
+      <None Include="@(ILRepackOutput)" Visible="false" Pack="true" PackagePath="buildTransitive\netstandard2.0\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" />
-    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
-    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
     <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
