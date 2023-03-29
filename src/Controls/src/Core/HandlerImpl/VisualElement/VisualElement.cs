@@ -79,12 +79,18 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			if (ve.IsFocused)
+			{
+				fr.IsFocused = true;
 				return;
+			}
 
 			if (ve.FocusChangeRequested is null)
 			{
 				FocusRequest focusRequest = new FocusRequest(false);
-				ViewHandler.MapFocus(handler, view, focusRequest);
+
+				if (handler is not null)
+					ViewHandler.MapFocus(handler, view, focusRequest);
+
 				return;
 			}
 
