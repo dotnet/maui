@@ -34,8 +34,8 @@
         <StackLayout 
             Margin="12" 
             Spacing="12">
-            <Label
-                Text="Default"
+            <Label 
+                Text="RoundRectangle 10,10,10,10"
                 Style="{StaticResource Headline}"/>
             <Border
                 Style="{StaticResource BorderStyle}"/>
