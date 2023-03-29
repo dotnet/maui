@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 	public class TestApp : Application
 	{
-		ContentPage _withPage;
+		Page _withPage;
 		TestWindow _window;
 
 		public TestApp() : base(false)
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return _window ?? new TestWindow(_withPage ?? new ContentPage());
 		}
 
-		public TestWindow CreateWindow(ContentPage withPage)
+		public TestWindow CreateWindow(Page withPage)
 		{
 			_withPage = withPage;
 			return (TestWindow)(this as IApplication).CreateWindow(null);

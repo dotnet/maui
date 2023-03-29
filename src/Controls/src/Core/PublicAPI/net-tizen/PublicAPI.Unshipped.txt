@@ -1642,6 +1642,7 @@ Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>.ElementChange
 Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>.NewElement.get -> TElement?
 Microsoft.Maui.Controls.Platform.ElementChangedEventArgs<TElement>.OldElement.get -> TElement?
 Microsoft.Maui.Controls.Platform.FontExtensions
+Microsoft.Maui.Controls.Platform.FormattedStringExtensions
 Microsoft.Maui.Controls.Platform.GestureHandler
 Microsoft.Maui.Controls.Platform.GestureHandler.Attach(Microsoft.Maui.IViewHandler! handler) -> void
 Microsoft.Maui.Controls.Platform.GestureHandler.Detach() -> void
@@ -1718,7 +1719,6 @@ Microsoft.Maui.Controls.Platform.ShellSectionView.MauiContext.set -> void
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSection.get -> Microsoft.Maui.Controls.ShellSection!
 Microsoft.Maui.Controls.Platform.ShellSectionView.ShellSectionView(Microsoft.Maui.Controls.ShellSection! section, Microsoft.Maui.IMauiContext! context) -> void
 Microsoft.Maui.Controls.Platform.ShellView
-Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundCorlor -> Tizen.NUI.Color!
 Microsoft.Maui.Controls.Platform.ShellView.Element.get -> Microsoft.Maui.Controls.Shell?
 Microsoft.Maui.Controls.Platform.ShellView.Element.set -> void
 Microsoft.Maui.Controls.Platform.ShellView.HeaderOnMenu.get -> bool
@@ -3235,6 +3235,8 @@ override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.O
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(Microsoft.Maui.Controls.BindableObject! bindable) -> void
 override sealed Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachingFrom(TView! bindable) -> void
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackdropColor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Controls.Platform.ShellView.DefaultBackgroundColor -> Tizen.NUI.Color!
 static Microsoft.Maui.Controls.AbsoluteLayout.AutoSize -> double
 static Microsoft.Maui.Controls.Application.AccentColor.get -> Microsoft.Maui.Graphics.Color?
 static Microsoft.Maui.Controls.Application.AccentColor.set -> void
@@ -5888,6 +5890,7 @@ virtual Microsoft.Maui.Controls.Window.OnStopped() -> void
 ~static Microsoft.Maui.Controls.Platform.ButtonExtensions.UpdateText(this Tizen.UIExtensions.NUI.Button platformButton, Microsoft.Maui.Controls.Button button) -> void
 ~static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.ToLayoutManager(this Microsoft.Maui.Controls.IItemsLayout layout, Microsoft.Maui.Controls.ItemSizingStrategy sizing = Microsoft.Maui.Controls.ItemSizingStrategy.MeasureFirstItem) -> Tizen.UIExtensions.NUI.ICollectionViewLayoutManager
 ~static Microsoft.Maui.Controls.Platform.FontExtensions.ToNativeFontFamily(this string self, Microsoft.Maui.IFontManager fontManager) -> string
+~static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToFormattedString(this Microsoft.Maui.Controls.Label label) -> Tizen.UIExtensions.Common.FormattedString
 ~static Microsoft.Maui.Controls.Platform.ImageExtensions.LoadImage(this Tizen.NUI.BaseComponents.ImageView image, Microsoft.Maui.Controls.ImageSource source) -> System.Threading.Tasks.Task
 ~static Microsoft.Maui.Controls.Platform.ImageExtensions.LoadImageAsync(this Tizen.NUI.BaseComponents.ImageView image, Microsoft.Maui.Controls.FileImageSource imageSource) -> System.Threading.Tasks.Task<bool>
 ~static Microsoft.Maui.Controls.Platform.ImageExtensions.LoadImageAsync(this Tizen.NUI.BaseComponents.ImageView image, Microsoft.Maui.Controls.StreamImageSource imageSource) -> System.Threading.Tasks.Task<bool>

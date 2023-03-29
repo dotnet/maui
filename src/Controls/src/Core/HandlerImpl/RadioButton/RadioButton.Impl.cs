@@ -19,5 +19,23 @@ namespace Microsoft.Maui.Controls
 		Color IButtonStroke.StrokeColor => (Color)GetValue(BorderColorProperty);
 
 		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
+
+		private protected override Semantics UpdateSemantics()
+		{
+			var semantics = base.UpdateSemantics();
+
+			if (ControlTemplate != null)
+			{
+				string contentAsString = ContentAsString();
+
+				if (!string.IsNullOrWhiteSpace(contentAsString) && string.IsNullOrWhiteSpace(semantics?.Description))
+				{
+					semantics ??= new Semantics();
+					semantics.Description = contentAsString;
+				}
+			}
+
+			return semantics;
+		}
 	}
 }

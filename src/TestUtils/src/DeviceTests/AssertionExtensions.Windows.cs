@@ -144,16 +144,15 @@ namespace Microsoft.Maui.DeviceTests
 				await tcs.Task;
 				view.Unloaded += OnViewUnloaded;
 
-				// continue with the run
 				T result;
 				try
 				{
 					result = await Run(action);
-					grid.Children.Clear();
 				}
 				finally
 				{
-					await unloadedTcs.Task;
+					grid.Children.Clear();
+					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
 					await Task.Delay(10);
 					window.Close();
 				}

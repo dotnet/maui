@@ -2995,3 +2995,4 @@ static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CommandMapper -> Microso
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.ImageButtonHandler(Microsoft.Maui.IPropertyMapper! mapper) -> void
 *REMOVED*Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size

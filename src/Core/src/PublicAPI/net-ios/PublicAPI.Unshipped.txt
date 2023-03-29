@@ -143,6 +143,7 @@ override Microsoft.Maui.Platform.LayoutView.UserInteractionEnabled.set -> void
 *REMOVED*override Microsoft.Maui.Handlers.LabelHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ScrollViewHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 static Microsoft.Maui.Handlers.EditorHandler.MapIsEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
+static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
 override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptAlertPanel(WebKit.WKWebView! webView, string! message, WebKit.WKFrameInfo! frame, System.Action! completionHandler) -> void
 override Microsoft.Maui.Platform.MauiWebViewUIDelegate.RunJavaScriptConfirmPanel(WebKit.WKWebView! webView, string! message, WebKit.WKFrameInfo! frame, System.Action<bool>! completionHandler) -> void

@@ -12,6 +12,7 @@ jobs:
 
     steps:
     - name: 'Autoformat'
-      uses: rolfbjarne/autoformat@v0.1
+      uses: rolfbjarne/autoformat@v0.2
       with:
         projects: "Microsoft.Maui.sln"
+        onlyFilesModifiedInPullRequest: true

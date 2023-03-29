@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class ApplicationStub : IApplication
+	class CoreApplicationStub : IApplication
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 

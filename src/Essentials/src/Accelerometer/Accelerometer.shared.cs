@@ -129,8 +129,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// Public constructor for accelerometer data.
 		/// </summary>
 		/// <param name="x">X data</param>
-        /// <param name="y">Y data</param>
-        /// <param name="z">Z data</param>
+		/// <param name="y">Y data</param>
+		/// <param name="z">Z data</param>
 		public AccelerometerData(double x, double y, double z)
 			: this((float)x, (float)y, (float)z)
 		{

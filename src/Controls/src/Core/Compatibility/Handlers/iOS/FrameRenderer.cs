@@ -120,7 +120,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_actualView.Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			_actualView.Layer.ShouldRasterize = true;
-			_actualView.Layer.MasksToBounds = Element.IsClippedToBounds;
+			_actualView.Layer.MasksToBounds = Element.IsClippedToBoundsSet(true);
 		}
 
 		void UpdateShadow()
@@ -132,7 +132,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		public override void LayoutSubviews()
 		{
 			if (_previousSize != Bounds.Size)
+			{
 				SetNeedsDisplay();
+				this.UpdateBackgroundLayer();
+			}
 
 			base.LayoutSubviews();
 		}

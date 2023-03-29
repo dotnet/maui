@@ -30,13 +30,14 @@ namespace Microsoft.Maui.DeviceTests
 			_isCreated = true;
 
 
-			var appBuilder = ConfigureBuilder(MauiApp.CreateBuilder());
+			var appBuilder = MauiApp.CreateBuilder();
 
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
+
+			appBuilder = ConfigureBuilder(appBuilder);
 			additionalCreationActions?.Invoke(appBuilder);
-
-			appBuilder.Services.TryAddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
-			appBuilder.Services.TryAddScoped<IDispatcher>(svc => TestDispatcher.Current);
-			appBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
 
 			_mauiApp = appBuilder.Build();
 			_servicesProvider = _mauiApp.Services;
@@ -106,11 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 				var w = size.Width;
 				var h = size.Height;
 
-				if (double.IsPositiveInfinity(w))
-					w = view.Width;
-
-				if (double.IsPositiveInfinity(h))
-					h = view.Height;
+				// No measure method should be returning infinite values
+				Assert.False(double.IsPositiveInfinity(w));
+				Assert.False(double.IsPositiveInfinity(h));
 
 #else
 				// Windows cannot measure without the view being loaded

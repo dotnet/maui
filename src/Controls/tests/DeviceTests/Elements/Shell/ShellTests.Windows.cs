@@ -448,10 +448,11 @@ namespace Microsoft.Maui.DeviceTests
 			var mainPage = new ContentPage();
 			var shell = new Shell() { CurrentItem = mainPage };
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var position = mainPage.ToPlatform().GetLocationOnScreen();
+				Assert.True(await AssertionExtensions.Wait(() => mainPage.ToPlatform().GetLocationOnScreen().Value.Y > 0));
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
+				var position = mainPage.ToPlatform().GetLocationOnScreen();
 
 				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
 			});
@@ -555,7 +556,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.FlyoutBehavior = FlyoutBehavior.Locked;
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				var flyoutItems = shell.FlyoutItems.Cast<IReadOnlyList<Element>>().ToList();
 				var rootView = handler.PlatformView as MauiNavigationView;
@@ -571,6 +572,9 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(selectedTabItem.Data, flyoutItem.Items[0].Items[0]);
 
 				tabbedView.SelectedItem = platformTabItems[1].MenuItemsSource[1];
+
+				// Wait for the selected item to propagate to the rootview
+				await AssertionExtensions.Wait(() => (rootView.SelectedItem as NavigationViewItemViewModel).Data == flyoutItems[0][1]);
 
 				// Verify that the flyout item updates
 				Assert.Equal((rootView.SelectedItem as NavigationViewItemViewModel).Data, flyoutItems[0][1]);

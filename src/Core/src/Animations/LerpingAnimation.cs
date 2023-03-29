@@ -97,10 +97,8 @@ namespace Microsoft.Maui.Animations
 				if (Lerp != null! && StartValue != null && EndValue != null)
 					CurrentValue = Lerp.Calculate?.Invoke(StartValue, EndValue, Progress);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
-				//TODO log exception
-				Console.WriteLine(ex);
 				HasFinished = true;
 			}
 		}

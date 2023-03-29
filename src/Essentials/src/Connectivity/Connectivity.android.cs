@@ -11,6 +11,9 @@ namespace Microsoft.Maui.Networking
 {
 	partial class ConnectivityImplementation : IConnectivity
 	{
+		/// <summary>
+		/// Unique identifier for the connectivity changed action on Android.
+		/// </summary>
 		public const string ConnectivityChangedAction = "com.maui.essentials.ESSENTIALS_CONNECTIVITY_CHANGED";
 		static Intent connectivityIntent = new Intent(ConnectivityChangedAction);
 
@@ -214,6 +217,7 @@ namespace Microsoft.Maui.Networking
 				}
 				catch (Exception e)
 				{
+					// TODO add Logging here
 					Debug.WriteLine("Unable to get connected state - do you have ACCESS_NETWORK_STATE permission? - error: {0}", e);
 					return NetworkAccess.Unknown;
 				}
@@ -314,10 +318,17 @@ namespace Microsoft.Maui.Networking
 	{
 		Action onChanged;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConnectivityBroadcastReceiver"/> class.
+		/// </summary>
 		public ConnectivityBroadcastReceiver()
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="ConnectivityBroadcastReceiver"/> class.
+		/// </summary>
+		/// <param name="onChanged">The action that is triggered whenever the connectivity changes.</param>
 		public ConnectivityBroadcastReceiver(Action onChanged) =>
 			this.onChanged = onChanged;
 

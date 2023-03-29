@@ -36,7 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
-			mauiAppBuilder.Services.TryAddSingleton<IApplication>((_) => new ApplicationStub());
+			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 			return CreateHandler<THandler>(view, MauiContext);
 		}
 
-		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view) 
+		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
 

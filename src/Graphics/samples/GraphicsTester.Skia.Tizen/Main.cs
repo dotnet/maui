@@ -1,10 +1,10 @@
 using System;
+using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.Applications;
 using Tizen.NUI;
 using Tizen.NUI.BaseComponents;
 using Tizen.NUI.Components;
-using GraphicsTester.Scenarios;
-using Microsoft.Maui.Graphics.Skia.Views;
 
 namespace GraphicsTester.Skia.Tizen
 {

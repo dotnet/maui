@@ -185,3 +185,4 @@ static Microsoft.Maui.Handlers.WindowHandler.MapY(Microsoft.Maui.Handlers.IWindo
 Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper) -> void
 Microsoft.Maui.Handlers.ContentViewHandler.ContentViewHandler(Microsoft.Maui.IPropertyMapper? mapper, Microsoft.Maui.CommandMapper? commandMapper) -> void
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ButtonHandler(Microsoft.Maui.IPropertyMapper? mapper = null) -> void
+static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
