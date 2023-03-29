@@ -9,8 +9,13 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WebView2, IWebViewDelegate
 	{
-		public MauiWebView()
+		readonly WeakReference<WebViewHandler> _handler;
+
+		public MauiWebView(WebViewHandler handler)
 		{
+			ArgumentNullException.ThrowIfNull(handler, nameof(handler));
+			_handler = new WeakReference<WebViewHandler>(handler);
+
 			NavigationStarting += (sender, args) =>
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
@@ -99,11 +104,16 @@ namespace Microsoft.Maui.Platform
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
 				// Free up memory after we're done with _internalWebView
-				_internalWebView = null;
+				if (_internalWebView.IsValid())
+				{
+					_internalWebView.Close();
+					_internalWebView = null;
+				}
 			};
 
 			// Kick off the initial navigation
-			_internalWebView.NavigateToString(html);
+			if (_internalWebView.IsValid())
+				_internalWebView.NavigateToString(html);
 		}
 
 		public async void LoadUrl(string? url)
@@ -122,7 +132,8 @@ namespace Microsoft.Maui.Platform
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
-			// TODO: Sync Cookies
+			if (_handler.TryGetTarget(out var handler))
+				await handler.SyncPlatformCookies(uri.AbsoluteUri);
 
 			try
 			{

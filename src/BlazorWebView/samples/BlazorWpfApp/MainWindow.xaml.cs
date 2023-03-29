@@ -4,6 +4,7 @@
 using System.Windows;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using WebViewAppShared;
 
 namespace BlazorWpfApp
@@ -18,6 +19,12 @@ namespace BlazorWpfApp
 		public MainWindow()
 		{
 			var services1 = new ServiceCollection();
+			services1.AddLogging(c =>
+			{
+				c.AddDebug();
+				// Enable maximum logging for BlazorWebView
+				c.AddFilter("Microsoft.AspNetCore.Components.WebView", LogLevel.Trace);
+			});
 			services1.AddWpfBlazorWebView();
 #if DEBUG
 			services1.AddBlazorWebViewDeveloperTools();

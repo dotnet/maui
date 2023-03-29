@@ -1,12 +1,12 @@
 {
     "$schema": "http://json.schemastore.org/template",
     "author": "Microsoft",
-    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor" ],
+    "classifications": [ "MAUI", "Android", "iOS", "macOS", "Mac Catalyst", "Windows", "Tizen", "Blazor", "Blazor Hybrid" ],
     "identity": "Microsoft.Maui.BlazorApp.CSharp.DOTNET_TFM_VERSION_VALUE",
     "groupIdentity": "Microsoft.Maui.BlazorApp",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
-    "name": ".NET MAUI Blazor App",
-    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor",
+    "name": ".NET MAUI Blazor Hybrid App",
+    "description": "A project for creating a .NET MAUI application for iOS, Android, Mac Catalyst, WinUI, and Tizen using Blazor Hybrid",
     "shortName": "maui-blazor",
     "tags": {
       "language": "C#",
@@ -49,15 +49,13 @@
     ],
     "preferNameDirectory": true,
     "guids": [
-      "07CD65EF-6238-4365-AF5D-F6D433967F48",
-      "8B51DC95-6D07-4C39-BC6C-3BFE96E8A7EA"
+      "07CD65EF-6238-4365-AF5D-F6D433967F48"
     ],
     "symbols": {
       "applicationId": {
         "type": "parameter",
         "description": "Overrides the $(ApplicationId) in the project",
-        "datatype": "string",
-        "replaces": "com.companyname.MauiApp.1"
+        "datatype": "string"
       },
       "msExtensionsVersion": {
         "type": "parameter",
@@ -86,6 +84,39 @@
         "type": "generated",
         "generator": "guid",
         "replaces": "$guid9$"
+      },
+      "nameToLower":{
+        "type": "generated",
+        "generator": "casing",
+        "parameters": {
+          "source" : "name",
+          "toLower": true
+        }
+      },
+      "defaultAppId":{
+        "type": "generated",
+        "generator": "join",
+        "parameters": {
+          "symbols": [
+            {
+              "type": "const",
+              "value": "com.companyname."
+            },
+            {
+              "type": "ref",
+              "value": "nameToLower"
+            }
+          ]
+        }
+      },
+      "finalAppId":{
+        "type":"generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "applicationId",
+          "fallbackVariableName": "defaultAppId"
+        },
+        "replaces": "com.companyname.mauiapp"
       }
     },
     "defaultName": "MauiApp1"

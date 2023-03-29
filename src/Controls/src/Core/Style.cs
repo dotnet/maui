@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,13 +12,10 @@ namespace Microsoft.Maui.Controls
 	{
 		internal const string StyleClassPrefix = "Microsoft.Maui.Controls.StyleClass.";
 
-		const int CleanupTrigger = 128;
-		int _cleanupThreshold = CleanupTrigger;
-
 		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
 			propertyChanged: OnBasedOnResourceChanged);
 
-		readonly List<WeakReference<BindableObject>> _targets = new List<WeakReference<BindableObject>>(4);
+		readonly WeakList<BindableObject> _targets = new();
 
 		Style _basedOnStyle;
 
@@ -65,10 +63,8 @@ namespace Microsoft.Maui.Controls
 					return;
 				_baseResourceKey = value;
 				//update all DynamicResources
-				foreach (WeakReference<BindableObject> bindableWr in _targets)
+				foreach (var target in _targets)
 				{
-					if (!bindableWr.TryGetTarget(out BindableObject target))
-						continue;
 					target.RemoveDynamicResource(_basedOnResourceProperty);
 					if (value != null)
 						target.SetDynamicResource(_basedOnResourceProperty, value);
@@ -97,14 +93,12 @@ namespace Microsoft.Maui.Controls
 		{
 			lock (_targets)
 			{
-				_targets.Add(new WeakReference<BindableObject>(bindable));
+				_targets.Add(bindable);
 			}
 
 			if (BaseResourceKey != null)
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
 			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));
-
-			CleanUpWeakReferences();
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
@@ -116,7 +110,7 @@ namespace Microsoft.Maui.Controls
 			bindable.RemoveDynamicResource(_basedOnResourceProperty);
 			lock (_targets)
 			{
-				_targets.RemoveAll(wr => wr != null && wr.TryGetTarget(out BindableObject target) && target == bindable);
+				_targets.Remove(bindable);
 			}
 		}
 
@@ -148,11 +142,8 @@ namespace Microsoft.Maui.Controls
 
 		void BasedOnChanged(Style oldValue, Style newValue)
 		{
-			foreach (WeakReference<BindableObject> bindableRef in _targets)
+			foreach (var bindable in _targets)
 			{
-				if (!bindableRef.TryGetTarget(out BindableObject bindable))
-					continue;
-
 				UnApplyCore(bindable, oldValue);
 				ApplyCore(bindable, newValue);
 			}
@@ -182,17 +173,5 @@ namespace Microsoft.Maui.Controls
 
 		bool ValidateBasedOn(Style value)
 			=> value is null || value.TargetType.IsAssignableFrom(TargetType);
-
-		void CleanUpWeakReferences()
-		{
-			if (_targets.Count < _cleanupThreshold)
-				return;
-
-			lock (_targets)
-			{
-				_targets.RemoveAll(t => t == null || !t.TryGetTarget(out _));
-				_cleanupThreshold = _targets.Count + CleanupTrigger;
-			}
-		}
 	}
 }

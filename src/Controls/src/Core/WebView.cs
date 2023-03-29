@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,6 +41,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForwardProperty']/Docs/*" />
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
 
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='UserAgentProperty']/Docs/*" />
+		public static readonly BindableProperty UserAgentProperty = BindableProperty.Create(nameof(UserAgent), typeof(string), typeof(WebView), null);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CookiesProperty']/Docs/*" />
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
 
@@ -75,6 +79,13 @@ namespace Microsoft.Maui.Controls
 		public bool CanGoForward
 		{
 			get { return (bool)GetValue(CanGoForwardProperty); }
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='UserAgent']/Docs/*" />
+		public string UserAgent
+		{
+			get { return (string)GetValue(UserAgentProperty); }
+			set { SetValue(UserAgentProperty, value ?? UserAgent); }
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='Cookies']/Docs/*" />
@@ -114,7 +125,7 @@ namespace Microsoft.Maui.Controls
 
 			string result;
 
-			if (_evaluateJavaScriptRequested?.GetInvocationList().Length == 0)
+			if (_evaluateJavaScriptRequested != null) // With Handlers we don't use events, if is null we are using a renderer and a handler otherwise.
 			{
 				// This is the WebViewRenderer subscribing to these requests; the handler stuff
 				// doesn't use them.

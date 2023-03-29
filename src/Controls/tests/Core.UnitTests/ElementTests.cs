@@ -218,7 +218,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ChildRemoved()
 		{
 			var root = new TestElement();
-			
+
 			var child = new TestElement();
 			root.Children.Add(child);
 

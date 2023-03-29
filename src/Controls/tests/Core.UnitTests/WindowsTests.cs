@@ -1,5 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Xunit;
 
@@ -284,6 +288,72 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void AddingTabSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var window = new Window(new TabbedPage() { Children = { cp } });
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public void RemovingTabUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public async Task PushingPageSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+
+			Assert.Equal(window, btn.Window);
+		}
+
+		[Fact]
+		public async Task PoppingPageUnsetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var secondPage = new ContentPage { Content = grid };
+			var np = new NavigationPage(new ContentPage());
+			var window = new Window(np);
+			await np.PushAsync(secondPage);
+			await np.PopAsync();
+
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
+		public void PoppingPageUnSetsWindow()
+		{
+			var btn = new Button();
+			var grid = new Grid { btn };
+			var cp = new ContentPage { Content = grid };
+			var tabbedPage = new TabbedPage() { Children = { cp, new ContentPage() } };
+			var window = new Window(tabbedPage);
+
+			Assert.Equal(window, btn.Window);
+			tabbedPage.Children.RemoveAt(0);
+			Assert.Null(btn.Window);
+		}
+
+		[Fact]
 		void DestroyedFiresDisappearingEvent()
 		{
 			int disappear = 0;
@@ -553,6 +623,64 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(outW, coreWindow.MinimumWidth);
 			Assert.Equal(outH, coreWindow.MinimumHeight);
+		}
+
+		[Fact]
+		public async Task WindowDoesNotLeak()
+		{
+			var application = new Application();
+			WeakReference reference;
+
+			// Scope for window
+			{
+				var window = new Window { Page = new ContentPage() };
+				reference = new WeakReference(window);
+				application.OpenWindow(window);
+				((IWindow)window).Destroying();
+			}
+
+			// GC
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Window should not be alive!");
+		}
+
+		// NOTE: this test is here to show `ConditionalWeakTable _requestedWindows` was a bad idea
+		[Fact]
+		public async Task TwoKeysSameWindow()
+		{
+			var application = new Application();
+			var window = new Window { Page = new ContentPage() };
+
+			application.OpenWindow(window);
+
+			// Access Application._requestedWindows
+			var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+			var table = typeof(Application).GetField("_requestedWindows", flags).GetValue(application) as IDictionary;
+			Assert.NotNull(table);
+
+			// A "cloned" key should still work
+			string key;
+			{
+				var originalKey = table.Keys.OfType<string>().Single();
+				key = new string(originalKey);
+				Assert.NotSame(originalKey, key);
+			}
+
+			// GC collect the original key
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			// Same window, doesn't create a new one
+			var actual = ((IApplication)application).CreateWindow(new ActivationState(new MockMauiContext(), new PersistedState
+			{
+				{ Application.MauiWindowIdKey, key }
+			}));
+			Assert.Same(window, actual);
+			Assert.Empty(table);
 		}
 	}
 }

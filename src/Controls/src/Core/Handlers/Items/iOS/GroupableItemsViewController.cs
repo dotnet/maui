@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using CoreGraphics;
 using Foundation;
@@ -211,7 +212,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal UIEdgeInsets GetInsetForSection(ItemsViewLayout itemsViewLayout,
 			UICollectionView collectionView, nint section)
 		{
-			var uIEdgeInsets = ItemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
+			var uIEdgeInsets = itemsViewLayout.GetInsetForSection(collectionView, itemsViewLayout, section);
 
 			if (!ItemsView.IsGrouped)
 			{

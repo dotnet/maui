@@ -65,7 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if ANDROID || WINDOWS
 		[Fact]
 		public async Task FlyoutHeaderAdaptsToMinimumHeight()
 		{
@@ -88,10 +87,8 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
 			});
 		}
-#endif
 
-#if ANDROID
-
+#if !WINDOWS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderMinimumHeight(FlyoutHeaderBehavior behavior)
@@ -130,16 +127,17 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		// This is mainly relevant for android because android will auto offset the content
-		// baed on the height of the flyout header.
+		// based on the height of the flyout header.
 		[Fact]
 		public async Task FlyoutContentSetsCorrectBottomPaddingWhenMinHeightIsSetForFlyoutHeader()
 		{
+			var layout = new VerticalStackLayout()
+			{
+				new Label() { Text = "Flyout Header" }
+			};
+
 			await RunShellTest(shell =>
 			{
-				var layout = new VerticalStackLayout()
-				{
-					new Label() { Text = "Flyout Header" }
-				};
 
 				layout.MinimumHeightRequest = 30;
 				shell.FlyoutHeader = layout;
@@ -157,17 +155,21 @@ namespace Microsoft.Maui.DeviceTests
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
 				// validate footer position
-				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height);
+				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea().Top);
 			});
 		}
+#endif
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(FlyoutHeaderBehavior behavior)
 		{
+			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
+			// so we have to account for that in the default setup
+			var flyoutHeader = new Label() { Text = "Flyout Header" };
 			await RunShellTest(shell =>
 			{
-				shell.FlyoutHeader = new Label() { Text = "Flyout Header" };
+				shell.FlyoutHeader = flyoutHeader;
 				shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
 				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
 				shell.FlyoutHeaderBehavior = behavior;
@@ -183,24 +185,25 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(0, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(GetSafeArea().Top, headerFrame.Y, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
-				AssertionExtensions.CloseEnough(headerFrame.Height, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height + GetSafeArea().Top, contentFrame.Y, epsilon: 0.5, message: "Content Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
 				// validate footer position
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + GetSafeArea().Top, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + GetSafeArea().Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
 
+#if ANDROID
 		[Fact]
 		public async Task FlyoutHeaderCollapsesOnScroll()
 		{
@@ -232,7 +235,6 @@ namespace Microsoft.Maui.DeviceTests
 			async (shell, handler) =>
 			{
 				await OpenFlyout(handler);
-				await Task.Delay(10);
 
 				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
@@ -247,15 +249,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutTemplatePartsTestCases))]
-		public async Task FlyoutCustomContentMargin(Func<Shell, object, string> shellPart)
+		public async Task FlyoutCustomContentMargin(string testName)
 		{
+
+			Action<Shell, object> shellPart = ShellFlyoutTemplatePartsTestCases.GetTest(testName);
 			var baselineContent = new VerticalStackLayout() { new Label() { Text = "Flyout Layout Part" } };
 			Rect frameWithoutMargin = Rect.Zero;
 
 			// determine the location of the templated content on the screen without a margin
 			await RunShellTest(shell =>
 			{
-				_ = shellPart(shell, baselineContent);
+				shellPart(shell, baselineContent);
 			},
 			async (shell, handler) =>
 			{
@@ -268,29 +272,45 @@ namespace Microsoft.Maui.DeviceTests
 			await RunShellTest(shell =>
 			{
 				content.Margin = new Thickness(20, 30, 0, 30);
-				partTesting = shellPart(shell, content);
+				shellPart(shell, content);
 			},
 			async (shell, handler) =>
 			{
 				await OpenFlyout(handler);
 
 				var frameWithMargin = GetFrameRelativeToFlyout(handler, content);
-				var leftDiff = Math.Abs(Math.Abs(frameWithMargin.Left - frameWithoutMargin.Left) - 20);
-				var verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - frameWithoutMargin.Top) - 30);
+				var leftDiff = Math.Abs(Math.Abs(frameWithMargin.Left - (frameWithoutMargin.Left - baselineContent.Margin.Left)) - 20);
+				double verticalDiff;
+
+				// The Flyout Footer doesn't automatically offset from the top safe area so we don't need to account for it
+				if (shell.FlyoutFooter != null)
+					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top)) - 30);
+				else
+					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea().Top)) - 30);
 
 				AssertionExtensions.AssertWithMessage(() =>
 					Assert.True(leftDiff < 0.2),
-					$"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o marin : {frameWithoutMargin}"
+					$"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}"
 				);
 
 				AssertionExtensions.AssertWithMessage(() =>
 					Assert.True(verticalDiff < 0.2),
-					$"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o marin : {frameWithoutMargin}"
+					$"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}"
 				);
 			});
 		}
+
 #endif
 
+		Thickness GetSafeArea()
+		{
+#if IOS || MACCATALYST
+			var insets = UIKit.UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
+			return new Thickness(insets.Left, insets.Top, insets.Right, insets.Bottom);
+#else
+			return Thickness.Zero;
+#endif
+		}
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
 		{
 			SetupBuilder();

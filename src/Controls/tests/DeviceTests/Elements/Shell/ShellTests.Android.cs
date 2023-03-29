@@ -8,7 +8,9 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.BottomNavigation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
@@ -221,7 +223,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		[Fact]
 		public async Task SwappingOutAndroidContextDoesntCrash()
 		{
@@ -234,9 +235,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(MauiContext.GetApplicationServices());
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -246,8 +245,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub1);
 
-			var mauiContextStub2 = new ContextStub(MauiContext.GetApplicationServices());
-			mauiContextStub2.Context = new ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -257,6 +255,113 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem1");
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub2);
+		}
+
+		[Fact]
+		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "red.png" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
+				var menuItem1 = menu.GetItem(0);
+				var menuItem2 = menu.GetItem(1);
+				var icon1 = menuItem1.Icon;
+				var icon2 = menuItem2.Icon;
+				var title1 = menuItem1.TitleFormatted;
+				var title2 = menuItem2.TitleFormatted;
+
+				shell.CurrentItem.Items[0].Title = "new Title 1";
+				shell.CurrentItem.Items[0].Icon = "blue.png";
+
+				shell.CurrentItem.Items[1].Title = "new Title 2";
+				shell.CurrentItem.Items[1].Icon = "blue.png";
+
+				// let the icon and title propagate
+				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+
+				menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
+				Assert.Equal(menuItem1, menu.GetItem(0));
+				Assert.Equal(menuItem2, menu.GetItem(1));
+
+				menuItem1.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+				menuItem2.Icon.AssertColorAtCenter(Android.Graphics.Color.Blue);
+
+				Assert.NotEqual(icon1, menuItem1.Icon);
+				Assert.NotEqual(icon2, menuItem2.Icon);
+				Assert.NotEqual(title1, menuItem1.TitleFormatted);
+				Assert.NotEqual(title2, menuItem2.TitleFormatted);
+			});
+		}
+
+		[Fact]
+		public async Task RemovingBottomTabDoesntRecreateMenu()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "red.png" });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var bottomView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				var menu = bottomView.Menu;
+				var menuItem1 = menu.GetItem(0);
+				var menuItem2 = menu.GetItem(1);
+
+				shell.CurrentItem.Items.RemoveAt(2);
+
+				// let the change propagate
+				await AssertionExtensions.Wait(() => bottomView.Menu.Size() == 2);
+
+				menu = bottomView.Menu;
+				Assert.Equal(menuItem1, menu.GetItem(0));
+				Assert.Equal(menuItem2, menu.GetItem(1));
+			});
+		}
+
+		[Fact]
+		public async Task AddingBottomTabDoesntRecreateMenu()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
+				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 3", Icon = "red.png" });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				var bottomView = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>();
+				var menu = bottomView.Menu;
+				var menuItem1 = menu.GetItem(0);
+				var menuItem2 = menu.GetItem(1);
+				var menuItem2Icon = menuItem2.Icon;
+
+				shell.CurrentItem.Items.Insert(1, new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "green.png" });
+
+				// let the change propagate
+				await AssertionExtensions.Wait(() => bottomView.Menu.GetItem(1).Icon != menuItem2Icon);
+
+				menu = bottomView.Menu;
+				Assert.Equal(menuItem1, menu.GetItem(0));
+				Assert.Equal(menuItem2, menu.GetItem(1));
+
+				menu.GetItem(1).Icon.AssertColorAtCenter(Android.Graphics.Color.Green);
+				menu.GetItem(2).Icon.AssertColorAtCenter(Android.Graphics.Color.Red);
+			});
 		}
 
 		protected AView GetFlyoutPlatformView(ShellRenderer shellRenderer)
@@ -360,6 +465,27 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return flyoutContainer ?? throw new Exception("RecyclerView not found");
+		}
+
+		async Task TapToSelect(ContentPage page)
+		{
+			var shellContent = page.Parent as ShellContent;
+			var shellSection = shellContent.Parent as ShellSection;
+			var shellItem = shellSection.Parent as ShellItem;
+			var shell = shellItem.Parent as Shell;
+			await OnNavigatedToAsync(shell.CurrentPage);
+
+			if (shellItem != shell.CurrentItem)
+				throw new NotImplementedException();
+
+			if (shellSection != shell.CurrentItem.CurrentItem)
+				throw new NotImplementedException();
+
+			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
+				.PlatformView.GetParentOfType<ViewPager2>();
+
+			pagerParent.CurrentItem = shellSection.Items.IndexOf(shellContent);
+			await OnNavigatedToAsync(page);
 		}
 	}
 }

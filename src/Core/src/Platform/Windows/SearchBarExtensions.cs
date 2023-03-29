@@ -130,7 +130,39 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
-			// AutoSuggestBox does not support this property
+			var textBox = platformControl.GetFirstDescendant<TextBox>();
+
+			if (textBox is null)
+				return;
+
+			textBox.UpdateIsTextPredictionEnabled(searchBar);
+		}
+
+		public static void UpdateKeyboard(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();
+
+			if (queryTextBox == null)
+				return;
+
+			queryTextBox.UpdateInputScope(searchBar);
+		}
+
+		private static readonly string[] CancelButtonColorKeys =
+		{
+			"TextControlButtonForeground",
+			"TextControlButtonForegroundPointerOver",
+			"TextControlButtonForegroundPressed",
+		};
+
+		internal static void UpdateCancelButtonColor(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var cancelButton = platformControl.GetDescendantByName<Button>("DeleteButton");
+
+			if (cancelButton is null)
+				return;
+
+			cancelButton.UpdateTextColor(searchBar.CancelButtonColor, CancelButtonColorKeys);
 		}
 	}
 }

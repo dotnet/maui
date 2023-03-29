@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsRunning = true
 			};
 
-			await ValidateHasColor(activityIndicator, Colors.Yellow, () => activityIndicator.Background = new SolidPaintStub(Colors.Yellow));
+			await ValidateHasColor(activityIndicator, Colors.Yellow, () => activityIndicator.Background = new SolidPaintStub(Colors.Yellow), nameof(activityIndicator.Background));
 		}
 	}
 }

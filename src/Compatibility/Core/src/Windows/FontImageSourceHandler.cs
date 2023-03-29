@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 				var imageSource = new CanvasImageSource(device, canvasWidth, canvasHeight, dpi);
 				using (var ds = imageSource.CreateDrawingSession(Microsoft.UI.Colors.Transparent))
 				{
-					var iconcolor = (fontsource.Color != null ? fontsource.Color : Colors.White).ToWindowsColor();
+					var iconcolor = (fontsource.Color ?? Colors.White).ToWindowsColor();
 
 					// offset by 1 as we added a 1 inset
 					ds.DrawTextLayout(layout, 1f, 1f, iconcolor);

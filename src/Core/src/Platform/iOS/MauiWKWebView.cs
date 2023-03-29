@@ -4,9 +4,9 @@ using System.IO;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Platform
 {
@@ -90,14 +90,26 @@ namespace Microsoft.Maui.Platform
 				LoadHtmlString(html, baseUrl == null ? new NSUrl(NSBundle.MainBundle.BundlePath, true) : new NSUrl(baseUrl, true));
 		}
 
-		public void LoadUrl(string? url)
+		async Task LoadUrlAsync(string? url)
 		{
 			try
 			{
 				var uri = new Uri(url ?? string.Empty);
 				var safeHostUri = new Uri($"{uri.Scheme}://{uri.Authority}", UriKind.Absolute);
 				var safeRelativeUri = new Uri($"{uri.PathAndQuery}{uri.Fragment}", UriKind.Relative);
-				NSUrlRequest request = new NSUrlRequest(new NSUrl(new Uri(safeHostUri, safeRelativeUri).AbsoluteUri));
+				var safeFullUri = new Uri(safeHostUri, safeRelativeUri);
+				NSUrlRequest request = new NSUrlRequest(new NSUrl(safeFullUri.AbsoluteUri));
+
+				if (_handler.TryGetTarget(out var handler))
+				{
+					if (handler.HasCookiesToLoad(safeFullUri.AbsoluteUri) &&
+						!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
+					{
+						return;
+					}
+
+					await handler.SyncPlatformCookiesAsync(safeFullUri.AbsoluteUri);
+				}
 
 				LoadRequest(request);
 			}
@@ -123,6 +135,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public void LoadUrl(string? url)
+		{
+			LoadUrlAsync(url).FireAndForget();
+		}
+
 		// https://developer.apple.com/forums/thread/99674
 		// WKWebView and making sure cookies synchronize is really quirky
 		// The main workaround I've found for ensuring that cookies synchronize 
@@ -130,8 +147,20 @@ namespace Microsoft.Maui.Platform
 		// It also has to be shared at the point you call init
 		public static WKWebViewConfiguration CreateConfiguration()
 		{
+			// By default, setting inline media playback to allowed, including autoplay
+			// and picture in picture, since these things MUST be set during the webview
+			// creation, and have no effect if set afterwards.
+			// A custom handler factory delegate could be set to disable these defaults
+			// but if we do not set them here, they cannot be changed once the
+			// handler's platform view is created, so erring on the side of wanting this
+			// capability by default.
 			var config = new WKWebViewConfiguration();
-
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(10) || OperatingSystem.IsIOSVersionAtLeast(10))
+			{
+				config.AllowsPictureInPictureMediaPlayback = true;
+				config.AllowsInlineMediaPlayback = true;
+				config.MediaTypesRequiringUserActionForPlayback = WKAudiovisualMediaTypes.None;
+			}
 			if (SharedPool == null)
 				SharedPool = config.ProcessPool;
 			else

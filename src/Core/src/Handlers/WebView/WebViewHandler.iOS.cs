@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateSource(webView, webViewDelegate);
 		}
 
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView)
+		{
+			handler.PlatformView?.UpdateUserAgent(webView);
+		}
+
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg)
 		{
 			if (handler.PlatformView.CanGoBack && handler.PlatformView.NavigationDelegate is MauiWebViewNavigationDelegate mauiDelegate)
@@ -169,7 +174,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		bool HasCookiesToLoad(string url)
+		internal bool HasCookiesToLoad(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
@@ -239,7 +244,7 @@ namespace Microsoft.Maui.Handlers
 			await SyncPlatformCookiesAsync(url);
 		}
 
-		async Task SyncPlatformCookiesAsync(string url)
+		internal async Task SyncPlatformCookiesAsync(string url)
 		{
 			var uri = CreateUriForCookies(url);
 

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -74,6 +73,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			async void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				string content = arguments.Message ?? string.Empty;
 				string title = arguments.Title ?? string.Empty;
 
@@ -127,6 +129,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			async void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				var promptDialog = new PromptDialog
 				{
 					Title = arguments.Title ?? string.Empty,
@@ -161,6 +166,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				bool userDidSelect = false;
 
 				if (arguments.FlowDirection == FlowDirection.MatchParent)
@@ -234,6 +242,17 @@ namespace Microsoft.Maui.Controls.Platform
 					return prompt.Input;
 
 				return null;
+			}
+
+			bool PageIsInThisWindow(Page page)
+			{
+				var window = page?.Window;
+				var platformWindow = window?.MauiContext.GetPlatformWindow();
+
+				if (window is null || platformWindow is null)
+					return false;
+
+				return platformWindow == Window;
 			}
 		}
 	}

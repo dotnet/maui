@@ -13,16 +13,18 @@
     <Product>Microsoft.Maui.Graphics</Product>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CA1307;CA1309;CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CA1307;CA1309;CS1591;RS0026;RS0027;RS0041</NoWarn>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
     <PackageReference Include="System.Memory" Version="4.5.5" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" Condition="$(TargetFramework.StartsWith('netstandard'))" />
   </ItemGroup>
 
-  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

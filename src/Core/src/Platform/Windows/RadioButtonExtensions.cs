@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Platform
 			if (button.Background is SolidPaint solidPaint)
 			{
 				UpdateColors(platformRadioButton.Resources, _backgroundColorKeys, solidPaint.ToPlatform());
+
+				platformRadioButton.RefreshThemeResources();
 			}
 		}
 
@@ -41,6 +43,8 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTextColor(this RadioButton platformRadioButton, ITextStyle button)
 		{
 			UpdateColors(platformRadioButton.Resources, _foregroundColorKeys, button.TextColor?.ToPlatform());
+
+			platformRadioButton.RefreshThemeResources();
 		}
 
 		public static void UpdateContent(this RadioButton platformRadioButton, IRadioButton radioButton)
@@ -64,18 +68,16 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateStrokeColor(this RadioButton platformRadioButton, IRadioButton radioButton)
 		{
 			UpdateColors(platformRadioButton.Resources, _borderColorKeys, radioButton.StrokeColor?.ToPlatform());
+
+			platformRadioButton.RefreshThemeResources();
 		}
 
-		private static void UpdateColors(ResourceDictionary resource, string[] keys, Brush? brush)
+		static void UpdateColors(ResourceDictionary resource, string[] keys, WBrush? brush)
 		{
 			if (brush is null)
-			{
 				resource.RemoveKeys(keys);
-			}
 			else
-			{
 				resource.SetValueForAllKey(keys, brush);
-			}
 		}
 
 		public static void UpdateStrokeThickness(this RadioButton nativeRadioButton, IRadioButton radioButton)

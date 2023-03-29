@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
@@ -20,11 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			((AccessibilityView)((DependencyObject)viewHandler.PlatformView).GetValue(NativeAutomationProperties.AccessibilityViewProperty))
-			== AccessibilityView.Content;
-
-
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
@@ -44,10 +40,10 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					window.Handler.DisconnectHandler();
+					window.Handler?.DisconnectHandler();
 					await Task.Delay(10);
 					newWindow?.Close();
-					appStub.Handler.DisconnectHandler();
+					appStub.Handler?.DisconnectHandler();
 				}
 			});
 		}
@@ -129,6 +125,12 @@ namespace Microsoft.Maui.DeviceTests
 		protected MauiToolbar GetPlatformToolbar(IElementHandler handler) =>
 			GetPlatformToolbar(handler.MauiContext);
 
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var headerView = GetPlatformToolbar(handler.MauiContext);
+			return new Size(headerView.ActualWidth, headerView.ActualHeight);
+		}
+
 		public bool ToolbarItemsMatch(
 			IElementHandler handler,
 			params ToolbarItem[] toolbarItems)
@@ -148,10 +150,13 @@ namespace Microsoft.Maui.DeviceTests
 			return true;
 		}
 
-		protected object GetTitleView(IElementHandler handler)
+		protected FrameworkElement GetTitleView(IElementHandler handler)
 		{
 			var toolbar = GetPlatformToolbar(handler);
-			return toolbar.TitleView;
+			return (FrameworkElement)toolbar.TitleView;
 		}
+
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 	}
 }

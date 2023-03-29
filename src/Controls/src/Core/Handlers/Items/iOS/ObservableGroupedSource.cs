@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -142,7 +143,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 			}
 
-			_collectionView.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			if (!ApplicationModel.MainThread.IsMainThread)
+			{
+				ApplicationModel.MainThread.BeginInvokeOnMainThread(() => CollectionChanged(args));
+			}
+			else
+			{
+				CollectionChanged(args);
+			}
 		}
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
@@ -162,18 +170,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					Move(args);
 					break;
 				case NotifyCollectionChangedAction.Reset:
-					Reload();
+					Reload(true);
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 		}
 
-		void Reload()
+		void Reload(bool collectionWasReset = false)
 		{
 			ResetGroupTracking();
 
 			_collectionView.ReloadData();
+			if (collectionWasReset)
+			{
+				_collectionView.LayoutIfNeeded();
+			}
+
 			_collectionView.CollectionViewLayout.InvalidateLayout();
 		}
 

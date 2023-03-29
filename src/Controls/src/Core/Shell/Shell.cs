@@ -1,3 +1,4 @@
+#nullable disable
 
 using System;
 using System.Collections;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
-		public Page CurrentPage => (CurrentSection as IShellSectionController)?.PresentedPage;
+		public Page CurrentPage => GetVisiblePage() as Page;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='BackButtonBehaviorProperty']/Docs/*" />
 		public static readonly BindableProperty BackButtonBehaviorProperty =
@@ -712,11 +713,11 @@ namespace Microsoft.Maui.Controls
 
 			element.Parent = null;
 
-			if (!_logicalChildren.Contains(element))
+			var oldLogicalIndex = _logicalChildren.IndexOf(element);
+			if (oldLogicalIndex == -1)
 				return;
 
-			var oldLogicalIndex = _logicalChildren.IndexOf(element);
-			_logicalChildren.Remove(element);
+			_logicalChildren.RemoveAt(oldLogicalIndex);
 			OnChildRemoved(element, oldLogicalIndex);
 			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
 		}
@@ -1363,7 +1364,7 @@ namespace Microsoft.Maui.Controls
 			Element element = null,
 			bool ignoreImplicit = false)
 		{
-			element = element ?? GetCurrentShellPage() ?? CurrentContent;
+			element = element ?? (Element)GetCurrentShellPage() ?? CurrentContent;
 			while (element != this && element != null)
 			{
 				observer?.Invoke(element);
@@ -1505,9 +1506,17 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
+		internal void SendPageAppearing(Page page)
+		{
+			if (Toolbar is ShellToolbar shellToolbar)
+				shellToolbar.ApplyChanges();
+
+			page.SendAppearing();
+		}
+
 		// This returns the current shell page that's visible
 		// without including the modal stack
-		internal Element GetCurrentShellPage()
+		internal Page GetCurrentShellPage()
 		{
 			var navStack = CurrentSection?.Navigation?.NavigationStack;
 			Page currentPage = null;
@@ -1670,11 +1679,17 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
+				if (_shell.CurrentSection is null)
+				{
+					await base.OnPushModal(modal, animated);
+					return;
+				}
+
 				if (!_shell.NavigationManager.AccumulateNavigatedEvents)
 				{
 					// This will route the modal push through the shell section which is setup
 					// to update the shell state after a modal push
-					await _shell.CurrentItem.CurrentItem.Navigation.PushModalAsync(modal, animated);
+					await _shell.CurrentSection.Navigation.PushModalAsync(modal, animated);
 					return;
 				}
 
@@ -1684,7 +1699,14 @@ namespace Microsoft.Maui.Controls
 				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
 
 				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					if (ModalStack.Count > 0)
+					{
+						ModalStack[ModalStack.Count - 1].SendDisappearing();
+					}
+
 					modal.SendAppearing();
+				}
 
 				await base.OnPushModal(modal, animated);
 

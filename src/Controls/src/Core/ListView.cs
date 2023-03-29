@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -455,10 +456,12 @@ namespace Microsoft.Maui.Controls
 		{
 			base.UnhookContent(content);
 
-			if (content == null || !_logicalChildren.Contains(content))
+			if (content == null)
 				return;
 			var index = _logicalChildren.IndexOf(content);
-			_logicalChildren.Remove(content);
+			if (index == -1)
+				return;
+			_logicalChildren.RemoveAt(index);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
 

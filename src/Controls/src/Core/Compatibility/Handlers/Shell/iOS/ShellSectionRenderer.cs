@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -153,6 +154,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			});
 
 			return false;
+		}
+
+		public override void ViewDidDisappear(bool animated)
+		{
+			// If this page is removed from the View Hierarchy we need to resolve any
+			// pending navigation operations
+			var sourcesToComplete = new List<TaskCompletionSource<bool>>();
+
+			foreach (var item in _completionTasks.Values)
+			{
+				sourcesToComplete.Add(item);
+			}
+
+			_completionTasks.Clear();
+
+			foreach (var source in sourcesToComplete)
+				source.TrySetResult(false);
+
+			_popCompletionTask?.TrySetResult(false);
+			_popCompletionTask = null;
+
+
+			base.ViewDidDisappear(animated);
 		}
 
 		public override void ViewWillAppear(bool animated)
@@ -698,7 +722,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			public override void WillShowViewController(UINavigationController navigationController, [Transient] UIViewController viewController, bool animated)
 			{
-				System.Diagnostics.Debug.Write($"WillShowViewController {viewController.GetHashCode()}");
 				var element = _self.ElementForViewController(viewController);
 
 				bool navBarVisible;
@@ -714,6 +737,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					// handle swipe to dismiss gesture 
 					coordinator.NotifyWhenInteractionChanges(OnInteractionChanged);
+				}
+
+				// Because the back button title needs to be set on the previous VC
+				// We want to set the BackButtonItem as early as possible so there is no flickering
+				var currentPage = _self._context?.Shell?.GetCurrentShellPage();
+				var trackers = _self._trackers;
+				if (currentPage?.Handler is IPlatformViewHandler pvh &&
+					pvh.ViewController == viewController &&
+					trackers.TryGetValue(currentPage, out var tracker) &&
+					tracker is ShellPageRendererTracker shellRendererTracker)
+				{
+					shellRendererTracker.UpdateToolbarItemsInternal(false);
 				}
 			}
 

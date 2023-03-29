@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnLineBreakModeButtonClicked(object sender, System.EventArgs e)
 		{
-			LineBreakModeButton.LineBreakMode = SelectLineBreakMode();
+			LineBreakModeButton.LineBreakMode = ImageLineBreakModeButton.LineBreakMode = SelectLineBreakMode();
 		}
 
 		LineBreakMode SelectLineBreakMode()
@@ -84,6 +84,23 @@ namespace Maui.Controls.Sample.Pages
 
 	public class ButtonPageViewModel : BindableObject
 	{
+		bool _changeButtonColor;
+
+		public string ButtonBackground => "#fc87ad";
+
+		public bool ChangeButtonColor
+		{
+			get => _changeButtonColor;
+			set
+			{
+				if (_changeButtonColor != value)
+				{
+					_changeButtonColor = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
 		public ICommand ButtonCommand => new Command(OnExecuteImageButtonCommand);
 
 		void OnExecuteImageButtonCommand()

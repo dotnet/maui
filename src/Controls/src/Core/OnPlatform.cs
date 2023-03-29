@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices;

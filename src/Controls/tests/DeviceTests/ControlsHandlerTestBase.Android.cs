@@ -11,6 +11,7 @@ using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -23,21 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ControlsHandlerTestBase
 	{
-		protected bool GetIsAccessibilityElement(IViewHandler viewHandler) =>
-			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.Yes;
-
-
-		protected bool GetExcludedWithChildren(IViewHandler viewHandler) =>
-			GetSemanticPlatformElement(viewHandler).ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
-
-		public AView GetSemanticPlatformElement(IViewHandler viewHandler)
-		{
-			if (viewHandler.PlatformView is AndroidX.AppCompat.Widget.SearchView sv)
-				return sv.FindViewById(Resource.Id.search_button)!;
-
-			return (AView)viewHandler.PlatformView;
-		}
-
 		Task SetupWindowForTests<THandler>(IWindow window, Func<Task> runTests, IMauiContext mauiContext = null)
 			where THandler : class, IElementHandler
 		{
@@ -64,10 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				finally
 				{
-					if (window.Handler != null)
-					{
-						window.Handler.DisconnectHandler();
-					}
+					window.Handler?.DisconnectHandler();
 
 					fragmentManager
 						.BeginTransaction()
@@ -132,16 +115,24 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var shell = handler.VirtualView as Shell;
 				var currentPage = shell.CurrentPage;
-				var pagePlatformView = currentPage.Handler.PlatformView as AView;
-				var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
-				var toolbar = parentContainer.GetFirstChildOfType<MaterialToolbar>();
-				return toolbar;
+
+				if (currentPage?.Handler?.PlatformView is AView pagePlatformView)
+				{
+					var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
+					var toolbar = parentContainer?.GetFirstChildOfType<MaterialToolbar>();
+					return toolbar;
+				}
+
+				return null;
 			}
 			else
 			{
 				return GetPlatformToolbar(handler.MauiContext);
 			}
 		}
+
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
@@ -163,6 +154,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return toolBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var context = handler.MauiContext.Context;
+			var toolbar = GetPlatformToolbar(handler.MauiContext).GetFirstChildOfType<Microsoft.Maui.Controls.Toolbar.Container>();
+			return new Size(context.FromPixels(toolbar.MeasuredWidth), context.FromPixels(toolbar.MeasuredHeight));
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>
@@ -213,18 +211,38 @@ namespace Microsoft.Maui.DeviceTests
 				FakeActivityRootView.AddView(handler.PlatformViewUnderTest);
 				handler.PlatformViewUnderTest.LayoutParameters = new FitWindowsFrameLayout.LayoutParams(AViewGroup.LayoutParams.MatchParent, AViewGroup.LayoutParams.MatchParent);
 
+				if (_window is Window window)
+				{
+					window.ModalNavigationManager.SetModalParentView(FakeActivityRootView);
+				}
+
 				return FakeActivityRootView;
 			}
 
 			public override void OnResume()
 			{
 				base.OnResume();
+
+				bool isCreated = (_window as Window)?.IsCreated ?? false;
+				bool isActivated = (_window as Window)?.IsActivated ?? false;
+
+				if (!isCreated)
+					_window.Created();
+
+				if (!isActivated)
+					_window.Activated();
+
 				_taskCompletionSource.SetResult(true);
 			}
 
 			public override void OnDestroy()
 			{
 				base.OnDestroy();
+				bool isDestroyed = (_window as Window)?.IsDestroyed ?? false;
+
+				if (!isDestroyed)
+					_window.Destroying();
+
 				_finishedDestroying.SetResult(true);
 			}
 		}

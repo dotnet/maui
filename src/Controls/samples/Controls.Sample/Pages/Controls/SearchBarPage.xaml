@@ -107,6 +107,16 @@
                         </LinearGradientBrush>
                     </SearchBar.Background>
                 </SearchBar>
+                <Label
+                    Text="CancelButtonColor"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    CancelButtonColor="Red"/>
+                <Label
+                    Text="Keyboard"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    Keyboard="Numeric"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

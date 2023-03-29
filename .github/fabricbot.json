@@ -1351,7 +1351,7 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "We've moved this issue to the Backlog milestone. This means that it is not going to be worked on for the coming release. We will reassess the backlog following the current release and consider this item at that time. To learn more about our issue management process and to have better expectation regarding different types of issues you can read our [Triage Process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md)."
+              "comment": "We've added this issue to our backlog, and we will work to address it as time and resources allow. If you have any additional information or questions about this issue, please leave a comment. For additional info about issue management, please read our [Triage Process](https://github.com/dotnet/maui/blob/main/docs/TriageProcess.md)."
             }
           }
         ]
@@ -2005,112 +2005,8 @@
           {
             "name": "addReply",
             "parameters": {
-              "comment": "Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.\n\nIf you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.\n\n1. Go to the [Visual Studio for Windows feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) or [Visual Studio for Mac feedback tool](https://learn.microsoft.com/en-us/visualstudio/mac/report-a-problem?view=vsmac-2022) to report the issue\n2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there.\n\nThis issue will be automatically closed in 3 days if there are no further comments."
+              "comment": "Thanks for the issue report @${issueAuthor}! This issue appears to be a problem with Visual Studio, so we ask that you use the VS feedback tool to report the issue. That way it will get to the routed to the team that owns this experience in VS.\n\nIf you encounter a problem with Visual Studio, we want to know about it so that we can diagnose and fix it. By using the Report a Problem tool, you can collect detailed information about the problem, and send it to Microsoft with just a few button clicks.\n\n1. Go to the [Visual Studio for Windows feedback tool](https://docs.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022) or [Visual Studio for Mac feedback tool](https://learn.microsoft.com/en-us/visualstudio/mac/report-a-problem?view=vsmac-2022) to report the issue\n2. Close this bug, and consider adding a link to the VS Feedback issue so that others can follow its activity there."
             }
-          }
-        ]
-      }
-    },
-    {
-      "taskType": "scheduled",
-      "capabilityId": "ScheduledSearch",
-      "subCapability": "ScheduledSearch",
-      "version": "1.1",
-      "config": {
-        "frequency": [
-          {
-            "weekDay": 0,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 1,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 2,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 3,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 4,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 5,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          },
-          {
-            "weekDay": 6,
-            "hours": [
-              0,
-              6,
-              12,
-              18
-            ]
-          }
-        ],
-        "searchTerms": [
-          {
-            "name": "isOpen",
-            "parameters": {}
-          },
-          {
-            "name": "hasLabel",
-            "parameters": {
-              "label": "s/move-to-vs-feedback"
-            }
-          },
-          {
-            "name": "noActivitySince",
-            "parameters": {
-              "days": 3
-            }
-          }
-        ],
-        "taskName": "Close 's/move-to-vs-feedback' after 3 days of no activity",
-        "actions": [
-          {
-            "name": "addReply",
-            "parameters": {
-              "comment": "This issue is being closed due to inactivity. If this issue is still affecting you, please follow the steps above to use the VS Feedback Tool to report the issue."
-            }
-          },
-          {
-            "name": "closeIssue",
-            "parameters": {}
           }
         ]
       }
@@ -2824,6 +2720,124 @@
             "name": "addReply",
             "parameters": {
               "comment": "Hi @${issueAuthor}. We have added the \"s/pr-needs-author-input\" label to this issue, which indicates that we have an open question/action for you before we can take further action. This PRwill be closed automatically in 14 days if we do not hear back from you by then - please feel free to re-open it if you come back to this PR after that time."
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssuesOnlyResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an issue",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 API change(s) detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "PullRequestResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "labelAdded",
+              "parameters": {
+                "label": "t/breaking 💥"
+              }
+            }
+          ]
+        },
+        "eventType": "pull_request",
+        "eventNames": [
+          "pull_request",
+          "issues",
+          "project_card"
+        ],
+        "taskName": "Tag Dave Britch when a breaking change is tagged on an PR",
+        "actions": [
+          {
+            "name": "addReply",
+            "parameters": {
+              "comment": "🚨 API change(s) detected @davidbritch FYI"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "taskType": "trigger",
+      "capabilityId": "IssueResponder",
+      "subCapability": "IssueCommentResponder",
+      "version": "1.0",
+      "config": {
+        "conditions": {
+          "operator": "and",
+          "operands": [
+            {
+              "name": "hasLabel",
+              "parameters": {
+                "label": "s/try-latest-version"
+              }
+            },
+            {
+              "name": "isActivitySender",
+              "parameters": {
+                "user": {
+                  "type": "author"
+                }
+              }
+            },
+            {
+              "operator": "not",
+              "operands": [
+                {
+                  "name": "activitySenderHasPermissions",
+                  "parameters": {
+                    "permissions": "write"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "eventType": "issue",
+        "eventNames": [
+          "issue_comment"
+        ],
+        "taskName": "Remove 's/try-latest-version' when new reply from author comes in",
+        "actions": [
+          {
+            "name": "removeLabel",
+            "parameters": {
+              "label": "s/try-latest-version"
             }
           }
         ]
