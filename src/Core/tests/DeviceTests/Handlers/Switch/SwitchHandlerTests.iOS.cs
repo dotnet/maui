@@ -66,8 +66,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(actualBackgroundColor);
 
 			// Compare the actual RGBA values since UIColor can be picky
-			actualBackgroundColor.GetRGBA (out var actualRed, out var actualGreen, out var actualBlue, out var actualAlpha);
-			color.GetRGBA (out var colorRed, out var colorGreen, out var colorBlue, out var colorAlpha);
+			actualBackgroundColor.GetRGBA(out var actualRed, out var actualGreen, out var actualBlue, out var actualAlpha);
+			color.GetRGBA(out var colorRed, out var colorGreen, out var colorBlue, out var colorAlpha);
 
 			Assert.True(actualRed == colorRed);
 			Assert.True(actualGreen == colorGreen);
