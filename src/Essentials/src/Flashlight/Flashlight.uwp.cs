@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Devices
 			// find all the back lamps
 			var lampInfo = allLamps.FirstOrDefault(di => di.EnclosureLocation?.Panel == Panel.Back);
 
-			if (lampInfo != null)
+			if (lampInfo is not null)
 			{
 				// get the lamp
 				lamp = await Lamp.FromIdAsync(lampInfo.Id);
@@ -48,6 +48,20 @@ namespace Microsoft.Maui.Devices
 			Monitor.Exit(locker);
 		}
 
+		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		public async Task<bool> IsSupportedAsync()
+		{
+			await FindLampAsync();
+
+			lock (locker)
+			{
+				return hasLoadedLamp && lamp is not null;
+			}
+		}
+
 		public async Task TurnOnAsync()
 		{
 			await FindLampAsync();
@@ -57,7 +71,7 @@ namespace Microsoft.Maui.Devices
 
 			lock (locker)
 			{
-				if (lamp != null)
+				if (lamp is not null)
 				{
 					lamp.BrightnessLevel = 1.0f;
 					lamp.IsEnabled = true;
@@ -69,7 +83,7 @@ namespace Microsoft.Maui.Devices
 		{
 			lock (locker)
 			{
-				if (lamp != null)
+				if (lamp is not null)
 				{
 					lamp.IsEnabled = false;
 					lamp.Dispose();

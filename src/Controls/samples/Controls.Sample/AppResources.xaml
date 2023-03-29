@@ -27,6 +27,14 @@
     <Color x:Key="DarkTextSecondaryColor">#f5f5f5</Color>
     <Color x:Key="DarkBorderColor">#fefefe</Color>
 
+    <!--Individual Dark/Light Theme colors for RadioButton Components -->
+    <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeLight">#5639b0</SolidColorBrush>
+    <SolidColorBrush x:Key="RadioButtonOuterEllipseStrokeDark">#7e2bea</SolidColorBrush>
+    <SolidColorBrush x:Key="RadioButtonCheckGlyphStrokeLight">#5639b0</SolidColorBrush>
+    <SolidColorBrush x:Key="RadioButtonCheckGlyphStrokeDark">#7e2bea</SolidColorBrush>
+    <SolidColorBrush x:Key="RadioButtonCheckGlyphFillLight">#5639b0</SolidColorBrush>
+    <SolidColorBrush x:Key="RadioButtonCheckGlyphFillDark">#7e2bea</SolidColorBrush>
+
     <!-- STYLES -->
     <Style x:Key="SearchBorderStyle" TargetType="Frame">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackgroundSecondaryColor}, Dark={StaticResource DarkBackgroundSecondaryColor}}" />
