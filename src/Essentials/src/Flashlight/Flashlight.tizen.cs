@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Devices
 		internal static bool IsSupported
 			=> PlatformUtils.GetFeatureInfo<bool>("camera.back.flash");
 
+		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		public Task<bool> IsSupportedAsync() => Task.FromResult(IsSupported);
+
 		public Task TurnOnAsync()
 		{
 			return SwitchFlashlight(true);
