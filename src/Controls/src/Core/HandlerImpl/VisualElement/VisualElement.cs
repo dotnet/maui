@@ -75,28 +75,7 @@ namespace Microsoft.Maui.Controls
 			if (args is not FocusRequest fr)
 				return;
 
-			if (view is not VisualElement ve)
-				return;
-
-			if (ve.IsFocused)
-			{
-				fr.IsFocused = true;
-				return;
-			}
-
-			if (ve.FocusChangeRequested is null)
-			{
-				FocusRequest focusRequest = new FocusRequest(false);
-
-				if (handler is not null)
-					ViewHandler.MapFocus(handler, view, focusRequest);
-
-				return;
-			}
-
-			var arg = new FocusRequestArgs { Focus = true };
-			ve.FocusChangeRequested(ve, arg);
-			fr.IsFocused = arg.Result;
+			view.MapFocus(handler, fr);
 		}
 	}
 }

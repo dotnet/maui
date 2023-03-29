@@ -872,8 +872,7 @@ namespace Microsoft.Maui.Controls
 		public bool Focus()
 		{
 			FocusRequest focusRequest = new FocusRequest(false);
-			Handler?.Invoke(nameof(IView.Focus), focusRequest);
-			return focusRequest.IsFocused;
+			return this.Focus(focusRequest);
 		}
 
 		public event EventHandler<FocusEventArgs> Focused;
@@ -1038,6 +1037,9 @@ namespace Microsoft.Maui.Controls
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
+		internal void InvokeFocusChangeRequested(FocusRequestArgs args) =>
+			FocusChangeRequested?.Invoke(this, args);
+		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InvalidateMeasureNonVirtual']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
