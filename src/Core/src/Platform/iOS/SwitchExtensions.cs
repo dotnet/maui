@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateIsOn(this UISwitch uiSwitch, ISwitch view)
 		{
 			uiSwitch.SetState(view.IsOn, true);
-			uiSwitch.UpdateTrackColor(view);
 		}
 
 		public static void UpdateTrackColor(this UISwitch uiSwitch, ISwitch view)
@@ -50,9 +49,9 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				return uISwitch.Subviews?[0]?.Subviews?[0];
+				return uISwitch.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault();
 			else
-				return uISwitch.Subviews?[0]?.Subviews?[0]?.Subviews?[0];
+				return uISwitch.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault();
 		}
 
 		internal static UIColor? GetTrackColor(this UISwitch uISwitch)
