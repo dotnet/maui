@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.DeviceTests.TestCases;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -152,6 +153,58 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(field.Text == "EntryCell1");
 				});
 			});
+		}
+
+		[Category(TestCategory.Entry)]
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		public partial class EntryTestsWithWindow : ControlsHandlerTestBase
+		{
+			[Theory]
+			[ClassData(typeof(ControlsPageTypesTestCases))]
+			public async Task NextMovesToNextEntry(string page)
+			{
+				bool isFocused = false;
+				EnsureHandlerCreated(builder =>
+				{
+					ControlsPageTypesTestCases.Setup(builder);
+					builder.ConfigureMauiHandlers(handlers =>
+					{
+						handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
+					});
+				});
+
+				var entry1 = new Entry
+				{
+					Text = "Entry 1",
+					ReturnType = ReturnType.Next
+				};
+
+				var entry2 = new Entry
+				{
+					Text = "Entry 2",
+					ReturnType = ReturnType.Next
+				};
+
+				ContentPage contentPage = new ContentPage()
+				{
+					Content = new VerticalStackLayout()
+					{
+						entry1,
+						entry2
+					}
+				};
+
+				Page rootPage = ControlsPageTypesTestCases.CreatePageType(page, contentPage);
+
+				await CreateHandlerAndAddToWindow(rootPage, async () =>
+				{
+					KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform());
+					await AssertionExtensions.Wait(() => entry2.IsFocused);
+					isFocused = entry2.IsFocused;
+				});
+
+				Assert.True(isFocused, $"{page} failed to focus the second entry DANG");
+			}
 		}
 	}
 }
