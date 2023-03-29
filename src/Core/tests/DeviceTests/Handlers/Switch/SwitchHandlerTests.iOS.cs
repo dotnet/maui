@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Apple Changed UITrack Subviews")]
+		[Fact(DisplayName = "Apple has not changed UITrack Subviews")]
 		public async Task UIViewSubviewExists()
 		{
 			var switchStub = new SwitchStub();
