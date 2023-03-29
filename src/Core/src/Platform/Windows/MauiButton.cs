@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Platform
 		public void LayoutImageRight(double spacing)
 		{
 			SetupHorizontalLayout(spacing);
-			
+
 			Grid.SetColumn(_image, 1);
 			Grid.SetColumn(_textBlock, 0);
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Platform
 			ColumnDefinitions[1].Width = UI.Xaml.GridLength.Auto;
 		}
 
-		public void LayoutImageTop(double spacing) 
+		public void LayoutImageTop(double spacing)
 		{
 			SetupVerticalLayout(spacing);
 
@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Platform
 			Grid.SetRow(_textBlock, 1);
 		}
 
-		public void LayoutImageBottom(double spacing) 
+		public void LayoutImageBottom(double spacing)
 		{
 			SetupVerticalLayout(spacing);
 

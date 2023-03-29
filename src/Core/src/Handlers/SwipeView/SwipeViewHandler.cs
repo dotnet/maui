@@ -41,12 +41,12 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected SwipeViewHandler(IPropertyMapper? mapper)
+		public SwipeViewHandler(IPropertyMapper? mapper)
 			: base(mapper ?? Mapper, CommandMapper)
 		{
 		}
 
-		protected SwipeViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
+		public SwipeViewHandler(IPropertyMapper? mapper, CommandMapper? commandMapper)
 			: base(mapper ?? Mapper, commandMapper ?? CommandMapper)
 		{
 		}
