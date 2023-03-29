@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -54,6 +52,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.CrossPlatformMeasure = null;
 			platformView.CrossPlatformArrange = null;
+
+			platformView.Children?.Clear();
+
 			base.DisconnectHandler(platformView);
 		}
 	}

@@ -7,6 +7,8 @@ using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -14,6 +16,33 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
+		[Fact(DisplayName = "Swapping MainPage no Crash")]
+		public async Task SwappingMainPageNoCrash()
+		{
+			SetupBuilder();
+
+			var button = new Button();
+
+			var mainPage = new ContentPage
+			{
+				Content = button
+			};
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				Application.Current.MainPage = mainPage;
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			Assert.NotNull(Application.Current.MainPage);
+		}
+
 		[Fact]
 		public async Task AdornerLayerAdded()
 		{
@@ -171,5 +200,19 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, deactivated);
 			}
 		}
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = GetNativeButton(CreateHandler<ButtonHandler>(button));
+				var ap = new ButtonAutomationPeer(platformButton);
+				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+				ip?.Invoke();
+			});
+		}
+
+		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
 	}
 }
