@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 			if (e.PointerDeviceType is UI.Input.PointerDeviceType.Touch)
 				return; // Already managed by the RefreshContainer control itself
 
-			const double minimumCumulativeY = 10;
+			const double minimumCumulativeY = 20;
 			double cumulativeY = e.Cumulative.Translation.Y;
 
 			if (cumulativeY > minimumCumulativeY && VirtualView is not null && !VirtualView.IsRefreshing)
