@@ -104,6 +104,9 @@ namespace Microsoft.Maui.ApplicationModel
 				shortcut.SetLongLabel(action.Subtitle);
 			}
 
+			// file extension removal - issue 9234
+			action.Icon = Path.GetFileNameWithoutExtension(action.Icon);
+
 			if (!string.IsNullOrWhiteSpace(action.Icon))
 			{
 				var iconResId = context.Resources.GetIdentifier(action.Icon, "drawable", context.PackageName);
