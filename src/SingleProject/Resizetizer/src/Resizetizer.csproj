@@ -12,18 +12,32 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- Do not include any assemblies from this project as we will do it manually -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <!-- ILRepack this assembly and add a strong name and version -->
+    <ILRepackBeforePack>true</ILRepackBeforePack>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Resources\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" Version="15.9.20" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.9.20" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.9.20" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.9.20" PrivateAssets="all" />
+  </ItemGroup>
+
   <Import Project="ResizetizerPackages.projitems" />
+
+  <Import Project="$(MauiRootDirectory)eng\ILRepack.targets" />
+  <Target Name="AfterILRepack">
+    <ItemGroup>
+      <None Include="@(ILRepackOutput)" Visible="false" Pack="true" PackagePath="buildTransitive\%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
 
   <ItemGroup>
     <None Include="@(_ResizetizerFiles)" Visible="false" Pack="true" PackagePath="buildTransitive/%(Arch)" />
-    <None Include="$(OutputPath)$(AssemblyName).dll" Visible="false" Pack="true" PackagePath="buildTransitive" />
-    <None Include="$(OutputPath)$(AssemblyName).pdb" Visible="false" Pack="true" PackagePath="buildTransitive" />
     <None Include="nuget\**" Pack="true" PackagePath="" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
