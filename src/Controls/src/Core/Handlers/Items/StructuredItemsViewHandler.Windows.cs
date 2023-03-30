@@ -16,6 +16,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	{
 		View _currentHeader;
 		View _currentFooter;
+		WeakNotifyPropertyChangedProxy _layoutPropertyChangedProxy;
+		PropertyChangedEventHandler _layoutPropertyChanged;
+
+		~StructuredItemsViewHandler() => _layoutPropertyChangedProxy?.Unsubscribe();
 
 		protected override IItemsLayout Layout { get => ItemsView?.ItemsLayout; }
 
@@ -24,15 +28,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.ConnectHandler(platformView);
 
 			if (Layout is not null)
-				Layout.PropertyChanged += LayoutPropertyChanged;
+			{
+				_layoutPropertyChanged ??= LayoutPropertyChanged;
+				_layoutPropertyChangedProxy = new WeakNotifyPropertyChangedProxy(Layout, _layoutPropertyChanged);
+			}
+			else if (_layoutPropertyChangedProxy is not null)
+			{
+				_layoutPropertyChangedProxy.Unsubscribe();
+				_layoutPropertyChangedProxy = null;
+			}
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			if (Layout is not null)
-				Layout.PropertyChanged -= LayoutPropertyChanged;
+			if (_layoutPropertyChangedProxy is not null)
+			{
+				_layoutPropertyChangedProxy.Unsubscribe();
+				_layoutPropertyChangedProxy = null;
+			}
 		}
 
 		void LayoutPropertyChanged(object sender, PropertyChangedEventArgs e)
