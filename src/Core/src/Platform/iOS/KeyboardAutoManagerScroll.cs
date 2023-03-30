@@ -30,13 +30,16 @@ public static class KeyboardAutoManagerScroll
 	static UIView? ContainerView = null;
 	static CGRect? CursorRect = null;
 	internal static bool IsKeyboardShowing = false;
+	static bool IsKeyboardTemporarilyClosingForRotation = false;
 	static int TextViewTopDistance = 20;
 	static int DebounceCount = 0;
+	static int DebounceOrientationCount = 0;
 	static NSObject? WillShowToken = null;
 	static NSObject? WillHideToken = null;
 	static NSObject? DidHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
+	static NSObject? OrientationChangeToken = null;
 
 	public static void Connect()
 	{
@@ -52,6 +55,8 @@ public static class KeyboardAutoManagerScroll
 		WillHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardWillHideNotification"), WillHideKeyboard);
 
 		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
+
+		OrientationChangeToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIDeviceOrientationDidChangeNotification"), DidOrientationChange);
 	}
 
 	public static void Disconnect()
@@ -66,6 +71,8 @@ public static class KeyboardAutoManagerScroll
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
 		if (TextViewToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
+		if (OrientationChangeToken is not null)
+			NSNotificationCenter.DefaultCenter.RemoveObserver(OrientationChangeToken);
 
 		IsCurrentlyScrolling = false;
 	}
@@ -133,9 +140,12 @@ public static class KeyboardAutoManagerScroll
 			await AdjustPositionDebounce();
 			IsKeyboardShowing = true;
 		}
+
+		if (IsKeyboardTemporarilyClosingForRotation)
+			await RotateOrientationDebounce();
 	}
 
-	static void WillHideKeyboard(NSNotification notification)
+	static async void WillHideKeyboard(NSNotification notification)
 	{
 		notification.UserInfo?.SetAnimationDuration();
 
@@ -145,9 +155,26 @@ public static class KeyboardAutoManagerScroll
 		if (IsKeyboardShowing)
 			RestorePosition();
 
+		// if we are rotating, we want to keep the View and LastScrollView
+		// but the cursor may now be at a different location so recalculate
+		if (IsKeyboardTemporarilyClosingForRotation)
+		{
+			// the cursor needs a small amount of time to update the position
+			await Task.Delay(5);
+			var localCursor = FindLocalCursorPosition();
+			if (localCursor is CGRect local)
+				CursorRect = View?.ConvertRectToView(local, null);
+
+			await RotateOrientationDebounce();
+		}
+
+		else
+		{
+			View = null;
+			LastScrollView = null;
+		}
+
 		IsKeyboardShowing = false;
-		View = null;
-		LastScrollView = null;
 		KeyboardFrame = CGRect.Empty;
 		StartingContentInsets = new UIEdgeInsets();
 		StartingScrollIndicatorInsets = new UIEdgeInsets();
@@ -157,6 +184,12 @@ public static class KeyboardAutoManagerScroll
 	static void DidHideKeyboard(NSNotification notification)
 	{
 		IsCurrentlyScrolling = false;
+	}
+
+	static void DidOrientationChange(NSNotification notification)
+	{
+		if (IsKeyboardShowing)
+			IsKeyboardTemporarilyClosingForRotation = true;
 	}
 
 	static NSObject? FindValue(this NSDictionary dict, string key)
@@ -238,10 +271,26 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
-		await Task.Delay(10);
+		await Task.Delay(15);
 
 		if (entranceCount == DebounceCount)
 			AdjustPosition();
+	}
+
+	internal static async Task RotateOrientationDebounce()
+	{
+		Interlocked.Increment(ref DebounceOrientationCount);
+
+		var entranceCount = DebounceOrientationCount;
+
+		await Task.Delay(10);
+
+		if (entranceCount == DebounceOrientationCount)
+		{
+			await AdjustPositionDebounce();
+			IsKeyboardShowing = true;
+			IsKeyboardTemporarilyClosingForRotation = false;
+		}
 	}
 
 	// main method to calculate and animate the scrolling
@@ -479,6 +528,28 @@ public static class KeyboardAutoManagerScroll
 			}
 
 			move += innerScrollValue;
+
+			// ContentInset logic
+			if (LastScrollView.Superview?.ConvertRectToView(LastScrollView.Frame, window) is CGRect lastScrollViewRect)
+			{
+				var bottomInset = kbSize.Height - (window.Frame.Height - lastScrollViewRect.GetMaxY());
+				var bottomScrollIndicatorInset = bottomInset - TextViewTopDistance;
+
+				bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+				bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
+
+				if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+				{
+					bottomInset -= LastScrollView.SafeAreaInsets.Bottom;
+					bottomScrollIndicatorInset -= LastScrollView.SafeAreaInsets.Bottom;
+				}
+
+				var movedInsets = LastScrollView.ContentInset;
+				movedInsets.Bottom = bottomInset;
+
+				if (LastScrollView.ContentInset != movedInsets)
+					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(movedInsets, bottomScrollIndicatorInset), () => { });
+			}
 		}
 
 		if (move >= 0)
@@ -508,6 +579,24 @@ public static class KeyboardAutoManagerScroll
 				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 			}
 		}
+	}
+
+	static void AnimateInset(UIEdgeInsets movedInsets, nfloat bottomScrollIndicatorInset)
+	{
+		if (LastScrollView is null)
+			return;
+
+		LastScrollView.ContentInset = movedInsets;
+		var newscrollIndicatorInset = new UIEdgeInsets();
+
+		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			newscrollIndicatorInset = LastScrollView.VerticalScrollIndicatorInsets;
+		else
+			newscrollIndicatorInset = LastScrollView.ScrollIndicatorInsets;
+
+		newscrollIndicatorInset.Bottom = bottomScrollIndicatorInset;
+		LastScrollView.ScrollIndicatorInsets = newscrollIndicatorInset;
+
 	}
 
 	static void AnimateStartingLastScrollView()
@@ -562,10 +651,15 @@ public static class KeyboardAutoManagerScroll
 
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 		}
-		View = null;
-		ContainerView = null;
-		TopViewBeginOrigin = InvalidPoint;
-		CursorRect = null;
+
+		// if we are rotating, we want to keep these values or we will lose them
+		if (!IsKeyboardTemporarilyClosingForRotation)
+		{
+			View = null;
+			ContainerView = null;
+			TopViewBeginOrigin = InvalidPoint;
+			CursorRect = null;
+		}
 	}
 
 	static NSIndexPath? GetPreviousIndexPath(this UIScrollView scrollView, NSIndexPath indexPath)
