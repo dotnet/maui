@@ -444,29 +444,20 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		static internal bool Focus(
-			this VisualElement view,
-			FocusRequest focusRequest)
+		static internal bool Focus(this VisualElement view, FocusRequest focusRequest)
 		{
 			var handler = view.Handler;
 
 			if (handler is not null)
-			{
 				handler.Invoke(nameof(IView.Focus), focusRequest);
-			}
 			else
-			{
 				MapFocus(view, handler, focusRequest);
-			}
 
 			return focusRequest.IsFocused;
 		}
 
 		// If the handler isn't attached we still need some focus code to execute
-		static internal void MapFocus(
-			this IView view,
-			IViewHandler? handler,
-			FocusRequest args)
+		static internal void MapFocus(this IView view, IViewHandler? handler, FocusRequest args)
 		{
 			if (args is not FocusRequest fr)
 				return;
@@ -490,8 +481,8 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var arg = new VisualElement.FocusRequestArgs { Focus = true };
-			fr.IsFocused = arg.Result;
 			ve.InvokeFocusChangeRequested(arg);
+			fr.IsFocused = arg.Result;
 		}
 	}
 }
