@@ -756,12 +756,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Label label = new Label();
 			label.SetBinding(Label.TextProperty, "Text");
 			layout.Children.Add(label);
-			Shell.SetTitleView(page, layout);
+			Shell.SetTitleView(shell, layout);
 
 			// Should contain Layout in logical children of shell.
 			Assert.Contains(layout, shell.LogicalChildren);
 
-			Shell.SetTitleView(page, null);
+			Shell.SetTitleView(shell, null);
 
 			// Should now be removed.
 			Assert.DoesNotContain(layout, shell.LogicalChildren);
