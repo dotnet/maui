@@ -255,17 +255,10 @@ stages:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
   - stage: templates_net
-    displayName: Build .NET MAUI Templates
+    displayName: Test Templates
     dependsOn: pack_net
     jobs:
-      - template: common/maui-templates.yml
-        parameters:
-          BuildConfigurations: ${{ parameters.BuildConfigurations }}
-          BuildPlatforms: ${{ parameters.BuildPlatforms }}
-          TestTargetFrameworks: ${{ parameters.TestTargetFrameworks }}
-          condition: or(
-            ${{ parameters.BuildEverything }},
-            ne(variables['Build.Reason'], 'PullRequest'))
+    - template: common/maui-templates.yml
 
   - template: common/security-compliance.yml
 

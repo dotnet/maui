@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Platform
 
 			queryTextBox.UpdateInputScope(searchBar);
 		}
-    
+
 		private static readonly string[] CancelButtonColorKeys =
 		{
 			"TextControlButtonForeground",
