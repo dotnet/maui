@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 
 			// for iOS 13 only where active apperance is not supported yet
 			// for iOS 14+, see DidUpdateCoordinateSpace
-			if (OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsIOSVersionAtLeast(14))
+			if (!OperatingSystem.IsMacCatalystVersionAtLeast(14))
 			{
 				if (Window is not null && Window.IsKeyWindow)
 				{

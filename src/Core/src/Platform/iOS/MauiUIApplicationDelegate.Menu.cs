@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +26,7 @@ namespace Microsoft.Maui
 			MenuBuilder = builder;
 
 			UIWindow? window = null;
-			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			if (OperatingSystem.IsMacCatalystVersionAtLeast(14))
 			{
 				// for iOS 14+ where active apperance is supported
 				var activeWindowScenes = new List<UIWindowScene>();
@@ -40,7 +39,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				if (activeWindowScenes.Any())
+				if (activeWindowScenes.Count > 0)
 				{
 					// when a new window is created, some time more than 1 active window sence are returned
 					// we need to pick the newly created window in this case
@@ -48,13 +47,17 @@ namespace Microsoft.Maui
 					// after some manual testing, windowing behaviour that is not ready yet is the newly created window
 					if (activeWindowScenes.Count > 1)
 					{
-						window = activeWindowScenes.FirstOrDefault(ws =>
-							ws.WindowingBehaviors is not null &&
-							!ws.WindowingBehaviors.Closable)
-								?.KeyWindow;
+						foreach (var ws in activeWindowScenes)
+						{
+							if (ws.WindowingBehaviors is not null && !ws.WindowingBehaviors.Closable)
+							{
+								window = ws.KeyWindow;
+								break;
+							}
+						}
 					}
 					else
-						window = activeWindowScenes.First().KeyWindow;
+						window = activeWindowScenes[0].KeyWindow;
 				}
 			}
 			else
