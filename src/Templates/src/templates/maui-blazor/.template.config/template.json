@@ -10,7 +10,7 @@
     "shortName": "maui-blazor",
     "tags": {
       "language": "C#",
-      "type": "solution"
+      "type": "project"
     },
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
@@ -36,15 +36,7 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ],
-        "modifiers": [
-          {
-            "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-            "rename": {
-              ".App.sln": ".sln"
-            }
-          }
-        ]
+        "copyOnly": [ "**/wwwroot/css/**", "**/*.svg", "**/*.ttf" ]
       }
     ],
     "preferNameDirectory": true,
