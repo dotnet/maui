@@ -47,18 +47,18 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var page = new ContentPage();
 			page.LoadFromXaml(
-"""
-<?xml version="1.0" encoding="UTF-8"?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-	xmlns:sys="clr-namespace:System;assembly=mscorlib">
-	<RadioButton>
-		<RadioButton.Value>
-			<sys:Int32>1</sys:Int32>
-		</RadioButton.Value>
-	</RadioButton>
-</ContentPage>
-""");
+				"""
+				<?xml version="1.0" encoding="UTF-8"?>
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					xmlns:sys="clr-namespace:System;assembly=mscorlib">
+					<RadioButton>
+						<RadioButton.Value>
+							<sys:Int32>1</sys:Int32>
+						</RadioButton.Value>
+					</RadioButton>
+				</ContentPage>
+				""");
 			Assert.IsType<RadioButton>(page.Content);
 			Assert.Equal(1, ((RadioButton)page.Content).Value);
 		}
