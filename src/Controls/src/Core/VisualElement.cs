@@ -1035,6 +1035,7 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
+		// TODO: Obsolete in favor of MapFocus https://github.com/dotnet/maui/issues/14299
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
 		internal void InvokeFocusChangeRequested(FocusRequestArgs args) =>
