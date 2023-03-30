@@ -1,9 +1,5 @@
 <Project>
 
-	<ItemGroup>
-		<PackageReference Include="ILRepack" Version="2.0.18" PrivateAssets="all" />
-	</ItemGroup>
-
 	<!--
 		======================================================================
 		This target ensures that the input is valid.
@@ -33,6 +29,8 @@
 		<PropertyGroup>
 			<!-- NOTE: Strong naming is only supported by the .NET Full Framework and/or on Windows -->
 			<_ILRepackPerformRepack Condition="'$(OS)' == 'Windows_NT'">true</_ILRepackPerformRepack>
+			<!-- This is a binary from https://github.com/mattleibow/il-repack which has support for portable PDB -->
+			<ILRepackPath Condition="'$(ILRepackPath)' == ''">$(MSBuildThisFileDirectory)ILRepack.exe</ILRepackPath>
 		</PropertyGroup>
 
 		<!-- Determine the primary and output assembly names/paths -->
@@ -97,7 +95,7 @@
 
 		<!-- Merge the assemblies, if we can -->
 		<Exec
-			Command="&quot;$(ILRepack)&quot; /out:&quot;$(_ILRepackLanguageOutput)&quot; @(_ILRepackSatelliteForLanguage->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
+			Command="&quot;$(ILRepackPath)&quot; /out:&quot;$(_ILRepackLanguageOutput)&quot; @(_ILRepackSatelliteForLanguage->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
 			WorkingDirectory="$(TargetDir)"
 			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
 		<!-- Otherwise, just copy to the output foler -->
@@ -126,7 +124,7 @@
 
 		<!-- Merge the assemblies, if we can -->
 		<Exec
-			Command="&quot;$(ILRepack)&quot; /out:&quot;@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename)%(Extension)')&quot; @(_ILRepackAllAssemblies->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
+			Command="&quot;$(ILRepackPath)&quot; /out:&quot;@(_ILRepackOutputAssembly->'%(RootDir)%(Directory)%(Filename)%(Extension)')&quot; @(_ILRepackAllAssemblies->'&quot;%(Identity)&quot;', ' ') $(_ILRepackCommonArgs)"
 			WorkingDirectory="$(TargetDir)"
 			Condition="'$(_ILRepackPerformRepack)' == 'true'" />
 
