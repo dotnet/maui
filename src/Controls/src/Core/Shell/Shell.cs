@@ -1314,12 +1314,19 @@ namespace Microsoft.Maui.Controls
 
 			var oldView = (View)oldValue;
 			var newView = (View)newValue;
+			var shell = bindable as Shell;
 
 			if (oldView != null)
+			{
+				shell?.RemoveLogicalChild(oldView);
 				oldView.Parent = null;
+			}
 
 			if (newView != null)
+			{
 				newView.Parent = owner;
+				shell?.AddLogicalChild(newView);
+			}
 		}
 
 		internal FlyoutBehavior GetEffectiveFlyoutBehavior()
