@@ -743,6 +743,29 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Contains(layout, page.ChildrenNotDrawnByThisElement);
 		}
 
+		[Fact]
+		public async Task ShellLogicalChildrenContainsTitleView()
+		{
+			Shell shell = new Shell();
+			ContentPage page = new ContentPage();
+			shell.Items.Add(CreateShellItem(page));
+			page.BindingContext = new { Text = "Binding" };
+
+			// setup title view
+			StackLayout layout = new StackLayout() { BackgroundColor = Colors.White };
+			Label label = new Label();
+			label.SetBinding(Label.TextProperty, "Text");
+			layout.Children.Add(label);
+			Shell.SetTitleView(page, layout);
+
+			// Should contain Layout in logical children of shell.
+			Assert.Contains(layout, shell.LogicalChildren);
+
+			Shell.SetTitleView(page, null);
+
+			// Should now be removed.
+			Assert.DoesNotContain(layout, shell.LogicalChildren);
+		}
 
 		[Fact]
 		public async Task FlyoutHeaderLogicalChild()
