@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -57,7 +58,7 @@ namespace Microsoft.Maui.Platform
 			if (content != null && mauiContext != null)
 			{
 				_contentView = content.ToPlatform(mauiContext);
-				this.AddSubview(_contentView);
+				AddSubview(_contentView);
 				TryInsertRefresh(_contentView);
 			}
 		}
@@ -160,6 +161,19 @@ namespace Microsoft.Maui.Platform
 
 			return false;
 		}
+
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override CGRect Bounds
+		{
+			get => base.Bounds; set
+			{
+				base.Bounds = value;
+				if (_contentView != null)
+					_contentView.Frame = value;
+			}
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
