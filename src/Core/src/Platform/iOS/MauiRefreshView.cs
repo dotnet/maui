@@ -162,18 +162,16 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public override CGRect Bounds
 		{
-			get => base.Bounds; set
+			get => base.Bounds;
+			set
 			{
 				base.Bounds = value;
 				if (_contentView != null)
 					_contentView.Frame = value;
 			}
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public void UpdateIsEnabled(bool isRefreshViewEnabled)
 		{
