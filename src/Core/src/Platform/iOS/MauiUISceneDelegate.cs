@@ -32,6 +32,20 @@ namespace Microsoft.Maui
 		public virtual void DidDisconnect(UIScene scene)
 		{
 			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
+
+			// for iOS 13 only where active apperance is not supported yet
+			// for iOS 14+, see DidUpdateCoordinateSpace
+			if (!OperatingSystem.IsMacCatalystVersionAtLeast(14))
+			{
+				if (Window is not null && Window.IsKeyWindow)
+				{
+					// manually resign the key window and rebuild the menu
+					Window.ResignKeyWindow();
+					UIMenuSystem
+						.MainSystem
+						.SetNeedsRebuild();
+				}
+			}
 		}
 
 		[Export("stateRestorationActivityForScene:")]
@@ -120,7 +134,23 @@ namespace Microsoft.Maui
 		[System.Runtime.Versioning.SupportedOSPlatform("tvos13.0")]
 		[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.0")]
 		[Export("windowScene:didUpdateCoordinateSpace:interfaceOrientation:traitCollection:")]
-		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection) =>
+		public virtual void DidUpdateCoordinateSpace(UIWindowScene windowScene, IUICoordinateSpace previousCoordinateSpace, UIInterfaceOrientation previousInterfaceOrientation, UITraitCollection previousTraitCollection)
+		{
 			GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.WindowSceneDidUpdateCoordinateSpace>(del => del(windowScene, previousCoordinateSpace, previousInterfaceOrientation, previousTraitCollection));
+
+			if (OperatingSystem.IsIOSVersionAtLeast(14))
+			{
+				// for iOS 14+ where active apperance is supported
+				var newActiveAppearance = windowScene.TraitCollection.ActiveAppearance;
+				if (newActiveAppearance != previousTraitCollection.ActiveAppearance &&
+					newActiveAppearance == UIUserInterfaceActiveAppearance.Active)
+				{
+					// if window went from inactive to active (become focused), rebuild the menu
+					UIMenuSystem
+						.MainSystem
+						.SetNeedsRebuild();
+				}
+			}
+		}
 	}
 }
