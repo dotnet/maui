@@ -73,8 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 					var contentViewHandler = CreateHandler<LayoutHandler>(layout);
 					await contentViewHandler.PlatformView.AttachAndRun(async () =>
 					{
-						var entryBoxFunc = entry.GetBoundingBox;
-						var initialEntryBox = entryBoxFunc.Invoke();
+						var initialEntryBox = entry.GetBoundingBox();
 						var layoutPlat = layout.ToPlatform();
 						var win = layoutPlat.Window;
 						if (win is UIWindow uIWindow)
@@ -88,8 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							await uIWindow.RootViewController.PresentViewControllerAsync(alert, true);
 
-							var finalEntryBoxFunc = entry.GetBoundingBox;
-							var finalEntryBox = finalEntryBoxFunc.Invoke();
+							var finalEntryBox = entry.GetBoundingBox();
 
 							var taskCompletion = new TaskCompletionSource<bool>();
 
