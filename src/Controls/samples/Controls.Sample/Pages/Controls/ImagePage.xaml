@@ -49,6 +49,13 @@
                     </Image.Source>
                 </Image>
                 <Label
+                    Text="Animating a gif"
+                    Style="{StaticResource Headline}"/>
+                <Image 
+                    Source="animated_heart.gif"
+                    WidthRequest="200"
+                    IsAnimationPlaying="True" />
+                <Label
                     Text="Opacity (0.5)"
                     Style="{StaticResource Headline}"/>
                 <Image 
