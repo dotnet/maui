@@ -397,30 +397,36 @@ namespace Microsoft.Maui.Layouts
                     var measure = MeasureCell(cell, measureWidth, measureHeight);
 
 					if (treatCellWidthAsAuto)
-                    {
-                        if (cell.ColumnSpan == 1)
-                        {
-                            _columns[cell.Column].Update(measure.Width);
-                        }
-                        else
-                        {
-                            TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
-                        }
-                    }
+					{
+						if (cell.ColumnSpan == 1)
+						{
+							if (!cell.NeedsSecondPass)
+							{
+								_columns[cell.Column].Update(measure.Width);
+							}
+						}
+						else
+						{
+							TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
+						}
+					}
 
 					if (treatCellHeightAsAuto)
-                    {
-                        if (cell.RowSpan == 1)
-                        {
-                            _rows[cell.Row].Update(measure.Height);
-                        }
-                        else
-                        {
-                            TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
-                        }
-                    }
-                }
-            }
+					{
+						if (cell.RowSpan == 1)
+						{
+							if (!cell.NeedsSecondPass)
+							{
+								_rows[cell.Row].Update(measure.Height);
+							}
+						}
+						else
+						{
+							TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+						}
+					}
+				}
+			}
 
             void SecondMeasurePass()
 			{
@@ -434,14 +440,28 @@ namespace Microsoft.Maui.Layouts
 					double width = 0;
 					double height = 0;
 
-					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+					if (cell.IsRowSpanAuto)
 					{
-						height += _rows[n].Size;
+						height = double.PositiveInfinity;
+					}
+					else
+					{
+						for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+						{
+							height += _rows[n].Size;
+						}
 					}
 
-					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+					if (cell.IsColumnSpanAuto)
 					{
-						width += _columns[n].Size;
+						width = double.PositiveInfinity;
+					}
+					else
+					{
+						for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+						{
+							width += _columns[n].Size;
+						}
 					}
 
 					if (width == 0 || height == 0)
@@ -455,10 +475,18 @@ namespace Microsoft.Maui.Layouts
 					{
 						TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
 					}
+					else if (cell.ColumnSpan == 1)
+					{
+						_columns[cell.Column].Update(measure.Width);
+					}
 
 					if (cell.IsRowSpanStar && cell.RowSpan > 1)
 					{
 						TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+					}
+					else if (cell.RowSpan == 1)
+					{
+						_rows[cell.Row].Update(measure.Height);
 					}
 				}
 			}
