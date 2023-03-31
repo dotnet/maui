@@ -5,5 +5,10 @@
   "postActions/openInEditor/description": "Öffnet \"MainPage.xaml\" im Editor.",
   "symbols/applicationId/description": "Überschreibt $(ApplicationId) im Projekt",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"
+  "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE",
+  "symbols/Pipeline/choices/GitHub Actions/description": "Adds a GitHub Action file to build this .NET MAUI project.",
+  "symbols/Pipeline/choices/Azure Pipelines/description": "Adds a Azure Pipelines file to build this .NET MAUI project.",
+  "symbols/Pipeline/choices/None/description": "No pipeline setup.",
+  "symbols/Pipeline/displayName": "Add Build Pipeline",
+  "symbols/Pipeline/description": "Choose whether to include a build pipeline file for this .NET MAUI app."
 }

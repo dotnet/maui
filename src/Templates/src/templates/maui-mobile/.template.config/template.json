@@ -10,7 +10,8 @@
     "shortName": "maui",
     "tags": {
       "language": "C#",
-      "type": "project"
+      "type": "project",
+      "editorTreatAs":"solution"
     },
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
@@ -40,7 +41,23 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "(!GitHubPipeline)",
+            "exclude": [
+              ".github/",
+              ".github/workflows/",
+              ".github/workflows/ci.yml"
+            ]
+          },
+          {
+            "condition": "(!AzDOPipeline)",
+            "exclude": [
+              "azure-pipelines.yml"
+            ]
+          }
+        ]
       }
     ],
     "preferNameDirectory": true,
@@ -71,6 +88,41 @@
         ],
         "replaces": "DOTNET_TFM",
         "defaultValue": "DOTNET_TFM_VALUE"
+      },
+      "TfmWithoutNetPrefix": {
+        "type": "derived",
+        "valueTransform": "RemoveNetPrefix",
+        "valueSource": "Framework",
+        "replaces": "DOTNET_TFM_NO_NET_PREFIX"
+      },
+      "Pipeline": {
+        "type": "parameter",
+        "datatype": "choice",
+        "choices": [
+          {
+            "choice": "GitHub Actions",
+            "description": "Adds a GitHub Action file to build this .NET MAUI project."
+          },
+          {
+            "choice": "Azure Pipelines",
+            "description": "Adds a Azure Pipelines file to build this .NET MAUI project."
+          },
+          {
+            "choice": "None",
+            "description": "No pipeline setup."
+          }
+        ],
+        "defaultValue": "None",
+        "displayName": "Add Build Pipeline",
+        "description": "Choose whether to include a build pipeline file for this .NET MAUI app."
+      },
+      "GitHubPipeline": {
+        "type": "computed",
+        "value": "(Pipeline == \"GitHub Actions\")"
+      },
+      "AzDOPipeline": {
+        "type": "computed",
+        "value": "(Pipeline == \"Azure Pipelines\")"
       },
       "HostIdentifier": {
         "type": "bind",
@@ -113,6 +165,13 @@
           "fallbackVariableName": "defaultAppId"
         },
         "replaces": "com.companyname.mauiapp"
+      }
+    },
+    "forms": {
+      "RemoveNetPrefix": {
+        "identifier": "replace",
+        "pattern": "net",
+        "replacement": ""
       }
     },
     "defaultName": "MauiApp1"

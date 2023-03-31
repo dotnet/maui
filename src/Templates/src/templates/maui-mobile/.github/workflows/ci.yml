@@ -1,0 +1,25 @@
+name: Build MauiApp._1
+
+on:
+  push:
+    branches: [ "main" ]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-ci:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET DOTNET_TFM_NO_NET_PREFIX
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: DOTNET_TFM_NO_NET_PREFIX.x
+    - name: Install .NET MAUI
+      run: dotnet workload install maui
+    - name: Restore dependencies
+      run: dotnet restore MauiApp._1.csproj
+    - name: Build
+      run: dotnet build MauiApp._1.csproj -c Release

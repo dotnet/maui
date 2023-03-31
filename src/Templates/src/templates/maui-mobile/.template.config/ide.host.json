@@ -11,12 +11,17 @@
         { 
               "id": "Microsoft.VisualStudio.ComponentGroup.Maui.All", 
               "hostId": "vs", 
-              "componentType": "SetupComponent" 
+              "componentType": "setupComponent" 
         }
    ],
    "symbolInfo": [
     {
       "id": "Framework",
+      "persistenceScope": "shared",
+      "persistenceScopeName": "maui"
+    },
+    {
+      "id": "Pipeline",
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
     }
