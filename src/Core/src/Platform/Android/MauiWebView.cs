@@ -1,6 +1,8 @@
 ﻿using System;
 using Android.Content;
+using Android.Views;
 using Android.Webkit;
+using AndroidX.ViewPager2.Widget;
 
 namespace Microsoft.Maui.Platform
 {
@@ -13,6 +15,24 @@ namespace Microsoft.Maui.Platform
 		public MauiWebView(WebViewHandler handler, Context context) : base(context)
 		{
 			_handler = handler ?? throw new ArgumentNullException("handler");
+		}
+
+		public override bool OnTouchEvent(MotionEvent? e)
+		{
+			RequestDisallowInterceptParentTouchEvent();
+
+			return base.OnTouchEvent(e);
+		}
+
+		void RequestDisallowInterceptParentTouchEvent()
+		{
+			if (Parent is null)
+				return;
+
+			var viewPager2 = Parent.GetParentOfType<ViewPager2>();
+
+			if (viewPager2 is not null)
+				Parent?.RequestDisallowInterceptTouchEvent(HorizontalScrollBarEnabled);
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)

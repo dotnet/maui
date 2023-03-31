@@ -139,7 +139,7 @@ namespace Maui.Controls.Sample
 					PageType.Shell => typeof(AppShell),
 					PageType.Main => typeof(CustomNavigationPage),
 					PageType.FlyoutPage => typeof(CustomFlyoutPage),
-					PageType.TabbedPage => typeof(Pages.TabbedPageGallery),
+					PageType.TabbedPage => typeof(Pages.TabbedPageGalleries.TabbedPageGallery),
 					PageType.Blazor =>
 #if NET6_0_OR_GREATER
 						typeof(BlazorPage),

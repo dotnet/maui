@@ -4,11 +4,11 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using AndroidSpecific = Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
-namespace Maui.Controls.Sample.Pages
+namespace Maui.Controls.Sample.Pages.TabbedPageGalleries
 {
-	public partial class TabbedPageGallery
+	public partial class BasicTabbedPageGallery
 	{
-		public TabbedPageGallery()
+		public BasicTabbedPageGallery()
 		{
 			InitializeComponent();
 			this.Children.Add(new NavigationGallery());
