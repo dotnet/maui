@@ -2494,8 +2494,58 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(120, measure.Width);
 
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
-			AssertArranged(view1, new Rect(20, 00, 40, 20));
+			AssertArranged(view1, new Rect(20, 0, 40, 20));
 			AssertArranged(view2, new Rect(60, 0, 60, 20));
+		}
+
+		// These next two tests validate cases where the Grid structure necessitates multiple 
+		// measure passes (because a Star value intersects with multiple Auto values)
+		// and the items being measured may have a different Auto height/width on the second pass.
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating the situation from https://github.com/dotnet/maui/issues/14296
+		[InlineData(40, 30)] // Simulating something like an Image where the height shrinks as the width constraint gets tighter
+		public void AutoRowIsDominatedByTallestView(double unconstrainedHeight, double constrainedHeight) 
+		{
+			var grid = CreateGridLayout(rows: "Auto", columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how wide its measurement constraints are
+			var view1 = CreateWidthDominatedView(100, unconstrainedHeight, new Tuple<double, double>(200, constrainedHeight));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 0, col: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: 200);
+
+			// We expect the Grid to grow to accommodate the full height of view1 at this width
+			Assert.Equal(constrainedHeight, measure.Height);
+		}
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating https://github.com/dotnet/maui/issues/14296 but for columns
+		[InlineData(50, 30)] // Simulating something like an Image where the width shrinks as the height constraint gets tighter
+		public void AutoColumnIsDominatedByWidestView(double unconstrainedWidth, double constrainedWidth)
+		{
+			var grid = CreateGridLayout(columns: "Auto", rows: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how high its measurement constraints are
+			var view1 = CreateHeightDominatedView(unconstrainedWidth, 100, new Tuple<double, double>(constrainedWidth, 100));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 1, col: 0);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: 100);
+
+			// We expect the Grid to group to accommodate the full width of view1 at this height
+			Assert.Equal(constrainedWidth, measure.Width);
 		}
 	}
 }
