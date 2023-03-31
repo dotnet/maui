@@ -46,7 +46,6 @@
     <SystemMemoryPackageVersion>4.5.5</SystemMemoryPackageVersion>
     <SystemBuffersPackageVersion>4.5.1</SystemBuffersPackageVersion>
     <SystemTextJsonPackageVersion>6.0.5</SystemTextJsonPackageVersion>
-    <SystemTextEncodingsWebPackageVersion>6.0.0</SystemTextEncodingsWebPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>6.0.0</MicrosoftBclAsyncInterfacesPackageVersion>
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
