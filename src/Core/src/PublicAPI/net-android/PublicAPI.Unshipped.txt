@@ -39,3 +39,5 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
+virtual Microsoft.Maui.Handlers.WebViewHandler.GetWebViewClient() -> Android.Webkit.WebViewClient!
+virtual Microsoft.Maui.Handlers.WebViewHandler.WebChromeClient() -> Android.Webkit.WebChromeClient?

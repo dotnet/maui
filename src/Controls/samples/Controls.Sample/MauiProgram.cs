@@ -266,6 +266,17 @@ namespace Maui.Controls.Sample
 						return true;
 					}
 				});
+#if ANDROID
+			// Validate a scenario creating a custom WebViewHandler and managing different native events from the
+			// WebView, WebViewClient and WebChromeClient.
+			// https://github.com/dotnet/maui/issues/11004
+			/*
+			appBuilder.ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<Microsoft.Maui.Controls.WebView, ProblemWebViewHandler>();
+			});
+			*/
+#endif
 
 			// Adapt to dual-screen and foldable Android devices like Surface Duo, includes TwoPaneView layout control
 			appBuilder.UseFoldable();
@@ -276,4 +287,45 @@ namespace Maui.Controls.Sample
 			return appBuilder.Build();
 		}
 	}
+
+#if ANDROID
+	internal class ProblemWebViewHandler : Microsoft.Maui.Handlers.WebViewHandler
+	{
+		protected override Android.Webkit.WebView CreatePlatformView()
+		{
+			var platformView = new Microsoft.Maui.Platform.MauiWebView(this, Android.App.Application.Context)
+			{
+				LayoutParameters = new Android.Views.ViewGroup.LayoutParams(Android.Views.ViewGroup.LayoutParams.MatchParent, Android.Views.ViewGroup.LayoutParams.MatchParent)
+			};
+
+			platformView.Settings.JavaScriptEnabled = true;
+			platformView.Settings.DomStorageEnabled = true;
+			platformView.Settings.SetSupportMultipleWindows(true);
+
+			return platformView;
+		}
+
+		protected override Android.Webkit.WebViewClient GetWebViewClient()
+		{
+			return new CustomWebClient();
+		}
+	}
+
+	internal class CustomWebClient : Android.Webkit.WebViewClient
+	{
+		public override Android.Webkit.WebResourceResponse ShouldInterceptRequest(Android.Webkit.WebView view, Android.Webkit.IWebResourceRequest request)
+		{
+			Debug.WriteLine($"CustomWebClient ShouldInterceptRequest: {request.Url.ToString()}");
+
+			return base.ShouldInterceptRequest(view, request);
+		}
+
+		public override void OnPageFinished(Android.Webkit.WebView view, string url)
+		{
+			base.OnPageFinished(view, url);
+
+			Debug.WriteLine($"CustomWebClient OnPageFinished: {url}");
+		}
+	}
+#endif
 }

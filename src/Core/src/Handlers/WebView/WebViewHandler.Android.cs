@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Handlers
 		internal const string AssetBaseUrl = "file:///android_asset/";
 
 		WebViewClient? _webViewClient;
-		MauiWebChromeClient? _webChromeClient;
+		WebChromeClient? _webChromeClient;
 
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
@@ -55,7 +55,9 @@ namespace Microsoft.Maui.Handlers
 			if (_webViewClient is MauiWebViewClient mauiWebViewClient)
 				mauiWebViewClient.Disconnect();
 
-			_webChromeClient?.Disconnect();
+			if (_webChromeClient is MauiWebChromeClient mauiWebChromeClient)
+				mauiWebChromeClient.Disconnect();
+
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
@@ -79,13 +81,23 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebViewClient(platformHandler._webViewClient ??= new MauiWebViewClient(platformHandler));
+				handler.PlatformView.SetWebViewClient(platformHandler._webViewClient ??= platformHandler.GetWebViewClient());
+		}
+
+		protected virtual WebViewClient GetWebViewClient()
+		{
+			return new MauiWebViewClient(this);
 		}
 
 		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebChromeClient(platformHandler._webChromeClient ??= new MauiWebChromeClient(platformHandler));
+				handler.PlatformView.SetWebChromeClient(platformHandler._webChromeClient ??= platformHandler.WebChromeClient());
+		}
+
+		protected virtual WebChromeClient? WebChromeClient()
+		{
+			return new MauiWebChromeClient(this);
 		}
 
 		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
