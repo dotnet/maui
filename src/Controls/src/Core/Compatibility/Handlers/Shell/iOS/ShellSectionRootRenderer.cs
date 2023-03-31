@@ -458,7 +458,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					_header = CreateShellSectionRootHeader(_shellContext);
 					_header.ShellSection = ShellSection;
-					
+
 					AddChildViewController(_header.ViewController);
 					View.AddSubview(_header.ViewController.View);
 				}
