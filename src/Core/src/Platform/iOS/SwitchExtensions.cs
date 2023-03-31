@@ -51,14 +51,23 @@ namespace Microsoft.Maui.Platform
 		internal static UIView? GetTrackSubview(this UISwitch uISwitch)
 		{
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsTvOSVersionAtLeast(13))
-				return uISwitch.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault();
+				return uISwitch.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq();
 			else
-				return uISwitch.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault()?.Subviews?.FirstOrDefault();
+				return uISwitch.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq()?.Subviews?.FirstOrDefaultNoLinq();
 		}
 
 		internal static UIColor? GetTrackColor(this UISwitch uISwitch)
 		{
 			return uISwitch.GetTrackSubview()?.BackgroundColor;
+		}
+
+		internal static T? FirstOrDefaultNoLinq<T>(this T[] items)
+		{
+			return items switch
+			{
+				[var i, ..] => i,
+				[] => default,
+			};
 		}
 	}
 }
