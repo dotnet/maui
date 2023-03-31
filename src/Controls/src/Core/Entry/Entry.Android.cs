@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -33,11 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFocus(IViewHandler handler, IView view, object args)
 		{
-			if (view is VisualElement ve && ve.IsFocused && handler is IPlatformViewHandler platformViewHandler)
-			{
-				KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
-			}
-
+			handler.ShowKeyboardIfFocused(view);
 			EntryHandler.CommandMapper.Chained?.Invoke(handler, view, nameof(IView.Focus), args);
 		}
 	}

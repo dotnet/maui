@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
@@ -13,11 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapFocus(IViewHandler handler, IView view, object args)
 		{
-			if (view is VisualElement ve && ve.IsFocused && handler is IPlatformViewHandler platformViewHandler)
-			{
-				KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
-			}
-
+			handler.ShowKeyboardIfFocused(view);
 			SearchBarHandler.CommandMapper.Chained?.Invoke(handler, view, nameof(IView.Focus), args);
 		}
 	}
