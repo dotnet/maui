@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Linq;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -59,15 +57,6 @@ namespace Microsoft.Maui.Platform
 		internal static UIColor? GetTrackColor(this UISwitch uISwitch)
 		{
 			return uISwitch.GetTrackSubview()?.BackgroundColor;
-		}
-
-		internal static T? FirstOrDefaultNoLinq<T>(this T[] items)
-		{
-			return items switch
-			{
-				[var i, ..] => i,
-				[] => default,
-			};
 		}
 	}
 }
