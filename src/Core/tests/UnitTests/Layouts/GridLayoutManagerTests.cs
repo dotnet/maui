@@ -2505,7 +2505,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Theory, Category(GridAutoSizing)]
 		[InlineData(10, 30)] // Replicating the situation from https://github.com/dotnet/maui/issues/14296
 		[InlineData(40, 30)] // Simulating something like an Image where the height shrinks as the width constraint gets tighter
-		public void AutoRowIsDominatedByTallestView(double unconstrainedHeight, double constrainedHeight) 
+		public void AutoRowIsDominatedByTallestView(double unconstrainedHeight, double constrainedHeight)
 		{
 			var grid = CreateGridLayout(rows: "Auto", columns: "Auto, *");
 
