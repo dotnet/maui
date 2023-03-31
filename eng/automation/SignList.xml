@@ -52,7 +52,6 @@
     <Skip Include="System.ObjectModel.dll" />
     <Skip Include="System.Runtime.CompilerServices.Unsafe.dll" />
     <Skip Include="System.Text.Json.dll" />
-    <Skip Include="System.Text.Encodings.Web.dll" />
   </ItemGroup>
 
 </Project>
