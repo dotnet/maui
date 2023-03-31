@@ -17,11 +17,11 @@
       the specific parts of .NET MAUI SDK.
   -->
   <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))) and ('$(SkipMauiWorkloadManifest)' != 'true') "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@"
   />
   <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) and ('$(SkipMauiWorkloadManifest)' != 'true') "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@"
   />
 
@@ -29,7 +29,7 @@
       Previous versions of the .NET MAUI SDK used Microsoft.Maui.Resizetizer.Sdk, but the new version uses a NuGet.
   -->
   <Import
-      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) "
+      Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true') and ($([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@'))) and ('$(SkipMauiWorkloadManifest)' != 'true') "
       Project="Sdk.targets" Sdk="Microsoft.Maui.Resizetizer.Sdk"
   />
 
@@ -37,7 +37,7 @@
       Previous versions of the .NET MAUI SDK used **FromWorkload**, so replace with explicit versions.
       The BundledVersions.targets that is imported is from the previous SDK, so all the other values are correct.
   -->
-  <ItemGroup Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@')) and ('$(SkipMauiWorkloadManifest)' != 'true') ">
     <KnownFrameworkReference
         Update="Microsoft.Maui.Core"
         DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
