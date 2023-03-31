@@ -314,11 +314,7 @@ namespace Microsoft.Maui.DeviceTests
 			AssertWithinTolerance(expected.Width, actual.Width, tolerance, "Width was not within tolerance.");
 		}
 
-		[Theory(DisplayName = "Native View Transforms are not empty"
-#if IOS
-					, Skip = "https://github.com/dotnet/maui/issues/3600"
-#endif
-			)]
+		[Theory(DisplayName = "PlatformView Transforms are not empty")]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
