@@ -1,6 +1,6 @@
 #nullable disable
-using System.Runtime.CompilerServices;
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
