@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Handlers
 			if (cumulativeY > minimumCumulativeY && VirtualView is not null && !VirtualView.IsRefreshing)
 				VirtualView.IsRefreshing = true;
 		}
-		
+
 		void CompleteRefresh()
 		{
 			if (_refreshCompletionDeferral != null)
