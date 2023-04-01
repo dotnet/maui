@@ -96,9 +96,6 @@ namespace Microsoft.Maui.Controls
 			var result = _menus.Remove(item);
 			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
 
-			if (item is Element e)
-				e.Parent = null;
-
 			return result;
 		}
 
@@ -111,9 +108,6 @@ namespace Microsoft.Maui.Controls
 
 			_menus.RemoveAt(index);
 			NotifyHandler(nameof(IMenuBarHandler.Remove), index, item);
-
-			if (item is Element e)
-				e.Parent = null;
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
