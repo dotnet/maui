@@ -3,6 +3,7 @@ using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+using Microsoft.Maui.Platform.iOS;
 using ObjCRuntime;
 using UIKit;
 
@@ -12,6 +13,8 @@ namespace Microsoft.Maui
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
 		internal const string GetConfigurationSelectorName = "application:configurationForConnectingSceneSession:options:";
+		internal delegate void ViewDidMoveToWindowEventHandler(IntPtr a);
+		static Swizzle<ViewDidMoveToWindowEventHandler>? didMoveToWindow;
 
 		IMauiContext _applicationContext = null!;
 
@@ -19,6 +22,7 @@ namespace Microsoft.Maui
 		{
 			Current = this;
 			IPlatformApplication.Current = this;
+			didMoveToWindow = new Swizzle<ViewDidMoveToWindowEventHandler>(typeof(UIView), "didMoveToWindow", ViewDidMoveToWindow);
 		}
 
 		protected abstract MauiApp CreateMauiApp();
@@ -157,5 +161,18 @@ namespace Microsoft.Maui
 		public IServiceProvider Services { get; protected set; } = null!;
 
 		public IApplication Application { get; protected set; } = null!;
+
+		void ViewDidMoveToWindow(IntPtr @this)
+		{
+			UIView nsObject = (UIView)ObjCRuntime.Runtime.GetINativeObject(@this, true, typeof(UIView))!;
+
+			using (var orig = didMoveToWindow?.Restore())
+			{
+				if (orig?.Delegate is not null)
+				{
+					orig.Delegate(@this);
+				}
+			}
+		}
 	}
 }
