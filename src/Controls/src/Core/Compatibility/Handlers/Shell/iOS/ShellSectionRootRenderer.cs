@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					var view = renderer.ViewController.View;
 					if (view != null)
 					{
-						view.Frame = new CGRect(0, 0, _containerArea.Frame.Width, _containerArea.Frame.Height);
+						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
 						UpdateAdditionalSafeAreaInsets(renderer);
 					}
 				}
