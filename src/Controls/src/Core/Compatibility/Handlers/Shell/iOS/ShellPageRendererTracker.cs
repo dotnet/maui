@@ -460,6 +460,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
+			public override void LayoutSubviews()
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					if (Height == null || Height == 0)
+					{
+						UpdateFrame(Superview);
+					}
+				}
+
+				base.LayoutSubviews();
+			}
+
 			public override void WillMoveToSuperview(UIView newSuper)
 			{
 				UpdateFrame(newSuper);
