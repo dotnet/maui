@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _lastTabThickness = Int32.MinValue;
 		Thickness _lastInset;
 		bool _isDisposed;
-
+		bool _isRotating;
 		UIViewPropertyAnimator _pageAnimation;
 		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
@@ -66,6 +66,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutRenderers();
 
 			LayoutHeader();
+			_isRotating = false;
+		}
+
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+			_isRotating = true;
 		}
 
 		public override void ViewDidLoad()
@@ -131,7 +138,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			base.ViewSafeAreaInsetsDidChange();
 
-			LayoutHeader();
+			if (_didLayoutSubviews && !_isRotating)
+				LayoutHeader();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
