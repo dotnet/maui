@@ -604,7 +604,6 @@ public static class KeyboardAutoManagerScroll
 
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 		}
-
 		View = null;
 		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;
