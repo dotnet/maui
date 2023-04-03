@@ -157,11 +157,13 @@ namespace Microsoft.Maui.Platform
 
 			var backgroundLayer = GetBackgroundLayer();
 
-			//if (backgroundLayer is null)
-			//	return;
+			// We wrap some controls for certain visual effects like applying background gradient etc.
+			// For this reason, we have to clip the background layer as well if it exists.
+			if (backgroundLayer is null)
+				return;
 
-			//backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
-			//backgroundMask.Path = nativePath;
+			backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
+			backgroundMask.Path = nativePath;
 		}
 
 		void DisposeClip()
