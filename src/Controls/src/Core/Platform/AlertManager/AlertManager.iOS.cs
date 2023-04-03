@@ -82,16 +82,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 			void OnAlertRequested(IView sender, AlertArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				PresentAlert(arguments);
 			}
 
 			void OnPromptRequested(IView sender, PromptArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				PresentPrompt(arguments);
 			}
 
 			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
 			{
+				if (!PageIsInThisWindow(sender))
+					return;
+
 				PresentActionSheet(arguments);
 			}
 
@@ -205,6 +214,20 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					_ = platformView.RootViewController.PresentViewControllerAsync(alert, true);
 				});
+			}
+
+			bool PageIsInThisWindow(IView view)
+			{
+				if (view is not Page page)
+					return false;
+
+				var window = page.Window;
+				var platformWindow = window?.MauiContext.GetPlatformWindow();
+
+				if (window is null || platformWindow is null)
+					return false;
+
+				return platformWindow == PlatformView;
 			}
 		}
 	}
