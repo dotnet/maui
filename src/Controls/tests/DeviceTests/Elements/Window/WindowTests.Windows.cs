@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -25,14 +26,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			var mainPage = new ContentPage
 			{
+				BackgroundColor = Colors.Red,
 				Content = button
+			};
+
+			var secondaryPage = new ContentPage
+			{ 
+				BackgroundColor = Colors.Green 
 			};
 
 			var clicked = false;
 
 			button.Clicked += delegate
 			{
-				Application.Current.MainPage = mainPage;
 				clicked = true;
 			};
 
@@ -40,7 +46,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			Assert.NotNull(Application.Current.MainPage);
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+			{
+				var mainWindow = handler.VirtualView as Window;
+
+				if (clicked)
+				{
+					mainWindow.Page = secondaryPage;
+				}
+
+				// Without exceptions, the test has passed.
+				Assert.Equal(mainWindow.Page, secondaryPage);
+				Assert.NotNull(mainWindow.Page);
+			});
 		}
 
 		[Fact]
