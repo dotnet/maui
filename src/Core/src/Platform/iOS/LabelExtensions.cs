@@ -84,7 +84,8 @@ namespace Microsoft.Maui.Platform
 			};
 
 			NSError nSError = new NSError();
-			platformLabel.AttributedText = new NSAttributedString(text, attr,ref nSError);
+
+			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nSError);
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
