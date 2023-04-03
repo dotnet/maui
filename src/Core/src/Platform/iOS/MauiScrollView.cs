@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		// while the KeyboardAutoManagerScroll is scrolling.
 		public override void ScrollRectToVisible(CGRect rect, bool animated)
 		{
-			if (!KeyboardAutoManagerScroll.IsCurrentlyScrolling)
+			if (!KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
 				base.ScrollRectToVisible(rect, animated);
 		}
 	}
