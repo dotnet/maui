@@ -111,7 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if __IOS__
+#if __IOS__ || __ANDROID_30__
 			Skip = "Animated GIFs are not yet supported on iOS."
 #endif
 		)]
