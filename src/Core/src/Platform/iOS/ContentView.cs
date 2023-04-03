@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
-	
+
 		public ContentView()
 		{
 			Layer.CornerCurve = CACornerCurve.Continuous;

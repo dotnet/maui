@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
-		
+
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 
 			var width = size.Width;
 			var height = size.Height;
-			
+
 			var crossPlatformSize = layout.CrossPlatformMeasure(width, height);
 
 			CacheMeasureConstraints(width, height);
