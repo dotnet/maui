@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Graphics
@@ -22,11 +22,7 @@ namespace Microsoft.Maui.Graphics
 			return null;
 		}
 
-		public static bool IsNullOrEmpty(
-#if !NETSTANDARD
-			[NotNullWhen(true)]
-#endif
-		this Paint? paint)
+		public static bool IsNullOrEmpty([NotNullWhen(true)] this Paint? paint)
 		{
 			if (paint is SolidPaint solidPaint)
 				return solidPaint == null || solidPaint.Color == null;
