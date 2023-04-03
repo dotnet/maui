@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				.PerformEditorAction(returnType.ToPlatform());
 
 			// Let the action propagate
-			await Task.Delay(10);
+			await Task.Delay(100);
 		}
 
 		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message = "")
