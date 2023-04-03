@@ -37,8 +37,8 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal sealed class AlertRequestHelper : IDisposable
 		{
-			static Task<bool>? CurrentAlert;
-			static Task<string?>? CurrentPrompt;
+			Task<bool>? CurrentAlert;
+			Task<string?>? CurrentPrompt;
 
 			internal AlertRequestHelper(Window virtualView, UI.Xaml.Window platformView)
 			{
