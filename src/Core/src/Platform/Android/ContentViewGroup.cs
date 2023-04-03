@@ -4,6 +4,7 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
@@ -107,22 +108,26 @@ namespace Microsoft.Maui.Platform
 
 		void ClipChild(Canvas? canvas)
 		{
-			if (Clip == null || canvas == null)
+			if (Clip is null || Clip?.Shape is null || canvas is null)
 				return;
 
 			float density = _context.GetDisplayDensity();
 
 			float strokeThickness = (float)(Clip.StrokeThickness * density);
-			float offset = strokeThickness / 2;
-			float w = (canvas.Width / density) - strokeThickness;
-			float h = (canvas.Height / density) - strokeThickness;
 
-			var bounds = new Graphics.RectF(offset, offset, w, h);
-			var path = Clip.Shape?.PathForBounds(bounds);
-			var currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+			IShape clipShape = Clip.Shape;
 
-			if (currentPath != null)
-				canvas.ClipPath(currentPath);
+			float x = strokeThickness / 2;
+			float y = strokeThickness / 2;
+			float w = canvas.Width - strokeThickness;
+			float h = canvas.Height - strokeThickness;
+
+			var bounds = new Graphics.RectF(x, y, w, h);
+
+			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
+
+			if (platformPath is not null)
+				canvas.ClipPath(platformPath);
 		}
 	}
 }
