@@ -1,8 +1,8 @@
-﻿using NUnit.Framework;
+﻿using System.Reflection;
 using Microsoft.Maui.Appium;
+using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 using TestUtils.Appium.UITests;
-using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Appium;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
@@ -26,8 +26,21 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		[TearDown]
 		public void TearDown()
 		{
+			var testOutcome = TestContext.CurrentContext.Result.Outcome;
+			if (testOutcome == ResultState.Error ||
+				testOutcome == ResultState.Failure)
+			{
+				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+				var pageSource = Driver?.PageSource!;
+				File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-PageSource.txt"), pageSource);
+
+				var screenshot = Driver?.GetScreenshot();
+				screenshot?.SaveAsFile(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-ScreenShot.png"));
+			}
+
 			//this crashes on Android
-			if(!IsAndroid && !IsWindows)
+			if (!IsAndroid && !IsWindows)
 				Driver?.ResetApp();
 		}
 
