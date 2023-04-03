@@ -6,7 +6,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Browser"
-        Version="1.4.0.4"
+        Version="1.5.0"
     />
     <PackageReference
         Update="Xamarin.AndroidX.SwipeRefreshLayout"
@@ -42,7 +42,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
-        Version="1.2.1.9"
+        Version="1.3.0"
     />
     <PackageReference
         Update="Xamarin.Build.Download"
