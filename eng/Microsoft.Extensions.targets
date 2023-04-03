@@ -138,6 +138,10 @@
         Version="$(SystemTextJsonPackageVersion)"
     />
     <PackageReference
+        Update="System.Text.Encodings.Web"
+        Version="$(SystemTextEncodingsWebPackageVersion)"
+    />
+    <PackageReference
         Update="System.CodeDom"
         Version="$(SystemCodeDomPackageVersion)"
     />
