@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		// apply to ViewHandlerExtensions.MeasureVirtualView
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (CrossPlatformMeasure == null)
+			if (View is not ILayout layout)
 			{
 				return base.SizeThatFits(size);
 			}
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Platform
 			var width = size.Width;
 			var height = size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(width, height);
+			var crossPlatformSize = layout.CrossPlatformMeasure(width, height);
 			_measureValid = true;
 
 			return crossPlatformSize.ToCGSize();
@@ -36,15 +37,20 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
+			if (View is not ILayout layout)
+			{
+				return;
+			}
+
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
 			if (!_measureValid)
 			{
-				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
+				layout.CrossPlatformMeasure(bounds.Width, bounds.Height);
 				_measureValid = true;
 			}
 
-			CrossPlatformArrange?.Invoke(bounds);
+			layout.CrossPlatformArrange(bounds);
 		}
 
 		public override void SetNeedsLayout()
@@ -67,9 +73,6 @@ namespace Microsoft.Maui.Platform
 			base.WillRemoveSubview(uiview);
 			Superview?.SetNeedsLayout();
 		}
-
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		public override UIView HitTest(CGPoint point, UIEvent? uievent)
 		{
