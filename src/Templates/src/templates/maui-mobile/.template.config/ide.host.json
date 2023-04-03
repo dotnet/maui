@@ -11,7 +11,7 @@
         { 
               "id": "Microsoft.VisualStudio.ComponentGroup.Maui.All", 
               "hostId": "vs", 
-              "componentType": "setupComponent" 
+              "componentType": "SetupComponent" 
         }
    ],
    "symbolInfo": [

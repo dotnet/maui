@@ -10,8 +10,7 @@
     "shortName": "maui",
     "tags": {
       "language": "C#",
-      "type": "project",
-      "editorTreatAs":"solution"
+      "type": "project"
     },
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
