@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			void OnPageBusy(IView sender, bool enabled)
+			void OnPageBusy(Page sender, bool enabled)
 			{
 				_busyCount = Math.Max(0, enabled ? _busyCount + 1 : _busyCount - 1);
 #pragma warning disable CA1416, CA1422 // TODO:  'UIApplication.NetworkActivityIndicatorVisible' is unsupported on: 'ios' 13.0 and later
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Platform
 #pragma warning restore CA1416, CA1422
 			}
 
-			void OnAlertRequested(IView sender, AlertArguments arguments)
+			void OnAlertRequested(Page sender, AlertArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 				PresentAlert(arguments);
 			}
 
-			void OnPromptRequested(IView sender, PromptArguments arguments)
+			void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Platform
 				PresentPrompt(arguments);
 			}
 
-			void OnActionSheetRequested(IView sender, ActionSheetArguments arguments)
+			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
 					return;
@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (modalStack != null && modalStack.Count > 0)
 				{
 					var topPage = modalStack[modalStack.Count - 1];
-					var pageController = topPage.ToUIViewController(topPage.FindMauiContext());
+					var pageController = topPage.ToUIViewController(topPage.RequireMauiContext());
 
 					if (pageController != null)
 					{
@@ -216,19 +216,8 @@ namespace Microsoft.Maui.Controls.Platform
 				});
 			}
 
-			bool PageIsInThisWindow(IView view)
-			{
-				if (view is not Page page)
-					return false;
-
-				var window = page.Window;
-				var platformWindow = window?.MauiContext.GetPlatformWindow();
-
-				if (window is null || platformWindow is null)
-					return false;
-
-				return platformWindow == PlatformView;
-			}
+			bool PageIsInThisWindow(Page page) =>
+				page?.Window == VirtualView;
 		}
 	}
 }
