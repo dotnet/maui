@@ -549,7 +549,6 @@ public static class KeyboardAutoManagerScroll
 
 		newscrollIndicatorInset.Bottom = bottomScrollIndicatorInset;
 		LastScrollView.ScrollIndicatorInsets = newscrollIndicatorInset;
-
 	}
 
 	static void AnimateStartingLastScrollView()
