@@ -34,7 +34,9 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool New(string shortName, string outputDirectory, string framework)
 		{
-			return Run("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", timeoutinSeconds: 60);
+			var output = RunForOutput("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", out int exitCode, timeoutInSeconds: 300);
+			TestContext.WriteLine(output);
+			return exitCode == 0;
 		}
 
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
