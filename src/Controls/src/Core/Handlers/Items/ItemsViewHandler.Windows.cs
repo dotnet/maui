@@ -423,6 +423,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
+
+			switch (Element.RemainingItemsThreshold)
+			{
+				case -1:
+					return;
+				case 0:
+					if (itemsViewScrolledEventArgs.LastVisibleItemIndex == ItemCount - 1)
+						Element.SendRemainingItemsThresholdReached();
+					break;
+				default:
+					if (ItemCount - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= Element.RemainingItemsThreshold)
+						Element.SendRemainingItemsThresholdReached();
+					break;
+			}
 		}
 
 		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)
