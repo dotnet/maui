@@ -6,6 +6,7 @@ string TARGET = Argument("target", "Test");
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string CONFIGURATION = Argument("configuration", EnvironmentVariable("IOS_TEST_CONFIGURATION") ?? "Debug");
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -19,7 +20,6 @@ var TEST_RESULTS = Argument("results", EnvironmentVariable("IOS_TEST_RESULTS") ?
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-x64";
-string CONFIGURATION = "Release";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);

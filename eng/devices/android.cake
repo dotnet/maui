@@ -8,6 +8,7 @@ string TARGET = Argument("target", "Test");
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
 string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? "android-emulator-32_30");
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
+string CONFIGURATION = Argument("configuration", EnvironmentVariable("ANDROID_TEST_CONFIGURATION") ?? "Debug");
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -21,7 +22,6 @@ var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
 // other
-string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovered
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";
