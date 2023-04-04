@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Platform
 			var viewPager2 = Parent.GetParentOfType<ViewPager2>();
 
 			if (viewPager2 is not null)
-				Parent?.RequestDisallowInterceptTouchEvent(HorizontalScrollBarEnabled);
+				Parent.RequestDisallowInterceptTouchEvent(HorizontalScrollBarEnabled);
 		}
 
 		void IWebViewDelegate.LoadHtml(string? html, string? baseUrl)
