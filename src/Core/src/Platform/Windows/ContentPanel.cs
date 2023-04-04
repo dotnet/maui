@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 	public class ContentPanel : Panel
 	{
 		readonly Path? _borderPath;
-		IShape? _borderShape;
+		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
@@ -75,9 +75,9 @@ namespace Microsoft.Maui.Platform
 			if (_borderPath == null)
 				return;
 
-			_borderPath.UpdatePath(_borderShape, ActualWidth, ActualHeight);
+			_borderPath.UpdatePath(_borderStroke?.Shape, ActualWidth, ActualHeight);
 			UpdateContent();
-			UpdateClip(_borderShape);
+			UpdateClip(_borderStroke?.Shape);
 		}
 
 		internal void EnsureBorderPath()
@@ -96,18 +96,21 @@ namespace Microsoft.Maui.Platform
 			_borderPath.UpdateBackground(background);
 		}
 
-		public void UpdateBorderShape(IShape borderShape)
+		public void UpdateBorderStroke(IBorderStroke borderStroke)
 		{
-			_borderShape = borderShape;
+			if (borderStroke is null)
+				return;
+
+			_borderStroke = borderStroke;
 
 			if (_borderPath == null)
 				return;
 
-			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
+			_borderPath.UpdateBorderShape(_borderStroke.Shape, ActualWidth, ActualHeight);
 			UpdateContent();
-			UpdateClip(_borderShape);
+			UpdateClip(_borderStroke.Shape);
 		}
-
+		
 		void AddContent(FrameworkElement? content)
 		{
 			if (content == null)
@@ -146,8 +149,18 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
 
+
 			var pathSize = new Graphics.Rect(0, 0, width, height);
-			var clipPath = clipGeometry.PathForBounds(pathSize);
+			PathF? clipPath;
+
+			if (clipGeometry is IRoundRectangle roundRectangle)
+			{
+				var strokeThickness = (float)(_borderStroke?.StrokeThickness ?? 0);
+				clipPath = roundRectangle.InnerPathForBounds(pathSize, strokeThickness);
+			}
+			else
+				clipPath = clipGeometry?.PathForBounds(pathSize);
+
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
 
