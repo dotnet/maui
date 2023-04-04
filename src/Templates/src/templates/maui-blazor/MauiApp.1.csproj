@@ -60,6 +60,9 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
     </ItemGroup>
 
+  <!-- Build Properties must be defined within these property groups to ensure successful publishing
+       to the App Store. See "Define build properties in your project file" here:
+       https://learn.microsoft.com/en-us/dotnet/maui/mac-catalyst/deployment/publish-app-store -->
   <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
     <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
   </PropertyGroup>
