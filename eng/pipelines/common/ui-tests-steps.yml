@@ -52,6 +52,15 @@ steps:
     displayName: "Install Appium"
     continueOnError: true
 
+  - task: PowerShell@2
+    inputs:
+      targetType: 'inline'
+      condition: eq(${{ parameters.platform }}, 'catalyst')
+      script: |
+        sudo automationmodetool enable-automationmode-without-authentication
+    displayName: "Enable automationmode without authentication"
+    continueOnError: true
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
