@@ -74,7 +74,7 @@ jobs:
         itemPattern: ${{ parameters.artifactItemPattern }}
         downloadPath: $(System.DefaultWorkingDirectory)/artifacts
 
-    - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
@@ -127,7 +127,7 @@ jobs:
         itemPattern: ${{ parameters.artifactItemPattern }}
         downloadPath: $(System.DefaultWorkingDirectory)/artifacts
 
-    - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
