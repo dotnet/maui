@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
-		{       
+		{
 			var previousCursorPosition = editText.SelectionStart;
 			var keyboard = textInput.Keyboard;
 

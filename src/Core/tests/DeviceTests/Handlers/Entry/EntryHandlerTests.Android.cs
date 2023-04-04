@@ -24,8 +24,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
 
-			var entry = new EntryStub() 
-			{ 
+			var entry = new EntryStub()
+			{
 				IsPassword = false,
 				Keyboard = keyboard,
 				Text = "Password"
