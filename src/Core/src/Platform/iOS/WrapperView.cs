@@ -77,23 +77,23 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
-			if (_borderView != null)
+			if (_borderView is not null)
 				BringSubviewToFront(_borderView);
 
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
 
-			if (MaskLayer != null)
+			if (MaskLayer is not null)
 				MaskLayer.Frame = Bounds;
 
-			if (BackgroundMaskLayer != null)
+			if (BackgroundMaskLayer is not null)
 				BackgroundMaskLayer.Frame = Bounds;
 
-			if (ShadowLayer != null)
+			if (ShadowLayer is not null)
 				ShadowLayer.Frame = Bounds;
 
-			if (_borderView != null)
+			if (_borderView is not null)
 				_borderView.Frame = Bounds;
 
 			SetClip();
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			if (_borderView == null)
+			if (_borderView is null)
 			{
 				AddSubview(_borderView = new UIView(Bounds) { UserInteractionEnabled = false });
 			}
