@@ -64,5 +64,7 @@ namespace Microsoft.Maui
 		/// <param name="self">The array to retrieve the last item from.</param>
 		/// <returns>An object of type <typeparamref name="T"/> that is the last item in the collection.</returns>
 		public static T Last<T>(this T[] self) => self[self.Length - 1];
+
+		internal static T? FirstOrDefaultNoLinq<T>(this T[]? items) => items is null || items.Length == 0 ? default : items[0];
 	}
 }
