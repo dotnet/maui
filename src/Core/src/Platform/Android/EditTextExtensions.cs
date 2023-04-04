@@ -277,19 +277,20 @@ namespace Microsoft.Maui.Platform
 		}
 
 		internal static void SetInputType(this EditText editText, ITextInput textInput)
-		{
+		{       
 			var previousCursorPosition = editText.SelectionStart;
 			var keyboard = textInput.Keyboard;
-			var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+			editText.InputType = keyboard.ToInputType();
 
 			if (keyboard is not CustomKeyboard)
 			{
-				// TODO: IsSpellCheckEnabled handling must be here.
-
-				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				if ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
 				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
 					if (!textInput.IsTextPredictionEnabled)
-						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+						editText.InputType |= InputTypes.TextFlagNoSuggestions;
 				}
 			}
 
@@ -300,14 +301,11 @@ namespace Microsoft.Maui.Platform
 
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
-				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+				if ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText)
+					editText.InputType |= InputTypes.TextVariationPassword;
+				if ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
-
-			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
