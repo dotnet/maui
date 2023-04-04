@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to .NET MAUI! In this document, we'll outline what you need to know about contributing and how to get started.
 
+First and foremost: if you are thinking about contributing a bigger change or feature, **please open an issue or talk to a core team member first**! By doing this we can coordinate and see if the change you are going to work on is something that aligns with out current priorities and is something we can commit to reviewing and merging within reasonable time. We would want to prevent that you are investing a lot of your valuable time in something that might not be in line with what we want for .NET MAUI.
+
 ## Code of Conduct
 
 Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
