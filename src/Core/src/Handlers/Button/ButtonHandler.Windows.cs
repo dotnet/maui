@@ -1,3 +1,6 @@
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
@@ -108,6 +111,21 @@ namespace Microsoft.Maui.Handlers
 		void OnPointerReleased(object sender, PointerRoutedEventArgs e)
 		{
 			VirtualView?.Released();
+
+			UpdateVisualState();
+		}
+
+		void UpdateVisualState()
+		{
+			if (PlatformView is not null)
+			{
+				var dispatcher = MauiContext?.Services.GetRequiredService<IDispatcher>();
+
+				dispatcher?.DispatchDelayed(TimeSpan.FromMilliseconds(150), () =>
+				{
+					VisualStateManager.GoToState(PlatformView, "Normal", true);
+				});
+			}
 		}
 	}
 }
