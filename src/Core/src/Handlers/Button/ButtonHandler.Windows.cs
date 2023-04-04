@@ -112,6 +112,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			VirtualView?.Released();
 
+			// In Windows pressing the button sets the focus. This causes the VisualState to go from Pressed to Focused
+			// while on the rest of supported platforms, it goes to Normal.
+			// Here we force the same behavior as in the rest of the platforms but we keep the possibility of setting the focus with Keyboard, etc.
 			UpdateVisualState();
 		}
 
