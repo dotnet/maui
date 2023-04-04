@@ -101,11 +101,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Menu
 
 			if (typeof(TChildType) == typeof(MenuBarItem))
 			{
-				(child0.Parent as ContentPage)!.MenuBarItems.Clear();
+				(child0.Parent as ContentPage)!.MenuBarItems.Remove(child0 as MenuBarItem);
+				(child1.Parent as ContentPage)!.MenuBarItems.Remove(child1 as MenuBarItem);
 			}
 			else
 			{
-				menuBar.Clear();
+				menuBar.Remove(child0);
+				menuBar.Remove(child1);
 			}
 
 			Assert.Null(child0.Parent);
