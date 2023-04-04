@@ -92,6 +92,14 @@ namespace Microsoft.Maui.DeviceTests
 						for (int i = 0; i < 30; i++)
 						{
 							var entry = new Entry();
+
+							if (i == 0)
+							{
+								// This just lets us visually verify where
+								// the first entry is located
+								entry.Text = "First Entry";
+							}
+
 							entries.Add(entry);
 							layout.Add(entry);
 						}
@@ -102,6 +110,10 @@ namespace Microsoft.Maui.DeviceTests
 						// Locate the lowest visible entry
 						var pageBoundingBox = modalPage.GetBoundingBox();
 						testEntry = entries[0];
+
+						// Ensure that the keyboard is closed before we start
+						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Ensure that the keyboard is closed before we start");
+
 						foreach (var entry in entries)
 						{
 							var entryBox = entry.GetBoundingBox();
@@ -112,9 +124,6 @@ namespace Microsoft.Maui.DeviceTests
 
 							testEntry = entry;
 						}
-
-						// Ensure that the keyboard is closed before we start
-						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Ensure that the keyboard is closed before we start");
 
 						// determine the screen dimensions with no keyboard open
 						var rootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;

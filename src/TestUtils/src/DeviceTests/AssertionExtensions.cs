@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
@@ -112,8 +113,22 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000) =>
 			view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
 
-		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().ShowKeyboardForView(timeout);
+		public static Task ShowKeyboardForView(this IView view, int timeout = 1000, string? message = null)
+		{
+			try
+			{
+				return view.ToPlatform().ShowKeyboardForView(timeout);
+			}
+			catch (Exception ex)
+			{
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
+			}
+		}
+
+		// We're not using ToPlatform because we don't want to call this on the WrapperView
 		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
 			view.ToPlatform().HideKeyboardForView(timeout, message);
 
