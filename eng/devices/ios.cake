@@ -142,13 +142,8 @@ Task("Test")
 	Information("Test App: {0}", TEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	// Don't delete file from previous retry run
-	Func<IFileSystemInfo, bool> exclude_previous_test_results =
-	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
-                "TestResultsFailures",
-                StringComparison.OrdinalIgnoreCase);
-
-	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
+	if (!IsCIBuild())
+		CleanDirectories(TEST_RESULTS);
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
@@ -172,7 +167,6 @@ Task("Test")
 
 		if (testsFailed && IsCIBuild())
 		{
-			Information("Tests falied, creating copy of results in case task runs again");
 			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
 			EnsureDirectoryExists(failurePath);
 			// The tasks will retry the tests and overwrite the failed results each retry

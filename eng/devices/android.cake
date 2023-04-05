@@ -214,15 +214,8 @@ Task("Test")
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 	
-	Func<IFileSystemInfo, bool> exclude_previous_test_results =
-		fileSystemInfo => 
-		{
-			bool result = !fileSystemInfo.Path.FullPath.Contains("TestResultsFailure", StringComparison.OrdinalIgnoreCase);
-			Information($"Checking path: {result} {fileSystemInfo.Path.FullPath}");
-			return result;
-		};
-
-	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
+	if (IsCIBuild())
+		CleanDirectories(TEST_RESULTS);
 
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
@@ -265,16 +258,10 @@ Task("Test")
 		if (testsFailed && IsCIBuild())
 		{
 			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
-			Information($"Tests falied, creating copy of results in case task runs again: {failurePath}");
 			EnsureDirectoryExists(failurePath);
 			// The tasks will retry the tests and overwrite the failed results each retry
 			// we want to retain the failed results for diagnostic purposes
 			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
-
-			foreach(var fileFound in GetFiles($"{TEST_RESULTS}/*.*"))
-			{
-				Information($"File found: {fileFound.FullPath}");
-			}
 		}
 	}
 
