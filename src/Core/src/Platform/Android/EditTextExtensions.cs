@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Platform
 
 			if (keyboard is not CustomKeyboard)
 			{
-				if ((editText.InputType & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				if (!editText.InputType.HasFlag(InputTypes.TextFlagNoSuggestions))
 				{
 					// TODO: IsSpellCheckEnabled handling must be here.
 
@@ -301,9 +301,9 @@ namespace Microsoft.Maui.Platform
 
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
-				if ((editText.InputType & InputTypes.ClassText) == InputTypes.ClassText)
+				if (editText.InputType.HasFlag(InputTypes.ClassText))
 					editText.InputType |= InputTypes.TextVariationPassword;
-				if ((editText.InputType & InputTypes.ClassNumber) == InputTypes.ClassNumber)
+				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
 					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
 
