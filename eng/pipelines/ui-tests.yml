@@ -84,8 +84,11 @@ parameters:
   - name: macosPool
     type: object
     default:
-      name: $(macosTestsVmPool)
-      vmImage: $(macosTestsVmImage)
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Monterey
+        - macOS.Architecture -equals x64
 
 
 resources:
