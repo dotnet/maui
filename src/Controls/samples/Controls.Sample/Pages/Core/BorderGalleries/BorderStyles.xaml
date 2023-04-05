@@ -75,7 +75,8 @@
                 Text="Shadow"
                 Style="{StaticResource Headline}"/>
             <Border
-                StrokeThickness="10">
+                StrokeThickness="10"
+                Style="{StaticResource BorderStyle}">
                 <Border.Shadow>
                     <Shadow 
                         Brush="Orange"
@@ -84,7 +85,8 @@
                 </Border.Shadow>
             </Border>
             <Border
-                BackgroundColor="LightBlue">
+                BackgroundColor="LightBlue"
+                Style="{StaticResource BorderStyle}">
                 <Border.Shadow>
                     <Shadow 
                         Brush="Orange"
