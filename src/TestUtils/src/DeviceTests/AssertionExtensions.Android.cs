@@ -174,20 +174,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			try
 			{
-				int retry = 2;
-				for (int i = 0; i < retry; i++)
+				KeyboardManager.HideKeyboard(view);
+				await Task.Yield();
+				bool result = await Wait(() =>
 				{
-					KeyboardManager.HideKeyboard(view);
-					try
-					{
-						await view.WaitForKeyboardToHide(timeout);
-					}
-					catch
-					{
-						if (i >= retry)
-							throw;
-					}
-				}
+					bool isVisible = !KeyboardManager.IsSoftKeyboardVisible(view);
+
+					if (!isVisible)
+						KeyboardManager.HideKeyboard(view);
+
+					return isVisible;
+
+				}, timeout);
+
+				Assert.True(result);
 			}
 			catch (Exception ex)
 			{
