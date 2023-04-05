@@ -120,9 +120,11 @@ namespace Microsoft.Maui.Handlers
 
 		void UpdateVisualState()
 		{
-			if (PlatformView is not null)
+			var services = MauiContext?.Services;
+
+			if (services is not null && PlatformView is not null)
 			{
-				var dispatcher = MauiContext?.Services.GetRequiredService<IDispatcher>();
+				var dispatcher = services.GetRequiredService<IDispatcher>();
 
 				dispatcher?.DispatchDelayed(TimeSpan.FromMilliseconds(150), () =>
 				{
