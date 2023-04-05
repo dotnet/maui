@@ -1,12 +1,12 @@
 ﻿using Microsoft.Maui.Appium;
 using NUnit.Framework;
-using OpenQA.Selenium;
+using OpenQA.Selenium.Appium.Enums;
+using OpenQA.Selenium.Interactions;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
 	public class MainPageTests : AppiumPlatformsTestBase
 	{
-
 		public MainPageTests(TestDevice testDevice) : base(testDevice)
 		{
 
@@ -20,7 +20,19 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 
 			Driver?.FindElement(ByAutomationId("entryUsername")).SendKeys("user@email.com");
 			Driver?.FindElement(ByAutomationId("entryPassword")).SendKeys("password");
-			Driver?.FindElement(ByAutomationId("btnLogin")).Click();
+			Driver?.FindElement(ByAutomationId("btnLogin"));
+
+			var btnElement = Driver?.FindElement(ByAutomationId("btnLogin"))!;
+			if (Driver!.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("mac"))
+			{
+				Actions action = new Actions(Driver);
+				action.Click(btnElement).Perform();
+			}
+			else
+			{
+				btnElement.Click();
+			}
+
 			var text = Driver?.FindElement(ByAutomationId("lblStatus")).Text ?? "";
 
 			Assert.IsNotNull(text);
