@@ -128,7 +128,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		// We're not using ToPlatform because we don't want to call this on the WrapperView
 		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
 			view.ToPlatform().HideKeyboardForView(timeout, message);
 
