@@ -267,6 +267,10 @@ Task("Test")
 			// we want to retain the failed results for diagnostic purposes
 			CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
 		}
+		else
+		{
+			CopyFiles($"{TEST_RESULTS}/*.*", $"{TEST_RESULTS}/{Guid.NewGuid()}/");
+		}
 	}
 
 	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
