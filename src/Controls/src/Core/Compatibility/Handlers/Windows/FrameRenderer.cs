@@ -87,24 +87,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdatePadding()
 		{
-			//Control.Padding = Element.Padding.ToPlatform();
-			//Control.Padding = new UI.Xaml.Thickness(25);
-			//Control.Padding = new UI.Xaml.Thickness(26);
-			//Control.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
-
+			Control.Padding = Element.Padding.ToPlatform();
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			// We need this so the `Border` control will arrange and have a size
 			Control?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
-
-			//if (Element is IContentView cv)
-			//{
-			//	finalSize = cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
-			//}
-
-			System.Diagnostics.Debug.WriteLine($"FrameRenderer: {finalSize} content: {(Element.Content as IView)!.Frame}");
 			return new global::Windows.Foundation.Size(Math.Max(0, finalSize.Width), Math.Max(0, finalSize.Height));
 		}
 
@@ -115,41 +104,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Control?.DesiredSize is not null)
 				return Control.DesiredSize;
 
-			//if (Control is not null)
-			//{
-			//	return Control.DesiredSize;
-			//}
-			//Control?.Measure(availableSize);
-			//if (Element is IContentView cv)
-			//{
-			//	// If there's a border specified, include the thickness in our measurements
-			//	// multiplied by 2 to account for both sides (left/right or top/bot)
-			//	//var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
-			//	//borderThickness += (int)Element.Padding.VerticalThickness;
-
-			//	// Measure content but subtract border from available space
-			//	var measureContent = cv.CrossPlatformMeasure(
-			//		availableSize.Width,
-			//		availableSize.Height).ToPlatform();
-
-			//	// Add the border space to the final calculation
-			//	measureContent = new Size(
-			//		measureContent.Width,
-			//		measureContent.Height).ToPlatform();
-
-			//	return measureContent;
-			//}
-
 			return MinimumSize().ToPlatform();
 		}
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
-		{
-			return base.GetDesiredSize(widthConstraint, heightConstraint);
-		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
-
 
 		protected override void UpdateBackgroundColor()
 		{

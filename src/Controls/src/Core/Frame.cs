@@ -93,28 +93,6 @@ namespace Microsoft.Maui.Controls
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 
-//#pragma warning disable RS0016 // Add public types and members to the declared API
-//		protected override Size ArrangeOverride(Rect bounds)
-//#pragma warning restore RS0016 // Add public types and members to the declared API
-//		{
-//			// This border thickness would need to get adjusted per platform
-//			// currently just hardcoding it to 1
-//			bounds = bounds.Inset(1);
-//			this.ArrangeContent(bounds);
-//			return bounds.Size;
-//		}
-
-//#pragma warning disable RS0016 // Add public types and members to the declared API
-//		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
-//#pragma warning restore RS0016 // Add public types and members to the declared API
-//		{
-//			// This border thickness would need to get adjusted per platform
-//			// currently just hardcoding it to 1
-//			var inset = Padding + 1;
-//			return this.MeasureContent(inset, widthConstraint, heightConstraint);
-//			//return base.MeasureOverride(widthConstraint, heightConstraint);
-//		}
-
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
 
 		bool IBorderElement.IsBackgroundColorSet() => IsSet(BackgroundColorProperty);
