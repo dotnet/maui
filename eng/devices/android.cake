@@ -214,8 +214,14 @@ Task("Test")
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 	
-	if (IsCIBuild())
+	if (!IsCIBuild())
 		CleanDirectories(TEST_RESULTS);
+	else
+	{
+		// Because we retry on CI we don't want to delete the previous failures
+		// We want to publish those files for reference
+		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+	}
 
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");

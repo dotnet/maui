@@ -144,6 +144,12 @@ Task("Test")
 
 	if (!IsCIBuild())
 		CleanDirectories(TEST_RESULTS);
+	else
+	{
+		// Because we retry on CI we don't want to delete the previous failures
+		// We want to publish those files for reference
+		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+	}
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
