@@ -82,14 +82,23 @@ namespace Microsoft.Maui.Controls
 
 		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
 		{
+#if ANDROID
+			bounds = bounds.Inset(3); // Android is the only platform that has a FrameBorderThickness of 3
+#else
+
 			bounds = bounds.Inset(1);
+#endif
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
+#if ANDROID
+			var inset = Padding + 3; // Android is the only platform that has a FrameBorderThickness of 3
+#else
 			var inset = Padding + 1;
+#endif
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 
