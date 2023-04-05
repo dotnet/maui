@@ -16,7 +16,7 @@ parameters:
 
   - name: checkoutDirectory
     type: string
-    value: $(System.DefaultWorkingDirectory)
+    default: $(System.DefaultWorkingDirectory)
 
   - name: BuildPlatforms
     type: object
