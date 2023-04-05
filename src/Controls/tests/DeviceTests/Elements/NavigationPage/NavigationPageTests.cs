@@ -34,6 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
 				});
 			});
 		}
@@ -298,15 +299,27 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
 			{
-				var page = new ContentPage { Title = "Page 2" };
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+					}
+				};
 				pageReference = new WeakReference(page);
 				await navPage.Navigation.PushAsync(page);
 				await navPage.Navigation.PopAsync();
 			});
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			// 3 GCs were required in Android API 23, 2 worked otherwise
+			for (int i = 0; i < 3; i++)
+			{
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
 
 			Assert.NotNull(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");

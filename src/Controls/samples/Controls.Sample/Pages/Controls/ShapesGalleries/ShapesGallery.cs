@@ -28,6 +28,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 						GalleryBuilder.NavButton("Path Gallery", () => new PathGallery(), Navigation),
 						GalleryBuilder.NavButton("Path Aspect Gallery", () => new PathAspectGallery(), Navigation),
 						GalleryBuilder.NavButton("Path LayoutOptions Gallery", () => new PathLayoutOptionsGallery(), Navigation),
+						GalleryBuilder.NavButton("Invalidate Brushes Gallery", () => new InvalidateBrushGallery(), Navigation),
 						GalleryBuilder.NavButton("Transform Playground", () => new TransformPlaygroundGallery(), Navigation),
 						GalleryBuilder.NavButton("Update Path Data Gallery", () => new UpdatePathDataGallery(), Navigation),
 						GalleryBuilder.NavButton("Path Transform using string (TypeConverter) Gallery", () => new PathTransformStringGallery(), Navigation),

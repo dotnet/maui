@@ -10,7 +10,7 @@
     "shortName": "maui",
     "tags": {
       "language": "C#",
-      "type": "solution"
+      "type": "project"
     },
     "sourceName": "MauiApp.1",
     "primaryOutputs": [
@@ -40,15 +40,7 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
-        "modifiers": [
-          {
-            "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
-            "rename": {
-               ".App.sln": ".sln"
-            }
-          }
-        ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
       }
     ],
     "preferNameDirectory": true,

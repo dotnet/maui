@@ -9,6 +9,12 @@ namespace Microsoft.Maui.Devices
 	public interface IFlashlight
 	{
 		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		Task<bool> IsSupportedAsync();
+
+		/// <summary>
 		/// Turns the camera flashlight on.
 		/// </summary>
 		/// <returns>A <see cref="Task"/> object with the current status of the asynchronous operation.</returns>
@@ -26,6 +32,12 @@ namespace Microsoft.Maui.Devices
 	/// </summary>
 	public static partial class Flashlight
 	{
+		/// <summary>
+		/// Checks if the flashlight is available and can be turned on or off.
+		/// </summary>
+		/// <returns><see langword="true"/> when the flashlight is available, or <see langword="false"/> when not</returns>
+		public static Task<bool> IsSupportedAsync() => Default.IsSupportedAsync();
+
 		/// <summary>
 		/// Turns the camera flashlight on.
 		/// </summary>

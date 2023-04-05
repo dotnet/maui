@@ -400,7 +400,10 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (cell.ColumnSpan == 1)
 						{
-							_columns[cell.Column].Update(measure.Width);
+							if (!cell.NeedsSecondPass)
+							{
+								_columns[cell.Column].Update(measure.Width);
+							}
 						}
 						else
 						{
@@ -412,7 +415,10 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (cell.RowSpan == 1)
 						{
-							_rows[cell.Row].Update(measure.Height);
+							if (!cell.NeedsSecondPass)
+							{
+								_rows[cell.Row].Update(measure.Height);
+							}
 						}
 						else
 						{
@@ -434,14 +440,28 @@ namespace Microsoft.Maui.Layouts
 					double width = 0;
 					double height = 0;
 
-					for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+					if (cell.IsRowSpanAuto)
 					{
-						height += _rows[n].Size;
+						height = double.PositiveInfinity;
+					}
+					else
+					{
+						for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
+						{
+							height += _rows[n].Size;
+						}
 					}
 
-					for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+					if (cell.IsColumnSpanAuto)
 					{
-						width += _columns[n].Size;
+						width = double.PositiveInfinity;
+					}
+					else
+					{
+						for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
+						{
+							width += _columns[n].Size;
+						}
 					}
 
 					if (width == 0 || height == 0)
@@ -455,10 +475,18 @@ namespace Microsoft.Maui.Layouts
 					{
 						TrackSpan(new Span(cell.Column, cell.ColumnSpan, true, measure.Width));
 					}
+					else if (cell.ColumnSpan == 1)
+					{
+						_columns[cell.Column].Update(measure.Width);
+					}
 
 					if (cell.IsRowSpanStar && cell.RowSpan > 1)
 					{
 						TrackSpan(new Span(cell.Row, cell.RowSpan, false, measure.Height));
+					}
+					else if (cell.RowSpan == 1)
+					{
+						_rows[cell.Row].Update(measure.Height);
 					}
 				}
 			}
@@ -749,7 +777,13 @@ namespace Microsoft.Maui.Layouts
 
 			public void DecompressStars(Size targetSize)
 			{
-				if (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridHeight))
+				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
+					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill && targetSize.Height > MeasuredGridHeight();
+
+				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
+					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill && targetSize.Width > MeasuredGridWidth();
+
+				if (decompressVertical)
 				{
 					// Reset the size on all star rows
 					ZeroOutStarSizes(_rows);
@@ -758,7 +792,7 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(targetSize.Height, true);
 				}
 
-				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
+				if (decompressHorizontal)
 				{
 					// Reset the size on all star columns
 					ZeroOutStarSizes(_columns);

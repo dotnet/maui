@@ -15,9 +15,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
-internal static class KeyboardAutoManagerScroll
+public static class KeyboardAutoManagerScroll
 {
-	internal static bool IsCurrentlyScrolling;
+	internal static bool IsKeyboardAutoScrollHandling;
 	static UIScrollView? LastScrollView;
 	static CGPoint StartingContentOffset;
 	static UIEdgeInsets StartingScrollIndicatorInsets;
@@ -38,7 +38,7 @@ internal static class KeyboardAutoManagerScroll
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
 
-	internal static void Connect()
+	public static void Connect()
 	{
 		if (TextFieldToken is not null)
 			return;
@@ -54,7 +54,7 @@ internal static class KeyboardAutoManagerScroll
 		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
 	}
 
-	internal static void Disconnect()
+	public static void Disconnect()
 	{
 		if (WillShowToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
@@ -67,19 +67,22 @@ internal static class KeyboardAutoManagerScroll
 		if (TextViewToken is not null)
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
 
-		IsCurrentlyScrolling = false;
+		IsKeyboardAutoScrollHandling = false;
 	}
 
 	static async void DidUITextBeginEditing(NSNotification notification)
 	{
-		IsCurrentlyScrolling = true;
+		IsKeyboardAutoScrollHandling = true;
 
 		if (notification.Object is not null)
 		{
 			View = notification.Object as UIView;
 
-			if (View is null)
+			if (View is null || View.FindResponder<UIAlertController>() is not null)
+			{
+				IsKeyboardAutoScrollHandling = false;
 				return;
+			}
 
 			CursorRect = null;
 
@@ -156,7 +159,7 @@ internal static class KeyboardAutoManagerScroll
 
 	static void DidHideKeyboard(NSNotification notification)
 	{
-		IsCurrentlyScrolling = false;
+		IsKeyboardAutoScrollHandling = false;
 	}
 
 	static NSObject? FindValue(this NSDictionary dict, string key)
@@ -247,11 +250,13 @@ internal static class KeyboardAutoManagerScroll
 	// main method to calculate and animate the scrolling
 	internal static void AdjustPosition()
 	{
-		if (View is not UITextField field && View is not UITextView)
+		if (ContainerView is null
+			|| CursorRect is null
+			|| (View is not UITextField && View is not UITextView))
+		{
+			IsKeyboardAutoScrollHandling = false;
 			return;
-
-		if (ContainerView is null)
-			return;
+		}
 
 		if (TopViewBeginOrigin == InvalidPoint)
 			TopViewBeginOrigin = new CGPoint(ContainerView.Frame.X, ContainerView.Frame.Y);
@@ -289,9 +294,6 @@ internal static class KeyboardAutoManagerScroll
 		var rootSuperViewFrameInWindow = window.Frame;
 		if (ContainerView.Superview is UIView v)
 			rootSuperViewFrameInWindow = v.ConvertRectToView(v.Bounds, window);
-
-		if (CursorRect is null)
-			return;
 
 		var cursorRect = (CGRect)CursorRect;
 
