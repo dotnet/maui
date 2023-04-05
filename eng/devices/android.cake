@@ -213,14 +213,16 @@ Task("Test")
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
-
 	
-	/*Func<IFileSystemInfo, bool> exclude_previous_test_results =
-	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
-                "TestResultsFailure",
-                StringComparison.OrdinalIgnoreCase);
+	Func<IFileSystemInfo, bool> exclude_previous_test_results =
+		fileSystemInfo => 
+		{
+			bool result = !fileSystemInfo.Path.FullPath.Contains("TestResultsFailure", StringComparison.OrdinalIgnoreCase);
+			Information($"Checking path: {result} {fileSystemInfo.Path.FullPath}");
+			return result;
+		};
 
-	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);*/
+	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
 
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
@@ -268,9 +270,8 @@ Task("Test")
 			// The tasks will retry the tests and overwrite the failed results each retry
 			// we want to retain the failed results for diagnostic purposes
 			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
-			CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
 
-			foreach(var fileFound in GetFiles("*.*"))
+			foreach(var fileFound in GetFiles($"{TEST_RESULTS}/*.*"))
 			{
 				Information($"File found: {fileFound.FullPath}");
 			}
