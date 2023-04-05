@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 
 			Focusable = true;
 			FocusableInTouchMode = true;
-		
+
 			Clickable = true;
 			InputType = InputTypes.Null;
 
