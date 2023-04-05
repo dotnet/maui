@@ -142,7 +142,13 @@ Task("Test")
 	Information("Test App: {0}", TEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	CleanDirectories(TEST_RESULTS);
+	// Don't delete file from previous retry run
+	Func<IFileSystemInfo, bool> exclude_previous_test_results =
+	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
+                "TestResultsFailure",
+                StringComparison.OrdinalIgnoreCase);
+
+	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
 
 	var settings = new DotNetCoreToolSettings {
 		DiagnosticOutput = true,
@@ -153,8 +159,10 @@ Task("Test")
 		$"--verbosity=\"Debug\" ")
 	};
 
+	bool testsFailed = true;
 	try {
 		DotNetCoreTool("tool", settings);
+		testsFailed = false;
 	} finally {
 		// ios test result files are weirdly named, so fix it up
 		var resultsFile = GetFiles($"{TEST_RESULTS}/xunit-test-*.xml").FirstOrDefault();
@@ -162,12 +170,15 @@ Task("Test")
 			CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
 		}
 
-		// The tasks will retry the tests and overwrite the failed results each retry
-		// we want to retain the failed results for diagnostic purposes
-		CopyFile(
-			resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"), 
-			resultsFile.GetDirectory().CombineWithFilePath($"TestResultsFailure-{Guid.NewGuid()}.xml")
-		);
+		if (testsFailed && IsCIBuild())
+		{
+			// The tasks will retry the tests and overwrite the failed results each retry
+			// we want to retain the failed results for diagnostic purposes
+			CopyFile(
+				resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"), 
+				resultsFile.GetDirectory().CombineWithFilePath($"TestResultsFailure-{Guid.NewGuid()}.xml")
+			);
+		}
 	}
 
 	// this _may_ not be needed, but just in case

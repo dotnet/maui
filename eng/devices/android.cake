@@ -214,7 +214,13 @@ Task("Test")
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	CleanDirectories(TEST_RESULTS);
+	
+	Func<IFileSystemInfo, bool> exclude_previous_test_results =
+	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
+                "TestResultsFailure",
+                StringComparison.OrdinalIgnoreCase);
+
+	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
 
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
@@ -248,12 +254,19 @@ Task("Test")
 			$"--verbosity=\"Debug\" ")
 	};
 
+	bool testsFailed = true;
 	try {
 		DotNetCoreTool("tool", settings);
+		testsFailed = false;
 	} finally {
-		// The tasks will retry the tests and overwrite the failed results each retry
-		// we want to retain the failed results for diagnostic purposes
-		CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
+
+		if (testsFailed && IsCIBuild())
+		{
+			Information("Tests falied, creating copy of results in case task runs again");
+			// The tasks will retry the tests and overwrite the failed results each retry
+			// we want to retain the failed results for diagnostic purposes
+			CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
+		}
 	}
 
 	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
