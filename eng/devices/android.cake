@@ -217,7 +217,7 @@ Task("Test")
 	
 	Func<IFileSystemInfo, bool> exclude_previous_test_results =
 	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
-                "TestResultsFailure",
+                "TestResultsFailures",
                 StringComparison.OrdinalIgnoreCase);
 
 	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
@@ -263,13 +263,11 @@ Task("Test")
 		if (testsFailed && IsCIBuild())
 		{
 			Information("Tests falied, creating copy of results in case task runs again");
+			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+			EnsureDirectoryExists(failurePath);
 			// The tasks will retry the tests and overwrite the failed results each retry
 			// we want to retain the failed results for diagnostic purposes
-			CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
-		}
-		else
-		{
-			CopyFiles($"{TEST_RESULTS}/*.*", $"{TEST_RESULTS}/{Guid.NewGuid()}/");
+			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
 		}
 	}
 

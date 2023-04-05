@@ -145,7 +145,7 @@ Task("Test")
 	// Don't delete file from previous retry run
 	Func<IFileSystemInfo, bool> exclude_previous_test_results =
 	fileSystemInfo=>!fileSystemInfo.Path.FullPath.Contains(
-                "TestResultsFailure",
+                "TestResultsFailures",
                 StringComparison.OrdinalIgnoreCase);
 
 	CleanDirectories(TEST_RESULTS, exclude_previous_test_results);
@@ -172,12 +172,12 @@ Task("Test")
 
 		if (testsFailed && IsCIBuild())
 		{
+			Information("Tests falied, creating copy of results in case task runs again");
+			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+			EnsureDirectoryExists(failurePath);
 			// The tasks will retry the tests and overwrite the failed results each retry
 			// we want to retain the failed results for diagnostic purposes
-			CopyFile(
-				resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"), 
-				resultsFile.GetDirectory().CombineWithFilePath($"TestResultsFailure-{Guid.NewGuid()}.xml")
-			);
+			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
 		}
 	}
 
