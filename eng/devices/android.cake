@@ -248,13 +248,16 @@ Task("Test")
 			$"--verbosity=\"Debug\" ")
 	};
 
-	DotNetCoreTool("tool", settings);
-
-	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
-	if (!string.IsNullOrEmpty(failed)) {
+	try {
+		DotNetCoreTool("tool", settings);
+	} finally {
 		// The tasks will retry the tests and overwrite the failed results each retry
 		// we want to retain the failed results for diagnostic purposes
 		CopyFile($"{TEST_RESULTS}/TestResults.xml", $"{TEST_RESULTS}/TestResultsFailure-{Guid.NewGuid()}.xml");
+	}
+
+	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	if (!string.IsNullOrEmpty(failed)) {
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
 });
