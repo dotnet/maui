@@ -268,6 +268,9 @@ Task("Test")
 			// The tasks will retry the tests and overwrite the failed results each retry
 			// we want to retain the failed results for diagnostic purposes
 			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
+
+			// We don't want these to upload
+			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
 		}
 	}
 

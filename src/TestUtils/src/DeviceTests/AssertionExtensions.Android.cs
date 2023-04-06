@@ -171,6 +171,7 @@ namespace Microsoft.Maui.DeviceTests
 				}, timeout);
 
 				Assert.True(result);
+				await Task.Delay(100);
 			}
 			catch (Exception ex)
 			{
@@ -202,6 +203,7 @@ namespace Microsoft.Maui.DeviceTests
 				}, timeout);
 
 				Assert.True(result);
+				await Task.Delay(100);
 			}
 			catch (Exception ex)
 			{
