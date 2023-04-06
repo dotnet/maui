@@ -9,26 +9,21 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		readonly object locker = new();
-
-		Task<string> PlatformGetAsync(string key)
+		async Task<string> PlatformGetAsync(string key)
 		{
-			return Task.Run(() =>
+			return await Task.Run(() =>
 			{
 				try
 				{
-					lock (locker)
-					{
-						ISharedPreferences sharedPreferences = GetEncryptedSharedPreferences();
-						if (sharedPreferences != null)
-							return sharedPreferences.GetString(key, null);
+					ISharedPreferences sharedPreferences = GetEncryptedSharedPreferences();
+					if (sharedPreferences != null)
+						return sharedPreferences.GetString(key, null);
 
-						// TODO: Use Logger here?
-						System.Diagnostics.Debug.WriteLine(
-							$"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
-						PlatformRemove(key);
-						return null;
-					}
+					// TODO: Use Logger here?
+					System.Diagnostics.Debug.WriteLine(
+						$"Unable to decrypt key, {key}, which is likely due to key corruption. Removing old key and returning null.");
+					PlatformRemove(key);
+					return null;
 				}
 				catch (GeneralSecurityException)
 				{
@@ -49,45 +44,41 @@ namespace Microsoft.Maui.Storage
 			});
 		}
 
-		Task PlatformSetAsync(string key, string data)
+		async Task PlatformSetAsync(string key, string data)
 		{
-			return Task.Run(() =>
+			await Task.Run(() =>
 			{
-				lock (locker)
-				{
-					using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
-					if (data == null)
-						editor?.Remove(key);
-					else
-						editor?.PutString(key, data);
+				using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+				if (data is null)
+					editor?.Remove(key);
+				else
+					editor?.PutString(key, data);
 
-					editor?.Apply();
-				}
+				editor?.Apply();
 			});
 		}
 
 		bool PlatformRemove(string key)
 		{
-			lock (locker)
-			{
-				using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
-				editor?.Remove(key)?.Apply();
-			}
-
+			using ISharedPreferencesEditor editor = GetEncryptedSharedPreferences()?.Edit();
+			editor?.Remove(key)?.Apply();
 			return true;
 		}
 
 		void PlatformRemoveAll()
 		{
-			lock (locker)
-			{
-				using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
-				editor?.Clear()?.Apply();
-			}
+			using var editor = PreferencesImplementation.GetSharedPreferences(Alias).Edit();
+			editor?.Clear()?.Apply();
 		}
 
+		ISharedPreferences _prefs;
 		ISharedPreferences GetEncryptedSharedPreferences()
 		{
+			if (_prefs is not null)
+			{
+				return _prefs;
+			}
+
 			try
 			{
 				var context = Application.Context;
@@ -103,7 +94,7 @@ namespace Microsoft.Maui.Storage
 					EncryptedSharedPreferences.PrefKeyEncryptionScheme.Aes256Siv,
 					EncryptedSharedPreferences.PrefValueEncryptionScheme.Aes256Gcm);
 
-				return sharedPreferences;
+				return _prefs = sharedPreferences;
 			}
 			catch (InvalidProtocolBufferException)
 			{

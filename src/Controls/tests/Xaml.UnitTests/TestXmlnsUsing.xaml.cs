@@ -33,7 +33,9 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var page = new TestXmlnsUsing(useCompiledXaml);
 				Assert.That(page.Content, Is.Not.Null);
-				Assert.That(page.Content, Is.TypeOf<CustomXamlView>());
+				Assert.That(page.CustomView, Is.TypeOf<CustomXamlView>());
+				Assert.That(page.Radio1.Value, Is.EqualTo(1));
+				Assert.That(page.Radio2.Value, Is.EqualTo(2));
 			}
 		}
 	}

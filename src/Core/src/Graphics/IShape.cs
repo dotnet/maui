@@ -8,4 +8,9 @@
 	{
 		PathF PathForBounds(Rect bounds);
 	}
+
+	internal interface IRoundRectangle : IShape
+	{
+		PathF InnerPathForBounds(Rect bounds, float strokeThickness);
+	}
 }

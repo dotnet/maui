@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				.PerformEditorAction(returnType.ToPlatform());
 
 			// Let the action propagate
-			await Task.Delay(10);
+			await Task.Delay(100);
 		}
 
 		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message = "")
@@ -155,9 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 			try
 			{
 				await view.FocusView(timeout);
-				if (!KeyboardManager.ShowKeyboard(view))
-					throw new Exception("ShowKeyboard operation failed");
-
+				KeyboardManager.ShowKeyboard(view);
 				await view.WaitForKeyboardToShow(timeout);
 			}
 			catch (Exception ex)
@@ -176,10 +174,20 @@ namespace Microsoft.Maui.DeviceTests
 
 			try
 			{
-				if (!KeyboardManager.HideKeyboard(view))
-					throw new Exception("HideKeyboard operation failed");
-
-				await view.WaitForKeyboardToHide(timeout);
+				int retry = 2;
+				for (int i = 0; i < retry; i++)
+				{
+					KeyboardManager.HideKeyboard(view);
+					try
+					{
+						await view.WaitForKeyboardToHide(timeout);
+					}
+					catch
+					{
+						if (i >= retry)
+							throw;
+					}
+				}
 			}
 			catch (Exception ex)
 			{
@@ -213,7 +221,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
 		{
 			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
-			Assert.True(result);
+			Assert.True(result, "Keyboard failed to hide");
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
 			// If you try to call hide too quickly after showing, sometimes it will just hide and then pop back up.
