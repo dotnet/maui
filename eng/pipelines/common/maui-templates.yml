@@ -14,6 +14,10 @@ parameters:
     type: string
     default: ''
 
+  - name: checkoutDirectory
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+
   - name: BuildPlatforms
     type: object
     default:
@@ -46,6 +50,10 @@ parameters:
       testName: RunOniOS
       artifact: templates-run-ios
 
+  - name: prepareSteps
+    type: stepList
+    default: []
+
 jobs:
 - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
   - job: build_${{ BuildPlatform.name }}
@@ -63,9 +71,15 @@ jobs:
         - Agent.HasDevices -equals False
         - Agent.IsPaired -equals False
     steps:
+
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
+
     - template: provision.yml
       parameters:
         platform: ${{ BuildPlatform.name }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -115,10 +129,16 @@ jobs:
     condition: ${{ parameters.condition}}
     pool: ${{ RunPlatform }}
     steps:
+
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
+
     - template: provision.yml
       parameters:
         platform: macos
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
