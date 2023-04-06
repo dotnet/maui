@@ -1,3 +1,4 @@
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -459,9 +460,28 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 			}
 
+			public override void LayoutSubviews()
+			{
+				if (OperatingSystem.IsIOSVersionAtLeast(16))
+				{
+					if (Height == null || Height == 0)
+					{
+						UpdateFrame(Superview);
+					}
+				}
+
+				base.LayoutSubviews();
+			}
+
 			public override void WillMoveToSuperview(UIView newSuper)
 			{
-				if (newSuper != null)
+				UpdateFrame(newSuper);
+				base.WillMoveToSuperview(newSuper);
+			}
+
+			void UpdateFrame(UIView newSuper)
+			{
+				if (newSuper is not null && newSuper.Bounds != CGRect.Empty)
 				{
 					if (!(OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsTvOSVersionAtLeast(11)))
 						Frame = new CGRect(Frame.X, newSuper.Bounds.Y, Frame.Width, newSuper.Bounds.Height);

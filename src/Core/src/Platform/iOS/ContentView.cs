@@ -11,7 +11,6 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
-		bool _measureValid;
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
@@ -20,11 +19,12 @@ namespace Microsoft.Maui.Platform
 				return base.SizeThatFits(size);
 			}
 
-			var width = size.Width;
-			var height = size.Height;
+			var widthConstraint = size.Width;
+			var heightConstraint = size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(width, height);
-			_measureValid = true;
+			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -34,11 +34,13 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
+			var widthConstraint = bounds.Width;
+			var heightConstraint = bounds.Height;
 
-			if (!_measureValid)
+			if (!IsMeasureValid(widthConstraint, heightConstraint))
 			{
-				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
-				_measureValid = true;
+				CrossPlatformMeasure?.Invoke(widthConstraint, heightConstraint);
+				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange?.Invoke(bounds);
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void SetNeedsLayout()
 		{
-			_measureValid = false;
+			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
 		}
