@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -99,10 +98,6 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			}
 
-
-			ASoftInput GetSoftInput(AActivity aActivity) =>
-				aActivity.Window.Attributes.SoftInputMode;
-
 			class SoftInputApplicationHandlerStub : ApplicationHandler
 			{
 				public SoftInputApplicationHandlerStub() : base(Application.ControlsApplicationMapper)
@@ -140,7 +135,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			class SoftInputWindowHandlerStub : ElementHandler<IWindow, AActivity>, IWindowHandler
 			{
-				public ASoftInput LastASoftInputSet { get; private set; } = ASoftInput.AdjustUnspecified;
+				public ASoftInput LastASoftInputSet => PlatformView?.Window?.Attributes?.SoftInputMode ??
+					ASoftInput.AdjustUnspecified;
 
 				public static IPropertyMapper<IWindow, SoftInputWindowHandlerStub> StubMapper =
 					new PropertyMapper<IWindow, SoftInputWindowHandlerStub>()
@@ -150,11 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				public static void MapWindowSoftInputModeAdjust(SoftInputWindowHandlerStub arg1, IWindow arg2)
 				{
-					if (arg2.Parent is Application app)
-					{
-						var setting = Controls.PlatformConfiguration.AndroidSpecific.Application.GetWindowSoftInputModeAdjust(app);
-						arg1.LastASoftInputSet = setting.ToPlatform();
-					}
+					Window.MapWindowSoftInputModeAdjust(arg1, arg2);
 				}
 
 				public SoftInputWindowHandlerStub() : base(StubMapper, null)
@@ -164,7 +156,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				protected override AActivity CreatePlatformElement()
 				{
-					return new AActivity();
+					return MauiProgramDefaults.DefaultContext.GetActivity();
 				}
 			}
 		}
