@@ -116,10 +116,11 @@ namespace Microsoft.Maui.DeviceTests
 
 						foreach (var entry in entries)
 						{
+							var entryLocation = entry.GetLocationOnScreen();
 							var entryBox = entry.GetBoundingBox();
 
 							// Locate the lowest visible entry
-							if ((entryBox.Y + (entryBox.Height * 2)) > pageBoundingBox.Height)
+							if ((entryLocation.Value.Y + (entryBox.Height * 2)) > pageBoundingBox.Height)
 								break;
 
 							testEntry = entry;
@@ -149,7 +150,16 @@ namespace Microsoft.Maui.DeviceTests
 
 						Assert.True(offsetMatchesWhenKeyboardOpened, "Modal page has an invalid offset when open");
 
-						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Close Keyboard to see if sizes adjust back");
+						foreach (var entry in entries)
+						{
+							var entryBox = entry.GetLocationOnScreen();
+
+							if (entryBox.Value.Y > 0)
+							{
+								await AssertionExtensions.HideKeyboardForView(testEntry, message: "Close Keyboard to see if sizes adjust back");
+								break;
+							}
+						}
 
 						// Wait for the size of the screen to settle after the keyboard has closed
 						bool offsetMatchesWhenKeyboardClosed = await AssertionExtensions.Wait(() =>

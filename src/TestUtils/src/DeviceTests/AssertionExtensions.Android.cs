@@ -161,12 +161,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				bool result = await Wait(() =>
 				{
-					bool isVisible = KeyboardManager.IsSoftKeyboardVisible(view);
-
-					if (!isVisible)
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
 						KeyboardManager.ShowKeyboard(view);
 
-					return isVisible;
+					return KeyboardManager.IsSoftKeyboardVisible(view);
 
 				}, timeout);
 
@@ -193,12 +191,10 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Yield();
 				bool result = await Wait(() =>
 				{
-					bool isHidden = !KeyboardManager.IsSoftKeyboardVisible(view);
-
-					if (!isHidden)
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
 						KeyboardManager.HideKeyboard(view);
 
-					return isHidden;
+					return !KeyboardManager.IsSoftKeyboardVisible(view);
 
 				}, timeout);
 
