@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -149,7 +150,11 @@ namespace Microsoft.Maui.DeviceTests
 
 				public static void MapWindowSoftInputModeAdjust(SoftInputWindowHandlerStub arg1, IWindow arg2)
 				{
-					Window.MapWindowSoftInputModeAdjust(arg1, arg2);
+					if (arg2.Parent is Application app)
+					{
+						var setting = Controls.PlatformConfiguration.AndroidSpecific.Application.GetWindowSoftInputModeAdjust(app);
+						arg1.LastASoftInputSet = setting.ToPlatform();
+					}
 				}
 
 				public SoftInputWindowHandlerStub() : base(StubMapper, null)
