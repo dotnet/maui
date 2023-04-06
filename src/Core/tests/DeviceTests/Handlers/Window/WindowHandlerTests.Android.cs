@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Xunit;
+using AActivity = Android.App.Activity;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -13,10 +14,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await InvokeOnMainThreadAsync(() =>
 			{
-				var activity = MauiContext.Context.GetActivity();
-				Assert.NotNull(activity);
-				var testWindow = activity.GetWindow() as Window;
-				Assert.NotNull(testWindow);
+				var testWindow = Application.Current.Windows[0];
+				var activity = testWindow.Handler.PlatformView as AActivity;
+				Assert.True(activity is not null, "Activity is Null");
+				Assert.True(testWindow is not null, "Window is Null");
 
 				testWindow.Title = "Test Title";
 				Assert.Equal("Test Title", activity.Title);
