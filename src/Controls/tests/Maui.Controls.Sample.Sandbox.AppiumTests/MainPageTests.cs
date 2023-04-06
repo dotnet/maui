@@ -1,7 +1,5 @@
 ﻿using Microsoft.Maui.Appium;
 using NUnit.Framework;
-using OpenQA.Selenium.Appium.Enums;
-using OpenQA.Selenium.Interactions;
 
 namespace Maui.Controls.Sample.Sandbox.AppiumTests
 {
@@ -19,10 +17,10 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 			App?.WaitForElement("btnLogin");
 
 			Driver?.FindElement(ByAutomationId("entryUsername")).SendKeys("user@email.com");
-			Driver?.FindElement(ByAutomationId("entryPassword")).SendKeys("password");
-			Driver?.FindElement(ByAutomationId("btnLogin"));
-			Driver?.FindElement(ByAutomationId("btnLogin")).Click();
+			Driver?.FindElement(ByAutomationId("entryPassword")).SendKeys("Password");
+			Thread.Sleep(2000);
 
+			Driver?.FindElement(ByAutomationId("btnLogin")).Click();
 			var text = Driver?.FindElement(ByAutomationId("lblStatus")).Text ?? "";
 
 			Assert.IsNotNull(text);
@@ -34,7 +32,9 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 		{
 			App?.WaitForElement("btnLogin");
 			App?.EnterText("entryUsername", "user@email.com");
-			App?.EnterText("entryPassword", "password");
+			App?.EnterText("entryPassword", "Password");
+			Thread.Sleep(2000);
+
 			App?.Tap("btnLogin");
 			var lblStatus = App?.WaitForElement("lblStatus").FirstOrDefault();
 			var text = lblStatus?.Text;
