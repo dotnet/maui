@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 						var modalOffsetY = modalPage.GetLocationOnScreen().Value.Y;
 						var originalModalPageSize = modalPage.GetBoundingBox();
 
-						await AssertionExtensions.ShowKeyboardForView(testEntry);
+						await AssertionExtensions.ShowKeyboardForView(testEntry, message: "Show keyboard for entry");
 
 						// Type text into the entries
 						testEntry.Text = "Typing";
