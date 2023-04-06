@@ -155,18 +155,45 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		static int RemoveBorderFromMeasureSpec(int measureSpec, int borderThickness) 
+		{
+			var mode = MeasureSpec.GetMode(measureSpec);
+			
+			if (mode == MeasureSpecMode.Unspecified)
+			{
+				// Since it's unspecified, the border won't make any difference
+				return measureSpec;
+			}
+
+			// Determine the size of the spec, then remove the border size from it
+			// If the border is bigger than the size, then snap it to zero
+			var size = Math.Max(0, MeasureSpec.GetSize(measureSpec) - borderThickness);
+
+			// Return the updated MeasureSpec
+			return MeasureSpec.MakeMeasureSpec(size, mode);
+		}
+
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh &&
 				Element is IContentView cv)
 			{
-				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+				var deviceIndependentBorderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+
+				if (deviceIndependentBorderThickness > 0)
+				{
+					var platformBorderThickness = Context.ToPixels(deviceIndependentBorderThickness);
+
+					widthMeasureSpec = RemoveBorderFromMeasureSpec(widthMeasureSpec, (int)platformBorderThickness);
+					heightMeasureSpec = RemoveBorderFromMeasureSpec(heightMeasureSpec, (int)platformBorderThickness);
+				}
 
 				var size = pvh.MeasureVirtualView(
-					widthMeasureSpec - borderThickness,
-					heightMeasureSpec - borderThickness,
+					widthMeasureSpec,
+					heightMeasureSpec,
 					cv.CrossPlatformMeasure);
-				SetMeasuredDimension((int)size.Width + borderThickness, (int)size.Height + borderThickness);
+
+				SetMeasuredDimension((int)size.Width + deviceIndependentBorderThickness, (int)size.Height + deviceIndependentBorderThickness);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
