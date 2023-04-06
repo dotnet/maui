@@ -31,6 +31,7 @@
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" />
     <PackageReference Include="Microsoft.WindowsAppSDK" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'tizen'" >
