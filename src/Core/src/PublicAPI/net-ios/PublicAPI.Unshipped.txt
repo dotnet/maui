@@ -50,3 +50,6 @@ Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
+Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
+Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
+Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool
