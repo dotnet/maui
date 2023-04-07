@@ -3,7 +3,7 @@
 <plist version="1.0">
     <dict>
         <!-- Enable this value to use broswer developer tools with Blazor while debugging in order to use Dev tools.-->
-        <!-- See https://learn.microsoft.com/en-us/aspnet/core/blazor/hybrid/developer-tools?view=aspnetcore-7.0&pivots=macos -->
+        <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
         <key>com.apple.security.get-task-allow</key>
         <true/>
     </dict>
