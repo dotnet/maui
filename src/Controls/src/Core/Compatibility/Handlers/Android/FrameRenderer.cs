@@ -155,10 +155,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		static int RemoveBorderFromMeasureSpec(int measureSpec, int borderThickness) 
+		static int RemoveBorderFromMeasureSpec(int measureSpec, int borderThickness)
 		{
 			var mode = MeasureSpec.GetMode(measureSpec);
-			
+
 			if (mode == MeasureSpecMode.Unspecified)
 			{
 				// Since it's unspecified, the border won't make any difference
