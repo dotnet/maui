@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -407,6 +408,84 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LabelHandler>(label);
 				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Theory]
+		[InlineData(TextAlignment.Start, LineBreakMode.HeadTruncation)]
+		[InlineData(TextAlignment.Start, LineBreakMode.MiddleTruncation)]
+		[InlineData(TextAlignment.Start, LineBreakMode.TailTruncation)]
+		[InlineData(TextAlignment.Center, LineBreakMode.HeadTruncation)]
+		[InlineData(TextAlignment.Center, LineBreakMode.MiddleTruncation)]
+		[InlineData(TextAlignment.Center, LineBreakMode.TailTruncation)]
+		[InlineData(TextAlignment.End, LineBreakMode.HeadTruncation)]
+		[InlineData(TextAlignment.End, LineBreakMode.MiddleTruncation)]
+		[InlineData(TextAlignment.End, LineBreakMode.TailTruncation)]
+		public async Task LabelTruncatesCorrectly(TextAlignment textAlignment, LineBreakMode lineBreakMode)
+		{
+
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+
+			var labelStart = new Label
+			{
+				HorizontalOptions = LayoutOptions.Start,
+				LineBreakMode = lineBreakMode,
+				HorizontalTextAlignment = textAlignment,
+				Text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+			};
+
+			var labelCenter = new Label
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				LineBreakMode = lineBreakMode,
+				HorizontalTextAlignment = textAlignment,
+				Text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+			};
+
+			var labelEnd = new Label
+			{
+				HorizontalOptions = LayoutOptions.End,
+				LineBreakMode = lineBreakMode,
+				HorizontalTextAlignment = textAlignment,
+				Text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+			};
+
+			var labelFill = new Label
+			{
+				HorizontalOptions = LayoutOptions.Fill,
+				LineBreakMode = lineBreakMode,
+				HorizontalTextAlignment = textAlignment,
+				Text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.",
+			};
+
+			var layout = new VerticalStackLayout()
+				{
+					labelStart,
+					labelCenter,
+					labelEnd,
+					labelFill,
+				};
+
+			layout.HeightRequest = 300;
+			layout.WidthRequest = 100;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				await contentViewHandler.PlatformView.AttachAndRun(() =>
+				{
+					Assert.Equal(labelStart.Width, layout.Width);
+					Assert.Equal(labelCenter.Width, layout.Width);
+					Assert.Equal(labelEnd.Width, layout.Width);
+					Assert.Equal(labelFill.Width, layout.Width);
+				});
 			});
 		}
 
