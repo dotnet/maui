@@ -179,13 +179,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Element is IContentView cv)
 			{
 				var deviceIndependentBorderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+				var platformBorderThickness = (int)Context.ToPixels(deviceIndependentBorderThickness);
 
-				if (deviceIndependentBorderThickness > 0)
+				if (platformBorderThickness > 0)
 				{
-					var platformBorderThickness = Context.ToPixels(deviceIndependentBorderThickness);
-
-					widthMeasureSpec = RemoveBorderFromMeasureSpec(widthMeasureSpec, (int)platformBorderThickness);
-					heightMeasureSpec = RemoveBorderFromMeasureSpec(heightMeasureSpec, (int)platformBorderThickness);
+					widthMeasureSpec = RemoveBorderFromMeasureSpec(widthMeasureSpec, platformBorderThickness);
+					heightMeasureSpec = RemoveBorderFromMeasureSpec(heightMeasureSpec, platformBorderThickness);
 				}
 
 				var size = pvh.MeasureVirtualView(
@@ -193,7 +192,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					heightMeasureSpec,
 					cv.CrossPlatformMeasure);
 
-				SetMeasuredDimension((int)size.Width + deviceIndependentBorderThickness, (int)size.Height + deviceIndependentBorderThickness);
+				SetMeasuredDimension((int)size.Width + platformBorderThickness, (int)size.Height + platformBorderThickness);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
