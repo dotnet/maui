@@ -9,11 +9,10 @@ namespace Microsoft.Maui.Controls
 
 	public partial class MenuFlyout : FlyoutBase, IMenuFlyout // Same pattern as MenuBarItem
 	{
-		ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
-		readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
+		readonly List<IMenuElement> _menus = new List<IMenuElement>();
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCastingList<Element, IMenuElement>(_menus);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, IMenuElement>(_menus);
 
 		public IMenuElement this[int index]
 		{
@@ -32,7 +31,7 @@ namespace Microsoft.Maui.Controls
 		public void Add(IMenuElement item)
 		{
 			var index = _menus.Count;
-			_menus.Add(item);
+			AddLogicalChildInternal((Element)item);
 			NotifyHandler(nameof(IMenuFlyoutHandler.Add), index, item);
 
 			// Take care of the Element internal bookkeeping
@@ -70,27 +69,15 @@ namespace Microsoft.Maui.Controls
 
 		public void Insert(int index, IMenuElement item)
 		{
-			_menus.Insert(index, item);
+			InsertLogicalChildInternal(index, (Element)item);
 			NotifyHandler(nameof(IMenuFlyoutHandler.Insert), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		public bool Remove(IMenuElement item)
 		{
 			var index = _menus.IndexOf(item);
-			var result = _menus.Remove(item);
+			var result = RemoveLogicalChildInternal((Element)item);
 			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
 
 			return result;
 		}
@@ -98,14 +85,7 @@ namespace Microsoft.Maui.Controls
 		public void RemoveAt(int index)
 		{
 			var item = _menus[index];
-			_menus.RemoveAt(index);
-			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
+			Remove(item);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

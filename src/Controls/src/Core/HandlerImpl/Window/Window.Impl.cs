@@ -62,7 +62,6 @@ namespace Microsoft.Maui.Controls
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
-		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
@@ -95,7 +94,6 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
-			InternalChildren.CollectionChanged += OnCollectionChanged;
 #pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
 			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
 #pragma warning restore CA1416
@@ -296,11 +294,6 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
-
 		internal AlertManager AlertManager { get; }
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
@@ -389,36 +382,6 @@ namespace Microsoft.Maui.Controls
 			Page ?? throw new InvalidOperationException("No page was set on the window.");
 
 		Application? Application => Parent as Application;
-
-		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				for (var i = 0; i < e.OldItems.Count; i++)
-				{
-					var item = (Element?)e.OldItems[i];
-
-					if (item != null)
-						_visualChildren.Remove(item);
-
-					OnChildRemoved(item, e.OldStartingIndex + i);
-				}
-			}
-
-			if (e.NewItems != null)
-			{
-				foreach (Element item in e.NewItems)
-				{
-					_visualChildren.Add(item);
-					OnChildAdded(item);
-
-					if (Parent != null && item is Page)
-					{
-						SendWindowAppearing();
-					}
-				}
-			}
-		}
 
 		internal void FinishedAddingWindowToApplication(Application application)
 		{
@@ -612,7 +575,6 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
 			_visualChildren;
 
-
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (bindable is not Window window)
@@ -638,7 +600,8 @@ namespace Microsoft.Maui.Controls
 			if (oldPage != null)
 			{
 				_menuBarTracker.Target = null;
-				InternalChildren.Remove(oldPage);
+				RemoveLogicalChildInternal(oldPage);
+				_visualChildren.Remove(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -648,13 +611,16 @@ namespace Microsoft.Maui.Controls
 
 			if (newPage != null)
 			{
-				InternalChildren.Add(newPage);
+				AddLogicalChildInternal(newPage);
+				_visualChildren.Add(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
-			}
 
-			if (newPage != null)
-			{
+				if (Parent != null)
+				{
+					SendWindowAppearing();
+				}
+
 				newPage.HandlerChanged += OnPageHandlerChanged;
 				newPage.HandlerChanging += OnPageHandlerChanging;
 

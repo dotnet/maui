@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls
 	public class Border : View, IContentView, IBorderView, IPaddingElement
 	{
 		float[]? _strokeDashPattern;
-		ReadOnlyCollection<Element>? _logicalChildren;
 
 		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
 		PropertyChangedEventHandler? _strokeShapeChanged;
@@ -25,11 +24,6 @@ namespace Microsoft.Maui.Controls
 			_strokeShapeProxy?.Unsubscribe();
 			_strokeProxy?.Unsubscribe();
 		}
-
-		internal ObservableCollection<Element> InternalChildren { get; } = new();
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
 		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
@@ -274,17 +268,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (oldValue is Element oldElement)
 				{
-					int index = border.InternalChildren.IndexOf(oldElement);
-					if (border.InternalChildren.Remove(oldElement))
-					{
-						border.OnChildRemoved(oldElement, index);
-					}
+					border.RemoveLogicalChildInternal(oldElement);
 				}
 
 				if (newValue is Element newElement)
 				{
-					border.InternalChildren.Add(newElement);
-					border.OnChildAdded(newElement);
+					border.AddLogicalChildInternal(newElement);
 				}
 			}
 
