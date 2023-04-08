@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (!view.IsFocused)
 			{
-				view.Focus(new FocusRequest(view.IsFocused));
+				view.Focus(new FocusRequest());
 				return view.WaitForFocused(timeout);
 			}
 
