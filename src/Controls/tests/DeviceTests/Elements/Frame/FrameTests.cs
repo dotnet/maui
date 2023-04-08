@@ -256,7 +256,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
-			
+
 			// Because this Frame has a border color, we expect the border to show up. So we need to account for its size
 			var expected = contentSize + (FrameBorderThickness * 2);
 
