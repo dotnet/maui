@@ -5,6 +5,9 @@ parameters:
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  artifactName: 'nuget'
+  artifactItemPattern: '**/*.nupkg'
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
   projects:
     - name: name
       desc: Human Description
@@ -40,6 +43,9 @@ stages:
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      artifactName: ${{ parameters.artifactName }}
+                      artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                      checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -67,3 +73,6 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      artifactName: ${{ parameters.artifactName }}
+                      artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                      checkoutDirectory: ${{ parameters.checkoutDirectory }}
