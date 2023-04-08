@@ -8,6 +8,7 @@ parameters:
   artifactName: 'nuget'
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
+  useArtifacts: false
   projects:
     - name: name
       desc: Human Description
@@ -46,6 +47,7 @@ stages:
                       artifactName: ${{ parameters.artifactName }}
                       artifactItemPattern: ${{ parameters.artifactItemPattern }}
                       checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                      useArtifacts: ${{ parameters.useArtifacts }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -76,3 +78,4 @@ stages:
                       artifactName: ${{ parameters.artifactName }}
                       artifactItemPattern: ${{ parameters.artifactItemPattern }}
                       checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                      useArtifacts: ${{ parameters.useArtifacts }}
