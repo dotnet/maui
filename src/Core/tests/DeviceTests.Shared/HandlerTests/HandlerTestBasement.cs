@@ -172,7 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y) 
+		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
