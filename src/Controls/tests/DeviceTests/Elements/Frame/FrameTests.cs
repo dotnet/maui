@@ -15,6 +15,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Frame)]
 	public partial class FrameTests : ControlsHandlerTestBase
 	{
+		// This a hard-coded legacy value
+		const int FrameBorderThickness = 3;
+
 		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
@@ -230,7 +233,8 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var content = new Label { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
+			double contentSize = 50;
+			var content = new Label { Text = "Hey", WidthRequest = contentSize, HeightRequest = contentSize };
 
 			var frame = new Frame()
 			{
@@ -252,17 +256,85 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+			
+			// Because this Frame has a border color, we expect the border to show up. So we need to account for its size
+			var expected = contentSize + (FrameBorderThickness * 2);
 
-			Assert.True(layoutFrame.Width >= 52);
-			Assert.True(layoutFrame.Height >= 52);
+			Assert.Equal(expected, layoutFrame.Width);
+			Assert.Equal(expected, layoutFrame.Height);
 		}
 
-		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double measureWidth, double measureHeight)
+		[Theory]
+		[InlineData(500, 500)]
+		[InlineData(500, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, double.PositiveInfinity)]
+		[InlineData(double.PositiveInfinity, 500)]
+		public async Task FramesWithinFrames(double widthConstraint, double heightConstraint)
+		{
+			SetupBuilder();
+
+			var frameMargin = 30;
+			var middleFrameMarginWidth = 0;
+			var middleFrameMarginHeight = 0;
+			var outerFrameMargin = 20;
+
+			var content = new Label { Text = "Hey", FontSize = 12 };
+
+			var frame = new Frame()
+			{
+				Content = content,
+				BackgroundColor = Colors.White,
+				CornerRadius = 0,
+				HasShadow = false,
+				Padding = new Thickness(0),
+				Margin = new Thickness(frameMargin)
+			};
+
+			var middleFrame = new Frame()
+			{
+				Content = frame,
+				BackgroundColor = Colors.Blue,
+				CornerRadius = 20,
+				Padding = new Thickness(0),
+				Margin = new Thickness(middleFrameMarginWidth, middleFrameMarginHeight),
+				HasShadow = false
+			};
+
+			var outerFrame = new Frame()
+			{
+				Content = middleFrame,
+				BorderColor = Colors.Black,
+				CornerRadius = 0,
+				Padding = new Thickness(0),
+				Margin = new Thickness(outerFrameMargin),
+				HasShadow = false
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					outerFrame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, outerFrame, widthConstraint, heightConstraint);
+
+			// frameBorderWidth is included once because only the outer frame has a border color set, so it's the only one which
+			// will have a border.
+			var minExpectedWidth = (2 * frameMargin) + (2 * middleFrameMarginWidth) + (2 * outerFrameMargin) + (2 * FrameBorderThickness);
+			var minExpectedHeight = (2 * frameMargin) + (2 * middleFrameMarginHeight) + (2 * outerFrameMargin) + (2 * FrameBorderThickness);
+
+			Assert.True(layoutFrame.Height > minExpectedHeight);
+			Assert.True(layoutFrame.Width > minExpectedWidth);
+		}
+
+		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint)
 		{
 			return await InvokeOnMainThreadAsync(() =>
 					layout.ToPlatform(MauiContext).AttachAndRun(async () =>
 					{
-						var size = (layout as IView).Measure(measureWidth, measureHeight);
+						var size = (layout as IView).Measure(widthConstraint, heightConstraint);
 						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
 
 						await OnFrameSetToNotEmpty(layout);
@@ -271,15 +343,14 @@ namespace Microsoft.Maui.DeviceTests
 						// verify that the PlatformView was measured
 						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
 						Assert.True(frameControlSize.Width > 0);
-						Assert.True(frameControlSize.Width > 0);
+						Assert.True(frameControlSize.Height > 0);
 
 						// if the control sits inside a container make sure that also measured
 						var containerControlSize = frame.ToPlatform().GetBoundingBox();
-						Assert.True(frameControlSize.Width > 0);
-						Assert.True(frameControlSize.Width > 0);
+						Assert.True(containerControlSize.Width > 0);
+						Assert.True(containerControlSize.Height > 0);
 
 						return layout.Frame;
-
 					})
 				);
 		}
