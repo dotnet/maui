@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if IOS || MACCATALYST
 	[Category(TestCategory.SearchBar)]
 	public class SearchBarFocusTests : FocusHandlerTests<SearchBarHandler, SearchBarStub, VerticalStackLayoutStub>
 	{
@@ -9,4 +10,5 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 	}
+#endif
 }

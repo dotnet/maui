@@ -2,6 +2,7 @@
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if WINDOWS
 	[Category(TestCategory.Button)]
 	public class ButtonFocusTests : FocusHandlerTests<ButtonHandler, ButtonStub, VerticalStackLayoutStub>
 	{
@@ -9,4 +10,5 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 	}
+#endif
 }
