@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 					var platform2 = inputControl2.ToPlatform();
 
 					// focus the first control
-					inputControl1.Handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+					inputControl1.Handler.Invoke(nameof(IView.Focus), new FocusRequest());
 
 					// assert
 					await inputControl1.WaitForFocused();
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.False(inputControl2.IsFocused);
 
 					// focus the second control
-					inputControl2.Handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+					inputControl2.Handler.Invoke(nameof(IView.Focus), new FocusRequest());
 
 					// assert
 					await inputControl2.WaitForFocused();
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 					var platform2 = inputControl2.ToPlatform();
 
 					// focus the first control
-					inputControl1.Handler.Invoke(nameof(IView.Focus), new FocusRequest(false));
+					inputControl1.Handler.Invoke(nameof(IView.Focus), new FocusRequest());
 
 					// assert
 					await inputControl1.WaitForFocused();
