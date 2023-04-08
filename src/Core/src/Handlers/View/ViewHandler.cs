@@ -315,7 +315,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is not FocusRequest request)
 				return;
-			
+
 			((PlatformView?)handler.PlatformView)?.Focus(request);
 		}
 
