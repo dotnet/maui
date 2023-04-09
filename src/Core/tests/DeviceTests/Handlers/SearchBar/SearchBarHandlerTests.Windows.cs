@@ -65,10 +65,10 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
 
-		internal static string SetNativeText(SearchBarHandler searchBarHandler, string value) =>
+		static string SetNativeText(SearchBarHandler searchBarHandler, string value) =>
 			GetNativeSearchBar(searchBarHandler).Text = value;
 
-		internal static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
 		{
 			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
 
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		internal static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+		static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
 		{
 			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
 
