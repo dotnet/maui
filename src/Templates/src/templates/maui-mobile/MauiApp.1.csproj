@@ -69,10 +69,4 @@
     <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
     <UseHardenedRuntime>true</UseHardenedRuntime>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|DOTNET_TFM-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|DOTNET_TFM-ios|AnyCPU'">
-    <CreatePackage>false</CreatePackage>
-  </PropertyGroup>
 </Project>
