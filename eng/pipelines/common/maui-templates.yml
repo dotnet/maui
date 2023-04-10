@@ -101,13 +101,13 @@ jobs:
 
     - task: DotNetCoreCLI@2
       inputs:
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
       displayName: Build Microsoft.Maui.IntegrationTests
 
     - task: DotNetCoreCLI@2
       inputs:
         command: test
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
         arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
         publishTestResults: true
         testRunTitle: ${{ BuildPlatform.name }} template build tests
@@ -164,13 +164,13 @@ jobs:
 
     - task: DotNetCoreCLI@2
       inputs:
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
       displayName: Build Microsoft.Maui.IntegrationTests
 
     - task: DotNetCoreCLI@2
       inputs:
         command: test
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
         arguments: --logger "console;verbosity=normal" --filter "Name=${{ RunPlatform.testName }}"
         publishTestResults: true
         testRunTitle: ${{ RunPlatform.testName }} template run tests

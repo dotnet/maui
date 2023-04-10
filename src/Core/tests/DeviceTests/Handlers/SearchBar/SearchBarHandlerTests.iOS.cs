@@ -147,16 +147,16 @@ namespace Microsoft.Maui.DeviceTests
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
 
-		internal static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+		static void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
 			GetNativeSearchBar(searchBarHandler).Text = text;
 
-		internal static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
 		{
 			var control = searchBarHandler.QueryEditor;
 			return (int)control.GetOffsetFromPosition(control.BeginningOfDocument, control.SelectedTextRange.Start);
 		}
 
-		internal static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+		static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
 		{
 			var control = searchBarHandler.QueryEditor;
 			var endPosition = control.GetPosition(control.BeginningOfDocument, position);
