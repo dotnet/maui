@@ -279,7 +279,7 @@ namespace Microsoft.Maui.DeviceTests
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
 		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
-			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
+			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor(), withinRectModifier);
 
 		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{

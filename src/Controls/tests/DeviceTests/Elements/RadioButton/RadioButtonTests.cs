@@ -1,6 +1,6 @@
-﻿#if WINDOWS
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -9,6 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.RadioButton)]
 	public partial class RadioButtonTests : ControlsHandlerTestBase
 	{
+#if WINDOWS
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(false)]
 		[InlineData(true)]
@@ -39,6 +40,35 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(xplatIsChecked, valuesSecond.ViewValue);
 			Assert.Equal(expectedValue, valuesSecond.PlatformViewValue);
 		}
+#endif
+
+		[Fact("Parsed XAML can use mscorlib")]
+		public void Namespace_mscorlib_Parsed()
+		{
+			var page = new ContentPage();
+			page.LoadFromXaml(
+				"""
+				<?xml version="1.0" encoding="UTF-8"?>
+				<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+					xmlns:sys="clr-namespace:System;assembly=mscorlib">
+					<RadioButton>
+						<RadioButton.Value>
+							<sys:Int32>1</sys:Int32>
+						</RadioButton.Value>
+					</RadioButton>
+				</ContentPage>
+				""");
+			Assert.IsType<RadioButton>(page.Content);
+			Assert.Equal(1, ((RadioButton)page.Content).Value);
+		}
+
+		[Fact("Compiled XAML can use mscorlib")]
+		public void Namespace_mscorlib_Compiled()
+		{
+			var page = new RadioButtonUsing();
+			Assert.IsType<RadioButton>(page.Content);
+			Assert.Equal(1, ((RadioButton)page.Content).Value);
+		}
 	}
 }
-#endif
