@@ -3,7 +3,6 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -11,8 +10,9 @@ namespace Microsoft.Maui.Platform
 	public partial class WrapperView : UIView, IDisposable
 	{
 		CAShapeLayer? _maskLayer;
+		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
-		UIView? BorderView;
+		UIView? _borderView;
 
 		public WrapperView()
 		{
@@ -30,13 +30,30 @@ namespace Microsoft.Maui.Platform
 			{
 				var layer = GetLayer();
 
-				if (layer != null && _maskLayer != null)
+				if (layer is not null && _maskLayer is not null)
 					layer.Mask = null;
 
 				_maskLayer = value;
 
-				if (layer != null)
+				if (layer is not null)
 					layer.Mask = value;
+			}
+		}
+
+		CAShapeLayer? BackgroundMaskLayer
+		{
+			get => _backgroundMaskLayer;
+			set
+			{
+				var backgroundLayer = GetBackgroundLayer();
+
+				if (backgroundLayer is not null && _backgroundMaskLayer is not null)
+					backgroundLayer.Mask = null;
+
+				_backgroundMaskLayer = value;
+
+				if (backgroundLayer is not null)
+					backgroundLayer.Mask = value;
 			}
 		}
 
@@ -60,21 +77,24 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
-			if (BorderView != null)
-				BringSubviewToFront(BorderView);
+			if (_borderView is not null)
+				BringSubviewToFront(_borderView);
 
 			var child = Subviews[0];
 
 			child.Frame = Bounds;
 
-			if (MaskLayer != null)
+			if (MaskLayer is not null)
 				MaskLayer.Frame = Bounds;
 
-			if (ShadowLayer != null)
+			if (BackgroundMaskLayer is not null)
+				BackgroundMaskLayer.Frame = Bounds;
+
+			if (ShadowLayer is not null)
 				ShadowLayer.Frame = Bounds;
 
-			if (BorderView != null)
-				BorderView.Frame = Bounds;
+			if (_borderView is not null)
+				_borderView.Frame = Bounds;
 
 			SetClip();
 			SetShadow();
@@ -122,22 +142,34 @@ namespace Microsoft.Maui.Platform
 		void SetClip()
 		{
 			var mask = MaskLayer;
+			var backgroundMask = BackgroundMaskLayer;
 
-			if (mask == null && Clip == null)
+			if (mask is null && Clip is null)
 				return;
 
-			mask ??= MaskLayer = new CAShapeLayer();
 			var frame = Frame;
 			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
-
 			var path = _clip?.PathForBounds(bounds);
 			var nativePath = path?.AsCGPath();
+
+			mask ??= MaskLayer = new CAShapeLayer();
 			mask.Path = nativePath;
+
+			var backgroundLayer = GetBackgroundLayer();
+
+			// We wrap some controls for certain visual effects like applying background gradient etc.
+			// For this reason, we have to clip the background layer as well if it exists.
+			if (backgroundLayer is null)
+				return;
+
+			backgroundMask ??= BackgroundMaskLayer = new CAShapeLayer();
+			backgroundMask.Path = nativePath;
 		}
 
 		void DisposeClip()
 		{
 			MaskLayer = null;
+			BackgroundMaskLayer = null;
 		}
 
 		void SetShadow()
@@ -173,30 +205,42 @@ namespace Microsoft.Maui.Platform
 		{
 			if (Border == null)
 			{
-				BorderView?.RemoveFromSuperview();
+				_borderView?.RemoveFromSuperview();
 				return;
 			}
 
-			if (BorderView == null)
+			if (_borderView is null)
 			{
-				AddSubview(BorderView = new UIView(Bounds) { UserInteractionEnabled = false });
+				AddSubview(_borderView = new UIView(Bounds) { UserInteractionEnabled = false });
 			}
 
-			BorderView.UpdateMauiCALayer(Border);
+			_borderView.UpdateMauiCALayer(Border);
 		}
 
 		void DisposeBorder()
 		{
-			BorderView?.RemoveFromSuperview();
+			_borderView?.RemoveFromSuperview();
 		}
 
 		CALayer? GetLayer()
 		{
-			if (Layer == null || Layer.Sublayers == null)
+			if (Layer is null || Layer.Sublayers is null)
 				return null;
 
 			foreach (var subLayer in Layer.Sublayers)
-				if (subLayer.Delegate != null)
+				if (subLayer.Delegate is not null)
+					return subLayer;
+
+			return Layer;
+		}
+
+		CALayer? GetBackgroundLayer()
+		{
+			if (Layer is null || Layer.Sublayers is null)
+				return null;
+
+			foreach (var subLayer in Layer.Sublayers)
+				if (subLayer.Name == ViewExtensions.BackgroundLayerName)
 					return subLayer;
 
 			return Layer;
