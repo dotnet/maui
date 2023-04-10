@@ -75,8 +75,5 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
-    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" IsImplicitlyDefined="true" PrivateAssets="all" />
-  </ItemGroup>
 
 </Project>
