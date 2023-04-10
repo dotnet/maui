@@ -27,7 +27,7 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - if ${{ eq(parameters.useArtifacts, true) }}:
+  - ${{ if eq(parameters.useArtifacts, true) }}:
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
