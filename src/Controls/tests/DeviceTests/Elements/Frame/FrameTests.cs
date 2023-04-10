@@ -266,8 +266,10 @@ namespace Microsoft.Maui.DeviceTests
 			// Because this Frame has a border color, we expect the border to show up. So we need to account for its size
 			var expected = contentSize + (FrameBorderThickness * 2);
 
-			Assert.Equal(expected, layoutFrame.Width);
-			Assert.Equal(expected, layoutFrame.Height);
+			// We're checking the Frame size within a tolerance of 1; between screen density of test devices and rounding issues,
+			// it's not going to be exactly `expected`, but it should be close.
+			Assert.Equal(expected, layoutFrame.Width, 1);
+			Assert.Equal(expected, layoutFrame.Height, 1);
 		}
 
 		[Theory]
@@ -330,6 +332,10 @@ namespace Microsoft.Maui.DeviceTests
 			// will have a border.
 			var minExpectedWidth = (2 * frameMargin) + (2 * middleFrameMarginWidth) + (2 * outerFrameMargin) + (2 * FrameBorderThickness);
 			var minExpectedHeight = (2 * frameMargin) + (2 * middleFrameMarginHeight) + (2 * outerFrameMargin) + (2 * FrameBorderThickness);
+
+			// This test is specifically to guard against Android measurement situations where the nested frames collapse,
+			// (see https://github.com/dotnet/maui/issues/14418)
+			// which is why we're ensuring that the Frame has at least the expected height/width
 
 			Assert.True(layoutFrame.Height > minExpectedHeight);
 			Assert.True(layoutFrame.Width > minExpectedWidth);
