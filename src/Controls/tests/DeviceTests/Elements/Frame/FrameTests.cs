@@ -16,7 +16,13 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class FrameTests : ControlsHandlerTestBase
 	{
 		// This a hard-coded legacy value
+#if ANDROID
+		// Android
 		const int FrameBorderThickness = 3;
+#else
+		// Windows and iOS
+		const int FrameBorderThickness = 1;
+#endif
 
 		void SetupBuilder()
 		{
