@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSdk" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools" />
     <PackageReference Include="Microsoft.Graphics.Win2D" />
     <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
