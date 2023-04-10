@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics.Platform;
 namespace Microsoft.Maui.Platform
 {
 	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
-	public class ContentViewGroup : ViewGroup
+	public class ContentViewGroup : PlatformContentViewGroup
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -40,14 +40,6 @@ namespace Microsoft.Maui.Platform
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
-		}
-
-		protected override void DispatchDraw(Canvas? canvas)
-		{
-			if (Clip != null)
-				ClipChild(canvas);
-
-			base.DispatchDraw(canvas);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -99,17 +91,18 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_clip = value;
-				PostInvalidate();
+				// NOTE: calls PostInvalidate()
+				SetHasClip(_clip is not null);
 			}
 		}
 
 		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 
-		void ClipChild(Canvas? canvas)
+		protected override Path? GetClipPath(int width, int height)
 		{
-			if (Clip is null || Clip?.Shape is null || canvas is null)
-				return;
+			if (Clip is null || Clip?.Shape is null)
+				return null;
 
 			float density = _context.GetDisplayDensity();
 
@@ -119,15 +112,13 @@ namespace Microsoft.Maui.Platform
 
 			float x = strokeThickness / 2;
 			float y = strokeThickness / 2;
-			float w = canvas.Width - strokeThickness;
-			float h = canvas.Height - strokeThickness;
+			float w = width - strokeThickness;
+			float h = height - strokeThickness;
 
 			var bounds = new Graphics.RectF(x, y, w, h);
 
 			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
-
-			if (platformPath is not null)
-				canvas.ClipPath(platformPath);
+			return platformPath;
 		}
 	}
 }
