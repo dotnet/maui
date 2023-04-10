@@ -268,8 +268,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			// We're checking the Frame size within a tolerance of 1; between screen density of test devices and rounding issues,
 			// it's not going to be exactly `expected`, but it should be close.
-			Assert.Equal(expected, layoutFrame.Width, 1);
-			Assert.Equal(expected, layoutFrame.Height, 1);
+			Assert.Equal(expected, layoutFrame.Width, 1.0d);
+			Assert.Equal(expected, layoutFrame.Height, 1.0d);
 		}
 
 		[Theory]
