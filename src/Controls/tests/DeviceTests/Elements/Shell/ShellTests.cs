@@ -983,9 +983,11 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 			});
 
-			// 3 GCs were required in Android API 23, 2 worked otherwise
-			for (int i = 0; i < 3; i++)
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
 			{
+				if (!pageReference.IsAlive)
+					break;
 				await Task.Yield();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
