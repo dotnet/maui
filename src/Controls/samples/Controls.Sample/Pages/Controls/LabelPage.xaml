@@ -1,4 +1,4 @@
-﻿<views:BasePage 
+<views:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.LabelPage"
@@ -207,6 +207,54 @@
                     MaxLines="2"
                     LineBreakMode ="TailTruncation"
                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+                <Label x:Name="labelFormattedString"
+                    >
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="Plain old Text" />
+                            <Span Text=" " />
+                            <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
+                            <Span Text=" " />
+                            <Span Text="Strikethrough" TextDecorations="Strikethrough" />
+                            <Span Text=" " />
+                            <Span Text="Should be uppercase" TextTransform="Uppercase" />
+                            <Span Text=" " />
+                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
+                                <Span.GestureRecognizers>
+                                    <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
+                                </Span.GestureRecognizers>
+                            </Span>
+                            <Span Text=" " />
+                            <Span Text="Big Font" FontSize="20" />
+                            <Span Text=" " />
+                            <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
+                            <Span Text=" " />
+                            <Span Text="Plain old Text" />
+                        </FormattedString>
+                    </Label.FormattedText>
+
+                </Label>
+                <Button
+                    Text="Change Formatted String"
+                    Clicked="ChangeFormattedString_Clicked" />
+                <Label
+                    Text="Clip"
+                    Style="{StaticResource Headline}" />
+                <Label
+                    HeightRequest="100"
+                    WidthRequest="100"
+                    Text="Clipped Content"
+                    TextColor="WhiteSmoke"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    BackgroundColor="LimeGreen">
+                    <Label.Clip>
+                        <EllipseGeometry  
+                            RadiusX="50"
+                            RadiusY="50"
+                            Center="50, 50"/>
+                    </Label.Clip>
+                </Label>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>
