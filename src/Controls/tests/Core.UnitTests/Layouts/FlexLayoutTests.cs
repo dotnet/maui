@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		public void UnconstrainedMeasureHonorsFlexDirection(double widthConstraint, double heightConstraint,
 			FlexDirection flexDirection)
 		{
-			(var flexLayout, var view) = SetUpUnconstrainedTest((fl)=> { fl.Direction = flexDirection; }) ;
+			(var flexLayout, var view) = SetUpUnconstrainedTest((fl) => { fl.Direction = flexDirection; });
 
 			_ = flexLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
