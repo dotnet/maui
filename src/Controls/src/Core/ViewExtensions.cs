@@ -446,46 +446,40 @@ namespace Microsoft.Maui.Controls
 
 		static internal bool RequestFocus(this VisualElement view)
 		{
-			var focusRequest = new FocusRequest();
-
 			// if there is an attached handler, we use that and we will end up in the MapFocus method below
 			if (view.Handler is IViewHandler handler)
-				return handler.InvokeWithResult(nameof(IView.Focus), focusRequest);
+				return handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
 
 			// if there is no handler, we need to still run some code
+			var focusRequest = new FocusRequest();
 			MapFocus(view, null, focusRequest);
 			return focusRequest.Result;
 		}
 
 		static internal void MapFocus(this IView view, IViewHandler? handler, FocusRequest focusRequest)
 		{
-			// just call "base" for elements that are NOT a VisualElement
-			if (view is not VisualElement ve)
+			if (view is VisualElement ve)
 			{
-				if (handler is not null)
-					ViewHandler.MapFocus(handler, view, focusRequest);
-				return;
+				// the virtual view is already focused
+				if (ve.IsFocused)
+				{
+					focusRequest.TrySetResult(true);
+					return;
+				}
+
+				// if there are legacy events, then use that
+				if (ve.HasFocusChangeRequestedEvent)
+				{
+					var arg = new VisualElement.FocusRequestArgs { Focus = true };
+					ve.InvokeFocusChangeRequested(arg);
+					focusRequest.TrySetResult(arg.Result);
+					return;
+				}
 			}
 
-			// the virtual view is already focused
-			if (ve.IsFocused)
-			{
-				focusRequest.TrySetResult(true);
-				return;
-			}
-
-			// if there are no legacy events, call "base"
-			if (!ve.HasFocusChangeRequestedEvent)
-			{
-				if (handler is not null)
-					ViewHandler.MapFocus(handler, view, focusRequest);
-				return;
-			}
-
-			// call legacy events
-			var arg = new VisualElement.FocusRequestArgs { Focus = true };
-			ve.InvokeFocusChangeRequested(arg);
-			focusRequest.TrySetResult(arg.Result);
+			// otherwise, fall back to "base"
+			if (handler is not null)
+				ViewHandler.MapFocus(handler, view, focusRequest);
 		}
 	}
 }
