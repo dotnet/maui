@@ -40,14 +40,58 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
+		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			if (view is AutoSuggestBox searchView)
+			{
+				var queryEditor = searchView.GetFirstDescendant<TextBox>();
+
+				if (queryEditor is null)
+					throw new Exception("Unable to locate TextBox on AutoSuggestBox");
+
+				view = queryEditor;
+			}
+
+			TaskCompletionSource focusSource = new TaskCompletionSource();
+			view.GotFocus += OnFocused;
+
+			try
+			{
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+			}
+			finally
+			{
+				view.GotFocus -= OnFocused;
+			}
+
+			void OnFocused(object? sender, RoutedEventArgs e)
+			{
+				view.GotFocus -= OnFocused;
+				focusSource.SetResult();
+			}
 		}
 
-		public static Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
+		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+				TaskCompletionSource focusSource = new TaskCompletionSource();
+				view.LostFocus += OnUnFocused;
+
+				try
+				{
+					await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+				}
+				finally
+				{
+					view.LostFocus -= OnUnFocused;
+				}
+
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+				void OnUnFocused(object? sender, RoutedEventArgs e)
+				{
+					view.LostFocus -= OnUnFocused;
+					focusSource.SetResult();
+				}
 		}
 
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
