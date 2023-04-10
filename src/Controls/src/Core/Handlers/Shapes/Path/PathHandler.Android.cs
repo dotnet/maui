@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
