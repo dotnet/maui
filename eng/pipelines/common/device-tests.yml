@@ -9,6 +9,10 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
+  condition: true
+  dependsOn: []
+  stageNamePrefix: ''
+  stageHumanNamePrefix: ''
   projects:
     - name: name
       desc: Human Description
@@ -17,9 +21,10 @@ parameters:
 
 stages:
 
-  - stage: android_device_tests
-    displayName: Android Device Tests
-    dependsOn: []
+  - stage: ${{ parameters.stageNamePrefix }}android_device_tests
+    displayName: ${{ parameters.stageHumanNamePrefix }} Android Device Tests
+    dependsOn: ${{ parameters.parameters }}
+    condition: ${{ parameters.condition }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.android, '') }}:
@@ -49,9 +54,10 @@ stages:
                       checkoutDirectory: ${{ parameters.checkoutDirectory }}
                       useArtifacts: ${{ parameters.useArtifacts }}
 
-  - stage: ios_device_tests
-    displayName: iOS Device Tests
-    dependsOn: []
+  - stage: ${{ parameters.stageNamePrefix }}ios_device_tests
+    displayName: ${{ parameters.parameters.stageHumanNamePrefix }} iOS Device Tests
+    dependsOn: ${{ parameters.parameters }}
+    condition: ${{ parameters.condition }}
     jobs:
       - ${{ each project in parameters.projects }}:
         - ${{ if ne(project.ios, '') }}:
