@@ -35,8 +35,10 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		[MissingMapper]
-		void OnSetImageSource(Pixbuf? obj) => throw new NotImplementedException();
+		void OnSetImageSource(Pixbuf? obj)
+		{
+			PlatformView.Image = obj;
+		}
 
 	}
 
