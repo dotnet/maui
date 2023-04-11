@@ -103,7 +103,7 @@ stages:
                       prepareSteps: ${{ parameters.prepareSteps }}
 
   - stage: ${{ parameters.stageNamePrefix }}ios_device_tests
-    displayName: ${{ parameters.parameters.stageHumanNamePrefix }} iOS Device Tests
+    displayName: ${{ parameters.stageHumanNamePrefix }} iOS Device Tests
     dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
     jobs:

@@ -44,6 +44,7 @@ parameters:
   default: []
 
 steps:
+
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
       ${{ pair.key }}: ${{ pair.value }}
