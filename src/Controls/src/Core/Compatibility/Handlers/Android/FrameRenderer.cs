@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
-		const int FrameBorderThickness = 3;
-
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
 			{
@@ -81,6 +79,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_element = value;
 			}
 		}
+
+		IView? VirtualView => Element;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -155,44 +155,15 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
-		static int RemoveBorderFromMeasureSpec(int measureSpec, int borderThickness)
-		{
-			var mode = MeasureSpec.GetMode(measureSpec);
-
-			if (mode == MeasureSpecMode.Unspecified)
-			{
-				// Since it's unspecified, the border won't make any difference
-				return measureSpec;
-			}
-
-			// Determine the size of the spec, then remove the border size from it
-			// If the border is bigger than the size, then snap it to zero
-			var size = Math.Max(0, MeasureSpec.GetSize(measureSpec) - borderThickness);
-
-			// Return the updated MeasureSpec
-			return MeasureSpec.MakeMeasureSpec(size, mode);
-		}
-
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv)
+				Element is IContentView cv &&
+				VirtualView is not null &&
+				Context is not null)
 			{
-				var deviceIndependentBorderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
-				var platformBorderThickness = (int)Context.ToPixels(deviceIndependentBorderThickness);
-
-				if (platformBorderThickness > 0)
-				{
-					widthMeasureSpec = RemoveBorderFromMeasureSpec(widthMeasureSpec, platformBorderThickness);
-					heightMeasureSpec = RemoveBorderFromMeasureSpec(heightMeasureSpec, platformBorderThickness);
-				}
-
-				var size = pvh.MeasureVirtualView(
-					widthMeasureSpec,
-					heightMeasureSpec,
-					cv.CrossPlatformMeasure);
-
-				SetMeasuredDimension((int)size.Width + platformBorderThickness, (int)size.Height + platformBorderThickness);
+				var measure = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)measure.Width, (int)measure.Height);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -321,8 +292,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
-			else
-				_backgroundDrawable.SetStroke(FrameBorderThickness, borderColor.ToPlatform());
+			else if (VirtualView is IBorderElement be)
+				_backgroundDrawable.SetStroke((int)be.BorderWidth, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()
