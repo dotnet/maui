@@ -27,7 +27,7 @@ public class MainInstrumentation : Instrumentation
 	public async override void OnStart()
 	{
 		base.OnStart();
-		#if PERFLAB_INLAB
+#if PERFLAB_INLAB
 			Environment.SetEnvironmentVariable("PERFLAB_INLAB", "1");
 			Environment.SetEnvironmentVariable("PERFLAB_BUILDTIMESTAMP", "0001-01-01T00:00:00.0000000Z");
 			Environment.SetEnvironmentVariable("PERFLAB_BUILDNUM", "REPLACE_BUILDNUM");
@@ -43,7 +43,7 @@ public class MainInstrumentation : Instrumentation
 			Environment.SetEnvironmentVariable("PERFLAB_BUILDARCH", "REPLACE_PERFLAB_BUILDARCH");
 			Environment.SetEnvironmentVariable("PERFLAB_LOCALE", "REPLACE_PERFLAB_LOCALE");
 			Directory.CreateDirectory(outputPath);
-		#endif
+#endif
 
 		var success = await Task.Factory.StartNew(Run);
 		Log.Debug(Tag, $"Benchmark complete, success: {success}");
