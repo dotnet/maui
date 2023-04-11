@@ -18,10 +18,11 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Gets or sets a value indicating whether this request set or not the focus.
 		/// </summary>
-		[Obsolete("Use SetResult(bool) or TrySetResult(bool) instead.")]
 		public bool IsFocused
 		{
+			[Obsolete("Use Result instead.")]
 			get => Result;
+			[Obsolete("Use SetResult(bool) or TrySetResult(bool) instead.")]
 			set => SetResult(value);
 		}
 	}
