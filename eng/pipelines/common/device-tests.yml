@@ -40,7 +40,6 @@ parameters:
   default: false
 
 - name: condition
-  type: boolean
   default: true
 
 - name: dependsOn
