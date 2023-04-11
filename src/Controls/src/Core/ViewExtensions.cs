@@ -479,7 +479,13 @@ namespace Microsoft.Maui.Controls
 
 			// otherwise, fall back to "base"
 			if (handler is not null)
+			{
 				ViewHandler.MapFocus(handler, view, focusRequest);
+				return;
+			}
+
+			// if there was nothing that handles this, then nothing changed
+			focusRequest.TrySetResult(false);
 		}
 	}
 }
