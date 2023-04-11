@@ -1,21 +1,59 @@
 parameters:
-  platform: '' # [ android, ios ]
-  path: '' # path to csproj
-  device: '' # the xharness device to use
-  cakeArgs: '' # additional cake args
-  provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
-  artifactName: 'nuget'
-  artifactItemPattern: '**/*.nupkg'
-  checkoutDirectory: $(System.DefaultWorkingDirectory)
-  useArtifacts: false
+- name: platform
+  type: string
+  default: '' # [ android, ios ]
+
+- name: path
+  type: string
+  default: '' # path to csproj
+
+- name: device
+  type: string
+  default: '' # the xharness device to use
+
+- name: cakeArgs
+  type: string
+  default: '' # additional cake args
+
+- name: provisionatorChannel
+  type: string
+  default: 'latest'
+
+- name: agentPoolAccessToken
+  type: string
+  default: ''
+
+- name: artifactName
+  type: string
+  default: 'nuget'
+
+- name: artifactItemPattern
+  type: string
+  default: '**/*.nupkg'
+
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
+
+- name: useArtifacts
+  type: boolenad
+  default: false
+
+- name: prepareSteps
+  type: stepList
+  default: []
 
 steps:
+  - ${{ each step in parameters.prepareSteps }}:
+    - ${{ each pair in step }}:
+      ${{ pair.key }}: ${{ pair.value }}
+
   - template: provision.yml
     parameters:
       platform: macos
       skipXcode: ${{ eq(parameters.platform, 'android') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'

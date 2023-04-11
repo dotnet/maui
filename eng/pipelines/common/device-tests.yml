@@ -1,19 +1,67 @@
 parameters:
-  androidPool: { }
-  iosPool: { }
-  androidApiLevels: [ 33 ]
-  iosVersions: [ 'latest' ]
-  provisionatorChannel: 'latest'
-  agentPoolAccessToken: ''
-  artifactName: 'nuget'
-  artifactItemPattern: '**/*.nupkg'
-  checkoutDirectory: $(System.DefaultWorkingDirectory)
-  useArtifacts: false
-  condition: true
-  dependsOn: []
-  stageNamePrefix: ''
-  stageHumanNamePrefix: ''
-  projects:
+- name: androidPool
+  type: object
+  default: { }
+
+- name: iosPool
+  type: object
+  default: { }
+
+- name: androidApiLevels
+  type: object
+  default: [ 33 ]
+
+- name: iosVersions
+  type: object
+  default: [ 'latest' ]
+
+- name: provisionatorChannel
+  type: string
+  default: 'latest'
+
+- name: agentPoolAccessToken
+  type: string
+  default: ''
+
+- name: artifactName
+  type: string
+  default: 'nuget'
+
+- name: artifactItemPattern
+  type: string
+  default: '**/*.nupkg'
+
+- name: checkoutDirectory
+  type: string
+  default: $(System.DefaultWorkingDirectory)
+
+- name: useArtifacts
+  type: boolean
+  default: false
+
+- name: condition
+  type: boolean
+  default: true
+
+- name: dependsOn
+  type: object
+  default: []
+
+- name: stageNamePrefix
+  type: string
+  default: ''
+
+- name: stageHumanNamePrefix
+  type: string
+  default: ''
+
+- name: prepareSteps
+  type: stepList
+  default: []
+
+- name: projects
+  type: object
+  default:
     - name: name
       desc: Human Description
       android: /optional/path/to/android.csproj
@@ -53,6 +101,7 @@ stages:
                       artifactItemPattern: ${{ parameters.artifactItemPattern }}
                       checkoutDirectory: ${{ parameters.checkoutDirectory }}
                       useArtifacts: ${{ parameters.useArtifacts }}
+                      prepareSteps: ${{ parameters.prepareSteps }}
 
   - stage: ${{ parameters.stageNamePrefix }}ios_device_tests
     displayName: ${{ parameters.parameters.stageHumanNamePrefix }} iOS Device Tests
@@ -81,3 +130,8 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      artifactName: ${{ parameters.artifactName }}
+                      artifactItemPattern: ${{ parameters.artifactItemPattern }}
+                      checkoutDirectory: ${{ parameters.checkoutDirectory }}
+                      useArtifacts: ${{ parameters.useArtifacts }}
+                      prepareSteps: ${{ parameters.prepareSteps }}
