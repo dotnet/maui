@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			var collectionView = CollectionView;
-			if (collectionView == null)
+			if (collectionView is null)
 				return Array.Empty<NSIndexPath>();
 
 			return IndexPathHelpers.GenerateLoopedIndexPathRange(Section,
