@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
-		protected ListViewBase ListViewBase { get; private set; }
+		protected ListViewBase ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
@@ -50,13 +50,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
-			ListViewBase = platformView;
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
-			ListViewBase = null;
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			base.DisconnectHandler(platformView);
 		}
@@ -279,32 +277,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			UpdateEmptyViewVisibility();
 		}
 
+		double _previousItemSpacing;
+
+		double _previousHorizontalItemSpacing;
+		double _previousVerticalItemSpacing;
+
 		protected virtual void UpdateItemsLayout()
 		{
-			if (_scrollViewer is not null)
-				_scrollViewer.ViewChanged -= ScrollViewChanged;
-
-			if (ListViewBase is not null)
+			if (ListViewBase is FormsGridView gridView)
 			{
-				ListViewBase.ItemsSource = null;
-				ListViewBase = null;
+				if (Layout is LinearItemsLayout linearItemsLayout)
+				{
+					gridView.Orientation = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal
+						: Orientation.Vertical;
+
+					gridView.Span = 1;
+
+					if (linearItemsLayout.ItemSpacing != _previousItemSpacing)
+					{
+						_previousItemSpacing = linearItemsLayout.ItemSpacing;
+						gridView.ItemContainerStyle = linearItemsLayout.GetItemContainerStyle();
+					}
+				}
+
+				if (Layout is GridItemsLayout gridItemsLayout)
+				{
+					gridView.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
+						? Orientation.Horizontal
+						: Orientation.Vertical;
+
+					gridView.Span = gridItemsLayout.Span;
+				
+					if (gridItemsLayout.HorizontalItemSpacing != _previousHorizontalItemSpacing ||
+						gridItemsLayout.VerticalItemSpacing != _previousVerticalItemSpacing)
+					{
+						_previousHorizontalItemSpacing = gridItemsLayout.HorizontalItemSpacing;
+						_previousVerticalItemSpacing = gridItemsLayout.VerticalItemSpacing;
+						gridView.ItemContainerStyle = gridItemsLayout.GetItemContainerStyle();
+					}
+				}
 			}
-
-			ListViewBase = SelectListViewBase();
-			ListViewBase.IsSynchronizedWithCurrentItem = false;
-
-			FindScrollViewer(ListViewBase);
-
-			ConnectHandler(ListViewBase);
-
-			_defaultHorizontalScrollVisibility = null;
-			_defaultVerticalScrollVisibility = null;
-
-			UpdateItemTemplate();
-			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
-			UpdateEmptyView();
 		}
 
 		void FindScrollViewer(ListViewBase listView)

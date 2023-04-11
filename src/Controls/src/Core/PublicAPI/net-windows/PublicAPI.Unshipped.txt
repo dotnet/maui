@@ -1,6 +1,7 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
+Microsoft.Maui.Controls.Platform.CollectionViewExtensions
 override Microsoft.Maui.Controls.Handlers.BoxViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
@@ -18,6 +19,8 @@ static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls
 static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.Picker.MapHorizontalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
 static Microsoft.Maui.Controls.Picker.MapVerticalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
+static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.GridItemsLayout! layout) -> Microsoft.UI.Xaml.Style!
+static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.LinearItemsLayout! layout) -> Microsoft.UI.Xaml.Style!
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateHorizontalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateVerticalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
 static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
