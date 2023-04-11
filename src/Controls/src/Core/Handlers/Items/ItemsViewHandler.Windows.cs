@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
-		protected ListViewBase ListViewBase => PlatformView;
+		protected ListViewBase ListViewBase { get; private set; }
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
 		protected WASDKDataTemplate ViewTemplate => (WASDKDataTemplate)WASDKApp.Current.Resources["View"];
@@ -50,11 +50,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
+			ListViewBase = platformView;
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
+			ListViewBase = null;
 			VirtualView.ScrollToRequested -= ScrollToRequested;
 			base.DisconnectHandler(platformView);
 		}
@@ -279,9 +281,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemsLayout()
 		{
+			if (_scrollViewer is not null)
+				_scrollViewer.ViewChanged -= ScrollViewChanged;
+
+			if (ListViewBase is not null)
+			{
+				ListViewBase.ItemsSource = null;
+				ListViewBase = null;
+			}
+
+			ListViewBase = SelectListViewBase();
 			ListViewBase.IsSynchronizedWithCurrentItem = false;
 
 			FindScrollViewer(ListViewBase);
+
+			ConnectHandler(ListViewBase);
 
 			_defaultHorizontalScrollVisibility = null;
 			_defaultVerticalScrollVisibility = null;
