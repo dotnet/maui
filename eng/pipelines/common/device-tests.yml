@@ -70,7 +70,7 @@ stages:
 
   - stage: ${{ parameters.stageNamePrefix }}android_device_tests
     displayName: ${{ parameters.stageHumanNamePrefix }} Android Device Tests
-    dependsOn: ${{ parameters.parameters }}
+    dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
     jobs:
       - ${{ each project in parameters.projects }}:
@@ -104,7 +104,7 @@ stages:
 
   - stage: ${{ parameters.stageNamePrefix }}ios_device_tests
     displayName: ${{ parameters.parameters.stageHumanNamePrefix }} iOS Device Tests
-    dependsOn: ${{ parameters.parameters }}
+    dependsOn: ${{ parameters.dependsOn }}
     condition: ${{ parameters.condition }}
     jobs:
       - ${{ each project in parameters.projects }}:
