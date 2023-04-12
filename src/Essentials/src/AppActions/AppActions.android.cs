@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
@@ -103,6 +104,9 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				shortcut.SetLongLabel(action.Subtitle);
 			}
+
+			// file extension removal - issue 9234
+			action.Icon = Path.GetFileNameWithoutExtension(action.Icon);
 
 			if (!string.IsNullOrWhiteSpace(action.Icon))
 			{
