@@ -19,5 +19,23 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 				return currentPage;
 		}
+
+		internal static bool ParentHasAppeared(this Page currentPage, Func<Page, bool> hasPageAppeared)
+		{
+			Element parent = currentPage.Parent as Page;
+
+			bool hasAppeared = true;
+
+			while (parent is Page page && hasAppeared)
+			{
+				hasAppeared = hasPageAppeared.Invoke(page);
+				if (hasAppeared)
+				{
+					parent = page.Parent;
+				}
+			}
+
+			return hasAppeared;
+		}
 	}
 }
