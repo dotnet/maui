@@ -57,6 +57,7 @@ steps:
 - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
   displayName: 'Install .NET'
   retryCountOnTaskFailure: 3
+  workingDirectory: ${{ parameters.checkoutDirectory }}
   env:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
     PRIVATE_BUILD: $(PrivateBuild)
