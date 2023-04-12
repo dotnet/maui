@@ -17,7 +17,8 @@ namespace Microsoft.Maui.Handlers
 			UpdateVirtualViewFrame(platformView);
 		}
 
-		public static void MapTitle(IWindowHandler handler, IWindow window) { }
+		public static void MapTitle(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView.UpdateTitle(window);
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{

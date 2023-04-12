@@ -9,6 +9,14 @@ namespace Microsoft.Maui
 {
 	public static partial class WindowExtensions
 	{
+		internal static void UpdateTitle(this Activity platformWindow, IWindow window)
+		{
+			if (string.IsNullOrEmpty(window.Title))
+				platformWindow.Title = ApplicationModel.AppInfo.Current.Name;
+			else
+				platformWindow.Title = window.Title;
+		}
+
 		internal static DisplayOrientation GetOrientation(this IWindow? window)
 		{
 			if (window == null)
