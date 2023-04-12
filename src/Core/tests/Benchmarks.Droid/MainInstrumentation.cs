@@ -10,8 +10,6 @@ public class MainInstrumentation : Instrumentation
 
 	public static MainInstrumentation? Instance { get; private set; }
 
-	static string outputPath = "/storage/emulated/0/Android/data/com.microsoft.maui.benchmarks/files";
-
 	protected MainInstrumentation(IntPtr handle, JniHandleOwnership transfer)
 		: base(handle, transfer) { }
 
@@ -42,7 +40,7 @@ public class MainInstrumentation : Instrumentation
 		Environment.SetEnvironmentVariable("PERFLAB_QUEUE", "REPLACE_PERFLAB_QUEUE");
 		Environment.SetEnvironmentVariable("PERFLAB_BUILDARCH", "REPLACE_PERFLAB_BUILDARCH");
 		Environment.SetEnvironmentVariable("PERFLAB_LOCALE", "REPLACE_PERFLAB_LOCALE");
-		Directory.CreateDirectory(outputPath);
+		Directory.CreateDirectory("/storage/emulated/0/Android/data/com.microsoft.maui.benchmarks/files");
 #endif
 
 		var success = await Task.Factory.StartNew(Run);
