@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this FrameworkElement platformView, FocusRequest request)
 		{
-			request.IsFocused = platformView.Focus(FocusState.Programmatic);
+			request.TrySetResult(platformView.Focus(FocusState.Programmatic));
 		}
 
 		public static void Unfocus(this FrameworkElement platformView, IView view)
