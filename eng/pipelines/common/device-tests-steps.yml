@@ -45,6 +45,8 @@ parameters:
 
 steps:
 
+- ${{ parameters.prepareSteps }}
+
 - template: provision.yml
   parameters:
     platform: macos
