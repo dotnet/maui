@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				SetActiveWindow(window);
 			}
 
-			private void SetActiveWindow(UI.Xaml.Window window)
+			void SetActiveWindow(UI.Xaml.Window window)
 			{
 				if (_window != window)
 				{

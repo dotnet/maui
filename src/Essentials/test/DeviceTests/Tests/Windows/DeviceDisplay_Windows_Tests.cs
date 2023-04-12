@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 			});
 		}
 
-		private class TestWindowStateManagerImplementation : IWindowStateManager
+		class TestWindowStateManagerImplementation : IWindowStateManager
 		{
 			Window? _activeWindow;
 			Window? _activePlatformSetWindow;
