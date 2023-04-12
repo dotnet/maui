@@ -3,8 +3,8 @@
   <ImportGroup Condition="Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.Build.Tasks.dll') and Exists('$(_MauiBuildTasksLocation)Microsoft.Maui.Resizetizer.dll')">
 
     <!-- Microsoft.Maui.Core.props -->
-    <Import Project="$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'" />
-    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.props" Condition="'$(_MauiTargetPlatformIsWindows)' != 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)net6.0-windows10.0.17763.0\Microsoft.Maui.Core.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsWindows)' == 'true'" />
+    <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Core.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsWindows)' != 'true'" />
 
     <!-- Microsoft.Maui.Controls.Build.Tasks.props -->
     <Import Project="$(_MauiBuildTasksLocation)net6.0-ios10.0\Microsoft.Maui.Controls.Build.Tasks.props" Condition="'$(_MauiTargetPlatformIsiOS)' == 'true'" />

@@ -7,6 +7,6 @@
     <WinUISDKReferences Condition=" '$(WinUISDKReferences)' == '' and '$(EnableMsixTooling)' == 'true' ">false</WinUISDKReferences>
   </PropertyGroup>
 
-  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.Build.Tasks.props" />
 
 </Project>

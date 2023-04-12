@@ -45,18 +45,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\..\Graphics\src\Graphics\Graphics.csproj" />
+    <ProjectReference Include="..\..\Core\Build.Tasks\Core.Build.Tasks.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="nuget\**" PackagePath="" Pack="true" />
-  </ItemGroup>
-
-  <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
-    <ItemGroup>
-      <_CopyItems Include="nuget\buildTransitive\**" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_CopyItems)" DestinationFolder="$(_MauiBuildTasksLocation)%(RecursiveDir)" ContinueOnError="true" Retries="0" />
-  </Target>
 
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 

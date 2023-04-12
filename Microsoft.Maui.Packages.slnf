@@ -15,6 +15,7 @@
       "src\\Controls\\src\\SourceGen\\Controls.SourceGen.csproj",
       "src\\Controls\\src\\Xaml.Design\\Controls.Xaml.Design.csproj",
       "src\\Controls\\src\\Xaml\\Controls.Xaml.csproj",
+      "src\\Core\\Build.Tasks\\Core.Build.Tasks.csproj",
       "src\\Core\\src\\Core.csproj",
       "src\\Core\\maps\\src\\Maps.csproj",
       "src\\Graphics\\src\\Graphics\\Graphics.csproj",

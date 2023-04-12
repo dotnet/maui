@@ -1,5 +1,0 @@
-<Project>
-
-  <Import Project="$(MSBuildThisFileDirectory)..\Microsoft.Maui.Core.targets" />
-
-</Project>
