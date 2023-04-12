@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, xmlnsDefinitionAttribute.AssemblyName));
 
 					// As a fallback, for assembly=mscorlib try assembly=System.Private.CoreLib
-					if (xmlnsDefinitionAttribute.AssemblyName == "mscorlib")
+					if (xmlnsDefinitionAttribute.AssemblyName == "mscorlib" || xmlnsDefinitionAttribute.AssemblyName.StartsWith("mscorlib,", StringComparison.Ordinal))
 					{
 						potentialTypes.Add(new(typeName, xmlnsDefinitionAttribute.ClrNamespace, "System.Private.CoreLib"));
 					}
