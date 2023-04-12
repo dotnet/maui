@@ -28,7 +28,7 @@
     <!-- Everything else -->
     <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.4</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>7.0.4</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>7.0.4</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>7.0.5</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
     <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>7.0.4</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsFormsPackageVersion>
