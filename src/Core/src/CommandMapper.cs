@@ -4,17 +4,22 @@ using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IEl
 
 namespace Microsoft.Maui
 {
-	public abstract class CommandMapper
+	public abstract class CommandMapper : ICommandMapper
 	{
 		readonly Dictionary<string, Command> _mapper = new();
 
-		CommandMapper? _chained;
+		ICommandMapper? _chained;
 
 		public CommandMapper()
 		{
 		}
 
 		public CommandMapper(CommandMapper chained)
+		{
+			Chained = chained;
+		}
+
+		public CommandMapper(ICommandMapper chained)
 		{
 			Chained = chained;
 		}
@@ -43,7 +48,7 @@ namespace Microsoft.Maui
 				return null;
 		}
 
-		internal void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
+		public void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
 				return;
@@ -51,17 +56,30 @@ namespace Microsoft.Maui
 			InvokeCore(property, viewHandler, virtualView, args);
 		}
 
-		public CommandMapper? Chained
+		public ICommandMapper? Chained
 		{
 			get => _chained;
-			set
-			{
-				_chained = value;
-			}
+			set => _chained = value;
 		}
 	}
 
-	public class CommandMapper<TVirtualView, TViewHandler> : CommandMapper
+	public interface ICommandMapper
+	{
+		Command? GetCommand(string key);
+
+		void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args);
+	}
+
+	public interface ICommandMapper<out TVirtualView, out TViewHandler> : ICommandMapper
+		where TVirtualView : IElement
+		where TViewHandler : IElementHandler
+	{
+		void Add(string key, Action<TViewHandler, TVirtualView> action);
+
+		void Add(string key, Action<TViewHandler, TVirtualView, object?> action);
+	}
+
+	public class CommandMapper<TVirtualView, TViewHandler> : CommandMapper, ICommandMapper<TVirtualView, TViewHandler>
 		where TVirtualView : IElement
 		where TViewHandler : IElementHandler
 	{
@@ -70,6 +88,11 @@ namespace Microsoft.Maui
 		}
 
 		public CommandMapper(CommandMapper chained)
+			: base(chained)
+		{
+		}
+
+		public CommandMapper(ICommandMapper chained)
 			: base(chained)
 		{
 		}
@@ -100,6 +123,11 @@ namespace Microsoft.Maui
 		}
 
 		public CommandMapper(CommandMapper chained)
+			: base(chained)
+		{
+		}
+
+		public CommandMapper(ICommandMapper chained)
 			: base(chained)
 		{
 		}
