@@ -43,9 +43,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
-			if (!HasAppeared)
-				return;
-
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
@@ -54,9 +51,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
-			if (!HasAppeared)
-				return;
-
 			NavigatingFrom?.Invoke(this, args);
 			OnNavigatingFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
@@ -64,9 +58,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
-			if (!HasAppeared)
-				return;
-
 			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
