@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using AndroidX.AppCompat.Widget;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Xunit;
 using AColor = Android.Graphics.Color;
 
