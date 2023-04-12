@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
+		double _previousItemSpacing;
+		double _previousHorizontalItemSpacing;
+		double _previousVerticalItemSpacing;
+
 		protected ListViewBase ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
@@ -276,11 +280,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			UpdateEmptyViewVisibility();
 		}
-
-		double _previousItemSpacing;
-
-		double _previousHorizontalItemSpacing;
-		double _previousVerticalItemSpacing;
 
 		protected virtual void UpdateItemsLayout()
 		{
