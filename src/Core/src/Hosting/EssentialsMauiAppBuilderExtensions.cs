@@ -69,6 +69,10 @@ namespace Microsoft.Maui.Hosting
 					.OnLaunched((application, args) =>
 					{
 						ApplicationModel.Platform.OnLaunched(args);
+					})
+					.OnPlatformWindowSubclassed((window, context) =>
+					{
+						ApplicationModel.Platform.OnPlatformWindowInitialized(window);
 					}));
 #elif TIZEN
 
