@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		
+
 	}
 
 	public static class TestWindowExtensions
