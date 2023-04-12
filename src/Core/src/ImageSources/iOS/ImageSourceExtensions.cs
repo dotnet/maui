@@ -19,21 +19,19 @@ namespace Microsoft.Maui
 
 			var attString = new NSAttributedString(glyph, font, color);
 			var attributes = attString.GetUIKitAttributes(0, out _);
-			if (attributes != null)
-			{
-				var imagesize = glyph.GetSizeUsingAttributes(attributes);
 
-				UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
-				var ctx = new NSStringDrawingContext();
+			var imagesize = attributes == null ? attString.Size : glyph.GetSizeUsingAttributes(attributes);
 
-				var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
-				attString.DrawString(new CGRect(
-					imagesize.Width / 2 - boundingRect.Size.Width / 2,
-					imagesize.Height / 2 - boundingRect.Size.Height / 2,
-					imagesize.Width,
-					imagesize.Height));
-				
-			}
+			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
+			var ctx = new NSStringDrawingContext();
+
+			var boundingRect = attString.GetBoundingRect(imagesize, 0, ctx);
+			attString.DrawString(new CGRect(
+				imagesize.Width / 2 - boundingRect.Size.Width / 2,
+				imagesize.Height / 2 - boundingRect.Size.Height / 2,
+				imagesize.Width,
+				imagesize.Height));
+
 			var image = UIGraphics.GetImageFromCurrentImageContext();
 			UIGraphics.EndImageContext();
 
