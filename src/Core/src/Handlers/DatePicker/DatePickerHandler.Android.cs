@@ -36,12 +36,6 @@ namespace Microsoft.Maui.Handlers
 
 			if (platformView.IsAttachedToWindow)
 				OnViewAttachedToWindow();
-
-			if (_dialog is not null)
-			{
-				_dialog.ShowEvent += OnDialogShown;
-				_dialog.DismissEvent += OnDialogDismissed;
-			}
 		}
 
 		void OnViewDetachedFromWindow(object? sender = null, View.ViewDetachedFromWindowEventArgs? e = null)
@@ -59,9 +53,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog is not null)
 			{
-				_dialog.ShowEvent -= OnDialogShown;
-				_dialog.DismissEvent -= OnDialogDismissed;
-
 				_dialog.Hide();
 				_dialog.Dispose();
 				_dialog = null;
@@ -174,18 +165,6 @@ namespace Microsoft.Maui.Handlers
 
 				ShowPickerDialog(currentDialog.DatePicker.Year, currentDialog.DatePicker.Month, currentDialog.DatePicker.DayOfMonth);
 			}
-		}
-
-		void OnDialogShown(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnDialogDismissed(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = false;
 		}
 	}
 }

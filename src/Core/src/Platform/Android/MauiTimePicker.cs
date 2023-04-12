@@ -45,7 +45,8 @@ namespace Microsoft.Maui.Platform
 				DrawableCompat.Wrap(Background);
 
 			Focusable = true;
-			FocusableInTouchMode = true;
+			FocusableInTouchMode = false;
+
 			Clickable = true;
 			InputType = InputTypes.Null;
 

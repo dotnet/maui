@@ -13,66 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class TimePickerHandlerTests
 	{
-		[Fact(DisplayName = "IsFocused Initializes Correctly")]
-		public async Task IsFocusedInitializesCorrectly()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
-					handler.AddHandler<ButtonStub, ButtonHandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayoutStub();
-
-			var timePicker = new TimePickerStub()
-			{
-				Time = TimeSpan.FromHours(8)
-			};
-
-			var button = new ButtonStub
-			{
-				Text = "Focus TimePicker"
-			};
-
-			layout.Add(timePicker);
-			layout.Add(button);
-
-			var clicked = false;
-
-			button.Clicked += delegate
-			{
-				timePicker.Focus();
-				clicked = true;
-			};
-
-			await PerformClick(button);
-
-			Assert.True(clicked);
-
-			var handler = await CreateHandlerAsync(timePicker);
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					var mauiTimePicker = handler.PlatformView;
-
-					if (clicked && mauiTimePicker is not null)
-						mauiTimePicker.ShowPicker.Invoke();
-
-					// Wait to complete the Dialog animation and invoke the OnDialogShown event
-					await Task.Delay(100);
-					Assert.True(timePicker.IsFocused);
-
-					if (clicked && mauiTimePicker is not null)
-						mauiTimePicker.HidePicker.Invoke();
-				});
-			});
-		}
-
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -133,17 +73,6 @@ namespace Microsoft.Maui.DeviceTests
 			int currentTextColorInt = GetNativeTimePicker(timePickerHandler).CurrentTextColor;
 			AColor currentTextColor = new AColor(currentTextColorInt);
 			return currentTextColor.ToColor();
-		}
-
-		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
-			buttonHandler.PlatformView;
-
-		Task PerformClick(IButton button)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
-			});
 		}
 	}
 }

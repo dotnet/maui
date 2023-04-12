@@ -26,9 +26,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog is not null)
 			{
-				_dialog.ShowEvent -= OnDialogShown;
-				_dialog.DismissEvent -= OnDialogDismissed;
-
 				_dialog.Hide();
 				_dialog = null;
 			}
@@ -104,9 +101,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			_dialog = CreateTimePickerDialog(hour, minute);
 
-			_dialog.ShowEvent += OnDialogShown;
-			_dialog.DismissEvent += OnDialogDismissed;
-
 			_dialog.Show();
 		}
 
@@ -114,9 +108,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog is not null)
 			{
-				_dialog.ShowEvent -= OnDialogShown;
-				_dialog.DismissEvent -= OnDialogDismissed;
-
 				_dialog.Hide();
 			}
 
@@ -125,17 +116,5 @@ namespace Microsoft.Maui.Handlers
 
 		bool Use24HourView => VirtualView != null && (DateFormat.Is24HourFormat(PlatformView?.Context)
 			&& VirtualView.Format == "t" || VirtualView.Format == "HH:mm");
-
-		void OnDialogShown(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnDialogDismissed(object? sender, EventArgs e)
-		{
-			if (VirtualView is not null)
-				VirtualView.IsFocused = false;
-		}
 	}
 }
