@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Platform
 	public abstract class MauiView : UIView
 	{
 		static bool? _respondsToSafeArea;
+		double _lastMeasureHeight = double.NaN;
+		double _lastMeasureWidth = double.NaN;
 
 		public IView? View { get; set; }
 
@@ -27,6 +29,25 @@ namespace Microsoft.Maui.Platform
 #pragma warning disable CA1416 // TODO 'UIView.SafeAreaInsets' is only supported on: 'ios' 11.0 and later, 'maccatalyst' 11.0 and later, 'tvos' 11.0 and later.
 			return SafeAreaInsets.InsetRect(bounds);
 #pragma warning restore CA1416
+		}
+
+		private protected bool IsMeasureValid(double widthConstraint, double heightConstraint)
+		{
+			// Check the last constraints this View was measured with; if they're the same,
+			// then the current measure info is already correct and we don't need to repeat it
+			return heightConstraint == _lastMeasureHeight && widthConstraint == _lastMeasureWidth;
+		}
+
+		private protected void InvalidateConstraintsCache()
+		{
+			_lastMeasureWidth = double.NaN;
+			_lastMeasureHeight = double.NaN;
+		}
+
+		private protected void CacheMeasureConstraints(double widthConstraint, double heightConstraint)
+		{
+			_lastMeasureWidth = widthConstraint;
+			_lastMeasureHeight = heightConstraint;
 		}
 	}
 }
