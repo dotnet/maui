@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <_ValuesToReplace Include="VERSION" PropertyName="PackageReferenceVersion" />
+    <_ValuesToReplace Include="LAST_WORKLOAD_VERSION" PropertyName="MicrosoftMauiLastWorkloadReleasedVersion" />
     <_ValuesToReplace Include="TFM" PropertyName="_MauiDotNetTfm" />
     <_ValuesToReplace Include="PREVIOUS_TFM" PropertyName="_MauiPreviousDotNetTfm" />
     <_ValuesToReplace Include="MAUI_DOTNET_VERSION" PropertyName="_MauiDotNetVersion" />

@@ -4,6 +4,8 @@
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
     <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
+    <_MauiIsWorkloadType>false</_MauiIsWorkloadType>
+    <_MauiIsNuGetPackageType>true</_MauiIsNuGetPackageType>
 
     <!-- 
       Indicates that the Microsoft.Maui.Controls.Compatibility package should be implicitly
@@ -12,6 +14,99 @@
     -->
     <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">true</UseMauiCompat>
   </PropertyGroup>
+
+  <!--
+    This part sets up properties for "compatibility" with workload-based builds of .NET MAUI.
+  -->
+  <PropertyGroup Condition="$([MSBuild]::VersionGreaterThan($(MauiVersion), '7.0.0')) and $([MSBuild]::VersionLessThanOrEquals($(MauiVersion), '@LAST_WORKLOAD_VERSION@'))">
+    <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
+    <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
+    <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
+    <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
+    <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
+    <_MauiIsWorkloadType>true</_MauiIsWorkloadType>
+    <_MauiIsNuGetPackageType>false</_MauiIsNuGetPackageType>
+  </PropertyGroup>
+
+  <!--
+    If we are using a workload-based builds of .NET MAUI, then make sure we list the frameworks we are using.
+  -->
+  <ItemGroup Condition="$(_MauiIsWorkloadType)">
+    <KnownFrameworkReference
+        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Include="Microsoft.Maui.Core"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
+        RuntimeFrameworkName="Microsoft.Maui.Core"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackName="Microsoft.Maui.Core.Ref.$(_MauiPlatformName)"
+        TargetingPackVersion="$(MauiVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Core.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
+    />
+    <KnownFrameworkReference
+        Condition=" '$(UseMaui)' == 'true' "
+        Include="Microsoft.Maui.Controls"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
+        RuntimeFrameworkName="Microsoft.Maui.Controls"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackName="Microsoft.Maui.Controls.Ref.$(_MauiPlatformName)"
+        TargetingPackVersion="$(MauiVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Controls.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
+    />
+    <KnownFrameworkReference
+        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+        Include="Microsoft.Maui.Essentials"
+        TargetFramework="$(MauiWorkloadTargetFramework)"
+        RuntimeFrameworkName="Microsoft.Maui.Essentials"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackName="Microsoft.Maui.Essentials.Ref.$(_MauiPlatformName)"
+        TargetingPackVersion="$(MauiVersion)"
+        RuntimePackNamePatterns="Microsoft.Maui.Essentials.Runtime.**RID**"
+        RuntimePackRuntimeIdentifiers="$(_MauiPlatformName)"
+        Profile="$(TargetPlatformIdentifier)"
+        RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
+    />
+  </ItemGroup>
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and $(_MauiIsWorkloadType)">
+    <FrameworkReference
+        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
+        Include="Microsoft.Maui.Core"
+        IsImplicitlyDefined="true"
+        Pack="false"
+        PrivateAssets="All"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
+    />
+    <FrameworkReference
+        Condition=" '$(UseMaui)' == 'true' "
+        Include="Microsoft.Maui.Controls"
+        IsImplicitlyDefined="true"
+        Pack="false"
+        PrivateAssets="All"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
+    />
+    <FrameworkReference
+        Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' "
+        Include="Microsoft.Maui.Essentials"
+        IsImplicitlyDefined="true"
+        Pack="false"
+        PrivateAssets="All"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
+    />
+  </ItemGroup>
 
   <!--
     These implicit <PackageReference/> pull dependencies from NuGet transitively.
@@ -25,34 +120,70 @@
     of .NET MAUI. One exception the this is that the <_MauiRequiredImplicitPackageReference/> item
     group is always installed as this is not maui dependencies but rather .NET support dependencies.
   -->
-  <ItemGroup Condition=" '$(UseMauiAssets)' == 'true' ">
+  <!-- This section is for NuGet-based builds of .NET MAUI -->
+  <ItemGroup Condition=" '$(UseMauiAssets)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiEssentials)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMauiEssentials)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiCore)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMauiCore)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' and $(_MauiIsNuGetPackageType) ">
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
+  <!-- This section is for workload-based builds of .NET MAUI -->
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiAssets)' == 'true') and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiWorkloadVersion)" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)') == 'true' and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Core.Build.Tasks" Version="$(MauiWorkloadVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Build.Tasks" Version="$(MauiWorkloadVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Graphics.Skia" Version="$(MauiVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') and $(_MauiIsWorkloadType) ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" Version="$(MauiVersion)">
+      <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
+    </_MauiImplicitPackageReference>
+  </ItemGroup>
+
   <!-- Always install the required dependecies, such as build tools for the SDK itself -->
   <ItemGroup>
     <_MauiRequiredImplicitPackageReference Remove="@(PackageReference)" />
