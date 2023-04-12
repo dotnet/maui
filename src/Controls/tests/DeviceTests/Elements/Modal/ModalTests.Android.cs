@@ -92,6 +92,14 @@ namespace Microsoft.Maui.DeviceTests
 						for (int i = 0; i < 30; i++)
 						{
 							var entry = new Entry();
+
+							if (i == 0)
+							{
+								// This just lets us visually verify where
+								// the first entry is located
+								entry.Text = "First Entry";
+							}
+
 							entries.Add(entry);
 							layout.Add(entry);
 						}
@@ -102,26 +110,28 @@ namespace Microsoft.Maui.DeviceTests
 						// Locate the lowest visible entry
 						var pageBoundingBox = modalPage.GetBoundingBox();
 						testEntry = entries[0];
+
+						// Ensure that the keyboard is closed before we start
+						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Ensure that the keyboard is closed before we start");
+
 						foreach (var entry in entries)
 						{
+							var entryLocation = entry.GetLocationOnScreen();
 							var entryBox = entry.GetBoundingBox();
 
 							// Locate the lowest visible entry
-							if ((entryBox.Y + (entryBox.Height * 2)) > pageBoundingBox.Height)
+							if ((entryLocation.Value.Y + (entryBox.Height * 2)) > pageBoundingBox.Height)
 								break;
 
 							testEntry = entry;
 						}
-
-						// Ensure that the keyboard is closed before we start
-						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Ensure that the keyboard is closed before we start");
 
 						// determine the screen dimensions with no keyboard open
 						var rootPageOffsetY = navPage.CurrentPage.GetLocationOnScreen().Value.Y;
 						var modalOffsetY = modalPage.GetLocationOnScreen().Value.Y;
 						var originalModalPageSize = modalPage.GetBoundingBox();
 
-						await AssertionExtensions.ShowKeyboardForView(testEntry);
+						await AssertionExtensions.ShowKeyboardForView(testEntry, message: "Show keyboard for entry");
 
 						// Type text into the entries
 						testEntry.Text = "Typing";
@@ -140,7 +150,16 @@ namespace Microsoft.Maui.DeviceTests
 
 						Assert.True(offsetMatchesWhenKeyboardOpened, "Modal page has an invalid offset when open");
 
-						await AssertionExtensions.HideKeyboardForView(testEntry, message: "Close Keyboard to see if sizes adjust back");
+						foreach (var entry in entries)
+						{
+							var entryBox = entry.GetLocationOnScreen();
+
+							if (entryBox.Value.Y > 0)
+							{
+								await AssertionExtensions.HideKeyboardForView(testEntry, message: "Close Keyboard to see if sizes adjust back");
+								break;
+							}
+						}
 
 						// Wait for the size of the screen to settle after the keyboard has closed
 						bool offsetMatchesWhenKeyboardClosed = await AssertionExtensions.Wait(() =>

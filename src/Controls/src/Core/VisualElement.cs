@@ -869,31 +869,8 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler ChildrenReordered;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Focus']/Docs/*" />
-		public bool Focus()
-		{
-			if (IsFocused)
-			{
-#if ANDROID
-				// TODO: Refactor using mappers for .NET 8
-				if (this is ITextInput && Handler is IPlatformViewHandler platformViewHandler)
-					KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
-#endif
-				return true;
-			}
-
-			if (FocusChangeRequested == null)
-			{
-				FocusRequest focusRequest = new FocusRequest(false);
-
-				Handler?.Invoke(nameof(IView.Focus), focusRequest);
-
-				return focusRequest.IsFocused;
-			}
-
-			var arg = new FocusRequestArgs { Focus = true };
-			FocusChangeRequested(this, arg);
-			return arg.Result;
-		}
+		public bool Focus() =>
+			this.RequestFocus();
 
 		public event EventHandler<FocusEventArgs> Focused;
 
@@ -1055,8 +1032,12 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
+		// TODO: Obsolete in favor of MapFocus https://github.com/dotnet/maui/issues/14299
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
+		internal void InvokeFocusChangeRequested(FocusRequestArgs args) =>
+			FocusChangeRequested?.Invoke(this, args);
+		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InvalidateMeasureNonVirtual']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
