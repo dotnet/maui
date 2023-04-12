@@ -294,5 +294,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var gitr = tr as GenericInstanceType;
 			return gitr == null ? serialized : $"{serialized}<{string.Join(",", gitr.GenericArguments.Select(SerializeTypeReference))}>";
 		}
+
+		public static bool IsVisibleInternal(this ModuleDefinition from, ModuleDefinition to) =>
+			from.GetCustomAttributes().Any(ca =>
+				ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute" &&
+				ca.HasConstructorArguments &&
+				ca.ConstructorArguments[0].Value is string visibleTo &&
+				visibleTo.StartsWith(to.Assembly.Name.Name, StringComparison.InvariantCulture));
 	}
 }
