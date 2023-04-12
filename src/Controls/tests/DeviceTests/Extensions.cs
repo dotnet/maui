@@ -32,6 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			handlers.TryAddHandler<Layout, LayoutHandler>();
 			handlers.TryAddHandler<Image, ImageHandler>();
 			handlers.TryAddHandler<Label, LabelHandler>();
+			handlers.TryAddHandler<Button, ButtonHandler>();
 			handlers.TryAddHandler<Page, PageHandler>();
 			handlers.TryAddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 			handlers.TryAddHandler(typeof(MenuBar), typeof(MenuBarHandler));

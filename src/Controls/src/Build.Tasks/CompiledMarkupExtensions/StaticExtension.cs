@@ -100,10 +100,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (fd.Module == module)
 					return true;
-				if (fd.Module.GetCustomAttributes().Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
-															&& ca.HasConstructorArguments
-															&& (ca.ConstructorArguments[0].Value as string) != null
-															&& (ca.ConstructorArguments[0].Value as string).StartsWith(module.Assembly.Name.Name, System.StringComparison.InvariantCulture)))
+				if (fd.Module.IsVisibleInternal(module))
 					return true;
 			}
 			return false;
@@ -125,10 +122,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				if (md.Module == module)
 					return true;
-				if (md.Module.GetCustomAttributes().Any(ca => ca.AttributeType.FullName == "System.Runtime.CompilerServices.InternalsVisibleToAttribute"
-															&& ca.HasConstructorArguments
-															&& (ca.ConstructorArguments[0].Value as string) != null
-															&& (ca.ConstructorArguments[0].Value as string).StartsWith(module.Assembly.Name.Name, System.StringComparison.InvariantCulture)))
+				if (md.Module.IsVisibleInternal(module))
 					return true;
 			}
 			return false;

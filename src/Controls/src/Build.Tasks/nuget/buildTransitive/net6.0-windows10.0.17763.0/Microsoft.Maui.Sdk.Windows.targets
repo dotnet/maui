@@ -7,8 +7,6 @@
     <WindowsAppSDKSelfContained Condition=" '$(WindowsAppSDKSelfContained)' == '' and '$(WindowsPackageType)' == 'None' and '$(OutputType)' == 'WinExe' ">true</WindowsAppSDKSelfContained>
     <!-- Do not generate the bootstrapper if the project is not an app (ie: if it is a library) -->
     <WindowsAppSdkBootstrapInitialize Condition=" '$(WindowsAppSdkBootstrapInitialize)' == '' and '$(EnableMsixTooling)' == 'true' and '$(OutputType)' != 'WinExe' ">false</WindowsAppSdkBootstrapInitialize>
-    <!-- We have our own manager to avoid crashing the app -->
-    <WindowsAppSdkDeploymentManagerInitialize>false</WindowsAppSdkDeploymentManagerInitialize>
     <!-- Always generate the msix files if publishing -->
     <PublishAppXPackage Condition=" '$(PublishAppXPackage)' == '' and '$(EnableMsixTooling)' == 'true' and '$(WindowsPackageType)' == 'MSIX' ">true</PublishAppXPackage>
   </PropertyGroup>
