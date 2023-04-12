@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (!view.IsFocused)
 			{
-				view.Focus(new FocusRequest(view.IsFocused));
+				view.Focus(new FocusRequest());
 				return view.WaitForFocused(timeout);
 			}
 
@@ -155,8 +155,21 @@ namespace Microsoft.Maui.DeviceTests
 			try
 			{
 				await view.FocusView(timeout);
+				await Task.Yield();
 				KeyboardManager.ShowKeyboard(view);
-				await view.WaitForKeyboardToShow(timeout);
+				await Task.Yield();
+
+				bool result = await Wait(() =>
+				{
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
+						KeyboardManager.ShowKeyboard(view);
+
+					return KeyboardManager.IsSoftKeyboardVisible(view);
+
+				}, timeout);
+
+				await Task.Delay(100);
+				Assert.True(KeyboardManager.IsSoftKeyboardVisible(view));
 			}
 			catch (Exception ex)
 			{
@@ -174,20 +187,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			try
 			{
-				int retry = 2;
-				for (int i = 0; i < retry; i++)
+				KeyboardManager.HideKeyboard(view);
+				await Task.Yield();
+				bool result = await Wait(() =>
 				{
-					KeyboardManager.HideKeyboard(view);
-					try
-					{
-						await view.WaitForKeyboardToHide(timeout);
-					}
-					catch
-					{
-						if (i >= retry)
-							throw;
-					}
-				}
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
+						KeyboardManager.HideKeyboard(view);
+
+					return !KeyboardManager.IsSoftKeyboardVisible(view);
+
+				}, timeout);
+
+				await Task.Delay(100);
+				Assert.True(!KeyboardManager.IsSoftKeyboardVisible(view));
 			}
 			catch (Exception ex)
 			{
