@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
@@ -53,7 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
-#if !TIZEN && PLATFORM
 		public static Task AssertHasContainer(this IView view, bool expectation)
 		{
 			// On Windows the `Parent` of an element only initializes when the view is added
@@ -112,8 +112,21 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000) =>
 			view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
 
-		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().ShowKeyboardForView(timeout);
+		public static Task ShowKeyboardForView(this IView view, int timeout = 1000, string? message = null)
+		{
+			try
+			{
+				return view.ToPlatform().ShowKeyboardForView(timeout);
+			}
+			catch (Exception ex)
+			{
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
+			}
+		}
+
 		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
 			view.ToPlatform().HideKeyboardForView(timeout, message);
 
@@ -131,12 +144,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsExcludedWithChildren(this IView view) =>
 			view.ToPlatform().IsExcludedWithChildren();
-#endif
-
 
 		public static IDisposable OnUnloaded(this IElement element, Action action)
 		{
-#if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
 				platformViewHandler.PlatformView is not null)
 			{
@@ -144,14 +154,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			throw new InvalidOperationException("Handler is not set on element");
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public static IDisposable OnLoaded(this IElement element, Action action)
 		{
-#if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
 				platformViewHandler.PlatformView is not null)
 			{
@@ -159,22 +165,14 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			throw new InvalidOperationException("Handler is not set on element");
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public static bool IsLoadedOnPlatform(this IElement element)
 		{
-
-#if PLATFORM
 			if (element.Handler is not IPlatformViewHandler pvh)
 				return false;
 
 			return pvh.PlatformView?.IsLoaded() == true;
-#else
-			return true;
-#endif
 		}
 	}
 }
