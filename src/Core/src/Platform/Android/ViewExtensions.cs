@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void Focus(this AView platformView, FocusRequest request, Action? focusRequested)
 		{
-			request.IsFocused = true;
+			request.TrySetResult(true);
 
 			// Android does the actual focus/unfocus work on the main looper
 			// So in case we're setting the focus in response to another control's un-focusing,
