@@ -9,6 +9,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static partial class WindowExtensions
 	{
+		internal static void UpdateTitle(this UIWindow platformWindow, IWindow window)
+		{
+			// If you set the title to null the app will crash
+			// If you set it to an empty string the title reverts back to the 
+			// default app title.
+			if (OperatingSystem.IsIOSVersionAtLeast(13) && platformWindow.WindowScene is not null)
+				platformWindow.WindowScene.Title = window.Title ?? String.Empty;
+		}
+
 		internal static void UpdateX(this UIWindow platformWindow, IWindow window) =>
 			platformWindow.UpdateUnsupportedCoordinate(window);
 
