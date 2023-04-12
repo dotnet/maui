@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Platform
 			Drawable? defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
 
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
-			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
+			var backgroundDrawable = paint.ToDrawable(platformView.Context);
 
 			if (previousDrawable is null)
 				platformView.Background = backgroundDrawable;
