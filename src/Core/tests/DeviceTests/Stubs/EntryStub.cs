@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public ClearButtonVisibility ClearButtonVisibility { get; set; }
 
-		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
+		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 
 		public event EventHandler Completed;
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			Completed?.Invoke(this, EventArgs.Empty);
 
 		void OnTextChanged(string oldValue, string newValue) =>
-			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+			TextChanged?.Invoke(this, (oldValue, newValue));
 
 		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 
