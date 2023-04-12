@@ -87,10 +87,17 @@ namespace Microsoft.Maui.Platform
 		{
 			var requestedSize = base.SizeThatFits(size);
 
+			if (LineBreakMode == UILineBreakMode.Clip ||
+				LineBreakMode == UILineBreakMode.CharacterWrap ||
+				LineBreakMode == UILineBreakMode.WordWrap ||
+				Lines != 1)
+			{
+				return AddInsets(requestedSize);
+			}
+
 			// Let's be sure the label is not larger than the container
-			size.Width = nfloat.Min(requestedSize.Width, size.Width);
-			size.Height = requestedSize.Height;
-			return AddInsets(size);
+			var width = nfloat.Min(requestedSize.Width, size.Width);
+			return AddInsets(new SizeF(width, requestedSize.Height));
 		}
 
 		SizeF AddInsets(SizeF size) => new SizeF(
