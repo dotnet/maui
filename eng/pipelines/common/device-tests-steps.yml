@@ -43,21 +43,28 @@ parameters:
   type: stepList
   default: []
 
+- name: templatesResource
+  type: string
+  default: yaml-templates
+
 steps:
 
 - ${{ parameters.prepareSteps }}
+
+- checkout: ${{ parameters.templatesResource }}
+  clean: true
 
 - template: provision.yml
   parameters:
     platform: macos
     skipXcode: ${{ eq(parameters.platform, 'android') }}
     provisionatorChannel: ${{ parameters.provisionatorChannel }}
-    checkoutDirectory: ${{ parameters.checkoutDirectory }}
+    checkoutDirectory: ${{ parameters.checkoutDirectory }}/maui
 
 - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
   displayName: 'Install .NET'
   retryCountOnTaskFailure: 3
-  workingDirectory: ${{ parameters.checkoutDirectory }}
+  workingDirectory: ${{ parameters.checkoutDirectory }}/maui
   env:
     DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
     PRIVATE_BUILD: $(PrivateBuild)
@@ -79,7 +86,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
     displayName: 'Install .NET (Local Workloads)'
     retryCountOnTaskFailure: 3
-    workingDirectory: ${{ parameters.checkoutDirectory }}
+    workingDirectory: ${{ parameters.checkoutDirectory }}/maui
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
@@ -90,7 +97,7 @@ steps:
 
 - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
   displayName: $(Agent.JobName)
-  workingDirectory: ${{ parameters.checkoutDirectory }}
+  workingDirectory: ${{ parameters.checkoutDirectory }}/maui
   retryCountOnTaskFailure: 2
 
 - task: PublishTestResults@2
@@ -108,6 +115,6 @@ steps:
     artifactName: $(System.PhaseName)
 
 # This must always be placed as the last step in the job
-#- template: agent-rebooter/mac.v1.yml@yaml-templates
-#  parameters:
-#    AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+- template: agent-rebooter/mac.v2.yml@yaml-templates
+  parameters:
+    AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
