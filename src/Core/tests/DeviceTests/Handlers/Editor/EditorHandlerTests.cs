@@ -400,5 +400,23 @@ namespace Microsoft.Maui.DeviceTests
 		public class EditorTextStyleTests : TextStyleHandlerTests<EditorHandler, EditorStub>
 		{
 		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorFocusTests : FocusHandlerTests<EditorHandler, EditorStub, VerticalStackLayoutStub>
+		{
+		}
+
+		[Category(TestCategory.Editor)]
+		public class EditorTextInputTests : TextInputHandlerTests<EditorHandler, EditorStub>
+		{
+			protected override void SetNativeText(EditorHandler editorHandler, string text) =>
+				EditorHandlerTests.SetNativeText(editorHandler, text);
+
+			protected override int GetCursorStartPosition(EditorHandler editorHandler) =>
+				EditorHandlerTests.GetCursorStartPosition(editorHandler);
+
+			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
+				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
+		}
 	}
 }

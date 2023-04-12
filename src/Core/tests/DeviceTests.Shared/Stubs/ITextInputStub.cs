@@ -8,6 +8,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 {
 	public interface ITextInputStub : ITextInput
 	{
-		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
+		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 	}
 }
