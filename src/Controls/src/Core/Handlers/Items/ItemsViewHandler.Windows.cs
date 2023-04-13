@@ -287,9 +287,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (Layout is LinearItemsLayout linearItemsLayout)
 				{
-					gridView.Orientation = linearItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? Orientation.Horizontal
-						: Orientation.Vertical;
+					gridView.Orientation = linearItemsLayout.ToPlatform();
 
 					gridView.Span = 1;
 
@@ -302,9 +300,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				if (Layout is GridItemsLayout gridItemsLayout)
 				{
-					gridView.Orientation = gridItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal
-						? Orientation.Horizontal
-						: Orientation.Vertical;
+					gridView.Orientation = gridItemsLayout.ToPlatform();
 
 					gridView.Span = gridItemsLayout.Span;
 				
