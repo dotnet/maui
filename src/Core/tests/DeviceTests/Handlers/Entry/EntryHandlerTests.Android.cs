@@ -18,7 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Theory(DisplayName = "Validates Keyboard updates correctly using IsPassword")]
 		[InlineData(nameof(Keyboard.Text), false)]
 		[InlineData(nameof(Keyboard.Numeric), true)]
-		public async Task ValidateKeyboardUpdatesCorrectly(string keyboardName, bool expected)
+		public async Task ValidateNumericKeyboardUpdatesCorrectlyWithIsPassword(string keyboardName, bool expected)
 		{
 			var layout = new LayoutStub();
 
