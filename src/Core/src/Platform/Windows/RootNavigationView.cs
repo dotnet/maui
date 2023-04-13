@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Platform
 		double AppBarTitleHeight => _useCustomAppTitleBar ? _appBarTitleHeight : 0;
 		double _appBarTitleHeight;
 		bool _useCustomAppTitleBar;
+		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
 		public RootNavigationView()
 		{
@@ -250,7 +251,6 @@ namespace Microsoft.Maui.Platform
 			UpdateNavigationAndPaneButtonHolderGridStyles();
 		}
 
-
 		void UpdateNavigationAndPaneButtonHolderGridStyles()
 		{
 			var buttonHeight = Math.Min(_appBarTitleHeight, DefaultNavigationBackButtonHeight);
@@ -268,7 +268,6 @@ namespace Microsoft.Maui.Platform
 			if (PaneDisplayMode == NavigationViewPaneDisplayMode.LeftMinimal ||
 				PaneDisplayMode == NavigationViewPaneDisplayMode.Top)
 			{
-
 				NavigationViewButtonHolderGridMargin = new WThickness(0, 0, 0, 0);
 				NavigationViewBackButtonMargin = new WThickness(0, 0, 0, 0);
 				PaneToggleButtonPadding = new WThickness();
@@ -339,8 +338,6 @@ namespace Microsoft.Maui.Platform
 			_flyoutPanel.ContentWidth = FlyoutPaneSize.Width;
 			_flyoutPanel.InvalidateMeasure();
 		}
-
-		readonly FlyoutPanel _flyoutPanel = new FlyoutPanel();
 
 		void ReplacePaneMenuItemsWithCustomContent(UIElement? customContent)
 		{

@@ -128,5 +128,9 @@ namespace Microsoft.Maui
 		void FrameChanged(Rect frame);
 
 		float RequestDisplayDensity();
+
+#if WINDOWS
+		Rect[]? TitleBarDragRectangles => null;
+#endif
 	}
 }

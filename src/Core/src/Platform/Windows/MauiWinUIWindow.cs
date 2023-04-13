@@ -20,7 +20,6 @@ namespace Microsoft.Maui
 		IntPtr _windowIcon;
 		bool _enableResumeEvent;
 		bool _isActivated;
-		UI.Xaml.UIElement? _customTitleBar;
 
 		public MauiWinUIWindow()
 		{
@@ -33,7 +32,8 @@ namespace Microsoft.Maui
 			// We set this to true by default so later on if it's
 			// set to false we know the user toggled this to false 
 			// and then we can react accordingly
-			ExtendsContentIntoTitleBar = true;
+			if (AppWindowTitleBar.IsCustomizationSupported())
+				base.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
 
 			SubClassingWin32();
 			SetIcon();
@@ -173,26 +173,6 @@ namespace Microsoft.Maui
 		internal IServiceProvider? Services =>
 			Window?.Handler?.GetServiceProvider() ??
 			MauiWinUIApplication.Current.Services;
-
-		internal UI.Xaml.UIElement? MauiCustomTitleBar
-		{
-			get => _customTitleBar;
-			set
-			{
-				_customTitleBar = value;
-				SetTitleBar(_customTitleBar);
-				UpdateTitleOnCustomTitleBar();
-			}
-		}
-
-		internal void UpdateTitleOnCustomTitleBar()
-		{
-			if (_customTitleBar is UI.Xaml.FrameworkElement fe &&
-				fe.GetDescendantByName<TextBlock>("AppTitle") is TextBlock tb)
-			{
-				tb.Text = Title;
-			}
-		}
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);

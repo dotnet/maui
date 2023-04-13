@@ -487,5 +487,25 @@ namespace Microsoft.Maui.Controls
 			// if there was nothing that handles this, then nothing changed
 			focusRequest.TrySetResult(false);
 		}
+
+		internal static IMauiContext? GetCurrentlyPresentedMauiContext(this Element element)
+		{
+			var window = (element as Window) ?? (element as IWindowController)?.Window;
+
+			if (window is null)
+				return null;
+
+			var modalStack = window.Navigation.ModalStack;
+			if (modalStack.Count > 0)
+			{
+				var currentPage = modalStack[modalStack.Count - 1];
+				if (currentPage.Handler?.MauiContext is IMauiContext mauiContext)
+				{
+					return mauiContext;
+				}
+			}
+
+			return window.Handler?.MauiContext;
+		}
 	}
 }

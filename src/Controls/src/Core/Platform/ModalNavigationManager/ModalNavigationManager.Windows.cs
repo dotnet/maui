@@ -102,13 +102,14 @@ namespace Microsoft.Maui.Controls.Platform
 					_ = newPage.Toolbar.ToPlatform(modalContext);
 
 					var windowManager = modalContext.GetNavigationRootManager();
+
+					if (windowManager.RootView is WindowRootView wrv)
+					{
+						wrv.SetTitleBarBackgroundToTransparent(false);
+					}
+
 					windowManager.Connect(newPage.ToPlatform(modalContext));
 					Container.AddPage(windowManager.RootView);
-
-					previousPage
-						.FindMauiContext()
-						?.GetNavigationRootManager()
-						?.UpdateAppTitleBar(false);
 				}
 				// popping modal
 				else
@@ -117,8 +118,6 @@ namespace Microsoft.Maui.Controls.Platform
 						throw new InvalidOperationException("Previous Page Has Lost its MauiContext");
 
 					Container.AddPage(windowManager.RootView);
-
-					windowManager.UpdateAppTitleBar(true);
 				}
 
 				completedCallback?.Invoke();
