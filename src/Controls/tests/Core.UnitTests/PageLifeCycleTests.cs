@@ -170,24 +170,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Theory]
 		[InlineData(false)]
 		[InlineData(true)]
-		public async Task WhileCoveredNavigationPageDoesntFireNavEvents(bool useMaui)
-		{
-			var lcPage = new ContentPage();
-			var targetPage = new LCPage();
-			var modalPage = new ContentPage();
-			var window = new TestWindow(new TestNavigationPage(useMaui, lcPage));
-
-			await window.Navigation.PushModalAsync(modalPage);
-			await window.Page.Navigation.PushAsync(targetPage);
-			Assert.Null(targetPage.NavigatedToArgs);
-			await window.Navigation.PopModalAsync();
-			Assert.NotNull(targetPage.NavigatedToArgs);
-			Assert.Equal(modalPage, targetPage.NavigatedToArgs.PreviousPage);
-		}
-
-		[Theory]
-		[InlineData(false)]
-		[InlineData(true)]
 		public async Task NavigationPagePropagatesEventsWhenCoveredByModal(bool useMaui)
 		{
 			var lcPage = new ContentPage();
