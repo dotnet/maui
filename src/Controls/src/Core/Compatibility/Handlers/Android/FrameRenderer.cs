@@ -295,8 +295,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else if (VirtualView is IBorderElement be)
 			{
 				var borderWidth = be.BorderWidth;
-				if (borderWidth < 0)
-					borderWidth = 1;
+				if (borderWidth < 0 || borderWidth == Primitives.Dimension.Unset)
+					borderWidth = 0;
 
 				_backgroundDrawable.SetStroke((int)Context.ToPixels(borderWidth), borderColor.ToPlatform());
 			}
