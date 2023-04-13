@@ -50,6 +50,7 @@ Microsoft.Maui.Controls you could bring in partial parts of MAUI.
 `$(UseMauiCore)` brings in:
 
 * `Microsoft.Maui.Core`
+* `Microsoft.Maui.Core.Build.Tasks`
 
 `$(UseMauiEssentials)` brings in:
 

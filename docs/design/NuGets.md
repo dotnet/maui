@@ -13,6 +13,7 @@ There are several artifacts in the .NET MAUI "universe":
     * `Microsoft.Maui.Controls.Build.Tasks` - The real set of XAML[C|G] targets and globs
   * `Microsoft.Maui.Resizetizer` - The framework-and-platform-agnostic asset generator and integrator
   * `Microsoft.Maui.Core` - The base interfaces and handlers for all .NET MAUI things
+     * `Microsoft.Maui.Core.Build.Tasks` - The base targets and props .NET MAUI things
   * `Microsoft.Maui.Essentials` - The core set of framework-agnostic, cross-platform APIs
   * `Microsoft.Maui.Controls.Compatibility` - The set of compatibility APIs for Xamarin.Forms
 * .NET MAUI maps support:
@@ -43,7 +44,7 @@ Most nugets do not contain or need targets and/or props files, but some do. Thes
     - SDK - `Microsoft.Maui.Sdk`
  - NuGet Packages
     - Controls - `Microsoft.Maui.Controls.Build.Tasks`
-    - Core - `Microsoft.Maui.Core`
+    - Core - `Microsoft.Maui.Core.Build.Tasks`
     - Resizetizer - `Microsoft.Maui.Resizetizer`
 
 ### Structure of .props & .targets Files
@@ -107,7 +108,7 @@ The targets file can then import all the SDK:
 There are 3 packs today that need targets:
 
  - Controls - `Microsoft.Maui.Controls.Build.Tasks`
- - Core - `Microsoft.Maui.Core`
+ - Core - `Microsoft.Maui.Core.Build.Tasks`
  - Resizetizer - `Microsoft.Maui.Resizetizer`
 
 #### Targets in Controls

@@ -35,6 +35,7 @@
           "Microsoft.Maui.Templates.net@MAUI_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Templates.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Core",
+          "Microsoft.Maui.Core.Build.Tasks",
           "Microsoft.Maui.Controls",
           "Microsoft.Maui.Controls.Build.Tasks",
           "Microsoft.Maui.Controls.Core",
@@ -91,6 +92,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Core": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Core.Build.Tasks": {
       "kind": "library",
       "version": "@VERSION@"
     },
