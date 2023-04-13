@@ -22,6 +22,12 @@ namespace Microsoft.Maui.ApplicationModel
 		Window? GetActiveWindow();
 
 		/// <summary>
+		/// Occurs when a new window is created, but not yet displayed
+		/// </summary>
+		/// <param name="window">The <see cref="Window"/> object</param>
+		void OnPlatformWindowInitialized(Window window);
+
+		/// <summary>
 		/// Sets the new active window that can be retrieved with <see cref="GetActiveWindow"/>.
 		/// </summary>
 		/// <param name="window">The <see cref="Window"/> object that is activated.</param>
@@ -126,6 +132,11 @@ namespace Microsoft.Maui.ApplicationModel
 			_activeWindow = window;
 
 			ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
+		}
+
+		public void OnPlatformWindowInitialized(Window window)
+		{
+			SetActiveWindow(window);
 		}
 
 		public void OnActivated(Window window, WindowActivatedEventArgs args)
