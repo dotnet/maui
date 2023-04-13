@@ -17,7 +17,7 @@ The idea, is a project to be able to set `$(UseMaui)`:
 `$(UseMaui)` automatically brings in the following workload packs:
 
 * `Microsoft.NET.Sdk.Maui` - workload manifest
-* `Microsoft.Maui.Sdk` - worklaod SDK
+* `Microsoft.Maui.Sdk` - workload SDK
 * `Microsoft.Maui.Controls` - nuget
 * `Microsoft.Maui.Controls.Compatibility` - nuget
 * `Microsoft.Maui.Templates` - nuget
