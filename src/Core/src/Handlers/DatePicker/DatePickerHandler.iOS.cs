@@ -1,7 +1,5 @@
 ﻿using System;
-using Foundation;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -37,6 +35,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			platformView.MauiDatePickerDelegate = null;
+
 			base.DisconnectHandler(platformView);
 		}
 
@@ -130,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 
 		class DatePickerDelegate : MauiDatePickerDelegate
 		{
-			WeakReference<IDatePickerHandler> _handler;
+			readonly WeakReference<IDatePickerHandler> _handler;
 
 			public DatePickerDelegate(IDatePickerHandler handler) =>
 				_handler = new WeakReference<IDatePickerHandler>(handler);
