@@ -39,6 +39,7 @@
           "Microsoft.Maui.Controls.Build.Tasks",
           "Microsoft.Maui.Controls.Core",
           "Microsoft.Maui.Controls.Xaml",
+          "Microsoft.Maui.Controls.Compatibility",
           "Microsoft.Maui.Essentials"
       ]
     },
@@ -107,6 +108,10 @@
       "version": "@VERSION@"
     },
     "Microsoft.Maui.Controls.Xaml": {
+      "kind": "library",
+      "version": "@VERSION@"
+    },
+    "Microsoft.Maui.Controls.Compatibility": {
       "kind": "library",
       "version": "@VERSION@"
     },
