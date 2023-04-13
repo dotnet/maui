@@ -92,7 +92,7 @@ steps:
       PRIVATE_BUILD: $(PrivateBuild)
 
   - pwsh: ./build.ps1 --target=build-samples --verbosity=diagnostic
-    displayName: 'Install .NET (Local Workloads)'
+    displayName: 'Build samples'
     retryCountOnTaskFailure: 3
     workingDirectory: ${{ parameters.checkoutDirectory }}/maui
 
