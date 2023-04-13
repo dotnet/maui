@@ -16,13 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class FrameTests : ControlsHandlerTestBase
 	{
 		// This a hard-coded legacy value
-#if ANDROID
-		// Android
-		const int FrameBorderThickness = 3;
-#else
-		// Windows and iOS
 		const int FrameBorderThickness = 1;
-#endif
 
 		void SetupBuilder()
 		{
@@ -341,14 +335,15 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(layoutFrame.Width > minExpectedWidth);
 		}
 
-		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint)
+		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint, Func<Task> additionalTests = null)
 		{
+			additionalTests ??= () => Task.CompletedTask;
 			return await InvokeOnMainThreadAsync(() =>
 					layout.ToPlatform(MauiContext).AttachAndRun(async () =>
 					{
 						var size = (layout as IView).Measure(widthConstraint, heightConstraint);
-						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
-
+						var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
+						(layout as IView).Arrange(rect);
 						await OnFrameSetToNotEmpty(layout);
 						await OnFrameSetToNotEmpty(frame);
 
@@ -362,6 +357,7 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.True(containerControlSize.Width > 0);
 						Assert.True(containerControlSize.Height > 0);
 
+						await additionalTests.Invoke();
 						return layout.Frame;
 					})
 				);

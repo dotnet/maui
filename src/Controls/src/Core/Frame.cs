@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 
 		// TODO fix iOS/WinUI to work the same as Android
 #if ANDROID
-		double IBorderElement.BorderWidth => 3;
+		double IBorderElement.BorderWidth => 1;
 #else
 		// not currently used by frame
 		double IBorderElement.BorderWidth => -1d;

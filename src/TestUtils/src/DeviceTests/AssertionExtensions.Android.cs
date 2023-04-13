@@ -375,8 +375,16 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view) =>
-			view.AttachAndRun(() =>
+		public static Task<Bitmap> ToBitmap(this AView view)
+		{
+			if (view.Parent is not null)
+			{
+				return Task.FromResult(CreateBitmap(view));
+			}
+
+			return view.AttachAndRun(() => CreateBitmap(view));
+
+			Bitmap CreateBitmap(AView view)
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -387,7 +395,8 @@ namespace Microsoft.Maui.DeviceTests
 					view.Draw(canvas);
 				}
 				return bitmap;
-			});
+			}
+		}
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
@@ -473,7 +482,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 					}
 				}
 			}
