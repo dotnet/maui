@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -38,6 +39,16 @@ namespace Maui.Controls.Sample.Pages
 					new GradientStop { Color = endColor, Offset = 1 }
 				}
 			};
+		}
+
+		void OnFocusDatePickerFocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		{
+			Debug.WriteLine("Focused");
+		}
+
+		void OnFocusDatePickerUnfocused(object sender, Microsoft.Maui.Controls.FocusEventArgs e)
+		{
+			Debug.WriteLine("Unfocused");
 		}
 	}
 }
