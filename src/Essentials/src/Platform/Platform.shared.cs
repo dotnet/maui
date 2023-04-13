@@ -141,6 +141,10 @@ namespace Microsoft.Maui.ApplicationModel
 		public static void OnLaunched(UI.Xaml.LaunchActivatedEventArgs e) =>
 			AppActions.Current.OnLaunched(e);
 
+		/// <inheritdoc cref="IWindowStateManager.OnPlatformWindowInitialized(UI.Xaml.Window)"/>
+		public static void OnPlatformWindowInitialized(UI.Xaml.Window window) =>
+			WindowStateManager.Default.OnPlatformWindowInitialized(window);
+
 		/// <inheritdoc cref="IWindowStateManager.OnActivated(UI.Xaml.Window, UI.Xaml.WindowActivatedEventArgs)"/>
 		public static void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs args) =>
 			WindowStateManager.Default.OnActivated(window, args);
