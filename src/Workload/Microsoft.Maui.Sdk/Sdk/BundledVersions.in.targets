@@ -13,4 +13,24 @@
     <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">true</UseMauiCompat>
   </PropertyGroup>
 
+  <!--
+    After both the implicit packages and the user/project packages are added, we need to
+    remove any duplicates that we have added. In older versions of the IDE, the package manager
+    only supported Include so we could check here, however it now supports Update so we need to
+    make sure they are already available to be updated.
+
+    But the issue comes in if the user is on an existing project - or likes to use Include. In
+    these instances, we need to now remove out implicit packages.
+
+    This logic only installs packages if and only if $(UseMauiNuGets) is not true. This property
+    allows the user to totally override all the default nugets installed.
+  -->
+  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' ">
+    <_MauiAddedImplicitPackageReference Include="@(PackageReference->HasMetadata('IsMauiImplicitPackageReference'))" />
+    <_MauiAddedUserPackageReference Include="@(PackageReference->WithMetadataValue('IsMauiImplicitPackageReference',''))" />
+    <_MauiMissingImplicitPackageReference Include="@(_MauiAddedImplicitPackageReference)" Exclude="@(_MauiAddedUserPackageReference)" />
+    <PackageReference Remove="@(PackageReference)" />
+    <PackageReference Include="@(_MauiAddedUserPackageReference);@(_MauiMissingImplicitPackageReference)" />
+  </ItemGroup>
+
 </Project>
