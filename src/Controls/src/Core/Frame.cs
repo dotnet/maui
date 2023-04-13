@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="Type[@FullName='Microsoft.Maui.Controls.Frame']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement
+	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IContentView
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
@@ -54,8 +54,13 @@ namespace Microsoft.Maui.Controls
 
 		int IBorderElement.CornerRadius => (int)CornerRadius;
 
+		// TODO fix iOS/WinUI to work the same as Android
+#if ANDROID
+		double IBorderElement.BorderWidth => 3;
+#else
 		// not currently used by frame
 		double IBorderElement.BorderWidth => -1d;
+#endif
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)CornerRadiusProperty.DefaultValue;
 
@@ -82,5 +87,26 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderColorSet() => IsSet(BorderColorProperty);
 
 		bool IBorderElement.IsBorderWidthSet() => false;
+
+		// TODO fix iOS/WinUI to work the same as Android
+		// once this has been fixed on iOS/WinUI we should centralize 
+		// this code and Border into LayoutExtensions
+		// WinUI being fixed as part of
+		// https://github.com/dotnet/maui/issues/13552
+#if ANDROID
+		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
+		{
+			bounds = bounds.Inset((this as IBorderElement).BorderWidth);
+			this.ArrangeContent(bounds);
+			return bounds.Size;
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			var inset = Padding + (this as IBorderElement).BorderWidth;
+			return this.MeasureContent(inset, widthConstraint, heightConstraint);
+		}
+#endif
+
 	}
 }

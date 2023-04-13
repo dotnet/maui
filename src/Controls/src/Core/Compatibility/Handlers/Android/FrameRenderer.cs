@@ -100,6 +100,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 		}
 
+		IView? VirtualView => Element;
+
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var virtualView = (this as IViewHandler)?.VirtualView;
@@ -176,10 +178,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv)
+				Element is IContentView cv &&
+				VirtualView is not null &&
+				Context is not null)
 			{
-				var size = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
-				SetMeasuredDimension((int)size.Width, (int)size.Height);
+				var measure = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)measure.Width, (int)measure.Height);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -309,8 +313,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
-			else
-				_backgroundDrawable.SetStroke(3, borderColor.ToPlatform());
+			else if (VirtualView is IBorderElement be)
+				_backgroundDrawable.SetStroke((int)be.BorderWidth, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()
