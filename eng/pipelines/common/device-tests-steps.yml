@@ -91,7 +91,7 @@ steps:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
-  - pwsh: dotnet cake --target build-samples
+  - pwsh: dotnet cake --target dotnet-samples
     displayName: 'Build samples'
     retryCountOnTaskFailure: 3
     workingDirectory: ${{ parameters.checkoutDirectory }}/maui
