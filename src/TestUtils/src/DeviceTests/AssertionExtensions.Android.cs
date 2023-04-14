@@ -335,7 +335,17 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 				};
-				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+
+				var width = view.Width;
+				var height = view.Height;
+
+				if (width <= 0)
+					width = FrameLayout.LayoutParams.WrapContent;
+
+				if (height <= 0)
+					height = FrameLayout.LayoutParams.WrapContent;
+
+				view.LayoutParameters = new FrameLayout.LayoutParams(width, height)
 				{
 					Gravity = GravityFlags.Center
 				};
@@ -377,14 +387,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task<Bitmap> ToBitmap(this AView view)
 		{
-			if (view.Parent is not null)
-			{
-				return Task.FromResult(CreateBitmap(view));
-			}
-
-			return view.AttachAndRun(() => CreateBitmap(view));
-
-			Bitmap CreateBitmap(AView view)
+			return view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -395,7 +398,7 @@ namespace Microsoft.Maui.DeviceTests
 					view.Draw(canvas);
 				}
 				return bitmap;
-			}
+			});
 		}
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
