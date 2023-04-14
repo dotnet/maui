@@ -143,10 +143,13 @@ Task("Build")
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+
+	Information("PROJECT NAME: {0}", name);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
 
 	if (USE_DOTNET)
 	{
+		Information("USE DOTNET");
 		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
 		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
@@ -157,6 +160,7 @@ Task("Build")
 			},
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
+				.Append("/verbosity:diagnostic")
 				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 		});
