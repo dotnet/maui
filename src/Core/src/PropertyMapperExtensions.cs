@@ -52,6 +52,21 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Replace a property mapping in place but call the previous mapping if the types do not match.
+		/// </summary>
+		/// <typeparam name="TVirtualView">The cross-platform type.</typeparam>
+		/// <typeparam name="TViewHandler">The handler type.</typeparam>
+		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
+		/// <param name="key">The name of the property.</param>
+		/// <param name="method">The modified method to call when the property is updated.</param>
+		public static void ReplaceMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			propertyMapper.ModifyMappingWhen<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
+		}
+
+		/// <summary>
 		/// Specify a method to be run after an existing property mapping.
 		/// </summary>
 		/// <typeparam name="TVirtualView">The cross-platform type.</typeparam>

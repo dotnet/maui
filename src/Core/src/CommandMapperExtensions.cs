@@ -65,6 +65,21 @@ namespace Microsoft.Maui
 		}
 
 		/// <summary>
+		/// Replace a command mapping in place but call the previous mapping if the types do not match.
+		/// </summary>
+		/// <typeparam name="TVirtualView">The cross-platform type.</typeparam>
+		/// <typeparam name="TViewHandler">The handler type.</typeparam>
+		/// <param name="commandMapper">The command mapper in which to change the mapping.</param>
+		/// <param name="key">The name of the command.</param>
+		/// <param name="method">The modified method to call when the command is updated.</param>
+		public static void ReplaceMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
+			string key, Action<TViewHandler, TVirtualView, object?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			commandMapper.ModifyMappingWhen<TVirtualView, TViewHandler>(key, (h, v, a, p) => method.Invoke(h, v, a));
+		}
+
+		/// <summary>
 		/// Specify a method to be run after an existing command mapping.
 		/// </summary>
 		/// <typeparam name="TVirtualView">The cross-platform type.</typeparam>
