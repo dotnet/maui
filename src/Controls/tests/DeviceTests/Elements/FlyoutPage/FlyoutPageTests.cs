@@ -65,7 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS && !MACCATALYST
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
@@ -164,7 +163,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(FindPlatformFlyoutView(detailView));
 			});
 		}
-#endif
 
 		FlyoutPage CreateFlyoutPage(Type type, Page detail, Page flyout)
 		{
@@ -172,6 +170,52 @@ namespace Microsoft.Maui.DeviceTests
 			flyoutPage.Detail = detail;
 			flyoutPage.Flyout = flyout;
 			return flyoutPage;
+		}
+
+		[Fact]
+		public async Task DetailsPageMeasuresCorrectlyInSplitMode()
+		{
+			SetupBuilder();
+			var flyoutLabel = new Label() { Text = "Content" };
+			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
+			{
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split,
+				Detail = new ContentPage()
+				{
+					Title = "Detail",
+					Content = new Label()
+				},
+				Flyout = new ContentPage()
+				{
+					Title = "Flyout",
+					Content = flyoutLabel
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<PhoneFlyoutPageRenderer>(flyoutPage, (handler) =>
+			{
+				if (!CanDeviceDoSplitMode(flyoutPage))
+					return Task.CompletedTask;
+
+				var detailBounds = flyoutPage.Flyout.GetPlatformViewBounds();
+				var flyoutBounds = flyoutPage.Detail.GetPlatformViewBounds();
+				var windowBounds = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo;
+
+				Assert.True(detailBounds.Height <= windowBounds.Height, $"Details is measuring too high. Details - {detailBounds} Window - {windowBounds}");
+				Assert.True(flyoutBounds.Height <= windowBounds.Height, $"Flyout is measuring too high Flyout - {flyoutBounds} Window - {windowBounds}");
+				Assert.True(flyoutBounds.Width + detailBounds.Width <= windowBounds.Width,
+					$"Flyout and Details width exceed the width of the window. Details - {detailBounds}  Flyout - {flyoutBounds} Window - {windowBounds}");
+
+				Assert.True(detailBounds.X + detailBounds.Width <= windowBounds.Width,
+					$"Right edge of Details View is off the screen. Details - {detailBounds} Window - {windowBounds}");
+
+				return Task.CompletedTask;
+			});
+		}
+
+		bool CanDeviceDoSplitMode(FlyoutPage page)
+		{
+			return ((IFlyoutPageController)page).ShouldShowSplitMode;
 		}
 	}
 }

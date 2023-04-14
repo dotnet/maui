@@ -1324,6 +1324,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return empty;
 			}
 
+			[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
+			[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
+#pragma warning disable RS0016 // Add public types and members to the declared API
+			public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+			{
+				base.WillRotate(toInterfaceOrientation, duration);
+				UpdateLeftBarButtonItem();
+			}
+
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
 			{
 				NavigationRenderer n;

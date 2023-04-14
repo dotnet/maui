@@ -51,5 +51,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		UIView FindPlatformFlyoutView(UIView uiView) =>
+			uiView.FindResponder<PhoneFlyoutPageRenderer>()?.View;
 	}
 }

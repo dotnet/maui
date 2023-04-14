@@ -32,6 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IFlyoutPageController FlyoutPageController => FlyoutPage;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
+		bool IsPad => UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
+
 		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer> CommandMapper = new CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<FlyoutPage> _viewHandlerWrapper;
@@ -47,22 +49,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool Presented
 		{
 			get { return _presented; }
-			set
-			{
-				if (_presented == value)
-					return;
-				_presented = value;
-				LayoutChildren(true);
-
-				if (value)
-					AddClickOffView();
-				else
-					RemoveClickOffView();
-
-				ToggleAccessibilityElementsHidden();
-
-				((IElementController)Element).SetValueFromRenderer(Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty, value);
-			}
 		}
 
 		public VisualElement Element => _viewHandlerWrapper.Element ?? _element;
@@ -91,7 +77,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 			_element = element;
-			Presented = ((FlyoutPage)element).IsPresented;
+			UpdatePresented(((FlyoutPage)element).IsPresented);
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
@@ -137,11 +123,19 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			((FlyoutPage)Element).PropertyChanged += HandlePropertyChanged;
 
+			bool shouldReceive(UIGestureRecognizer g, UITouch t)
+			{
+				return !FlyoutPageController.ShouldShowSplitMode && Presented;
+			}
+
 			_tapGesture = new UITapGestureRecognizer(() =>
 			{
-				if (Presented)
-					Presented = false;
+				UpdatePresented(false, true);
 			});
+
+			if (IsPad)
+				_tapGesture.ShouldReceiveTouch = shouldReceive;
+
 			_clickOffView.AddGestureRecognizer(_tapGesture);
 
 			PackContainers();
@@ -157,10 +151,40 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
 		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
 		{
-			if (!FlyoutPageController.ShouldShowSplitMode && _presented)
-				Presented = false;
-
 			base.WillRotate(toInterfaceOrientation, duration);
+
+			if (IsPad)
+			{
+				if (FlyoutPageController.ShouldShowSplitMode)
+					UpdatePresented(true);
+				else
+					UpdatePresented(false);
+			}
+			else
+			{
+				if (!FlyoutPageController.ShouldShowSplitMode && _presented)
+					UpdatePresented(false);
+			}
+		}
+
+		void UpdatePresented(bool newValue, bool animated = false)
+		{
+			if (Presented == newValue)
+				return;
+
+			if (!newValue && FlyoutPageController.ShouldShowSplitMode)
+			{
+				return;
+			}
+
+			_presented = newValue;
+
+			LayoutChildren(animated);
+			UpdateClickOffView();
+
+			ToggleAccessibilityElementsHidden();
+
+			((IElementController)Element).SetValueFromRenderer(FlyoutPage.IsPresentedProperty, _presented);
 		}
 
 		protected override void Dispose(bool disposing)
@@ -203,10 +227,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				changed(this, e);
 		}
 
+		void UpdateClickOffView()
+		{
+			if (IsPad && FlyoutPageController.ShouldShowSplitMode)
+			{
+				RemoveClickOffView();
+				return;
+			}
+
+			if (Presented)
+				AddClickOffView();
+			else
+				RemoveClickOffView();
+		}
+
 		void AddClickOffView()
 		{
+			if (_clickOffView.Superview == View)
+				return;
+
 			View.Add(_clickOffView);
 			_clickOffView.Frame = _detailController.View.Frame;
+		}
+
+		void RemoveClickOffView()
+		{
+			_clickOffView.RemoveFromSuperview();
 		}
 
 		void EmptyContainers()
@@ -229,7 +275,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (e.PropertyName == "Flyout" || e.PropertyName == "Detail")
 				UpdateFlyoutPageContainers();
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsPresentedProperty.PropertyName)
-				Presented = ((FlyoutPage)Element).IsPresented;
+				UpdatePresented(((FlyoutPage)Element).IsPresented, true);
 			else if (e.PropertyName == Microsoft.Maui.Controls.FlyoutPage.IsGestureEnabledProperty.PropertyName)
 				UpdatePanGesture();
 			else if (e.PropertyName == VisualElement.BackgroundColorProperty.PropertyName || e.PropertyName == VisualElement.BackgroundProperty.PropertyName)
@@ -245,7 +291,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var frame = Element.Bounds.ToCGRect();
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
-			flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
+
+			if (IsPad)
+				flyoutFrame.Width = 320;
+			else
+				flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
+
 			var detailRenderer = FlyoutPage.Detail.Handler as IPlatformViewHandler;
 			if (detailRenderer == null)
 				return;
@@ -259,13 +310,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_flyoutController.View.Frame = flyoutFrame;
 
-			(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rect(0, 0, flyoutFrame.Width, flyoutFrame.Height));
+			if (!IsPad)
+			{
+				(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
+				FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rect(0, 0, flyoutFrame.Width, flyoutFrame.Height));
+			}
 
 			var target = frame;
 			if (Presented)
 			{
 				target.X += flyoutFrame.Width;
+
+				if (IsPad && FlyoutPageController.ShouldShowSplitMode)
+					target.Width -= flyoutFrame.Width;
+
 				if (_applyShadow)
 					opacity = 0.5f;
 			}
@@ -277,7 +335,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (animated)
 			{
-				UIView.Animate(250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+				UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 				{
 					var view = _detailController.View;
 					view.Frame = target;
@@ -291,7 +349,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-			FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
+			FlyoutPageController.DetailBounds = new Rect(target.X, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				_clickOffView.Frame = _detailController.View.Frame;
@@ -310,11 +368,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void PageOnSizeChanged(object sender, EventArgs eventArgs)
 		{
 			LayoutChildren(false);
-		}
-
-		void RemoveClickOffView()
-		{
-			_clickOffView.RemoveFromSuperview();
 		}
 
 		void UpdateBackground()
@@ -440,7 +493,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			bool shouldReceive(UIGestureRecognizer g, UITouch t)
 			{
-				return !(t.View is UISlider) && !IsSwipeView(t.View);
+				return !(t.View is UISlider) &&
+					!IsSwipeView(t.View) &&
+					!FlyoutPageController.ShouldShowSplitMode;
 			}
 
 			var center = new PointF();
@@ -483,14 +538,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						if (Presented)
 						{
 							if (detailFrame.X * directionModifier < flyoutFrame.Width * .75)
-								Presented = false;
+								UpdatePresented(false);
 							else
 								LayoutChildren(true);
 						}
 						else
 						{
 							if (detailFrame.X * directionModifier > flyoutFrame.Width * .25)
-								Presented = true;
+								UpdatePresented(true);
 							else
 								LayoutChildren(true);
 						}
@@ -503,7 +558,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			View.AddGestureRecognizer(_panGesture);
 		}
 
-		bool IsSwipeView(UIView view)
+		static bool IsSwipeView(UIView view)
 		{
 			if (view == null)
 				return false;
