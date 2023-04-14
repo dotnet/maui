@@ -221,12 +221,12 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = backgroundDrawable;
 			else
 			{
-				if (paint.IsNullOrEmpty())
+				if (backgroundDrawable is null)
 					platformView.Background = previousDrawable;
 				else
 				{
 
-					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable });
+					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable, previousDrawable });
 					platformView.Background = layer;
 				}
 			}
