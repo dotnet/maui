@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Platform
 
 			this.AccessibilityTraits = UIAccessibilityTrait.Button;
 
-			picker.EditingDidBegin += OnStarted;
-			picker.EditingDidEnd += OnEnded;
+			this.EditingDidBegin += OnStarted;
+			this.EditingDidEnd += OnEnded;
 			picker.ValueChanged += OnValueChanged;
 		}
 
