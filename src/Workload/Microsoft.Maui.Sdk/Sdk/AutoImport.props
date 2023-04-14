@@ -47,7 +47,7 @@
   <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiAssets)' == 'true') and '$(TargetFramework)' != '' and '$(_MauiPackagingTypeIsWorkload)' == 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiWorkloadVersion)" PrivateAssets="all" IsMauiImplicitPackageReference="true" />
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)') == 'true' and '$(TargetFramework)' != '' and '$(_MauiPackagingTypeIsWorkload)' == 'true' ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') == 'true' and '$(TargetFramework)' != '' and '$(_MauiPackagingTypeIsWorkload)' == 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Core.Build.Tasks" Version="$(MauiWorkloadVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
