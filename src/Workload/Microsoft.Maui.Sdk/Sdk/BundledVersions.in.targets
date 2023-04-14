@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
-    <MauiWorkloadTargetFrameworkVersion>@MAUI_DOTNET_VERSION@</MauiWorkloadTargetFrameworkVersion>
     <_MauiFirstWorkloadVersion>@MAUI_DOTNET_VERSION@</_MauiFirstWorkloadVersion>
     <_MauiLastWorkloadVersion>@LAST_WORKLOAD_VERSION@</_MauiLastWorkloadVersion>
     <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
