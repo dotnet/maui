@@ -314,7 +314,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
 			else if (VirtualView is IBorderElement be)
-				_backgroundDrawable.SetStroke((int)be.BorderWidth, borderColor.ToPlatform());
+			{
+				var borderWidth = be.BorderWidth;
+				if (borderWidth < 0 || borderWidth == Primitives.Dimension.Unset)
+					borderWidth = 0;
+
+				_backgroundDrawable.SetStroke((int)Context.ToPixels(borderWidth), borderColor.ToPlatform());
+			}
 		}
 
 		void UpdateShadow()

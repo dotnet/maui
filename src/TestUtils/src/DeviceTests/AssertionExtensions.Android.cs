@@ -315,7 +315,17 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 				};
-				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+
+				var width = view.Width;
+				var height = view.Height;
+
+				if (width <= 0)
+					width = FrameLayout.LayoutParams.WrapContent;
+
+				if (height <= 0)
+					height = FrameLayout.LayoutParams.WrapContent;
+
+				view.LayoutParameters = new FrameLayout.LayoutParams(width, height)
 				{
 					Gravity = GravityFlags.Center
 				};
@@ -355,8 +365,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view) =>
-			view.AttachAndRun(() =>
+		public static Task<Bitmap> ToBitmap(this AView view)
+		{
+			return view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -368,6 +379,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return bitmap;
 			});
+		}
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
@@ -453,7 +465,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 					}
 				}
 			}
