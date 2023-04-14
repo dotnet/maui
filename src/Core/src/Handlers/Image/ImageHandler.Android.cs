@@ -49,11 +49,10 @@ namespace Microsoft.Maui.Handlers
 
 		public static Task MapSourceAsync(IImageHandler handler, IImage image)
 		{
-			var result = handler.SourceLoader.UpdateImageSourceAsync();
-
-			result.ContinueWith((action) => handler.PlatformView.UpdateIsAnimationPlaying(image));
-
-			return result;
+			return handler
+				.SourceLoader
+				.UpdateImageSourceAsync()
+				.ContinueWith((action) => handler.PlatformView.UpdateIsAnimationPlaying(image));
 		}
 
 		void OnSetImageSource(Drawable? obj) =>
