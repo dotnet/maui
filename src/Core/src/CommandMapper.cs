@@ -8,18 +8,13 @@ namespace Microsoft.Maui
 	{
 		readonly Dictionary<string, Command> _mapper = new();
 
-		ICommandMapper? _chained;
+		CommandMapper? _chained;
 
 		public CommandMapper()
 		{
 		}
 
 		public CommandMapper(CommandMapper chained)
-		{
-			Chained = chained;
-		}
-
-		public CommandMapper(ICommandMapper chained)
 		{
 			Chained = chained;
 		}
@@ -56,7 +51,7 @@ namespace Microsoft.Maui
 			InvokeCore(property, viewHandler, virtualView, args);
 		}
 
-		public ICommandMapper? Chained
+		public CommandMapper? Chained
 		{
 			get => _chained;
 			set => _chained = value;
@@ -92,11 +87,6 @@ namespace Microsoft.Maui
 		{
 		}
 
-		public CommandMapper(ICommandMapper chained)
-			: base(chained)
-		{
-		}
-
 		public Action<TViewHandler, TVirtualView, object?> this[string key]
 		{
 			get
@@ -123,11 +113,6 @@ namespace Microsoft.Maui
 		}
 
 		public CommandMapper(CommandMapper chained)
-			: base(chained)
-		{
-		}
-
-		public CommandMapper(ICommandMapper chained)
 			: base(chained)
 		{
 		}

@@ -1,12 +1,7 @@
 #nullable enable
 abstract Microsoft.Maui.PlatformContentViewGroup.GetClipPath(int p0, int p1) -> Android.Graphics.Path?
 abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
-*REMOVED*Microsoft.Maui.CommandMapper.Chained.get -> Microsoft.Maui.CommandMapper?
-Microsoft.Maui.CommandMapper.Chained.get -> Microsoft.Maui.ICommandMapper?
-Microsoft.Maui.CommandMapper.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
-Microsoft.Maui.CommandMapper<TVirtualView, TViewHandler>.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
-Microsoft.Maui.CommandMapper<TVirtualView>.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme

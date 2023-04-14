@@ -1,10 +1,5 @@
 #nullable enable
-*REMOVED*Microsoft.Maui.CommandMapper.Chained.get -> Microsoft.Maui.CommandMapper?
-Microsoft.Maui.CommandMapper.Chained.get -> Microsoft.Maui.ICommandMapper?
-Microsoft.Maui.CommandMapper.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
-Microsoft.Maui.CommandMapper<TVirtualView, TViewHandler>.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
-Microsoft.Maui.CommandMapper<TVirtualView>.CommandMapper(Microsoft.Maui.ICommandMapper! chained) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
