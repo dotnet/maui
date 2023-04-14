@@ -2,16 +2,30 @@
 
   <PropertyGroup>
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
-    <_MauiFirstWorkloadVersion>7.0.0</_MauiFirstWorkloadVersion>
+    <MauiWorkloadTargetFrameworkVersion>@MAUI_DOTNET_VERSION@</MauiWorkloadTargetFrameworkVersion>
+    <_MauiFirstWorkloadVersion>@MAUI_DOTNET_VERSION@</_MauiFirstWorkloadVersion>
     <_MauiLastWorkloadVersion>@LAST_WORKLOAD_VERSION@</_MauiLastWorkloadVersion>
     <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
 
-    <!-- All the packaging type logic can be ignored with <MauiIgnoreWorkloadPackagingType>true</MauiIgnoreWorkloadPackagingType> -->
-    <_MauiPackagingTypeIsWorkload>false</_MauiPackagingTypeIsWorkload>
-    <_MauiPackagingTypeIsNuGetPackages>true</_MauiPackagingTypeIsNuGetPackages>
+    <!--
+      Only import the thngs from the AutoImport.props if we are in an inner build and if we are
+      importing things for the "current" TFM version.
+    -->
+    <_MauiSkipSdkAutoImport Condition="
+      '$(_MauiSkipSdkAutoImport)' == 'true' or
+      '$(TargetFramework)' == '' or
+      '$(TargetFrameworkVersion)' == '' or
+      '$(MauiWorkloadTargetFrameworkVersion)' == '' or
+      !$([MSBuild]::VersionEquals($(TargetFrameworkVersion), $(MauiWorkloadTargetFrameworkVersion)))">true</_MauiSkipSdkAutoImport>
 
-    <!-- 
+    <!-- All the packaging type logic can be ignored with <MauiIgnoreWorkloadPackagingType>true</MauiIgnoreWorkloadPackagingType> -->
+    <_MauiPackagingTypeIsWorkload Condition="
+      $([MSBuild]::VersionGreaterThan($(MauiVersion), '$(_MauiFirstWorkloadVersion)')) and
+      $([MSBuild]::VersionLessThanOrEquals($(MauiVersion), '$(_MauiLastWorkloadVersion)'))">true</_MauiPackagingTypeIsWorkload>
+    <_MauiPackagingTypeIsNuGetPackages Condition="'$(_MauiPackagingTypeIsWorkload)' != 'true'">true</_MauiPackagingTypeIsNuGetPackages>
+
+    <!--
       Indicates that the Microsoft.Maui.Controls.Compatibility package should be implicitly
       referenced.  This will eventually switch to false by default and become opt, in,
       however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
@@ -22,20 +36,18 @@
   <!--
     This part sets up properties for "compatibility" with workload-based builds of .NET MAUI.
   -->
-  <PropertyGroup Condition="'$(MauiIgnoreWorkloadPackagingType)' != 'true' and $([MSBuild]::VersionGreaterThan($(MauiVersion), '$(_MauiFirstWorkloadVersion)')) and $([MSBuild]::VersionLessThanOrEquals($(MauiVersion), '$(_MauiLastWorkloadVersion)'))">
+  <PropertyGroup Condition="'$(MauiIgnoreWorkloadPackagingType)' != 'true' and '$(_MauiPackagingTypeIsWorkload)' == 'true'">
     <!-- $(_MauiPlatformName) is used as RIDs as well as a suffix to targeting pack names -->
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' == 'windows' ">win</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(TargetPlatformIdentifier)' != 'windows' ">$(TargetPlatformIdentifier.ToLowerInvariant())</_MauiPlatformName>
     <_MauiPlatformName Condition=" '$(_MauiPlatformName)' == '' ">any</_MauiPlatformName>
     <_MauiRuntimePackAlwaysCopyLocal Condition=" '$(_MauiPlatformName)' == 'any' ">true</_MauiRuntimePackAlwaysCopyLocal>
-    <_MauiPackagingTypeIsWorkload>true</_MauiPackagingTypeIsWorkload>
-    <_MauiPackagingTypeIsNuGetPackages>false</_MauiPackagingTypeIsNuGetPackages>
   </PropertyGroup>
 
   <!--
     If we are using a workload-based builds of .NET MAUI, then make sure we list the frameworks we are using.
   -->
-  <ItemGroup Condition="$(_MauiPackagingTypeIsWorkload)">
+  <ItemGroup Condition="'$(_MauiPackagingTypeIsWorkload)' == 'true'">
     <KnownFrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
@@ -79,7 +91,7 @@
         RuntimePackAlwaysCopyLocal="$(_MauiRuntimePackAlwaysCopyLocal)"
     />
   </ItemGroup>
-  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and $(_MauiPackagingTypeIsWorkload)">
+  <ItemGroup Condition="'$(DisableImplicitFrameworkReferences)' != 'true' and '$(_MauiPackagingTypeIsWorkload)' == 'true'">
     <FrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
