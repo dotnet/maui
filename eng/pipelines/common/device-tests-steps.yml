@@ -96,6 +96,10 @@ steps:
     retryCountOnTaskFailure: 3
     workingDirectory: ${{ parameters.checkoutDirectory }}/maui
 
+  - bash: |
+      ls -R .
+    workingDirectory: ${{ parameters.checkoutDirectory }}/maui
+
 - ${{ else }}:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
     displayName: 'Build the MSBuild Tasks'

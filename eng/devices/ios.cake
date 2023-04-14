@@ -97,6 +97,8 @@ Task("Build")
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
 				.Append("/bl:" + binlog),
+				.Append("/bl:" + binlog),
+				.Append("/verbosity:diagnostic"),
 			ToolPath = DOTNET_PATH,
 		});
 	}
