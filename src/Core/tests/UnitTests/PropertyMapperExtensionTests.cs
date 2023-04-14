@@ -176,7 +176,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => log += msg1
 			};
 
-			mapper1.ModifyMappingWhen<Label, IViewHandler>(nameof(IView.Background), (h, v) => log += msg2);
+			mapper1.ModifyMappingWhen<Label, IViewHandler>(nameof(IView.Background), (h, v, a) => log += msg2);
 
 			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
 

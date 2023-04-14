@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
 		public static void ModifyMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
-			string key, Action<TViewHandler, TVirtualView> method)
+			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
 			var previousMethod = propertyMapper.GetProperty(key);
@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 			void newMethod(IElementHandler handler, IElement view)
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
-					method((TViewHandler)handler!, v);
+					method((TViewHandler)handler!, v, previousMethod);
 				else
 					previousMethod?.Invoke(handler!, view);
 			}

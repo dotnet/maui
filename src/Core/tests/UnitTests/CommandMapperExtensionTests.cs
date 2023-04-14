@@ -176,7 +176,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.ModifyMappingWhen<Label, IViewHandler>(nameof(IView.Focus), (h, v, a) => log += msg2);
+			mapper1.ModifyMappingWhen<Label, IViewHandler>(nameof(IView.Focus), (h, v, a, b) => log += msg2);
 
 			mapper1.Invoke(null, (IView)Activator.CreateInstance(controlType), nameof(IView.Focus), null);
 

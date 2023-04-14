@@ -48,7 +48,7 @@ namespace Microsoft.Maui
 		/// <param name="key">The name of the command.</param>
 		/// <param name="method">The modified method to call when the command is updated.</param>
 		public static void ModifyMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
-			string key, Action<TViewHandler, TVirtualView, object?> method)
+			string key, Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
 			var previousMethod = commandMapper.GetCommand(key);
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 			void newMethod(IElementHandler handler, IElement view, object? args)
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
-					method((TViewHandler)handler!, v, args);
+					method((TViewHandler)handler!, v, args, previousMethod);
 				else
 					previousMethod?.Invoke(handler!, view, args);
 			}
