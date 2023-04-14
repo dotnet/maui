@@ -7,17 +7,6 @@
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
 
     <!--
-      Only import the thngs from the AutoImport.props if we are in an inner build and if we are
-      importing things for the "current" TFM version.
-    -->
-    <_MauiSkipSdkAutoImport Condition="
-      '$(_MauiSkipSdkAutoImport)' == 'true' or
-      '$(TargetFramework)' == '' or
-      '$(TargetFrameworkVersion)' == '' or
-      '$(MauiWorkloadTargetFrameworkVersion)' == '' or
-      !$([MSBuild]::VersionEquals($(TargetFrameworkVersion), $(MauiWorkloadTargetFrameworkVersion)))">true</_MauiSkipSdkAutoImport>
-
-    <!--
       Indicates that the Microsoft.Maui.Controls.Compatibility package should be implicitly
       referenced.  This will eventually switch to false by default and become opt, in,
       however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
