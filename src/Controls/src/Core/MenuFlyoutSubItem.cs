@@ -73,14 +73,18 @@ namespace Microsoft.Maui.Controls
 		public bool Remove(IMenuElement item)
 		{
 			var index = _menus.IndexOf(item);
-			var result = RemoveLogicalChildInternal((Element)item);
-			NotifyHandler(nameof(IMenuFlyoutSubItemHandler.Remove), index, item);
+			var result = RemoveLogicalChildInternal((Element)item, index);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
 			return result;
 		}
 
 		public void RemoveAt(int index)
-			=> Remove(_menus[index]);
+		{
+			var item = _menus[index];
+			RemoveLogicalChildInternal((Element)item, index);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
+		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
