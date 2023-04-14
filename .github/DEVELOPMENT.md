@@ -32,7 +32,15 @@ dotnet cake --target=VS --workloads=global
 
 All of the above cake commands should work fine on `MacOS`.
 
-If you aren't using the cake scripts and the `Microsoft.Maui-mac.slnf` isn't working for you try `_omnisharp.sln`
+#### Solutions
+- Microsoft.Maui.sln
+  - Kitchen sink solution. This includes all of the `Compatibility` projects and all of the platforms that we compile for. It is very unlikely you will need to use this solution for development. 
+- Microsoft.Maui-dev.sln
+  - `Microsoft.Maui.sln` but without the `Compatibility` projects. Because we can't detect solution filters inside `MSBuild` we had to create a separate `sln` without the `Compatibility` projects. 
+- Microsoft.Maui-mac.slnf
+  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out
+- Microsoft.Maui-windows.slnf
+  - `Microsoft.Maui-dev.sln` with all of the targets you can't build on `Windows` removed (GTK/Catalyst).
 
 ## What branch should I use?
 - main

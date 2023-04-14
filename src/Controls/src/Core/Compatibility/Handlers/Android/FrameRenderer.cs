@@ -16,8 +16,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : CardView, IPlatformViewHandler
 	{
-		const int FrameBorderThickness = 3;
-
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(ViewRenderer.VisualElementRendererMapper)
 			{
@@ -81,6 +79,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_element = value;
 			}
 		}
+
+		IView? VirtualView => Element;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
@@ -158,15 +158,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv)
+				Element is IContentView cv &&
+				VirtualView is not null &&
+				Context is not null)
 			{
-				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
-
-				var size = pvh.MeasureVirtualView(
-					widthMeasureSpec - borderThickness,
-					heightMeasureSpec - borderThickness,
-					cv.CrossPlatformMeasure);
-				SetMeasuredDimension((int)size.Width + borderThickness, (int)size.Height + borderThickness);
+				var measure = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				SetMeasuredDimension((int)measure.Width, (int)measure.Height);
 			}
 			else
 				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
@@ -295,8 +292,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (borderColor == null)
 				_backgroundDrawable.SetStroke(0, AColor.Transparent);
-			else
-				_backgroundDrawable.SetStroke(FrameBorderThickness, borderColor.ToPlatform());
+			else if (VirtualView is IBorderElement be)
+				_backgroundDrawable.SetStroke((int)be.BorderWidth, borderColor.ToPlatform());
 		}
 
 		void UpdateShadow()

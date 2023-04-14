@@ -4,7 +4,17 @@
     x:Class="Maui.Controls.Sample.Pages.DatePickerPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="DatePicker">
-    <views:BasePage.Content>
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="IsFocusedTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="9" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+            
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+        <views:BasePage.Content>
         <VerticalStackLayout
             Margin="12">
             <Label
@@ -47,7 +57,25 @@
                 Text="Format"
                 Style="{StaticResource Headline}"/>
             <DatePicker
-                Format="yyyy/MM/dd" />    
+                Format="yyyy/MM/dd" />
+            <Label      
+                Text="IsFocused"
+                Style="{StaticResource Headline}"/>
+            <DatePicker
+                x:Name="FocusDatePicker"
+                Focused="OnFocusDatePickerFocused"
+                Unfocused="OnFocusDatePickerUnfocused"/>
+            <HorizontalStackLayout>
+                <Label 
+                    Text="IsFocused"
+                    Style="{StaticResource IsFocusedTextStyle}"/>
+                <Label
+                    x:Name="FocusResult"
+                    Text="{Binding Source={x:Reference FocusDatePicker},Path=IsFocused}"
+                    FontAttributes="Bold"
+                    Margin="6, 0"
+                    Style="{StaticResource IsFocusedTextStyle}"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>
