@@ -14,35 +14,35 @@
     the packages we want and let the IDE/user Update OR Include the same ones. We will remove
     our duplicates later in BundledVersions.targets.
   -->
-  <ItemGroup Condition=" '$(UseMauiAssets)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMauiAssets)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" IsMauiImplicitPackageReference="true" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiEssentials)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMauiEssentials)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiCore)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMauiCore)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Core" Version="$(MauiVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsMauiImplicitPackageReference="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' and '$(_MauiSkipSdkAutoImport)' != 'true' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <PackageReference Include="@(_MauiImplicitPackageReference)" Exclude="@(PackageReference)" />
   </ItemGroup>
 
