@@ -9,17 +9,6 @@
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
 
     <!--
-      Only import the thngs from the AutoImport.props if we are in an inner build and if we are
-      importing things for the "current" TFM version.
-    -->
-    <_MauiSkipSdkAutoImport Condition="
-      '$(_MauiSkipSdkAutoImport)' == 'true' or
-      '$(TargetFramework)' == '' or
-      '$(TargetFrameworkVersion)' == '' or
-      '$(MauiWorkloadTargetFrameworkVersion)' == '' or
-      !$([MSBuild]::VersionEquals($(TargetFrameworkVersion), $(MauiWorkloadTargetFrameworkVersion)))">true</_MauiSkipSdkAutoImport>
-
-    <!--
       All the packaging type logic can be ignored with:
         <MauiIgnoreWorkloadPackagingType>true</MauiIgnoreWorkloadPackagingType>
     -->
