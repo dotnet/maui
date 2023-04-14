@@ -600,8 +600,8 @@ namespace Microsoft.Maui.Controls
 			if (oldPage != null)
 			{
 				_menuBarTracker.Target = null;
-				RemoveLogicalChildInternal(oldPage);
 				_visualChildren.Remove(oldPage);
+				RemoveLogicalChildInternal(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -611,8 +611,8 @@ namespace Microsoft.Maui.Controls
 
 			if (newPage != null)
 			{
-				AddLogicalChildInternal(newPage);
 				_visualChildren.Add(newPage);
+				AddLogicalChildInternal(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 
