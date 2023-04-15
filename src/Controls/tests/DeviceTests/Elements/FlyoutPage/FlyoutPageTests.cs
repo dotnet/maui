@@ -192,7 +192,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 
-			await CreateHandlerAndAddToWindow<PhoneFlyoutPageRenderer>(flyoutPage, (handler) =>
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
 			{
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return Task.CompletedTask;
