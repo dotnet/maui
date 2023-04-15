@@ -10,7 +10,6 @@
   <PropertyGroup>
      <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
-    <NoWarn>$(NoWarn);RS0016</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
