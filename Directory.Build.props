@@ -26,9 +26,10 @@
     <_MauiTargetPlatformIsmacOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'macos'">True</_MauiTargetPlatformIsmacOS>
     <_MauiTargetPlatformIstvOS>false</_MauiTargetPlatformIstvOS>
     <_MauiTargetPlatformIstvOS Condition="'$(_MauiTargetPlatformIdentifier)' == 'tvos'">True</_MauiTargetPlatformIstvOS>
-    <_MauiTargetPlatformIsWindows>false</_MauiTargetPlatformIsWindows>
-    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
     <_MauiTargetPlatformIsTizen>false</_MauiTargetPlatformIsTizen>
+    <_WindowsTargetIsWinAppSDK Condition="'$(UseWPF)' == 'true' OR '$(UseWindowsForms)' == 'true' " >false</_WindowsTargetIsWinAppSDK>
+    <_MauiTargetPlatformIsWinAppSDK>false</_MauiTargetPlatformIsWinAppSDK>
+    <_MauiTargetPlatformIsWinAppSDK Condition="'$(_WindowsTargetIsWinAppSDK)' == 'true' and $(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWinAppSDK>
     <_MauiTargetPlatformIsTizen Condition="'$(_MauiTargetPlatformIdentifier)' == 'tizen'">True</_MauiTargetPlatformIsTizen>
   </PropertyGroup>
 
@@ -51,7 +52,7 @@
     <DotNetMacOSWorkloadIsInstalled Condition="Exists('$(DotNetWorkloadPacksInstallLocation)Microsoft.macOS.Sdk\$(DotNetMacOSWorkloadInstalledVersion)\Sdk\AutoImport.props')">true</DotNetMacOSWorkloadIsInstalled>
     <DotNetTizenWorkloadIsInstalled Condition="Exists('$(DotNetWorkloadPacksInstallLocation)Samsung.Tizen.Sdk\$(DotNetTizenWorkloadInstalledVersion)\Sdk\AutoImport.props')">true</DotNetTizenWorkloadIsInstalled>
 
-    <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
+    <IncludeWindowsTargetFrameworks Condition="('$(_WindowsTargetIsWinAppSDK)' == 'true' and $([MSBuild]::IsOSPlatform('windows'))) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeMacOSTargetFrameworks Condition="'$(DotNetMacOSWorkloadIsInstalled)' == 'true'">true</IncludeMacOSTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
@@ -63,7 +64,7 @@
 
   <!-- this is CI, so everything should be there -->
   <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
-    <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
+    <IncludeWindowsTargetFrameworks Condition="'$(_WindowsTargetIsWinAppSDK)' == 'true' AND $([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
     <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
@@ -72,7 +73,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(_MauiTargetPlatformIsWinAppSDK)' == 'True'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="'$(IncludeCompatibilityProjects)' == 'True'">$(DefineConstants);COMPATIBILITY_ENABLED</DefineConstants>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <!-- <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles> -->

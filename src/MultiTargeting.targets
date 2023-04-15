@@ -39,7 +39,7 @@
     <Compile Remove="**\*.Platform.cs" />
     <None Include="**\*.Platform.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWinAppSDK)' != 'True' ">
     <Compile Remove="**\*.Windows.cs" />
     <None Include="**\*.Windows.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
     <Compile Remove="**\Windows\**\*.cs" />
@@ -55,7 +55,7 @@
     <Compile Remove="**\Windows\**\*.xaml.cs" />
     <None Include="**\Windows\**\*.xaml.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
-  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWindows)' != 'True' ">
+  <ItemGroup Condition=" '$(_MauiTargetPlatformIsWinAppSDK)' != 'True' ">
     <Compile Remove="**\*.uwp.cs" />
     <None Include="**\*.uwp.cs" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
   </ItemGroup>
@@ -107,7 +107,7 @@
   </PropertyGroup>
 
   <!-- Windows -->
-  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWindows)' == 'True' ">
+  <PropertyGroup Condition=" '$(_MauiTargetPlatformIsWinAppSDK)' == 'True' ">
     <DefineConstants>WINDOWS;$(DefineConstants)</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" $(TargetFramework.StartsWith('uap10.0')) ">

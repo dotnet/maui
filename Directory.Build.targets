@@ -10,6 +10,7 @@
   <PropertyGroup>
      <!-- Allows for MAUI Xaml Hot Reload Samples to run without checks  -->
     <IgnoreMauiXamlHotReloadCompatibilityCheck>True</IgnoreMauiXamlHotReloadCompatibilityCheck>
+    <NoWarn>$(NoWarn);RS0016</NoWarn>
   </PropertyGroup>
 
   <!-- platform version number information -->
@@ -49,7 +50,7 @@
     because we don't want to set these properties for WPF projects...
     There's probably a better way we should find to infer this
   -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True' AND $(TargetFramework.Contains('-windows10'))">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsWinAppSDK)' == 'True' AND $(TargetFramework.Contains('-windows10'))">
     <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
@@ -64,19 +65,19 @@
   </PropertyGroup>
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
-  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWinAppSDK)' == 'True'">
     <Content Remove="@(None->WithMetadataValue('Pack','true'))" />
   </ItemGroup>
 
   <!-- Until we get a new enough dotnet -->
-  <ItemGroup Condition="'$(_MauiTargetPlatformIsWindows)' == 'True'">
+  <ItemGroup Condition="'$(_MauiTargetPlatformIsWinAppSDK)' == 'True'">
     <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.19041.27" TargetingPackVersion="10.0.19041.27" />
   </ItemGroup>
 
   <!--
     Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
   -->
-  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
+  <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWinAppSDK)' == 'True' " />
 
     <!-- Packaging -->
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
