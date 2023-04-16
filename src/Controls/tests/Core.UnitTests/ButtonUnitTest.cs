@@ -244,10 +244,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(element, vsgList);
 
 			element.SendPressed();
-			Assert.Equal(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.Equal(PressedStateName, stateGroup.CurrentState.Name);
 
 			element.SendReleased();
-			Assert.NotEqual(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }

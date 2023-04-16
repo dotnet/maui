@@ -400,8 +400,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tab.NavigationsFired.Clear();
 
 			await testShell.GoToAsync("../..");
-			Assert.Equal(testShell.CurrentState.Location.ToString(),
-				$"//rootpage");
+			Assert.Equal($"//rootpage", testShell.CurrentState.Location.ToString());
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnPopModal", tab.NavigationsFired[1]);
@@ -453,8 +452,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			tab.NavigationsFired.Clear();
 
 			await testShell.GoToAsync($"../pageToSwapIn");
-			Assert.Equal(testShell.CurrentState.Location.ToString(),
-				$"//rootpage/pageToSwapIn");
+			Assert.Equal($"//rootpage/pageToSwapIn", testShell.CurrentState.Location.ToString());
 
 			Assert.Equal("OnPushAsync", tab.NavigationsFired[0]);
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[1]);
@@ -479,12 +477,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await testShell.GoToAsync("firstPage/secondPage/thirdPage/fourthPage/fifthPage");
 			tab.NavigationsFired.Clear();
 
-			Assert.Equal(testShell.CurrentState.Location.ToString(),
-				$"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage");
+			Assert.Equal($"//rootpage/firstPage/secondPage/thirdPage/fourthPage/fifthPage", testShell.CurrentState.Location.ToString());
 
 			await testShell.GoToAsync($"//rootpage/thirdPage/fifthPage");
-			Assert.Equal(testShell.CurrentState.Location.ToString(),
-				$"//rootpage/thirdPage/fifthPage");
+			Assert.Equal($"//rootpage/thirdPage/fifthPage", testShell.CurrentState.Location.ToString());
 
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[0]);
 			Assert.Equal("OnRemovePage", tab.NavigationsFired[1]);

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var visualElement = new Label();
 			var coreView = visualElement as IView;
 
-			Assert.Equal(coreView.Width, Dimension.Unset);
+			Assert.Equal(Dimension.Unset, coreView.Width);
 			Assert.False(visualElement.IsSet(VisualElement.WidthRequestProperty));
 
 			double testWidth = 100;
@@ -26,8 +26,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// to "reset" it to the "unset" value.
 			visualElement.WidthRequest = -1;
 
-			Assert.Equal(coreView.Width, Dimension.Unset);
-			Assert.Equal(visualElement.WidthRequest, -1);
+			Assert.Equal(Dimension.Unset, coreView.Width);
+			Assert.Equal(-1, visualElement.WidthRequest);
 		}
 
 		[Fact("If HeightRequest has been set and is reset to -1, the Core Height should return to being Unset")]
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var visualElement = new Label();
 			var coreView = visualElement as IView;
 
-			Assert.Equal(coreView.Height, Dimension.Unset);
+			Assert.Equal(Dimension.Unset, coreView.Height);
 			Assert.False(visualElement.IsSet(VisualElement.HeightRequestProperty));
 
 			double testHeight = 100;
@@ -50,8 +50,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// to "reset" it to the "unset" value.
 			visualElement.HeightRequest = -1;
 
-			Assert.Equal(coreView.Height, Dimension.Unset);
-			Assert.Equal(visualElement.HeightRequest, -1);
+			Assert.Equal(Dimension.Unset, coreView.Height);
+			Assert.Equal(-1, visualElement.HeightRequest);
 		}
 
 		[Fact]
@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(element, vsgList);
 
 			element.SetValue(VisualElement.IsFocusedPropertyKey, true);
-			Assert.Equal(stateGroup.CurrentState.Name, FocusedStateName);
+			Assert.Equal(FocusedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }
