@@ -73,7 +73,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants Condition="'$(_MauiTargetPlatformIsWinAppSDK)' == 'True'">$(DefineConstants);WINDOWS</DefineConstants>
+    <DefineConstants Condition="'$(_MauiTargetPlatformIsWinAppSDK)' != 'false'">$(DefineConstants);WINDOWS</DefineConstants>
     <DefineConstants Condition="'$(IncludeCompatibilityProjects)' == 'True'">$(DefineConstants);COMPATIBILITY_ENABLED</DefineConstants>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <!-- <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles> -->
