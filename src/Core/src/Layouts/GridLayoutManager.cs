@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Layouts
 
 		public override Size ArrangeChildren(Rect bounds)
 		{
+			//System.Diagnostics.Debug.WriteLine($">>>>>> ArrangeChildren {bounds}");
+
 			_gridStructure ??= new GridStructure(Grid, bounds.Width, bounds.Height);
 
 			_gridStructure.DecompressStars(bounds.Size);
@@ -42,10 +44,16 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var cell = _gridStructure.GetCellBoundsFor(view, bounds.Left, bounds.Top);
+				//if (view is IContentView)
+				//{
+				//	System.Diagnostics.Debug.WriteLine($">>>>>> ArrangeChildren {view} {cell}");
+				//}
 				view.Arrange(cell);
 			}
 
 			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
+
+			_gridStructure = null;
 
 			return actual.AdjustForFill(bounds, Grid);
 		}
@@ -363,6 +371,12 @@ namespace Microsoft.Maui.Layouts
 			Size MeasureCell(Cell cell, double width, double height)
 			{
 				var child = _childrenToLayOut[cell.ViewIndex];
+
+				//if (child is IGridLayout)
+				{
+					System.Diagnostics.Debug.WriteLine($">>>>>> MeasureCell {child}, {width} x {height}");
+				}
+
 				var result = child.Measure(width, height);
 				return result;
 			}

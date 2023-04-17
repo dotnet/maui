@@ -379,7 +379,7 @@ namespace Microsoft.Maui.Controls
 		{
 			_allocatedFlag = true;
 			base.OnSizeAllocated(width, height);
-			UpdateChildrenLayout();
+			//UpdateChildrenLayout();
 		}
 
 		protected void UpdateChildrenLayout()

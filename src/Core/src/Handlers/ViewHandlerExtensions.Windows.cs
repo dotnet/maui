@@ -68,6 +68,8 @@ namespace Microsoft.Maui
 
 			var measureConstraint = new global::Windows.Foundation.Size(widthConstraint, heightConstraint);
 
+			//System.Diagnostics.Debug.WriteLine($"GetDesiredSizeFromHandler {viewHandler}, {measureConstraint} ");
+
 			platformView.Measure(measureConstraint);
 
 			return new Size(platformView.DesiredSize.Width, platformView.DesiredSize.Height);
@@ -83,7 +85,18 @@ namespace Microsoft.Maui
 			if (rect.Width < 0 || rect.Height < 0)
 				return;
 
-			platformView.Arrange(new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height));
+			
+			System.Diagnostics.Debug.WriteLine($">>> PlatformArrangeHandler {viewHandler}, {rect}");
+			//System.Diagnostics.Debug.WriteLine($"DesiredSize {platformView.DesiredSize}");
+
+			//platformView.InvalidateArrange();
+
+			var target = new global::Windows.Foundation.Rect(rect.X, rect.Y, rect.Width, rect.Height);
+			System.Diagnostics.Debug.WriteLine($">>> PlatformArrangeHandler RenderSize {viewHandler} = {platformView.RenderSize}, {target}");
+
+			platformView.Arrange(target);
+
+			System.Diagnostics.Debug.WriteLine($">>> PlatformArrangeHandler RenderSize {viewHandler} (after) = {platformView.RenderSize}, {target}");
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}

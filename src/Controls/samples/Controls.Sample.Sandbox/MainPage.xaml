@@ -1,7 +1,30 @@
-﻿<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.MainPage"
-    xmlns:local="clr-namespace:Maui.Controls.Sample">
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample">
+    <Grid x:Name="RootGrid"
+          BackgroundColor="LightGreen">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
+        <Grid 
+              Grid.Column="0"
+              Grid.ColumnSpan="2"
+              HorizontalOptions="Fill"
+              VerticalOptions="Center">
+
+            <Border x:Name="ContentContainer"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    BackgroundColor="Gold"
+                    HorizontalOptions="Fill"
+                    VerticalOptions="Center"
+                    >
+                <Label Text="Hey" />
+            </Border>
+        </Grid>
+
+    </Grid>
 </ContentPage>

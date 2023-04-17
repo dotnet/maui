@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Platform
 				return base.MeasureOverride(availableSize);
 			}
 
+			System.Diagnostics.Debug.WriteLine($">>>>>> LayoutPanel MeasureOverride {availableSize}");
+
 			var width = availableSize.Width;
 			var height = availableSize.Height;
 

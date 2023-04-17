@@ -59,7 +59,11 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
-			return new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
+			var result = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
+
+			System.Diagnostics.Debug.WriteLine($">>>>>> ContentPanel ArrangeOverride at {finalSize} returning {result}");
+
+			return result;
 		}
 
 		public ContentPanel()
