@@ -33,6 +33,8 @@ namespace Maui.Controls.Sample.Pages
 
 		public PageSearchHandler()
 		{
+			ClearIcon = "mic.png";
+
 			Pages = new List<Data>()
 			{
 				new Data(typeof(ShellChromeGallery).Name, typeof(ShellChromeGallery), "dotnet_bot.png"),
