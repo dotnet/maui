@@ -185,13 +185,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (!FlyoutFirstDrawPassFinished && _flyoutContent != null)
 			{
-				if (child == _flyoutContent?.AndroidView)
+				if (_flyoutContent.AndroidView is not null)
 					FlyoutFirstDrawPassFinished = true;
 
-				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
-				{
+				if (IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
 					UpdateDrawerState();
-				}
 			}
 
 			return returnValue;
