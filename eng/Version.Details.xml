@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-preview.4.23172.16" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-preview.4.23176.5" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>27d6769dfbf8c36bc4608d5f1c8d842c40157008</Sha>
+      <Sha>d109cba3ff8ff46fe70be93a40c45002e5770267</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-preview.3.23171.4" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-preview.4.23174.4" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>edb161ab06ddc69d27aee2c0e990a60221ebbe92</Sha>
+      <Sha>96a003edd9e25a7b4b693b6a7717ad4d46937a8b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.4.227">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.4.252">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>1bdcf9f1b239b3222ba0b44118d3c49cbdf4de2b</Sha>
+      <Sha>90afbdd2b89fc0b46ffcd81cb55ad2b85a337bc7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.8518-net8-p4">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
@@ -28,9 +28,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>6d6cee815ed887e50c89e4cdace25b52d4a2ad38</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-preview.3.23167.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-preview.4.23170.1" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>25d9f7a5e38a2d61b94ff341bc0d32135fcb15f9</Sha>
+      <Sha>a464820353b7956538b07c9b53103d793b5e15b6</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
