@@ -86,10 +86,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			config.UserContentController.AddUserScript(new WKUserScript(
 				new NSString(BlazorInitScript), WKUserScriptInjectionTime.AtDocumentEnd, true));
 
-#if MACCATALYST13_3_OR_GREATER || IOS16_1_OR_GREATER
 			// iOS WKWebView doesn't allow handling 'http'/'https' schemes, so we use the fake 'app' scheme
 			config.SetUrlSchemeHandler(new SchemeHandler(this), urlScheme: "app");
-#endif
 
 			var webview = new WKWebView(RectangleF.Empty, config)
 			{
@@ -97,9 +95,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
+#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
 			// Enable Developer Extras for Catalyst/iOS builds for 16.4+
 			webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
-
+#endif
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
