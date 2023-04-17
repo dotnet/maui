@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 	{
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
+		bool _attached;
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{
@@ -21,8 +22,7 @@ namespace Microsoft.Maui.Controls
 		{
 			base.Apply(fromTarget);
 			ApplyCore();
-
-			AttachEvents();
+			SetAttached(true);
 		}
 
 		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
@@ -31,14 +31,12 @@ namespace Microsoft.Maui.Controls
 			_targetProperty = targetProperty;
 			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
 			ApplyCore();
-
-			AttachEvents();
+			SetAttached(true);
 		}
 
 		internal override void Unapply(bool fromBindingContextChanged = false)
 		{
-			DetachEvents();
-
+			SetAttached(false);
 			base.Unapply(fromBindingContextChanged);
 			_weakTarget = null;
 			_targetProperty = null;
@@ -51,7 +49,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
 			{
-				DetachEvents();
+				SetAttached(false);
 				return;
 			}
 
@@ -123,18 +121,21 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		void AttachEvents()
+		void SetAttached(bool value)
 		{
-			DetachEvents();
-
-			if (Application.Current != null)
-				Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
-		}
-
-		void DetachEvents()
-		{
-			if (Application.Current != null)
-				Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+			if (_attached != value)
+			{
+				if (_attached = value)
+				{
+					if (Application.Current != null)
+						Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+				}
+				else
+				{
+					if (Application.Current != null)
+						Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+				}
+			}
 		}
 	}
 }
