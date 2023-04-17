@@ -34,7 +34,7 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
-		public static void ModifyMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void ModifyMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -59,11 +59,11 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
-		public static void ReplaceMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void ReplaceMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			propertyMapper.ModifyMappingWhen<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
+			propertyMapper.ModifyMapping<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
 		}
 
 		/// <summary>
@@ -93,7 +93,7 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call after the existing mapping is finished.</param>
-		public static void AppendToMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void AppendToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -133,7 +133,7 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call before the existing mapping begins.</param>
-		public static void PrependToMappingWhen<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void PrependToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{

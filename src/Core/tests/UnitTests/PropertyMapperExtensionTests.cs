@@ -96,7 +96,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => log += msg1
 			};
 
-			mapper1.AppendToMappingWhen<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
+			mapper1.AppendToMapping<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
 
 			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
 
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => log += msg1
 			};
 
-			mapper1.PrependToMappingWhen<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
+			mapper1.PrependToMapping<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
 
 			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
 
@@ -164,7 +164,7 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData(typeof(ContentView), false)]
 		[InlineData(typeof(Label), true)]
 		[InlineData(typeof(Button), false)]
-		public void ReplaceMappingWhen(Type controlType, bool shouldRun)
+		public void ReplaceMapping(Type controlType, bool shouldRun)
 		{
 			string log = string.Empty;
 
@@ -176,7 +176,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => log += msg1
 			};
 
-			mapper1.ReplaceMappingWhen<Label, IViewHandler>(nameof(IView.Background), (h, v) => log += msg2);
+			mapper1.ReplaceMapping<Label, IViewHandler>(nameof(IView.Background), (h, v) => log += msg2);
 
 			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData(typeof(ContentView), false)]
 		[InlineData(typeof(Label), true)]
 		[InlineData(typeof(Button), false)]
-		public void ModifyMappingWhen(Type controlType, bool shouldRun)
+		public void ModifyMapping(Type controlType, bool shouldRun)
 		{
 			string log = string.Empty;
 
@@ -208,7 +208,7 @@ namespace Microsoft.Maui.UnitTests
 				[nameof(IView.Background)] = (r, v) => log += msg1
 			};
 
-			mapper1.ModifyMappingWhen<Label, IViewHandler>(nameof(IView.Background), (h, v, a) => log += msg2);
+			mapper1.ModifyMapping<Label, IViewHandler>(nameof(IView.Background), (h, v, a) => log += msg2);
 
 			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
 

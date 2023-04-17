@@ -47,7 +47,7 @@ namespace Microsoft.Maui
 		/// <param name="commandMapper">The command mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the command.</param>
 		/// <param name="method">The modified method to call when the command is updated.</param>
-		public static void ModifyMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
+		public static void ModifyMapping<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
 			string key, Action<TViewHandler, TVirtualView, object?, Action<IElementHandler, IElement, object?>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -72,11 +72,11 @@ namespace Microsoft.Maui
 		/// <param name="commandMapper">The command mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the command.</param>
 		/// <param name="method">The modified method to call when the command is updated.</param>
-		public static void ReplaceMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
+		public static void ReplaceMapping<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
 			string key, Action<TViewHandler, TVirtualView, object?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			commandMapper.ModifyMappingWhen<TVirtualView, TViewHandler>(key, (h, v, a, p) => method.Invoke(h, v, a));
+			commandMapper.ModifyMapping<TVirtualView, TViewHandler>(key, (h, v, a, p) => method.Invoke(h, v, a));
 		}
 
 		/// <summary>
@@ -119,7 +119,7 @@ namespace Microsoft.Maui
 		/// <param name="commandMapper">The command mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the command.</param>
 		/// <param name="method">The method to call after the existing mapping is finished.</param>
-		public static void AppendToMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
+		public static void AppendToMapping<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
 			string key, Action<TViewHandler, TVirtualView, object?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -172,7 +172,7 @@ namespace Microsoft.Maui
 		/// <param name="commandMapper">The command mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the command.</param>
 		/// <param name="method">The method to call before the existing mapping begins.</param>
-		public static void PrependToMappingWhen<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
+		public static void PrependToMapping<TVirtualView, TViewHandler>(this ICommandMapper<IElement, IElementHandler> commandMapper,
 			string key, Action<TViewHandler, TVirtualView, object?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
