@@ -782,7 +782,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void SetSearchBarIcon(UISearchBar searchBar, ImageSource source, UISearchBarIcon icon)
 		{
-			source.LoadImage(source.FindMauiContext(), image =>
+			source.LoadImage(source.FindMauiContext(true), image =>
 			{
 				var result = image?.Value;
 				if (result != null)
