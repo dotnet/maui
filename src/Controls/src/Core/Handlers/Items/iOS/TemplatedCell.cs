@@ -115,7 +115,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			PlatformHandler.VirtualView.Arrange(rectangle);
 			_size = rectangle.Size;
 		}
-		
+
 		public override void PrepareForReuse()
 		{
 			if (PlatformHandler?.VirtualView is View view)
