@@ -115,6 +115,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			PlatformHandler.VirtualView.Arrange(rectangle);
 			_size = rectangle.Size;
 		}
+		
+		public override void PrepareForReuse()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				view.BindingContext = null;
+			}
+			base.PrepareForReuse();
+		}
 
 		public void Bind(DataTemplate template, object bindingContext, ItemsView itemsView)
 		{
