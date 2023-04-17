@@ -212,7 +212,13 @@ namespace Microsoft.Maui.Platform
 
 			var paint = view.Background;
 
-			Drawable? defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
+			var background = new TypedValue();
+			Drawable? defaultBackgroundDrawable;
+
+			if (platformView.Context?.Theme?.ResolveAttribute(global::Android.Resource.Attribute.EditTextBackground, background, true) == true)
+				defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, background.ResourceId);
+			else
+				defaultBackgroundDrawable = platformView.Background;
 
 			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
 			var backgroundDrawable = paint.ToDrawable(platformView.Context);
