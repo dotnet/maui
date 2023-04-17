@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISearchBar, ISearchBarHandler> Mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(ViewHandler.ViewMapper)
 		{
-#if __IOS__
+#if ANDROID || __IOS__
 			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
 			[nameof(ISearchBar.Background)] = MapBackground,

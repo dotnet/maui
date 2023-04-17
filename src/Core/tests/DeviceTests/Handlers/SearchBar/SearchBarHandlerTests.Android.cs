@@ -12,6 +12,32 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
+		[Theory(DisplayName = "IsEnabled Initializes Correctly")]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task IsEnabledInitializesCorrectly(bool isEnabled)
+		{
+			var xplatIsEnabled = isEnabled;
+
+			var searchBar = new SearchBarStub()
+			{
+				IsEnabled = xplatIsEnabled,
+				Text = "Test"
+			};
+
+			var values = await GetValueAsync(searchBar, (handler) =>
+			{
+				return new
+				{
+					ViewValue = searchBar.IsEnabled,
+					PlatformViewValue = GetNativeIsEnabled(handler)
+				};
+			});
+
+			Assert.Equal(xplatIsEnabled, values.ViewValue);
+			Assert.Equal(xplatIsEnabled, values.PlatformViewValue);
+		}
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -301,6 +327,17 @@ namespace Microsoft.Maui.DeviceTests
 			var inputTypes = editText.InputType;
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			return editText.Enabled;
 		}
 	}
 }
