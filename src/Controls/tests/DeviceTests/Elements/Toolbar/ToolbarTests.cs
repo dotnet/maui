@@ -42,6 +42,79 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+#if !IOS && !MACCATALYST
+		[Fact(DisplayName = "Toolbar Items Map Correctly")]
+		public async Task ToolbarItemsMapCorrectly()
+		{
+			SetupBuilder();
+			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					toolbarItem
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				ToolbarItemsMatch(handler, toolbarItem);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Items Order Updates Correctly After Navigation")]
+		public async Task ToolbarItemsOrderUpdatesCorrectlyAfterNavigation()
+		{
+			SetupBuilder();
+			var toolbarItemFirstPage = new ToolbarItem() { Text = "Toolbar Item 1" };
+			var toolbarItemSecondPage = new ToolbarItem() { Text = "Toolbar Item Second Page", Order = ToolbarItemOrder.Secondary };
+
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					toolbarItemFirstPage
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.PushAsync(new ContentPage()
+				{
+					ToolbarItems =
+					{
+						toolbarItemSecondPage
+					}
+				});
+
+				ToolbarItemsMatch(handler, GetExpectedToolbarItems(navPage));
+				ToolbarItemsMatch(handler, toolbarItemSecondPage);
+				await navPage.PopAsync();
+				ToolbarItemsMatch(handler, GetExpectedToolbarItems(navPage));
+				ToolbarItemsMatch(handler, toolbarItemFirstPage);
+			});
+		}
+#endif
+
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				Title = "Page Title"
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				string title = GetToolbarTitle(handler);
+				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
+			});
+		}
+
 #if !IOS && !MACCATALYST
 		[Theory(DisplayName = "Toolbar Recreates With New MauiContext")]
 		[InlineData(typeof(FlyoutPage))]
@@ -104,5 +177,10 @@ namespace Microsoft.Maui.DeviceTests
 			}, context2);
 		}
 #endif
+
+		ToolbarItem[] GetExpectedToolbarItems(NavigationPage navPage)
+		{
+			return ((Toolbar)(navPage.Window as IToolbarElement).Toolbar).ToolbarItems.ToArray();
+		}
 	}
 }
