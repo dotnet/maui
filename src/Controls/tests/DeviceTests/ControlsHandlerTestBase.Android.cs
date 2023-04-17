@@ -89,7 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 				ToolbarItem toolbarItem = toolbarItems[i];
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
-								
+
 				if (primaryCommand is MenuItemImpl menuItemImpl)
 				{
 					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
