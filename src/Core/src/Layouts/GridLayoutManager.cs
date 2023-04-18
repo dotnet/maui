@@ -454,29 +454,29 @@ namespace Microsoft.Maui.Layouts
 					double width = 0;
 					double height = 0;
 
-					if (cell.IsRowSpanAuto)
-					{
-						height = double.PositiveInfinity;
-					}
-					else
-					{
+					//if (cell.IsRowSpanAuto)
+					//{
+					//	height = double.PositiveInfinity;
+					//}
+					//else
+					//{
 						for (int n = cell.Row; n < cell.Row + cell.RowSpan; n++)
 						{
 							height += _rows[n].Size;
 						}
-					}
+					//}
 
-					if (cell.IsColumnSpanAuto)
-					{
-						width = double.PositiveInfinity;
-					}
-					else
-					{
+					//if (cell.IsColumnSpanAuto)
+					//{
+					//	width = double.PositiveInfinity;
+					//}
+					//else
+					//{
 						for (int n = cell.Column; n < cell.Column + cell.ColumnSpan; n++)
 						{
 							width += _columns[n].Size;
 						}
-					}
+					//}
 
 					if (width == 0 || height == 0)
 					{
@@ -1046,7 +1046,7 @@ namespace Microsoft.Maui.Layouts
 
 			bool TreatCellWidthAsAuto(Cell cell)
 			{
-				if (cell.IsColumnSpanAuto)
+				if (cell.IsColumnSpanAuto && !cell.IsColumnSpanStar)
 				{
 					return true;
 				}
@@ -1062,7 +1062,7 @@ namespace Microsoft.Maui.Layouts
 
 			bool TreatCellHeightAsAuto(Cell cell)
 			{
-				if (cell.IsRowSpanAuto)
+				if (cell.IsRowSpanAuto && !cell.IsRowSpanStar)
 				{
 					return true;
 				}
