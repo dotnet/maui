@@ -164,7 +164,7 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData(typeof(ContentView), false)]
 		[InlineData(typeof(Label), true)]
 		[InlineData(typeof(Button), false)]
-		public void ReplaceMapping(Type controlType, bool shouldRun)
+		public void ReplaceMappingWhen(Type controlType, bool shouldRun)
 		{
 			string log = string.Empty;
 
@@ -196,7 +196,7 @@ namespace Microsoft.Maui.UnitTests
 		[InlineData(typeof(ContentView), false)]
 		[InlineData(typeof(Label), true)]
 		[InlineData(typeof(Button), false)]
-		public void ModifyMapping(Type controlType, bool shouldRun)
+		public void ModifyMappingWhen(Type controlType, bool shouldRun)
 		{
 			string log = string.Empty;
 
