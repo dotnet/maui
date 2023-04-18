@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 
 		// TODO fix iOS/WinUI to work the same as Android
 #if ANDROID
-		double IBorderElement.BorderWidth => 3;
+		double IBorderElement.BorderWidth => 1;
 #else
 		// not currently used by frame
 		double IBorderElement.BorderWidth => -1d;
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls
 
 		Color IBorderElement.BorderColorDefaultValue => (Color)BorderColorProperty.DefaultValue;
 
-		double IBorderElement.BorderWidthDefaultValue => -1d;
+		double IBorderElement.BorderWidthDefaultValue => ((IBorderElement)this).BorderWidth;
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, Frame> On<T>() where T : IConfigPlatform
@@ -97,14 +97,14 @@ namespace Microsoft.Maui.Controls
 #if ANDROID
 		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
 		{
-			bounds = bounds.Inset((this as IBorderElement).BorderWidth);
+			bounds = bounds.Inset(((IBorderElement)this).BorderWidth);
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var inset = Padding + (this as IBorderElement).BorderWidth;
+			var inset = Padding + ((IBorderElement)this).BorderWidth;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
 #endif

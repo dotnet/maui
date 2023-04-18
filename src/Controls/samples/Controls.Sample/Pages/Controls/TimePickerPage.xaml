@@ -40,6 +40,19 @@
                 </DatePicker.Background>
             </TimePicker>
             <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <TimePicker 
+                x:Name="BackgroundTimePicker"/>
+            <Button
+                x:Name="UpdateBackgroundButton"
+                Text="Update Background"
+                Clicked="OnUpdateBackgroundButtonClicked"/>
+            <Button
+                x:Name="ClearBackgroundButton"
+                Text="Clear Background"
+                Clicked="OnClearBackgroundButtonClicked"/>
+            <Label
                 Text="Default with time"
                 Style="{StaticResource Headline}"/>
             <TimePicker Time="4:15:26"/>

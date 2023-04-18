@@ -25,6 +25,23 @@ public class MainInstrumentation : Instrumentation
 	public async override void OnStart()
 	{
 		base.OnStart();
+#if PERFLAB_INLAB
+		Environment.SetEnvironmentVariable("PERFLAB_INLAB", "1");
+		Environment.SetEnvironmentVariable("PERFLAB_BUILDTIMESTAMP", "0001-01-01T00:00:00.0000000Z");
+		Environment.SetEnvironmentVariable("PERFLAB_BUILDNUM", "REPLACE_BUILDNUM");
+		Environment.SetEnvironmentVariable("DOTNET_VERSION", "REPLACE_DOTNET_VERSION");
+		Environment.SetEnvironmentVariable("PERFLAB_HASH", "REPLACE_HASH");
+		Environment.SetEnvironmentVariable("HELIX_CORRELATION_ID", "REPLACE_HELIX_CORRELATION_ID");
+		Environment.SetEnvironmentVariable("PERFLAB_PERFHASH", "REPLACE_PERFLAB_PERFHASH");
+		Environment.SetEnvironmentVariable("PERFLAB_RUNNAME", "REPLACE_PERFLAB_RUNNAME");
+		Environment.SetEnvironmentVariable("HELIX_WORKITEM_FRIENDLYNAME", "REPLACE_HELIX_WORKITEM_FRIENDLYNAME");
+		Environment.SetEnvironmentVariable("PERFLAB_REPO", "REPLACE_PERFLAB_REPO");
+		Environment.SetEnvironmentVariable("PERFLAB_BRANCH", "REPLACE_PERFLAB_BRANCH");
+		Environment.SetEnvironmentVariable("PERFLAB_QUEUE", "REPLACE_PERFLAB_QUEUE");
+		Environment.SetEnvironmentVariable("PERFLAB_BUILDARCH", "REPLACE_PERFLAB_BUILDARCH");
+		Environment.SetEnvironmentVariable("PERFLAB_LOCALE", "REPLACE_PERFLAB_LOCALE");
+		Directory.CreateDirectory("/storage/emulated/0/Android/data/com.microsoft.maui.benchmarks/files");
+#endif
 
 		var success = await Task.Factory.StartNew(Run);
 		Log.Debug(Tag, $"Benchmark complete, success: {success}");
