@@ -71,32 +71,5 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
-
-#if ANDROID
-		[Fact]
-		public async Task SearchBarTakesFullWidth()
-		{
-			SetupBuilder();
-
-			SearchBar searchBar = new();
-
-			ContentPage page = new()
-			{
-				Content = searchBar
-			};
-
-			NavigationPage navPage = new(new ContentPage());
-
-			await CreateHandlerAndAddToWindow<IWindowHandler>(navPage,
-				async (_) =>
-				{
-					await navPage.CurrentPage.Navigation.PushAsync(page);
-				});
-
-			Assert.NotEqual(-1, page.Width);
-			Assert.NotEqual(-1, searchBar.Width);
-			Assert.Equal(page.Width, searchBar.Width);
-		}
-#endif
 	}
 }

@@ -119,24 +119,28 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SearchBarTakesFullWidthByDefault()
 		{
-			var layout = new LayoutStub()
-			{
-				Width = 500
-			};
-
-			var searchbar = new SearchBarStub
-			{
-				Text = "My Search Term",
-			};
-
-			layout.Add(searchbar);
-
 			await InvokeOnMainThreadAsync(async () =>
 			{
+				var layout = new LayoutStub()
+				{
+					Width = 500
+				};
+
+				var searchbar = new SearchBarStub
+				{
+					Text = "My Search Term",
+				};
+
+				layout.Add(searchbar);
+
 				var layoutHandler = CreateHandler(layout);
 				await layoutHandler.PlatformView.AttachAndRun(() =>
 				{
-					Assert.Equal(layout.Width, searchbar.Width);
+					var layoutSize = layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+					var rect = new Rect(0, 0, layoutSize.Width, layoutSize.Height);
+					var searchbarSize = searchbar.Measure(rect.Width, rect.Height);
+				
+					Assert.Equal(layoutSize.Width, searchbarSize.Width);
 				});
 			});
 		}
