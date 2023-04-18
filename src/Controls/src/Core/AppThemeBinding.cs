@@ -124,18 +124,20 @@ namespace Microsoft.Maui.Controls
 
 		void SetAttached(bool value)
 		{
-			if (_attached != value)
+			var app = Application.Current;
+			if (app != null && _attached != value)
 			{
-				if (_attached = value)
+				if (value)
 				{
-					if (Application.Current != null)
-						Application.Current.RequestedThemeChanged += OnRequestedThemeChanged;
+					// Going from false -> true
+					app.RequestedThemeChanged += OnRequestedThemeChanged;
 				}
 				else
 				{
-					if (Application.Current != null)
-						Application.Current.RequestedThemeChanged -= OnRequestedThemeChanged;
+					// Going from true -> false
+					app.RequestedThemeChanged -= OnRequestedThemeChanged;
 				}
+				_attached = value;
 			}
 		}
 	}
