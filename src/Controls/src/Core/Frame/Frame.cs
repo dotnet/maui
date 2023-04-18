@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 		}
-		
+
 		// TODO fix iOS/WinUI to work the same as Android
 		// once this has been fixed on iOS/WinUI we should centralize 
 		// this code and Border into LayoutExtensions
