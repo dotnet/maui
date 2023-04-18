@@ -139,7 +139,7 @@ namespace Microsoft.Maui.DeviceTests
 					var layoutSize = layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
 					var rect = new Rect(0, 0, layoutSize.Width, layoutSize.Height);
 					var searchbarSize = searchbar.Measure(rect.Width, rect.Height);
-				
+
 					Assert.Equal(layoutSize.Width, searchbarSize.Width);
 				});
 			});
