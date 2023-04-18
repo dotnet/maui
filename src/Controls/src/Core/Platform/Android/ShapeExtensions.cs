@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var shapeDrawable = new ShapeDrawable(shapeView);
 
-			var windowMode = shapeDrawable.GetPathWindingMode(shapeView);
-			shapeDrawable.UpdateWindingMode(windowMode);
+			var windingMode = shapeDrawable.GetPathWindingMode(shapeView);
+			shapeDrawable.UpdateWindingMode(windingMode);
 
 			platformView.Drawable = shapeDrawable;
 		}
