@@ -55,6 +55,51 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => expected, GetNativeIsNumericKeyboard, expected);
 		}
 
+		[Fact(DisplayName = "Entry Background Updates Correctly")]
+		public async Task BackgroundUpdatesCorrectly()
+		{
+			var expected = Colors.Red;
+
+			var layout = new LayoutStub();
+
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				Background = new SolidPaintStub(Colors.Yellow),
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Change Background"
+			};
+
+			layout.Add(entry);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				entry.Background = new SolidPaintStub(expected);
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			await ValidateHasColor(entry, expected);
+		}
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var buttonHandler = CreateHandler<ButtonHandler>(button);
+				buttonHandler.PlatformView.PerformClick();
+			});
+		}
+
 		[Theory(DisplayName = "ClearButton Color Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
