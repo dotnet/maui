@@ -2551,7 +2551,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Theory]
 		[InlineData(20, 100)]
 		[InlineData(200, 100)]
-		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint) 
+		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint)
 		{
 			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
 			var view0 = CreateTestView(new Size(20, 20));
