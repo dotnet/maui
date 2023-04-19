@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
+			UpdateValue(nameof(Shell.FlyoutIcon));
 			UpdateValue(nameof(Shell.FlyoutBackground));
 		}
 
@@ -124,6 +126,21 @@ namespace Microsoft.Maui.Controls.Handlers
 					view.FlyoutBackgroundColor?.AsPaint());
 		}
 
+		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
+		{
+			var togglePaneButton = handler.PlatformView.TogglePaneButton;
+
+			if (togglePaneButton is null)
+				return;
+
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+			var flyoutIcon = view.FlyoutIcon;
+
+			togglePaneButton
+				.UpdateBackgroundImageAsync(flyoutIcon, provider)
+				.FireAndForget();
+		}
+	
 		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)
 		{
 			handler.PlatformView.UpdateFlyoutVerticalScrollMode((WScrollMode)(int)view.FlyoutVerticalScrollMode);

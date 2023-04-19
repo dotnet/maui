@@ -48,6 +48,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
+~static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutIcon(Microsoft.Maui.Controls.Handlers.ShellHandler handler, Microsoft.Maui.Controls.Shell view) -> void
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void

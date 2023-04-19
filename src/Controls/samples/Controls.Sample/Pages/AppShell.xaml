@@ -6,7 +6,8 @@
     xmlns:pages="using:Maui.Controls.Sample.Pages"
     xmlns:shellPages="clr-namespace:Maui.Controls.Sample.Pages.ShellGalleries"
     FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
-    Title="{Binding ShellTitle}">
+    Title="{Binding ShellTitle}"
+    FlyoutIcon="books.png">
     <Shell.TitleView>
         <Grid
             BackgroundColor="Red"

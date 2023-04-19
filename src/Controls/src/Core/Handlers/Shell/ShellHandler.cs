@@ -20,6 +20,7 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(IFlyoutView.FlyoutBehavior)] = MapFlyoutBehavior,
 					[nameof(IFlyoutView.FlyoutWidth)] = MapFlyoutWidth,
 					[nameof(Shell.FlyoutBackground)] = MapFlyoutBackground,
+					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
 					[nameof(Shell.FlyoutBackgroundColor)] = MapFlyoutBackground,
 					[nameof(Shell.CurrentItem)] = MapCurrentItem,
 					[nameof(Shell.FlyoutBackdrop)] = MapFlyoutBackdrop,
