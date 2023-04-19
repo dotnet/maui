@@ -388,10 +388,7 @@ namespace Microsoft.Maui.Layouts
 						continue;
 					}
 
-					var measureWidth = cell.MeasureWidth;
-					var measureHeight = cell.MeasureHeight;
-
-					var measure = MeasureCell(cell, measureWidth, measureHeight);
+					var measure = MeasureCell(cell, cell.MeasureWidth, cell.MeasureHeight);
 
 					if (treatCellWidthAsAuto)
 					{
