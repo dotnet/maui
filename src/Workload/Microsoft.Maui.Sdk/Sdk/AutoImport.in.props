@@ -32,7 +32,7 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' ">
+  <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
     <PackageReference Include="@(_MauiImplicitPackageReference)" Exclude="@(PackageReference)" IsMauiImplicitPackageReference="true" />
   </ItemGroup>
 
