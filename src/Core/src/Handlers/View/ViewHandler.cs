@@ -274,16 +274,6 @@ namespace Microsoft.Maui.Handlers
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
 				handler.HasContainer = view.NeedsContainer();
-
-			UpdateInputTransparentOnContainerView(handler, view);
-		}
-
-		static void UpdateInputTransparentOnContainerView(IViewHandler handler, IView view)
-		{
-#if ANDROID
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.InputTransparent = view.InputTransparent;
-#endif
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
@@ -325,7 +315,9 @@ namespace Microsoft.Maui.Handlers
 		{
 #if ANDROID
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			UpdateInputTransparentOnContainerView(handler, view);
+
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.InputTransparent = view.InputTransparent;
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif
