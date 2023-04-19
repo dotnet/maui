@@ -17,15 +17,19 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateInputTransparent(IViewHandler handler, IView layout)
 		{
-			if (handler.PlatformView is LayoutViewGroup layoutViewGroup)
+			if (handler is ILayoutHandler layoutHandler && layout is Layout controlsLayout)
 			{
-				// Handle input transparent for this view
-				layoutViewGroup.InputTransparent = layout.InputTransparent;
-			}
+				if (layoutHandler.PlatformView is LayoutViewGroup layoutViewGroup)
+				{
+					// Handle input transparent for this view
+					layoutViewGroup.InputTransparent = layout.InputTransparent;
+				}
 
-			if (layout is Layout l)
+				controlsLayout.UpdateDescendantInputTransparent();
+			}
+			else
 			{
-				l.UpdateDescendantInputTransparent();
+				ControlsVisualElementMapper.UpdateProperty(handler, layout, nameof(IView.InputTransparent));
 			}
 		}
 	}
