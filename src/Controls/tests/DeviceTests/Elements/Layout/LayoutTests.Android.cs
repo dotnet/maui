@@ -15,9 +15,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		void ValidateInputTransparentOnPlatformView(IView view)
 		{
-			if (view is ILayout)
+			var handler = view.ToHandler(MauiContext);
+			if (handler.PlatformView is LayoutViewGroup lvg)
 			{
-				Assert.True(view.ToPlatform(MauiContext) is not WrapperView wv || !wv.InputTransparent);
+				Assert.Equal(view.InputTransparent, lvg.InputTransparent);
+				if (handler.ContainerView is WrapperView wv)
+					Assert.False(wv.InputTransparent);
+
 				return;
 			}
 
