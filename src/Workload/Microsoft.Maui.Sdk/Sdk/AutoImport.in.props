@@ -3,8 +3,8 @@
   <!--
     These implicit <PackageReference/> pull dependencies from NuGet transitively.
     They are first added to the <_MauiImplicitPackageReference/> item group to list the the desired
-    packages. Then the packages that were specified by the user are removed from the list. Finally,
-    the remaining implicit packages are added into the project.
+    packages. Then the implicit packages are added into the project, exclding any duplicate
+    packages added via the projet or user props.
 
     This logic only installs packages if and only if $(UseMauiNuGets) is not true. This property
     allows the user to totally override all the default nugets installed.
