@@ -15,8 +15,8 @@ namespace Microsoft.Maui.Controls
 
 		static void UpdateInputTransparent(IViewHandler handler, IView layout)
 		{
-			if (handler.PlatformView is FrameworkElement fe)
-				fe.UpdateInputTransparent(handler, layout);
+			if (handler.PlatformView is LayoutPanel lp && handler is ILayoutHandler lh && layout is Maui.ILayout iLayout)
+				lp.UpdateInputTransparent(lh, iLayout);
 
 			if (layout is Layout l)
 			{
