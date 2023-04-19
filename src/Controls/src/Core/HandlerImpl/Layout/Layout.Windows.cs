@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (handler is ILayoutHandler layoutHandler && layout is Layout controlsLayout)
 			{
-				layoutHandler.PlatformView.UpdateInputTransparent(handler, controlsLayout);
+				layoutHandler.PlatformView.UpdateInputTransparent(layoutHandler, controlsLayout);
 				controlsLayout.UpdateDescendantInputTransparent();
 			}
 			else
