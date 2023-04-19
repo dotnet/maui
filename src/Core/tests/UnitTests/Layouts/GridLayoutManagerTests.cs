@@ -2427,5 +2427,169 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// be arranged at the top left corner
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
 		}
+
+		[Fact, Category(GridStarSizing)]
+		public void UnconstrainedStarRowsRetainTheirHeightsWhenArrangedAtMeasuredSize()
+		{
+			// This test accounts for the situation where a Grid has Rows marked as "*", is measured
+			// without height constraint, is vertically set to Fill, and is arranged at the measured height.
+			// Basically, a situation where the Grid is inside a vertically-oriented ScrollView or StackLayout, 
+			// and the concept of vertical "Fill" doesn't mean anything. In that situation, the rows should 
+			// retain their automatic sizing, rather than being evenly distributed as usual.
+
+			var grid = CreateGridLayout(rows: "*, *, *");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, 40));
+			var view2 = CreateTestView(new Size(20, 60));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			// Measure the Grid with no height constraint, then arrange it using the resulting size
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
+			// Since we're arranging it at that same height, there's reason for it to expand the items
+			// so we expect them to be arranged at the same heights
+			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
+
+			Assert.Equal(120, measure.Height);
+
+			AssertArranged(view0, new Rect(0, 0, 20, 20));
+			AssertArranged(view1, new Rect(0, 20, 20, 40));
+			AssertArranged(view2, new Rect(0, 60, 20, 60));
+		}
+
+		[Fact, Category(GridStarSizing)]
+		public void UnconstrainedStarColumnsRetainTheirWidthsWhenArrangedAtMeasuredSize()
+		{
+			// This test accounts for the situation where a Grid has Columns marked as "*", is measured
+			// without width constraint, is horizontally set to Fill, and is arranged at the measured width.
+			// Basically, a situation where the Grid is inside a horizontally-oriented ScrollView or StackLayout, 
+			// and the concept of horizontal "Fill" doesn't mean anything. In that situation, the columns should 
+			// retain their automatic sizing, rather than being evenly distributed as usual.
+
+			var grid = CreateGridLayout(columns: "*, *, *");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(40, 20));
+			var view2 = CreateTestView(new Size(60, 20));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			// Measure the Grid with no width constraint, then arrange it using the resulting size
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
+			// Since we're arranging it at that same width, there's reason for it to expand the items
+			// so we expect them to be arranged at the same widths
+			var measure = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
+
+			Assert.Equal(120, measure.Width);
+
+			AssertArranged(view0, new Rect(0, 0, 20, 20));
+			AssertArranged(view1, new Rect(20, 0, 40, 20));
+			AssertArranged(view2, new Rect(60, 0, 60, 20));
+		}
+
+		// These next two tests validate cases where the Grid structure necessitates multiple 
+		// measure passes (because a Star value intersects with multiple Auto values)
+		// and the items being measured may have a different Auto height/width on the second pass.
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating the situation from https://github.com/dotnet/maui/issues/14296
+		[InlineData(40, 30)] // Simulating something like an Image where the height shrinks as the width constraint gets tighter
+		public void AutoRowIsDominatedByTallestView(double unconstrainedHeight, double constrainedHeight)
+		{
+			var grid = CreateGridLayout(rows: "Auto", columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how wide its measurement constraints are
+			var view1 = CreateWidthDominatedView(100, unconstrainedHeight, new Tuple<double, double>(200, constrainedHeight));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 0, col: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: 200);
+
+			// We expect the Grid to grow to accommodate the full height of view1 at this width
+			Assert.Equal(constrainedHeight, measure.Height);
+		}
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating https://github.com/dotnet/maui/issues/14296 but for columns
+		[InlineData(50, 30)] // Simulating something like an Image where the width shrinks as the height constraint gets tighter
+		public void AutoColumnIsDominatedByWidestView(double unconstrainedWidth, double constrainedWidth)
+		{
+			var grid = CreateGridLayout(columns: "Auto", rows: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how high its measurement constraints are
+			var view1 = CreateHeightDominatedView(unconstrainedWidth, 100, new Tuple<double, double>(constrainedWidth, 100));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 1, col: 0);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: 100);
+
+			// We expect the Grid to group to accommodate the full width of view1 at this height
+			Assert.Equal(constrainedWidth, measure.Width);
+		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(determinantViewWidth, 20));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, view1, row: 1, col: 0, colSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: 100);
+
+			// view1 should make column 0 at least `determinantViewWidth` units wide
+			// So view0 should be getting measured at _at least_ that value; if the widthConstraint is larger
+			// than that, the * should bump the measure value up to match the widthConstraint
+			var expectedMeasureWidth = Math.Max(determinantViewWidth, widthConstraint);
+
+			view0.Received().Measure(Arg.Is<double>(expectedMeasureWidth), Arg.Any<double>());
+		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarRowSpanMeasureIsSumOfAutoAndStar(double determinantViewHeight, double heightConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, Auto", rows: "Auto, *");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, determinantViewHeight));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: 2);
+			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: heightConstraint);
+
+			// view1 should make row 0 at least `determinantViewHeight` units tall
+			// So view0 should be getting measured at _at least_ that value; if the heightConstraint is larger
+			// than that, the * should bump the measure value up to match the heightConstraint
+			var expectedMeasureHeight = Math.Max(determinantViewHeight, heightConstraint);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
 	}
 }
