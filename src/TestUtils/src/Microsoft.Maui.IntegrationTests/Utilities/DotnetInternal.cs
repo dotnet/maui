@@ -5,9 +5,9 @@ namespace Microsoft.Maui.IntegrationTests
 	public static class DotnetInternal
 	{
 		static readonly string DotnetTool = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet", "dotnet");
-		const int DEFAULT_TIMEOUT = 600;
+		const int DEFAULT_TIMEOUT = 900;
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null)
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "")
 		{
 			var binlogName = $"build-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 			var buildArgs = $"\"{projectFile}\" -c {config}";
@@ -29,7 +29,12 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 			}
 
-			return Run("build", $"{buildArgs} -bl:\"{Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName)}\"");
+			if (string.IsNullOrEmpty(binlogPath))
+			{
+				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
+			}
+
+			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
 		public static bool New(string shortName, string outputDirectory, string framework)

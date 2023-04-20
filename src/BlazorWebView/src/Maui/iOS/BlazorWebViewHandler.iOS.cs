@@ -80,6 +80,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				Configuration = config
 			});
 
+			// Legacy Developer Extras setting.
 			config.Preferences.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("developerExtrasEnabled"));
 
 			config.UserContentController.AddScriptMessageHandler(new WebViewScriptMessageHandler(MessageReceived), "webwindowinterop");
@@ -95,6 +96,10 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
+#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
+			// Enable Developer Extras for Catalyst/iOS builds for 16.4+
+			webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
+#endif
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview

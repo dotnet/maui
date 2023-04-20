@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
