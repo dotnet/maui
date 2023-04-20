@@ -90,6 +90,19 @@
                     </Editor.Background>
                 </Editor>
                 <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    x:Name="BackgroundEditor"/>
+                <Button
+                    x:Name="UpdateBackgroundButton"
+                    Text="Update Background"
+                    Clicked="OnUpdateBackgroundButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundButton"
+                    Text="Clear Background"
+                    Clicked="OnClearBackgroundButtonClicked"/>
+                <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />
                 <Editor 
