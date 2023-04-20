@@ -444,50 +444,48 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		static internal bool Focus(this VisualElement view, FocusRequest focusRequest)
+		static internal bool RequestFocus(this VisualElement view)
 		{
-			var handler = view.Handler;
+			// if there is an attached handler, we use that and we will end up in the MapFocus method below
+			if (view.Handler is IViewHandler handler)
+				return handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
 
-			if (handler is not null)
-				handler.Invoke(nameof(IView.Focus), focusRequest);
-			else
-				MapFocus(view, handler, focusRequest);
-
-			return focusRequest.IsFocused;
+			// if there is no handler, we need to still run some code
+			var focusRequest = new FocusRequest();
+			MapFocus(view, null, focusRequest);
+			return focusRequest.Result;
 		}
 
-		// If the handler isn't attached we still need some focus code to execute
-		static internal void MapFocus(this IView view, IViewHandler? handler, FocusRequest args)
+		static internal void MapFocus(this IView view, IViewHandler? handler, FocusRequest focusRequest)
 		{
-			if (args is not FocusRequest fr)
-				return;
-
-			if (view is not VisualElement ve)
+			if (view is VisualElement ve)
 			{
-				FocusRequest focusRequest = new FocusRequest(false);
-				if (handler is not null)
-					ViewHandler.MapFocus(handler, view, focusRequest);
+				// the virtual view is already focused
+				if (ve.IsFocused)
+				{
+					focusRequest.TrySetResult(true);
+					return;
+				}
+
+				// if there are legacy events, then use that
+				if (ve.HasFocusChangeRequestedEvent)
+				{
+					var arg = new VisualElement.FocusRequestArgs { Focus = true };
+					ve.InvokeFocusChangeRequested(arg);
+					focusRequest.TrySetResult(arg.Result);
+					return;
+				}
+			}
+
+			// otherwise, fall back to "base"
+			if (handler is not null)
+			{
+				ViewHandler.MapFocus(handler, view, focusRequest);
 				return;
 			}
 
-			if (ve.IsFocused)
-			{
-				fr.IsFocused = true;
-				return;
-			}
-
-			if (!ve.HasFocusChangeRequestedEvent)
-			{
-				FocusRequest focusRequest = new FocusRequest(false);
-				if (handler is not null)
-					ViewHandler.MapFocus(handler, view, focusRequest);
-
-				return;
-			}
-
-			var arg = new VisualElement.FocusRequestArgs { Focus = true };
-			ve.InvokeFocusChangeRequested(arg);
-			fr.IsFocused = arg.Result;
+			// if there was nothing that handles this, then nothing changed
+			focusRequest.TrySetResult(false);
 		}
 	}
 }

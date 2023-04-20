@@ -73,25 +73,25 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
 		{
-				TaskCompletionSource focusSource = new TaskCompletionSource();
-				view.LostFocus += OnUnFocused;
+			TaskCompletionSource focusSource = new TaskCompletionSource();
+			view.LostFocus += OnUnFocused;
 
-				try
-				{
-					await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
-				}
-				finally
-				{
-					view.LostFocus -= OnUnFocused;
-				}
-
+			try
+			{
 				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+			}
+			finally
+			{
+				view.LostFocus -= OnUnFocused;
+			}
 
-				void OnUnFocused(object? sender, RoutedEventArgs e)
-				{
-					view.LostFocus -= OnUnFocused;
-					focusSource.SetResult();
-				}
+			await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+			void OnUnFocused(object? sender, RoutedEventArgs e)
+			{
+				view.LostFocus -= OnUnFocused;
+				focusSource.SetResult();
+			}
 		}
 
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)

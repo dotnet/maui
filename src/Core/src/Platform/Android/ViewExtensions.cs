@@ -8,6 +8,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
@@ -69,7 +70,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void Focus(this AView platformView, FocusRequest request, Action? focusRequested)
 		{
-			request.IsFocused = true;
+			request.TrySetResult(true);
 
 			// Android does the actual focus/unfocus work on the main looper
 			// So in case we're setting the focus in response to another control's un-focusing,
@@ -184,9 +185,7 @@ namespace Microsoft.Maui.Platform
 		// TODO: NET8 make this public for NET8.0
 		internal static void UpdateBackground(this EditText platformView, IView view)
 		{
-			var paint = view.Background;
-
-			if (paint.IsNullOrEmpty())
+			if (platformView is null || platformView.Context is null)
 			{
 				return;
 			}
@@ -198,17 +197,39 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.Dispose();
 			}
 
-			// Android will reset the padding when setting a Background drawable
+			if (platformView.Background is LayerDrawable layerDrawable)
+			{
+				platformView.Background = null;
+				layerDrawable.Dispose();
+			}
+
+			// Android will reset the padding when setting a Background drawable	
 			// So we need to reapply the padding after
 			var padLeft = platformView.PaddingLeft;
 			var padTop = platformView.PaddingTop;
 			var padRight = platformView.PaddingRight;
 			var padBottom = platformView.PaddingBottom;
 
-			var previousDrawable = platformView.Background;
-			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
-			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
-			platformView.Background = layer;
+			var paint = view.Background;
+
+			Drawable? defaultBackgroundDrawable = ContextCompat.GetDrawable(platformView.Context, Resource.Drawable.abc_edit_text_material);
+
+			var previousDrawable = defaultBackgroundDrawable ?? platformView.Background;
+			var backgroundDrawable = paint.ToDrawable(platformView.Context);
+
+			if (previousDrawable is null)
+				platformView.Background = backgroundDrawable;
+			else
+			{
+				if (backgroundDrawable is null)
+					platformView.Background = previousDrawable;
+				else
+				{
+
+					LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable, previousDrawable });
+					platformView.Background = layer;
+				}
+			}
 
 			// Apply previous padding
 			platformView.SetPadding(padLeft, padTop, padRight, padBottom);
