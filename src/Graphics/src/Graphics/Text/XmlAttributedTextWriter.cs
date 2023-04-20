@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			if (attributedText != null && !string.IsNullOrEmpty(attributedText.Text))
 			{
-				bool encode = attributedText.Text.Contains("]]");
+				bool encode = attributedText.Text.IndexOf("]]", StringComparison.Ordinal) != -1;
 
 				writer.Write($"<{XmlNames.AttributedText}>");
 				if (encode)
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			currentAttributes.TryGetValue(key, out var value);
 
-			if (!string.Equals(value, defaultValue))
+			if (!string.Equals(value, defaultValue, StringComparison.Ordinal))
 				WriteAttribute(writer, key.ToString(), value);
 		}
 

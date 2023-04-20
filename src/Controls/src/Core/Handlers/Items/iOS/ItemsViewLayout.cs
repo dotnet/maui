@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _adjustmentSize0;
 		CGSize _adjustmentSize1;
 		CGSize _currentSize;
+		WeakReference<Func<UICollectionViewCell>> _getPrototype;
 
 		const double ConstraintSizeTolerance = 0.00001;
 
@@ -28,7 +29,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public nfloat ConstrainedDimension { get; set; }
 
-		public Func<UICollectionViewCell> GetPrototype { get; set; }
+		public Func<UICollectionViewCell> GetPrototype
+		{
+			get => _getPrototype is not null && _getPrototype.TryGetTarget(out var func) ? func : null;
+			set => _getPrototype = new(value);
+		}
 
 		internal ItemSizingStrategy ItemSizingStrategy { get; private set; }
 

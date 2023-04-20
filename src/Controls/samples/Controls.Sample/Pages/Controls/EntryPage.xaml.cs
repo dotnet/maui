@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Pages
@@ -19,9 +20,10 @@ namespace Maui.Controls.Sample.Pages
 			sldCursorPosition.Maximum = entryCursor.Text.Length;
 			sldCursorPosition.Value = entryCursor.CursorPosition;
 
-
 			PlatformSpecificEntry.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>()
 				.SetImeOptions(ImeFlags.Search);
+
+			UpdateEntryBackground();
 		}
 
 		void OnSlideCursorPositionValueChanged(object sender, ValueChangedEventArgs e)
@@ -66,6 +68,33 @@ namespace Maui.Controls.Sample.Pages
 		{
 			var text = ((Entry)sender).Text;
 			DisplayAlert("Unfocused", text, "Ok");
+		}
+
+		void OnUpdateBackgroundButtonClicked(object sender, System.EventArgs e)
+		{
+			UpdateEntryBackground();
+		}
+
+		void OnClearBackgroundButtonClicked(object sender, System.EventArgs e)
+		{
+			BackgroundEntry.Background = null;
+		}
+
+		void UpdateEntryBackground()
+		{
+			Random rnd = new Random();
+			Color startColor = Color.FromRgba(rnd.Next(256), rnd.Next(256), rnd.Next(256), 255);
+			Color endColor = Color.FromRgba(rnd.Next(256), rnd.Next(256), rnd.Next(256), 255);
+
+			BackgroundEntry.Background = new LinearGradientBrush
+			{
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop { Color = startColor },
+					new GradientStop { Color = endColor, Offset = 1 }
+				}
+			};
 		}
 	}
 }
