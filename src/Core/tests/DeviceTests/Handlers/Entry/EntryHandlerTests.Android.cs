@@ -91,15 +91,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(entry, expected);
 		}
 
-		Task PerformClick(IButton button)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var buttonHandler = CreateHandler<ButtonHandler>(button);
-				buttonHandler.PlatformView.PerformClick();
-			});
-		}
-
 		[Theory(DisplayName = "ClearButton Color Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
