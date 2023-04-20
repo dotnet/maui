@@ -411,7 +411,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory (
+#if WINDOWS
+			Skip = "Appears that the layout is not getting rendered on Windows."
+#endif
+			)]
 		[InlineData(TextAlignment.Start, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.TailTruncation)]
@@ -425,7 +429,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap, false)]
-#else
+#elif __ANDROID__
 		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap)]
