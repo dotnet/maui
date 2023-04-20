@@ -4,6 +4,16 @@
     x:Class="Maui.Controls.Sample.Pages.TimePickerPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="TimePicker">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="IsFocusedTextStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="9" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
         <VerticalStackLayout
             Margin="12">
@@ -30,6 +40,19 @@
                 </DatePicker.Background>
             </TimePicker>
             <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <TimePicker 
+                x:Name="BackgroundTimePicker"/>
+            <Button
+                x:Name="UpdateBackgroundButton"
+                Text="Update Background"
+                Clicked="OnUpdateBackgroundButtonClicked"/>
+            <Button
+                x:Name="ClearBackgroundButton"
+                Text="Clear Background"
+                Clicked="OnClearBackgroundButtonClicked"/>
+            <Label
                 Text="Default with time"
                 Style="{StaticResource Headline}"/>
             <TimePicker Time="4:15:26"/>
@@ -47,7 +70,23 @@
                 Text="Format"
                 Style="{StaticResource Headline}"/>
             <TimePicker
-                Format = "hh:mm"/>               
+                Format = "hh:mm"/>
+            <Label      
+                Text="IsFocused"
+                Style="{StaticResource Headline}"/>
+            <TimePicker
+                x:Name="FocusTimePicker" />
+            <HorizontalStackLayout>
+                <Label 
+                    Text="IsFocused"
+                    Style="{StaticResource IsFocusedTextStyle}"/>
+                <Label
+                    x:Name="FocusResult"
+                    Text="{Binding Source={x:Reference FocusTimePicker},Path=IsFocused}"
+                    FontAttributes="Bold"
+                    Margin="6, 0"
+                    Style="{StaticResource IsFocusedTextStyle}"/>
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
