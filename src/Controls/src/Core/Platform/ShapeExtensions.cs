@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		internal static WindingMode GetPathWindingMode(this IDrawable drawable, IShapeView shapeView)
 		{
-			if (drawable is not ShapeDrawable || shapeView is null || shapeView?.Shape is not Path path)
+			if (drawable is not ShapeDrawable || shapeView is null || shapeView.Shape is not Path path)
 				return WindingMode.NonZero;
 
 			var data = path.Data;
