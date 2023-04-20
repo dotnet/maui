@@ -2547,5 +2547,49 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// We expect the Grid to group to accommodate the full width of view1 at this height
 			Assert.Equal(constrainedWidth, measure.Width);
 		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(determinantViewWidth, 20));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, view1, row: 1, col: 0, colSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: 100);
+
+			// view1 should make column 0 at least `determinantViewWidth` units wide
+			// So view0 should be getting measured at _at least_ that value; if the widthConstraint is larger
+			// than that, the * should bump the measure value up to match the widthConstraint
+			var expectedMeasureWidth = Math.Max(determinantViewWidth, widthConstraint);
+
+			view0.Received().Measure(Arg.Is<double>(expectedMeasureWidth), Arg.Any<double>());
+		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarRowSpanMeasureIsSumOfAutoAndStar(double determinantViewHeight, double heightConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, Auto", rows: "Auto, *");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, determinantViewHeight));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: 2);
+			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: heightConstraint);
+
+			// view1 should make row 0 at least `determinantViewHeight` units tall
+			// So view0 should be getting measured at _at least_ that value; if the heightConstraint is larger
+			// than that, the * should bump the measure value up to match the heightConstraint
+			var expectedMeasureHeight = Math.Max(determinantViewHeight, heightConstraint);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
 	}
 }
