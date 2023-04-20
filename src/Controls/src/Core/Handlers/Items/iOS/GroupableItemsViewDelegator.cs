@@ -17,12 +17,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override CGSize GetReferenceSizeForHeader(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			return ViewController.GetReferenceSizeForHeader(collectionView, layout, section);
+			return ViewController?.GetReferenceSizeForHeader(collectionView, layout, section) ?? CGSize.Empty;
 		}
 
 		public override CGSize GetReferenceSizeForFooter(UICollectionView collectionView, UICollectionViewLayout layout, nint section)
 		{
-			return ViewController.GetReferenceSizeForFooter(collectionView, layout, section);
+			return ViewController?.GetReferenceSizeForFooter(collectionView, layout, section) ?? CGSize.Empty;
 		}
 
 		public override void ScrollAnimationEnded(UIScrollView scrollView)
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return default;
 			}
 
-			return ViewController.GetInsetForSection(ItemsViewLayout, collectionView, section);
+			return ViewController?.GetInsetForSection(ItemsViewLayout, collectionView, section) ?? UIEdgeInsets.Zero;
 		}
 	}
 }

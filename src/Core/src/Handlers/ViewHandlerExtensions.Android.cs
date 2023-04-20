@@ -38,8 +38,8 @@ namespace Microsoft.Maui
 		// apply to LayoutViewGroup.OnMeasure
 		internal static Size MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
-			int platformWidthConstraint,
-			int platformHeightConstraint,
+			int widthMeasureSpec,
+			int heightMeasureSpec,
 			Func<double, double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
@@ -51,11 +51,11 @@ namespace Microsoft.Maui
 				return Size.Zero;
 			}
 
-			var deviceIndependentWidth = platformWidthConstraint.ToDouble(context);
-			var deviceIndependentHeight = platformHeightConstraint.ToDouble(context);
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(context);
 
-			var widthMode = MeasureSpec.GetMode(platformWidthConstraint);
-			var heightMode = MeasureSpec.GetMode(platformHeightConstraint);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
 			measureFunc ??= virtualView.Measure;
 			var measure = measureFunc(deviceIndependentWidth, deviceIndependentHeight);
