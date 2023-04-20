@@ -1,16 +1,16 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-preview.4.23211.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="8.0.100-preview.4.23218.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>3ca7ad1c793ab07597fe5dd0db44425589a06062</Sha>
+      <Sha>16c10f8115bff3fba5c74497fe135fd62c6f19d4</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-preview.4.23210.1" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>053e17a0daf4be907db34d64fc51bc133c284fae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.4.256">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.4.260">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>24affb5190173b6ec93c312ddba476561366c976</Sha>
+      <Sha>d8ac255afd00a40ee6d0f638033f50ea4f759b39</Sha>
     </Dependency>
     <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="16.2.8518-net8-p4">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
