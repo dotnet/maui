@@ -37,12 +37,12 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Monterey
+        - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+    - name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmPool)
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -58,10 +58,8 @@ jobs:
       name: ${{ BuildPlatform.poolName }}
       vmImage: ${{ BuildPlatform.vmImage }}
       demands:
-        - macOS.Name -equals Monterey
+        - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.HasDevices -equals False
-        - Agent.IsPaired -equals False
     steps:
     - template: provision.yml
       parameters:
