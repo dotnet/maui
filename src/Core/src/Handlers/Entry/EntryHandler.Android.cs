@@ -1,14 +1,9 @@
 ﻿using System;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Text;
 using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -56,6 +51,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
+
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
