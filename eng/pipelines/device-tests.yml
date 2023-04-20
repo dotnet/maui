@@ -71,6 +71,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
 
 resources:
   repositories:
