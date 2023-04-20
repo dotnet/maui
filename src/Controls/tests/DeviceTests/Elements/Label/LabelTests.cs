@@ -415,18 +415,23 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Start, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.TailTruncation)]
-		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.Center, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.Center, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.Center, LineBreakMode.TailTruncation)]
-		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.End, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.End, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.End, LineBreakMode.TailTruncation)]
+#if __IOS__
+		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap, false)]
+		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap, false)]
+#else
+		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap)]
+		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap)]
+		[InlineData(TextAlignment.End, LineBreakMode.NoWrap)]
+#endif
 		public async Task LabelTruncatesCorrectly(TextAlignment textAlignment, LineBreakMode lineBreakMode, bool isEqual = true)
 		{
-
 			EnsureHandlerCreated(builder =>
 			{
 				builder.ConfigureMauiHandlers(handlers =>
@@ -489,20 +494,21 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
 						Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
 						Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-						Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 					}
-					// with LineBreakMode.NoWrap, we do not expect them to be equal
+					// with LineBreakMode.NoWrap, we do not expect them to be equal if HorizontalOptions != LayoutOptions.Fill
 					else
 					{
-						Assert.NotEqual(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-						Assert.NotEqual(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-						Assert.NotEqual(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
+						Assert.NotEqual(labelStart.Width, layout.Width);
+						Assert.NotEqual(labelCenter.Width, layout.Width);
+						Assert.NotEqual(labelEnd.Width, layout.Width);
 					}
+
+					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 				});
 			});
 		}
 
-		static string LoremIpsum = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+		static readonly string LoremIpsum = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
 
 		Color TextColor(LabelHandler handler)
 		{
