@@ -155,8 +155,21 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 			public void OnActivated(UI.Xaml.Window window, UI.Xaml.WindowActivatedEventArgs? args = null)
 			{
-				_window = window;
-				ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
+				SetActiveWindow(window);
+			}
+
+			public void OnPlatformWindowInitialized(UI.Xaml.Window window)
+			{
+				SetActiveWindow(window);
+			}
+
+			void SetActiveWindow(UI.Xaml.Window window)
+			{
+				if (_window != window)
+				{
+					_window = window;
+					ActiveWindowChanged?.Invoke(window, EventArgs.Empty);
+				}
 			}
 		}
 	}

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics
 		{
 			if (defaultWidth <= 0 || defaultHeight <= 0)
 			{
-				if ("en-US".Equals(Thread.CurrentThread.CurrentCulture.Name))
+				if ("en-US".Equals(Thread.CurrentThread.CurrentCulture.Name, StringComparison.Ordinal))
 				{
 					// Letter
 					defaultWidth = 612;

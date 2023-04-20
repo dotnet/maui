@@ -38,6 +38,8 @@
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
     <ProjectReference Include="..\Xaml.UnitTests.ExternalAssembly\Controls.Xaml.UnitTests.ExternalAssembly.csproj" />
+    <ProjectReference Include="..\Xaml.UnitTests.InternalsHiddenAssembly\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj" />
+    <ProjectReference Include="..\Xaml.UnitTests.InternalsVisibleAssembly\Controls.Xaml.UnitTests.InternalsVisibleAssembly.csproj" />
   </ItemGroup>
 
   <ItemGroup>
