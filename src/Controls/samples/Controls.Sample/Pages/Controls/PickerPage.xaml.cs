@@ -20,6 +20,8 @@ namespace Maui.Controls.Sample.Pages
 
 			BindingContext = this;
 
+			UpdatePickerBackground();
+
 			Loaded += (s, e) =>
 			{
 				DynamicItemsPicker.Items.Add("Item 1");
