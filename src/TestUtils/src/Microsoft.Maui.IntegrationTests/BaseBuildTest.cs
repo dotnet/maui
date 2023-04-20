@@ -30,7 +30,7 @@ namespace Microsoft.Maui.IntegrationTests
 			$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
 			$"RestoreConfigFile={TestNuGetConfig}",
 			// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(),"src", "Templates", "TemplateTestExtraTargets.targets")}",
+			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
 			//Try not restore dependencies of 6.0.10
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
 		};
