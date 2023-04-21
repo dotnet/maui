@@ -14,6 +14,10 @@ parameters:
     type: string
     default: ''
 
+  - name: checkoutDirectory
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+
   - name: BuildPlatforms
     type: object
     default:
@@ -49,6 +53,10 @@ parameters:
       testName: RunOniOS
       artifact: templates-run-ios
 
+  - name: prepareSteps
+    type: stepList
+    default: []
+
 jobs:
 - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
   - job: build_${{ BuildPlatform.name }}
@@ -64,9 +72,15 @@ jobs:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
     steps:
+
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
+
     - template: provision.yml
       parameters:
         platform: ${{ BuildPlatform.name }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -75,25 +89,26 @@ jobs:
         itemPattern: ${{ parameters.artifactItemPattern }}
         downloadPath: $(System.DefaultWorkingDirectory)/artifacts
 
-    - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
+      workingDirectory: ${{ parameters.checkoutDirectory }}
       env:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
     - task: DotNetCoreCLI@2
       inputs:
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
       displayName: Build Microsoft.Maui.IntegrationTests
 
     - task: DotNetCoreCLI@2
       inputs:
         command: test
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
         arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
         publishTestResults: true
         testRunTitle: ${{ BuildPlatform.name }} template build tests
@@ -116,10 +131,16 @@ jobs:
     condition: ${{ parameters.condition}}
     pool: ${{ RunPlatform }}
     steps:
+
+    - ${{ each step in parameters.prepareSteps }}:
+      - ${{ each pair in step }}:
+          ${{ pair.key }}: ${{ pair.value }}
+
     - template: provision.yml
       parameters:
         platform: macos
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
@@ -128,12 +149,13 @@ jobs:
         itemPattern: ${{ parameters.artifactItemPattern }}
         downloadPath: $(System.DefaultWorkingDirectory)/artifacts
 
-    - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
     - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
+      workingDirectory: ${{ parameters.checkoutDirectory }}
       env:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
@@ -143,13 +165,13 @@ jobs:
 
     - task: DotNetCoreCLI@2
       inputs:
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
       displayName: Build Microsoft.Maui.IntegrationTests
 
     - task: DotNetCoreCLI@2
       inputs:
         command: test
-        projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
         arguments: --logger "console;verbosity=normal" --filter "Name=${{ RunPlatform.testName }}"
         publishTestResults: true
         testRunTitle: ${{ RunPlatform.testName }} template run tests

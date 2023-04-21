@@ -71,12 +71,12 @@ namespace Microsoft.Maui.Graphics.Text
 		{
 			string elementName = _reader.Name;
 
-			if (XmlNames.Content.Equals(elementName))
+			if (XmlNames.Content.Equals(elementName, StringComparison.Ordinal))
 			{
 				_inContent = true;
 				_contentEncoded = ReadBool(XmlNames.Encoded);
 			}
-			else if (XmlNames.Run.Equals(elementName))
+			else if (XmlNames.Run.Equals(elementName, StringComparison.Ordinal))
 			{
 				ReadRun();
 			}
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Graphics.Text
 		protected void ElementEnded()
 		{
 			string elementName = _reader.Name;
-			if (XmlNames.Content.Equals(elementName))
+			if (XmlNames.Content.Equals(elementName, StringComparison.Ordinal))
 				_inContent = false;
 		}
 
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Graphics.Text
 					var attributeName = _reader.Name;
 					var attributeValue = _reader.Value;
 
-					if (!(XmlNames.Start.Equals(attributeName) || XmlNames.Length.Equals(attributeName)))
+					if (!(XmlNames.Start.Equals(attributeName, StringComparison.Ordinal) || XmlNames.Length.Equals(attributeName, StringComparison.Ordinal)))
 					{
 						if (Enum.TryParse(attributeName, out TextAttribute key))
 							attributes[key] = attributeValue;

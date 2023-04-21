@@ -65,7 +65,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 #endif
 
-#if PLATFORM
 		public static ContextStub CreateNew(IMauiContext mauiContext)
 		{
 			var returnValue = new ContextStub(mauiContext.Services);
@@ -75,6 +74,5 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #endif
 			return returnValue;
 		}
-#endif
 	}
 }

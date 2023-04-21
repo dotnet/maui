@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 				.PerformEditorAction(returnType.ToPlatform());
 
 			// Let the action propagate
-			await Task.Delay(10);
+			await Task.Delay(100);
 		}
 
 		public static async Task WaitForFocused(this AView view, int timeout = 1000, string message = "")
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			if (!view.IsFocused)
 			{
-				view.Focus(new FocusRequest(view.IsFocused));
+				view.Focus(new FocusRequest());
 				return view.WaitForFocused(timeout);
 			}
 
@@ -155,10 +155,21 @@ namespace Microsoft.Maui.DeviceTests
 			try
 			{
 				await view.FocusView(timeout);
-				if (!KeyboardManager.ShowKeyboard(view))
-					throw new Exception("ShowKeyboard operation failed");
+				await Task.Yield();
+				KeyboardManager.ShowKeyboard(view);
+				await Task.Yield();
 
-				await view.WaitForKeyboardToShow(timeout);
+				bool result = await Wait(() =>
+				{
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
+						KeyboardManager.ShowKeyboard(view);
+
+					return KeyboardManager.IsSoftKeyboardVisible(view);
+
+				}, timeout);
+
+				await Task.Delay(100);
+				Assert.True(KeyboardManager.IsSoftKeyboardVisible(view));
 			}
 			catch (Exception ex)
 			{
@@ -176,10 +187,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			try
 			{
-				if (!KeyboardManager.HideKeyboard(view))
-					throw new Exception("HideKeyboard operation failed");
+				KeyboardManager.HideKeyboard(view);
+				await Task.Yield();
+				bool result = await Wait(() =>
+				{
+					if (!KeyboardManager.IsSoftKeyboardVisible(view))
+						KeyboardManager.HideKeyboard(view);
 
-				await view.WaitForKeyboardToHide(timeout);
+					return !KeyboardManager.IsSoftKeyboardVisible(view);
+
+				}, timeout);
+
+				await Task.Delay(100);
+				Assert.True(!KeyboardManager.IsSoftKeyboardVisible(view));
 			}
 			catch (Exception ex)
 			{
@@ -213,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
 		{
 			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
-			Assert.True(result);
+			Assert.True(result, "Keyboard failed to hide");
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
 			// If you try to call hide too quickly after showing, sometimes it will just hide and then pop back up.
@@ -315,7 +335,17 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 				};
-				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+
+				var width = view.Width;
+				var height = view.Height;
+
+				if (width <= 0)
+					width = FrameLayout.LayoutParams.WrapContent;
+
+				if (height <= 0)
+					height = FrameLayout.LayoutParams.WrapContent;
+
+				view.LayoutParameters = new FrameLayout.LayoutParams(width, height)
 				{
 					Gravity = GravityFlags.Center
 				};
@@ -355,8 +385,9 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view) =>
-			view.AttachAndRun(() =>
+		public static Task<Bitmap> ToBitmap(this AView view)
+		{
+			return view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -368,6 +399,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return bitmap;
 			});
+		}
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
@@ -453,7 +485,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 					}
 				}
 			}

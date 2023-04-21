@@ -150,6 +150,23 @@ Task("dotnet-samples")
         }, binlogPrefix: "sample-");
     });
 
+Task("dotnet-samples-test")
+    .Does(() =>
+    {
+        var buildSettings = new DotNetCoreBuildSettings
+        {
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .SetConfiguration(configuration)
+        };
+        DotNetCoreBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
+
+        var testSettings = new DotNetCoreTestSettings
+        {
+            Filter = "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
+        };
+        DotNetCoreTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
+    });
+
 Task("dotnet-test")
     .IsDependentOn("dotnet")
     .Description("Build the solutions")

@@ -8,6 +8,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
 		}
@@ -968,16 +970,27 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage { Title = "Page 2", Content = new VerticalStackLayout { new Label() } };
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new CollectionView(),
+					}
+				};
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
 				await shell.Navigation.PopAsync();
 			});
 
-			// 3 GCs were required in Android API 23, 2 worked otherwise
-			for (int i = 0; i < 3; i++)
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
 			{
+				if (!pageReference.IsAlive)
+					break;
 				await Task.Yield();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();

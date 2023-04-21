@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task FocusView(this UIView view, int timeout = 1000)
 		{
-			view.Focus(new FocusRequest(false));
+			view.Focus(new FocusRequest());
 			return WaitForFocused(view, timeout);
 		}
 

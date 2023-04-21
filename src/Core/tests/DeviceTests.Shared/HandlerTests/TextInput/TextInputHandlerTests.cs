@@ -1,12 +1,13 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public abstract partial class TextInputHandlerTests<THandler, TStub> : CoreHandlerTestBase
+	public abstract partial class TextInputHandlerTests<THandler, TStub> : HandlerTestBasement<THandler, TStub>
 		where THandler : class, IViewHandler, new()
-		where TStub : StubBase, ITextInputStub, new()
+		where TStub : IStubBase, ITextInputStub, new()
 	{
 		[Theory(DisplayName = "TextChanged Events Fire Correctly"
 #if WINDOWS
@@ -79,34 +80,5 @@ namespace Microsoft.Maui.DeviceTests
 		protected abstract void UpdateCursorStartPosition(THandler entryHandler, int position);
 		protected abstract int GetCursorStartPosition(THandler entryHandler);
 		protected abstract void SetNativeText(THandler entryHandler, string text);
-
-#if ANDROID
-		[Fact]
-		public async Task ShowsKeyboardOnFocus()
-		{
-			var button = new ButtonStub();
-			var textInput = new TStub();
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var handler = (IPlatformViewHandler)CreateHandler<THandler>(textInput);
-				var platformView = handler.PlatformView;
-
-				await platformView.AttachAndRun(async () =>
-				{
-					try
-					{
-						button.Focus();
-						textInput.Focus();
-						await AssertionExtensions.WaitForKeyboardToShow(platformView);
-					}
-					finally
-					{
-						await AssertionExtensions.HideKeyboardForView(platformView);
-					}
-				});
-			});
-		}
-#endif
 	}
 }

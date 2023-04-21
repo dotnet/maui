@@ -39,10 +39,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int SelectionLength { get; set; }
 
-		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
+		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
-			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+			TextChanged?.Invoke(this, (oldValue, newValue));
 
 		public event EventHandler Completed;
 
