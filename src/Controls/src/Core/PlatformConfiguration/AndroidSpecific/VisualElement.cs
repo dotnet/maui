@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	{
 		#region Elevation
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='ElevationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Elevation"/>.</summary>
 		public static readonly BindableProperty ElevationProperty =
 			BindableProperty.Create("Elevation", typeof(float?),
 				typeof(FormsElement));
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 
 		#region IsLegacyColorModeEnabled
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/VisualElement.xml" path="//Member[@MemberName='IsLegacyColorModeEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLegacyColorModeEnabled"/>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
 				typeof(FormsElement), true);

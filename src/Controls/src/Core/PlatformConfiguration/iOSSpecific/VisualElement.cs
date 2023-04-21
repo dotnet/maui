@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement']/Docs/*" />
 	public static class VisualElement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='BlurEffectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BlurEffect"/>.</summary>
 		public static readonly BindableProperty BlurEffectProperty = BindableProperty.Create("BlurEffect", typeof(BlurEffectStyle), typeof(VisualElement), BlurEffectStyle.None);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetBlurEffect'][1]/Docs/*" />
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			public ShadowEffect() : base("Microsoft.Maui.Controls.ShadowEffect") { }
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='IsShadowEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsShadowEnabled"/>.</summary>
 		public static readonly BindableProperty IsShadowEnabledProperty =
 			BindableProperty.Create("IsShadowEnabled", typeof(bool),
 			typeof(VisualElement), false, propertyChanged: OnIsShadowEnabledChanged);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='ShadowColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ShadowColor"/>.</summary>
 		public static readonly BindableProperty ShadowColorProperty =
 			BindableProperty.Create("ShadowColor", typeof(Color),
 			typeof(VisualElement), null);
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='ShadowRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ShadowRadius"/>.</summary>
 		public static readonly BindableProperty ShadowRadiusProperty =
 			BindableProperty.Create("ShadowRadius", typeof(double),
 			typeof(VisualElement), 10.0);
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='ShadowOffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ShadowOffset"/>.</summary>
 		public static readonly BindableProperty ShadowOffsetProperty =
 		BindableProperty.Create("ShadowOffset", typeof(Size),
 		typeof(VisualElement), Size.Zero);
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='ShadowOpacityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ShadowOpacity"/>.</summary>
 		public static readonly BindableProperty ShadowOpacityProperty =
 		BindableProperty.Create("ShadowOpacity", typeof(double),
 		typeof(VisualElement), 0.5);
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region IsLegacyColorModeEnabled
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='IsLegacyColorModeEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLegacyColorModeEnabled"/>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
 				typeof(FormsElement), true);
@@ -252,7 +252,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#endregion
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='CanBecomeFirstResponderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CanBecomeFirstResponder"/>.</summary>
 		public static readonly BindableProperty CanBecomeFirstResponderProperty = BindableProperty.Create(nameof(CanBecomeFirstResponder), typeof(bool), typeof(VisualElement), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetCanBecomeFirstResponder']/Docs/*" />

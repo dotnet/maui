@@ -12,20 +12,27 @@ namespace Microsoft.Maui.Controls.Compatibility
 	[ContentProperty(nameof(Children))]
 	public partial class Grid : Layout<View>, IGridController, IElementConfiguration<Grid>, IGridLayout
 	{
+		/// <summary>Bindable property for <see cref="Row"/>.</summary>
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
+		/// <summary>Bindable property for <see cref="RowSpan"/>.</summary>
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan", typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1);
 
+		/// <summary>Bindable property for <see cref="Column"/>.</summary>
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column", typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0);
 
+		/// <summary>Bindable property for <see cref="ColumnSpan"/>.</summary>
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan", typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1);
 
+		/// <summary>Bindable property for <see cref="RowSpacing"/>.</summary>
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double), typeof(Grid), 6d,
 			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
+		/// <summary>Bindable property for <see cref="ColumnSpacing"/>.</summary>
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double), typeof(Grid), 6d,
 			propertyChanged: (bindable, oldValue, newValue) => ((Grid)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
+		/// <summary>Bindable property for <see cref="ColumnDefinitions"/>.</summary>
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions", typeof(ColumnDefinitionCollection), typeof(Grid), null,
 			validateValue: (bindable, value) => value != null, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
@@ -41,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 				return colDef;
 			});
 
+		/// <summary>Bindable property for <see cref="RowDefinitions"/>.</summary>
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions", typeof(RowDefinitionCollection), typeof(Grid), null,
 			validateValue: (bindable, value) => value != null, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Application']/Docs/*" />
 	public static class Application
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='UseBezelInteractionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="UseBezelInteraction"/>.</summary>
 		public static readonly BindableProperty UseBezelInteractionProperty = BindableProperty.Create("UseBezelInteraction", typeof(bool), typeof(FormsElement), true);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetUseBezelInteraction'][1]/Docs/*" />
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='OverlayContentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="OverlayContent"/>.</summary>
 		public static readonly BindableProperty OverlayContentProperty = BindableProperty.CreateAttached("OverlayContent", typeof(View), typeof(FormsElement), default(View));
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Application.xml" path="//Member[@MemberName='GetOverlayContent'][1]/Docs/*" />

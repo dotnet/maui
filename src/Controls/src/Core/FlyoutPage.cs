@@ -13,14 +13,14 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Detail))]
 	public partial class FlyoutPage : Page, IFlyoutPageController, IElementConfiguration<FlyoutPage>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsGestureEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsGestureEnabled"/>.</summary>
 		public static readonly BindableProperty IsGestureEnabledProperty = BindableProperty.Create(nameof(IsGestureEnabled), typeof(bool), typeof(FlyoutPage), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='IsPresentedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsPresented"/>.</summary>
 		public static readonly BindableProperty IsPresentedProperty = BindableProperty.Create(nameof(IsPresented), typeof(bool), typeof(FlyoutPage), default(bool),
 			propertyChanged: OnIsPresentedPropertyChanged, propertyChanging: OnIsPresentedPropertyChanging, defaultValueCreator: GetDefaultValue);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FlyoutPage.xml" path="//Member[@MemberName='FlyoutLayoutBehaviorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FlyoutLayoutBehavior"/>.</summary>
 		public static readonly BindableProperty FlyoutLayoutBehaviorProperty = BindableProperty.Create(nameof(FlyoutLayoutBehavior), typeof(FlyoutLayoutBehavior), typeof(FlyoutPage), default(FlyoutLayoutBehavior),
 			propertyChanged: OnFlyoutLayoutBehaviorPropertyChanged);
 

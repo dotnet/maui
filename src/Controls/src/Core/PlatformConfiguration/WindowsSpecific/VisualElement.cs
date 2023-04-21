@@ -6,19 +6,19 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement']/Docs/*" />
 	public static class VisualElement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='AccessKeyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AccessKey"/>.</summary>
 		public static readonly BindableProperty AccessKeyProperty =
 			BindableProperty.Create("AccessKey", typeof(string), typeof(VisualElement));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='AccessKeyPlacementProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AccessKeyPlacement"/>.</summary>
 		public static readonly BindableProperty AccessKeyPlacementProperty =
 					BindableProperty.Create(nameof(AccessKeyPlacement), typeof(AccessKeyPlacement), typeof(VisualElement), AccessKeyPlacement.Auto);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='AccessKeyHorizontalOffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AccessKeyHorizontalOffset"/>.</summary>
 		public static readonly BindableProperty AccessKeyHorizontalOffsetProperty =
 					BindableProperty.Create("AccessKeyHorizontalOffset", typeof(double), typeof(FormsElement), 0.0);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='AccessKeyVerticalOffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AccessKeyVerticalOffset"/>.</summary>
 		public static readonly BindableProperty AccessKeyVerticalOffsetProperty =
 					BindableProperty.Create("AccessKeyVerticalOffset", typeof(double), typeof(FormsElement), 0.0);
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		}
 		#region IsLegacyColorModeEnabled
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="//Member[@MemberName='IsLegacyColorModeEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLegacyColorModeEnabled"/>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
 				typeof(FormsElement), true);

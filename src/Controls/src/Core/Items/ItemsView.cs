@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	{
 		List<Element> _logicalChildren = new List<Element>();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='EmptyViewProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="EmptyView"/>.</summary>
 		public static readonly BindableProperty EmptyViewProperty =
 			BindableProperty.Create(nameof(EmptyView), typeof(object), typeof(ItemsView), null);
 
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(EmptyViewProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='EmptyViewTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="EmptyViewTemplate"/>.</summary>
 		public static readonly BindableProperty EmptyViewTemplateProperty =
 			BindableProperty.Create(nameof(EmptyViewTemplate), typeof(DataTemplate), typeof(ItemsView), null);
 
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(EmptyViewTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(ItemsView), null);
 
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemsSourceProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdReachedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RemainingItemsThresholdReachedCommand"/>.</summary>
 		public static readonly BindableProperty RemainingItemsThresholdReachedCommandProperty =
 			BindableProperty.Create(nameof(RemainingItemsThresholdReachedCommand), typeof(ICommand), typeof(ItemsView), null);
 
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(RemainingItemsThresholdReachedCommandProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdReachedCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RemainingItemsThresholdReachedCommandParameter"/>.</summary>
 		public static readonly BindableProperty RemainingItemsThresholdReachedCommandParameterProperty = BindableProperty.Create(nameof(RemainingItemsThresholdReachedCommandParameter), typeof(object), typeof(ItemsView), default(object));
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdReachedCommandParameter']/Docs/*" />
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(RemainingItemsThresholdReachedCommandParameterProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(
 			nameof(HorizontalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(HorizontalScrollBarVisibilityProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='VerticalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(
 			nameof(VerticalScrollBarVisibility),
 			typeof(ScrollBarVisibility),
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(VerticalScrollBarVisibilityProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemainingItemsThresholdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RemainingItemsThreshold"/>.</summary>
 		public static readonly BindableProperty RemainingItemsThresholdProperty =
 			BindableProperty.Create(nameof(RemainingItemsThreshold), typeof(int), typeof(ItemsView), -1, validateValue: (bindable, value) => (int)value >= -1);
 
@@ -172,7 +172,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(InternalItemsLayoutProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemTemplate"/>.</summary>
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView));
 
@@ -183,7 +183,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ItemTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsUpdatingScrollModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsUpdatingScrollMode"/>.</summary>
 		public static readonly BindableProperty ItemsUpdatingScrollModeProperty =
 			BindableProperty.Create(nameof(ItemsUpdatingScrollMode), typeof(ItemsUpdatingScrollMode), typeof(ItemsView),
 				default(ItemsUpdatingScrollMode));

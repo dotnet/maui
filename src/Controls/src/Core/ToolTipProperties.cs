@@ -4,6 +4,7 @@ namespace Microsoft.Maui.Controls
 {
 	public class ToolTipProperties
 	{
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty =
  			BindableProperty.CreateAttached("Text", typeof(string), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
 

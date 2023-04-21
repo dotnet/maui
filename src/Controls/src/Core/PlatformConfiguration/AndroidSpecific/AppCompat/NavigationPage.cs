@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 	/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage']/Docs/*" />
 	public static class NavigationPage
 	{
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='BarHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarHeight"/>.</summary>
 		public static readonly BindableProperty BarHeightProperty = BindableProperty.Create("BarHeight", typeof(int), typeof(NavigationPage), default(int));
 
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/NavigationPage.xml" path="//Member[@MemberName='GetBarHeight'][1]/Docs/*" />

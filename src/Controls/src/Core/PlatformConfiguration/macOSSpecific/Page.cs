@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 	public static class Page
 	{
 		#region TabsStyle
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='TabOrderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TabOrder"/>.</summary>
 		public static readonly BindableProperty TabOrderProperty = BindableProperty.Create("TabOrder", typeof(VisualElement[]), typeof(Page), null);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/Page.xml" path="//Member[@MemberName='GetTabOrder'][1]/Docs/*" />

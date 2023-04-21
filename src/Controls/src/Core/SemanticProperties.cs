@@ -6,10 +6,13 @@ namespace Microsoft.Maui.Controls
 {
 	public class SemanticProperties
 	{
+		/// <summary>Bindable property for <see cref="Description"/>.</summary>
 		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string));
 
+		/// <summary>Bindable property for <see cref="Hint"/>.</summary>
 		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string));
 
+		/// <summary>Bindable property for <see cref="HeadingLevel"/>.</summary>
 		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None);
 
 		public static string GetDescription(BindableObject bindable)

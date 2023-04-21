@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	public static class NavigationPage
 	{
 		#region HasBreadCrumbsBar
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/NavigationPage.xml" path="//Member[@MemberName='HasBreadCrumbsBarProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasBreadCrumbsBar"/>.</summary>
 		public static readonly BindableProperty HasBreadCrumbsBarProperty
 			= BindableProperty.CreateAttached("HasBreadCrumbsBar", typeof(bool), typeof(FormsElement), false);
 

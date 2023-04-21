@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,41 +13,41 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BackButtonTitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BackButtonTitle"/>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='HasNavigationBarProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasNavigationBar"/>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='HasBackButtonProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasBackButton"/>.</summary>
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarBackgroundProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarBackground"/>.</summary>
 		public static readonly BindableProperty BarBackgroundProperty = BarElement.BarBackgroundProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='BarTextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='TitleIconImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TitleIconImageSource"/>.</summary>
 		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='IconColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IconColor"/>.</summary>
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='TitleViewProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TitleView"/>.</summary>
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
 		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='CurrentPageProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CurrentPage"/>.</summary>
 		public static readonly BindableProperty CurrentPageProperty = CurrentPagePropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey RootPagePropertyKey = BindableProperty.CreateReadOnly(nameof(RootPage), typeof(Page), typeof(NavigationPage), null);
-		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='RootPageProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RootPage"/>.</summary>
 		public static readonly BindableProperty RootPageProperty = RootPagePropertyKey.BindableProperty;
 
 		INavigationPageController NavigationPageController => this;
