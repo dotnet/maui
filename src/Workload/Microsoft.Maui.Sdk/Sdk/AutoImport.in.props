@@ -15,7 +15,7 @@
     our duplicates later in BundledVersions.targets.
   -->
   <!-- This section is for NuGet-based builds of .NET MAUI -->
-  <ItemGroup Condition=" '$(_MauiPackagingTypeIsNuGetPackages)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(_MauiPackagingTypeIsNuGetPackages)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" Condition=" '$(UseMauiAssets)' == 'true' " />
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" Condition=" '$(UseMauiEssentials)' == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
@@ -34,7 +34,7 @@
     </_MauiImplicitPackageReference>
   </ItemGroup>
   <!-- This section is for workload-based builds of .NET MAUI -->
-  <ItemGroup Condition=" '$(_MauiPackagingTypeIsWorkload)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
+  <ItemGroup Condition=" '$(_MauiPackagingTypeIsWorkload)' == 'true' and '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(TargetFrameworkVersion)' != '' and $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '@MAUI_DOTNET_VERSION@')) ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiWorkloadVersion)" PrivateAssets="all" Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiAssets)' == 'true') " />
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Core.Build.Tasks" Version="$(MauiWorkloadVersion)" Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>

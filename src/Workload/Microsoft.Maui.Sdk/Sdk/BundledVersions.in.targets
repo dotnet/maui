@@ -128,7 +128,7 @@
     This logic only installs packages if and only if $(UseMauiNuGets) is not true. This property
     allows the user to totally override all the default nugets installed.
   -->
-  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' ">
+  <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiAddedImplicitPackageReference Include="@(PackageReference->HasMetadata('IsMauiImplicitPackageReference'))" />
     <_MauiAddedUserPackageReference Include="@(PackageReference->WithMetadataValue('IsMauiImplicitPackageReference',''))" />
     <_MauiMissingImplicitPackageReference Include="@(_MauiAddedImplicitPackageReference)" Exclude="@(_MauiAddedUserPackageReference)" />
