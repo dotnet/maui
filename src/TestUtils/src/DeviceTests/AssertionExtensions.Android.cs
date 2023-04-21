@@ -240,7 +240,12 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 		}
 
-		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
+			Task.WhenAll(
+				view.WaitForLayout(timeout),
+				Wait(() => view.Width > 0 && view.Height > 0, timeout));
+
+		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -377,9 +382,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
-				await Task.WhenAll(
-					WaitForLayout(view),
-					Wait(() => view.Width > 0 && view.Height > 0));
+				await view.WaitForLayoutOrNonZeroSize();
 
 				return await action();
 			}
