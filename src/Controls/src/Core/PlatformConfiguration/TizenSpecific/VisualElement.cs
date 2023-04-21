@@ -13,9 +13,8 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <summary>Bindable property for attached property <c>IsFocusAllowed</c>.</summary>
 		public static readonly BindableProperty IsFocusAllowedProperty = BindableProperty.Create("IsFocusAllowed", typeof(bool?), typeof(VisualElement), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusDirectionProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusDirection</c>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		/// <summary>Bindable property for <see cref="NextFocusDirection"/>.</summary>
 		public static readonly BindableProperty NextFocusDirectionProperty = BindableProperty.Create("NextFocusDirection", typeof(string), typeof(VisualElement), FocusDirection.None, propertyChanged: OnNextFocusDirectionPropertyChanged);
 
 		/// <summary>Bindable property for attached property <c>NextFocusUpView</c>.</summary>

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	public static class Page
 	{
 		#region BreadCrumbName
-		/// <summary>Bindable property for <see cref="BreadCrumb"/>.</summary>
+		/// <summary>Bindable property for attached property <c>BreadCrumb</c>.</summary>
 		public static readonly BindableProperty BreadCrumbProperty
 			= BindableProperty.CreateAttached("BreadCrumb", typeof(string), typeof(FormsElement), default(string));
 

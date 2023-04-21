@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 
 	public static class ItemsView
 	{
-		/// <summary>Bindable property for <see cref="FocusedItemScrollPosition"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FocusedItemScrollPosition</c>.</summary>
 		public static readonly BindableProperty FocusedItemScrollPositionProperty = BindableProperty.Create("FocusedItemScrollPosition", typeof(ScrollToPosition), typeof(FormsElement), ScrollToPosition.MakeVisible);
 
 

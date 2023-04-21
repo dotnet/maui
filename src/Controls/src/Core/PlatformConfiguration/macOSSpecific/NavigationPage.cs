@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific.NavigationPage']/Docs/*" />
 	public static class NavigationPage
 	{
-		/// <summary>Bindable property for <see cref="NavigationTransitionPushStyle"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NavigationTransitionPushStyle</c>.</summary>
 		public static readonly BindableProperty NavigationTransitionPushStyleProperty = BindableProperty.Create("NavigationTransitionPushStyle", typeof(NavigationTransitionStyle), typeof(NavigationPage), NavigationTransitionStyle.SlideForward);
-		/// <summary>Bindable property for <see cref="NavigationTransitionPopStyle"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NavigationTransitionPopStyle</c>.</summary>
 		public static readonly BindableProperty NavigationTransitionPopStyleProperty = BindableProperty.Create("NavigationTransitionPopStyle", typeof(NavigationTransitionStyle), typeof(NavigationPage), NavigationTransitionStyle.SlideBackward);
 
 		#region PushStyle
