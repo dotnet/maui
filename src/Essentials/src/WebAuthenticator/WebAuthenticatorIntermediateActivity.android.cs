@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Authentication
 			if (!launched)
 			{
 				// if this is the first time, start the authentication flow
-				StartActivity(actualIntent);
+				StartActivity(actualIntent ?? Intent);
 
 				launched = true;
 			}
