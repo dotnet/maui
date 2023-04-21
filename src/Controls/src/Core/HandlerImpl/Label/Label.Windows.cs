@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			Platform.TextBlockExtensions.UpdateDetectReadingOrderFromContent(handler.PlatformView, label);
 
 		public static void MapTextType(ILabelHandler handler, Label label) =>
-			Platform.TextBlockExtensions.UpdateText(handler.PlatformView, label);
+			handler.UpdateValue(nameof(ILabel.Text));
 
 		public static void MapText(ILabelHandler handler, Label label) =>
 			Platform.TextBlockExtensions.UpdateText(handler.PlatformView, label);
