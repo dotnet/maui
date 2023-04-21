@@ -93,8 +93,7 @@ namespace Microsoft.Maui.Platform
 					_appTitleBar = cp;
 				}
 
-				if (_appTitleBar is Border border && _setTitleBarBackgroundToTransparent)
-					border.Background = null;
+				UpdateAppTitleBarTransparency();
 
 				return _appTitleBar;
 			}
@@ -358,15 +357,20 @@ namespace Microsoft.Maui.Platform
 		internal void SetTitleBarBackgroundToTransparent(bool value)
 		{
 			_setTitleBarBackgroundToTransparent = value;
-			if(value)
+			if (value)
 			{
-				if (_appTitleBar is not null && _appTitleBar is Border border)
-					border.Background = null;
+				UpdateAppTitleBarTransparency();
 			}
 			else
 			{
 				_appTitleBar?.RefreshThemeResources();
 			}
+		}
+
+		void UpdateAppTitleBarTransparency()
+		{
+			if (_setTitleBarBackgroundToTransparent && _appTitleBar is Border border)
+				border.Background = null;
 		}
 
 		internal static readonly DependencyProperty WindowTitleForegroundProperty =
