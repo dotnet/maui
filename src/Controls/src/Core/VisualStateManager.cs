@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			internal const string Unfocused = "Unfocused";
 		}
 
-		/// <summary>Bindable property for <see cref="VisualStateGroups"/>.</summary>
+		/// <summary>Bindable property for attached property <c>VisualStateGroups</c>.</summary>
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement),
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged, propertyChanging: VisualStateGroupsPropertyChanging,

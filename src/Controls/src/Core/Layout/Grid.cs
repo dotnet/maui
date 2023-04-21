@@ -41,22 +41,22 @@ namespace Microsoft.Maui.Controls
 
 		#region Row/Column/Span Attached Properties
 
-		/// <summary>Bindable property for <see cref="Row"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Row</c>.</summary>
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
-		/// <summary>Bindable property for <see cref="RowSpan"/>.</summary>
+		/// <summary>Bindable property for attached property <c>RowSpan</c>.</summary>
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
-		/// <summary>Bindable property for <see cref="Column"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Column</c>.</summary>
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
-		/// <summary>Bindable property for <see cref="ColumnSpan"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ColumnSpan</c>.</summary>
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);

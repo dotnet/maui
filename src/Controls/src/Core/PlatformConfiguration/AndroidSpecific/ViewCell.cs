@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ViewCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ViewCell']/Docs/*" />
 	public static class ViewCell
 	{
-		/// <summary>Bindable property for <see cref="IsContextActionsLegacyModeEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsContextActionsLegacyModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsContextActionsLegacyModeEnabledProperty = BindableProperty.Create("IsContextActionsLegacyModeEnabled", typeof(bool), typeof(Maui.Controls.ViewCell), false, propertyChanged: OnIsContextActionsLegacyModeEnabledPropertyChanged);
 
 		private static void OnIsContextActionsLegacyModeEnabledPropertyChanged(BindableObject element, object oldValue, object newValue)

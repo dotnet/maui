@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	public static class ImageButton
 	{
 		#region Shadow
-		/// <summary>Bindable property for <see cref="IsShadowEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsShadowEnabled</c>.</summary>
 		public static readonly BindableProperty IsShadowEnabledProperty = BindableProperty.Create("IsShadowEnabled", typeof(bool), typeof(Maui.Controls.ImageButton), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetIsShadowEnabled'][1]/Docs/*" />
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowColor</c>.</summary>
 		public static readonly BindableProperty ShadowColorProperty = BindableProperty.Create("ShadowColor", typeof(Color), typeof(ImageButton), null);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowColor'][1]/Docs/*" />
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowRadius"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowRadius</c>.</summary>
 		public static readonly BindableProperty ShadowRadiusProperty = BindableProperty.Create("ShadowRadius", typeof(double), typeof(ImageButton), 10.0);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowRadius'][1]/Docs/*" />
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowOffset"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowOffset</c>.</summary>
 		public static readonly BindableProperty ShadowOffsetProperty = BindableProperty.Create("ShadowOffset", typeof(Size), typeof(VisualElement), Size.Zero);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ImageButton.xml" path="//Member[@MemberName='GetShadowOffset'][1]/Docs/*" />

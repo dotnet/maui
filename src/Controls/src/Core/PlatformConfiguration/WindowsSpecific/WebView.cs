@@ -35,11 +35,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return config;
 		}
 
-
-
-		/// <summary>Bindable property for <see cref="ExecutionMode"/>.</summary>
-
-
+		/// <summary>Bindable property for attached property <c>ExecutionMode</c>.</summary>
 		public static readonly BindableProperty ExecutionModeProperty = BindableProperty.Create("ExecutionMode", typeof(WebViewExecutionMode), typeof(WebView), WebViewExecutionMode.SameThread);
 
 		public static WebViewExecutionMode GetExecutionMode(BindableObject element)

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => GetVisiblePage() as Page;
 
-		/// <summary>Bindable property for <see cref="BackButtonBehavior"/>.</summary>
+		/// <summary>Bindable property for attached property <c>BackButtonBehavior</c>.</summary>
 		public static readonly BindableProperty BackButtonBehaviorProperty =
 			BindableProperty.CreateAttached("BackButtonBehavior", typeof(BackButtonBehavior), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanged: OnBackButonBehaviorPropertyChanged);
@@ -39,24 +39,24 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(newHandlerBehavior, bindable.BindingContext);
 		}
 
-		/// <summary>Bindable property for <see cref="PresentationMode"/>.</summary>
+		/// <summary>Bindable property for attached property <c>PresentationMode</c>.</summary>
 		public static readonly BindableProperty PresentationModeProperty = BindableProperty.CreateAttached("PresentationMode", typeof(PresentationMode), typeof(Shell), PresentationMode.Animated);
 
-		/// <summary>Bindable property for <see cref="FlyoutBehavior"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FlyoutBehavior</c>.</summary>
 		public static readonly BindableProperty FlyoutBehaviorProperty =
 			BindableProperty.CreateAttached("FlyoutBehavior", typeof(FlyoutBehavior), typeof(Shell), FlyoutBehavior.Flyout,
 				propertyChanged: OnFlyoutBehaviorChanged);
 
-		/// <summary>Bindable property for <see cref="NavBarIsVisible"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NavBarIsVisible</c>.</summary>
 		public static readonly BindableProperty NavBarIsVisibleProperty =
 			BindableProperty.CreateAttached("NavBarIsVisible", typeof(bool), typeof(Shell), true);
 
-		/// <summary>Bindable property for <see cref="NavBarHasShadow"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NavBarHasShadow</c>.</summary>
 		public static readonly BindableProperty NavBarHasShadowProperty =
 			BindableProperty.CreateAttached("NavBarHasShadow", typeof(bool), typeof(Shell), default(bool),
 				defaultValueCreator: (b) => DeviceInfo.Platform == DevicePlatform.Android);
 
-		/// <summary>Bindable property for <see cref="SearchHandler"/>.</summary>
+		/// <summary>Bindable property for attached property <c>SearchHandler</c>.</summary>
 		public static readonly BindableProperty SearchHandlerProperty =
 			BindableProperty.CreateAttached("SearchHandler", typeof(SearchHandler), typeof(Shell), null, BindingMode.OneTime,
 				propertyChanged: OnSearchHandlerPropertyChanged);
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(newHandler, bindable.BindingContext);
 		}
 
-		/// <summary>Bindable property for <see cref="FlyoutItemIsVisible"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FlyoutItemIsVisible</c>.</summary>
 		public static readonly BindableProperty FlyoutItemIsVisibleProperty =
 			BindableProperty.CreateAttached("FlyoutItemIsVisible", typeof(bool), typeof(Shell), true, propertyChanged: OnFlyoutItemIsVisibleChanged);
 		public static bool GetFlyoutItemIsVisible(BindableObject obj) => (bool)obj.GetValue(FlyoutItemIsVisibleProperty);
@@ -83,15 +83,15 @@ namespace Microsoft.Maui.Controls
 					?.SendFlyoutItemsChanged();
 		}
 
-		/// <summary>Bindable property for <see cref="TabBarIsVisible"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarIsVisible</c>.</summary>
 		public static readonly BindableProperty TabBarIsVisibleProperty =
 			BindableProperty.CreateAttached("TabBarIsVisible", typeof(bool), typeof(Shell), true);
 
-		/// <summary>Bindable property for <see cref="TitleView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TitleView</c>.</summary>
 		public static readonly BindableProperty TitleViewProperty =
 			BindableProperty.CreateAttached("TitleView", typeof(View), typeof(Shell), null, propertyChanged: OnTitleViewChanged);
 
-		/// <summary>Bindable property for <see cref="MenuItemTemplate"/>.</summary>
+		/// <summary>Bindable property for attached property <c>MenuItemTemplate</c>.</summary>
 		public static readonly BindableProperty MenuItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(MenuItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='SetMenuItemTemplate']/Docs/*" />
 		public static void SetMenuItemTemplate(BindableObject obj, DataTemplate menuItemTemplate) => obj.SetValue(MenuItemTemplateProperty, menuItemTemplate);
 
-		/// <summary>Bindable property for <see cref="ItemTemplate"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ItemTemplate</c>.</summary>
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached(nameof(ItemTemplate), typeof(DataTemplate), typeof(Shell), null, BindingMode.OneTime);
 
@@ -173,62 +173,62 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateAttached("BackgroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="DisabledColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>DisabledColor</c>.</summary>
 		public static readonly BindableProperty DisabledColorProperty =
 			BindableProperty.CreateAttached("DisabledColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="ForegroundColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ForegroundColor</c>.</summary>
 		public static readonly BindableProperty ForegroundColorProperty =
 			BindableProperty.CreateAttached("ForegroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TabBarBackgroundColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarBackgroundColor</c>.</summary>
 		public static readonly BindableProperty TabBarBackgroundColorProperty =
 			BindableProperty.CreateAttached("TabBarBackgroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TabBarDisabledColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarDisabledColor</c>.</summary>
 		public static readonly BindableProperty TabBarDisabledColorProperty =
 			BindableProperty.CreateAttached("TabBarDisabledColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TabBarForegroundColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarForegroundColor</c>.</summary>
 		public static readonly BindableProperty TabBarForegroundColorProperty =
 			BindableProperty.CreateAttached("TabBarForegroundColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TabBarTitleColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarTitleColor</c>.</summary>
 		public static readonly BindableProperty TabBarTitleColorProperty =
 			BindableProperty.CreateAttached("TabBarTitleColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TabBarUnselectedColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TabBarUnselectedColor</c>.</summary>
 		public static readonly BindableProperty TabBarUnselectedColorProperty =
 			BindableProperty.CreateAttached("TabBarUnselectedColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="TitleColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TitleColor</c>.</summary>
 		public static readonly BindableProperty TitleColorProperty =
 			BindableProperty.CreateAttached("TitleColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="UnselectedColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>UnselectedColor</c>.</summary>
 		public static readonly BindableProperty UnselectedColorProperty =
 			BindableProperty.CreateAttached("UnselectedColor", typeof(Color), typeof(Shell), null,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="FlyoutBackdrop"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FlyoutBackdrop</c>.</summary>
 		public static readonly BindableProperty FlyoutBackdropProperty =
 			BindableProperty.CreateAttached("FlyoutBackdrop", typeof(Brush), typeof(Shell), Brush.Default,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="FlyoutWidth"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FlyoutWidth</c>.</summary>
 		public static readonly BindableProperty FlyoutWidthProperty =
 			BindableProperty.CreateAttached("FlyoutWidth", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);
 
-		/// <summary>Bindable property for <see cref="FlyoutHeight"/>.</summary>
+		/// <summary>Bindable property for attached property <c>FlyoutHeight</c>.</summary>
 		public static readonly BindableProperty FlyoutHeightProperty =
 			BindableProperty.CreateAttached("FlyoutHeight", typeof(double), typeof(Shell), -1d,
 				propertyChanged: OnShellAppearanceValueChanged);

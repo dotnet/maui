@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		#region CollapsedPaneWidth
 
-		/// <summary>Bindable property for <see cref="CollapsedPaneWidth"/>.</summary>
+		/// <summary>Bindable property for attached property <c>CollapsedPaneWidth</c>.</summary>
 		public static readonly BindableProperty CollapsedPaneWidthProperty =
 			BindableProperty.CreateAttached("CollapsedPaneWidth", typeof(double),
 				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0);

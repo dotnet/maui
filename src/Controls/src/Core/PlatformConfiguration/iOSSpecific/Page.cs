@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="UseSafeArea"/>.</summary>
+		/// <summary>Bindable property for attached property <c>UseSafeArea</c>.</summary>
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), true);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetUseSafeArea']/Docs/*" />

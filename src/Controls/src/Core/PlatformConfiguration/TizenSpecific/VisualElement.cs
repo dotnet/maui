@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create("ThemeStyle", typeof(string), typeof(VisualElement), default(string));
 
-		/// <summary>Bindable property for <see cref="IsFocusAllowed"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsFocusAllowed</c>.</summary>
 		public static readonly BindableProperty IsFocusAllowedProperty = BindableProperty.Create("IsFocusAllowed", typeof(bool?), typeof(VisualElement), null);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusDirectionProperty']/Docs/*" />
@@ -18,22 +18,22 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 		/// <summary>Bindable property for <see cref="NextFocusDirection"/>.</summary>
 		public static readonly BindableProperty NextFocusDirectionProperty = BindableProperty.Create("NextFocusDirection", typeof(string), typeof(VisualElement), FocusDirection.None, propertyChanged: OnNextFocusDirectionPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="NextFocusUpView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusUpView</c>.</summary>
 		public static readonly BindableProperty NextFocusUpViewProperty = BindableProperty.Create("NextFocusUpView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <summary>Bindable property for <see cref="NextFocusDownView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusDownView</c>.</summary>
 		public static readonly BindableProperty NextFocusDownViewProperty = BindableProperty.Create("NextFocusDownView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <summary>Bindable property for <see cref="NextFocusLeftView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusLeftView</c>.</summary>
 		public static readonly BindableProperty NextFocusLeftViewProperty = BindableProperty.Create("NextFocusLeftView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <summary>Bindable property for <see cref="NextFocusRightView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusRightView</c>.</summary>
 		public static readonly BindableProperty NextFocusRightViewProperty = BindableProperty.Create("NextFocusRightView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <summary>Bindable property for <see cref="NextFocusBackView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusBackView</c>.</summary>
 		public static readonly BindableProperty NextFocusBackViewProperty = BindableProperty.Create("NextFocusBackView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <summary>Bindable property for <see cref="NextFocusForwardView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>NextFocusForwardView</c>.</summary>
 		public static readonly BindableProperty NextFocusForwardViewProperty = BindableProperty.Create("NextFocusForwardView", typeof(View), typeof(VisualElement), default(View));
 
 		/// <summary>Bindable property for <see cref="ToolTip"/>.</summary>

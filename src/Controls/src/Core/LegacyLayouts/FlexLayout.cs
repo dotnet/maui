@@ -45,27 +45,27 @@ namespace Microsoft.Maui.Controls.Compatibility
 		static readonly BindableProperty FlexItemProperty =
 			BindableProperty.CreateAttached("FlexItem", typeof(Flex.Item), typeof(FlexLayout), null);
 
-		/// <summary>Bindable property for <see cref="Order"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Order</c>.</summary>
 		public static readonly BindableProperty OrderProperty =
 			BindableProperty.CreateAttached("Order", typeof(int), typeof(FlexLayout), default(int),
 											propertyChanged: OnOrderPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Grow"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Grow</c>.</summary>
 		public static readonly BindableProperty GrowProperty =
 			BindableProperty.CreateAttached("Grow", typeof(float), typeof(FlexLayout), default(float),
 											propertyChanged: OnGrowPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <summary>Bindable property for <see cref="Shrink"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Shrink</c>.</summary>
 		public static readonly BindableProperty ShrinkProperty =
 			BindableProperty.CreateAttached("Shrink", typeof(float), typeof(FlexLayout), 1f,
 											propertyChanged: OnShrinkPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <summary>Bindable property for <see cref="AlignSelf"/>.</summary>
+		/// <summary>Bindable property for attached property <c>AlignSelf</c>.</summary>
 		public static readonly BindableProperty AlignSelfProperty =
 			BindableProperty.CreateAttached("AlignSelf", typeof(FlexAlignSelf), typeof(FlexLayout), FlexAlignSelf.Auto,
 											propertyChanged: OnAlignSelfPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Basis"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Basis</c>.</summary>
 		public static readonly BindableProperty BasisProperty =
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);

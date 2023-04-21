@@ -15,57 +15,57 @@ namespace Microsoft.Maui.Controls
 	{
 		Flex.Item _root;
 
-		/// <summary>Bindable property for <see cref="Direction"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="Direction"/>.</summary>
 		public static readonly BindableProperty DirectionProperty =
 			BindableProperty.Create(nameof(Direction), typeof(FlexDirection), typeof(FlexLayout), FlexDirection.Row,
 									propertyChanged: OnDirectionPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="JustifyContent"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="JustifyContent"/>.</summary>
 		public static readonly BindableProperty JustifyContentProperty =
 			BindableProperty.Create(nameof(JustifyContent), typeof(FlexJustify), typeof(FlexLayout), FlexJustify.Start,
 									propertyChanged: OnJustifyContentPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="AlignContent"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="AlignContent"/>.</summary>
 		public static readonly BindableProperty AlignContentProperty =
 			BindableProperty.Create(nameof(AlignContent), typeof(FlexAlignContent), typeof(FlexLayout), FlexAlignContent.Stretch,
 									propertyChanged: OnAlignContentPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="AlignItems"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="AlignItems"/>.</summary>
 		public static readonly BindableProperty AlignItemsProperty =
 			BindableProperty.Create(nameof(AlignItems), typeof(FlexAlignItems), typeof(FlexLayout), FlexAlignItems.Stretch,
 									propertyChanged: OnAlignItemsPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Position"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="Position"/>.</summary>
 		public static readonly BindableProperty PositionProperty =
 			BindableProperty.Create(nameof(Position), typeof(FlexPosition), typeof(FlexLayout), FlexPosition.Relative,
 									propertyChanged: OnPositionPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Wrap"/>.</summary>
+		/// <summary>Bindable property for attached property <see cref="Wrap"/>.</summary>
 		public static readonly BindableProperty WrapProperty =
 			BindableProperty.Create(nameof(Wrap), typeof(FlexWrap), typeof(FlexLayout), FlexWrap.NoWrap,
 									propertyChanged: OnWrapPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Order"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Order</c>.</summary>
 		public static readonly BindableProperty OrderProperty =
 			BindableProperty.CreateAttached("Order", typeof(int), typeof(FlexLayout), default(int),
 											propertyChanged: OnOrderPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Grow"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Grow</c>.</summary>
 		public static readonly BindableProperty GrowProperty =
 			BindableProperty.CreateAttached("Grow", typeof(float), typeof(FlexLayout), default(float),
 											propertyChanged: OnGrowPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <summary>Bindable property for <see cref="Shrink"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Shrink</c>.</summary>
 		public static readonly BindableProperty ShrinkProperty =
 			BindableProperty.CreateAttached("Shrink", typeof(float), typeof(FlexLayout), 1f,
 											propertyChanged: OnShrinkPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <summary>Bindable property for <see cref="AlignSelf"/>.</summary>
+		/// <summary>Bindable property for attached property <c>AlignSelf</c>.</summary>
 		public static readonly BindableProperty AlignSelfProperty =
 			BindableProperty.CreateAttached("AlignSelf", typeof(FlexAlignSelf), typeof(FlexLayout), FlexAlignSelf.Auto,
 											propertyChanged: OnAlignSelfPropertyChanged);
 
-		/// <summary>Bindable property for <see cref="Basis"/>.</summary>
+		/// <summary>Bindable property for attached property <c>Basis</c>.</summary>
 		public static readonly BindableProperty BasisProperty =
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);

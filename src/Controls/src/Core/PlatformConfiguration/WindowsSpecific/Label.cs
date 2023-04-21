@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Label']/Docs/*" />
 	public static class Label
 	{
-		/// <summary>Bindable property for <see cref="DetectReadingOrderFromContent"/>.</summary>
+		/// <summary>Bindable property for attached property <c>DetectReadingOrderFromContent</c>.</summary>
 		public static readonly BindableProperty DetectReadingOrderFromContentProperty = BindableProperty.Create("DetectReadingOrderFromContent", typeof(bool), typeof(FormsElement), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Label.xml" path="//Member[@MemberName='SetDetectReadingOrderFromContent'][1]/Docs/*" />

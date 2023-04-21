@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		#region ToolbarDynamicOverflowEnabled
 
-		/// <summary>Bindable property for <see cref="ToolbarDynamicOverflowEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ToolbarDynamicOverflowEnabled</c>.</summary>
 		public static readonly BindableProperty ToolbarDynamicOverflowEnabledProperty =
 			BindableProperty.CreateAttached("ToolbarDynamicOverflowEnabled", typeof(bool),
 				typeof(FormsElement), true);

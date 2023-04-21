@@ -13,19 +13,19 @@ namespace Microsoft.Maui.Controls.Compatibility
 	[ContentProperty(nameof(Children))]
 	public class RelativeLayout : Layout<View>, IElementConfiguration<RelativeLayout>
 	{
-		/// <summary>Bindable property for <see cref="XConstraint"/>.</summary>
+		/// <summary>Bindable property for attached property <c>XConstraint</c>.</summary>
 		public static readonly BindableProperty XConstraintProperty = BindableProperty.CreateAttached("XConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);
 
-		/// <summary>Bindable property for <see cref="YConstraint"/>.</summary>
+		/// <summary>Bindable property for attached property <c>YConstraint</c>.</summary>
 		public static readonly BindableProperty YConstraintProperty = BindableProperty.CreateAttached("YConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);
 
-		/// <summary>Bindable property for <see cref="WidthConstraint"/>.</summary>
+		/// <summary>Bindable property for attached property <c>WidthConstraint</c>.</summary>
 		public static readonly BindableProperty WidthConstraintProperty = BindableProperty.CreateAttached("WidthConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);
 
-		/// <summary>Bindable property for <see cref="HeightConstraint"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HeightConstraint</c>.</summary>
 		public static readonly BindableProperty HeightConstraintProperty = BindableProperty.CreateAttached("HeightConstraint", typeof(Constraint), typeof(RelativeLayout), null, propertyChanged: ConstraintChanged);
 
-		/// <summary>Bindable property for <see cref="BoundsConstraint"/>.</summary>
+		/// <summary>Bindable property for attached property <c>BoundsConstraint</c>.</summary>
 		public static readonly BindableProperty BoundsConstraintProperty = BindableProperty.CreateAttached("BoundsConstraint", typeof(BoundsConstraint), typeof(RelativeLayout), null);
 
 		readonly RelativeElementCollection _children;

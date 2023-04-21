@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.BoxView']/Docs/*" />
 	public static class BoxView
 	{
-		/// <summary>Bindable property for <see cref="HasCornerRadius"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HasCornerRadius</c>.</summary>
 		public static readonly BindableProperty HasCornerRadiusProperty =
 			BindableProperty.Create("HasCornerRadius", typeof(bool),
 				typeof(BoxView), default(bool));

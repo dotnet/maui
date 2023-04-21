@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.VisualElement']/Docs/*" />
 	public static class VisualElement
 	{
-		/// <summary>Bindable property for <see cref="BlurEffect"/>.</summary>
+		/// <summary>Bindable property for attached property <c>BlurEffect</c>.</summary>
 		public static readonly BindableProperty BlurEffectProperty = BindableProperty.Create("BlurEffect", typeof(BlurEffectStyle), typeof(VisualElement), BlurEffectStyle.None);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/VisualElement.xml" path="//Member[@MemberName='GetBlurEffect'][1]/Docs/*" />
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			public ShadowEffect() : base("Microsoft.Maui.Controls.ShadowEffect") { }
 		}
 
-		/// <summary>Bindable property for <see cref="IsShadowEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsShadowEnabled</c>.</summary>
 		public static readonly BindableProperty IsShadowEnabledProperty =
 			BindableProperty.Create("IsShadowEnabled", typeof(bool),
 			typeof(VisualElement), false, propertyChanged: OnIsShadowEnabledChanged);
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowColor</c>.</summary>
 		public static readonly BindableProperty ShadowColorProperty =
 			BindableProperty.Create("ShadowColor", typeof(Color),
 			typeof(VisualElement), null);
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowRadius"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowRadius</c>.</summary>
 		public static readonly BindableProperty ShadowRadiusProperty =
 			BindableProperty.Create("ShadowRadius", typeof(double),
 			typeof(VisualElement), 10.0);
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowOffset"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowOffset</c>.</summary>
 		public static readonly BindableProperty ShadowOffsetProperty =
 		BindableProperty.Create("ShadowOffset", typeof(Size),
 		typeof(VisualElement), Size.Zero);
@@ -185,7 +185,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <summary>Bindable property for <see cref="ShadowOpacity"/>.</summary>
+		/// <summary>Bindable property for attached property <c>ShadowOpacity</c>.</summary>
 		public static readonly BindableProperty ShadowOpacityProperty =
 		BindableProperty.Create("ShadowOpacity", typeof(double),
 		typeof(VisualElement), 0.5);
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		#region IsLegacyColorModeEnabled
 
-		/// <summary>Bindable property for <see cref="IsLegacyColorModeEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsLegacyColorModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
 				typeof(FormsElement), true);

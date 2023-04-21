@@ -13,14 +13,14 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.NavigationPage']/Docs/*" />
 	public partial class NavigationPage : Page, IPageContainer<Page>, IBarElement, IElementConfiguration<NavigationPage>
 	{
-		/// <summary>Bindable property for <see cref="BackButtonTitle"/>.</summary>
+		/// <summary>Bindable property for attached property <c>BackButtonTitle</c>.</summary>
 		public static readonly BindableProperty BackButtonTitleProperty = BindableProperty.CreateAttached("BackButtonTitle", typeof(string), typeof(Page), null);
 
-		/// <summary>Bindable property for <see cref="HasNavigationBar"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HasNavigationBar</c>.</summary>
 		public static readonly BindableProperty HasNavigationBarProperty =
 			BindableProperty.CreateAttached("HasNavigationBar", typeof(bool), typeof(Page), true);
 
-		/// <summary>Bindable property for <see cref="HasBackButton"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HasBackButton</c>.</summary>
 		public static readonly BindableProperty HasBackButtonProperty = BindableProperty.CreateAttached("HasBackButton", typeof(bool), typeof(NavigationPage), true);
 
 		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
@@ -32,13 +32,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
-		/// <summary>Bindable property for <see cref="TitleIconImageSource"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TitleIconImageSource</c>.</summary>
 		public static readonly BindableProperty TitleIconImageSourceProperty = BindableProperty.CreateAttached("TitleIconImageSource", typeof(ImageSource), typeof(NavigationPage), default(ImageSource));
 
-		/// <summary>Bindable property for <see cref="IconColor"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IconColor</c>.</summary>
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), null);
 
-		/// <summary>Bindable property for <see cref="TitleView"/>.</summary>
+		/// <summary>Bindable property for attached property <c>TitleView</c>.</summary>
 		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
 
 		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);

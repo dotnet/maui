@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.VisualElement']/Docs/*" />
 	public static class VisualElement
 	{
-		/// <summary>Bindable property for <see cref="AccessKey"/>.</summary>
+		/// <summary>Bindable property for attached property <c>AccessKey</c>.</summary>
 		public static readonly BindableProperty AccessKeyProperty =
 			BindableProperty.Create("AccessKey", typeof(string), typeof(VisualElement));
 
@@ -14,11 +14,11 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		public static readonly BindableProperty AccessKeyPlacementProperty =
 					BindableProperty.Create(nameof(AccessKeyPlacement), typeof(AccessKeyPlacement), typeof(VisualElement), AccessKeyPlacement.Auto);
 
-		/// <summary>Bindable property for <see cref="AccessKeyHorizontalOffset"/>.</summary>
+		/// <summary>Bindable property for attached property <c>AccessKeyHorizontalOffset</c>.</summary>
 		public static readonly BindableProperty AccessKeyHorizontalOffsetProperty =
 					BindableProperty.Create("AccessKeyHorizontalOffset", typeof(double), typeof(FormsElement), 0.0);
 
-		/// <summary>Bindable property for <see cref="AccessKeyVerticalOffset"/>.</summary>
+		/// <summary>Bindable property for attached property <c>AccessKeyVerticalOffset</c>.</summary>
 		public static readonly BindableProperty AccessKeyVerticalOffsetProperty =
 					BindableProperty.Create("AccessKeyVerticalOffset", typeof(double), typeof(FormsElement), 0.0);
 
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 		}
 		#region IsLegacyColorModeEnabled
 
-		/// <summary>Bindable property for <see cref="IsLegacyColorModeEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>IsLegacyColorModeEnabled</c>.</summary>
 		public static readonly BindableProperty IsLegacyColorModeEnabledProperty =
 			BindableProperty.CreateAttached("IsLegacyColorModeEnabled", typeof(bool),
 				typeof(FormsElement), true);

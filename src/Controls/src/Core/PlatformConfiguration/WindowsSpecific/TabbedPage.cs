@@ -11,11 +11,11 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.TabbedPage']/Docs/*" />
 	public static class TabbedPage
 	{
-		/// <summary>Bindable property for <see cref="HeaderIconsEnabled"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HeaderIconsEnabled</c>.</summary>
 		public static readonly BindableProperty HeaderIconsEnabledProperty =
 			BindableProperty.Create(nameof(HeaderIconsEnabledProperty), typeof(bool), typeof(TabbedPage), true);
 
-		/// <summary>Bindable property for <see cref="HeaderIconsSize"/>.</summary>
+		/// <summary>Bindable property for attached property <c>HeaderIconsSize</c>.</summary>
 		public static readonly BindableProperty HeaderIconsSizeProperty =
 			BindableProperty.Create(nameof(HeaderIconsSizeProperty), typeof(Size), typeof(TabbedPage), new Size(16, 16));
 
