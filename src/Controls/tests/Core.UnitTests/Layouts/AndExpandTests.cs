@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(expectedWidth, view1.Bounds.X);
 		}
 
-		static IEnumerable<object[]> ExpansionYCases()
+		public static IEnumerable<object[]> ExpansionYCases()
 		{
 			yield return new object[] { LayoutOptions.StartAndExpand, 0 };
 			yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaHeight / 2) - TestViewHeight };
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			yield return new object[] { LayoutOptions.FillAndExpand, 0 };
 		}
 
-		static IEnumerable<object[]> ExpansionXCases()
+		public static IEnumerable<object[]> ExpansionXCases()
 		{
 			yield return new object[] { LayoutOptions.StartAndExpand, 0 };
 			yield return new object[] { LayoutOptions.EndAndExpand, (TestAreaWidth / 2) - TestViewWidth };

@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var color = new Color(.5f, .1f, .1f);
 
-			Assert.Equal(1, color.GetHue(), 3);
+			Assert.Equal((float)1, color.GetHue(), (float)3);
 			Assert.Equal(0.662, color.GetSaturation(), 1);
 			Assert.Equal(0.302, color.GetLuminosity(), 1);
 		}
@@ -179,9 +179,9 @@ namespace Microsoft.Maui.Graphics.Tests
 			var color = new Color(0.2f, 0.5f, 0.7f);
 			color = Color.FromHsla(.2f, color.GetSaturation(), color.GetLuminosity());
 
-			Assert.Equal(0.6f, color.Red, 3);
-			Assert.Equal(0.7f, color.Green, 3);
-			Assert.Equal(0.2f, color.Blue, 3);
+			Assert.Equal(0.6f, color.Red, 3f);
+			Assert.Equal(0.7f, color.Green, 3f);
+			Assert.Equal(0.2f, color.Blue, 3f);
 		}
 
 		[Fact]
@@ -222,10 +222,10 @@ namespace Microsoft.Maui.Graphics.Tests
 			Assert.Equal(Color.FromArgb(colorHsl.ToArgbHex()), colorHsl);
 			var colorHsla = Color.FromHsla(240, 1, 1, .1f);
 			var hexFromHsla = Color.FromArgb(colorHsla.ToArgbHex());
-			Assert.Equal(hexFromHsla.Alpha, colorHsla.Alpha, 2);
-			Assert.Equal(hexFromHsla.Red, colorHsla.Red, 3);
-			Assert.Equal(hexFromHsla.Green, colorHsla.Green, 3);
-			Assert.Equal(hexFromHsla.Blue, colorHsla.Blue, 3);
+			Assert.Equal(hexFromHsla.Alpha, colorHsla.Alpha, 2f);
+			Assert.Equal(hexFromHsla.Red, colorHsla.Red, 3f);
+			Assert.Equal(hexFromHsla.Green, colorHsla.Green, 3f);
+			Assert.Equal(hexFromHsla.Blue, colorHsla.Blue, 3f);
 		}
 
 		[Fact]
@@ -233,9 +233,9 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var color = Color.FromRgb(1, .29f, .752f);
 			var colorHsv = Color.FromHsv(321, 71, 100);
-			Assert.Equal(color.Red, colorHsv.Red, 3);
-			Assert.Equal(color.Green, colorHsv.Green, 3);
-			Assert.Equal(color.Blue, colorHsv.Blue, 3);
+			Assert.Equal(color.Red, colorHsv.Red, 3f);
+			Assert.Equal(color.Green, colorHsv.Green, 3f);
+			Assert.Equal(color.Blue, colorHsv.Blue, 3f);
 		}
 
 		[Fact]
@@ -243,10 +243,10 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var color = Color.FromRgba(1, .29, .752, .5);
 			var colorHsv = Color.FromHsva(321, 71, 100, 50);
-			Assert.Equal(color.Red, colorHsv.Red, 3);
-			Assert.Equal(color.Green, colorHsv.Green, 3);
-			Assert.Equal(color.Blue, colorHsv.Blue, 3);
-			Assert.Equal(color.Alpha, colorHsv.Alpha, 3);
+			Assert.Equal(color.Red, colorHsv.Red, 3f);
+			Assert.Equal(color.Green, colorHsv.Green, 3f);
+			Assert.Equal(color.Blue, colorHsv.Blue, 3f);
+			Assert.Equal(color.Alpha, colorHsv.Alpha, 3f);
 		}
 
 		[Fact]
@@ -254,9 +254,9 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var color = Color.FromRgb(1, .29f, .758f);
 			var colorHsv = Color.FromHsv(.89f, .71f, 1);
-			Assert.Equal(color.Red, colorHsv.Red, 2);
-			Assert.Equal(color.Green, colorHsv.Green, 2);
-			Assert.Equal(color.Blue, colorHsv.Blue, 2);
+			Assert.Equal(color.Red, colorHsv.Red, 2f);
+			Assert.Equal(color.Green, colorHsv.Green, 2f);
+			Assert.Equal(color.Blue, colorHsv.Blue, 2f);
 		}
 
 		[Fact]
@@ -264,10 +264,10 @@ namespace Microsoft.Maui.Graphics.Tests
 		{
 			var color = Color.FromRgba(1, .29, .758, .5);
 			var colorHsv = Color.FromHsva(.89f, .71f, 1f, .5f);
-			Assert.Equal(color.Red, colorHsv.Red, 2);
-			Assert.Equal(color.Green, colorHsv.Green, 2);
-			Assert.Equal(color.Blue, colorHsv.Blue, 2);
-			Assert.Equal(color.Alpha, colorHsv.Alpha, 2);
+			Assert.Equal(color.Red, colorHsv.Red, 2f);
+			Assert.Equal(color.Green, colorHsv.Green, 2f);
+			Assert.Equal(color.Blue, colorHsv.Blue, 2f);
+			Assert.Equal(color.Alpha, colorHsv.Alpha, 2f);
 		}
 
 		[Fact]
@@ -314,10 +314,10 @@ namespace Microsoft.Maui.Graphics.Tests
 			var fromUint = Color.FromUint(argb);
 
 			// Verify the components
-			Assert.Equal(expectedColor.Alpha, fromUint.Alpha, 2);
-			Assert.Equal(expectedColor.Red, fromUint.Red, 2);
-			Assert.Equal(expectedColor.Green, fromUint.Green, 2);
-			Assert.Equal(expectedColor.Blue, fromUint.Blue, 2);
+			Assert.Equal(expectedColor.Alpha, fromUint.Alpha, 2f);
+			Assert.Equal(expectedColor.Red, fromUint.Red, 2f);
+			Assert.Equal(expectedColor.Green, fromUint.Green, 2f);
+			Assert.Equal(expectedColor.Blue, fromUint.Blue, 2f);
 		}
 
 		[Fact]
@@ -340,10 +340,10 @@ namespace Microsoft.Maui.Graphics.Tests
 
 			var comp = orig.GetComplementary();
 
-			Assert.Equal(expectedComplement.Alpha, comp.Alpha, 3);
-			Assert.Equal(expectedComplement.Red, comp.Red, 3);
-			Assert.Equal(expectedComplement.Green, comp.Green, 3);
-			Assert.Equal(expectedComplement.Blue, comp.Blue, 3);
+			Assert.Equal(expectedComplement.Alpha, comp.Alpha, 3f);
+			Assert.Equal(expectedComplement.Red, comp.Red, 3f);
+			Assert.Equal(expectedComplement.Green, comp.Green, 3f);
+			Assert.Equal(expectedComplement.Blue, comp.Blue, 3f);
 		}
 
 		public static IEnumerable<object[]> TestFromRgbaValues()
