@@ -92,6 +92,7 @@
 ~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.NetworkState.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Phone.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
+~override Microsoft.Maui.ApplicationModel.Permissions.PostNotifications.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Sensors.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Sms.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Speech.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
