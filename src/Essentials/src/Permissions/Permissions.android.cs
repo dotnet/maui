@@ -429,7 +429,7 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 		}
 
-		public class PostNotifications : BasePlatformPermission
+		public partial class PostNotifications : BasePlatformPermission
 		{
 			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
 			{
@@ -448,8 +448,7 @@ namespace Microsoft.Maui.ApplicationModel
 
 					return permissions.ToArray();
 				}
-
-						
+			}						
 		}
 
 		public partial class Reminders : BasePlatformPermission
