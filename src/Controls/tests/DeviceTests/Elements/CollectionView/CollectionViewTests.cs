@@ -397,5 +397,52 @@ namespace Microsoft.Maui.DeviceTests
 				timeout -= interval;
 			}
 		}
+
+		[Fact]
+		public async Task ClearingItemsSourceClearsBindingContext()
+		{
+			SetupBuilder();
+
+			IReadOnlyList<Element> logicalChildren = null;
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() => new Label() {  HeightRequest = 30, WidthRequest = 200 }),
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var data = new ObservableCollection<MyRecord>()
+				{
+					new MyRecord("Item 1"),
+					new MyRecord("Item 2"),
+					new MyRecord("Item 3"),
+				};
+				collectionView.ItemsSource = data;
+				await Task.Delay(100);
+
+				logicalChildren = collectionView.LogicalChildrenInternal;
+				Assert.NotNull(logicalChildren);
+				Assert.True(logicalChildren.Count == 3);
+
+				// Clear collection
+				data.Clear();
+
+				await Task.Delay(100);
+			});
+
+			await Task.Yield();
+
+			Assert.NotNull(logicalChildren);
+			Assert.True(logicalChildren.Count <= 3, "LogicalChildren should not grow in size!");
+
+			foreach (var logicalChild in logicalChildren)
+			{
+				Assert.Null(logicalChild.BindingContext);
+			}
+		}
+
+		record MyRecord(string Name);
 	}
 }
