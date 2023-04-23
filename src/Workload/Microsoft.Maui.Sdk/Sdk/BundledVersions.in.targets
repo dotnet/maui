@@ -31,9 +31,9 @@
     <_MauiAddedUserNonMauiPackageReference Include="@(PackageReference)" Exclude="@(_MauiAddedImplicitMauiPackageReference)" />
     <_MauiAddedUserAllPackageReference Include="@(PackageReference->WithMetadataValue('IsMauiImplicitPackageReference',''))" />
     <_MauiAddedUserMauiPackageReference Include="@(_MauiAddedUserAllPackageReference)" Exclude="@(_MauiAddedUserNonMauiPackageReference)" />
-    <PackageReference Remove="@(_MauiAddedImplicitMauiPackageReference)" />
-    <PackageReference Include="@(_MauiAddedUserMauiPackageReference)" />
-    <PackageReference Include="@(_MauiAddedImplicitMauiPackageReference)" Exclude="@(PackageReference)" />
+    <PackageReference Remove="@(_MauiAddedImplicitMauiPackageReference)" /> <!-- this also removes Microsoft.Maui.* packages from the csproj -->
+    <PackageReference Include="@(_MauiAddedUserMauiPackageReference)" /> <!-- so we have to add it back -->
+    <PackageReference Include="@(_MauiAddedImplicitMauiPackageReference)" Exclude="@(PackageReference)" /> <!-- and then add missing implicit packages -->
   </ItemGroup>
 
 </Project>
