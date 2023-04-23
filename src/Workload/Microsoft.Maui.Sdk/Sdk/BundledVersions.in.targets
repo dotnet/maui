@@ -27,11 +27,13 @@
     allows the user to totally override all the default nugets installed.
   -->
   <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
-    <_MauiAddedImplicitPackageReference Include="@(PackageReference->HasMetadata('IsMauiImplicitPackageReference'))" />
-    <_MauiAddedUserPackageReference Include="@(PackageReference->WithMetadataValue('IsMauiImplicitPackageReference',''))" />
-    <_MauiMissingImplicitPackageReference Include="@(_MauiAddedImplicitPackageReference)" Exclude="@(_MauiAddedUserPackageReference)" />
-    <PackageReference Remove="@(PackageReference)" />
-    <PackageReference Include="@(_MauiAddedUserPackageReference);@(_MauiMissingImplicitPackageReference)" />
+    <_MauiAddedImplicitMauiPackageReference Include="@(PackageReference->HasMetadata('IsMauiImplicitPackageReference'))" />
+    <_MauiAddedUserNonMauiPackageReference Include="@(PackageReference)" Exclude="@(_MauiAddedImplicitMauiPackageReference)" />
+    <_MauiAddedUserAllPackageReference Include="@(PackageReference->WithMetadataValue('IsMauiImplicitPackageReference',''))" />
+    <_MauiAddedUserMauiPackageReference Include="@(_MauiAddedUserAllPackageReference)" Exclude="@(_MauiAddedUserNonMauiPackageReference)" />
+    <PackageReference Remove="@(_MauiAddedImplicitMauiPackageReference)" />
+    <PackageReference Include="@(_MauiAddedUserMauiPackageReference)" />
+    <PackageReference Include="@(_MauiAddedImplicitMauiPackageReference)" Exclude="@(PackageReference)" />
   </ItemGroup>
 
 </Project>
