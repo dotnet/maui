@@ -427,20 +427,32 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(logicalChildren.Count == 3);
 
 				// Clear collection
+				var savedItems = data.ToArray();
 				data.Clear();
 
-				await Task.Delay(100);
+				// Check that all logical children have no binding context
+				foreach (var logicalChild in logicalChildren)
+				{
+					Assert.Null(logicalChild.BindingContext);
+				}
+
+				// Re-add the old children
+				foreach (var savedItem in savedItems)
+				{
+					data.Add(savedItem);
+				}
+
+				// Check that the right number of logical children have binding context again
+				int boundChildren = 0;
+				foreach (var logicalChild in logicalChildren)
+				{
+					if (logicalChild.BindingContext is not null)
+					{
+						boundChildren++;
+					}
+				}
+				Assert.Equal(3, boundChildren);
 			});
-
-			await Task.Yield();
-
-			Assert.NotNull(logicalChildren);
-			Assert.True(logicalChildren.Count <= 3, "LogicalChildren should not grow in size!");
-
-			foreach (var logicalChild in logicalChildren)
-			{
-				Assert.Null(logicalChild.BindingContext);
-			}
 		}
 
 		record MyRecord(string Name);

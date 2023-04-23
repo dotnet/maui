@@ -58,6 +58,15 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainedDimension = default;
 		}
 
+		public void Unbind()
+		{
+			if (PlatformHandler?.VirtualView is View view)
+			{
+				view.MeasureInvalidated -= MeasureInvalidated;
+				view.BindingContext = null;
+			}
+		}
+
 		public override UICollectionViewLayoutAttributes PreferredLayoutAttributesFittingAttributes(
 			UICollectionViewLayoutAttributes layoutAttributes)
 		{
@@ -118,11 +127,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void PrepareForReuse()
 		{
-			if (PlatformHandler?.VirtualView is View view)
-			{
-				view.MeasureInvalidated -= MeasureInvalidated;
-				view.BindingContext = null;
-			}
+			Unbind();
 			base.PrepareForReuse();
 		}
 

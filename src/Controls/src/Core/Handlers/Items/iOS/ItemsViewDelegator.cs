@@ -108,6 +108,26 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override void CellDisplayingEnded(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
 		{
+			if (cell is TemplatedCell templatedCell &&
+				(templatedCell.PlatformHandler?.VirtualView as View)?.BindingContext is object bindingContext)
+			{
+				// We want to unbind a cell that is no longer present in the items source. Unfortunately
+				// it's too expensive to check directly, so let's check that the current binding context
+				// matches the item at a given position.
+				//
+				//var itemIndex = ViewController?.ItemsSource.GetIndexForItem(bindingContext);
+				//if (itemIndex.Item == -1)
+				// 	templatedCell.Unbind();
+
+				var itemsSource = ViewController?.ItemsSource;
+				if (itemsSource == null ||
+					!itemsSource.IsIndexPathValid(indexPath) ||
+					itemsSource[indexPath] != bindingContext)
+				{
+					templatedCell.Unbind();
+				}
+			}
+
 			if (ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal)
 			{
 				var actualWidth = collectionView.ContentSize.Width - collectionView.Bounds.Size.Width;
