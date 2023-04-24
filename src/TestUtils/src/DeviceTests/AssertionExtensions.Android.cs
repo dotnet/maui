@@ -472,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			throw new XunitException($"Color {expectedColor} not found.");
+			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
 		}
 
 		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
