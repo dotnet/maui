@@ -13,6 +13,8 @@ namespace Maui.Controls.Sample.Pages
 		public MenuBarPage()
 		{
 			InitializeComponent();
+
+			MenuItem.SetAccelerator(CustomFileMenuFlyoutItem, Accelerator.FromString("ctrl+f"));
 		}
 
 		void ItemClicked(object sender, EventArgs e)

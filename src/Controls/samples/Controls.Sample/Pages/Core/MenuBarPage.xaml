@@ -12,7 +12,7 @@
             <MenuFlyoutItem Text="Cool item 2"></MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="File">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File">
+            <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File">
                 <MenuFlyoutItem.IconImageSource>
                         <FontImageSource
                             FontAutoScalingEnabled="False"
