@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.UI.Xaml.Controls;
+﻿using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -38,6 +35,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapText(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
 			handler.PlatformView.Text = view.Text;
+		}
+
+		public static void MapAccelerator(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView.UpdateAccelerator(view);
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>

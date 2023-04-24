@@ -3,8 +3,12 @@ Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
+Microsoft.Maui.IAccelerator
+Microsoft.Maui.IAccelerator.Keys.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string!>!
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.Maui.IMenuElement.Accelerator.get -> Microsoft.Maui.IAccelerator!
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void

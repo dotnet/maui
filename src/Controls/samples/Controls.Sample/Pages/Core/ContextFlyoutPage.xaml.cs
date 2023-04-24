@@ -42,6 +42,9 @@ namespace Maui.Controls.Sample.Pages
 			bbb.IsEnabled = false;
 
 			ContextMenuWebView.HandlerChanged += OnWebViewHandlerChanged;
+
+			MenuItem.SetAccelerator(Increment10MenuFlyoutItem, Accelerator.FromString("ctrl+a"));
+			MenuItem.SetAccelerator(Increment20MenuFlyoutItem, Accelerator.FromString("ctrl+b"));
 		}
 
 

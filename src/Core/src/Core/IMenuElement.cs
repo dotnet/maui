@@ -1,9 +1,12 @@
-﻿using Microsoft.Maui.Graphics;
-
-namespace Microsoft.Maui
+﻿namespace Microsoft.Maui
 {
 	public interface IMenuElement : IElement, IImageSourcePart, IText
 	{
+		/// <summary>
+		/// Represents a shortcut key for a MenuItem.
+		/// </summary>
+		IAccelerator Accelerator { get; }
+
 		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 
 		/// </summary>

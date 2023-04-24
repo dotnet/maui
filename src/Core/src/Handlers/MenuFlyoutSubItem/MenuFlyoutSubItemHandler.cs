@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
+			[nameof(IMenuFlyoutSubItem.Accelerator)] = MapAccelerator,
 			[nameof(IMenuFlyoutSubItem.Source)] = MapSource,
 			[nameof(IMenuFlyoutSubItem.IsEnabled)] = MapIsEnabled,
 #endif

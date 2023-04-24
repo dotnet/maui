@@ -35,6 +35,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Text = view.Text;
 		}
 
+		public static void MapAccelerator(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			handler.PlatformView.UpdateAccelerator(view);
+		}
+
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
 			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 
