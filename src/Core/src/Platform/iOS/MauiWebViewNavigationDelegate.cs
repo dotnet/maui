@@ -93,8 +93,14 @@ namespace Microsoft.Maui.Platform
 		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
-			if (handler == null)
+			if (handler == null || handler?.VirtualView == null)
+			{
+				//the only place we saw this happening is on device tests,
+				//But the decisionHandler should always be called, or else we will get an NSInternalInconsistencyException
+				decisionHandler(WKNavigationActionPolicy.Cancel);
 				return;
+			}
+				
 
 			var navEvent = WebNavigationEvent.NewPage;
 			var navigationType = navigationAction.NavigationType;
@@ -128,10 +134,7 @@ namespace Microsoft.Maui.Platform
 			_lastEvent = navEvent;
 
 			var virtualView = handler.VirtualView;
-
-			if (virtualView == null)
-				return;
-
+	
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();
 

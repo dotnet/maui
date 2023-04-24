@@ -18,7 +18,9 @@ namespace Microsoft.Maui
 			var glyph = (NSString)imageSource.Glyph;
 
 			var attString = new NSAttributedString(glyph, font, color);
-			var imagesize = glyph.GetSizeUsingAttributes(attString.GetUIKitAttributes(0, out _));
+			var attributes = attString.GetUIKitAttributes(0, out _);
+
+			var imagesize = attributes == null ? attString.Size : glyph.GetSizeUsingAttributes(attributes);
 
 			UIGraphics.BeginImageContextWithOptions(imagesize, false, scale);
 			var ctx = new NSStringDrawingContext();
