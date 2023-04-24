@@ -53,6 +53,9 @@ namespace Microsoft.Maui.Platform
 						case "shift":
 							keyboardAccelerator.Modifiers = VirtualKeyModifiers.Shift;
 							break;
+						default:
+							keyboardAccelerator.Modifiers = VirtualKeyModifiers.None;
+							break;
 					}
 
 					string key = keys.ElementAt(i);
