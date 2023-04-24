@@ -11,6 +11,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
 using Xunit;
+using Xunit.Sdk;
 using WColor = Windows.UI.Color;
 
 namespace Microsoft.Maui.DeviceTests
@@ -200,10 +201,11 @@ namespace Microsoft.Maui.DeviceTests
 
 					// attach to the UI
 					Grid grid;
-					var window = (mauiContext?.Services != null) ?
-						Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance<Window>(mauiContext.Services) : new Window();
+					var window = (mauiContext?.Services != null)
+						? Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance<Window>(mauiContext.Services)
+						: new Window();
 
-					window.Content = new Grid
+					window.Content = new TestWindowRoot(window)
 					{
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
@@ -248,7 +250,8 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			else
 			{
-				var window = view.GetParentOfType<Window>() ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
+				// Window is not a XAML type so is never on the hierarchy
+				var window = view.GetParentOfType<TestWindowRoot>()?.Window ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
 				return await Run(() => action(window));
 			}
 
@@ -362,6 +365,45 @@ namespace Microsoft.Maui.DeviceTests
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
 
+		public static Task<CanvasBitmap> AssertDoesNotContainColor(this CanvasBitmap bitmap, Graphics.Color unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+			=> bitmap.AssertDoesNotContainColor(unexpectedColor.ToWindowsColor(), withinRectModifier);
+
+		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this CanvasBitmap bitmap, WColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+		{
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
+
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
+
+			foreach (var c in colors)
+			{
+				if (c.IsEquivalent(unexpectedColor))
+				{
+					Assert.True(false, await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
+				}
+			}
+
+			return bitmap;
+		}
+
+		public static Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, Maui.Graphics.Color unexpectedColor) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToWindowsColor());
+
+		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, WColor unexpectedColor)
+		{
+			var bitmap = await view.ToBitmap();
+			return await AssertDoesNotContainColor(bitmap, unexpectedColor);
+		}
+
 		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
 		{
 			var bitmap = await view.ToBitmap();
@@ -440,6 +482,16 @@ namespace Microsoft.Maui.DeviceTests
 		public static bool IsExcludedWithChildren(this FrameworkElement platformView)
 		{
 			throw new NotImplementedException();
+		}
+
+		class TestWindowRoot : Grid
+		{
+			public TestWindowRoot(Window window)
+			{
+				Window = window;
+			}
+
+			public Window Window { get; set; }
 		}
 	}
 }
