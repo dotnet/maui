@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var itemsSource = ViewController?.ItemsSource;
 				if (itemsSource is null ||
 					!itemsSource.IsIndexPathValid(indexPath) ||
-					itemsSource[indexPath] is not bindingContext)
+					!Equals(itemsSource[indexPath], bindingContext))
 				{
 					templatedCell.Unbind();
 				}
