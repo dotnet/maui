@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Platform
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
-#if PLATFORM
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
 			where T : ParentView
 #else
 			where T : class
@@ -83,7 +85,9 @@ namespace Microsoft.Maui.Platform
 
 #if WINDOWS || ANDROID
 		internal static T? GetParentOfType<T>(this PlatformView view)
-#if PLATFORM
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
 			where T : ParentView
 #else
 			where T : class
