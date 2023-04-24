@@ -5,9 +5,10 @@ using NSStringAttributeKey = UIKit.UIStringAttributeKey;
 using NSFont = UIKit.UIFont;
 using NSColor = UIKit.UIColor;
 #endif
+using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics.Text;
 using System.IO;
+using Microsoft.Maui.Graphics.Text;
 using Foundation;
 
 namespace Microsoft.Maui.Graphics.Platform
@@ -67,10 +68,10 @@ namespace Microsoft.Maui.Graphics.Platform
 					formatAttributes.SetFontName(fontName);
 				else
 				{
-					if (fontName.Contains("Italic"))
+					if (fontName.Contains("Italic", StringComparison.Ordinal))
 						formatAttributes.SetItalic(true);
 
-					if (fontName.Contains("Bold"))
+					if (fontName.Contains("Bold", StringComparison.Ordinal))
 						formatAttributes.SetBold(true);
 				}
 			}

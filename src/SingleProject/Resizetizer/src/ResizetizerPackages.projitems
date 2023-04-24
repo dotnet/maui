@@ -7,8 +7,6 @@
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Linux" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.Win32" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="HarfBuzzSharp.NativeAssets.macOS" Version="$(_HarfBuzzSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="16.7.0" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.7.0" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.NativeAssets.Win32" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="SkiaSharp.NativeAssets.macOS" Version="$(_SkiaSharpVersion)" GeneratePathProperty="true" PrivateAssets="all" />
@@ -29,8 +27,6 @@
     <PackageReference Include="System.Numerics.Vectors" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="System.ObjectModel" GeneratePathProperty="true" PrivateAssets="all" />
-    <!-- "temporary" build hacks -->
-    <PackageReference Include="Mono.ApiTools.MSBuildTasks" Version="0.1.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
