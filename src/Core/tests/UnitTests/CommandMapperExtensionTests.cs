@@ -4,8 +4,8 @@ using Xunit;
 
 namespace Microsoft.Maui.UnitTests
 {
-	[Category(TestCategory.Core, TestCategory.PropertyMapping)]
-	public class PropertyMapperExtensionTests
+	[Category(TestCategory.Core, TestCategory.CommandMapping)]
+	public class CommandMapperExtensionTests
 	{
 		[Fact]
 		public void AddAfterMapping()
@@ -15,14 +15,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original mapping should have run";
 			var msg2 = "and also this one";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.AppendToMapping(nameof(IView.Background), (h, v) => log += msg2);
+			mapper1.AppendToMapping(nameof(IView.Focus), (h, v, a) => log += msg2);
 
-			mapper1.UpdateProperties(null, new Button());
+			mapper1.Invoke(null, new Button(), nameof(IView.Focus), null);
 
 			Assert.Contains(msg1, log, StringComparison.Ordinal);
 			Assert.Contains(msg2, log, StringComparison.Ordinal);
@@ -41,14 +41,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original mapping should have run";
 			var msg2 = "and also this one";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.PrependToMapping(nameof(IView.Background), (h, v) => log += msg2);
+			mapper1.PrependToMapping(nameof(IView.Focus), (h, v, a) => log += msg2);
 
-			mapper1.UpdateProperties(null, new Button());
+			mapper1.Invoke(null, new Button(), nameof(IView.Focus), null);
 
 			Assert.Contains(msg1, log, StringComparison.Ordinal);
 			Assert.Contains(msg2, log, StringComparison.Ordinal);
@@ -67,14 +67,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original";
 			var msg2 = "modification";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.ModifyMapping(nameof(IView.Background), (h, v, a) => log += msg2);
+			mapper1.ModifyMapping(nameof(IView.Focus), (h, v, a, b) => log += msg2);
 
-			mapper1.UpdateProperties(null, new Button());
+			mapper1.Invoke(null, new Button(), nameof(IView.Focus), null);
 
 			Assert.DoesNotContain(msg1, log, StringComparison.Ordinal);
 			Assert.Contains(msg2, log, StringComparison.Ordinal);
@@ -91,14 +91,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original mapping should have run";
 			var msg2 = "and also this one";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.AppendToMapping<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
+			mapper1.AppendToMapping<Label, IViewHandler>(nameof(Label.Focus), (h, v, a) => log += msg2);
 
-			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
+			mapper1.Invoke(null, (IView)Activator.CreateInstance(controlType), nameof(IView.Focus), null);
 
 			Assert.Contains(msg1, log, StringComparison.Ordinal);
 			if (shouldRun)
@@ -131,14 +131,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original mapping should have run";
 			var msg2 = "and also this one";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.PrependToMapping<Label, IViewHandler>(nameof(Label.Background), (h, v) => log += msg2);
+			mapper1.PrependToMapping<Label, IViewHandler>(nameof(Label.Focus), (h, v, a) => log += msg2);
 
-			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
+			mapper1.Invoke(null, (IView)Activator.CreateInstance(controlType), nameof(IView.Focus), null);
 
 			Assert.Contains(msg1, log, StringComparison.Ordinal);
 			if (shouldRun)
@@ -171,14 +171,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original";
 			var msg2 = "modification";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.ReplaceMapping<Label, IViewHandler>(nameof(IView.Background), (h, v) => log += msg2);
+			mapper1.ReplaceMapping<Label, IViewHandler>(nameof(IView.Focus), (h, v, a) => log += msg2);
 
-			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
+			mapper1.Invoke(null, (IView)Activator.CreateInstance(controlType), nameof(IView.Focus), null);
 
 			if (shouldRun)
 			{
@@ -203,14 +203,14 @@ namespace Microsoft.Maui.UnitTests
 			var msg1 = "original";
 			var msg2 = "modification";
 
-			var mapper1 = new PropertyMapper<IView, IViewHandler>
+			var mapper1 = new CommandMapper<IView, IViewHandler>
 			{
-				[nameof(IView.Background)] = (r, v) => log += msg1
+				[nameof(IView.Focus)] = (r, v, a) => log += msg1
 			};
 
-			mapper1.ModifyMapping<Label, IViewHandler>(nameof(IView.Background), (h, v, a) => log += msg2);
+			mapper1.ModifyMapping<Label, IViewHandler>(nameof(IView.Focus), (h, v, a, b) => log += msg2);
 
-			mapper1.UpdateProperties(null, (IView)Activator.CreateInstance(controlType));
+			mapper1.Invoke(null, (IView)Activator.CreateInstance(controlType), nameof(IView.Focus), null);
 
 			if (shouldRun)
 			{
