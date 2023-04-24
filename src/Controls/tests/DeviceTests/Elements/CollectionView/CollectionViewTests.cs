@@ -430,6 +430,8 @@ namespace Microsoft.Maui.DeviceTests
 				var savedItems = data.ToArray();
 				data.Clear();
 
+				await Task.Delay(100);
+
 				// Check that all logical children have no binding context
 				foreach (var logicalChild in logicalChildren)
 				{
@@ -441,6 +443,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					data.Add(savedItem);
 				}
+
+				await Task.Delay(100);
 
 				// Check that the right number of logical children have binding context again
 				int boundChildren = 0;
