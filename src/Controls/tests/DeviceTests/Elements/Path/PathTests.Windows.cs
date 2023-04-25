@@ -62,8 +62,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			await InvokeOnMainThreadAsync(() =>
-			path.ToPlatform(MauiContext).AttachAndRun(() =>
+			await path.AttachAndRun((handler) =>
 			{
 				var platformView = (W2DGraphicsView)path.ToPlatform(MauiContext);
 				Assert.NotNull(platformView);
@@ -72,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 				var shapeData = ((Path)shapeDrawable.ShapeView.Shape).Data;
 
 				Assert.Equal(pathGeometry2, shapeData);
-			}));
+			}, MauiContext);
 		}
 
 		Task PerformClick(IButton button)

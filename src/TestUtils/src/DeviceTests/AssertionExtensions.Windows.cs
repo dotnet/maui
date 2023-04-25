@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
+using Windows.UI;
 using Xunit;
 using Xunit.Sdk;
 using WColor = Windows.UI.Color;
@@ -138,35 +139,25 @@ namespace Microsoft.Maui.DeviceTests
 				: WColor.FromArgb(255, pixel.R, pixel.G, pixel.B);
 		}
 
-		public static Task AttachAndRun(this FrameworkElement view, Action action, IMauiContext? mauiContext = null) =>
+		public static Task AttachAndRun(this FrameworkElement view, Action action, IMauiContext mauiContext) =>
 			view.AttachAndRun(window => action(), mauiContext);
 
-		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action, IMauiContext? mauiContext = null) =>
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action, IMauiContext mauiContext) =>
 			view.AttachAndRun((window) =>
 			{
 				action(window);
 				return Task.FromResult(true);
 			}, mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext? mauiContext = null) =>
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun(window => action(), mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext? mauiContext = null) =>
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext mauiContext) =>
 			view.AttachAndRun((window) =>
 			{
 				var result = action(window);
 				return Task.FromResult(result);
 			}, mauiContext);
-
-		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRun(window => action());
-
-		public static Task AttachAndRun(this FrameworkElement view, Func<Window, Task> action) =>
-			view.AttachAndRun(async (window) =>
-			{
-				await action(window);
-				return true;
-			});
 
 		// Windows does ok running these tests in parallel but there's definitely
 		// a limit where it'll eventually be too many windows.
@@ -174,10 +165,7 @@ namespace Microsoft.Maui.DeviceTests
 		// to work fine.
 		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
-			view.AttachAndRun(window => action());
-
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext? mauiContext = null)
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext mauiContext)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
@@ -201,11 +189,12 @@ namespace Microsoft.Maui.DeviceTests
 
 					// attach to the UI
 					Grid grid;
-					var window = (mauiContext?.Services != null)
-						? Extensions.DependencyInjection.ActivatorUtilities.GetServiceOrCreateInstance<Window>(mauiContext.Services)
-						: new Window();
+					var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
 
-					window.Content = new TestWindowRoot(window)
+					if (window.Content is not null)
+						throw new Exception("The window retrieved from the service is already attached to existing content");
+
+					window.Content = new Grid
 					{
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
@@ -233,6 +222,12 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						result = await Run(() => action(window));
 					}
+					catch (Exception e)
+					{
+#pragma warning disable CA2200 // Rethrow to preserve stack details
+						throw e;
+#pragma warning restore CA2200 // Rethrow to preserve stack details
+					}
 					finally
 					{
 						grid.Children.Clear();
@@ -251,7 +246,11 @@ namespace Microsoft.Maui.DeviceTests
 			else
 			{
 				// Window is not a XAML type so is never on the hierarchy
-				var window = view.GetParentOfType<TestWindowRoot>()?.Window ?? throw new InvalidOperationException("View was attached to a window but there was no window.");
+				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
+
+				if (window.Content.XamlRoot != view.XamlRoot)
+					throw new Exception("The window retrieved from the service is different than the window this view is attached to");
+
 				return await Run(() => action(window));
 			}
 
@@ -273,7 +272,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
+		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view, IMauiContext mauiContext) =>
 			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
@@ -295,7 +294,7 @@ namespace Microsoft.Maui.DeviceTests
 				var height = bmp.PixelHeight;
 
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
-			});
+			}, mauiContext);
 
 		public static CanvasBitmap AssertColorAtPoint(this CanvasBitmap bitmap, WColor expectedColor, uint x, uint y) =>
 			bitmap.AssertColorAtPoint(expectedColor, (int)x, (int)y);
@@ -356,12 +355,12 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToWindowsColor());
+		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor, IMauiContext mauiContext) =>
+			AssertContainsColor(view, expectedColor.ToWindowsColor(), mauiContext);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return await AssertContainsColor(bitmap, expectedColor);
 		}
 
@@ -395,48 +394,48 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, Maui.Graphics.Color unexpectedColor) =>
-			AssertDoesNotContainColor(view, unexpectedColor.ToWindowsColor());
+		public static Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, Maui.Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToWindowsColor(), mauiContext);
 
-		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, WColor unexpectedColor)
+		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, WColor unexpectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return await AssertDoesNotContainColor(bitmap, unexpectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
+		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomLeft(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomLeft(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomRight(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomRight(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopLeft(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopLeft(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopRight(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopRight(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
@@ -482,16 +481,6 @@ namespace Microsoft.Maui.DeviceTests
 		public static bool IsExcludedWithChildren(this FrameworkElement platformView)
 		{
 			throw new NotImplementedException();
-		}
-
-		class TestWindowRoot : Grid
-		{
-			public TestWindowRoot(Window window)
-			{
-				Window = window;
-			}
-
-			public Window Window { get; set; }
 		}
 	}
 }

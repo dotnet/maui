@@ -33,32 +33,28 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, async (contentViewHandler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(async () =>
-				{
-					var platform1 = inputControl1.ToPlatform();
-					var platform2 = inputControl2.ToPlatform();
+				var platform1 = inputControl1.ToPlatform();
+				var platform2 = inputControl2.ToPlatform();
 
-					// focus the first control
-					var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-					Assert.True(result1);
+				// focus the first control
+				var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				Assert.True(result1);
 
-					// assert
-					await inputControl1.WaitForFocused();
-					Assert.True(inputControl1.IsFocused);
-					Assert.False(inputControl2.IsFocused);
+				// assert
+				await inputControl1.WaitForFocused();
+				Assert.True(inputControl1.IsFocused);
+				Assert.False(inputControl2.IsFocused);
 
-					// focus the second control
-					var result2 = inputControl2.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-					Assert.True(result2);
+				// focus the second control
+				var result2 = inputControl2.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				Assert.True(result2);
 
-					// assert
-					await inputControl2.WaitForFocused();
-					Assert.False(inputControl1.IsFocused);
-					Assert.True(inputControl2.IsFocused);
-				});
+				// assert
+				await inputControl2.WaitForFocused();
+				Assert.False(inputControl1.IsFocused);
+				Assert.True(inputControl2.IsFocused);
 			});
 		}
 
@@ -87,31 +83,27 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, async (contentViewHandler) =>
 			{
-				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
-				await contentViewHandler.PlatformView.AttachAndRun(async () =>
-				{
-					var platform1 = inputControl1.ToPlatform();
-					var platform2 = inputControl2.ToPlatform();
+				var platform1 = inputControl1.ToPlatform();
+				var platform2 = inputControl2.ToPlatform();
 
-					// focus the first control
-					var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
-					Assert.True(result1);
+				// focus the first control
+				var result1 = inputControl1.Handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+				Assert.True(result1);
 
-					// assert
-					await inputControl1.WaitForFocused();
-					Assert.True(inputControl1.IsFocused);
-					Assert.False(inputControl2.IsFocused);
+				// assert
+				await inputControl1.WaitForFocused();
+				Assert.True(inputControl1.IsFocused);
+				Assert.False(inputControl2.IsFocused);
 
-					// UNfocus the first control (revert the focus)
-					inputControl1.Handler.Invoke(nameof(IView.Unfocus));
+				// UNfocus the first control (revert the focus)
+				inputControl1.Handler.Invoke(nameof(IView.Unfocus));
 
-					// assert
-					await inputControl1.WaitForUnFocused();
-					Assert.False(inputControl1.IsFocused);
-					Assert.False(inputControl2.IsFocused);
-				});
+				// assert
+				await inputControl1.WaitForUnFocused();
+				Assert.False(inputControl1.IsFocused);
+				Assert.False(inputControl2.IsFocused);
 			});
 		}
 #endif

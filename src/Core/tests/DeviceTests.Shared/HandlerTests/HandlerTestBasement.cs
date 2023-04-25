@@ -168,7 +168,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color);
+				await plaformView.AssertContainsColor(color, MauiContext);
 			});
 		}
 
@@ -178,9 +178,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var plaformView = CreateHandler(view, handlerType).ToPlatform();
 #if WINDOWS
-				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y);
+				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y, MauiContext);
 #else
-				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y);
+				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y, MauiContext);
 #endif
 			});
 		}

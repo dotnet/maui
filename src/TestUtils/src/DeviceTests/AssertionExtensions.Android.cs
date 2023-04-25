@@ -388,7 +388,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view)
+		public static Task<Bitmap> ToBitmap(this AView view, IMauiContext mauiContext)
 		{
 			return view.AttachAndRun(() =>
 			{
@@ -496,57 +496,57 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
 
-		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor) =>
-			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
+		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return AssertContainsColor(bitmap, expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor)
+		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return AssertDoesNotContainColor(bitmap, unexpectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
+		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
