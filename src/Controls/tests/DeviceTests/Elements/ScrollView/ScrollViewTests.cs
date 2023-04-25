@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
 
-			await scroll.AttachAndRun(async (handler) =>
+			await AttachAndRun(scroll, async (handler) =>
 			{
 				var expectedSize = new Size(100, 100);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				expectedSize = new Size(200, 100);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
-			}, MauiContext);
+			});
 		}
 
 		[Theory]
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
 
-			await scroll.AttachAndRun(async (handler) =>
+			await AttachAndRun(scroll, async (handler) =>
 			{
 				var expectedSize = new Size(100, 100);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				expectedSize = new Size(100, 200);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
-			}, MauiContext);
+			});
 		}
 
 		[Theory]
@@ -70,11 +70,11 @@ namespace Microsoft.Maui.DeviceTests
 			var scroll = handler.VirtualView as ScrollView;
 
 
-			await scroll.AttachAndRun(async (handler) =>
+			await AttachAndRun(scroll, async (handler) =>
 			{
 				var expectedSize = new Size(expectedWidth, expectedHeight);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
-			}, MauiContext);
+			});
 		}
 
 		static async Task AssertContentSizeChanged(Task<bool> changed)

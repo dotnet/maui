@@ -172,6 +172,42 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		public Task AttachAndRun(IView view, Action<IPlatformViewHandler> action) =>
+				AttachAndRun<bool>(view, (handler) =>
+				{
+					action(handler);
+					return Task.FromResult(true);
+				});
+
+		public Task AttachAndRun(IView view, Func<IPlatformViewHandler, Task> action) =>
+				AttachAndRun<bool>(view, async (handler) =>
+				{
+					await action(handler);
+					return true;
+				});
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, T> action)
+		{
+			Func<IPlatformViewHandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return AttachAndRun<T>(view, boop);
+		}
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, Task<T>> action)
+		{
+			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
+			{
+				return action.Invoke((IPlatformViewHandler)handler);
+			}, MauiContext, (view) =>
+			{
+				var handler = view.ToHandler(MauiContext);
+				return Task.FromResult(handler);
+			});
+		}
+
 		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
 		{
 			return InvokeOnMainThreadAsync(async () =>

@@ -175,12 +175,12 @@ namespace Microsoft.Maui.DeviceTests
 
 				_ = CreateHandler<LabelHandler>(updatingLabel);
 				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
-				var updatingBitmap = await updatingLayout.AttachAndRun((handler) =>
+				var updatingBitmap = await AttachAndRun(updatingLayout , (handler) =>
 				{
 					updatingLabel.HorizontalOptions = layoutOptions;
 
 					return updatingHandler.PlatformView.ToBitmap(MauiContext);
-				}, MauiContext);
+				});
 
 				await initialBitmap.AssertEqualAsync(updatingBitmap);
 			});
@@ -233,7 +233,7 @@ namespace Microsoft.Maui.DeviceTests
 				// If this can be attached to the hierarchy and make it through a layout 
 				// without crashing, then we're good.
 
-				await root.AttachAndRun((handler) => { }, MauiContext);
+				await AttachAndRun(root, (handler) => { });
 			});
 		}
 	}

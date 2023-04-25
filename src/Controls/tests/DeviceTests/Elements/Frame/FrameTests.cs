@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var labelFrame =
-					await frame.AttachAndRun<Rect>(async (handler) =>
+					await AttachAndRun<Rect>(frame, async (handler) =>
 					{
 						(frame as IView).Measure(300, 300);
 						(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 						await OnFrameSetToNotEmpty(frame.Content);
 
 						return frame.Content.Frame;
-					}, MauiContext);
+					});
 
 
 			// validate label is centered in the frame
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			additionalTests ??= () => Task.CompletedTask;
 			return await
-					layout.AttachAndRun(async (handler) =>
+					AttachAndRun(layout, async (handler) =>
 					{
 						var size = (layout as IView).Measure(widthConstraint, heightConstraint);
 						var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
@@ -356,7 +356,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						await additionalTests.Invoke();
 						return layout.Frame;
-					}, MauiContext);
+					});
 		}
 	}
 }
