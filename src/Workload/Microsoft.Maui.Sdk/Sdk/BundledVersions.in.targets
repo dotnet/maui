@@ -40,7 +40,7 @@
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
-    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
+    <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" IsMauiImplicitOptionalPackageReference="true" Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
@@ -51,6 +51,7 @@
   <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiImplicitPackageReference Remove="@(PackageReference)" />
     <PackageReference Include="@(_MauiImplicitPackageReference)" IsMauiImplicitPackageReference="true" />
+    <_MauiImplicitRequiredPackageReference Include="@(_MauiImplicitPackageReference->WithMetadataValue('IsMauiImplicitOptionalPackageReference',''))" />
   </ItemGroup>
 
   <Target
@@ -60,7 +61,7 @@
       ('$(SkipValidateMauiImplicitPackageReferences)' != 'true') and
       ('$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true') and
       ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and
-      ('@(_MauiRequiredImplicitPackageReference->Count())' != '0' or '@(_MauiImplicitPackageReference->Count())' != '0') ">
+      ('@(_MauiImplicitRequiredPackageReference->Count())' != '0') ">
 
     <PropertyGroup>
       <_MauiValidateRefsPrefix>Starting with .NET 8, setting </_MauiValidateRefsPrefix>
