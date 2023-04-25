@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
@@ -9,6 +10,12 @@ Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IEnumera
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.IMenuElement.Accelerator.get -> Microsoft.Maui.IAccelerator!
+Microsoft.Maui.ICommandMapper
+Microsoft.Maui.ICommandMapper.GetCommand(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?
+Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll
@@ -31,6 +38,13 @@ override Microsoft.Maui.Platform.MauiTextView.Font.get -> UIKit.UIFont?
 override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
@@ -52,6 +66,10 @@ static Microsoft.Maui.Platform.ApplicationExtensions.UpdateUserInterfaceStyle(th
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
+static Microsoft.Maui.PropertyMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
