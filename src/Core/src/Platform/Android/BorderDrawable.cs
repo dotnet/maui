@@ -387,7 +387,7 @@ namespace Microsoft.Maui.Platform
 				if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
 				{
 					var resource = _context.Resources.GetResourceTypeName(background.ResourceId);
-					var type = resource?.ToLower();
+					var type = resource?.ToLowerInvariant();
 
 					if (type == "color")
 					{
