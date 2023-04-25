@@ -175,7 +175,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				_ = CreateHandler<LabelHandler>(updatingLabel);
 				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
-				var updatingBitmap = await AttachAndRun(updatingLayout , (handler) =>
+				var updatingBitmap = await AttachAndRun(updatingLayout, (handler) =>
 				{
 					updatingLabel.HorizontalOptions = layoutOptions;
 
