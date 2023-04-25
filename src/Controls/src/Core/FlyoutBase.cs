@@ -2,6 +2,7 @@
 {
 	public abstract class FlyoutBase : Element, IFlyout
 	{
+		/// <summary>Bindable property for attached property <c>ContextFlyout</c>.</summary>
 		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.CreateAttached("ContextFlyout", typeof(FlyoutBase), typeof(FlyoutBase), null,
 			propertyChanged: (bo, oldV, newV) =>
 			{

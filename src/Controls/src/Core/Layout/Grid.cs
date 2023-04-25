@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Dictionary<IView, GridInfo> _viewInfo = new();
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnDefinitionsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ColumnDefinitions"/>.</summary>
 		public static readonly BindableProperty ColumnDefinitionsProperty = BindableProperty.Create("ColumnDefinitions",
 			typeof(ColumnDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 				return colDef;
 			});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowDefinitionsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RowDefinitions"/>.</summary>
 		public static readonly BindableProperty RowDefinitionsProperty = BindableProperty.Create("RowDefinitions",
 			typeof(RowDefinitionCollection), typeof(Grid), null, validateValue: (bindable, value) => value != null,
 			propertyChanged: UpdateSizeChangedHandlers, defaultValueCreator: bindable =>
@@ -30,32 +30,32 @@ namespace Microsoft.Maui.Controls
 				return rowDef;
 			});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RowSpacing"/>.</summary>
 		public static readonly BindableProperty RowSpacingProperty = BindableProperty.Create("RowSpacing", typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ColumnSpacing"/>.</summary>
 		public static readonly BindableProperty ColumnSpacingProperty = BindableProperty.Create("ColumnSpacing", typeof(double),
 			typeof(Grid), 0d, propertyChanged: Invalidate);
 
 		#region Row/Column/Span Attached Properties
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Row</c>.</summary>
 		public static readonly BindableProperty RowProperty = BindableProperty.CreateAttached("Row",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='RowSpanProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>RowSpan</c>.</summary>
 		public static readonly BindableProperty RowSpanProperty = BindableProperty.CreateAttached("RowSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Column</c>.</summary>
 		public static readonly BindableProperty ColumnProperty = BindableProperty.CreateAttached("Column",
 			typeof(int), typeof(Grid), default(int), validateValue: (bindable, value) => (int)value >= 0,
 			propertyChanged: Invalidate);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Grid.xml" path="//Member[@MemberName='ColumnSpanProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ColumnSpan</c>.</summary>
 		public static readonly BindableProperty ColumnSpanProperty = BindableProperty.CreateAttached("ColumnSpan",
 			typeof(int), typeof(Grid), 1, validateValue: (bindable, value) => (int)value >= 1,
 			propertyChanged: Invalidate);

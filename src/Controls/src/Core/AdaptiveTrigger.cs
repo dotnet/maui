@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinWindowHeightProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MinWindowHeight"/>.</summary>
 		public static readonly BindableProperty MinWindowHeightProperty =
 			BindableProperty.Create(nameof(MinWindowHeight), typeof(double), typeof(AdaptiveTrigger), -1d,
 				propertyChanged: OnMinWindowDimensionChanged);
@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(MinWindowWidthProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AdaptiveTrigger.xml" path="//Member[@MemberName='MinWindowWidthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MinWindowWidth"/>.</summary>
 		public static readonly BindableProperty MinWindowWidthProperty =
 			BindableProperty.Create(nameof(MinWindowWidth), typeof(double), typeof(AdaptiveTrigger), -1d,
 				propertyChanged: OnMinWindowDimensionChanged);

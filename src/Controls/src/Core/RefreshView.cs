@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<RefreshView>>(() => new PlatformConfigurationRegistry<RefreshView>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
 		public static readonly BindableProperty IsRefreshingProperty =
 			BindableProperty.Create(nameof(IsRefreshing), typeof(bool), typeof(RefreshView), false, BindingMode.TwoWay, coerceValue: OnIsRefreshingPropertyCoerced, propertyChanged: OnIsRefreshingPropertyChanged);
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsRefreshingProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(RefreshView), propertyChanged: OnCommandChanged);
 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(CommandProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty =
 			BindableProperty.Create(nameof(CommandParameter),
 				typeof(object),
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='RefreshColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RefreshColor"/>.</summary>
 		public static readonly BindableProperty RefreshColorProperty =
 			BindableProperty.Create(nameof(RefreshColor), typeof(Color), typeof(RefreshView), null);
 

@@ -6,21 +6,21 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.Image']/Docs/*" />
 	public partial class Image : View, IImageController, IElementConfiguration<Image>, IViewController, IImageElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='SourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='AspectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Aspect"/>.</summary>
 		public static readonly BindableProperty AspectProperty = ImageElement.AspectProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsOpaqueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsOpaque"/>.</summary>
 		public static readonly BindableProperty IsOpaqueProperty = ImageElement.IsOpaqueProperty;
 
 		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsLoading), typeof(bool), typeof(Image), default(bool));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsLoadingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLoading"/>.</summary>
 		public static readonly BindableProperty IsLoadingProperty = IsLoadingPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Image.xml" path="//Member[@MemberName='IsAnimationPlayingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsAnimationPlaying"/>.</summary>
 		public static readonly BindableProperty IsAnimationPlayingProperty = ImageElement.IsAnimationPlayingProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Image>> _platformConfigurationRegistry;

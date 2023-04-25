@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Segments = new PathSegmentCollection();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='SegmentsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Segments"/>.</summary>
 		public static readonly BindableProperty SegmentsProperty =
 			BindableProperty.Create(nameof(Segments), typeof(PathSegmentCollection), typeof(PathFigure), null,
 				propertyChanged: OnPathSegmentCollectionChanged);
@@ -25,15 +25,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as PathFigure)?.UpdatePathSegmentCollection(oldValue as PathSegmentCollection, newValue as PathSegmentCollection);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='StartPointProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StartPoint"/>.</summary>
 		public static readonly BindableProperty StartPointProperty =
 			BindableProperty.Create(nameof(StartPoint), typeof(Point), typeof(PathFigure), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='IsClosedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsClosed"/>.</summary>
 		public static readonly BindableProperty IsClosedProperty =
 			BindableProperty.Create(nameof(IsClosed), typeof(bool), typeof(PathFigure), false);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathFigure.xml" path="//Member[@MemberName='IsFilledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsFilled"/>.</summary>
 		public static readonly BindableProperty IsFilledProperty =
 			BindableProperty.Create(nameof(IsFilled), typeof(bool), typeof(PathFigure), true);
 

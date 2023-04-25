@@ -6,6 +6,7 @@ namespace Microsoft.Maui.Controls
 {
 	static class DecorableTextElement
 	{
+		/// <summary>Bindable property for <see cref="TextDecorations"/>.</summary>
 		public static readonly BindableProperty TextDecorationsProperty = BindableProperty.Create(nameof(IDecorableTextElement.TextDecorations), typeof(TextDecorations), typeof(IDecorableTextElement), TextDecorations.None);
 	}
 

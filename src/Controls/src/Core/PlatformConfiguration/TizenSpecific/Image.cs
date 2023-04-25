@@ -6,10 +6,10 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Image']/Docs/*" />
 	public static class Image
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='BlendColorProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>BlendColor</c>.</summary>
 		public static readonly BindableProperty BlendColorProperty = BindableProperty.Create("BlendColor", typeof(Color), typeof(FormsElement), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='FileProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>File</c>.</summary>
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FormsElement), default(string));
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Image.xml" path="//Member[@MemberName='GetBlendColor'][1]/Docs/*" />

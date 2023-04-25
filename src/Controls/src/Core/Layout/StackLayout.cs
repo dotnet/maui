@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/StackLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.StackLayout']/Docs/*" />
 	public class StackLayout : StackBase, IStackLayout
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StackLayout.xml" path="//Member[@MemberName='OrientationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: OrientationChanged);
 

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PropertyProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='PropertyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Property"/>.</summary>
 		public static readonly BindableProperty PropertyProperty =
 		BindableProperty.Create(nameof(Property), typeof(object), typeof(CompareStateTrigger), null,
 			propertyChanged: OnPropertyChanged);
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ValueProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompareStateTrigger.xml" path="//Member[@MemberName='ValueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 		BindableProperty.Create(nameof(Value), typeof(object), typeof(CompareStateTrigger), null,
 			propertyChanged: OnValueChanged);

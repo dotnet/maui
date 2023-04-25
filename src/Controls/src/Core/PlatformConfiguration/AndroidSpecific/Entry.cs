@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.Entry']/Docs/*" />
 	public static class Entry
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='ImeOptionsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ImeOptions"/>.</summary>
 		public static readonly BindableProperty ImeOptionsProperty = BindableProperty.Create(nameof(ImeOptions), typeof(ImeFlags), typeof(Entry), ImeFlags.Default);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Entry.xml" path="//Member[@MemberName='GetImeOptions']/Docs/*" />

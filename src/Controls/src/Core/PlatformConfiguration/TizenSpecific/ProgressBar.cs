@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.ProgressBar']/Docs/*" />
 	public static class ProgressBar
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/ProgressBar.xml" path="//Member[@MemberName='ProgressBarPulsingStatusProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ProgressBarPulsingStatus</c>.</summary>
 		public static readonly BindableProperty ProgressBarPulsingStatusProperty =
 			BindableProperty.Create("ProgressBarPulsingStatus", typeof(bool),
 			typeof(FormsElement), false);
