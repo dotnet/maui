@@ -59,32 +59,4 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_GenerateAutoImport"
-      BeforeTargets="Build;AssignTargetPaths"
-      DependsOnTargets="SetVersions"
-      Inputs="$(MSBuildProjectFile);$(MauiRootDirectory)eng/Versions.props;Sdk/AutoImport.in.props"
-      Outputs="$(IntermediateOutputPath)AutoImport.props">
-    <Copy
-        SourceFiles="Sdk/AutoImport.in.props"
-        DestinationFiles="$(IntermediateOutputPath)AutoImport.props"
-    />
-    <ReplaceText
-        Input="$(IntermediateOutputPath)AutoImport.props"
-        Output="$(IntermediateOutputPath)AutoImport.props"
-        OldValue="@%(_ValuesToReplace.Identity)@"
-        NewValue="$(%(_ValuesToReplace.PropertyName))"
-    />
-    <ItemGroup>
-      <None
-          Include="$(IntermediateOutputPath)AutoImport.props"
-          Link="Sdk/AutoImport.props"
-          CopyToOutputDirectory="PreserveNewest"
-          Pack="true"
-          PackagePath="Sdk"
-          Visible="false"
-      />
-      <FileWrites Include="$(IntermediateOutputPath)AutoImport.props" />
-    </ItemGroup>
-  </Target>
-
 </Project>
