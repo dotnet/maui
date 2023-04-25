@@ -7,6 +7,7 @@ Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IEnumera
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.IMenuElement.Accelerator.get -> Microsoft.Maui.IAccelerator!
+Microsoft.Maui.IWindow.TitleBarDragRectangles.get -> Microsoft.Maui.Graphics.Rect[]?
 Microsoft.Maui.ICommandMapper
 Microsoft.Maui.ICommandMapper.GetCommand(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?
 Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void

@@ -439,6 +439,11 @@ namespace Microsoft.Maui.Controls
 			Application?.NotifyOfWindowModalEvent(args);
 
 			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal bool OnModalPopping(Page modalPage)
@@ -456,6 +461,11 @@ namespace Microsoft.Maui.Controls
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 			VisualDiagnostics.OnChildAdded(this, modalPage);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal void OnModalPushing(Page modalPage)

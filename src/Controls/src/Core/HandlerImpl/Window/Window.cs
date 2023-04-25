@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Controls
 				// This property is also on the Application Mapper since that's where the attached property exists				
 				[PlatformConfiguration.AndroidSpecific.Application.WindowSoftInputModeAdjustProperty.PropertyName] = MapWindowSoftInputModeAdjust,
 #endif
+
+#if WINDOWS
+				[nameof(ITitledElement.Title)] = MapWindowTitle
+#endif
 			};
 
 		internal static void RemapForControls()
