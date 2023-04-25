@@ -92,6 +92,30 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
+		[Test]
+		[TestCase("maui", "net7.0", "Debug")]
+		[TestCase("mauilib", "net7.0", "Debug")]
+		[TestCase("maui-blazor", "net7.0", "Debug")]
+		public void BuildWithPackageReference(string id, string framework, string config)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+			FileUtilities.ReplaceInFile(projectFile,
+				"<Project>",
+				"<Project><PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>");
+			FileUtilities.ReplaceInFile(projectFile,
+				"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
+				"");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
 		void EnableTizen(string projectFile)
 		{
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
