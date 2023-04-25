@@ -240,7 +240,12 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 		}
 
-		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
+			Task.WhenAll(
+				view.WaitForLayout(timeout),
+				Wait(() => view.Width > 0 && view.Height > 0, timeout));
+
+		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -335,7 +340,17 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					LayoutParameters = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.MatchParent)
 				};
-				view.LayoutParameters = new FrameLayout.LayoutParams(view.Width, view.Height)
+
+				var width = view.Width;
+				var height = view.Height;
+
+				if (width <= 0)
+					width = FrameLayout.LayoutParams.WrapContent;
+
+				if (height <= 0)
+					height = FrameLayout.LayoutParams.WrapContent;
+
+				view.LayoutParameters = new FrameLayout.LayoutParams(width, height)
 				{
 					Gravity = GravityFlags.Center
 				};
@@ -367,16 +382,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
-				await Task.WhenAll(
-					WaitForLayout(view),
-					Wait(() => view.Width > 0 && view.Height > 0));
+				await view.WaitForLayoutOrNonZeroSize();
 
 				return await action();
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view) =>
-			view.AttachAndRun(() =>
+		public static Task<Bitmap> ToBitmap(this AView view)
+		{
+			return view.AttachAndRun(() =>
 			{
 				if (view.Parent is WrapperView wrapper)
 					view = wrapper;
@@ -388,6 +402,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return bitmap;
 			});
+		}
 
 		public static Bitmap AssertColorAtPoint(this Bitmap bitmap, AColor expectedColor, int x, int y)
 		{
@@ -457,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			throw new XunitException($"Color {expectedColor} not found.");
+			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
 		}
 
 		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
@@ -473,7 +488,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (bitmap.ColorAtPoint(x, y, true).IsEquivalent(unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 					}
 				}
 			}

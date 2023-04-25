@@ -40,6 +40,19 @@
                 </DatePicker.Background>
             </DatePicker>
             <Label
+                Text="Background"
+                Style="{StaticResource Headline}" />
+            <DatePicker 
+                x:Name="BackgroundDatePicker"/>
+            <Button
+                x:Name="UpdateBackgroundButton"
+                Text="Update Background"
+                Clicked="OnUpdateBackgroundButtonClicked"/>
+            <Button
+                x:Name="ClearBackgroundButton"
+                Text="Clear Background"
+                Clicked="OnClearBackgroundButtonClicked"/>
+            <Label
                 Text="Default with date"
                 Style="{StaticResource Headline}"/>
             <DatePicker 

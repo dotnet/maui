@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WebView2 platformView)
 		{
-			DisconnectHandler(platformView);
+			Disconnect(platformView);
 			base.DisconnectHandler(platformView);
 		}
 
