@@ -49,6 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(swipeView, async (handler) =>
 			{
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
 				var openRequest = new SwipeViewOpenRequest(OpenSwipeItem.LeftItems, false);
 				swipeView.Open(OpenSwipeItem.LeftItems, false);
 
