@@ -96,7 +96,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", "net7.0", "Debug")]
 		[TestCase("mauilib", "net7.0", "Debug")]
 		[TestCase("maui-blazor", "net7.0", "Debug")]
-		public void BuildWithPackageReference(string id, string framework, string config)
+		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
