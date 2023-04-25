@@ -81,7 +81,7 @@
       Condition="'$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'false'"
       Text="$(_MauiValidateRefsPrefix) &lt;UseMaui&gt;true&lt;/UseMaui&gt; $(_MauiValidateRefsInfix)Microsoft.Maui.Controls$(_MauiValidateRefsSuffix)" />
 
-    <Warning 
+    <Warning
       Code="MA002"
       Condition="'$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true'"
       Text="$(_MauiValidateRefsPrefix) &lt;UseMaui&gt;true&lt;/UseMaui&gt; $(_MauiValidateRefsInfix)Microsoft.AspNetCore.Components.WebView.Maui$(_MauiValidateRefsSuffix)" />
@@ -90,12 +90,12 @@
       Code="MA002"
       Condition="'$(UseMauiCore)' == 'true'"
       Text="$(_MauiValidateRefsPrefix) &lt;UseMauiCore&gt;true&lt;/UseMauiCore&gt; $(_MauiValidateRefsInfix)Microsoft.Maui.Core$(_MauiValidateRefsSuffix)" />
-    
-    <Warning 
+
+    <Warning
       Code="MA002"
       Condition="'$(UseMauiAssets)' == 'true'"
       Text="$(_MauiValidateRefsPrefix) &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt; $(_MauiValidateRefsInfix)Microsoft.Maui.Resizetizer$(_MauiValidateRefsSuffix)" />
-    
+
     <Warning
       Code="MA002"
       Condition="'$(UseMauiEssentials)' == 'true'"
