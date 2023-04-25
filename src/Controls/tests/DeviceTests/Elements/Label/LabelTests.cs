@@ -252,13 +252,13 @@ namespace Microsoft.Maui.DeviceTests
 				(label = new Label
 				{
 					WidthRequest = 200,
-					HeightRequest = 200,
+					HeightRequest = 100,
 					BackgroundColor = Colors.Blue,
 					FormattedText = new FormattedString
 					{
 						Spans =
 						{
-							new Span { Text = "short", TextColor = Colors.Red },
+							new Span { Text = "short", TextColor = Colors.Red, FontSize = 20 },
 							new Span { Text = " long second string"}
 						}
 					},
