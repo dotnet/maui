@@ -252,7 +252,7 @@ namespace Microsoft.Maui.DeviceTests
 				(label = new Label
 				{
 					WidthRequest = 200,
-					HeightRequest = 50,
+					HeightRequest = 200,
 					BackgroundColor = Colors.Blue,
 					FormattedText = new FormattedString
 					{
