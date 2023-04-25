@@ -33,7 +33,7 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await AttachAndRun(layout, async (contentViewHandler) =>
+			await AttachAndRun<LayoutHandler>(layout, async (contentViewHandler) =>
 			{
 				var platform1 = inputControl1.ToPlatform();
 				var platform2 = inputControl2.ToPlatform();
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 			layout.Width = 100;
 			layout.Height = 150;
 
-			await AttachAndRun(layout, async (contentViewHandler) =>
+			await AttachAndRun<LayoutHandler>(layout, async (contentViewHandler) =>
 			{
 				var platform1 = inputControl1.ToPlatform();
 				var platform2 = inputControl2.ToPlatform();
