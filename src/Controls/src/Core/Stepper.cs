@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="Type[@FullName='Microsoft.Maui.Controls.Stepper']/Docs/*" />
 	public partial class Stepper : View, IElementConfiguration<Stepper>, IStepper
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='MaximumProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Stepper), 100.0,
 			validateValue: (bindable, value) => (double)value > ((Stepper)bindable).Minimum,
 			coerceValue: (bindable, value) =>
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 				return value;
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='MinimumProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Stepper), 0.0,
 			validateValue: (bindable, value) => (double)value < ((Stepper)bindable).Maximum,
 			coerceValue: (bindable, value) =>
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 				return value;
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='ValueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Stepper), 0.0, BindingMode.TwoWay,
 			coerceValue: (bindable, value) =>
 			{
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 		int digits = 4;
 		//'-log10(increment) + 4' as rounding digits gives us 4 significant decimal digits after the most significant one.
 		//If your increment uses more than 4 significant digits, you're holding it wrong.
-		/// <include file="../../docs/Microsoft.Maui.Controls/Stepper.xml" path="//Member[@MemberName='IncrementProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Increment"/>.</summary>
 		public static readonly BindableProperty IncrementProperty = BindableProperty.Create(nameof(Increment), typeof(double), typeof(Stepper), 1.0,
 			propertyChanged: (b, o, n) => { ((Stepper)b).digits = (int)(-Math.Log10((double)n) + 4).Clamp(1, 15); });
 

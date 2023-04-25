@@ -9,11 +9,12 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Entry']/Docs/*" />
 	public static class Entry
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='AdjustsFontSizeToFitWidthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AdjustsFontSizeToFitWidth"/>.</summary>
 		public static readonly BindableProperty AdjustsFontSizeToFitWidthProperty =
 			BindableProperty.Create("AdjustsFontSizeToFitWidth", typeof(bool),
 				typeof(Entry), false);
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='CursorColorProperty']/Docs/*" />
+
+		/// <summary>Bindable property for attached property <c>CursorColor</c>.</summary>
 		public static readonly BindableProperty CursorColorProperty = BindableProperty.Create("CursorColor", typeof(Color), typeof(Entry), null);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Entry.xml" path="//Member[@MemberName='GetAdjustsFontSizeToFitWidth']/Docs/*" />

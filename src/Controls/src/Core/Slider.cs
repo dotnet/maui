@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="Type[@FullName='Microsoft.Maui.Controls.Slider']/Docs/*" />
 	public partial class Slider : View, ISliderController, IElementConfiguration<Slider>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MinimumProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Minimum"/>.</summary>
 		public static readonly BindableProperty MinimumProperty = BindableProperty.Create(nameof(Minimum), typeof(double), typeof(Slider), 0d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 			return value;
 		});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MaximumProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Maximum"/>.</summary>
 		public static readonly BindableProperty MaximumProperty = BindableProperty.Create(nameof(Maximum), typeof(double), typeof(Slider), 1d, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			return value;
 		});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='ValueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty = BindableProperty.Create(nameof(Value), typeof(double), typeof(Slider), 0d, BindingMode.TwoWay, coerceValue: (bindable, value) =>
 		{
 			var slider = (Slider)bindable;
@@ -35,22 +35,22 @@ namespace Microsoft.Maui.Controls
 			slider.ValueChanged?.Invoke(slider, new ValueChangedEventArgs((double)oldValue, (double)newValue));
 		});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MinimumTrackColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MinimumTrackColor"/>.</summary>
 		public static readonly BindableProperty MinimumTrackColorProperty = BindableProperty.Create(nameof(MinimumTrackColor), typeof(Color), typeof(Slider), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='MaximumTrackColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MaximumTrackColor"/>.</summary>
 		public static readonly BindableProperty MaximumTrackColorProperty = BindableProperty.Create(nameof(MaximumTrackColor), typeof(Color), typeof(Slider), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='ThumbColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Slider), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='ThumbImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ThumbImageSource"/>.</summary>
 		public static readonly BindableProperty ThumbImageSourceProperty = BindableProperty.Create(nameof(ThumbImageSource), typeof(ImageSource), typeof(Slider), default(ImageSource));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='DragStartedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragStartedCommand"/>.</summary>
 		public static readonly BindableProperty DragStartedCommandProperty = BindableProperty.Create(nameof(DragStartedCommand), typeof(ICommand), typeof(Slider), default(ICommand));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='DragCompletedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragCompletedCommand"/>.</summary>
 		public static readonly BindableProperty DragCompletedCommandProperty = BindableProperty.Create(nameof(DragCompletedCommand), typeof(ICommand), typeof(Slider), default(ICommand));
 
 		readonly Lazy<PlatformConfigurationRegistry<Slider>> _platformConfigurationRegistry;

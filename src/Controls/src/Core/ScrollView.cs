@@ -96,30 +96,30 @@ namespace Microsoft.Maui.Controls
 
 		#endregion IScrollViewController
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='OrientationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create("Orientation", typeof(ScrollOrientation), typeof(ScrollView), ScrollOrientation.Vertical);
 
 		static readonly BindablePropertyKey ScrollXPropertyKey = BindableProperty.CreateReadOnly("ScrollX", typeof(double), typeof(ScrollView), 0d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScrollX"/>.</summary>
 		public static readonly BindableProperty ScrollXProperty = ScrollXPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey ScrollYPropertyKey = BindableProperty.CreateReadOnly("ScrollY", typeof(double), typeof(ScrollView), 0d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ScrollYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScrollY"/>.</summary>
 		public static readonly BindableProperty ScrollYProperty = ScrollYPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey ContentSizePropertyKey = BindableProperty.CreateReadOnly("ContentSize", typeof(Size), typeof(ScrollView), default(Size));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='ContentSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ContentSize"/>.</summary>
 		public static readonly BindableProperty ContentSizeProperty = ContentSizePropertyKey.BindableProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<ScrollView>> _platformConfigurationRegistry;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='VerticalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ScrollView), ScrollBarVisibility.Default);
 
 		View _content;
