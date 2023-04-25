@@ -82,7 +82,6 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler, new()
 			=> CreateHandler<THandler, THandler>(view, mauiContext);
 
-
 		protected void InitializeViewHandler(IElement element, IElementHandler handler, IMauiContext mauiContext = null)
 		{
 			mauiContext ??= MauiContext;
@@ -207,6 +206,18 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(handler);
 			});
 		}
+		public Task AttachAndRun<TPlatformHandler>(IView view, Func<TPlatformHandler, Task> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+			view.AttachAndRun<bool, TPlatformHandler>(async (handler) =>
+			{
+				await action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
 
 		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
 		{
