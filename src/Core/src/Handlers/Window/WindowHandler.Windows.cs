@@ -156,34 +156,34 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		internal static void MapTitleBarDragRectangles(IWindowHandler handler, IWindow window)
-        {
-            if (!AppWindowTitleBar.IsCustomizationSupported())
-                return;
+		{
+			if (!AppWindowTitleBar.IsCustomizationSupported())
+				return;
 
-            var titleBar = handler.PlatformView.AppWindow.TitleBar;
-            var titleBarRects = window.TitleBarDragRectangles;
-			
-            if (titleBarRects is null)
-            {
-                titleBar.SetDragRectangles(null);
-            }
-            else
-            {
-                var density = handler.PlatformView.GetDisplayDensity();
-                RectInt32[] dragRects = new RectInt32[titleBarRects.Length];
-                for (var i = 0; i < titleBarRects.Length; i++)
-                {
-                    Rect rect = titleBarRects[i];
-                    dragRects[i] = new RectInt32(
-                        (int)(rect.X * density),
-                        (int)(rect.Y * density),
-                        (int)(rect.Width * density),
-                        (int)(rect.Height * density));
-                }
+			var titleBar = handler.PlatformView.AppWindow.TitleBar;
+			var titleBarRects = window.TitleBarDragRectangles;
 
-                titleBar.SetDragRectangles(dragRects);
-            }
-        }
+			if (titleBarRects is null)
+			{
+				titleBar.SetDragRectangles(null);
+			}
+			else
+			{
+				var density = handler.PlatformView.GetDisplayDensity();
+				RectInt32[] dragRects = new RectInt32[titleBarRects.Length];
+				for (var i = 0; i < titleBarRects.Length; i++)
+				{
+					Rect rect = titleBarRects[i];
+					dragRects[i] = new RectInt32(
+					(int)(rect.X * density),
+					(int)(rect.Y * density),
+					(int)(rect.Width * density),
+					(int)(rect.Height * density));
+				}
+
+				titleBar.SetDragRectangles(dragRects);
+			}
+		}
 
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)
 		{
