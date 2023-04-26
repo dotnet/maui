@@ -36,6 +36,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 			EnableTizen(projectFile);
 
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"<Project>",
+					"<Project><PropertyGroup><Version>1.0.0-preview.1</Version>");
+
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
