@@ -157,14 +157,10 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 200
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, (handler) =>
 			{
-				var handler = CreateHandler(searchBar);
-				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
-				{
-					var height = GetInputFieldHeight(handler);
-					Assert.True(height >= 44);
-				});
+				var height = GetInputFieldHeight(handler);
+				Assert.True(height >= 44);
 			});
 		}
 

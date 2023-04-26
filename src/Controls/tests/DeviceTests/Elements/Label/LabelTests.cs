@@ -261,10 +261,10 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(MauiContext);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(MauiContext);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
@@ -298,13 +298,13 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var initialHandler = CreateHandler<LabelHandler>(initialLabel);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap(MauiContext);
 
 				var updatedHandler = CreateHandler<LabelHandler>(updatedLabel);
 
 				updatedLabel.FormattedText = GetFormattedString();
 
-				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
+				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap(MauiContext);
 
 				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
@@ -358,10 +358,10 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(MauiContext);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(MauiContext);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});

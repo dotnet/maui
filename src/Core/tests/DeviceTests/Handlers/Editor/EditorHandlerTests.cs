@@ -383,14 +383,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
 
-			// attach for windows because it uses control templates
-			var values = await GetValueAsync(editor, (handler) =>
-				handler.PlatformView.AttachAndRun(() =>
+			var values =
+				await AttachAndRun(editor, (handler) =>
 					new
 					{
 						ViewValue = editor.VerticalTextAlignment,
 						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-					}));
+					});
+
 
 			Assert.Equal(textAlignment, values.ViewValue);
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
