@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(OrientationProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/OrientationStateTrigger.xml" path="//Member[@MemberName='OrientationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty =
 			BindableProperty.Create(nameof(Orientation), typeof(DisplayOrientation), typeof(OrientationStateTrigger), null,
 				propertyChanged: OnOrientationChanged);

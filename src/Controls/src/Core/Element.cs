@@ -15,10 +15,10 @@ namespace Microsoft.Maui.Controls
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationIdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AutomationId"/>.</summary>
 		public static readonly BindableProperty AutomationIdProperty = BindableProperty.Create(nameof(AutomationId), typeof(string), typeof(Element), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassIdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ClassId"/>.</summary>
 		public static readonly BindableProperty ClassIdProperty = BindableProperty.Create(nameof(ClassId), typeof(string), typeof(Element), null);
 
 		IList<BindableObject> _bindableResources;

@@ -15,19 +15,19 @@ namespace Microsoft.Maui.Controls
 			keyValues = new Dictionary<string, string>();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(nameof(Title), typeof(string), typeof(AppLinkEntry), default(string));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='DescriptionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Description"/>.</summary>
 		public static readonly BindableProperty DescriptionProperty = BindableProperty.Create(nameof(Description), typeof(string), typeof(AppLinkEntry), default(string));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='ThumbnailProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Thumbnail"/>.</summary>
 		public static readonly BindableProperty ThumbnailProperty = BindableProperty.Create(nameof(Thumbnail), typeof(ImageSource), typeof(AppLinkEntry), default(ImageSource));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='AppLinkUriProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AppLinkUri"/>.</summary>
 		public static readonly BindableProperty AppLinkUriProperty = BindableProperty.Create(nameof(AppLinkUri), typeof(Uri), typeof(AppLinkEntry), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='IsLinkActiveProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLinkActive"/>.</summary>
 		public static readonly BindableProperty IsLinkActiveProperty = BindableProperty.Create(nameof(IsLinkActive), typeof(bool), typeof(AppLinkEntry), false);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='AppLinkUri']/Docs/*" />

@@ -22,62 +22,62 @@ namespace Microsoft.Maui.Controls
 
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsPullToRefreshEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsRefreshingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsRefreshing"/>.</summary>
 		public static readonly BindableProperty IsRefreshingProperty = BindableProperty.Create("IsRefreshing", typeof(bool), typeof(ListView), false, BindingMode.TwoWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RefreshCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RefreshCommand"/>.</summary>
 		public static readonly BindableProperty RefreshCommandProperty = BindableProperty.Create("RefreshCommand", typeof(ICommand), typeof(ListView), null, propertyChanged: OnRefreshCommandChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HeaderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Header"/>.</summary>
 		public static readonly BindableProperty HeaderProperty = BindableProperty.Create("Header", typeof(object), typeof(ListView), null, propertyChanged: OnHeaderChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HeaderTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HeaderTemplate"/>.</summary>
 		public static readonly BindableProperty HeaderTemplateProperty = BindableProperty.Create("HeaderTemplate", typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnHeaderTemplateChanged,
 			validateValue: ValidateHeaderFooterTemplate);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='FooterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Footer"/>.</summary>
 		public static readonly BindableProperty FooterProperty = BindableProperty.Create("Footer", typeof(object), typeof(ListView), null, propertyChanged: OnFooterChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='FooterTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FooterTemplate"/>.</summary>
 		public static readonly BindableProperty FooterTemplateProperty = BindableProperty.Create("FooterTemplate", typeof(DataTemplate), typeof(ListView), null, propertyChanged: OnFooterTemplateChanged,
 			validateValue: ValidateHeaderFooterTemplate);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SelectedItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
 		public static readonly BindableProperty SelectedItemProperty = BindableProperty.Create("SelectedItem", typeof(object), typeof(ListView), null, BindingMode.OneWayToSource,
 			propertyChanged: OnSelectedItemChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SelectionModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
 		public static readonly BindableProperty SelectionModeProperty = BindableProperty.Create(nameof(SelectionMode), typeof(ListViewSelectionMode), typeof(ListView), ListViewSelectionMode.Single);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HasUnevenRowsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
 		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(ListView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RowHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(ListView), -1);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='GroupHeaderTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="GroupHeaderTemplate"/>.</summary>
 		public static readonly BindableProperty GroupHeaderTemplateProperty = BindableProperty.Create("GroupHeaderTemplate", typeof(DataTemplate), typeof(ListView), null,
 			propertyChanged: OnGroupHeaderTemplateChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='IsGroupingEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsGroupingEnabled"/>.</summary>
 		public static readonly BindableProperty IsGroupingEnabledProperty = BindableProperty.Create("IsGroupingEnabled", typeof(bool), typeof(ListView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SeparatorVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SeparatorVisibility"/>.</summary>
 		public static readonly BindableProperty SeparatorVisibilityProperty = BindableProperty.Create("SeparatorVisibility", typeof(SeparatorVisibility), typeof(ListView), SeparatorVisibility.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='SeparatorColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SeparatorColor"/>.</summary>
 		public static readonly BindableProperty SeparatorColorProperty = BindableProperty.Create("SeparatorColor", typeof(Color), typeof(ListView), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='RefreshControlColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RefreshControlColor"/>.</summary>
 		public static readonly BindableProperty RefreshControlColorProperty = BindableProperty.Create(nameof(RefreshControlColor), typeof(Color), typeof(ListView), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='HorizontalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty HorizontalScrollBarVisibilityProperty = BindableProperty.Create(nameof(HorizontalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='VerticalScrollBarVisibilityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalScrollBarVisibility"/>.</summary>
 		public static readonly BindableProperty VerticalScrollBarVisibilityProperty = BindableProperty.Create(nameof(VerticalScrollBarVisibility), typeof(ScrollBarVisibility), typeof(ListView), ScrollBarVisibility.Default);
 
 		static readonly ToStringValueConverter _toStringValueConverter = new ToStringValueConverter();

@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Application']/Docs/*" />
 	public static class Application
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Application.xml" path="//Member[@MemberName='ImageDirectoryProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ImageDirectory</c>.</summary>
 		public static readonly BindableProperty ImageDirectoryProperty =
 			BindableProperty.Create("ImageDirectory", typeof(string), typeof(FormsElement), string.Empty,
 				propertyChanged: OnImageDirectoryChanged);
