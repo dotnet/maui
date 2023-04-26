@@ -1,10 +1,10 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="7.0.201-rtm.23116.12" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+     <Dependency Name="Microsoft.Dotnet.Sdk.Internal" Version="7.0.203-servicing.23170.23" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/installer</Uri>
-      <Sha>aca89f19d00c2c27da1e1bb887a133ac602486ce</Sha>
+      <Sha>332c2bc24954c8305a1985bd8e52088cc6b6a677</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.4" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="7.0.5" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b68fd882623b528fd4ef78b122209710f17bacdb</Sha>
     </Dependency>
