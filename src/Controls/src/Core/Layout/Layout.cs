@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
-		ReadOnlyCastingList<Element, IView> _logicalChildren;
-
 		protected ILayoutManager _layoutManager;
 
 		ILayoutManager LayoutManager
@@ -40,8 +38,8 @@ namespace Microsoft.Maui.Controls
 
 		IList IBindableLayout.Children => _children;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, IView>(_children);
 
 		public int Count => _children.Count;
 

@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsEnabled = true,
 				IsExpanded = true
 			};
-			var cp = expander.Children[0].LogicalChildren[1] as ContentPresenter;
+			var cp = expander.Children[0].LogicalChildrenInternal[1] as ContentPresenter;
 			Assert.True(cp.IsVisible);
 			expander.IsEnabled = false;
 			Assert.False(cp.IsVisible);

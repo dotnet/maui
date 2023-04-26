@@ -80,8 +80,6 @@ namespace Microsoft.Maui.Controls.Compatibility
 		bool _hasDoneLayout;
 		Size _lastLayoutSize = new Size(-1, -1);
 
-		ReadOnlyCollection<Element> _logicalChildren;
-
 		protected Layout()
 		{
 			//if things were added in base ctor (through implicit styles), the items added aren't properly parented
@@ -121,9 +119,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> InternalChildren;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		public event EventHandler LayoutChanged;
 

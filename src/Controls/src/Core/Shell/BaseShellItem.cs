@@ -27,7 +27,9 @@ namespace Microsoft.Maui.Controls
 
 		protected private ObservableCollection<Element> DeclaredChildren { get; } = new ObservableCollection<Element>();
 		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => new ReadOnlyCollection<Element>(_logicalChildren);
+
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> _logicalChildren;
 
 		#region PropertyKeys
 

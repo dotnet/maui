@@ -795,10 +795,11 @@ namespace Microsoft.Maui.Controls
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
 
-		ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
+		ObservableCollection<Element> _logicalChildren
+			= new ObservableCollection<Element>();
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			new ReadOnlyCollection<Element>(_logicalChildren);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> _logicalChildren;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
