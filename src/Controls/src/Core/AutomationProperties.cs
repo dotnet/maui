@@ -6,20 +6,21 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="Type[@FullName='Microsoft.Maui.Controls.AutomationProperties']/Docs/*" />
 	public class AutomationProperties
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='HelpTextProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>HelpText</c>.</summary>
 		[Obsolete("Use SemanticProperties.Hint instead. See the conceptual docs about accessibility for more information.")]
 		public static readonly BindableProperty HelpTextProperty = BindableProperty.Create("HelpText", typeof(string), typeof(AutomationProperties), default(string));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='IsInAccessibleTreeProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>IsInAccessibleTree</c>.</summary>
 		public static readonly BindableProperty IsInAccessibleTreeProperty = BindableProperty.Create("IsInAccessibleTree", typeof(bool?), typeof(AutomationProperties), null);
 
+		/// <summary>Bindable property for <c>ExcludedWithChildren</c>.</summary>
 		public static readonly BindableProperty ExcludedWithChildrenProperty = BindableProperty.Create("ExcludedWithChildren", typeof(bool?), typeof(AutomationProperties), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='LabeledByProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>LabeledBy</c>.</summary>
 		[Obsolete("Use a SemanticProperties.Description binding instead. See the conceptual docs about accessibility for more information.")]
 		public static readonly BindableProperty LabeledByProperty = BindableProperty.Create("LabeledBy", typeof(VisualElement), typeof(AutomationProperties), default(VisualElement));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/AutomationProperties.xml" path="//Member[@MemberName='NameProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>Name</c>.</summary>
 		[Obsolete("Use SemanticProperties.Description instead. See the conceptual docs about accessibility for more information.")]
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(AutomationProperties), default(string));
 

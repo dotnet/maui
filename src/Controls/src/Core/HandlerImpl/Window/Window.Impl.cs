@@ -15,38 +15,49 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
 
+		/// <summary>Bindable property for <see cref="Page"/>.</summary>
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanging: OnPageChanging,
 			propertyChanged: (b, o, n) => ((Window)b).OnPageChanged(o as Page, n as Page));
 
+		/// <summary>Bindable property for <see cref="FlowDirection"/>.</summary>
 		public static readonly BindableProperty FlowDirectionProperty =
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
+		/// <summary>Bindable property for <see cref="X"/>.</summary>
 		public static readonly BindableProperty XProperty = BindableProperty.Create(
 			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Y"/>.</summary>
 		public static readonly BindableProperty YProperty = BindableProperty.Create(
 			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
 			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
 			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
 			nameof(MaximumWidth), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
 
+		/// <summary>Bindable property for <see cref="MaximumHeight"/>.</summary>
 		public static readonly BindableProperty MaximumHeightProperty = BindableProperty.Create(
 			nameof(MaximumHeight), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
 
+		/// <summary>Bindable property for <see cref="MinimumWidth"/>.</summary>
 		public static readonly BindableProperty MinimumWidthProperty = BindableProperty.Create(
 			nameof(MinimumWidth), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
+		/// <summary>Bindable property for <see cref="MinimumHeight"/>.</summary>
 		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
@@ -439,6 +450,11 @@ namespace Microsoft.Maui.Controls
 			Application?.NotifyOfWindowModalEvent(args);
 
 			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal bool OnModalPopping(Page modalPage)
@@ -456,6 +472,11 @@ namespace Microsoft.Maui.Controls
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 			VisualDiagnostics.OnChildAdded(this, modalPage);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal void OnModalPushing(Page modalPage)

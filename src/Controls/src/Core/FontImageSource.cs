@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
 		public override bool IsEmpty => string.IsNullOrEmpty(Glyph);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(FontImageSource), default(Color),
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(FontImageSource), default(string),
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FontFamilyProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="//Member[@MemberName='GlyphProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Glyph"/>.</summary>
 		public static readonly BindableProperty GlyphProperty = BindableProperty.Create(nameof(Glyph), typeof(string), typeof(FontImageSource), default(string),
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(GlyphProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/FontImageSource.xml" path="//Member[@MemberName='SizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Size"/>.</summary>
 		public static readonly BindableProperty SizeProperty = BindableProperty.Create(nameof(Size), typeof(double), typeof(FontImageSource), 30d,
 			propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
 
@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SizeProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty =
 			BindableProperty.Create("FontAutoScalingEnabled", typeof(bool), typeof(FontImageSource), false,
 				propertyChanged: (b, o, n) => ((FontImageSource)b).OnSourceChanged());
