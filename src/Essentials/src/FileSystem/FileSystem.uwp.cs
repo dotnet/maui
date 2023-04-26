@@ -73,6 +73,24 @@ namespace Microsoft.Maui.Storage
 
 			return Path.Combine(root, filename);
 		}
+
+		public static bool TryGetAppPackageFileUri(string filename, out string uri)
+		{
+			var path = PlatformGetFullAppPackageFilePath(filename);
+
+			if (File.Exists(path))
+			{
+				if (AppInfoUtils.IsPackagedApp)
+					uri = $"ms-appx:///{filename.Replace('\\', '/')}";
+				else
+					uri = $"file:///{path.Replace('\\', '/')}";
+
+				return true;
+			}
+
+			uri = null;
+			return false;
+		}
 	}
 
 	public partial class FileBase
