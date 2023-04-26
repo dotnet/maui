@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// I tried various permutations of KeyEventActions to set the keyboard in upper case
 			// But I wasn't successful
-			if (Enum.TryParse($"{value}".ToUpper(), out Keycode result))
+			if (Enum.TryParse($"{value}".ToUpperInvariant(), out Keycode result))
 			{
 				view.OnCreateInputConnection(new EditorInfo())?
 					.SendKeyEvent(new KeyEvent(10, 10, KeyEventActions.Down, result, 0));
