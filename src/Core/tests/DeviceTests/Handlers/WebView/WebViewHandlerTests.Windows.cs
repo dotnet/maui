@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					// If the new source is loaded without exceptions, the test has passed
 					Assert.True(await tcsLoaded.Task);
-				}, MauiContext);
+				});
 			});
 		}
 
@@ -81,11 +81,11 @@ namespace Microsoft.Maui.DeviceTests
 					navigationComplete = null;
 				};
 
-				await handler.PlatformView.AttachAndRun(async () =>
+				await AttachAndRun(webView, async (handler) =>
 				{
 					await handler.PlatformView.OnLoadedAsync();
 					await navigationComplete.Task;
-				}, MauiContext);
+				});
 			});
 		}
 
