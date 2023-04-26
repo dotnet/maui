@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace Microsoft.Maui.IntegrationTests
 {
 	public static class FileUtilities
@@ -6,6 +7,8 @@ namespace Microsoft.Maui.IntegrationTests
 		public static void ReplaceInFile(string file, string oldValue, string newValue)
 		{
 			string content = File.ReadAllText(file);
+			if (!content.Contains(oldValue))
+				throw new InvalidOperationException($"Unable to find '{oldValue}' in '{file}'.");
 			content = content.Replace(oldValue, newValue, StringComparison.OrdinalIgnoreCase);
 			File.WriteAllText(file, content);
 		}
@@ -15,6 +18,8 @@ namespace Microsoft.Maui.IntegrationTests
 			string content = File.ReadAllText(file);
 			foreach (var r in replacements)
 			{
+				if (!content.Contains(r.Key))
+					throw new InvalidOperationException($"Unable to find '{r.Key}' in '{file}'.");
 				content = content.Replace(r.Key, r.Value, StringComparison.OrdinalIgnoreCase);
 			}
 			File.WriteAllText(file, content);
