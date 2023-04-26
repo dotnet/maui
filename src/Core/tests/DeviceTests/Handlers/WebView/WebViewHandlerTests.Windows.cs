@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformView = handler.PlatformView;
 
 				// Setup the view to be displayed/parented and run our tests on it
-				await webView.AttachAndRun(async (handler) =>
+				await AttachAndRun(webView, async (handler) =>
 				{
 					// Wait for the page to load
 					var tcsLoaded = new TaskCompletionSource<bool>();
