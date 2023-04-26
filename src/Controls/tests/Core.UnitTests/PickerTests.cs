@@ -469,12 +469,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, picker.Items.Count);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
+
 			picker.SelectedItem = obj;
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]

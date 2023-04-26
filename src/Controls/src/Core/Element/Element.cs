@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
-		Dictionary<BindableProperty, string> _dynamicResources;
+		Dictionary<BindableProperty, (string, SetterSpecificity)> _dynamicResources;
 
 		IEffectControlProvider _effectControlProvider;
 
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
-		Dictionary<BindableProperty, string> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, string>());
+		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
@@ -370,14 +370,14 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
-			SetValueCore(property, value);
+			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][2]/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
-			SetValueCore(property, value);
+			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectIsAttached']/Docs/*" />
@@ -585,22 +585,22 @@ namespace Microsoft.Maui.Controls
 				_bindableResources = new List<BindableObject>();
 			foreach (KeyValuePair<string, object> value in values)
 			{
-				List<BindableProperty> changedResources = null;
-				foreach (KeyValuePair<BindableProperty, string> dynR in DynamicResources)
+				List<(BindableProperty, SetterSpecificity)> changedResources = null;
+				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
 				{
 					// when the DynamicResource bound to a BindableProperty is
 					// changing then the BindableProperty needs to be refreshed;
-					// The .Value is the name of DynamicResouce to which the BindableProperty is bound.
+					// The .Value.Item1 is the name of DynamicResouce to which the BindableProperty is bound.
 					// The .Key is the name of the DynamicResource whose value is changing.
-					if (dynR.Value != value.Key)
+					if (dynR.Value.Item1 != value.Key)
 						continue;
-					changedResources = changedResources ?? new List<BindableProperty>();
-					changedResources.Add(dynR.Key);
+					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+					changedResources.Add((dynR.Key, dynR.Value.Item2));
 				}
 				if (changedResources == null)
 					continue;
-				foreach (BindableProperty changedResource in changedResources)
-					OnResourceChanged(changedResource, value.Value);
+				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
+					OnResourceChanged(changedResource.Item1, value.Value, changedResource.Item2);
 
 				var bindableObject = value.Value as BindableObject;
 				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
@@ -612,12 +612,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override void OnSetDynamicResource(BindableProperty property, string key)
+		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
-			base.OnSetDynamicResource(property, key);
-			DynamicResources[property] = key;
+			base.OnSetDynamicResource(property, key, specificity);
+			DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
-				OnResourceChanged(property, value);
+				OnResourceChanged(property, value, specificity);
 		}
 
 		internal event EventHandler ParentSet;
@@ -743,8 +743,8 @@ namespace Microsoft.Maui.Controls
 			RealParent?.OnDescendantRemoved(child);
 		}
 
-		void OnResourceChanged(BindableProperty property, object value)
-			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
+		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
+			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings, SetValuePrivateFlags.Default, specificity);
 
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
 		public event EventHandler ParentChanged;

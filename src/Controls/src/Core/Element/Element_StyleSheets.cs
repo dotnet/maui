@@ -61,7 +61,8 @@ namespace Microsoft.Maui.Controls
 
 			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
 			{
-				((IStyle)sheets[i]).Apply(element);
+				//FIXME: is it ok to ignore specificty here ?
+				((IStyle)sheets[i]).Apply(element, new SetterSpecificity());
 			}
 
 			foreach (Element child in element.AllChildren)

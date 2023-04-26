@@ -709,7 +709,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchController.SetSearchResultsUpdater(sc =>
 			{
-				SearchHandler.SetValueCore(SearchHandler.QueryProperty, sc.SearchBar.Text);
+				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
