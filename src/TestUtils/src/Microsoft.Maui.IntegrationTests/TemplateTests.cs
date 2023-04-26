@@ -39,7 +39,7 @@ namespace Microsoft.Maui.IntegrationTests
 			if (shouldPack)
 				FileUtilities.ReplaceInFile(projectFile,
 					"<Project>",
-					"<Project><PropertyGroup><Version>1.0.0-preview.1</Version>");
+					"<Project><PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup>");
 
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
@@ -112,7 +112,7 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile,
 				"<Project>",
-				"<Project><PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences>");
+				"<Project><PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences></PropertyGroup>");
 			FileUtilities.ReplaceInFile(projectFile,
 				"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
 				"");
