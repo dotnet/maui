@@ -37,6 +37,10 @@ namespace Microsoft.Maui.Controls
 
 		string _styleId;
 
+		IReadOnlyList<Element> _logicalChildrenReadonly;
+
+		IList<Element> _internalChildren;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs/*" />
 		public string AutomationId
 		{
@@ -133,6 +137,8 @@ namespace Microsoft.Maui.Controls
 		public ReadOnlyCollection<Element> LogicalChildren =>
 			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
 
+		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
+
 		void SetupChildren()
 		{
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
@@ -228,11 +234,6 @@ namespace Microsoft.Maui.Controls
 
 		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
-
-		IReadOnlyList<Element> _logicalChildrenReadonly;
-		IList<Element> _internalChildren;
-
-		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
 		internal bool Owned { get; set; }
 
