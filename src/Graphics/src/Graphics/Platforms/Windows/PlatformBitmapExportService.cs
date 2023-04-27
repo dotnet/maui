@@ -7,7 +7,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService instead.")]
 	public class W2DBitmapExportService
 #else
 	public class PlatformBitmapExportService

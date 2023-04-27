@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService instead.")]
 	public class W2DImageLoadingService
 #else
 	public class PlatformImageLoadingService

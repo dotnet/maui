@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformStringSizeService instead.")]
 	public class W2DStringSizeService
 #else
 	public class PlatformStringSizeService

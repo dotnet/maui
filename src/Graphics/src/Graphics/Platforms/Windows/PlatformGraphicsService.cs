@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformGraphicsService instead.")]
 	internal class W2DGraphicsService
 #else
 	internal class PlatformGraphicsService
