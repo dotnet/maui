@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 		public override string Text
 		{
 			get { return base.Text; }
-			set { base.Text = value.ToUpper(); }
+			set { base.Text = value.ToUpperInvariant(); }
 		}
 
 		public override CGSize SizeThatFits(CGSize size)

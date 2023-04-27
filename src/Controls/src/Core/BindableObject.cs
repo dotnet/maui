@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		bool _applying;
 		WeakReference _inheritedContext;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BindingContext"/>.</summary>
 		public static readonly BindableProperty BindingContextProperty =
 			BindableProperty.Create(nameof(BindingContext), typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);

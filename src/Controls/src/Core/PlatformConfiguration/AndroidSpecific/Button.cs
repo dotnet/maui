@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	public static class Button
 	{
 		#region UseDefaultPadding
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='UseDefaultPaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="UseDefaultPadding"/>.</summary>
 		public static readonly BindableProperty UseDefaultPaddingProperty = BindableProperty.Create("UseDefaultPadding", typeof(bool), typeof(Button), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='GetUseDefaultPadding']/Docs/*" />
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 		#endregion
 
 		#region UseDefaultShadow
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='UseDefaultShadowProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="UseDefaultShadow"/>.</summary>
 		public static readonly BindableProperty UseDefaultShadowProperty = BindableProperty.Create("UseDefaultShadow", typeof(bool), typeof(Button), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/Button.xml" path="//Member[@MemberName='GetUseDefaultShadow']/Docs/*" />
