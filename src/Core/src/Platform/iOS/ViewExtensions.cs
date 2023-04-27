@@ -338,8 +338,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
-				var result = await service.GetImageAsync(imageSource);
+				var result = await imageSource.GetPlatformImageAsync(provider, platformView);
 				var backgroundImage = result?.Value;
 
 				if (backgroundImage == null)
@@ -881,5 +880,8 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		internal static float GetDisplayDensity(this UIView? view) =>
+			view?.Window?.GetDisplayDensity() ?? 1.0f;
 	}
 }

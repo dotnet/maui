@@ -27,10 +27,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var service = services.GetRequiredImageSourceService(imageSource);
-
-				var scale = destinationContext.Window?.Screen?.Scale ?? 1;
-				var result = await service.GetImageAsync(imageSource, (float)scale, cancellationToken);
+				var result = await imageSource.GetPlatformImageAsync(services, destinationContext, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;

@@ -30,7 +30,7 @@ namespace Microsoft.Maui
 				if (data == null)
 					throw new InvalidOperationException("Unable to load image stream data.");
 
-				var image = UIImage.LoadFromData(data, scale);
+				var image = UIImage.LoadFromData(data);
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to decode image from stream.");

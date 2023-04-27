@@ -24,13 +24,19 @@ namespace Microsoft.Maui
 
 			try
 			{
+				// TODO: The DPI not working as the view is not respecting the
+				//       value, so just reset to 1 to keep the correct size.
+				scale = 1;
+
 				// TODO: use a cached way
 				var image = RenderImageSource(imageSource, scale);
 
 				if (image == null)
 					throw new InvalidOperationException("Unable to generate font image.");
 
-				var result = new ImageSourceServiceResult(image, true);
+				// TODO: The DPI not working as the view is not respecting the
+				//       value, so mark this image as non-resolution-dependent.
+				var result = new ImageSourceServiceResult(image, false);
 
 				return FromResult(result);
 			}
@@ -44,12 +50,8 @@ namespace Microsoft.Maui
 		static Task<IImageSourceServiceResult<WImageSource>?> FromResult(IImageSourceServiceResult<WImageSource>? result) =>
 			Task.FromResult(result);
 
-		internal CanvasImageSource RenderImageSource(IFontImageSource imageSource, float scale)
+		CanvasImageSource RenderImageSource(IFontImageSource imageSource, float scale)
 		{
-			// TODO: The DPI not working as the view is not respecting the
-			//       value, so just reset to 1 to keep the correct size.
-			scale = 1;
-
 			var dpi = scale * DeviceDisplay.BaseLogicalDpi;
 
 			var fontFamily = GetFontSource(imageSource);

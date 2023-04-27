@@ -53,7 +53,7 @@ namespace Microsoft.Maui
 						CacheImage(imageData, pathToImageCache);
 				}
 
-				var image = UIImage.LoadFromData(imageData, scale);
+				var image = UIImage.LoadFromData(imageData);
 
 				if (image == null)
 					throw new InvalidOperationException($"Unable to decode image from URI '{imageSource.Uri}'.");

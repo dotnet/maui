@@ -49,8 +49,7 @@ namespace Microsoft.Maui.Platform
 
 			if (thumbImageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetImageAsync(thumbImageSource);
+				var result = await thumbImageSource.GetPlatformImageAsync(provider, uiSlider);
 				var thumbImage = result?.Value;
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);

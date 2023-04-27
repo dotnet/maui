@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Graphics;
@@ -42,6 +44,16 @@ namespace Microsoft.Maui
 			return File.Exists(filename)
 						? UIImage.FromFile(filename)
 						: UIImage.FromBundle(filename);
+		}
+
+		internal static Task<IImageSourceServiceResult<UIImage>?> GetPlatformImageAsync(this IImageSource? imageSource, IImageSourceServiceProvider provider, UIKit.UIView uiContext, CancellationToken token = default)
+		{
+			if (imageSource == null)
+				return Task.FromResult<IImageSourceServiceResult<UIImage>?>(null);
+
+			var service = provider.GetRequiredImageSourceService(imageSource);
+			var scale = uiContext.GetDisplayDensity();
+			return service.GetImageAsync(imageSource, (float)scale, token);
 		}
 	}
 }
