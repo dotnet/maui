@@ -28,6 +28,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls.Xaml/XamlParseException.xml" path="//Member[@MemberName='.ctor'][3]/Docs/*" />
+		#if !NETSTANDARD
+		[ObsoleteAttribute("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+		#endif
 		protected XamlParseException(global::System.Runtime.Serialization.SerializationInfo info, global::System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
 		{
