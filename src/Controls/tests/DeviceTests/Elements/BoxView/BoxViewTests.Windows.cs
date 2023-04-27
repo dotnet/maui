@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.DeviceTests

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
+using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {

@@ -15,7 +15,15 @@ namespace Microsoft.Maui.Graphics.Platform
 	public static class GraphicsExtensions
 #endif
 	{
-		public static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1)
+#if MAUI_GRAPHICS_WIN2D
+		public static global::Windows.UI.Color AsColor(
+#else
+		internal static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1) =>
+			AsWindowsColor(color, defaultColor, alpha);
+
+		public static global::Windows.UI.Color AsWindowsColor(
+#endif
+			this Color color, Color defaultColor, float alpha = 1)
 		{
 			var finalColor = color ?? defaultColor;
 
@@ -27,7 +35,15 @@ namespace Microsoft.Maui.Graphics.Platform
 			return global::Windows.UI.Color.FromArgb(a, r, g, b);
 		}
 
-		public static global::Windows.UI.Color AsColor(this Color color, float alpha = 1)
+#if MAUI_GRAPHICS_WIN2D
+		public static global::Windows.UI.Color AsColor(
+#else
+		internal static global::Windows.UI.Color AsColor(this Color color, float alpha = 1) =>
+			AsWindowsColor(color, alpha);
+
+		public static global::Windows.UI.Color AsWindowsColor(
+#endif
+			this Color color, float alpha = 1)
 		{
 			var r = (byte)(color.Red * 255);
 			var g = (byte)(color.Green * 255);
@@ -37,7 +53,12 @@ namespace Microsoft.Maui.Graphics.Platform
 			return global::Windows.UI.Color.FromArgb(a, r, g, b);
 		}
 
-		public static Matrix3x2 Scale(this Matrix3x2 target, float sx, float sy)
+#if MAUI_GRAPHICS_WIN2D
+		public
+#else
+		internal
+#endif
+		static Matrix3x2 Scale(this Matrix3x2 target, float sx, float sy)
 		{
 			return Matrix3x2.Multiply(Matrix3x2.CreateScale(sx, sy), target);
 			/* target.M11 *= sx;
@@ -45,7 +66,12 @@ namespace Microsoft.Maui.Graphics.Platform
             return target;*/
 		}
 
-		public static Matrix3x2 Translate(this Matrix3x2 target, float dx, float dy)
+#if MAUI_GRAPHICS_WIN2D
+		public
+#else
+		internal
+#endif
+		static Matrix3x2 Translate(this Matrix3x2 target, float dx, float dy)
 		{
 			return Matrix3x2.Multiply(Matrix3x2.CreateTranslation(dx, dy), target);
 			/*target.M31 += dx;
@@ -53,7 +79,12 @@ namespace Microsoft.Maui.Graphics.Platform
             return target;*/
 		}
 
-		public static Matrix3x2 Rotate(this Matrix3x2 target, float radians)
+#if MAUI_GRAPHICS_WIN2D
+		public
+#else
+		internal
+#endif
+		static Matrix3x2 Rotate(this Matrix3x2 target, float radians)
 		{
 			Matrix3x2 vMatrix = Matrix3x2.Multiply(Matrix3x2.CreateRotation(radians), target);
 			/* target.M31 += dx;
@@ -61,12 +92,24 @@ namespace Microsoft.Maui.Graphics.Platform
 			return vMatrix;
 		}
 
-		public static CanvasGeometry AsPath(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
-		{
-			return AsPath(path, 0, 0, 1, 1, creator, fillMode);
-		}
+#if MAUI_GRAPHICS_WIN2D
+		public static CanvasGeometry AsPath(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
+			AsPath(path, 0, 0, 1, 1, creator, fillMode);
 
-		public static CanvasGeometry AsPath(this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
+		public static CanvasGeometry AsPath(
+#else
+		internal static CanvasGeometry AsPath(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
+			AsCanvasGeometry(path, creator, fillMode);
+
+		public static CanvasGeometry AsCanvasGeometry(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
+			AsCanvasGeometry(path, 0, 0, 1, 1, creator, fillMode);
+
+		internal static CanvasGeometry AsPath(this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
+			AsCanvasGeometry(path, ox, oy, fx, fy, creator, fillMode);
+		
+		public static CanvasGeometry AsCanvasGeometry(
+#endif
+			this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
 		{
 			var builder = new CanvasPathBuilder(creator);
 
@@ -203,7 +246,12 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		}
 
-		public static CanvasGeometry AsPathFromSegment(this PathF path, int segmentIndex, float zoom, ICanvasResourceCreator creator)
+#if MAUI_GRAPHICS_WIN2D
+		public static CanvasGeometry AsPathFromSegment(
+#else
+		public static CanvasGeometry AsCanvasGeometryFromSegment(
+#endif
+			this PathF path, int segmentIndex, float zoom, ICanvasResourceCreator creator)
 		{
 			float scale = 1 / zoom;
 
