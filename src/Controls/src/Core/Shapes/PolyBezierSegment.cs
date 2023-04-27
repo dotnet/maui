@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Points = points;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyBezierSegment.xml" path="//Member[@MemberName='PointsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Points"/>.</summary>
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyBezierSegment), null);
 

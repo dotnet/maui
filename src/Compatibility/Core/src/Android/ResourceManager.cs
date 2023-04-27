@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (defType == "style" || (resourceType != null && resourceType == StyleClass))
 				name = title;
 			else
-				name = title.ToLower();
+				name = title.ToLowerInvariant();
 
 			if (defType == _drawableDefType || (resourceType != null && resourceType == DrawableClass))
 				name = IOPath.GetFileNameWithoutExtension(name);

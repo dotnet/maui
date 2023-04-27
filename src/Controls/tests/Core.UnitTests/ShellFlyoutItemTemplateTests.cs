@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(shellItem);
 
 			var element = GetFlyoutItemDataTemplateElement<Element>(shell, shellItem);
-			var label = element.LogicalChildren.OfType<Label>().First();
+			var label = element.LogicalChildrenInternal.OfType<Label>().First();
 			Assert.Equal(TextAlignment.Center, label.VerticalTextAlignment);
 		}
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(shellItem);
 
 			var element = GetFlyoutItemDataTemplateElement<Element>(shell, shellItem);
-			var label = element.LogicalChildren.OfType<Label>().First();
+			var label = element.LogicalChildrenInternal.OfType<Label>().First();
 			Assert.Equal(TextAlignment.Start, label.VerticalTextAlignment);
 		}
 
@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellItem = CreateShellItem();
 			shell.Items.Add(shellItem);
 			var grid = GetFlyoutItemDataTemplateElement<Grid>(shell, shellItem);
-			var label = grid.LogicalChildren.OfType<Label>().First();
+			var label = grid.LogicalChildrenInternal.OfType<Label>().First();
 
 			Assert.Equal(Colors.Red, label.BackgroundColor);
 			Assert.True(VisualStateManager.GoToState(grid, "Selected"));
@@ -269,7 +269,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			if (e == null)
 				return default(T);
 
-			return e.LogicalChildren.OfType<T>().First();
+			return e.LogicalChildrenInternal.OfType<T>().First();
 		}
 
 

@@ -104,7 +104,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
 			}
 
-			if (gridLength.ToLower() == "auto")
+			if (gridLength.ToLowerInvariant() == "auto")
 			{
 				return GridLength.Auto;
 			}

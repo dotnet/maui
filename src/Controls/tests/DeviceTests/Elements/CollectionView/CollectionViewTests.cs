@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Get ItemsView._logicalChildren
 				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
-				logicalChildren = typeof(ItemsView).GetField("_logicalChildren", flags).GetValue(collectionView) as IList;
+				logicalChildren = typeof(Element).GetField("_internalChildren", flags).GetValue(collectionView) as IList;
 				Assert.NotNull(logicalChildren);
 
 				// Replace with cloned collection
