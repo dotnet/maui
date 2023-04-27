@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 				{
 					var keyboardAccelerator = new KeyboardAccelerator();
 
-					var modifierMask = modifiers.ElementAt(i).ToLower();
+					var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
 
 					switch (modifierMask)
 					{
