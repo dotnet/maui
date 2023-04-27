@@ -1,9 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics.Platform;
-using Xunit;
 using Microsoft.Maui.Storage;
-using System.IO;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
