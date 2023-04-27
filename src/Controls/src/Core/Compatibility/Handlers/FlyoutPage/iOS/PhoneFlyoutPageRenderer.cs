@@ -147,11 +147,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			UpdateApplyShadow(((FlyoutPage)Element).OnThisPlatform().GetApplyShadow());
 		}
 
-		[System.Runtime.Versioning.UnsupportedOSPlatform("ios8.0")]
-		[System.Runtime.Versioning.UnsupportedOSPlatform("tvos")]
-		public override void WillRotate(UIInterfaceOrientation toInterfaceOrientation, double duration)
+		public override void ViewWillTransitionToSize(CoreGraphics.CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
 		{
-			base.WillRotate(toInterfaceOrientation, duration);
+			base.ViewWillTransitionToSize(toSize, coordinator);
 
 			if (IsPad)
 			{
@@ -165,6 +163,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (!FlyoutPageController.ShouldShowSplitMode && _presented)
 					UpdatePresented(false);
 			}
+
+			UpdateLeftBarButton();
 		}
 
 		void UpdatePresented(bool newValue, bool animated = false)
@@ -308,18 +308,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				flyoutFrame.X = (int)(flyoutFrame.Width * .25);
 			}
 
-			_flyoutController.View.Frame = flyoutFrame;
-
-			if (!IsPad)
-			{
-				(FlyoutPage.Flyout as IView).Measure(flyoutFrame.Width, flyoutFrame.Height);
-				FlyoutPage.Flyout.Handler.PlatformArrangeHandler(new Rect(0, 0, flyoutFrame.Width, flyoutFrame.Height));
-			}
-
 			var target = frame;
 			if (Presented)
 			{
-				target.X += flyoutFrame.Width;
+				if (!IsPad || FlyoutPageController.ShouldShowSplitMode)
+					target.X += flyoutFrame.Width;
 
 				if (IsPad && FlyoutPageController.ShouldShowSplitMode)
 					target.Width -= flyoutFrame.Width;
@@ -333,19 +326,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				target.X = target.X * -1;
 			}
 
-			if (animated)
+			if (animated && !IsPad)
 			{
-				UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+				if (!IsPad)
 				{
-					var view = _detailController.View;
-					view.Frame = target;
-					detailView.Layer.Opacity = (float)opacity;
-				}, () => { });
+					UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+					{
+						var view = _detailController.View;
+						view.Frame = target;
+						detailView.Layer.Opacity = (float)opacity;
+					}, () => { });
+				}
 			}
 			else
 			{
 				_detailController.View.Frame = target;
 				detailView.Layer.Opacity = (float)opacity;
+			}
+
+			if (IsPad)
+			{
+				if (!Presented)
+				{
+					flyoutFrame.X -= flyoutFrame.Width;
+				}
+
+				if (animated)
+				{
+					UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+					{
+						_flyoutController.View.Frame = flyoutFrame;
+						detailView.Layer.Opacity = (float)opacity;
+					}, () => { });
+				}
+				else
+				{
+					_flyoutController.View.Frame = flyoutFrame;
+				}
 			}
 
 			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
@@ -362,11 +379,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void PackContainers()
 		{
 			_detailController.View.BackgroundColor = new UIColor(1, 1, 1, 1);
-			View.AddSubview(_flyoutController.View);
-			View.AddSubview(_detailController.View);
 
-			AddChildViewController(_flyoutController);
-			AddChildViewController(_detailController);
+			if (!IsPad)
+			{
+				View.AddSubview(_flyoutController.View);
+				View.AddSubview(_detailController.View);
+
+				AddChildViewController(_flyoutController);
+				AddChildViewController(_detailController);
+			}
+			else
+			{
+				View.AddSubview(_detailController.View);
+				View.AddSubview(_flyoutController.View);
+
+				AddChildViewController(_detailController);
+				AddChildViewController(_flyoutController);
+			}
 		}
 
 		void PageOnSizeChanged(object sender, EventArgs eventArgs)
@@ -515,43 +544,96 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						center = g.LocationInView(g.View);
 						break;
 					case UIGestureRecognizerState.Changed:
-						var currentPosition = g.LocationInView(g.View);
-						var motion = currentPosition.X - center.X;
-
-						motion = motion * directionModifier;
-
-						var detailView = _detailController.View;
-						var targetFrame = detailView.Frame;
-						if (Presented)
-							targetFrame.X = (nfloat)Math.Max(0, _flyoutController.View.Frame.Width + Math.Min(0, motion));
-						else
-							targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
-
-						targetFrame.X = targetFrame.X * directionModifier;
-						if (_applyShadow)
+						if (!IsPad)
 						{
-							var openProgress = targetFrame.X / _flyoutController.View.Frame.Width;
-							ApplyDetailShadow((nfloat)openProgress);
+							var currentPosition = g.LocationInView(g.View);
+							var motion = currentPosition.X - center.X;
+
+							motion = motion * directionModifier;
+
+							var detailView = _detailController.View;
+							var targetFrame = detailView.Frame;
+							if (Presented)
+								targetFrame.X = (nfloat)Math.Max(0, _flyoutController.View.Frame.Width + Math.Min(0, motion));
+							else
+								targetFrame.X = (nfloat)Math.Min(_flyoutController.View.Frame.Width, Math.Max(0, motion));
+
+							targetFrame.X = targetFrame.X * directionModifier;
+							if (_applyShadow)
+							{
+								var openProgress = targetFrame.X / _flyoutController.View.Frame.Width;
+								ApplyDetailShadow((nfloat)openProgress);
+							}
+
+							detailView.Frame = targetFrame;
+						}
+						else
+						{
+							var currentPosition = g.LocationInView(g.View);
+							var motion = currentPosition.X - center.X;
+
+							motion = motion * directionModifier;
+
+							var flyoutView = _flyoutController.View;
+							var targetFrame = flyoutView.Frame;
+							var flyoutWidth = _flyoutController.View.Frame.Width;
+
+							if (Presented)
+								targetFrame.X = (nfloat)Math.Max(-flyoutWidth, Math.Min(0, motion));
+							else
+								targetFrame.X = (nfloat)Math.Min(0, Math.Max(0, motion) - flyoutWidth);
+
+							targetFrame.X = targetFrame.X * directionModifier;
+							if (_applyShadow)
+							{
+								var openProgress = targetFrame.X / flyoutWidth;
+								ApplyDetailShadow((nfloat)openProgress);
+							}
+
+							flyoutView.Frame = targetFrame;
 						}
 
-						detailView.Frame = targetFrame;
 						break;
 					case UIGestureRecognizerState.Ended:
-						var detailFrame = _detailController.View.Frame;
-						var flyoutFrame = _flyoutController.View.Frame;
-						if (Presented)
+
+						if (!IsPad)
 						{
-							if (detailFrame.X * directionModifier < flyoutFrame.Width * .75)
-								UpdatePresented(false);
+							var detailFrame = _detailController.View.Frame;
+							var flyoutFrame = _flyoutController.View.Frame;
+							if (Presented)
+							{
+								if (detailFrame.X * directionModifier < flyoutFrame.Width * .75)
+									UpdatePresented(false);
+								else
+									LayoutChildren(true);
+							}
 							else
-								LayoutChildren(true);
+							{
+								if (detailFrame.X * directionModifier > flyoutFrame.Width * .25)
+									UpdatePresented(true);
+								else
+									LayoutChildren(true);
+							}
 						}
 						else
 						{
-							if (detailFrame.X * directionModifier > flyoutFrame.Width * .25)
-								UpdatePresented(true);
+							var flyoutFrame = _flyoutController.View.Frame;
+							var progress = flyoutFrame.Width + flyoutFrame.X;
+
+							if (Presented)
+							{
+								if (flyoutFrame.X * directionModifier < flyoutFrame.Width * .75)
+									UpdatePresented(false);
+								else
+									LayoutChildren(true);
+							}
 							else
-								LayoutChildren(true);
+							{
+								if ((flyoutFrame.X + flyoutFrame.Width) * directionModifier > flyoutFrame.Width * .25)
+									UpdatePresented(true);
+								else
+									LayoutChildren(true);
+							}
 						}
 						break;
 				}
