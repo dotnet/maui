@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls
 				for (int i = 0; i < acceleratorParts.Length; i++)
 				{
 					var modifierMask = acceleratorParts[i];
-					var modiferMaskLower = modifierMask.ToLower();
+					var modiferMaskLower = modifierMask.ToLowerInvariant();
 					switch (modiferMaskLower)
 					{
 						case "ctrl":

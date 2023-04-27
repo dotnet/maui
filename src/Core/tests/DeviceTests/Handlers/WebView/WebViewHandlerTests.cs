@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 				Exception lastException = null;
 
 				// Setup the view to be displayed/parented and run our tests on it
-				await platformView.AttachAndRun(async () =>
+				await AttachAndRun(webView, async (handler) =>
 				{
 					// Wait for the page to load
 					var tcsLoaded = new TaskCompletionSource<bool>();
