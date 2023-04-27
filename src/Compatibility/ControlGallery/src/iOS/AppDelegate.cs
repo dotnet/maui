@@ -435,9 +435,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
 			set
 			{
 
-				WillChangeValue(nameof(KVOValue).ToLower());
+				WillChangeValue(nameof(KVOValue).ToLowerInvariant());
 				_kVOValue = Value = value;
-				DidChangeValue(nameof(KVOValue).ToLower());
+				DidChangeValue(nameof(KVOValue).ToLowerInvariant());
 			}
 		}
 	}

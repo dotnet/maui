@@ -1,6 +1,8 @@
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -62,15 +64,16 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = platformViewHandler.PlatformView!;
 
 #if WINDOWS
-			var dispatcher = platformViewHandler.MauiContext!.GetDispatcher();
+			var mauiContext = platformViewHandler.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
+			var dispatcher = mauiContext.GetDispatcher();
 			return dispatcher.DispatchAsync(async () =>
 			{
 				if (platformView.XamlRoot is null)
 				{
 					if (!expectation)
-						await AttachAndRun(platformView, RunAssertions);
+						await AttachAndRun(platformView, RunAssertions, mauiContext);
 					else
-						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions);
+						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions, mauiContext);
 				}
 				else
 					RunAssertions();
@@ -86,6 +89,89 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(expectation, view.Handler?.ContainerView is not null);
 				var parentView = platformView?.GetParent();
 				Assert.Equal(expectation, parentView is WrapperView);
+			}
+		}
+
+		public static Task AttachAndRun(this IView view, Action<IPlatformViewHandler> action, IMauiContext mauiContext) =>
+				view.AttachAndRun<bool>((handler) =>
+				{
+					action(handler);
+					return Task.FromResult(true);
+				}, mauiContext);
+
+		public static Task AttachAndRun(this IView view, Func<IPlatformViewHandler, Task> action, IMauiContext mauiContext)
+			 =>
+				view.AttachAndRun<bool>(async (handler) =>
+				{
+					await action(handler);
+					return true;
+				}, mauiContext);
+
+		public static Task<T> AttachAndRun<T>(this IView view, Func<IPlatformViewHandler, T> action, IMauiContext mauiContext)
+		{
+			Func<IPlatformViewHandler, Task<T>> taskAction = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return view.AttachAndRun<T>(taskAction, mauiContext);
+		}
+
+		public static Task<T> AttachAndRun<T>(this IView view, Func<IPlatformViewHandler, Task<T>> action, IMauiContext mauiContext) =>
+			view.AttachAndRun<T, IPlatformViewHandler>(action, mauiContext, (view) =>
+			{
+				var handler = view.ToHandler(mauiContext);
+				return Task.FromResult(handler);
+			});
+
+
+
+
+		public static Task AttachAndRun<THandler>(this IView view, Action<THandler> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+		where THandler : IPlatformViewHandler =>
+			view.AttachAndRun<bool, THandler>((handler) =>
+			{
+				action(handler);
+				return Task.FromResult(true);
+			}, mauiContext, createHandler);
+
+		public static Task AttachAndRun<THandler>(this IView view, Func<THandler, Task> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler =>
+				view.AttachAndRun<bool, THandler>(async (handler) =>
+				{
+					await action(handler);
+					return true;
+				}, mauiContext, createHandler);
+
+		public static Task<T> AttachAndRun<T, THandler>(this IView view, Func<THandler, T> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler
+		{
+			Func<THandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return view.AttachAndRun<T, THandler>(boop, mauiContext, createHandler);
+		}
+
+		public static Task<T> AttachAndRun<T, THandler>(this IView view, Func<THandler, Task<T>> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler
+		{
+			var dispatcher = mauiContext.GetDispatcher();
+
+			if (dispatcher.IsDispatchRequired)
+				return dispatcher.DispatchAsync(Run);
+
+			return Run();
+
+			async Task<T> Run()
+			{
+				var handler = await createHandler(view);
+#if WINDOWS
+				return await view.ToPlatform(mauiContext).AttachAndRun<T>((window) => action(handler), mauiContext);
+#else
+				return await view.ToPlatform().AttachAndRun(() => action(handler));
+#endif
 			}
 		}
 
