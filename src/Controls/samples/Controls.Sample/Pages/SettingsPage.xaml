@@ -5,7 +5,6 @@
     x:Class="Maui.Controls.Sample.Pages.SettingsPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
-    BackgroundColor="{DynamicResource BackgroundColor}"
     Title="Settings">
     <views:BasePage.Resources>
         <ResourceDictionary>

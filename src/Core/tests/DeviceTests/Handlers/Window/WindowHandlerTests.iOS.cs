@@ -10,6 +10,28 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WindowHandlerTests : CoreHandlerTestBase
 	{
 #if MACCATALYST
+
+		[Fact]
+		public async Task TitleSetsOnWindow()
+		{
+			var window = new Window
+			{
+				Title = "Initial Title",
+				Page = new ContentPage
+				{
+					Content = new Label { Text = "Yay!" }
+				}
+			};
+
+			await RunWindowTest(window, handler =>
+			{
+				Assert.Equal("Initial Title", handler.PlatformView.WindowScene.Title);
+				window.Title = "Updated Title";
+				Assert.Equal("Updated Title", handler.PlatformView.WindowScene.Title);
+			});
+		}
+
+
 		[Fact]
 		public async Task ContentIsSetInitially()
 		{

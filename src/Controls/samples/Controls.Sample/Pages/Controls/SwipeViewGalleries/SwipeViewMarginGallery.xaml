@@ -5,7 +5,8 @@
     x:Class="Maui.Controls.Sample.Pages.SwipeViewGalleries.SwipeViewMarginGallery"
     Title="SwipeView Margin Gallery">
     <ContentPage.Content>
-        <StackLayout>
+        <VerticalStackLayout 
+            Padding="12">
             <Label
                 Padding="12"
                 BackgroundColor="Black"
@@ -89,6 +90,6 @@
                     </Grid>
                 </SwipeView.Content>
             </SwipeView>
-        </StackLayout>
+        </VerticalStackLayout>
     </ContentPage.Content>
 </ContentPage>

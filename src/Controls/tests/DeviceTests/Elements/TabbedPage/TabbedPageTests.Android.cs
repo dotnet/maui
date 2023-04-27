@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Content;
+using Android.OS;
 using AndroidX.CoordinatorLayout.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
+using AndroidX.ViewPager2.Adapter;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.BottomNavigation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -78,6 +84,32 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Custom RecyclerView Adapter Doesn't Crash")]
+		public async Task CustomRecyclerViewAdapterDoesNotCrash()
+		{
+			SetupBuilder(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<TabbedPage, CustomTestAdapterHandler>();
+				});
+			});
+
+			var tabbedPage = CreateBasicTabbedPage();
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), async (handler) =>
+			{
+				// If you currently try to modify the children too early.
+				// This will sometimes cause `NotifyDataSourceChanged` on the
+				// adapter to get called while it's already processing
+				await Task.Delay(50);
+
+				tabbedPage.Children.Add(new ContentPage());
+
+				// make sure changes have time to propagate
+				await Task.Delay(50);
+			});
+		}
 
 		BottomNavigationView GetBottomNavigationView(TabbedViewHandler tabViewHandler)
 		{

@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
+		/// <summary>Bindable property for <see cref="Shadow"/>.</summary>
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -79,6 +80,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="ZIndex"/>.</summary>
 		public static readonly BindableProperty ZIndexProperty =
 			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(VisualElement), default(int),
 				propertyChanged: ZIndexPropertyChanged);
@@ -306,20 +308,25 @@ namespace Microsoft.Maui.Controls
 
 		void NotifyShadowChanges()
 		{
-			if (Shadow != null)
+			var shadow = Shadow;
+
+			if (shadow is not null)
 			{
-				Shadow.Parent = this;
-				Shadow.PropertyChanged += OnShadowChanged;
+				SetInheritedBindingContext(shadow, BindingContext);
+				_shadowChanged ??= (sender, e) => OnPropertyChanged(nameof(Shadow));
+				_shadowProxy ??= new();
+				_shadowProxy.Subscribe(shadow, _shadowChanged);
 			}
 		}
 
 		void StopNotifyingShadowChanges()
 		{
-			if (Shadow != null)
-			{
-				Shadow.Parent = null;
-				Shadow.PropertyChanged -= OnShadowChanged;
+			var shadow = Shadow;
 
+			if (shadow is not null)
+			{
+				SetInheritedBindingContext(shadow, null);
+				_shadowProxy?.Unsubscribe();
 			}
 		}
 

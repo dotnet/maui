@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void TestBrushParent()
+		public void TestBrushBindingContext()
 		{
 			var context = new object();
 
@@ -84,7 +84,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			parent.Background = linearGradientBrush;
 
-			Assert.Same(parent, parent.Background.Parent);
 			Assert.Same(context, parent.Background.BindingContext);
 		}
 

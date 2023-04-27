@@ -57,5 +57,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				self = self.BaseType?.ResolveCached(cache);
 			}
 		}
+
+		public static bool IsPublicOrVisibleInternal(this TypeDefinition self, ModuleDefinition module)
+		{
+			if (self.IsPublic)
+				return true;
+			if (self.Module == module)
+				return true;
+			if (self.Module.IsVisibleInternal(module))
+				return true;
+			return false;
+		}
 	}
 }

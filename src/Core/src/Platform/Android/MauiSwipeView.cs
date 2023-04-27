@@ -50,7 +50,9 @@ namespace Microsoft.Maui.Platform
 			_context = context;
 
 			_swipeItems = new Dictionary<ISwipeItem, object>();
-			this.SetClipToOutline(true);
+
+			SetClipChildren(false);
+			SetClipToPadding(false);
 
 			_density = context.GetActivity()?.Resources?.DisplayMetrics?.Density ?? 0;
 			Control = new AView(_context);
@@ -61,6 +63,9 @@ namespace Microsoft.Maui.Platform
 		internal void SetElement(ISwipeView swipeView)
 		{
 			Element = swipeView;
+
+			bool clipToOutline = Element?.Shadow is null && (Element?.Content as IView)?.Shadow is null;
+			this.SetClipToOutline(clipToOutline);
 		}
 
 		protected override void OnAttachedToWindow()
@@ -1345,10 +1350,11 @@ namespace Microsoft.Maui.Platform
 			if (swipeItems == null || swipeItems.Count == 0)
 				return;
 
+			UpdateSwipeItems();
+
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);
 
-			UpdateSwipeItems();
 			Swipe(animated);
 
 			_swipeOffset = Math.Abs(_swipeOffset);

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -478,6 +480,153 @@ namespace Microsoft.Maui.DeviceTests
 					action?.Invoke();
 				});
 			});
+		}
+
+		[Fact]
+		public async Task ScrollEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Height = 600
+			};
+
+			var entry2 = new EntryStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToText(entry2), entry1, entry2);
+		}
+
+		[Fact]
+		public async Task ScrollEditor()
+		{
+			var entry = new EntryStub
+			{
+				Height = 600
+			};
+
+			var editor = new EditorStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToText(editor), entry, editor);
+		}
+
+		[Fact]
+		public async Task ScrollNextEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Height = 600,
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToNext(entry1, entry2), entry1, entry2);
+		}
+
+		[Fact]
+		public async Task ScrollNextEditor()
+		{
+			var entry = new EntryStub
+			{
+				Height = 600,
+				ReturnType = ReturnType.Next
+			};
+
+			var editor = new EditorStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToNext(entry, editor), entry, editor);
+		}
+
+		async Task ScrollHelper(Func<Task> func, params StubBase[] views)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+					handler.AddHandler<EditorStub, EditorHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			foreach (var view in views)
+			{
+				layout.Add(view);
+			}
+
+			layout.Width = 300;
+			layout.Height = 800;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				var contentPlatformView = contentViewHandler.PlatformView;
+
+				await contentPlatformView.AttachAndRun(async () => await func.Invoke());
+			});
+		}
+
+		async Task ScrollToText(StubBase selectedStub)
+		{
+			var uiTextField = selectedStub.ToPlatform();
+			Assert.True(uiTextField.BecomeFirstResponder());
+
+			var isKeyboardShowing = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, 1000);
+
+			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
+			if (isKeyboardShowing)
+			{
+				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
+
+				if (cursorRect is CGRect rect)
+					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				else
+					Assert.Fail("CursorRect should not be null");
+
+				uiTextField.ResignFirstResponder();
+				await uiTextField.WaitForKeyboardToHide();
+			}
+		}
+
+		async Task ScrollToNext(StubBase originalStub, StubBase nextStub)
+		{
+			var originalUIText = originalStub.ToPlatform();
+			var nextUIText = nextStub.ToPlatform();
+
+			KeyboardAutoManager.GoToNextResponderOrResign(originalUIText, customSuperView: originalUIText.Superview);
+
+			Assert.True(nextUIText.BecomeFirstResponder());
+
+			var isKeyboardShowing = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, 1000);
+
+			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
+			if (isKeyboardShowing)
+			{
+				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
+
+				if (cursorRect is CGRect rect)
+					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				else
+					Assert.Fail("CursorRect should not be null");
+
+				nextUIText.ResignFirstResponder();
+				await nextUIText.WaitForKeyboardToHide();
+			}
 		}
 
 		double GetNativeCharacterSpacing(EntryHandler entryHandler)

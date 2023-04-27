@@ -18,17 +18,17 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableLayout']/Docs/*" />
 	public static class BindableLayout
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ItemsSource</c>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.CreateAttached("ItemsSource", typeof(IEnumerable), typeof(IBindableLayout), default(IEnumerable),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemsSource = (IEnumerable)n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ItemTemplate</c>.</summary>
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.CreateAttached("ItemTemplate", typeof(DataTemplate), typeof(IBindableLayout), default(DataTemplate),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplate = (DataTemplate)n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='ItemTemplateSelectorProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ItemTemplateSelector</c>.</summary>
 		public static readonly BindableProperty ItemTemplateSelectorProperty =
 			BindableProperty.CreateAttached("ItemTemplateSelector", typeof(DataTemplateSelector), typeof(IBindableLayout), default(DataTemplateSelector),
 				propertyChanged: (b, o, n) => { GetBindableLayoutController(b).ItemTemplateSelector = (DataTemplateSelector)n; });
@@ -38,11 +38,11 @@ namespace Microsoft.Maui.Controls
 				 defaultValueCreator: (b) => new BindableLayoutController((IBindableLayout)b),
 				 propertyChanged: (b, o, n) => OnControllerChanged(b, (BindableLayoutController)o, (BindableLayoutController)n));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='EmptyViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>EmptyView</c>.</summary>
 		public static readonly BindableProperty EmptyViewProperty =
 			BindableProperty.Create("EmptyView", typeof(object), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyView = n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableLayout.xml" path="//Member[@MemberName='EmptyViewTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>EmptyViewTemplate</c>.</summary>
 		public static readonly BindableProperty EmptyViewTemplateProperty =
 			BindableProperty.Create("EmptyViewTemplate", typeof(DataTemplate), typeof(IBindableLayout), null, propertyChanged: (b, o, n) => { GetBindableLayoutController(b).EmptyViewTemplate = (DataTemplate)n; });
 
@@ -201,7 +201,8 @@ namespace Microsoft.Maui.Controls
 	class BindableLayoutController
 	{
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
-		readonly WeakCollectionChangedProxy _collectionChangedProxy = new();
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -220,6 +221,7 @@ namespace Microsoft.Maui.Controls
 		public BindableLayoutController(IBindableLayout layout)
 		{
 			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
+			_collectionChangedEventHandler = ItemsSourceCollectionChanged;
 		}
 
 		~BindableLayoutController() => _collectionChangedProxy.Unsubscribe();
@@ -246,7 +248,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_itemsSource is INotifyCollectionChanged c)
 			{
-				_collectionChangedProxy.Subscribe(c, ItemsSourceCollectionChanged);
+				_collectionChangedProxy.Subscribe(c, _collectionChangedEventHandler);
 			}
 
 			if (!_isBatchUpdate)
@@ -394,46 +396,6 @@ namespace Microsoft.Maui.Controls
 			// UpdateEmptyView is called from within CreateChildren, therefor skip it for Reset
 			if (e.Action != NotifyCollectionChangedAction.Reset)
 				UpdateEmptyView(layout);
-		}
-
-		class WeakCollectionChangedProxy
-		{
-			WeakReference<NotifyCollectionChangedEventHandler> _handler;
-			WeakReference<INotifyCollectionChanged> _source;
-
-			void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-			{
-				if (_handler.TryGetTarget(out var handler))
-				{
-					handler(sender, e);
-				}
-				else
-				{
-					Unsubscribe();
-				}
-			}
-
-			public void Subscribe(INotifyCollectionChanged source, NotifyCollectionChangedEventHandler handler)
-			{
-				if (_source is not null && _source.TryGetTarget(out var s))
-				{
-					s.CollectionChanged -= OnCollectionChanged;
-				}
-
-				_source = new WeakReference<INotifyCollectionChanged>(source);
-				_handler = new WeakReference<NotifyCollectionChangedEventHandler>(handler);
-				source.CollectionChanged += OnCollectionChanged;
-			}
-
-			public void Unsubscribe()
-			{
-				if (_source is not null && _source.TryGetTarget(out var s))
-				{
-					s.CollectionChanged -= OnCollectionChanged;
-				}
-				_source = null;
-				_handler = null;
-			}
 		}
 	}
 }

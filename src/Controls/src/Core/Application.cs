@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
-		ReadOnlyCollection<Element>? _logicalChildren;
 		bool _isStarted;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
@@ -51,7 +50,8 @@ namespace Microsoft.Maui.Controls
 
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Application>>(() => new PlatformConfigurationRegistry<Application>(this));
 
-			_lastAppTheme = PlatformAppTheme;
+			_platformAppTheme = AppInfo.RequestedTheme;
+			_lastAppTheme = _platformAppTheme;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='Quit']/Docs/*" />
@@ -110,16 +110,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='NavigationProxy']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
 		internal IResourceDictionary SystemResources => _systemResources.Value;
-
-		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -164,15 +159,34 @@ namespace Microsoft.Maui.Controls
 			get => _userAppTheme;
 			set
 			{
+				if (_userAppTheme == value)
+					return;
+
 				_userAppTheme = value;
+
 				TriggerThemeChangedActual();
 			}
 		}
 
-		public AppTheme PlatformAppTheme => AppInfo.RequestedTheme;
+		public AppTheme PlatformAppTheme
+		{
+			get => _platformAppTheme;
+			private set
+			{
+				if (_platformAppTheme == value)
+					return;
+
+				_platformAppTheme = value;
+
+				TriggerThemeChangedActual();
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='RequestedTheme']/Docs/*" />
-		public AppTheme RequestedTheme => UserAppTheme != AppTheme.Unspecified ? UserAppTheme : PlatformAppTheme;
+		public AppTheme RequestedTheme =>
+			UserAppTheme != AppTheme.Unspecified
+				? UserAppTheme
+				: PlatformAppTheme;
 
 		static Color? _accentColor;
 		public static Color? AccentColor
@@ -211,6 +225,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		bool _themeChangedFiring;
+		AppTheme _platformAppTheme = AppTheme.Unspecified;
 		AppTheme _lastAppTheme = AppTheme.Unspecified;
 		AppTheme _userAppTheme = AppTheme.Unspecified;
 

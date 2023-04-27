@@ -19,8 +19,10 @@ namespace Microsoft.Maui.Controls.Internals
 												where TView : BindableObject, IItemsView<TItem>
 												where TItem : BindableObject
 	{
+		/// <summary>Bindable property for <see cref="Name"/>.</summary>
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
+		/// <summary>Bindable property for <see cref="ShortName"/>.</summary>
 		public static readonly BindableProperty ShortNameProperty = BindableProperty.Create("ShortName", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
 		static readonly BindablePropertyKey HeaderContentPropertyKey = BindableProperty.CreateReadOnly("HeaderContent", typeof(TItem), typeof(TemplatedItemsList<TView, TItem>), null);

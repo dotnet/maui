@@ -830,6 +830,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task PopModalWithEmptyStackThrows()
+		{
+			var window = new TestWindow(new ContentPage());
+			var contentPage1 = new ContentPage();
+			var navigationPage = new TestNavigationPage(true, contentPage1);
+			Assert.ThrowsAsync<InvalidOperationException>(() => window.Navigation.PopModalAsync());
+		}
+
+		[Fact]
 		public async Task TabBarSetsOnFlyoutPageInsideModalPage()
 		{
 			var window = new TestWindow(new ContentPage());

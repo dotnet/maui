@@ -82,10 +82,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				var oldIndex = InternalChildren.IndexOf(windowElement);
-				InternalChildren.RemoveAt(oldIndex);
-				windowElement.Parent = null;
-				OnChildRemoved(windowElement, oldIndex);
+				RemoveLogicalChildInternal(windowElement);
 			}
 
 			_windows.Remove(window);
@@ -111,10 +108,7 @@ namespace Microsoft.Maui.Controls
 
 		void IApplication.ThemeChanged()
 		{
-			if (UserAppTheme != AppTheme.Unspecified)
-				return;
-
-			TriggerThemeChangedActual();
+			PlatformAppTheme = AppInfo.RequestedTheme;
 		}
 
 		protected virtual Window CreateWindow(IActivationState? activationState)
@@ -137,9 +131,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				windowElement.Parent = this;
-				InternalChildren.Add(windowElement);
-				OnChildAdded(windowElement);
+				AddLogicalChildInternal(windowElement);
 			}
 
 			if (window is NavigableElement ne)

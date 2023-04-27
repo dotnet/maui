@@ -2,6 +2,7 @@
 using Android.Animation;
 using Android.Content;
 using Android.Graphics;
+using Android.Hardware.Lights;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
@@ -187,9 +188,22 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnLayout(changed, left, top, right, bottom);
 
-			if (_hScrollView != null && _hScrollView.Parent == this)
+			if (_hScrollView?.Parent == this && _content is not null)
 			{
-				_hScrollView.Layout(0, 0, right - left, bottom - top);
+				var scrollViewContentHeight = _content.Height;
+				var hScrollViewHeight = bottom - top;
+				var hScrollViewWidth = right - left;
+
+				//if we are scrolling both ways we need to lay out our MauiHorizontalScrollView with more than the available height
+				//so its parent the NestedScrollView can scroll vertically
+				hScrollViewHeight = _isBidirectional ? Math.Max(hScrollViewHeight, scrollViewContentHeight) : hScrollViewHeight;
+
+				// Ensure that the horizontal scrollview has been measured at the actual target size
+				// so that it updates its internal bookkeeping to use the full size
+				_hScrollView.Measure(MeasureSpec.MakeMeasureSpec(right - left, MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(hScrollViewHeight, MeasureSpecMode.Exactly));
+
+				_hScrollView.Layout(0, 0, hScrollViewWidth, hScrollViewHeight);
 			}
 
 			if (CrossPlatformArrange == null)
@@ -296,6 +310,7 @@ namespace Microsoft.Maui.Platform
 		public MauiHorizontalScrollView(Context? context, MauiScrollView parentScrollView) : base(context)
 		{
 			_parentScrollView = parentScrollView;
+			Tag = "Microsoft.Maui.Android.HorizontalScrollView";
 		}
 
 		public MauiHorizontalScrollView(Context? context, IAttributeSet? attrs) : base(context, attrs)

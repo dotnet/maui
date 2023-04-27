@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Graphics
 			{
 				string vValueAsString = _commandStack.Pop();
 
-				if ("1".Equals(vValueAsString))
+				if ("1".Equals(vValueAsString, StringComparison.Ordinal))
 				{
 					return true;
 				}
@@ -112,11 +112,21 @@ namespace Microsoft.Maui.Graphics
 #if DEBUG_PATH
 				System.Diagnostics.Debug.WriteLine(aPathString);
 #endif
+#if NETSTANDARD2_0
 				pathAsString = pathAsString.Replace("Infinity", "0");
+#else
+				pathAsString = pathAsString.Replace("Infinity", "0", StringComparison.Ordinal);
+#endif
 				pathAsString = Regex.Replace(pathAsString, "([a-zA-Z])", " $1 ");
+#if NETSTANDARD2_0
 				pathAsString = pathAsString.Replace("-", " -");
 				pathAsString = pathAsString.Replace(" E  -", "E-");
 				pathAsString = pathAsString.Replace(" e  -", "e-");
+#else
+				pathAsString = pathAsString.Replace("-", " -", StringComparison.Ordinal);
+				pathAsString = pathAsString.Replace(" E  -", "E-", StringComparison.Ordinal);
+				pathAsString = pathAsString.Replace(" e  -", "e-", StringComparison.Ordinal);
+#endif
 #if DEBUG_PATH
 				System.Diagnostics.Debug.WriteLine(aPathString);
 #endif
@@ -197,7 +207,7 @@ namespace Microsoft.Maui.Graphics
 			}
 			catch (Exception exc)
 			{
-				System.Diagnostics.Debug.WriteLine("=== An error occured parsing the path. ===", exc);
+				System.Diagnostics.Debug.WriteLine("=== An error occurred parsing the path. ===", exc);
 				System.Diagnostics.Debug.WriteLine(pathAsString);
 #if DEBUG
 				throw;

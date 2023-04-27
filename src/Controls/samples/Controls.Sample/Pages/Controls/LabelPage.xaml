@@ -184,7 +184,27 @@
                     </Label.FormattedText>
 
                 </Label>
-                <Button Text="Change Formatted String" Clicked="ChangeFormattedString_Clicked" />
+                <Button
+                    Text="Change Formatted String"
+                    Clicked="ChangeFormattedString_Clicked" />
+                <Label
+                    Text="Clip"
+                    Style="{StaticResource Headline}" />
+                <Label
+                    HeightRequest="100"
+                    WidthRequest="100"
+                    Text="Clipped Content"
+                    TextColor="WhiteSmoke"
+                    HorizontalTextAlignment="Center"
+                    VerticalTextAlignment="Center"
+                    BackgroundColor="LimeGreen">
+                    <Label.Clip>
+                        <EllipseGeometry  
+                            RadiusX="50"
+                            RadiusY="50"
+                            Center="50, 50"/>
+                    </Label.Clip>
+                </Label>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

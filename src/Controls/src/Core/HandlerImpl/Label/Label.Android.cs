@@ -33,29 +33,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapTextType(LabelHandler handler, Label label) => MapTextType((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 		public static void MapLineBreakMode(LabelHandler handler, Label label) => MapLineBreakMode((ILabelHandler)handler, label);
 
 
 		public static void MapTextType(ILabelHandler handler, Label label)
 		{
-			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
+			handler.UpdateValue(nameof(ILabel.Text));
 		}
 
 		public static void MapText(ILabelHandler handler, Label label)
 		{
-			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
-		}
-
-		// TODO: NET8 make this public
-		internal static void MapTextColor(ILabelHandler handler, Label label)
-		{
-			handler.PlatformView?.UpdateTextColor(label);
-
-			if (label?.HasFormattedTextSpans ?? false)
-				return;
-
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 
@@ -71,21 +60,24 @@ namespace Microsoft.Maui.Controls
 
 		void OnLayoutChanged(object sender, LayoutChangedEventArgs args)
 		{
-			if (Handler is LabelHandler labelHandler)
-			{
-				var platformView = labelHandler.PlatformView;
-				var virtualView = labelHandler.VirtualView as Label;
+			if (Handler is not ILabelHandler labelHandler)
+				return;
 
-				if (platformView == null || virtualView == null)
-					return;
+			var platformView = labelHandler.PlatformView;
+			var virtualView = labelHandler.VirtualView as Label;
 
-				SpannableString spannableString = null;
+			if (platformView == null || virtualView == null)
+				return;
 
-				if (virtualView.FormattedText != null)
-					spannableString = virtualView.ToSpannableString();
+			var text = virtualView.FormattedText;
 
-				platformView.RecalculateSpanPositions(virtualView, spannableString, new SizeRequest(new Size(args.Right - args.Left, args.Bottom - args.Top)));
-			}
+			// don't attempt to layout if this is not a formatted text WITH some text
+			if (virtualView.TextType != TextType.Text || text?.Spans == null || text.Spans.Count == 0)
+				return;
+
+			var spannableString = virtualView.ToSpannableString();
+
+			platformView.RecalculateSpanPositions(virtualView, spannableString, new SizeRequest(new Size(args.Right - args.Left, args.Bottom - args.Top)));
 		}
 	}
 }

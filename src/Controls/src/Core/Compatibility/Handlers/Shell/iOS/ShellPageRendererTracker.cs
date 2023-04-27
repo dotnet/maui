@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				SearchHandler = Shell.GetSearchHandler(Page);
 			}
-			else if (e.PropertyName == Shell.TitleViewProperty.PropertyName)
+			else if (e.IsOneOf(Shell.TitleViewProperty, VisualElement.HeightProperty, VisualElement.WidthProperty))
 			{
 				UpdateTitleView();
 			}

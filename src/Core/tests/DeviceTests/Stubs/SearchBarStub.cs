@@ -14,10 +14,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			set => SetProperty(ref _text, value, onChanged: OnTextChanged);
 		}
 
-		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
+		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
-			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+			TextChanged?.Invoke(this, (oldValue, newValue));
 
 		public string Placeholder { get; set; }
 

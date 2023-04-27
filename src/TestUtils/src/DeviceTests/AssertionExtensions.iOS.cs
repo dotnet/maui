@@ -13,14 +13,16 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public static partial class AssertionExtensions
 	{
-		public static Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
+		public static async Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			var result = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
+			Assert.True(result);
 		}
 
-		public static Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
+		public static async Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			var result = await Wait(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
+			Assert.True(result);
 		}
 
 		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static Task FocusView(this UIView view, int timeout = 1000)
 		{
-			view.Focus(new FocusRequest(false));
+			view.Focus(new FocusRequest());
 			return WaitForFocused(view, timeout);
 		}
 
@@ -66,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task HideKeyboardForView(this UIView view, int timeout = 1000)
+		public static Task HideKeyboardForView(this UIView view, int timeout = 1000, string? message = null)
 		{
 			throw new NotImplementedException();
 		}
@@ -144,6 +146,14 @@ namespace Microsoft.Maui.DeviceTests
 				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
 			}
 
+			while (viewController.PresentedViewController is not null)
+			{
+				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
+					throw new InvalidOperationException("Modal Window Is Still Present");
+
+				viewController = viewController.PresentedViewController;
+			}
+
 			if (viewController == null)
 			{
 				throw new InvalidOperationException("Could not attach view - unable to find presented ViewController");
@@ -176,7 +186,7 @@ namespace Microsoft.Maui.DeviceTests
 			return attachParent ?? currentView;
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)
 		{
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
@@ -277,50 +287,59 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			return bitmap.AssertDoesNotContainColor(unexpectedColor);
+		}
+
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, IMauiContext mauiContext) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
+
+		public static Task<UIImage> AssertDoesNotContainColor(this UIView view, Microsoft.Maui.Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
 		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier));
@@ -343,9 +362,30 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
+		}
+
+		public static UIImage AssertDoesNotContainColor(this UIImage bitmap, UIColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+		{
+			var imageRect = new Graphics.RectF(0, 0, (float)bitmap.Size.Width.Value, (float)bitmap.Size.Height.Value);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			for (int x = (int)imageRect.X; x < (int)imageRect.Width; x++)
+			{
+				for (int y = (int)imageRect.Y; y < (int)imageRect.Height; y++)
+				{
+					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
+					{
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
+					}
+				}
+			}
+
 			return bitmap;
 		}
+
 
 		public static Task AssertEqualAsync(this UIImage bitmap, UIImage other)
 		{

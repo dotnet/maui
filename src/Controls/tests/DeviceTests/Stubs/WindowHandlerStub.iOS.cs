@@ -94,7 +94,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
 				}
 
-				pvc.DismissViewController(false,
+				pvc.PresentingViewController.DismissViewController(false,
 					() =>
 					{
 						finishedClosing.Invoke();
@@ -115,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					platformView?.RootViewController?.PresentedViewController ??
 					vc.PresentedViewController;
 
-				if (presentedVC is Microsoft.Maui.Controls.Platform.ModalWrapper mw)
+				if (presentedVC is ModalWrapper mw)
 				{
 					await mw.PresentingViewController.DismissViewControllerAsync(false);
 				}

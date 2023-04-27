@@ -90,6 +90,10 @@
         NoWarn="NU1605"
     />
     <PackageReference
+        Update="Microsoft.Windows.SDK.BuildTools"
+        Version="$(MicrosoftWindowsSDKBuildToolsPackageVersion)"
+    />
+    <PackageReference
         Update="Microsoft.Graphics.Win2D"
         Version="$(MicrosoftGraphicsWin2DPackageVersion)"
     />
