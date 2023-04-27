@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		bool _applyShadow;
 
+		bool _intialLayoutFinished;
+
 		Page Page => Element as Page;
 		IFlyoutPageController FlyoutPageController => FlyoutPage;
 		IMauiContext _mauiContext;
@@ -77,7 +79,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_clickOffView.BackgroundColor = new Color(0, 0, 0, 0).ToPlatform();
 			_viewHandlerWrapper.SetVirtualView(element, OnElementChanged, false);
 			_element = element;
-			UpdatePresented(((FlyoutPage)element).IsPresented);
+
+			if (_intialLayoutFinished)
+			{
+				SetInitialPresented();
+			}
+
 			Element.SizeChanged += PageOnSizeChanged;
 		}
 
@@ -115,6 +122,31 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			LayoutChildren(false);
+		}
+
+
+		void SetInitialPresented()
+		{
+			FlyoutPageController.UpdateFlyoutLayoutBehavior();
+			if (FlyoutPageController.ShouldShowSplitMode)
+				UpdatePresented(true);
+			else
+				UpdatePresented(((FlyoutPage)Element).IsPresented);
+
+			UpdateLeftBarButton();
+		}
+
+		public override void ViewWillLayoutSubviews()
+		{
+			// Orientation doesn't seem to be set to a stable correct value until here.
+			// So, we officially process orientation here.
+			if (!_intialLayoutFinished)
+			{
+				_intialLayoutFinished = true;
+				SetInitialPresented();
+			}
+
+			base.ViewWillLayoutSubviews();
 		}
 
 		public override void ViewDidLoad()
@@ -170,7 +202,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void UpdatePresented(bool newValue, bool animated = false)
 		{
 			if (Presented == newValue)
+			{
+				UpdateClickOffView();
 				return;
+			}
 
 			if (!newValue && FlyoutPageController.ShouldShowSplitMode)
 			{
@@ -320,6 +355,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var detailRenderer = FlyoutPage.Detail.Handler as IPlatformViewHandler;
 			if (detailRenderer == null)
 				return;
+
 			var detailView = detailRenderer.ViewController.View;
 
 			var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;

@@ -197,8 +197,8 @@ namespace Microsoft.Maui.DeviceTests
 				if (!CanDeviceDoSplitMode(flyoutPage))
 					return Task.CompletedTask;
 
-				var detailBounds = flyoutPage.Flyout.GetPlatformViewBounds();
-				var flyoutBounds = flyoutPage.Detail.GetPlatformViewBounds();
+				var detailBounds = flyoutPage.Detail.GetPlatformViewBounds();
+				var flyoutBounds = flyoutPage.Flyout.GetPlatformViewBounds();
 				var windowBounds = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo;
 
 				Assert.True(detailBounds.Height <= windowBounds.Height, $"Details is measuring too high. Details - {detailBounds} Window - {windowBounds}");
