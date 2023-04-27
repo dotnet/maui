@@ -87,7 +87,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		string TextForHandler(LabelHandler handler)
 		{
-#if IOS
+#if IOS || MACCATALYST
 			return handler.PlatformView.AttributedText?.Value;
 #elif ANDROID
 			return handler.PlatformView.TextFormatted.ToString();
