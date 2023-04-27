@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -14,37 +14,37 @@ namespace Microsoft.Maui.Controls
 	{
 		const int DefaultPadding = 4;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorsShapeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IndicatorsShape"/>.</summary>
 		public static readonly BindableProperty IndicatorsShapeProperty = BindableProperty.Create(nameof(IndicatorsShape), typeof(IndicatorShape), typeof(IndicatorView), Controls.IndicatorShape.Circle);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='PositionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Position"/>.</summary>
 		public static readonly BindableProperty PositionProperty = BindableProperty.Create(nameof(Position), typeof(int), typeof(IndicatorView), default(int), BindingMode.TwoWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='CountProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Count"/>.</summary>
 		public static readonly BindableProperty CountProperty = BindableProperty.Create(nameof(Count), typeof(int), typeof(IndicatorView), default(int), propertyChanged: (bindable, oldValue, newValue)
 			=> (((IndicatorView)bindable).IndicatorLayout as IndicatorStackLayout)?.ResetIndicatorCount((int)oldValue));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='MaximumVisibleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MaximumVisible"/>.</summary>
 		public static readonly BindableProperty MaximumVisibleProperty = BindableProperty.Create(nameof(MaximumVisible), typeof(int), typeof(IndicatorView), int.MaxValue, propertyChanged: (bindable, oldValue, newValue)
 		=> (((IndicatorView)bindable).IndicatorLayout as IndicatorStackLayout)?.ResetIndicators());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IndicatorTemplate"/>.</summary>
 		public static readonly BindableProperty IndicatorTemplateProperty = BindableProperty.Create(nameof(IndicatorTemplate), typeof(DataTemplate), typeof(IndicatorView), default(DataTemplate), propertyChanging: (bindable, oldValue, newValue)
 			=> UpdateIndicatorLayout((IndicatorView)bindable, newValue));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='HideSingleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HideSingle"/>.</summary>
 		public static readonly BindableProperty HideSingleProperty = BindableProperty.Create(nameof(HideSingle), typeof(bool), typeof(IndicatorView), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IndicatorColor"/>.</summary>
 		public static readonly BindableProperty IndicatorColorProperty = BindableProperty.Create(nameof(IndicatorColor), typeof(Color), typeof(IndicatorView), Colors.LightGrey);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='SelectedIndicatorColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedIndicatorColor"/>.</summary>
 		public static readonly BindableProperty SelectedIndicatorColorProperty = BindableProperty.Create(nameof(SelectedIndicatorColor), typeof(Color), typeof(IndicatorView), Colors.Black);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='IndicatorSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IndicatorSize"/>.</summary>
 		public static readonly BindableProperty IndicatorSizeProperty = BindableProperty.Create(nameof(IndicatorSize), typeof(double), typeof(IndicatorView), 6.0);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/IndicatorView.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(IndicatorView), null, propertyChanged: (bindable, oldValue, newValue)
 			=> ((IndicatorView)bindable).ResetItemsSource((IEnumerable)oldValue));
 

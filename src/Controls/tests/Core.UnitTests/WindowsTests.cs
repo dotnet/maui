@@ -421,10 +421,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(app, window.Parent);
 			Assert.Equal(window, window.Page.Parent);
 			Assert.Equal(1, app.Windows.Count);
-			Assert.Equal(app.LogicalChildren[0], window);
-			Assert.Equal(window.LogicalChildren[0], page);
-			Assert.Single(app.LogicalChildren);
-			Assert.Single(window.LogicalChildren);
+			Assert.Equal(app.LogicalChildrenInternal[0], window);
+			Assert.Equal(window.LogicalChildrenInternal[0], page);
+			Assert.Single(app.LogicalChildrenInternal);
+			Assert.Single(window.LogicalChildrenInternal);
 			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);
 		}

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.ProgressBar']/Docs/*" />
 	public partial class ProgressBar : View, IElementConfiguration<ProgressBar>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='ProgressColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ProgressColor"/>.</summary>
 		public static readonly BindableProperty ProgressColorProperty = BindableProperty.Create(nameof(ProgressColor), typeof(Color), typeof(ProgressBar), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ProgressBar.xml" path="//Member[@MemberName='ProgressProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Progress"/>.</summary>
 		public static readonly BindableProperty ProgressProperty = BindableProperty.Create(nameof(Progress), typeof(double), typeof(ProgressBar), 0d, coerceValue: (bo, v) => ((double)v).Clamp(0, 1));
 
 		readonly Lazy<PlatformConfigurationRegistry<ProgressBar>> _platformConfigurationRegistry;

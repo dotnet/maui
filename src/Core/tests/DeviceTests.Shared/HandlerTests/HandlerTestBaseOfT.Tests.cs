@@ -198,13 +198,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(view);
 
-
 				// This is a view that always has a container
 				// so there's nothing to test here
 				if (handler.HasContainer)
 					return;
-				await AssertionExtensions.AttachAndRun((handler as IPlatformViewHandler).PlatformView,
-					async () =>
+
+				await AttachAndRun(view,
+					async (handler) =>
 					{
 						await view.AssertHasContainer(false);
 						view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
@@ -215,7 +215,6 @@ namespace Microsoft.Maui.DeviceTests
 						handler.UpdateValue(nameof(IView.Clip));
 						await Task.Delay(10);
 						await view.AssertHasContainer(false);
-
 					});
 
 				return;

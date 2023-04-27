@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.SearchBar']/Docs/*" />
 	public static class SearchBar
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/SearchBar.xml" path="//Member[@MemberName='IsSpellCheckEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsSpellCheckEnabled"/>.</summary>
 		public static readonly BindableProperty IsSpellCheckEnabledProperty =
 			BindableProperty.Create("IsSpellCheckEnabled ", typeof(bool), typeof(SearchBar), false);
 
