@@ -2,8 +2,8 @@
 using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
