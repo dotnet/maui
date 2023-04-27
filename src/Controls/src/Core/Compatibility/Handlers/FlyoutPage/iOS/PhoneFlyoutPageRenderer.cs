@@ -247,7 +247,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			View.Add(_clickOffView);
-			_clickOffView.Frame = _detailController.View.Frame;
+			UpdateClickOffViewFrame();
+		}
+
+		void UpdateClickOffViewFrame()
+		{
+			if (IsPad)
+			{
+				var detailsFrame = _detailController.View.Frame;
+				var flyoutWidth = _flyoutController.View.Frame.Width;
+
+				_clickOffView.Frame =
+					new CoreGraphics.CGRect(
+							_flyoutController.View.Frame.Width,
+							detailsFrame.Y,
+							detailsFrame.Width - flyoutWidth,
+							detailsFrame.Height);
+			}
+			else
+			{
+				_clickOffView.Frame = _detailController.View.Frame;
+			}
 		}
 
 		void RemoveClickOffView()
@@ -373,7 +393,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
 
 			if (Presented)
-				_clickOffView.Frame = _detailController.View.Frame;
+				UpdateClickOffViewFrame();
 		}
 
 		void PackContainers()
