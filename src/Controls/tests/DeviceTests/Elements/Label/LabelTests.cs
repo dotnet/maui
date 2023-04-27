@@ -87,10 +87,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		string TextForHandler(LabelHandler handler)
 		{
-#if __IOS__
+#if IOS
 			return handler.PlatformView.AttributedText?.Value;
-#elif __ANDROID__
-				return handler.PlatformView.TextFormatted.ToString();
+#elif ANDROID
+			return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
 			return handler.PlatformView.Text;
 #endif
@@ -265,19 +265,14 @@ namespace Microsoft.Maui.DeviceTests
 				})
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, async (handler) =>
 			{
-				var layoutHandler = CreateHandler<LayoutHandler>(layout);
-				var platformView = layoutHandler.ToPlatform();
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(Colors.Red, MauiContext);
 
-				await platformView.AttachAndRun(async () =>
-				{
-					await platformView.AssertContainsColor(Colors.Red);
+				label.TextType = TextType.Html;
 
-					label.TextType = TextType.Html;
-
-					await platformView.AssertDoesNotContainColor(Colors.Red);
-				});
+				await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}
 
