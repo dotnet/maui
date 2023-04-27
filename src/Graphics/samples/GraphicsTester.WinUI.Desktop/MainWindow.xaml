@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:graphics="using:Microsoft.Maui.Graphics.Win2D"
+    xmlns:platform="using:Microsoft.Maui.Graphics.Platform"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
@@ -16,6 +17,7 @@
         </Grid.ColumnDefinitions>
         <ListView x:Name="List" />
         <Canvas Grid.Column="1" Width="5" HorizontalAlignment="Stretch" Background="Black"/>
-        <graphics:W2DGraphicsView x:Name="GraphicsView" Grid.Column="2" />
+        <!--<graphics:W2DGraphicsView x:Name="GraphicsView" Grid.Column="2" />-->
+        <platform:PlatformGraphicsView x:Name="GraphicsView" Grid.Column="2" />
     </Grid>
 </Window>

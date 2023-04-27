@@ -465,6 +465,10 @@ Microsoft.Maui.Graphics.PictureExtensions
 Microsoft.Maui.Graphics.PicturePattern
 Microsoft.Maui.Graphics.PictureReaderExtensions
 Microsoft.Maui.Graphics.PictureWriterExtensions
+Microsoft.Maui.Graphics.Platform.PlatformImage
+Microsoft.Maui.Graphics.Platform.PlatformImage.Dispose() -> void
+Microsoft.Maui.Graphics.Platform.PlatformImage.Height.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformImage.Width.get -> float
 Microsoft.Maui.Graphics.Point
 Microsoft.Maui.Graphics.Point.Deconstruct(out double x, out double y) -> void
 Microsoft.Maui.Graphics.Point.Distance(Microsoft.Maui.Graphics.Point other) -> double
@@ -1001,6 +1005,16 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~Microsoft.Maui.Graphics.PictureCanvas.StrokeDashPattern.set -> void
 ~Microsoft.Maui.Graphics.PicturePattern.PicturePattern(Microsoft.Maui.Graphics.IPicture picture) -> void
 ~Microsoft.Maui.Graphics.PicturePattern.PicturePattern(Microsoft.Maui.Graphics.IPicture picture, float stepX, float stepY) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidth, float maxHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Downsize(float maxWidthOrHeight, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Draw(Microsoft.Maui.Graphics.ICanvas canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformImage(Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.CanvasBitmap bitmap) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.PlatformRepresentation.get -> Microsoft.Graphics.Canvas.CanvasBitmap
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Resize(float width, float height, Microsoft.Maui.Graphics.ResizeMode resizeMode = Microsoft.Maui.Graphics.ResizeMode.Fit, bool disposeOriginal = false) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.Save(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImage.SaveAsync(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png, float quality = 1) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Graphics.Platform.PlatformImage.ToImage(int width, int height, float scale = 1) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformImage.ToPlatformImage() -> Microsoft.Maui.Graphics.IImage
 ~Microsoft.Maui.Graphics.Point.Equals(object o, double epsilon) -> bool
 ~Microsoft.Maui.Graphics.PointF.Equals(object o, float epsilon) -> bool
 ~Microsoft.Maui.Graphics.RadialGradientPaint.RadialGradientPaint(Microsoft.Maui.Graphics.GradientPaint gradientPaint) -> void
@@ -1224,6 +1238,7 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytes(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> byte[]
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsBytesAsync(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.Threading.Tasks.Task<byte[]>
 ~static Microsoft.Maui.Graphics.PictureWriterExtensions.SaveAsStream(this Microsoft.Maui.Graphics.IPictureWriter target, Microsoft.Maui.Graphics.IPicture picture) -> System.IO.Stream
+~static Microsoft.Maui.Graphics.Platform.PlatformImage.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat format = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
 ~static Microsoft.Maui.Graphics.Point.TryParse(string value, out Microsoft.Maui.Graphics.Point point) -> bool
 ~static Microsoft.Maui.Graphics.PointF.TryParse(string value, out Microsoft.Maui.Graphics.PointF pointF) -> bool
 ~static Microsoft.Maui.Graphics.Rect.TryParse(string value, out Microsoft.Maui.Graphics.Rect rectangle) -> bool
@@ -1431,3 +1446,128 @@ virtual Microsoft.Maui.Graphics.Paint.IsTransparent.get -> bool
 ~static readonly Microsoft.Maui.Graphics.Colors.YellowGreen -> Microsoft.Maui.Graphics.Color
 ~static readonly Microsoft.Maui.Graphics.Text.AttributedTextRunComparer.Instance -> Microsoft.Maui.Graphics.Text.AttributedTextRunComparer
 ~virtual Microsoft.Maui.Graphics.AbstractCanvas<TState>.StateRestored(TState state) -> void
+Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService
+Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService.PlatformBitmapExportService() -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvas
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.BitmapPatternFills.get -> bool
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.BitmapPatternFills.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.CanvasSize.get -> Windows.Foundation.Size
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.CanvasSize.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetBlur(float blurRadius) -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformCanvas() -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ActualScale.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ActualShadowBlur.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Alpha.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Alpha.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.AppendConcatenateTransform(System.Numerics.Matrix3x2 transform) -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.AppendRotate(float aAngle) -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.AppendRotate(float aAngle, float x, float y) -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.AppendScale(float tx, float ty) -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.AppendTranslate(float tx, float ty) -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.BlurRadius.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ClipRectangle(float x, float y, float width, float height) -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Dpi.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.FontSize.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.FontSize.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.IsBlurred.get -> bool
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.IsShadowed.get -> bool
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Matrix.get -> System.Numerics.Matrix3x2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.MiterLimit.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.RestoreRenderTargetState() -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SaveRenderTargetState() -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetBlur(float aRadius) -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetToDefaults() -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ShadowBlur.get -> float
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ShadowBlur.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ShadowColor.get -> Windows.UI.Color
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ShadowOffset.get -> System.Numerics.Vector2
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.StrokeLineCap.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.StrokeLineJoin.set -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SubtractFromClip(float x, float y, float width, float height) -> void
+Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService
+Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.PlatformCanvasStateService() -> void
+Microsoft.Maui.Graphics.Platform.GraphicsExtensions
+Microsoft.Maui.Graphics.Platform.PlatformGraphicsView
+Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Invalidate() -> void
+Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.PlatformGraphicsView() -> void
+Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService
+Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.PlatformImageLoadingService() -> void
+Microsoft.Maui.Graphics.Platform.PlatformStringSizeService
+Microsoft.Maui.Graphics.Platform.PlatformStringSizeService.PlatformStringSizeService() -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.Alpha.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.Antialias.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.BlendMode.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.ClipRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillEllipse(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillRoundedRectangle(float x, float y, float width, float height, float cornerRadius) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FontSize.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.MiterLimit.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformConcatenateTransform(System.Numerics.Matrix3x2 transform) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawArc(float x, float y, float width, float height, float startAngle, float endAngle, bool clockwise, bool closed) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawEllipse(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawLine(float x1, float y1, float x2, float y2) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawRectangle(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawRoundedRectangle(float x, float y, float width, float height, float cornerRadius) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformRotate(float degrees, float radians) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformRotate(float degrees, float radians, float x, float y) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformScale(float sx, float sy) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformStrokeSize.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformTranslate(float tx, float ty) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SaveState() -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineCap.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineJoin.set -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
+override Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Dispose() -> void
+static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Rotate(this System.Numerics.Matrix3x2 target, float radians) -> System.Numerics.Matrix3x2
+static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Scale(this System.Numerics.Matrix3x2 target, float sx, float sy) -> System.Numerics.Matrix3x2
+static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Translate(this System.Numerics.Matrix3x2 target, float dx, float dy) -> System.Numerics.Matrix3x2
+~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService.CreateContext(int width, int height, float displayScale = 1) -> Microsoft.Maui.Graphics.BitmapExportContext
+~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Session.get -> Microsoft.Graphics.Canvas.CanvasDrawingSession
+~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Session.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.ClipPath(Microsoft.Maui.Graphics.PathF path, Microsoft.Maui.Graphics.WindingMode windingMode) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.FillColor.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Font.get -> Microsoft.Maui.Graphics.IFont
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Font.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.FontColor.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformFillBrush.get -> Microsoft.Graphics.Canvas.Brushes.ICanvasBrush
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformFontBrush.get -> Microsoft.Graphics.Canvas.Brushes.ICanvasBrush
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformStrokeBrush.get -> Microsoft.Graphics.Canvas.Brushes.ICanvasBrush
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformStrokeStyle.get -> Microsoft.Graphics.Canvas.Geometry.CanvasStrokeStyle
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetBitmapBrush(Microsoft.Graphics.Canvas.Brushes.CanvasImageBrush bitmapBrush) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetLinearGradient(Microsoft.Maui.Graphics.Paint aPaint, System.Numerics.Vector2 startPoint, System.Numerics.Vector2 endPoint) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetRadialGradient(Microsoft.Maui.Graphics.Paint aPaint, System.Numerics.Vector2 center, float radius) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.SetStrokeDashPattern(float[] pattern, float strokeDashOffset, float strokeSize) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.StrokeColor.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformCanvasState(Microsoft.Maui.Graphics.Platform.PlatformCanvas owner) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasState.PlatformCanvasState(Microsoft.Maui.Graphics.Platform.PlatformCanvasState prototype) -> void
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.CreateCopy(Microsoft.Maui.Graphics.Platform.PlatformCanvasState prototype) -> Microsoft.Maui.Graphics.Platform.PlatformCanvasState
+~Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService.CreateNew(object context) -> Microsoft.Maui.Graphics.Platform.PlatformCanvasState
+~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Drawable.get -> Microsoft.Maui.Graphics.IDrawable
+~Microsoft.Maui.Graphics.Platform.PlatformGraphicsView.Drawable.set -> void
+~Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService.FromStream(System.IO.Stream stream, Microsoft.Maui.Graphics.ImageFormat formatHint = Microsoft.Maui.Graphics.ImageFormat.Png) -> Microsoft.Maui.Graphics.IImage
+~Microsoft.Maui.Graphics.Platform.PlatformStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float textSize) -> Microsoft.Maui.Graphics.SizeF
+~Microsoft.Maui.Graphics.Platform.PlatformStringSizeService.GetStringSize(string value, Microsoft.Maui.Graphics.IFont font, float textSize, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment) -> Microsoft.Maui.Graphics.SizeF
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.ClipPath(Microsoft.Maui.Graphics.PathF path, Microsoft.Maui.Graphics.WindingMode windingMode = Microsoft.Maui.Graphics.WindingMode.NonZero) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawImage(Microsoft.Maui.Graphics.IImage image, float x, float y, float width, float height) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawString(string value, float x, float y, float width, float height, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment, Microsoft.Maui.Graphics.VerticalAlignment verticalAlignment, Microsoft.Maui.Graphics.TextFlow textFlow = Microsoft.Maui.Graphics.TextFlow.ClipBounds, float lineAdjustment = 0) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawString(string value, float x, float y, Microsoft.Maui.Graphics.HorizontalAlignment horizontalAlignment) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.DrawText(Microsoft.Maui.Graphics.Text.IAttributedText value, float x, float y, float width, float height) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillColor.set -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FillPath(Microsoft.Maui.Graphics.PathF path, Microsoft.Maui.Graphics.WindingMode windingMode) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.Font.set -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.FontColor.set -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformDrawPath(Microsoft.Maui.Graphics.PathF path) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.PlatformSetStrokeDashPattern(float[] strokePattern, float strokeDashOffset, float strokeSize) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetFillPaint(Microsoft.Maui.Graphics.Paint paint, Microsoft.Maui.Graphics.RectF rectangle) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StateRestored(Microsoft.Maui.Graphics.Platform.PlatformCanvasState state) -> void
+~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeColor.set -> void
+~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsColor(this Microsoft.Maui.Graphics.Color color, float alpha = 1) -> Windows.UI.Color
+~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsColor(this Microsoft.Maui.Graphics.Color color, Microsoft.Maui.Graphics.Color defaultColor, float alpha = 1) -> Windows.UI.Color
+~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPath(this Microsoft.Maui.Graphics.PathF path, float ox, float oy, float fx, float fy, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination fillMode = Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination.Winding) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
+~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPath(this Microsoft.Maui.Graphics.PathF path, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination fillMode = Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination.Winding) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
+~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPathFromSegment(this Microsoft.Maui.Graphics.PathF path, int segmentIndex, float zoom, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
