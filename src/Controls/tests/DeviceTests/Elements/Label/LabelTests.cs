@@ -462,6 +462,50 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task TextTypeAfterFontStuffIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				FontSize = 64,
+				FontFamily = "Baskerville",
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.TextType = TextType.Html;
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		public async Task FontStuffAfterTextTypeIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				TextType = TextType.Html,
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.FontFamily = "Baskerville";
+				label.FontSize = 64;
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
 		Color TextColor(LabelHandler handler)
 		{
 #if __IOS__
