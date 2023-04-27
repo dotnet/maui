@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class MenuBar : Element, IMenuBar
 	{
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(MenuBar), true);
 
