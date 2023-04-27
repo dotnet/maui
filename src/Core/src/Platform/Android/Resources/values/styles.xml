@@ -10,6 +10,7 @@
         <item name="bottomNavigationViewStyle">@style/Widget.Design.BottomNavigationView</item>
         <item name="materialButtonStyle">@style/MauiMaterialButton</item>
         <item name="checkboxStyle">@style/MauiCheckBox</item>
+        <item name="toolbarStyle">@style/MauiToolbarStyle</item>
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
@@ -44,6 +45,10 @@
     <style name="AppTheme" parent="Maui.MainTheme" />
     <style name="AppTheme.NoActionBar" parent="Maui.MainTheme.NoActionBar" />
 
+    <style name="MauiToolbarStyle" parent="@style/Widget.AppCompat.Toolbar">
+        <item name="titleTextColor">@android:color/white</item>
+    </style>
+    
     <style name="MauiMaterialButton" parent="Widget.MaterialComponents.Button.UnelevatedButton">
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
