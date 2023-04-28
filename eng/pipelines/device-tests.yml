@@ -67,12 +67,9 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
-
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      
 resources:
   repositories:
     - repository: yaml-templates

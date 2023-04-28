@@ -45,11 +45,8 @@ parameters:
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
-    - name: $(androidTestsVmPool)
-      vmImage: $(androidTestsVmPool)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
+    - name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
       testName: RunOniOS
       artifact: templates-run-ios
 
