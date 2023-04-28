@@ -2218,7 +2218,6 @@ override Microsoft.Maui.MauiAppCompatActivity.OnActivityResult(int requestCode, 
 override Microsoft.Maui.MauiAppCompatActivity.OnBackPressed() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnConfigurationChanged(Android.Content.Res.Configuration! newConfig) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
-override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnNewIntent(Android.Content.Intent? intent) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnPostCreate(Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnPostResume() -> void

@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 
 				var expectedColor = Color.FromArgb("#FF0000");
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
 
@@ -95,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 					var nativeThumbSize = GetNativeThumbSize(handler);
 					Assert.Equal(nativeThumbSize.Height, thumbHeight);
 					Assert.Equal(nativeThumbSize.Width, thumbWidth);
-				});
+				}, MauiContext);
 			});
 		}
 

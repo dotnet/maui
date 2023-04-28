@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="Type[@FullName='Microsoft.Maui.Controls.RowDefinition']/Docs/*" />
 	public sealed class RowDefinition : BindableObject, IDefinition, IGridRowDefinition
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/RowDefinition.xml" path="//Member[@MemberName='HeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(nameof(Height), typeof(GridLength), typeof(RowDefinition), GridLength.Star,
 			propertyChanged: (bindable, oldValue, newValue) => ((RowDefinition)bindable).OnSizeChanged());
 

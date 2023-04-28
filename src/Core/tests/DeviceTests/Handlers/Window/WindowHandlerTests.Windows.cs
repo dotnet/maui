@@ -215,7 +215,7 @@ namespace Microsoft.Maui.DeviceTests
 					};
 
 					await action.Invoke(windowManager);
-				});
+				}, MauiContext);
 
 				return;
 			});
