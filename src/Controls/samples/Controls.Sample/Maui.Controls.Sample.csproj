@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <ApplicationTitle>.NET MAUI Controls</ApplicationTitle>
+    <ApplicationTitle>.NET MAUI</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.sample</ApplicationId>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
