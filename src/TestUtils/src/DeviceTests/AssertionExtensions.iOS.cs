@@ -186,7 +186,7 @@ namespace Microsoft.Maui.DeviceTests
 			return attachParent ?? currentView;
 		}
 
-		public static Task<UIImage> ToBitmap(this UIView view)
+		public static Task<UIImage> ToBitmap(this UIView view, IMauiContext mauiContext)
 		{
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
@@ -287,59 +287,59 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, (int)bitmap.Size.Width - 1, (int)bitmap.Size.Height - 1);
 		}
 
-		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y)
+		public static async Task<UIImage> AssertColorAtPointAsync(this UIView view, UIColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomLeft(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtBottomRight(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopLeft(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertColorAtTopRight(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertContainsColor(expectedColor);
 		}
 
-		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor)
+		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertDoesNotContainColor(unexpectedColor);
 		}
 
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, IMauiContext mauiContext) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
 
-		public static Task<UIImage> AssertDoesNotContainColor(this UIView view, Microsoft.Maui.Graphics.Color unexpectedColor) =>
-			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
+		public static Task<UIImage> AssertDoesNotContainColor(this UIView view, Microsoft.Maui.Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
 		public static Task<UIImage> AssertContainsColor(this UIImage image, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(image.AssertContainsColor(expectedColor.ToPlatform(), withinRectModifier));
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			throw new XunitException($"Color {expectedColor} not found.");
+			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
 		}
 
 		public static UIImage AssertDoesNotContainColor(this UIImage bitmap, UIColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
@@ -378,7 +378,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), unexpectedColor))
 					{
-						throw new XunitException($"Color {unexpectedColor} was found at point {x}, {y}.");
+						throw new XunitException(CreateColorError(bitmap, $"Color {unexpectedColor} was found at point {x}, {y}."));
 					}
 				}
 			}

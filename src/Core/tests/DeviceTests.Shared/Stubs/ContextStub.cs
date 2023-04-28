@@ -17,6 +17,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		Android.Content.Context _androidContext;
 #endif
 
+#if WINDOWS
+		UI.Xaml.Window _window;
+#endif
+
 		public ContextStub(IServiceProvider services)
 		{
 			_services = services;
@@ -43,10 +47,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return UIKit.UIApplication.SharedApplication.GetKeyWindow();
 #elif WINDOWS
 			if (serviceType == typeof(NavigationRootManager))
-				return _windowManager ??= new NavigationRootManager(MauiProgramDefaults.DefaultWindow);
+				return _windowManager ??= new NavigationRootManager((UI.Xaml.Window)this.GetService(typeof(UI.Xaml.Window)));
 
 			if (serviceType == typeof(UI.Xaml.Window))
-				return _services.GetService(serviceType) ?? MauiProgramDefaults.DefaultWindow;
+				return _window ??= (_services.GetService<UI.Xaml.Window>() ?? new UI.Xaml.Window());
 #endif
 			if (serviceType == typeof(IDispatcher))
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
