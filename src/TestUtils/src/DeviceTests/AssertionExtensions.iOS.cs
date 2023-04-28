@@ -323,34 +323,20 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-<<<<<<< HEAD
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, double? tolerance = null)
-		{
-			var bitmap = await view.ToBitmap();
-			return bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
-		}
-		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor)
-=======
-		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
+		public static async Task<UIImage> AssertContainsColor(this UIView view, UIColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
-			return bitmap.AssertContainsColor(expectedColor);
+			return bitmap.AssertContainsColor(expectedColor, tolerance: tolerance);
 		}
 
 		public static async Task<UIImage> AssertDoesNotContainColor(this UIView view, UIColor unexpectedColor, IMauiContext mauiContext)
->>>>>>> origin/main
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertDoesNotContainColor(unexpectedColor);
 		}
 
-<<<<<<< HEAD
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, double? tolerance = null) =>
-			AssertContainsColor(view, expectedColor.ToPlatform(), tolerance: tolerance);
-=======
-		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, IMauiContext mauiContext) =>
-			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
->>>>>>> origin/main
+		public static Task<UIImage> AssertContainsColor(this UIView view, Microsoft.Maui.Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext, tolerance: tolerance);
 
 		public static Task<UIImage> AssertDoesNotContainColor(this UIView view, Microsoft.Maui.Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
 			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
