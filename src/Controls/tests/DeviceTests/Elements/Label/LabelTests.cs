@@ -22,6 +22,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Layout, LayoutHandler>();
 				});
 			});
 		}
@@ -87,10 +88,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		string TextForHandler(LabelHandler handler)
 		{
-#if __IOS__
+#if IOS || MACCATALYST
 			return handler.PlatformView.AttributedText?.Value;
-#elif __ANDROID__
-				return handler.PlatformView.TextFormatted.ToString();
+#elif ANDROID
+			return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
 			return handler.PlatformView.Text;
 #endif
@@ -265,19 +266,14 @@ namespace Microsoft.Maui.DeviceTests
 				})
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(layout, async (handler) =>
 			{
-				var layoutHandler = CreateHandler<LayoutHandler>(layout);
-				var platformView = layoutHandler.ToPlatform();
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(Colors.Red, MauiContext);
 
-				await platformView.AttachAndRun(async () =>
-				{
-					await platformView.AssertContainsColor(Colors.Red);
+				label.TextType = TextType.Html;
 
-					label.TextType = TextType.Html;
-
-					await platformView.AssertDoesNotContainColor(Colors.Red);
-				});
+				await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}
 
@@ -458,6 +454,50 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<LabelHandler>(label);
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		public async Task TextTypeAfterFontStuffIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				FontSize = 64,
+				FontFamily = "Baskerville",
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.TextType = TextType.Html;
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		public async Task FontStuffAfterTextTypeIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				TextType = TextType.Html,
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.FontFamily = "Baskerville";
+				label.FontSize = 64;
 				AssertEquivalentFont(handler, label.ToFont());
 			});
 		}

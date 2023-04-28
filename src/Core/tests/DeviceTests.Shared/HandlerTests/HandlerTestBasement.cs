@@ -202,7 +202,11 @@ namespace Microsoft.Maui.DeviceTests
 				return action.Invoke((IPlatformViewHandler)handler);
 			}, MauiContext, (view) =>
 			{
+				if (view.Handler is IPlatformViewHandler platformViewHandler)
+					return Task.FromResult(platformViewHandler);
+
 				var handler = view.ToHandler(MauiContext);
+				InitializeViewHandler(view, handler, MauiContext);
 				return Task.FromResult(handler);
 			});
 		}
