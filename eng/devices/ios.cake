@@ -5,7 +5,7 @@ string TARGET = Argument("target", "Test");
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_14.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? "ios-simulator-64_16.4"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);

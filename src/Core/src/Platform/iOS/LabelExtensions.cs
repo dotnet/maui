@@ -83,9 +83,9 @@ namespace Microsoft.Maui.Platform
 				StringEncoding = NSStringEncoding.UTF8
 			};
 
-			NSError? nsError = null;
+			NSError nSError = new NSError();
 
-			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nsError);
+			platformLabel.AttributedText = new NSAttributedString(text, attr, ref nSError);
 		}
 
 		internal static void UpdateTextPlainText(this UILabel platformLabel, IText label)
