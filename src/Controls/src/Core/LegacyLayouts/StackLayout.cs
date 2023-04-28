@@ -9,9 +9,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 	[ContentProperty(nameof(Children))]
 	public class StackLayout : Layout<View>, IElementConfiguration<StackLayout>, IView
 	{
+		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
 		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(StackOrientation), typeof(StackLayout), StackOrientation.Vertical,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
 
+		/// <summary>Bindable property for <see cref="Spacing"/>.</summary>
 		public static readonly BindableProperty SpacingProperty = BindableProperty.Create(nameof(Spacing), typeof(double), typeof(StackLayout), 6d,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((StackLayout)bindable).InvalidateLayout());
 

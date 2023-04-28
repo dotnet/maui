@@ -157,14 +157,10 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 200
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, (handler) =>
 			{
-				var handler = CreateHandler(searchBar);
-				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
-				{
-					var height = GetInputFieldHeight(handler);
-					Assert.True(height >= 44);
-				});
+				var height = GetInputFieldHeight(handler);
+				Assert.True(height >= 44);
 			});
 		}
 
@@ -297,30 +293,35 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsChatKeyboard, expected);
 		}
-
-		[Category(TestCategory.SearchBar)]
-		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
-		{
-			protected override void SetNativeText(SearchBarHandler searchBarHandler, string text)
-			{
-				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
-			}
-
-			protected override int GetCursorStartPosition(SearchBarHandler searchBarHandler)
-			{
-				return SearchBarHandlerTests.GetCursorStartPosition(searchBarHandler);
-			}
-
-			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
-			{
-				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
-			}
-		}
 #endif
 
 		[Category(TestCategory.SearchBar)]
 		public class SearchBarTextStyleTests : TextStyleHandlerTests<SearchBarHandler, SearchBarStub>
 		{
 		}
+
+		[Category(TestCategory.SearchBar)]
+		public class SearchBarTextInputTests : TextInputHandlerTests<SearchBarHandler, SearchBarStub>
+		{
+			protected override void SetNativeText(SearchBarHandler searchBarHandler, string text) =>
+				SearchBarHandlerTests.SetNativeText(searchBarHandler, text);
+
+			protected override int GetCursorStartPosition(SearchBarHandler searchBarHandler) =>
+				SearchBarHandlerTests.GetCursorStartPosition(searchBarHandler);
+
+			protected override void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position) =>
+				SearchBarHandlerTests.UpdateCursorStartPosition(searchBarHandler, position);
+		}
+
+		// TODO: only iOS is working with the search bar focus tests
+#if IOS || MACCATALYST
+		[Category(TestCategory.SearchBar)]
+		public class SearchBarFocusTests : FocusHandlerTests<SearchBarHandler, SearchBarStub, VerticalStackLayoutStub>
+		{
+			public SearchBarFocusTests()
+			{
+			}
+		}
+#endif
 	}
 }

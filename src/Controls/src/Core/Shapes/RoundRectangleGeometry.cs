@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Rect = rect;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='RectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Rect"/>.</summary>
 		public static readonly BindableProperty RectProperty =
 		   BindableProperty.Create(nameof(Rect), typeof(Rect), typeof(RoundRectangleGeometry), new Rect(),
 			   propertyChanged: OnRectChanged);
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			get { return (Rect)GetValue(RectProperty); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RoundRectangleGeometry.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty =
 			BindableProperty.Create(nameof(CornerRadius), typeof(CornerRadius), typeof(RoundRectangleGeometry), new CornerRadius(),
 				propertyChanged: OnCornerRadiusChanged);

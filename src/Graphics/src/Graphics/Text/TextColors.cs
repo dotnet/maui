@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Graphics.Text
 			//Remove # if present
 			if (!color.StartsWith("#", StringComparison.Ordinal))
 			{
-				if (!StandardColors.TryGetValue(color.ToUpper(), out color))
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
 					return null;
 			}
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Graphics.Text
 			//Remove # if present
 			if (!color.StartsWith("#", StringComparison.Ordinal))
 			{
-				if (!StandardColors.TryGetValue(color.ToUpper(), out color))
+				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
 					return null;
 			}
 

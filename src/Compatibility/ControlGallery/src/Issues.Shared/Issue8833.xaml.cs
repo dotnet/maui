@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void FilterItems(string filter)
 		{
-			var filteredItems = _source.Where(monkey => monkey.Name.ToLower().Contains(filter.ToLower())).ToList();
+			var filteredItems = _source.Where(monkey => monkey.Name.ToLowerInvariant().Contains(filter.ToLowerInvariant())).ToList();
 			foreach (var monkey in _source)
 			{
 				if (!filteredItems.Contains(monkey))

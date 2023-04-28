@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.AppCompat.View.Menu;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
@@ -88,6 +89,22 @@ namespace Microsoft.Maui.DeviceTests
 				ToolbarItem toolbarItem = toolbarItems[i];
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+
+				if (primaryCommand is MenuItemImpl menuItemImpl)
+				{
+					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
+					{
+						Assert.True(menuItemImpl.RequiresActionButton(), "Secondary Menu Item `SetShowAsAction` not set correctly");
+					}
+					else
+					{
+						Assert.False(menuItemImpl.RequiresActionButton(), "Primary Menu Item `SetShowAsAction` not set correctly");
+					}
+				}
+				else
+				{
+					throw new Exception($"MenuItem type is not MenuItemImpl. Please rework test to work with {primaryCommand}");
+				}
 			}
 
 			return true;

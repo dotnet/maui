@@ -30,6 +30,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
@@ -368,7 +369,12 @@ namespace Microsoft.Maui.Controls.Xaml
 				s_xmlnsDefinitions,
 				currentAssembly?.FullName,
 				(typeInfo) =>
-					Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}"));
+				{
+					var t = Type.GetType($"{typeInfo.clrNamespace}.{typeInfo.typeName}, {typeInfo.assemblyName}");
+					if (t is not null && t.IsPublicOrVisibleInternal(currentAssembly))
+						return t;
+					return null;
+				});
 
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
@@ -421,5 +427,20 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			return type;
 		}
+
+		public static bool IsPublicOrVisibleInternal(this Type type, Assembly assembly)
+		{
+			if (type.IsPublic)
+				return true;
+			if (type.Assembly == assembly)
+				return true;
+			if (type.Assembly.IsVisibleInternal(assembly))
+				return true;
+			return false;
+		}
+
+		public static bool IsVisibleInternal(this Assembly from, Assembly to) =>
+			from.GetCustomAttributes<InternalsVisibleToAttribute>().Any(ca =>
+				ca.AssemblyName.StartsWith(to.GetName().Name, StringComparison.InvariantCulture));
 	}
 }
