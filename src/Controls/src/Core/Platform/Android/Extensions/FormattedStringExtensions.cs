@@ -154,7 +154,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var padLeft = (int)textView.Context.ToPixels(padding.Left);
 			var padTop = (int)textView.Context.ToPixels(padding.Top);
 
-			for (int i = 0; i < spannableString.Length(); i = next)
+#pragma warning disable CA1416
+			var strlen = spannableString.Length();
+#pragma warning restore CA1416
+
+			for (int i = 0; i < strlen; i = next)
 			{
 				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
 
