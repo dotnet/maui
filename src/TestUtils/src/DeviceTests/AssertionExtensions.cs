@@ -92,41 +92,6 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task AttachAndRun(this IView view, Action<IPlatformViewHandler> action, IMauiContext mauiContext) =>
-				view.AttachAndRun<bool>((handler) =>
-				{
-					action(handler);
-					return Task.FromResult(true);
-				}, mauiContext);
-
-		public static Task AttachAndRun(this IView view, Func<IPlatformViewHandler, Task> action, IMauiContext mauiContext)
-			 =>
-				view.AttachAndRun<bool>(async (handler) =>
-				{
-					await action(handler);
-					return true;
-				}, mauiContext);
-
-		public static Task<T> AttachAndRun<T>(this IView view, Func<IPlatformViewHandler, T> action, IMauiContext mauiContext)
-		{
-			Func<IPlatformViewHandler, Task<T>> taskAction = (handler) =>
-			{
-				return Task.FromResult(action.Invoke(handler));
-			};
-
-			return view.AttachAndRun<T>(taskAction, mauiContext);
-		}
-
-		public static Task<T> AttachAndRun<T>(this IView view, Func<IPlatformViewHandler, Task<T>> action, IMauiContext mauiContext) =>
-			view.AttachAndRun<T, IPlatformViewHandler>(action, mauiContext, (view) =>
-			{
-				var handler = view.ToHandler(mauiContext);
-				return Task.FromResult(handler);
-			});
-
-
-
-
 		public static Task AttachAndRun<THandler>(this IView view, Action<THandler> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
 		where THandler : IPlatformViewHandler =>
 			view.AttachAndRun<bool, THandler>((handler) =>
