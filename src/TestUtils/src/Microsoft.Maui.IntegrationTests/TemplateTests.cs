@@ -36,6 +36,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 			EnableTizen(projectFile);
 
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -87,6 +92,30 @@ namespace Microsoft.Maui.IntegrationTests
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			});
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", "net7.0", "Debug")]
+		[TestCase("mauilib", "net7.0", "Debug")]
+		[TestCase("maui-blazor", "net7.0", "Debug")]
+		public void BuildWithoutPackageReference(string id, string framework, string config)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				"<PropertyGroup><SkipValidateMauiImplicitPackageReferences>true</SkipValidateMauiImplicitPackageReferences></PropertyGroup></Project>");
+			FileUtilities.ReplaceInFile(projectFile,
+				"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
+				"");
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
