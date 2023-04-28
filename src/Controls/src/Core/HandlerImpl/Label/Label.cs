@@ -15,9 +15,6 @@ namespace Microsoft.Maui.Controls
 #if WINDOWS
 			[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
 #endif
-#if ANDROID
-			[nameof(TextColor)] = MapTextColor,
-#endif
 #if IOS
 			[nameof(TextDecorations)] = MapTextDecorations,
 			[nameof(CharacterSpacing)] = MapCharacterSpacing,

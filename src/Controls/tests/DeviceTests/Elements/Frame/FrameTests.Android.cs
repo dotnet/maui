@@ -106,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 			// There shouldn't be any white between the two frames
 			await LayoutFrame(layout, outerFrame, 100, 100, () =>
 			{
-				return AssertionExtensions.AssertDoesNotContainColor(layout.ToPlatform(), Colors.White.ToPlatform());
+				return AssertionExtensions.AssertDoesNotContainColor(layout.ToPlatform(), Colors.White.ToPlatform(), MauiContext);
 			});
 		}
 

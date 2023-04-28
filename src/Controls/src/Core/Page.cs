@@ -55,8 +55,6 @@ namespace Microsoft.Maui.Controls
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
 
-		ReadOnlyCollection<Element> _logicalChildren;
-
 		View _titleView;
 
 		List<Action> _pendingActions = new List<Action>();
@@ -158,6 +156,11 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		// Todo rework Page to use AddLogical/RemoveLogical.
+		// Rework all the related parts of the code that interact with the `Page` InternalChildren
+		private protected override IList<Element> LogicalChildrenInternalBackingStore =>
+			InternalChildren;
+
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
 		{
 			get
@@ -172,9 +175,6 @@ namespace Microsoft.Maui.Controls
 					yield return titleViewPart2TheNavBar;
 			}
 		}
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 

@@ -82,7 +82,6 @@ namespace Microsoft.Maui.DeviceTests
 			where THandler : IElementHandler, new()
 			=> CreateHandler<THandler, THandler>(view, mauiContext);
 
-
 		protected void InitializeViewHandler(IElement element, IElementHandler handler, IMauiContext mauiContext = null)
 		{
 			mauiContext ??= MauiContext;
@@ -168,9 +167,61 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color);
+				await plaformView.AssertContainsColor(color, MauiContext);
 			});
 		}
+
+		public Task AttachAndRun(IView view, Action<IPlatformViewHandler> action) =>
+				AttachAndRun<bool>(view, (handler) =>
+				{
+					action(handler);
+					return Task.FromResult(true);
+				});
+
+		public Task AttachAndRun(IView view, Func<IPlatformViewHandler, Task> action) =>
+				AttachAndRun<bool>(view, async (handler) =>
+				{
+					await action(handler);
+					return true;
+				});
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, T> action)
+		{
+			Func<IPlatformViewHandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return AttachAndRun<T>(view, boop);
+		}
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, Task<T>> action)
+		{
+			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
+			{
+				return action.Invoke((IPlatformViewHandler)handler);
+			}, MauiContext, (view) =>
+			{
+				if (view.Handler is IPlatformViewHandler platformViewHandler)
+					return Task.FromResult(platformViewHandler);
+
+				var handler = view.ToHandler(MauiContext);
+				InitializeViewHandler(view, handler, MauiContext);
+				return Task.FromResult(handler);
+			});
+		}
+		public Task AttachAndRun<TPlatformHandler>(IView view, Func<TPlatformHandler, Task> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+			view.AttachAndRun<bool, TPlatformHandler>(async (handler) =>
+			{
+				await action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
 
 		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
 		{
@@ -178,9 +229,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var plaformView = CreateHandler(view, handlerType).ToPlatform();
 #if WINDOWS
-				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y);
+				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y, MauiContext);
 #else
-				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y);
+				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y, MauiContext);
 #endif
 			});
 		}

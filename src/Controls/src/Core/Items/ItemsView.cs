@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsView']/Docs/*" />
 	public abstract class ItemsView : View
 	{
-		List<Element> _logicalChildren = new List<Element>();
 
 		/// <summary>Bindable property for <see cref="EmptyView"/>.</summary>
 		public static readonly BindableProperty EmptyViewProperty =
@@ -110,48 +109,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='AddLogicalChild']/Docs/*" />
-		public void AddLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			_logicalChildren.Add(element);
-			element.Parent = this;
-			OnChildAdded(element);
-			VisualDiagnostics.OnChildAdded(this, element);
-		}
+		public void AddLogicalChild(Element element) =>
+			AddLogicalChildInternal(element);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemoveLogicalChild']/Docs/*" />
 		public void RemoveLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			element.Parent = null;
-
-			if (!_logicalChildren.Contains(element))
-				return;
-
-			var oldLogicalIndex = _logicalChildren.IndexOf(element);
-			_logicalChildren.Remove(element);
-			OnChildRemoved(element, oldLogicalIndex);
-			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
-		}
-
-		internal void ClearLogicalChildren()
-		{
-			// Reverse for-loop, so children can be removed while iterating
-			for (int i = _logicalChildren.Count - 1; i >= 0; i--)
-			{
-				RemoveLogicalChild(_logicalChildren[i]);
-			}
-		}
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();
+			=> RemoveLogicalChildInternal(element);
 
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
