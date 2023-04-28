@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.DatePicker']/Docs/*" />
 	public static class DatePicker
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/DatePicker.xml" path="//Member[@MemberName='UpdateModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="UpdateMode"/>.</summary>
 		public static readonly BindableProperty UpdateModeProperty = BindableProperty.Create(
 			nameof(UpdateMode),
 			typeof(UpdateMode),

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.TabbedPage']/Docs/*" />
 	public static class TabbedPage
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/TabbedPage.xml" path="//Member[@MemberName='TabPositionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TabPosition"/>.</summary>
 		public static readonly BindableProperty TabPositionProperty =
 			BindableProperty.Create("TabPosition", typeof(TabPosition),
 				typeof(TabbedPage), TabPosition.Default);

@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			}
 			else
 			{
-				Assert.Equal(!view.InputTransparent, !view.ToPlatform(MauiContext).IsHitTestVisible);
+				Assert.Equal(view.InputTransparent, !handler.PlatformView.IsHitTestVisible);
 			}
 		}
 	}

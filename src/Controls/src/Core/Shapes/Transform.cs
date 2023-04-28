@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[System.ComponentModel.TypeConverter(typeof(TransformTypeConverter))]
 	public class Transform : BindableObject
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Transform.xml" path="//Member[@MemberName='ValueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 		   BindableProperty.Create(nameof(Value), typeof(Matrix), typeof(Transform), new Matrix());
 
