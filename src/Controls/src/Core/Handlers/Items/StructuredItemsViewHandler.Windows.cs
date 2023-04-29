@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				if (Layout is GridItemsLayout gridItemsLayout)
 					formsGridView.ItemContainerStyle = gridItemsLayout.GetItemContainerStyle();
-		
+
 				if (Layout is LinearItemsLayout linearItemsLayout)
 					formsGridView.ItemContainerStyle = linearItemsLayout.GetItemContainerStyle();
 			}
