@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					gridView.Orientation = gridItemsLayout.ToPlatform();
 
 					gridView.Span = gridItemsLayout.Span;
-				
+
 					if (gridItemsLayout.HorizontalItemSpacing != _previousHorizontalItemSpacing ||
 						gridItemsLayout.VerticalItemSpacing != _previousVerticalItemSpacing)
 					{
