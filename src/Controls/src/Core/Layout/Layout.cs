@@ -293,7 +293,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		public bool CascadeInputTransparent
 		{
@@ -303,25 +304,20 @@ namespace Microsoft.Maui.Controls
 
 		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper)
 		{
-			[nameof(CascadeInputTransparent)] = MapInputTransparent,
-			[nameof(IView.InputTransparent)] = MapInputTransparent,
 		};
 
-		void UpdateDescendantInputTransparent()
-		{
-			if (!InputTransparent || !CascadeInputTransparent)
-			{
-				// We only need to propagate values if the layout is InputTransparent AND Cascade is true
-				return;
-			}
 
-			// Set all the child InputTransparent values to match this one
-			for (int n = 0; n < Count; n++)
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
+			(bindable as Layout)?.RefreshInputTransparentProperty();
+
+		private protected override bool InputTransparentCore
+		{
+			get
 			{
-				if (this[n] is VisualElement visualElement)
-				{
-					visualElement.InputTransparent = true;
-				}
+				if (Parent is Layout parent && parent.CascadeInputTransparent && parent.InputTransparent)
+					return true;
+
+				return base.InputTransparentCore;
 			}
 		}
 	}
