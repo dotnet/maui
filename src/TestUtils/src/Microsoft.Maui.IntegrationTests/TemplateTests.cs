@@ -98,9 +98,9 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net7.0", "Debug")]
-		[TestCase("mauilib", "net7.0", "Debug")]
-		[TestCase("maui-blazor", "net7.0", "Debug")]
+		[TestCase("maui", "net8.0", "Debug")]
+		[TestCase("mauilib", "net8.0", "Debug")]
+		[TestCase("maui-blazor", "net8.0", "Debug")]
 		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
