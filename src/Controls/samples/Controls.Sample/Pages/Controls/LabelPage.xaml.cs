@@ -31,6 +31,11 @@ namespace Maui.Controls.Sample.Pages
 					new Span
 					{
 						Text = "Testing"
+					},
+					new Span
+					{
+						Text = "Bold",
+						FontAttributes = FontAttributes.Bold
 					}
 				}
 			};
