@@ -309,16 +309,5 @@ namespace Microsoft.Maui.Controls
 
 		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
 			(bindable as Layout)?.RefreshInputTransparentProperty();
-
-		private protected override bool InputTransparentCore
-		{
-			get
-			{
-				if (Parent is Layout parent && parent.CascadeInputTransparent && parent.InputTransparent)
-					return true;
-
-				return base.InputTransparentCore;
-			}
-		}
 	}
 }

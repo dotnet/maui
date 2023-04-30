@@ -96,14 +96,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var (finalNestedTrans, finalTrans) = States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
 
 			if (finalNestedTrans)
-				Assert.True(nested.InputTransparent, "Nested layout did not match");
+				Assert.True(nested.InputTransparent, "Nested layout was not input transparent when it should have been.");
 			else
-				Assert.False(nested.InputTransparent, "Nested layout did not match");
+				Assert.False(nested.InputTransparent, "Nested layout was input transparent when it should not have been.");
 
 			if (finalTrans)
-				Assert.True(child.InputTransparent, "Child element did not match");
+				Assert.True(child.InputTransparent, "Child element was not input transparent when it should have been.");
 			else
-				Assert.False(child.InputTransparent, "Child element did not match");
+				Assert.False(child.InputTransparent, "Child element was input transparent when it should not have been.");
 		}
 
 		[Theory]

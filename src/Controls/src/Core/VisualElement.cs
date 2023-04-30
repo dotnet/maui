@@ -605,9 +605,13 @@ namespace Microsoft.Maui.Controls
 					return true;
 				}
 
-				var parent = Parent as VisualElement;
-				if (parent is not null && parent.InputTransparent)
-					return true;
+				var parent = Parent as Layout;
+				while (parent is not null)
+				{
+					if (parent.CascadeInputTransparent && parent.InputTransparent)
+						return true;
+					parent = parent.Parent as Layout;
+				}
 
 				return _inputTransparentExplicit;
 			}
