@@ -8,6 +8,7 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.DeviceTests.TestCases;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -116,18 +117,67 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(ContentPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(FlyoutPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(NavigationPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
+		[InlineData($"{nameof(Shell)}, {nameof(ContentPage)}, {nameof(Shell)}")]
+		[InlineData($"FlyoutPageWithNavigationPage, NavigationPageWithFlyoutPage, FlyoutPageWithNavigationPage")]
+		public async Task ToolbarUpdatesCorrectlyWhenSwappingMainPageWithAlreadyUsedPage(string pages)
+		{
+			string[] pageSet = pages.Split(',');
+
+			SetupBuilder();
+			Dictionary<ControlsPageTypesTestCase, Page> createdPages
+				= new Dictionary<ControlsPageTypesTestCase, Page>();
+
+			var window = new Window(GetPage(pageSet[0]));
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(window.Page);
+
+				for (int i = 1; i < pageSet.Length; i++)
+				{
+					var nextPage = GetPage(pageSet[i]);
+
+					window.Page = GetPage(pageSet[i]);
+					if (window.Page is IPageContainer<Page> pc)
+						await OnLoadedAsync(pc.CurrentPage);
+					else
+						await OnLoadedAsync(window.Page);
+
+					bool shouldHaveToolbar =
+						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
+						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
+
+					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(nextPage.Handler));
+				}
+			}, timeOut: TimeSpan.FromMinutes(10));
+
+			Page GetPage(string name)
+			{
+				var result = (ControlsPageTypesTestCase)Enum.Parse(typeof(ControlsPageTypesTestCase), name);
+
+				if (!createdPages.ContainsKey(result))
+					createdPages[result] = ControlsPageTypesTestCases.CreatePageType(result);
+
+				return createdPages[result];
+			}
+		}
+
 #if !IOS && !MACCATALYST
 		[Theory(DisplayName = "Toolbar Recreates With New MauiContext")]
-		[InlineData(typeof(FlyoutPage))]
-		[InlineData(typeof(NavigationPage))]
-		[InlineData(typeof(TabbedPage))]
-		[InlineData(typeof(Shell))]
-		public async Task ToolbarRecreatesWithNewMauiContext(Type type)
+		[InlineData(nameof(FlyoutPage))]
+		[InlineData(nameof(NavigationPage))]
+		[InlineData(nameof(TabbedPage))]
+		[InlineData(nameof(Shell))]
+		public async Task ToolbarRecreatesWithNewMauiContext(string type)
 		{
 			SetupBuilder();
 			Page page = null;
 
-			if (type == typeof(FlyoutPage))
+			if (type == nameof(FlyoutPage))
 			{
 				page = new FlyoutPage()
 				{
@@ -135,11 +185,11 @@ namespace Microsoft.Maui.DeviceTests
 					Flyout = new ContentPage() { Title = "Flyout" }
 				};
 			}
-			else if (type == typeof(NavigationPage))
+			else if (type == nameof(NavigationPage))
 			{
 				page = new NavigationPage(new ContentPage() { Title = "Nav Page" });
 			}
-			else if (type == typeof(TabbedPage))
+			else if (type == nameof(TabbedPage))
 			{
 				page = new TabbedPage()
 				{
@@ -150,7 +200,7 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				};
 			}
-			else if (type == typeof(Shell))
+			else if (type == nameof(Shell))
 			{
 				page = new Shell() { CurrentItem = new ContentPage() { Title = "Shell Page" } };
 			}

@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Platform
 
 				if (_mainView != null)
 				{
+					_mainView.RemoveFromParent();
 					_mainView.LayoutParameters = new ViewGroup.LayoutParams(LayoutParams.MatchParent, LayoutParams.MatchParent);
 					AddView(_mainView);
 				}

@@ -24,11 +24,12 @@ namespace Microsoft.Maui.Controls
 		TaskCompletionSource<object> _currentNavigationCompletionSource;
 
 		int _waitingCount = 0;
+		NavigationPageToolbar _toolbar;
 		readonly SemaphoreSlim SemaphoreSlim = new SemaphoreSlim(1, 1);
 
 		partial void Init()
 		{
-			this.Appearing += OnAppearing;
+			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
 		}
 
 		Thickness IView.Margin => Thickness.Zero;
@@ -124,17 +125,33 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-		void OnAppearing(object sender, EventArgs e)
+		void OnWindowChanged(object sender, EventArgs e)
 		{
+			// If this NavigationPage is removed from the window
+			// Then we just invalidate the toolbar that this NavigationPage created
+			if (this.Window is null && _toolbar is not null)
+			{
+				if (_toolbar.Parent is Window w &&
+					w.Toolbar == _toolbar)
+				{
+					w.Toolbar = null;
+				}
+
+				_toolbar.Disconnect();
+				_toolbar = null;
+				return;
+			}
+
 			// Update the Container level Toolbar with my Toolbar information
 			if (FindMyToolbar() is not NavigationPageToolbar)
 			{
-				// If the root is a flyoutpage then we set the toolbar on the flyout page
+				// If the root is a FlyoutPage then we set the toolbar on the flyout page
 				var flyoutPage = this.FindParentOfType<FlyoutPage>();
+
 				if (flyoutPage != null && flyoutPage.Parent is IWindow)
 				{
-					var toolbar = new NavigationPageToolbar(flyoutPage, flyoutPage);
-					flyoutPage.Toolbar = toolbar;
+					_toolbar = new NavigationPageToolbar(flyoutPage, flyoutPage);
+					flyoutPage.Toolbar = _toolbar;
 				}
 				// Is the root a modal page?
 				else
@@ -144,13 +161,13 @@ namespace Microsoft.Maui.Controls
 
 					if (rootPage is Window w)
 					{
-						var toolbar = new NavigationPageToolbar(w, w.Page);
-						w.Toolbar = toolbar;
+						_toolbar = new NavigationPageToolbar(w, w.Page);
+						w.Toolbar = _toolbar;
 					}
 					else if (rootPage is Page p)
 					{
-						var toolbar = new NavigationPageToolbar(p, p);
-						p.Toolbar = toolbar;
+						_toolbar = new NavigationPageToolbar(p, p);
+						p.Toolbar = _toolbar;
 					}
 				}
 			}
