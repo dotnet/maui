@@ -222,6 +222,8 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Assert.Equal(flyoutBounds.Width, detailBounds.X);
 				}
+
+				Assert.Equal(detailBounds.Width, windowBounds.Width - flyoutBounds.Width);
 			});
 		}
 
