@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				_flyoutOverlapsDetailsInPopoverMode = value;
 			}
 		}
-		
+
 		bool IsRTL => (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 
 		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
