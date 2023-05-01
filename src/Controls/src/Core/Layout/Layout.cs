@@ -307,7 +307,14 @@ namespace Microsoft.Maui.Controls
 		};
 
 
-		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue) =>
-			(bindable as Layout)?.RefreshInputTransparentProperty();
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
+			{
+				layout.RefreshInputTransparentProperty();
+			}
+		}
 	}
 }

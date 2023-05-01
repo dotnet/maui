@@ -106,6 +106,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Assert.False(child.InputTransparent, "Child element was input transparent when it should not have been.");
 		}
 
+		static void AssertState(bool layoutTrans, bool layoutCascade, bool trans, Layout layout, VisualElement child)
+		{
+			var (finalLayoutTrans, finalTrans) = States[(false, false, layoutTrans, layoutCascade, trans)];
+
+			if (finalLayoutTrans)
+				Assert.True(layout.InputTransparent, "Layout was not input transparent when it should have been.");
+			else
+				Assert.False(layout.InputTransparent, "Layout was input transparent when it should not have been.");
+
+			if (finalTrans)
+				Assert.True(child.InputTransparent, "Child element was not input transparent when it should have been.");
+			else
+				Assert.False(child.InputTransparent, "Child element was input transparent when it should not have been.");
+		}
+
 		[Theory]
 		[MemberData(nameof(TransparencyStates))]
 		public void TestMethodsAreValid(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans)
@@ -302,18 +317,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(initialInputTransparent, false, false, layout, element);
 
 			layout.InputTransparent = !initialInputTransparent;
 
-			Assert.NotEqual(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(!initialInputTransparent, false, false, layout, element);
 
 			layout.InputTransparent = initialInputTransparent;
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(initialInputTransparent, false, false, layout, element);
 		}
 
 		[Theory]
@@ -338,18 +350,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.Equal(initialInputTransparent, element.InputTransparent);
+			AssertState(initialInputTransparent, true, false, layout, element);
 
 			layout.InputTransparent = !initialInputTransparent;
 
-			Assert.NotEqual(initialInputTransparent, layout.InputTransparent);
-			Assert.NotEqual(initialInputTransparent, element.InputTransparent);
+			AssertState(!initialInputTransparent, true, false, layout, element);
 
 			layout.InputTransparent = initialInputTransparent;
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.Equal(initialInputTransparent, element.InputTransparent);
+			AssertState(initialInputTransparent, true, false, layout, element);
 		}
 
 		[Theory]
@@ -374,18 +383,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(initialInputTransparent, false, false, layout, element);
 
 			layout.InputTransparent = !initialInputTransparent;
 
-			Assert.NotEqual(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(!initialInputTransparent, false, false, layout, element);
 
 			layout.InputTransparent = initialInputTransparent;
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(initialInputTransparent, false, false, layout, element);
 		}
 
 		[Theory]
@@ -410,18 +416,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			};
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.Equal(initialInputTransparent, element.InputTransparent);
+			AssertState(initialInputTransparent, true, false, layout, element);
 
 			layout.InputTransparent = !initialInputTransparent;
 
-			Assert.NotEqual(initialInputTransparent, layout.InputTransparent);
-			Assert.NotEqual(initialInputTransparent, element.InputTransparent);
+			AssertState(!initialInputTransparent, true, false, layout, element);
 
 			layout.InputTransparent = initialInputTransparent;
 
-			Assert.Equal(initialInputTransparent, layout.InputTransparent);
-			Assert.Equal(initialInputTransparent, element.InputTransparent);
+			AssertState(initialInputTransparent, true, false, layout, element);
 		}
 
 		[Theory]
@@ -432,6 +435,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void InputTransparencyOnLayoutDoesNotOverrideNestedLayoutWhenNotCascadeInputTransparentButCascadeOnNested(bool parent, bool nested)
 		{
 			var element = new Button();
+			Grid nestedLayout;
 			var layout = new Grid
 			{
 				InputTransparent = parent,
@@ -440,7 +444,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					new Grid
 					{
-						new Grid
+						(nestedLayout = new Grid
 						{
 							InputTransparent = nested,
 							CascadeInputTransparent = true, // default
@@ -448,23 +452,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							{
 								new Grid { element }
 							}
-						}
+						})
 					}
 				}
 			};
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.Equal(nested, element.InputTransparent);
+			AssertState(parent, false, nested, true, false, nestedLayout, element);
 
 			layout.InputTransparent = !parent;
 
-			Assert.NotEqual(parent, layout.InputTransparent);
-			Assert.Equal(nested, element.InputTransparent);
+			AssertState(!parent, false, nested, true, false, nestedLayout, element);
 
 			layout.InputTransparent = parent;
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.Equal(nested, element.InputTransparent);
+			AssertState(parent, false, nested, true, false, nestedLayout, element);
 		}
 
 		[Theory]
@@ -475,6 +476,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void InputTransparencyOnLayoutDoesNotOverrideNestedLayoutWhenNotCascadeInputTransparent(bool parent, bool nested)
 		{
 			var element = new Button();
+			Grid nestedLayout;
 			var layout = new Grid
 			{
 				InputTransparent = parent,
@@ -483,7 +485,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					new Grid
 					{
-						new Grid
+						(nestedLayout = new Grid
 						{
 							InputTransparent = nested,
 							CascadeInputTransparent = false,
@@ -491,23 +493,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							{
 								new Grid { element }
 							}
-						}
+						})
 					}
 				}
 			};
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(parent, false, nested, false, false, nestedLayout, element);
 
 			layout.InputTransparent = !parent;
 
-			Assert.NotEqual(parent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(!parent, false, nested, false, false, nestedLayout, element);
 
 			layout.InputTransparent = parent;
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.False(element.InputTransparent);
+			AssertState(parent, false, nested, false, false, nestedLayout, element);
 		}
 
 		[Theory]
@@ -522,6 +521,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void InputTransparencyOnLayoutOverridesNestedLayout(bool parent, bool nested, bool cascadeNested)
 		{
 			var element = new Button();
+			Grid nestedLayout;
 			var layout = new Grid
 			{
 				InputTransparent = parent,
@@ -530,7 +530,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{
 					new Grid
 					{
-						new Grid
+						(nestedLayout = new Grid
 						{
 							InputTransparent = nested,
 							CascadeInputTransparent = cascadeNested,
@@ -538,23 +538,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 							{
 								new Grid { element }
 							}
-						}
+						})
 					}
 				}
 			};
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.Equal(parent, element.InputTransparent);
+			AssertState(parent, true, nested, cascadeNested, false, nestedLayout, element);
 
 			layout.InputTransparent = !parent;
 
-			Assert.NotEqual(parent, layout.InputTransparent);
-			Assert.NotEqual(parent, element.InputTransparent);
+			AssertState(!parent, true, nested, cascadeNested, false, nestedLayout, element);
 
 			layout.InputTransparent = parent;
 
-			Assert.Equal(parent, layout.InputTransparent);
-			Assert.Equal(parent, element.InputTransparent);
+			AssertState(parent, true, nested, cascadeNested, false, nestedLayout, element);
 		}
 	}
 }

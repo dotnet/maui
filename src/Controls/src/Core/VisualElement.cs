@@ -593,8 +593,14 @@ namespace Microsoft.Maui.Controls
 		/// This value represents the cumulative InputTransparent value.
 		/// All types that override this property need to also invoke
 		/// the RefreshInputTransparentProperty() method if the value will change.
+		/// 
+		/// This method is not virtual as none of the derived types actually need
+		/// to change the calculation. If this ever needs to change, then the
+		/// RefreshInputTransparentProperty() method should also call the
+		/// RefreshPropertyValue() method - just like how the
+		/// RefreshIsEnabledProperty() method does.
 		/// </summary>
-		private protected virtual bool InputTransparentCore
+		private protected bool InputTransparentCore
 		{
 			get
 			{
@@ -1399,8 +1405,15 @@ namespace Microsoft.Maui.Controls
 		/// This method must always be called if some event occurs and the value of
 		/// the InputTransparentCore property will change.
 		/// </summary>
-		private protected void RefreshInputTransparentProperty() =>
-			this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
+		private protected void RefreshInputTransparentProperty()
+		{
+			// This method does not need to call the
+			// this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
+			// method because none of the derived types will affect this view. All we
+			// need to do is propagate the new value to all the children.
+
+			(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
+		}
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
