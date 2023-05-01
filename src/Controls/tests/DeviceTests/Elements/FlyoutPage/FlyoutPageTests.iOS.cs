@@ -57,8 +57,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact]
-		public async Task DetailsViewLayoutIsCorrectForIdiom()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DetailsViewPopOverLayoutIsCorrectForIdiom(bool isRtl)
 		{
 			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
@@ -75,18 +77,29 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Title = "Flyout",
 					Content = flyoutLabel
-				}
+				},
+				FlowDirection = (isRtl) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
 			});
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
+				var screenBounds = new Graphics.Rect(0, 0,
+					Devices.DeviceDisplay.Current.MainDisplayInfo.Width,
+					Devices.DeviceDisplay.Current.MainDisplayInfo.Height);
+
 				var detailBounds = flyoutPage.Detail.GetPlatformViewBounds();
 				var flyoutBounds = flyoutPage.Flyout.GetPlatformViewBounds();
 
+				// When used on an iPad the flyout overlaps the details
 				if (IsPad)
 				{
 					Assert.Equal(0, detailBounds.X);
 					Assert.Equal(0, flyoutBounds.X);
+				}
+				else if (isRtl)
+				{
+					Assert.Equal(-flyoutBounds.Width, detailBounds.X);
+					Assert.Equal(screenBounds.Width - flyoutBounds.Width, flyoutBounds.X);
 				}
 				else
 				{
@@ -109,10 +122,12 @@ namespace Microsoft.Maui.DeviceTests
 				if (IsPad)
 				{
 					Assert.Equal(detailBoundsNotPresented, detailBounds);
+					Assert.Equal(-flyoutBoundsNotPresented.Width, flyoutBoundsNotPresented.X);
 				}
-
-				// ensure flyout is off screen
-				Assert.Equal(-flyoutBoundsNotPresented.Width, flyoutBoundsNotPresented.X);
+				else
+				{
+					Assert.Equal(0, detailBoundsNotPresented.X);
+				}
 			});
 		}
 

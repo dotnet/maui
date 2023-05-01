@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
 		bool IsPad => UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
+		bool IsRTL => (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 
 		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
 		public static CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer> CommandMapper = new CommandMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewCommandMapper);
@@ -291,10 +292,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var detailsFrame = _detailController.View.Frame;
 				var flyoutWidth = _flyoutController.View.Frame.Width;
+				var clickOffX = _flyoutController.View.Frame.Width;
+
+				if (IsRTL)
+					clickOffX = 0;
 
 				_clickOffView.Frame =
 					new CoreGraphics.CGRect(
-							_flyoutController.View.Frame.Width,
+							clickOffX,
 							detailsFrame.Y,
 							detailsFrame.Width - flyoutWidth,
 							detailsFrame.Height);
@@ -358,28 +363,36 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var detailView = detailRenderer.ViewController.View;
 
-			var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
-			if (isRTL)
+			if (IsRTL && !IsPad)
 			{
 				flyoutFrame.X = (int)(flyoutFrame.Width * .25);
 			}
 
-			var target = frame;
+			var detailsFrame = frame;
 			if (Presented)
 			{
 				if (!IsPad || FlyoutPageController.ShouldShowSplitMode)
-					target.X += flyoutFrame.Width;
+				{
+					if (IsRTL && FlyoutPageController.ShouldShowSplitMode)
+						detailsFrame.X = 0;
+					else
+						detailsFrame.X += flyoutFrame.Width;
+				}
 
 				if (IsPad && FlyoutPageController.ShouldShowSplitMode)
-					target.Width -= flyoutFrame.Width;
+				{
+					detailsFrame.Width -= flyoutFrame.Width;
+				}
 
 				if (_applyShadow)
+				{
 					opacity = 0.5f;
+				}
 			}
 
-			if (isRTL)
+			if (IsRTL && !IsPad)
 			{
-				target.X = target.X * -1;
+				detailsFrame.X = detailsFrame.X * -1;
 			}
 
 			if (animated && !IsPad)
@@ -389,14 +402,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 					{
 						var view = _detailController.View;
-						view.Frame = target;
+						view.Frame = detailsFrame;
 						detailView.Layer.Opacity = (float)opacity;
 					}, () => { });
 				}
 			}
 			else
 			{
-				_detailController.View.Frame = target;
+				_detailController.View.Frame = detailsFrame;
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
@@ -404,29 +417,35 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				if (!Presented)
 				{
-					flyoutFrame.X -= flyoutFrame.Width;
+					if (!IsRTL)
+						flyoutFrame.X -= flyoutFrame.Width;
+					else
+						flyoutFrame.X = flyoutFrame.Width + frame.Width;
 				}
-
-				if (animated)
+				else if (IsRTL)
 				{
-					UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
-					{
-						_flyoutController.View.Frame = flyoutFrame;
-						detailView.Layer.Opacity = (float)opacity;
-					}, () => { });
-				}
-				else
-				{
-					_flyoutController.View.Frame = flyoutFrame;
+					if (FlyoutPageController.ShouldShowSplitMode)
+						flyoutFrame.X = detailsFrame.Width;
+					else
+						flyoutFrame.X = frame.Width - flyoutFrame.Width;
 				}
 			}
 
-			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
-
-			if (IsPad)
-				FlyoutPageController.DetailBounds = new Rect(target.X, 0, frame.Width, frame.Height);
+			if (animated && IsPad)
+			{
+				UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+				{
+					_flyoutController.View.Frame = flyoutFrame;
+					detailView.Layer.Opacity = (float)opacity;
+				}, () => { });
+			}
 			else
-				FlyoutPageController.DetailBounds = new Rect(0, 0, frame.Width, frame.Height);
+			{
+				_flyoutController.View.Frame = flyoutFrame;
+			}
+
+			FlyoutPageController.FlyoutBounds = new Rect(flyoutFrame.X, 0, flyoutFrame.Width, flyoutFrame.Height);
+			FlyoutPageController.DetailBounds = new Rect(detailsFrame.X, 0, frame.Width, frame.Height);
 
 			if (Presented)
 				UpdateClickOffViewFrame();
@@ -590,9 +609,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var center = new PointF();
 			_panGesture = new UIPanGestureRecognizer(g =>
 			{
-				var isRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
+				var IsRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 
-				int directionModifier = isRTL ? -1 : 1;
+				int directionModifier = IsRTL ? -1 : 1;
 
 				switch (g.State)
 				{
