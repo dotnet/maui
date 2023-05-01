@@ -12,7 +12,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IInputTransparentElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -558,6 +558,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InputTransparentProperty, value); }
 		}
 
+		bool IInputTransparentElement.CascadeInputTransparent => false;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
 		public bool IsEnabled
 		{
@@ -611,12 +613,12 @@ namespace Microsoft.Maui.Controls
 					return true;
 				}
 
-				var parent = Parent as Layout;
+				var parent = Parent as IInputTransparentElement;
 				while (parent is not null)
 				{
 					if (parent.CascadeInputTransparent && parent.InputTransparent)
 						return true;
-					parent = parent.Parent as Layout;
+					parent = parent.Parent as IInputTransparentElement;
 				}
 
 				return _inputTransparentExplicit;
