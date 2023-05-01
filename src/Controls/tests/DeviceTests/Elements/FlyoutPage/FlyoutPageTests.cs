@@ -172,8 +172,10 @@ namespace Microsoft.Maui.DeviceTests
 			return flyoutPage;
 		}
 
-		[Fact]
-		public async Task DetailsPageMeasuresCorrectlyInSplitMode()
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DetailsPageMeasuresCorrectlyInSplitMode(bool isRtl)
 		{
 			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
@@ -189,17 +191,20 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Title = "Flyout",
 					Content = flyoutLabel
-				}
+				},
+				FlowDirection = (isRtl) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
 			});
 
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
 				if (!CanDeviceDoSplitMode(flyoutPage))
-					return Task.CompletedTask;
+					return;
 
-				var detailBounds = flyoutPage.Detail.GetPlatformViewBounds();
-				var flyoutBounds = flyoutPage.Flyout.GetPlatformViewBounds();
-				var windowBounds = Microsoft.Maui.Devices.DeviceDisplay.Current.MainDisplayInfo;
+				await AssertionExtensions.Wait(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+
+				var detailBounds = flyoutPage.Detail.GetBoundingBox();
+				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
+				var windowBounds = flyoutPage.GetBoundingBox();
 
 				Assert.True(detailBounds.Height <= windowBounds.Height, $"Details is measuring too high. Details - {detailBounds} Window - {windowBounds}");
 				Assert.True(flyoutBounds.Height <= windowBounds.Height, $"Flyout is measuring too high Flyout - {flyoutBounds} Window - {windowBounds}");
@@ -209,7 +214,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(detailBounds.X + detailBounds.Width <= windowBounds.Width,
 					$"Right edge of Details View is off the screen. Details - {detailBounds} Window - {windowBounds}");
 
-				return Task.CompletedTask;
+				if (isRtl)
+				{
+					Assert.Equal(flyoutBounds.X, detailBounds.Width);
+				}
+				else
+				{
+					Assert.Equal(flyoutBounds.Width, detailBounds.X);
+				}
 			});
 		}
 

@@ -420,7 +420,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					if (!IsRTL)
 						flyoutFrame.X -= flyoutFrame.Width;
 					else
-						flyoutFrame.X = flyoutFrame.Width + frame.Width;
+						flyoutFrame.X = frame.Width;
 				}
 				else if (IsRTL)
 				{
@@ -609,8 +609,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var center = new PointF();
 			_panGesture = new UIPanGestureRecognizer(g =>
 			{
-				var IsRTL = (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
-
 				int directionModifier = IsRTL ? -1 : 1;
 
 				switch (g.State)
@@ -658,7 +656,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							else
 								targetFrame.X = (nfloat)Math.Min(0, Math.Max(0, motion) - flyoutWidth);
 
-							targetFrame.X = targetFrame.X * directionModifier;
+							if (IsRTL)
+							{
+								targetFrame.X = (float)Element.Bounds.Width - (flyoutWidth + targetFrame.X);
+							}
+
 							if (_applyShadow)
 							{
 								var openProgress = targetFrame.X / flyoutWidth;
@@ -693,18 +695,23 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						else
 						{
 							var flyoutFrame = _flyoutController.View.Frame;
-							var progress = flyoutFrame.Width + flyoutFrame.X;
+							var flyoutOffsetX = flyoutFrame.X + flyoutFrame.Width;
+
+							if (IsRTL)
+							{
+								flyoutOffsetX = (float)Element.Bounds.Width - flyoutFrame.X;
+							}
 
 							if (Presented)
 							{
-								if (flyoutFrame.X * directionModifier < flyoutFrame.Width * .75)
+								if (flyoutOffsetX < flyoutFrame.Width * .75)
 									UpdatePresented(false);
 								else
 									LayoutChildren(true);
 							}
 							else
 							{
-								if ((flyoutFrame.X + flyoutFrame.Width) * directionModifier > flyoutFrame.Width * .25)
+								if (flyoutOffsetX > flyoutFrame.Width * .25)
 									UpdatePresented(true);
 								else
 									LayoutChildren(true);
