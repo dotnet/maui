@@ -29,12 +29,32 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _applyShadow;
 
 		bool _intialLayoutFinished;
+		bool? _flyoutOverlapsDetailsInPopoverMode;
 
 		Page Page => Element as Page;
 		IFlyoutPageController FlyoutPageController => FlyoutPage;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
-		bool IsPad => UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
+
+		// Forms used a UISplitViewController for iPad and a custom implementation for iPhone.
+		// With MAUI, we switched to using this same handler for both iPad/iPhone to simplify
+		// the amount of code we needed to maintain. The UISplitViewController implementation was also
+		// problematic and would break frequently between iOS upgrades.
+		// At a later point, this implementation will get merged with the shell implementation so we have
+		// to maintain even less code.
+		public bool FlyoutOverlapsDetailsInPopoverMode
+		{
+			get
+			{
+				return _flyoutOverlapsDetailsInPopoverMode ??
+					UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
+			}
+			set
+			{
+				_flyoutOverlapsDetailsInPopoverMode = value;
+			}
+		}
+		
 		bool IsRTL => (Element as IVisualElementController)?.EffectiveFlowDirection.IsRightToLeft() == true;
 
 		public static IPropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer> Mapper = new PropertyMapper<FlyoutPage, PhoneFlyoutPageRenderer>(ViewHandler.ViewMapper);
@@ -166,7 +186,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				UpdatePresented(false, true);
 			});
 
-			if (IsPad)
+			if (FlyoutOverlapsDetailsInPopoverMode)
 				_tapGesture.ShouldReceiveTouch = shouldReceive;
 
 			_clickOffView.AddGestureRecognizer(_tapGesture);
@@ -184,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			base.ViewWillTransitionToSize(toSize, coordinator);
 
-			if (IsPad)
+			if (FlyoutOverlapsDetailsInPopoverMode)
 			{
 				if (FlyoutPageController.ShouldShowSplitMode)
 					UpdatePresented(true);
@@ -265,7 +285,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateClickOffView()
 		{
-			if (IsPad && FlyoutPageController.ShouldShowSplitMode)
+			if (FlyoutOverlapsDetailsInPopoverMode && FlyoutPageController.ShouldShowSplitMode)
 			{
 				RemoveClickOffView();
 				return;
@@ -288,7 +308,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateClickOffViewFrame()
 		{
-			if (IsPad)
+			if (FlyoutOverlapsDetailsInPopoverMode)
 			{
 				var detailsFrame = _detailController.View.Frame;
 				var flyoutWidth = _flyoutController.View.Frame.Width;
@@ -352,7 +372,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var flyoutFrame = frame;
 			nfloat opacity = 1;
 
-			if (IsPad)
+			if (FlyoutOverlapsDetailsInPopoverMode)
 				flyoutFrame.Width = 320;
 			else
 				flyoutFrame.Width = (int)(Math.Min(flyoutFrame.Width, flyoutFrame.Height) * 0.8);
@@ -363,7 +383,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var detailView = detailRenderer.ViewController.View;
 
-			if (IsRTL && !IsPad)
+			if (IsRTL && !FlyoutOverlapsDetailsInPopoverMode)
 			{
 				flyoutFrame.X = (int)(flyoutFrame.Width * .25);
 			}
@@ -371,7 +391,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var detailsFrame = frame;
 			if (Presented)
 			{
-				if (!IsPad || FlyoutPageController.ShouldShowSplitMode)
+				if (!FlyoutOverlapsDetailsInPopoverMode || FlyoutPageController.ShouldShowSplitMode)
 				{
 					if (IsRTL && FlyoutPageController.ShouldShowSplitMode)
 						detailsFrame.X = 0;
@@ -379,7 +399,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						detailsFrame.X += flyoutFrame.Width;
 				}
 
-				if (IsPad && FlyoutPageController.ShouldShowSplitMode)
+				if (FlyoutOverlapsDetailsInPopoverMode && FlyoutPageController.ShouldShowSplitMode)
 				{
 					detailsFrame.Width -= flyoutFrame.Width;
 				}
@@ -390,14 +410,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (IsRTL && !IsPad)
+			if (IsRTL && !FlyoutOverlapsDetailsInPopoverMode)
 			{
 				detailsFrame.X = detailsFrame.X * -1;
 			}
 
-			if (animated && !IsPad)
+			if (animated && !FlyoutOverlapsDetailsInPopoverMode)
 			{
-				if (!IsPad)
+				if (!FlyoutOverlapsDetailsInPopoverMode)
 				{
 					UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 					{
@@ -413,7 +433,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				detailView.Layer.Opacity = (float)opacity;
 			}
 
-			if (IsPad)
+			if (FlyoutOverlapsDetailsInPopoverMode)
 			{
 				if (!Presented)
 				{
@@ -431,7 +451,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (animated && IsPad)
+			if (animated && FlyoutOverlapsDetailsInPopoverMode)
 			{
 				UIView.Animate(0.250, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 				{
@@ -455,7 +475,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			_detailController.View.BackgroundColor = new UIColor(1, 1, 1, 1);
 
-			if (!IsPad)
+			if (!FlyoutOverlapsDetailsInPopoverMode)
 			{
 				View.AddSubview(_flyoutController.View);
 				View.AddSubview(_detailController.View);
@@ -617,7 +637,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						center = g.LocationInView(g.View);
 						break;
 					case UIGestureRecognizerState.Changed:
-						if (!IsPad)
+						if (!FlyoutOverlapsDetailsInPopoverMode)
 						{
 							var currentPosition = g.LocationInView(g.View);
 							var motion = currentPosition.X - center.X;
@@ -673,7 +693,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						break;
 					case UIGestureRecognizerState.Ended:
 
-						if (!IsPad)
+						if (!FlyoutOverlapsDetailsInPopoverMode)
 						{
 							var detailFrame = _detailController.View.Frame;
 							var flyoutFrame = _flyoutController.View.Frame;
