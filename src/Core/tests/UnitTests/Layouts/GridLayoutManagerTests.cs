@@ -1107,8 +1107,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Row height is auto, so it gets the height of the view
 			// Columns are 3*,100,* 
-			// So we expect the center column to be 100, leaving 500 for the stars
-			// 3/4 of that goes to the first column, so 375; the remaining 125 is the last column
+			// So we expect the center column to be 100, leaving 200 for the stars
+			// 3/4 of that goes to the first column, so 150; the remaining 50 is the last column
 			var expectedStarWidth = (screenWidth - 100) / 4;
 			var expectedHeight = viewSize.Height;
 
@@ -1934,7 +1934,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(10, measuredSize.Width);
 		}
 
-		[Fact("ArrangeChildren should arranged within measured size")]
+		[Fact("ArrangeChildren should arrange within measured size")]
 		[Category(GridStarSizing)]
 		public void ArrangeChildrenShouldArrangeWithinMeasuredSize()
 		{
@@ -2433,7 +2433,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			// This test accounts for the situation where a Grid has Rows marked as "*", is measured
 			// without height constraint, is vertically set to Fill, and is arranged at the measured height.
-			// Basically, a situation where the Grid is inside a vertically-oriented ScrollView or StackLayout, 
+			// Basically, a situation where the Grid is inside a vertically-oriented StackLayout, 
 			// and the concept of vertical "Fill" doesn't mean anything. In that situation, the rows should 
 			// retain their automatic sizing, rather than being evenly distributed as usual.
 
@@ -2452,7 +2452,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Measure the Grid with no height constraint, then arrange it using the resulting size
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
-			// Since we're arranging it at that same height, there's reason for it to expand the items
+			// Since we're arranging it at that same height, there's no reason for it to expand the items
 			// so we expect them to be arranged at the same heights
 			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
 
@@ -2461,6 +2461,128 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
 			AssertArranged(view1, new Rect(0, 20, 20, 40));
 			AssertArranged(view2, new Rect(0, 60, 20, 60));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void ViewsInUnconstrainedStarRowsDoNotOverlapWhenArrangeHeightChanges(double heightDelta)
+		{
+			// Basically checking for https://github.com/dotnet/maui/issues/14694 here
+
+			// This test accounts for the situation where a Grid has Rows marked as "*", is measured
+			// without height constraint, is vertically set to Fill, and is arranged at a different height
+			// than the measured height. This can happen for a couple of reasons - either because of 
+			// adjustments made on the native side to handle rounding/conversion issues (e.g., Android
+			// density conversions), or because of ScrollView's "Fill the viewport" behavior.
+
+			var grid = CreateGridLayout(rows: "*, *, *");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, 40));
+			var view2 = CreateTestView(new Size(20, 60));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			// Measure the Grid with no height constraint, then arrange it using the resulting size
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(200, double.PositiveInfinity);
+			Assert.Equal(120, measure.Height);
+
+			// Now arrange it at a _different_ height
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height + heightDelta));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest = (Rect)v0ArrangeArgs[0];
+
+			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest = (Rect)v1ArrangeArgs[0];
+
+			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest = (Rect)v2ArrangeArgs[0];
+
+			// Ensure that the destination rect for each view is large enough
+			// for that view (that the grid isn't somehow shrinking their destination area)
+			Assert.True(view0Dest.Height >= 20);
+			Assert.True(view1Dest.Height >= 40);
+			Assert.True(view2Dest.Height >= 60);
+
+			// Ensure that the destination rects for the views don't overlap
+			Assert.False(view0Dest.IntersectsWith(view1Dest));
+			Assert.False(view1Dest.IntersectsWith(view2Dest));
+			Assert.False(view0Dest.IntersectsWith(view2Dest));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void ViewsInUnconstrainedStarColumnsDoNotOverlapWhenArrangeWidthChanges(double widthDelta)
+		{
+			// Basically checking for https://github.com/dotnet/maui/issues/14694 here
+
+			// This test accounts for the situation where a Grid has Columns marked as "*", is measured
+			// without width constraint, is horizontally set to Fill, and is arranged at a different width
+			// than the measured width. This can happen for a couple of reasons - either because of 
+			// adjustments made on the native side to handle rounding/conversion issues (e.g., Android
+			// density conversions), or because of ScrollView's "Fill the viewport" behavior.
+
+			var grid = CreateGridLayout(columns: "*, *, *");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(40, 20));
+			var view2 = CreateTestView(new Size(60, 20));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			// Measure the Grid with no width constraint, then arrange it using the resulting size
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, 200);
+			Assert.Equal(120, measure.Width);
+
+			// Now arrange it at a _different_ width
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + widthDelta, measure.Height));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest = (Rect)v0ArrangeArgs[0];
+
+			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest = (Rect)v1ArrangeArgs[0];
+
+			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest = (Rect)v2ArrangeArgs[0];
+
+			// Ensure that the destination rect for each view is large enough
+			// for that view (that the grid isn't somehow shrinking their destination area)
+			Assert.True(view0Dest.Width >= 20);
+			Assert.True(view1Dest.Width >= 40);
+			Assert.True(view2Dest.Width >= 60);
+
+			// Ensure that the destination rects for the views don't overlap
+			Assert.False(view0Dest.IntersectsWith(view1Dest));
+			Assert.False(view1Dest.IntersectsWith(view2Dest));
+			Assert.False(view0Dest.IntersectsWith(view2Dest));
 		}
 
 		[Fact, Category(GridStarSizing)]
@@ -2487,7 +2609,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Measure the Grid with no width constraint, then arrange it using the resulting size
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
-			// Since we're arranging it at that same width, there's reason for it to expand the items
+			// Since we're arranging it at that same width, there's no reason for it to expand the items
 			// so we expect them to be arranged at the same widths
 			var measure = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Security.Cryptography;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
 
@@ -47,13 +48,16 @@ namespace Microsoft.Maui.Layouts
 
 			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
 
-			_gridStructure = null;
+			//_gridStructure = null;
 
 			return actual.AdjustForFill(bounds, Grid);
 		}
 
 		class GridStructure
 		{
+			public int _id;
+			static int _idSource;
+
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
@@ -82,6 +86,8 @@ namespace Microsoft.Maui.Layouts
 
 			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
+				_id = _idSource++;
+
 				_grid = grid;
 
 				_explicitGridHeight = _grid.Height;
@@ -589,14 +595,14 @@ namespace Microsoft.Maui.Layouts
 				return top;
 			}
 
-			void ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension)
+			double ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension)
 			{
-				if (availableSpace < 0)
+				if (availableSpace <= 0)
 				{
 					// This can happen if an Auto-measured part of a span is larger than the Grid's constraint;
 					// There's a negative amount of space left for the Star values. Just bail, the
 					// Star values are already zero and they can't get any smaller.
-					return;
+					return 0;
 				}
 
 				// Count up the total weight of star columns (e.g., "*, 3*, *" == 5)
@@ -613,7 +619,7 @@ namespace Microsoft.Maui.Layouts
 
 				if (starCount == 0)
 				{
-					return;
+					return 0;
 				}
 
 				double starSize = 0;
@@ -644,10 +650,15 @@ namespace Microsoft.Maui.Layouts
 					if (definition.IsStar)
 					{
 						// Give the star row/column the appropriate portion of the space based on its weight
-						definition.Size = starSize * definition.GridLength.Value;
+						definition.Size += starSize * definition.GridLength.Value;
 					}
 				}
+
+				return starSize;
 			}
+
+			double _starColumnSize = 0.0;
+			double _starRowSize = 0.0;
 
 			void ResolveStarColumns(double widthConstraint, bool decompressing = false)
 			{
@@ -655,7 +666,7 @@ namespace Microsoft.Maui.Layouts
 				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
 				static double getDimension(Size size) => size.Width;
 
-				ResolveStars(_columns, availableSpace, cellCheck, getDimension);
+				_starColumnSize = ResolveStars(_columns, availableSpace, cellCheck, getDimension);
 
 				if (decompressing)
 				{
@@ -678,9 +689,9 @@ namespace Microsoft.Maui.Layouts
 				static bool cellCheck(Cell cell) => cell.IsRowSpanStar;
 				static double getDimension(Size size) => size.Height;
 
-				ResolveStars(_rows, availableSpace, cellCheck, getDimension);
+				_starRowSize = ResolveStars(_rows, availableSpace, cellCheck, getDimension);
 
-				if (decompressing)
+				if (decompressing) // TODO You can probably drop this
 				{
 					// This pass is for arrangement, we don't need to update the measure values
 					return;
@@ -774,27 +785,118 @@ namespace Microsoft.Maui.Layouts
 			public void DecompressStars(Size targetSize)
 			{
 				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
-					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill && targetSize.Height > MeasuredGridHeight();
+					|| (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill);
 
 				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
-					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill && targetSize.Width > MeasuredGridWidth();
+					|| (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill);
 
 				if (decompressVertical)
 				{
 					// Reset the size on all star rows
-					ZeroOutStarSizes(_rows);
+					//ZeroOutStarSizes(_rows);
+
+					var sum = SumDefinitions(_rows, _rowSpacing);
+					double starCount = 0.0;
+					foreach (var def in _rows)
+					{
+						if (def.IsStar)
+						{
+							sum -= def.Size;
+							starCount += def.GridLength.Value;
+						}
+					}
+
+					_starRowSize = (targetSize.Height - sum) / starCount; 
+
+					DecompressStars(targetSize.Height, GridHeight(), _rows, _starRowSize);
 
 					// And compute them for the actual arrangement height
-					ResolveStarRows(targetSize.Height, true);
+					//ResolveStarRows(targetSize.Height, true);
 				}
 
 				if (decompressHorizontal)
 				{
 					// Reset the size on all star columns
-					ZeroOutStarSizes(_columns);
+					//ZeroOutStarSizes(_columns);
+
+					var sum = SumDefinitions(_columns, _columnSpacing);
+					double starCount = 0.0;
+					foreach (var def in _columns)
+					{
+						if (def.IsStar)
+						{
+							sum -= def.Size;
+							starCount += def.GridLength.Value;
+						}
+					}
+
+					_starColumnSize = (targetSize.Width - sum) / starCount;
+
+					DecompressStars(targetSize.Width, GridWidth(), _columns, _starColumnSize);
 
 					// And compute them for the actual arrangement width
-					ResolveStarColumns(targetSize.Width, true);
+					//ResolveStarColumns(targetSize.Width, true);
+				}
+			}
+
+			void DecompressStars(double targetSize, double currentSize, Definition[] defs, double starSize) 
+			{
+			// TODO cleanup
+
+
+						
+
+			
+
+				var availableSpace = targetSize - currentSize;
+				
+				if (availableSpace <= 0)
+				{
+					return;
+				}
+
+				// Count up the total weight of star columns (e.g., "*, 3*, *" == 5)
+
+				var starCount = 0.0;
+				var maxCurrentSize = 0.0;
+
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						starCount += definition.GridLength.Value;
+						maxCurrentSize = Math.Max(maxCurrentSize, definition.Size);
+					}
+				}
+
+				if (starCount == 0)
+				{
+					return;
+				}
+
+				double starDelta = 0;
+				starDelta = availableSpace / starCount;
+
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						if (maxCurrentSize >= (starSize * definition.GridLength.Value))
+						{
+							var diff = maxCurrentSize - definition.Size;
+
+							if (diff > 0)
+							{
+								var scale = availableSpace / (maxCurrentSize - definition.Size);
+								definition.Size += scale;
+							}
+						}
+						else
+						{
+							// Give the star row/column the appropriate portion of the space based on its weight
+							definition.Size = starSize * definition.GridLength.Value;
+						}
+					}
 				}
 			}
 
