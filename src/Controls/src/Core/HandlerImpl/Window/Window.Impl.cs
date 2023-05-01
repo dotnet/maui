@@ -210,15 +210,40 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			if (new Rect(X, Y, Width, Height) == frame)
+			var x = X;
+			var y = Y;
+			var width = Width;
+			var height = Height;
+			if (new Rect(x, y, width, height) == frame)
 				return;
 
 			_batchFrameUpdate++;
 
-			X = frame.X;
-			Y = frame.Y;
-			Width = frame.Width;
-			Height = frame.Height;
+			if (x != frame.X)
+			{
+				XProperty.PropertyChanging?.Invoke(this, x, frame.X);
+				OnPropertyChanging(nameof(X));
+			}
+			if (y != frame.Y)
+			{
+				YProperty.PropertyChanging?.Invoke(this, y, frame.Y);
+				OnPropertyChanging(nameof(Y));
+			}
+			if (width != frame.Width)
+			{
+				WidthProperty.PropertyChanging?.Invoke(this, width, frame.Width);
+				OnPropertyChanging(nameof(Width));
+			}
+			if (height != frame.Height)
+			{
+				HeightProperty.PropertyChanging?.Invoke(this, height, frame.Height);
+				OnPropertyChanging(nameof(Height));
+			}
+
+			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent);
+			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent);
+			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent);
+			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
@@ -226,6 +251,27 @@ namespace Microsoft.Maui.Controls
 
 			if (_batchFrameUpdate == 0)
 			{
+				if (x != frame.X)
+				{
+					OnPropertyChanged(nameof(X));
+					XProperty.PropertyChanged?.Invoke(this, x, frame.X);
+				}
+				if (y != frame.Y)
+				{
+					OnPropertyChanged(nameof(Y));
+					YProperty.PropertyChanged?.Invoke(this, y, frame.Y);
+				}
+				if (width != frame.Width)
+				{
+					OnPropertyChanged(nameof(Width));
+					WidthProperty.PropertyChanged?.Invoke(this, width, frame.Width);
+				}
+				if (height != frame.Height)
+				{
+					OnPropertyChanged(nameof(Height));
+					HeightProperty.PropertyChanged?.Invoke(this, height, frame.Height);
+				}
+
 				SizeChanged?.Invoke(this, EventArgs.Empty);
 			}
 		}
