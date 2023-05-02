@@ -1,10 +1,17 @@
 #nullable enable
 abstract Microsoft.Maui.PlatformContentViewGroup.GetClipPath(int p0, int p1) -> Android.Graphics.Path?
 abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
+Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.Maui.ICommandMapper
+Microsoft.Maui.ICommandMapper.GetCommand(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?
+Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.ShapeExtensions
 Microsoft.Maui.PlatformContentViewGroup
@@ -37,6 +44,13 @@ override Microsoft.Maui.SizeRequest.GetHashCode() -> int
 override Microsoft.Maui.PlatformWrapperView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformWrapperView.ThresholdClass.get -> nint
 override Microsoft.Maui.PlatformWrapperView.ThresholdType.get -> System.Type!
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.FontSize.operator !=(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.FontSize.operator ==(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint? paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
@@ -57,6 +71,10 @@ static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(thi
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
+static Microsoft.Maui.PropertyMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void

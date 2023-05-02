@@ -26,7 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// I tried various permutations of KeyEventActions to set the keyboard in upper case
 			// But I wasn't successful
-			if (Enum.TryParse($"{value}".ToUpper(), out Keycode result))
+			if (Enum.TryParse($"{value}".ToUpperInvariant(), out Keycode result))
 			{
 				view.OnCreateInputConnection(new EditorInfo())?
 					.SendKeyEvent(new KeyEvent(10, 10, KeyEventActions.Down, result, 0));
@@ -240,7 +240,12 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(100);
 		}
 
-		public static Task<bool> WaitForLayout(AView view, int timeout = 1000)
+		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
+			Task.WhenAll(
+				view.WaitForLayout(timeout),
+				Wait(() => view.Width > 0 && view.Height > 0, timeout));
+
+		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
 		{
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -377,15 +382,13 @@ namespace Microsoft.Maui.DeviceTests
 
 			static async Task<T> Run(AView view, Func<Task<T>> action)
 			{
-				await Task.WhenAll(
-					WaitForLayout(view),
-					Wait(() => view.Width > 0 && view.Height > 0));
+				await view.WaitForLayoutOrNonZeroSize();
 
 				return await action();
 			}
 		}
 
-		public static Task<Bitmap> ToBitmap(this AView view)
+		public static Task<Bitmap> ToBitmap(this AView view, IMauiContext mauiContext)
 		{
 			return view.AttachAndRun(() =>
 			{
@@ -445,13 +448,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
-			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform(), tolerance: tolerance));
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
@@ -469,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			throw new XunitException($"Color {expectedColor} not found.");
+			throw new XunitException(CreateColorError(bitmap, $"Color {expectedColor} not found."));
 		}
 
 		public static Bitmap AssertDoesNotContainColor(this Bitmap bitmap, AColor unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
@@ -493,57 +496,57 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToPlatform());
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext, tolerance: tolerance);
 
-		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor) =>
-			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform());
+		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
-			var bitmap = await view.ToBitmap();
-			return AssertContainsColor(bitmap, expectedColor);
+			var bitmap = await view.ToBitmap(mauiContext);
+			return AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
 		}
 
-		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor)
+		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return AssertDoesNotContainColor(bitmap, unexpectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y)
+		public static async Task<Bitmap> AssertColorAtPointAsync(this AView view, AColor expectedColor, int x, int y, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtBottomRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopLeft(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor)
+		public static async Task<Bitmap> AssertColorAtTopRight(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 

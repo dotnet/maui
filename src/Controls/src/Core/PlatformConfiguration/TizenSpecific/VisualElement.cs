@@ -7,35 +7,35 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement']/Docs/*" />
 	public static class VisualElement
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create("ThemeStyle", typeof(string), typeof(VisualElement), default(string));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='IsFocusAllowedProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>IsFocusAllowed</c>.</summary>
 		public static readonly BindableProperty IsFocusAllowedProperty = BindableProperty.Create("IsFocusAllowed", typeof(bool?), typeof(VisualElement), null);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusDirectionProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusDirection</c>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty NextFocusDirectionProperty = BindableProperty.Create("NextFocusDirection", typeof(string), typeof(VisualElement), FocusDirection.None, propertyChanged: OnNextFocusDirectionPropertyChanged);
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusUpViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusUpView</c>.</summary>
 		public static readonly BindableProperty NextFocusUpViewProperty = BindableProperty.Create("NextFocusUpView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusDownViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusDownView</c>.</summary>
 		public static readonly BindableProperty NextFocusDownViewProperty = BindableProperty.Create("NextFocusDownView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusLeftViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusLeftView</c>.</summary>
 		public static readonly BindableProperty NextFocusLeftViewProperty = BindableProperty.Create("NextFocusLeftView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusRightViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusRightView</c>.</summary>
 		public static readonly BindableProperty NextFocusRightViewProperty = BindableProperty.Create("NextFocusRightView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusBackViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusBackView</c>.</summary>
 		public static readonly BindableProperty NextFocusBackViewProperty = BindableProperty.Create("NextFocusBackView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='NextFocusForwardViewProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>NextFocusForwardView</c>.</summary>
 		public static readonly BindableProperty NextFocusForwardViewProperty = BindableProperty.Create("NextFocusForwardView", typeof(View), typeof(VisualElement), default(View));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='ToolTipProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ToolTip"/>.</summary>
 		public static readonly BindableProperty ToolTipProperty = BindableProperty.Create("ToolTip", typeof(string), typeof(VisualElement), default(string));
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/VisualElement.xml" path="//Member[@MemberName='GetStyle'][1]/Docs/*" />

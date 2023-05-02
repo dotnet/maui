@@ -73,13 +73,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapFormatting(ILabelHandler handler, ILabel label)
 		{
 			// Update all of the attributed text formatting properties
-			handler.PlatformView?.UpdateLineHeight(label);
-			handler.PlatformView?.UpdateTextDecorations(label);
-			handler.PlatformView?.UpdateCharacterSpacing(label);
+			handler.UpdateValue(nameof(ILabel.LineHeight));
+			handler.UpdateValue(nameof(ILabel.TextDecorations));
+			handler.UpdateValue(nameof(ILabel.CharacterSpacing));
 
 			// Setting any of those may have removed text alignment settings,
 			// so we need to make sure those are applied, too
-			handler.PlatformView?.UpdateHorizontalTextAlignment(label);
+			handler.UpdateValue(nameof(ILabel.HorizontalTextAlignment));
 		}
 	}
 }
