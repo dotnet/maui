@@ -286,12 +286,12 @@ namespace Microsoft.Maui.Layouts
 				return new Rect(left + xOffset, top + yOffset, width, height);
 			}
 
-			public double GridHeight()
+			double GridHeight()
 			{
 				return SumDefinitions(_rows, _rowSpacing) + _padding.VerticalThickness;
 			}
 
-			public double GridWidth()
+			double GridWidth()
 			{
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
@@ -699,82 +699,6 @@ namespace Microsoft.Maui.Layouts
 						UpdateKnownMeasureHeight(cell);
 					}
 				}
-			}
-
-			double AvailableWidth(Cell cell)
-			{
-				// Because our cell may overlap columns that are already measured (and counted in GridWidth()),
-				// we'll need to add the size of those columns back into our available space
-				double cellColumnsWidth = 0;
-
-				// So we'll have to tally up the known widths of those rows. While we do that, we'll
-				// keep track of whether all the columns spanned by this cell are absolute widths
-				bool absolute = true;
-
-				for (int c = cell.Column; c < cell.Column + cell.ColumnSpan; c++)
-				{
-					cellColumnsWidth += _columns[c].Size;
-
-					if (!_columns[c].IsAbsolute)
-					{
-						absolute = false;
-					}
-				}
-
-				cellColumnsWidth += (cell.ColumnSpan - 1) * _columnSpacing;
-
-				if (absolute)
-				{
-					// If all the spanned columns were absolute, then we know the exact available width for 
-					// the view that's in this cell
-					return cellColumnsWidth;
-				}
-
-				// Since some of the columns weren't already specified, we'll need to work out what's left
-				// of the Grid's width for this cell
-
-				var alreadyUsed = GridWidth();
-				var available = _gridWidthConstraint - alreadyUsed;
-
-				return available + cellColumnsWidth;
-			}
-
-			double AvailableHeight(Cell cell)
-			{
-				// Because our cell may overlap rows that are already measured (and counted in GridHeight()),
-				// we'll need to add the size of those rows back into our available space
-				double cellRowsHeight = 0;
-
-				// So we'll have to tally up the known heights of those rows. While we do that, we'll
-				// keep track of whether all the rows spanned by this cell are absolute heights
-				bool absolute = true;
-
-				for (int c = cell.Row; c < cell.Row + cell.RowSpan; c++)
-				{
-					cellRowsHeight += _rows[c].Size;
-
-					if (!_rows[c].IsAbsolute)
-					{
-						absolute = false;
-					}
-				}
-
-				cellRowsHeight += (cell.RowSpan - 1) * _rowSpacing;
-
-				if (absolute)
-				{
-					// If all the spanned rows were absolute, then we know the exact available height for 
-					// the view that's in this cell
-					return cellRowsHeight;
-				}
-
-				// Since some of the rows weren't already specified, we'll need to work out what's left
-				// of the Grid's height for this cell
-
-				var alreadyUsed = GridHeight();
-				var available = _gridHeightConstraint - alreadyUsed;
-
-				return available + cellRowsHeight;
 			}
 
 			static void UseCompressedSize(Definition[] defs)
