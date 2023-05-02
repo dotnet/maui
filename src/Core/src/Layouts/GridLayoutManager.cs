@@ -296,6 +296,16 @@ namespace Microsoft.Maui.Layouts
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
+			double GridCompressedHeight() 
+			{
+				return SumDefinitions(_rows, _rowSpacing, true) + _padding.VerticalThickness;
+			}
+
+			double GridCompressedWidth() 
+			{
+				return SumDefinitions(_columns, _columnSpacing, true) + _padding.HorizontalThickness;
+			}
+
 			public double MeasuredGridHeight()
 			{
 				var height = Dimension.IsExplicitSet(_explicitGridHeight) ? _explicitGridHeight : GridHeight();
@@ -330,13 +340,13 @@ namespace Microsoft.Maui.Layouts
 				return width;
 			}
 
-			static double SumDefinitions(Definition[] definitions, double spacing)
+			static double SumDefinitions(Definition[] definitions, double spacing, bool compressed = false)
 			{
 				double sum = 0;
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					sum += definitions[n].Size;
+					sum += compressed ? definitions[n].CompressedSize : definitions[n].Size;
 
 					if (n > 0)
 					{
@@ -767,7 +777,7 @@ namespace Microsoft.Maui.Layouts
 				return available + cellRowsHeight;
 			}
 
-			void UseCompressedSize(Definition[] defs)
+			static void UseCompressedSize(Definition[] defs)
 			{
 				foreach (var def in defs)
 				{
@@ -790,12 +800,12 @@ namespace Microsoft.Maui.Layouts
 
 				if (decompressVertical)
 				{
-					DecompressDefinitions(_rows, targetSize.Height, GridHeight(), _rowSpacing, _rowStarCount);
+					DecompressDefinitions(_rows, targetSize.Height, GridCompressedHeight(), _rowSpacing, _rowStarCount);
 				}
 
 				if (decompressHorizontal)
 				{
-					DecompressDefinitions(_columns, targetSize.Width, GridWidth(), _columnSpacing, _columnStarCount);
+					DecompressDefinitions(_columns, targetSize.Width, GridCompressedWidth(), _columnSpacing, _columnStarCount);
 				}
 			}
 
@@ -830,10 +840,7 @@ namespace Microsoft.Maui.Layouts
 
 			void DecompressStars(double targetSize, double currentSize, Definition[] defs, double starSize, double starCount)
 			{
-				if (starCount == 0)
-				{
-					return;
-				}
+				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
 
 				var availableSpace = targetSize - currentSize;
 
@@ -1088,7 +1095,7 @@ namespace Microsoft.Maui.Layouts
 				return cell.IsRowSpanAuto;
 			}
 
-			double CountStars(Definition[] definitions)
+			static double CountStars(Definition[] definitions)
 			{
 				// Count up the total weight of star values (e.g., "*, 3*, *" == 5)
 				var starCount = 0.0;

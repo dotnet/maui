@@ -2495,7 +2495,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, row: 1);
 			SetLocation(grid, view2, row: 2);
 
-			// Measure the Grid with no height constraint, then arrange it using the resulting size
+			// Measure the Grid with no height constraint
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(200, double.PositiveInfinity);
@@ -2534,8 +2534,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Theory, Category(GridStarSizing)]
 		[InlineData(0.1)]
+		[InlineData(1)]
 		[InlineData(10)]
 		[InlineData(60)]
+		[InlineData(1000)]
 		[InlineData(-0.1)]
 		[InlineData(-10)]
 		[InlineData(-60)]
@@ -2562,7 +2564,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1);
 			SetLocation(grid, view2, col: 2);
 
-			// Measure the Grid with no width constraint, then arrange it using the resulting size
+			// Measure the Grid with no width constraint
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(double.PositiveInfinity, 200);
@@ -2720,6 +2722,65 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var expectedMeasureHeight = Math.Max(determinantViewHeight, heightConstraint);
 
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
+
+		
+		[Fact]
+		public void MultipleArrangeCallsProduceConsistentResults()
+		{
+			var grid = CreateGridLayout(rows: "*, *, *", columns: "*, *, *");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(40, 20));
+			var view2 = CreateTestView(new Size(60, 20));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, col: 0, row: 0);
+			SetLocation(grid, view1, col: 1, row: 1);
+			SetLocation(grid, view2, col: 2, row: 2);
+
+			// Measure the Grid with no width constraint, then arrange it using the resulting size
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, 200);
+			Assert.Equal(120, measure.Width);
+
+			// Now arrange it at a _different_ size
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + 100, measure.Height + 100));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs1 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest1 = (Rect)v0ArrangeArgs1[0];
+
+			var v1ArrangeArgs1 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest1 = (Rect)v1ArrangeArgs1[0];
+
+			var v2ArrangeArgs1 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest1 = (Rect)v2ArrangeArgs1[0];
+
+			view0.ClearReceivedCalls();
+			view1.ClearReceivedCalls();
+			view2.ClearReceivedCalls();
+
+			// Now arrange it at the same size again
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + 100, measure.Height + 100));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs2 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest2 = (Rect)v0ArrangeArgs2[0];
+
+			var v1ArrangeArgs2 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest2 = (Rect)v1ArrangeArgs2[0];
+
+			var v2ArrangeArgs2 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest2 = (Rect)v2ArrangeArgs2[0];
+
+			// Ensure that Arrange was called with the same destination rect for each view both times
+			Assert.Equal(view0Dest1, view0Dest2);
+			Assert.Equal(view1Dest1, view1Dest2);
+			Assert.Equal(view2Dest1, view2Dest2);
 		}
 	}
 }
