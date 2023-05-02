@@ -59,15 +59,15 @@ namespace Maui.Controls.Sample.Sandbox.AppiumTests
 
 		public override TestConfig GetTestConfig()
 		{
-			var testConfig = new TestConfig(_testDevice, "com.microsoft.maui.sandbox")
+			var testConfig = new TestConfig(_testDevice, "com.microsoft.maui.uitests")
 			{
-				BundleId = "com.microsoft.maui.sandbox",
+				BundleId = "com.microsoft.maui.uitests",
 			};
 			switch (_testDevice)
 			{
 				case TestDevice.Android:
-					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.sandbox");
-					// activity { com.microsoft.maui.sandbox / crc64fa090d87c1ce7f0b.MainActivity}
+					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.uitests");
+					// activity { com.microsoft.maui.uitests / crc64fa090d87c1ce7f0b.MainActivity}
 					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "MainActivity");
 					break;
 				case TestDevice.iOS:
