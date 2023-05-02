@@ -346,7 +346,14 @@ namespace Microsoft.Maui.Layouts
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					sum += compressed ? definitions[n].CompressedSize : definitions[n].Size;
+					if (definitions[n].IsStar && compressed)
+					{
+						sum += definitions[n].CompressedSize;
+					}
+					else
+					{
+						sum += definitions[n].Size;
+					}
 
 					if (n > 0)
 					{
@@ -769,8 +776,8 @@ namespace Microsoft.Maui.Layouts
 					return;
 				}
 
+				// Figure out which is the biggest star definition in this dimension
 				var maxCurrentSize = 0.0;
-
 				foreach (var definition in defs)
 				{
 					if (definition.IsStar)
@@ -779,6 +786,8 @@ namespace Microsoft.Maui.Layouts
 					}
 				}
 
+				// Work out the total difference in size between the largest star definition and all 
+				// the smaller ones; we'll need that later to distribute available space.
 				double totaldiff = 0;
 				foreach (var definition in defs)
 				{
@@ -790,24 +799,37 @@ namespace Microsoft.Maui.Layouts
 
 				foreach (var definition in defs)
 				{
-					if (definition.IsStar)
+					if (!definition.IsStar)
 					{
-						if (maxCurrentSize >= (starSize * definition.GridLength.Value))
-						{
-							var diff = maxCurrentSize - definition.CompressedSize;
+						continue;
+					}
 
-							if (diff > 0)
-							{
-								var scale = ((maxCurrentSize - definition.CompressedSize) / totaldiff);
-								var portion = scale * availableSpace;
-								definition.Size = definition.CompressedSize + portion;
-							}
-						}
-						else
+					// Figure out how large this definition would be at full size
+					double defStarValue = starSize * definition.GridLength.Value;
+
+					if (maxCurrentSize >= defStarValue)
+					{
+						// If that value at full size is less than the current biggest definition,
+						// then the total size isn't big enough for all the stars to expand; instead,
+						// we just need to fill up the remaining available space. How much we give to
+						// each star definition is inversely proportional to its size - the smaller
+						// definitions get expanded faster than the bigger ones.
+
+						// We ignore the biggest definitions - they can't expand until there's room for
+						// everyone to expand.
+						if (maxCurrentSize > definition.CompressedSize)
 						{
-							// Give the star row/column the appropriate portion of the space based on its weight
-							definition.Size = starSize * definition.GridLength.Value;
+							// Figure out how small this definition is relative to the total difference,
+							// and use that to determine how much of the available space this definition gets
+							var scale = ((maxCurrentSize - definition.CompressedSize) / totaldiff);
+							var portion = scale * availableSpace;
+							definition.Size = definition.CompressedSize + portion;
 						}
+					}
+					else
+					{
+						// Give the star row/column its full weighted star value
+						definition.Size = defStarValue;
 					}
 				}
 			}
