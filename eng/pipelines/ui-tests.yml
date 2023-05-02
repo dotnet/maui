@@ -113,7 +113,7 @@ stages:
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30 ]
         # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '14.4' ]
+        iosVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       projects:
         # - name: essentials
