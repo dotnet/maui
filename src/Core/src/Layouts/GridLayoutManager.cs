@@ -34,12 +34,6 @@ namespace Microsoft.Maui.Layouts
 		{
 			_gridStructure ??= new GridStructure(Grid, bounds.Width, bounds.Height);
 
-			// We need to _keep_ the original measured values rather than letting Decompress stomp on them
-			// so that subsequent calls to arrange with this same grid structure work as expected
-
-			// Bonus if we can keep the original measured values for stars (pre-CompressStars) so that we 
-			// can re-use them if we're laying things out at the same size as we measured initially
-
 			_gridStructure.DecompressStars(bounds.Size);
 
 			foreach (var view in Grid)
@@ -54,8 +48,6 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			var actual = new Size(_gridStructure.MeasuredGridWidth(), _gridStructure.MeasuredGridHeight());
-
-			//_gridStructure = null;
 
 			return actual.AdjustForFill(bounds, Grid);
 		}
@@ -775,7 +767,7 @@ namespace Microsoft.Maui.Layouts
 				return available + cellRowsHeight;
 			}
 
-			void UseCompressedSize(Definition[] defs) 
+			void UseCompressedSize(Definition[] defs)
 			{
 				foreach (var def in defs)
 				{
@@ -788,34 +780,39 @@ namespace Microsoft.Maui.Layouts
 
 			public void DecompressStars(Size targetSize)
 			{
-				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
-					|| (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill);
+				bool decompressVertical = _rowStarCount > 0
+					&& (Dimension.IsExplicitSet(_explicitGridHeight)
+					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill);
 
-				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
-					|| (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill);
+				bool decompressHorizontal = _columnStarCount > 0
+					&& (Dimension.IsExplicitSet(_explicitGridWidth)
+					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill);
 
 				if (decompressVertical)
 				{
-					UseCompressedSize(_rows);
-
-					var height = targetSize.Height;
-					var starRowSize = ComputeStarSizeForTarget(height, _rows, _rowSpacing, _rowStarCount);
-
-					DecompressStars(height, GridHeight(), _rows, starRowSize, _rowStarCount);
+					DecompressDefinitions(_rows, targetSize.Height, GridHeight(), _rowSpacing, _rowStarCount);
 				}
 
 				if (decompressHorizontal)
 				{
-					UseCompressedSize(_columns);
-
-					var width = targetSize.Width;
-					var starColumnSize = ComputeStarSizeForTarget(width, _columns, _columnSpacing, _columnStarCount);
-
-					DecompressStars(width, GridWidth(), _columns, starColumnSize, _columnStarCount);
+					DecompressDefinitions(_columns, targetSize.Width, GridWidth(), _columnSpacing, _columnStarCount);
 				}
 			}
 
-			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount) 
+			void DecompressDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount) 
+			{
+				// Reset the row definitions to the minimum sizes (in case Arrange has been called
+				// multiple times at different sizes without a new Measure call)
+				UseCompressedSize(definitions);
+
+				// Figure out what the star value should be at this size
+				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
+
+				// Inflate the stars so that we fill up the space at this size
+				DecompressStars(targetSize, currentSize, definitions, starSize, starCount);
+			}
+
+			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
 			{
 				var sum = SumDefinitions(defs, spacing);
 
@@ -831,7 +828,7 @@ namespace Microsoft.Maui.Layouts
 				return (targetSize - sum) / starCount;
 			}
 
-			void DecompressStars(double targetSize, double currentSize, Definition[] defs, double starSize, double starCount) 
+			void DecompressStars(double targetSize, double currentSize, Definition[] defs, double starSize, double starCount)
 			{
 				if (starCount == 0)
 				{
@@ -839,7 +836,7 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				var availableSpace = targetSize - currentSize;
-				
+
 				if (availableSpace <= 0)
 				{
 					return;
@@ -1091,7 +1088,7 @@ namespace Microsoft.Maui.Layouts
 				return cell.IsRowSpanAuto;
 			}
 
-			double CountStars(Definition[] definitions) 
+			double CountStars(Definition[] definitions)
 			{
 				// Count up the total weight of star values (e.g., "*, 3*, *" == 5)
 				var starCount = 0.0;
