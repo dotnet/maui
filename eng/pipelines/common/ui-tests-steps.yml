@@ -76,7 +76,7 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic 
+  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
     displayName: 'Build the samples'
 
   # - script: appium server --base-path=/wd/hub --log="$(LogDirectory)/appium_logs_${{ parameters.platform }}.log" &

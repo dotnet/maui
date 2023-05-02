@@ -9,7 +9,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 
 string TestTFM = Argument("testtfm", "");
-var useNuget = Argument("usenuget", false);
+var useNuget = Argument("usenuget", true);
 if (TestTFM == "default")
     TestTFM = "";
 
