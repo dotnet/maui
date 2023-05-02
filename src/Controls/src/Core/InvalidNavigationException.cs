@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+#if !NETSTANDARD
+		[ObsoleteAttribute("This API supports obsolete formatter-based serialization. It should not be called or extended by application code.", DiagnosticId = "SYSLIB0051", UrlFormat = "https://aka.ms/dotnet-warnings/{0}")]
+#endif
 		protected InvalidNavigationException(SerializationInfo info, StreamingContext context)
 			: base(info, context)
 		{
