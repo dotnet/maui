@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			AsWindowsColor(color, defaultColor, alpha);
 #endif
 
-		public static global::Windows.UI.Color 
+		public static global::Windows.UI.Color
 #if MAUI_GRAPHICS_WIN2D
 			AsColor
 #else
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			AsWindowsColor(color, alpha);
 #endif
 
-		public static global::Windows.UI.Color 
+		public static global::Windows.UI.Color
 #if MAUI_GRAPHICS_WIN2D
 			AsColor
 #else
@@ -115,8 +115,8 @@ namespace Microsoft.Maui.Graphics.Platform
 		internal static CanvasGeometry AsPath(this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
 			AsCanvasGeometry(path, ox, oy, fx, fy, creator, fillMode);
 #endif
-		
-		public static CanvasGeometry 
+
+		public static CanvasGeometry
 #if MAUI_GRAPHICS_WIN2D
 			AsPath
 #else
@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		}
 
-		public static CanvasGeometry 
+		public static CanvasGeometry
 #if MAUI_GRAPHICS_WIN2D
 			AsPathFromSegment
 #else
