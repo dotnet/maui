@@ -17,57 +17,104 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			foreach (var keyboardAccelerator in keyboardAccelerators)
-			{
 				platformView.KeyboardAccelerators.Add(keyboardAccelerator);
-			}
+			
 		}
-		
+
+		// Single key (A, Delete, F2, Spacebar, Esc, Multimedia Key) accelerators and multi-key
+		// accelerators (Ctrl+Shift+M) are supported.
+		// Gamepad virtual keys are not supported.
 		public static IList<KeyboardAccelerator>? ToPlatform(this IAccelerator accelerator)
 		{
 			if (accelerator is null)
 				return null;
 
 			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
-
+			
 			var keys = accelerator.Keys;
-			var modifiers = accelerator.Modifiers;
 
-			bool hasModifierMask = modifiers.Any();
-
-			if (hasModifierMask)
+			if (keys is not null)
 			{
-				for (int i = 0; i < modifiers.Count(); i++)
+				var keysCount = keys.Count();
+				bool hasKeys = keysCount > 0;
+
+				if (hasKeys)
 				{
-					var keyboardAccelerator = new KeyboardAccelerator();
+					var key = keys!.ElementAt(0);
+					var modifiers = accelerator.Modifiers;
 
-					var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
-
-					switch (modifierMask)
+					if (modifiers is not null)
 					{
-						case "ctrl":
-							keyboardAccelerator.Modifiers = VirtualKeyModifiers.Control;
-							break;
-						case "alt":
-							keyboardAccelerator.Modifiers = VirtualKeyModifiers.Menu;
-							break;
-						case "shift":
-							keyboardAccelerator.Modifiers = VirtualKeyModifiers.Shift;
-							break;
-						default:
-							keyboardAccelerator.Modifiers = VirtualKeyModifiers.None;
-							break;
+						var modifiersCount = modifiers.Count();
+						bool hasModifierMask = modifiersCount > 0;
+
+						if (hasModifierMask)
+						{
+							if (modifiersCount == 1)
+								result.Add(CreateSingleKeyAccelerator(modifiers!.ElementAt(0), key));
+							else
+								result.Add(CreateMultiKeyAccelerator(modifiers!, key));
+						}
 					}
+					else
+						result.Add(CreateSingleKeyAccelerator(string.Empty, key));
 
-					string key = keys.ElementAt(i);
-
-					if (Enum.TryParse<VirtualKey>(key, true, out var virtualKey))
-						keyboardAccelerator.Key = virtualKey;
-
-					result.Add(keyboardAccelerator);
 				}
 			}
 
 			return result;
+		}
+
+		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this string modifierMask)
+		{
+			switch (modifierMask.ToLowerInvariant())
+			{
+				case "ctrl":
+					return VirtualKeyModifiers.Control;
+				case "alt":
+					return VirtualKeyModifiers.Menu;
+				case "shift":
+					return VirtualKeyModifiers.Shift;
+				case "win":
+					return VirtualKeyModifiers.Windows;
+				default:
+					return VirtualKeyModifiers.None;
+			}
+		}
+
+		internal static VirtualKey ToVirtualKey(this string key)
+		{
+			if (Enum.TryParse<VirtualKey>(key, true, out var virtualKey))
+				return virtualKey;
+
+			return VirtualKey.None;
+		}
+		
+		internal static KeyboardAccelerator CreateSingleKeyAccelerator(string modifierMask, string key)
+		{
+			var keyboardAccelerator = new KeyboardAccelerator();
+
+			if (!string.IsNullOrEmpty(modifierMask))
+				keyboardAccelerator.Modifiers = modifierMask.ToVirtualKeyModifiers();
+
+			keyboardAccelerator.Key = key.ToVirtualKey();
+
+			return keyboardAccelerator;
+		}
+
+		internal static KeyboardAccelerator CreateMultiKeyAccelerator(IEnumerable<string> modifiers, string key)
+		{
+			var keyboardAccelerator = new KeyboardAccelerator();
+
+			for (int i = 0; i < modifiers.Count(); i++)
+			{
+				var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
+				keyboardAccelerator.Modifiers |= modifierMask.ToVirtualKeyModifiers();
+			}
+				
+			keyboardAccelerator.Key = key.ToVirtualKey();
+
+			return keyboardAccelerator;
 		}
 	}
 }
