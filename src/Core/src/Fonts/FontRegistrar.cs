@@ -10,9 +10,9 @@ namespace Microsoft.Maui
 	/// <inheritdoc cref="IFontRegistrar"/>
 	public partial class FontRegistrar : IFontRegistrar
 	{
-		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new();
-		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new();
-		readonly Dictionary<string, string?> _fontLookupCache = new();
+		readonly Dictionary<string, (string Filename, string? Alias, Assembly Assembly)> _embeddedFonts = new(StringComparer.Ordinal);
+		readonly Dictionary<string, (string Filename, string? Alias)> _nativeFonts = new(StringComparer.Ordinal);
+		readonly Dictionary<string, string?> _fontLookupCache = new(StringComparer.Ordinal);
 		readonly IServiceProvider? _serviceProvider;
 
 		IEmbeddedFontLoader _fontLoader;

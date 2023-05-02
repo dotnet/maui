@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 
 		// Used to check for duplicate names; we keep it around because it's cheaper to create it once and clear it
 		// than to create one every time we need to validate
-		readonly HashSet<string> _names = new HashSet<string>();
+		readonly HashSet<string> _names = new HashSet<string>(StringComparer.Ordinal);
 
 		void Validate(IList<VisualStateGroup> groups)
 		{
