@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			_inflation = inflation;
 		}
 
-		internal static Region FromRectangles(IEnumerable<Rect> rectangles)
+		public static Region FromRectangles(IEnumerable<Rect> rectangles)
 		{
 			var list = rectangles.ToList();
 			return new Region(list);
