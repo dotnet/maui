@@ -3,7 +3,6 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	[TestFixture(TestDevice.Windows)]
 	public class MainPageTests : AppiumPlatformsTestBase
 	{
 		public MainPageTests(TestDevice testDevice) : base(testDevice)
