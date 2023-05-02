@@ -131,7 +131,9 @@ namespace Microsoft.Maui.DeviceTests
 			Dictionary<ControlsPageTypesTestCase, Page> createdPages
 				= new Dictionary<ControlsPageTypesTestCase, Page>();
 
-			var window = new Window(GetPage(pageSet[0]));
+			var nextPage = GetPage(pageSet[0]);
+			var window = new Window(nextPage);
+
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -139,28 +141,38 @@ namespace Microsoft.Maui.DeviceTests
 
 				for (int i = 1; i < pageSet.Length; i++)
 				{
-					var nextPage = GetPage(pageSet[i]);
+					nextPage = GetPage(pageSet[i]);
+					window.Page = nextPage;
 
-					window.Page = GetPage(pageSet[i]);
 					if (window.Page is IPageContainer<Page> pc)
 						await OnLoadedAsync(pc.CurrentPage);
 					else
 						await OnLoadedAsync(window.Page);
 
-					bool shouldHaveToolbar =
+					var shouldHaveToolbar =
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
 					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(nextPage.Handler));
 				}
-			}, timeOut: TimeSpan.FromMinutes(10));
+			});
 
 			Page GetPage(string name)
 			{
 				var result = (ControlsPageTypesTestCase)Enum.Parse(typeof(ControlsPageTypesTestCase), name);
 
 				if (!createdPages.ContainsKey(result))
-					createdPages[result] = ControlsPageTypesTestCases.CreatePageType(result);
+					createdPages[result] = ControlsPageTypesTestCases.CreatePageType(result, new ContentPage()
+					{
+						Title = "Page Title",
+						Content = new VerticalStackLayout()
+						{
+							new Label()
+							{
+								Text = "ToolbarUpdatesCorrectlyWhenSwappingMainPageWithAlreadyUsedPage"
+							}
+						}
+					});
 
 				return createdPages[result];
 			}
