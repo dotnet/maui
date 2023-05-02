@@ -112,7 +112,10 @@ namespace Microsoft.Maui.Controls
 			if (this.Toolbar != null)
 				return Toolbar;
 
-			var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+			if (this.Window is null)
+				return null;
+
+			var rootPage = this.FindParentWith(x => (x is IWindow te || Window.Navigation.ModalStack.Contains(x)), true);
 			if (this.FindParentWith(x => (x is IToolbarElement te && te.Toolbar != null), false) is IToolbarElement te)
 			{
 				// This means I'm inside a Modal Page so we shouldn't return the Toolbar from the window
@@ -129,16 +132,20 @@ namespace Microsoft.Maui.Controls
 		{
 			// If this NavigationPage is removed from the window
 			// Then we just invalidate the toolbar that this NavigationPage created
-			if (this.Window is null && _toolbar is not null)
+			if (this.Window is null)
 			{
-				if (_toolbar.Parent is Window w &&
-					w.Toolbar == _toolbar)
+				if (_toolbar is not null)
 				{
-					w.Toolbar = null;
+					if (_toolbar.Parent is Window w &&
+						w.Toolbar == _toolbar)
+					{
+						w.Toolbar = null;
+					}
+
+					_toolbar.Disconnect();
+					_toolbar = null;
 				}
 
-				_toolbar.Disconnect();
-				_toolbar = null;
 				return;
 			}
 
@@ -157,7 +164,7 @@ namespace Microsoft.Maui.Controls
 				else
 				{
 					// Is the root the window or is this part of a modal stack
-					var rootPage = this.FindParentWith(x => (x is IWindow te || Navigation.ModalStack.Contains(x)), true);
+					var rootPage = this.FindParentWith(x => (x is IWindow te || Window.Navigation.ModalStack.Contains(x)), true);
 
 					if (rootPage is Window w)
 					{
