@@ -2724,9 +2724,17 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
 		}
 
-		
-		[Fact]
-		public void MultipleArrangeCallsProduceConsistentResults()
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(1000)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void MultipleArrangeCallsProduceConsistentResults(double delta)
 		{
 			var grid = CreateGridLayout(rows: "*, *, *", columns: "*, *, *");
 			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
@@ -2748,7 +2756,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(120, measure.Width);
 
 			// Now arrange it at a _different_ size
-			manager.ArrangeChildren(new Rect(0, 0, measure.Width + 100, measure.Height + 100));
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
 			var v0ArrangeArgs1 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
@@ -2765,7 +2773,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view2.ClearReceivedCalls();
 
 			// Now arrange it at the same size again
-			manager.ArrangeChildren(new Rect(0, 0, measure.Width + 100, measure.Height + 100));
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
 			var v0ArrangeArgs2 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
