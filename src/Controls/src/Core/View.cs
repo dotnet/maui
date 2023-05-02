@@ -6,6 +6,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -15,19 +16,19 @@ namespace Microsoft.Maui.Controls
 	{
 		protected internal IGestureController GestureController => this;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptionsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalOptions"/>.</summary>
 		public static readonly BindableProperty VerticalOptionsProperty =
 			BindableProperty.Create(nameof(VerticalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
 									propertyChanged: (bindable, oldvalue, newvalue) =>
 									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.VerticalOptionsChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptionsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalOptions"/>.</summary>
 		public static readonly BindableProperty HorizontalOptionsProperty =
 			BindableProperty.Create(nameof(HorizontalOptions), typeof(LayoutOptions), typeof(View), LayoutOptions.Fill,
 									propertyChanged: (bindable, oldvalue, newvalue) =>
 									((View)bindable).InvalidateMeasureInternal(InvalidationTrigger.HorizontalOptionsChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='MarginProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Margin"/>.</summary>
 		public static readonly BindableProperty MarginProperty =
 			BindableProperty.Create(nameof(Margin), typeof(Thickness), typeof(View), default(Thickness),
 									propertyChanged: MarginPropertyChanged);
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Controls
 
 		protected internal View()
 		{
+			_gestureManager = new GestureManager(this);
 			_gestureRecognizers.CollectionChanged += (sender, args) =>
 			{
 				void AddItems(IEnumerable<IElementDefinition> elements)

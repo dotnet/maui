@@ -2830,7 +2830,6 @@ static Microsoft.Maui.Platform.SearchBarExtensions.UpdateFont(this UIKit.UISearc
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateFont(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ITextStyle! textStyle, Microsoft.Maui.IFontManager! fontManager) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsReadOnly(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateMaxLength(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdatePlaceholder(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateText(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void

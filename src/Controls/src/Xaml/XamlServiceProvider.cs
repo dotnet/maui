@@ -112,9 +112,15 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 	{
 		readonly object[] objectAndParents;
 		readonly object targetProperty;
-		readonly INameScope scope;
+		readonly INameScope[] scopes;
 
+		[Obsolete("Use the other ctor")]
 		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope scope)
+			: this(objectAndParents, targetProperty, new INameScope[] { scope }, false)
+		{
+		}
+
+		public SimpleValueTargetProvider(object[] objectAndParents, object targetProperty, INameScope[] scopes, bool notused)
 		{
 			if (objectAndParents == null)
 				throw new ArgumentNullException(nameof(objectAndParents));
@@ -123,7 +129,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 			this.objectAndParents = objectAndParents;
 			this.targetProperty = targetProperty;
-			this.scope = scope;
+			this.scopes = scopes;
 		}
 
 		IEnumerable<object> IProvideParentValues.ParentObjects => objectAndParents;
@@ -133,8 +139,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		public object FindByName(string name)
 		{
 			object value;
-			if ((value = scope?.FindByName(name)) != null)
-				return value;
+			if (scopes != null)
+				foreach (var scope in scopes)
+					if ((value = scope?.FindByName(name)) != null)
+						return value;
 
 			for (var i = 0; i < objectAndParents.Length; i++)
 			{

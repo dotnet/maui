@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Xunit.Abstractions;
 using Microsoft.Maui.Controls;
+using Xunit.Abstractions;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {

@@ -133,6 +133,9 @@ namespace Microsoft.Maui.Storage
 
 		readonly IDictionary<DevicePlatform, IEnumerable<string>> fileTypes;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FilePickerFileType"/> class.
+		/// </summary>
 		protected FilePickerFileType() =>
 			fileTypes = new Dictionary<DevicePlatform, IEnumerable<string>>();
 
@@ -154,6 +157,10 @@ namespace Microsoft.Maui.Storage
 		/// <exception cref="PlatformNotSupportedException">Thrown if the current platform does not have any file types configured.</exception>
 		public IEnumerable<string> Value => GetPlatformFileType(DeviceInfo.Current.Platform);
 
+		/// <summary>
+		/// Gets the configured allowed file types that can be picked by the user for the current platform.
+		/// </summary>
+		/// <exception cref="PlatformNotSupportedException">Thrown if the current platform does not have any file types configured.</exception>
 		protected virtual IEnumerable<string> GetPlatformFileType(DevicePlatform platform)
 		{
 			if (fileTypes.TryGetValue(platform, out var type))

@@ -36,10 +36,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs" Link="GalleryPages\AdvancedOpenGLGallery.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BundleResource Include="*.png" />
     <BundleResource Include="*.css" />
     <BundleResource Include="*.jpg" />

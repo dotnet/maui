@@ -21,13 +21,11 @@ namespace Microsoft.Maui.Platform
 			var platformBrush = picker.Background?.ToPlatform();
 
 			if (platformBrush == null)
-			{
 				nativeComboBox.Resources.RemoveKeys(BackgroundColorResourceKeys);
-			}
 			else
-			{
 				nativeComboBox.Resources.SetValueForAllKey(BackgroundColorResourceKeys, platformBrush);
-			}
+
+			nativeComboBox.RefreshThemeResources();
 		}
 
 		static readonly string[] BackgroundColorResourceKeys =

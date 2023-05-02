@@ -4,11 +4,13 @@ parameters:
   skipXcode: false
   skipVS: true
   skipProvisioning: $(skipProvisionator)
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
   provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
+  gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
 
 steps:
   # Prepare macOS
@@ -25,22 +27,22 @@ steps:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Xcode'
         inputs:
-          provisioning_script: ${{ parameters.provisionatorXCodePath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorXCodePath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
     # Provision Additional Software
     - ${{ if ne(parameters.skipProvisioning, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Additional Software'
         continueOnError: true 
         inputs:
-          provisioning_script: ${{ parameters.provisionatorPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
     # Setup SDK Paths
     - bash: |
@@ -51,6 +53,7 @@ steps:
     # Setup JDK Paths
     - bash: |
         echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
+        echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
       displayName: 'Setup JDK Paths'
     # Configure VS Mac for Xcode
     - bash: |
@@ -97,12 +100,12 @@ steps:
     - ${{ if ne(parameters.skipVS, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Visual Studio'
-        condition: eq(variables['provisioningVS'], 'true')
         inputs:
-          provisioning_script: ${{ parameters.provisionatorVSPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorVSPath }}
+          provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
       - pwsh: |
           $msbuild = "$env:ProgramFiles/Microsoft Visual Studio/2022/Preview/MSBuild/Current/Bin/MSBuild.exe"
           echo "##vso[task.setvariable variable=MSBUILD_EXE]$msbuild"
@@ -113,18 +116,51 @@ steps:
       - task: xamops.azdevex.provisionator-task.provisionator@2
         displayName: 'Provision Additional Software'
         inputs:
-          provisioning_script: ${{ parameters.provisionatorPath }}
+          provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
           provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
+          github_token: ${{ parameters.gitHubToken }}
         env:
           PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-          AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
+
+    - pwsh: |
+        if ($env:JAVA_HOME_11_X64) {
+          $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+        } else {
+          $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+          if ($path -and (Test-Path $path)) {
+            $env:JAVA_HOME = $path.Directory.Parent.FullName
+          }
+        }
+        if ($env:JAVA_HOME) {
+          echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+          echo "JAVA_HOME set to '$env:JAVA_HOME'"
+        } else {
+          echo "Unable to set JAVA_HOME"
+        }
+      displayName: 'Setup JDK Paths'
+
+    - pwsh: |
+        if ($env:ANDROID_SDK_ROOT) {
+          echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
+        } else {
+          if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
+            $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
+          }
+          if ($env:ANDROID_SDK_ROOT) {
+            echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
+            echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
+          } else {
+            echo "Unable to set ANDROID_SDK_ROOT"
+          }
+        }
+      displayName: 'Setup ANDROID_SDK_ROOT Paths'
 
   # Prepare Both
   - task: UseDotNet@2                 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/dotnet-core-tool-installer?view=azure-devops
-    displayName: 'Use .NET SDK 6'
+    displayName: 'Use .NET SDK 7'
     inputs:
       packageType: sdk
-      version: 6.0.x
+      version: $(DOTNET_VERSION)
 
   - pwsh: |
       dotnet --version

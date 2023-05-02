@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 
 				_page = null;
 
-				if (!_fragmentManager.IsDestroyed)
+				if (!_fragmentManager.IsDestroyed(_page?.Handler?.MauiContext?.Context))
 				{
 					FragmentTransaction transaction = _fragmentManager.BeginTransactionEx();
 

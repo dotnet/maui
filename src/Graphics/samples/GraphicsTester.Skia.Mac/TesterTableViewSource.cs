@@ -1,8 +1,8 @@
 using System;
-using Microsoft.Maui.Graphics;
 using AppKit;
 using Foundation;
 using GraphicsTester.Scenarios;
+using Microsoft.Maui.Graphics;
 
 namespace GraphicsTester.Skia
 {

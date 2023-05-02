@@ -4,7 +4,6 @@ using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.Util;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Graphics.Platform;
 using static Android.Graphics.Paint;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;
@@ -270,7 +269,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
-			if (strokeDashArray == null || strokeDashArray.Length == 0 || strokeDashOffset <= 0)
+			if (strokeDashArray is null || strokeDashArray.Length == 0)
 				_borderPathEffect = null;
 			else
 			{
@@ -414,13 +413,8 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						float offset = _strokeThickness / 2;
-						float w = (float)(_width / _density) - _strokeThickness;
-						float h = (float)(_height / _density) - _strokeThickness;
-
-						var bounds = new Graphics.Rect(offset, offset, w, h);
-						var path = _shape.PathForBounds(bounds);
-						var clipPath = path?.AsAndroidPath(scaleX: (float)_density, scaleY: (float)_density);
+						var bounds = new Graphics.Rect(0, 0, _width, _height);
+						var clipPath = _shape?.ToPlatform(bounds, _strokeThickness);
 
 						if (clipPath == null)
 							return;
@@ -526,7 +520,7 @@ namespace Microsoft.Maui.Graphics
 				if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
 				{
 					var resource = _context.Resources.GetResourceTypeName(background.ResourceId);
-					var type = resource?.ToLower();
+					var type = resource?.ToLowerInvariant();
 
 					if (type == "color")
 					{

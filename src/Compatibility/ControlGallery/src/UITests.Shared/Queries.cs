@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public const string ImageButtonGallery = "* marked:'Image Button Gallery'";
 		public const string LabelGallery = "* marked:'Label Gallery'";
 		public const string ListViewGallery = "* marked:'ListView Gallery'";
-		public const string OpenGLViewGallery = "* marked:'OpenGLView Gallery'";
 		public const string PickerGallery = "* marked:'Picker Gallery'";
 		public const string ProgressBarGallery = "* marked:'ProgressBar Gallery'";
 		public const string RadioButtonGallery = "* marked:'RadioButton Core Gallery'";
@@ -94,7 +93,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static readonly string Label = PlatformViews.Label;
 		public static readonly string ListView = PlatformViews.ListView;
 		public static readonly string Map = PlatformViews.Map;
-		public static readonly string OpenGLView = PlatformViews.OpenGLView;
 		public static readonly string Picker = PlatformViews.Picker;
 		public static readonly string Pin = PlatformViews.Pin;
 		public static readonly string ProgressBar = PlatformViews.ProgressBar;

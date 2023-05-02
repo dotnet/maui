@@ -1,4 +1,3 @@
-#if PLATFORM && !TIZEN
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -8,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class TextStyleHandlerTests<THandler, TStub> : HandlerTestBase<THandler, TStub>
+	public partial class TextStyleHandlerTests<THandler, TStub> : HandlerTestBasement<THandler, TStub>
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, ITextStyle, new()
 	{
@@ -115,4 +114,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif

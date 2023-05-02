@@ -39,13 +39,12 @@ namespace Microsoft.Maui.Resizetizer
 			splashDpiMap.Clear();
 			foreach (var dpi in DpiPath.Tizen.SplashScreen)
 			{
-				var destination = Resizer.GetFileDestination(splashInfo, dpi, IntermediateOutputPath);
-				destination = Path.ChangeExtension(destination, ".png");
+				var destination = Resizer.GetRasterFileDestination(splashInfo, dpi, IntermediateOutputPath);
 				appTool.Resize(dpi, destination);
 
 				if (File.Exists(destination))
 				{
-					var resolution = dpi.Path.Split('-')[1].ToLower();
+					var resolution = dpi.Path.Split('-')[1].ToLowerInvariant();
 					foreach (var orientation in orientations)
 					{
 						var newImage = splashInfo.OutputName + "." + resolution + "." + orientation + ".png";

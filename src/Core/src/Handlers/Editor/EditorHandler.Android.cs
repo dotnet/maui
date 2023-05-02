@@ -108,6 +108,12 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) =>
 			handler.PlatformView?.UpdateSelectionLength(editor);
 
+		static void MapFocus(IEditorHandler handler, IEditor editor, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.PlatformView.Focus(request);
+		}
+
 		void OnPlatformViewAttachedToWindow(object? sender, ViewAttachedToWindowEventArgs e)
 		{
 			if (PlatformView.IsAlive() && PlatformView.Enabled)
@@ -118,8 +124,15 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e) =>
+		void OnTextChanged(object? sender, Android.Text.TextChangedEventArgs e)
+		{
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView?.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+		}
 
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{

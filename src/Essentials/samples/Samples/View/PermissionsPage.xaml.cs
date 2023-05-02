@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls;
@@ -22,19 +23,17 @@ namespace Samples.View
 		{
 			base.OnAppearing();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Subscribe<PermissionItem, Exception>(this, nameof(PermissionException), async (p, ex) =>
-				await DisplayAlert("Permission Error", ex.Message, "OK"));
-#pragma warning restore CS0618 // Type or member is obsolete
+			WeakReferenceMessenger.Default.Register<Exception, string>(
+				this,
+				nameof(PermissionException),
+				async (p, ex) => await DisplayAlert("Permission Error", ex.Message, "OK"));
 		}
 
 		protected override void OnDisappearing()
 		{
 			base.OnDisappearing();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Unsubscribe<PermissionItem, Exception>(this, nameof(PermissionException));
-#pragma warning restore CS0618 // Type or member is obsolete
+			WeakReferenceMessenger.Default.Unregister<Exception, string>(this, nameof(PermissionException));
 		}
 	}
 }

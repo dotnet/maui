@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
+		const int FrameBorderThickness = 1;
+
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
 			{
@@ -105,7 +107,20 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Element is IContentView cv)
 			{
-				var measureContent = cv.CrossPlatformMeasure(availableSize.Width, availableSize.Height).ToPlatform();
+				// If there's a border specified, include the thickness in our measurements
+				// multiplied by 2 to account for both sides (left/right or top/bot)
+				var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+
+				// Measure content but subtract border from available space
+				var measureContent = cv.CrossPlatformMeasure(
+					availableSize.Width - borderThickness,
+					availableSize.Height - borderThickness).ToPlatform();
+
+				// Add the border space to the final calculation
+				measureContent = new Size(
+					measureContent.Width + borderThickness,
+					measureContent.Height + borderThickness).ToPlatform();
+
 				return measureContent;
 			}
 
@@ -135,7 +150,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void PackChild()
 		{
 			if (Element.Content == null)
+			{
+				Control.Child = null;
 				return;
+			}
 
 			Control.Child = Element.Content.ToPlatform(MauiContext);
 		}
@@ -145,7 +163,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element.BorderColor.IsNotDefault())
 			{
 				Control.BorderBrush = Element.BorderColor.ToPlatform();
-				Control.BorderThickness = WinUIHelpers.CreateThickness(1);
+				Control.BorderThickness = WinUIHelpers.CreateThickness(FrameBorderThickness);
 			}
 			else
 			{

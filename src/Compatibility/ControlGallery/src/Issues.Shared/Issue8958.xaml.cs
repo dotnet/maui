@@ -49,7 +49,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	}
 
 	[Preserve(AllMembers = true)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct Issue8958Model
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		public string Title { get; set; }
 	}

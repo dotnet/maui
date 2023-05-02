@@ -13,8 +13,6 @@ namespace Benchmarks.Droid;
 // SimpleTarget is apparently obsolete?
 #pragma warning disable CS0612
 
-[MemoryDiagnoser]
-[Orderer(SummaryOrderPolicy.FastestToSlowest)]
 public class ImageBenchmark
 {
 	AImageView? imageView;

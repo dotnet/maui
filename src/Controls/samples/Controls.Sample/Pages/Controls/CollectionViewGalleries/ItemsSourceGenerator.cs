@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using CommunityToolkit.Mvvm.Messaging;
 using Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleries;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
@@ -54,12 +55,10 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			layout.Children.Add(button);
 
 			button.Clicked += GenerateItems;
-#pragma warning disable CS0618 // Type or member is obsolete
-			MessagingCenter.Subscribe<ExampleTemplateCarousel>(this, "remove", (obj) =>
+			WeakReferenceMessenger.Default.Register<ExampleTemplateCarousel, string>(this, "remove", (_, obj) =>
 			{
 				(cv.ItemsSource as ObservableCollection<CollectionViewGalleryTestItem>).Remove(obj.BindingContext as CollectionViewGalleryTestItem);
 			});
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			Content = layout;
 		}

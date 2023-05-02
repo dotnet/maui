@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/LayoutOptions.xml" path="Type[@FullName='Microsoft.Maui.Controls.LayoutOptions']/Docs/*" />
 	[System.ComponentModel.TypeConverter(typeof(LayoutOptionsConverter))]
-	public struct LayoutOptions
+	public struct LayoutOptions : IEquatable<LayoutOptions>
 	{
 		int _flags;
 
@@ -73,5 +73,15 @@ namespace Microsoft.Maui.Controls
 
 			return Primitives.LayoutAlignment.Start;
 		}
+
+		public bool Equals(LayoutOptions other) => _flags == other._flags;
+
+		public override bool Equals(object obj) => obj is LayoutOptions other && Equals(other);
+
+		public override int GetHashCode() => _flags.GetHashCode();
+
+		public static bool operator ==(LayoutOptions left, LayoutOptions right) => left.Equals(right);
+
+		public static bool operator !=(LayoutOptions left, LayoutOptions right) => !(left == right);
 	}
 }

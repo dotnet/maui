@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(FileImageSourceConverter))]
 	public sealed partial class FileImageSource : ImageSource
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="//Member[@MemberName='FileProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="File"/>.</summary>
 		public static readonly BindableProperty FileProperty = BindableProperty.Create("File", typeof(string), typeof(FileImageSource), default(string));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/FileImageSource.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator string(FileImageSource file)
 		{
-			return file != null ? file.File : null;
+			return file?.File;
 		}
 
 		protected override void OnPropertyChanged(string propertyName = null)

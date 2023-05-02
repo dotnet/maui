@@ -22,15 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 #if !WINDOWS
 			await Assert();
 #else
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(RefreshView, async (handler) =>
 			{
-				await CreateHandler(RefreshView)
-					.PlatformView
-					.AttachAndRun(async () =>
-					{
-						await Wait(() => GetPlatformIsRefreshing((RefreshViewHandler)RefreshView.Handler) == isRefreshing);
-						await Assert();
-					});
+				await Wait(() => GetPlatformIsRefreshing((RefreshViewHandler)handler) == isRefreshing);
+				await Assert();
 			});
 #endif
 			Task Assert()

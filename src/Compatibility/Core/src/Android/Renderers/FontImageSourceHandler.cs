@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				{
 					TextSize = TypedValue.ApplyDimension(ComplexUnitType.Dip, (float)fontsource.Size, context.Resources.DisplayMetrics),
 #pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
-					Color = (fontsource.Color != null ? fontsource.Color : Colors.White).ToAndroid(),
+					Color = (fontsource.Color ?? Colors.White).ToAndroid(),
 #pragma warning restore CA1416
 					TextAlign = Paint.Align.Left,
 					AntiAlias = true,

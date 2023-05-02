@@ -543,7 +543,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 				SetRenderer(modal, modalRenderer);
 			}
 
-			var wrapper = new ModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
+			var wrapper = new ControlsModalWrapper(modalRenderer.Element.Handler as IPlatformViewHandler);
 
 			if (_modals.Count > 1)
 			{

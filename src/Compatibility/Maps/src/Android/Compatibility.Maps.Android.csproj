@@ -11,7 +11,7 @@
   <ItemGroup>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
     <PackageReference Include="Xamarin.Google.Android.Material" />
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="118.1.0" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="118.1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

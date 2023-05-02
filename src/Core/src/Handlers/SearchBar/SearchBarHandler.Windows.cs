@@ -1,6 +1,5 @@
-﻿#nullable enable
+#nullable enable
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -97,7 +96,12 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapCancelButtonColor(ISearchBarHandler handler, ISearchBar searchBar)
 		{
-			// AutoSuggestBox does not support this property
+			handler.PlatformView?.UpdateCancelButtonColor(searchBar);
+		}
+
+		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
@@ -109,6 +113,9 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateHorizontalTextAlignment(VirtualView);
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
+				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
+				PlatformView?.UpdateCancelButtonColor(VirtualView);
+				PlatformView?.UpdateKeyboard(VirtualView);
 			}
 		}
 

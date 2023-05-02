@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public class GeometryGroup : Geometry
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(GeometryCollection), typeof(GeometryGroup), null,
 				propertyChanged: OnChildrenChanged);
@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			(bindable as GeometryGroup)?.UpdateChildren(oldValue as GeometryCollection, newValue as GeometryCollection);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/GeometryGroup.xml" path="//Member[@MemberName='FillRuleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FillRule"/>.</summary>
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(GeometryGroup), FillRule.EvenOdd);
 

@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LabelHandler>(label);
 
 				var interactions =
-					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+					handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>()
 						.ToList();
 
 				Assert.Single(interactions);
@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 				label.GestureRecognizers.RemoveAt(0);
 
 				interactions =
-					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+					handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>()
 						.ToList();
 
 				Assert.Empty(interactions);
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LabelHandler>(label);
 
 				var interactions =
-					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+					handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>()
 						.ToList();
 
 				Assert.Single(interactions);
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 				(label.GestureRecognizers[0] as TapGestureRecognizer).Buttons = ButtonsMask.Primary;
 
 				interactions =
-					handler.PlatformView.Interactions.OfType<GestureManager.FakeRightClickContextMenuInteraction>()
+					handler.PlatformView.Interactions.OfType<GesturePlatformManager.FakeRightClickContextMenuInteraction>()
 						.ToList();
 
 				Assert.Empty(interactions);

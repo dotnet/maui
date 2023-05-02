@@ -57,7 +57,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Core\GalleryPages\OpenGLGalleries\AdvancedOpenGLGallery.cs" Link="GalleryPages\AdvancedOpenGLGallery.cs" />
     <ProguardConfiguration Include="..\..\..\..\..\.nuspec\proguard.cfg" />
     <AndroidAsset Include="Assets\**" />
     <AndroidResource Include="Resources\**" />

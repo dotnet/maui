@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
 		{
 			message = "Success";
 
-			if (element == null || element is OpenGLView)
+			if (element == null)
 				return true;
 
 #pragma warning disable CS0612 // Type or member is obsolete

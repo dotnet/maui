@@ -70,6 +70,7 @@ namespace Microsoft.Maui.Platform
 			}
 			catch (Exception ex)
 			{
+				setImage?.Invoke(null);
 				events?.LoadingFailed(ex);
 			}
 			finally

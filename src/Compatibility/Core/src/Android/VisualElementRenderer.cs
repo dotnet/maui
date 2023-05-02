@@ -300,10 +300,10 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnLayout(bool changed, int l, int t, int r, int b)
 		{
-			if (Element == null)
-				return;
-
-			UpdateLayout(((IElementController)Element).LogicalChildren);
+			if (Element is IElementController controller)
+			{
+				UpdateLayout(controller.LogicalChildren);
+			}
 		}
 
 		public override void Draw(Canvas canvas)

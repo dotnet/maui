@@ -79,6 +79,9 @@ namespace Microsoft.Maui.ApplicationModel
 		[DllImport("user32.dll")]
 		public static extern bool SetWindowPos(IntPtr hWnd, SpecialWindowHandles hWndInsertAfter, int x, int y, int width, int height, SetWindowPosFlags uFlags);
 
+		[DllImport("user32.dll")]
+		public static extern bool ShowWindow(IntPtr hWnd, ShowWindowFlags uFlags);
+
 		[DllImport("comctl32.dll", CharSet = CharSet.Auto)]
 		public static extern IntPtr DefSubclassProc(IntPtr hWnd, uint uMsg, IntPtr wParam, IntPtr lParam);
 
@@ -143,6 +146,23 @@ namespace Microsoft.Maui.ApplicationModel
 			SWP_NOSIZE = 0x0001,
 			SWP_NOZORDER = 0x0004,
 			SWP_SHOWWINDOW = 0x0040,
+		}
+
+		[Flags]
+		public enum ShowWindowFlags : uint
+		{
+			SW_HIDE = 0,
+			SW_NORMAL = 1,
+			SW_SHOWMINIMIZED = 2,
+			SW_MAXIMIZE = 3,
+			SW_SHOWNOACTIVATE = 4,
+			SW_SHOW = 5,
+			SW_MINIMIZE = 6,
+			SW_SHOWMINNOACTIVE = 7,
+			SW_SHOWNA = 8,
+			SW_RESTORE = 9,
+			SW_SHOWDEFAULT = 10,
+			SW_FORCEMINIMIZE = 11,
 		}
 
 		[Flags]

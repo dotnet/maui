@@ -28,6 +28,14 @@ namespace Maui.Controls.Sample.Pages
 			MauiWebView.Navigated -= OnMauiWebViewNavigated;
 		}
 
+		void OnUpdateHtmlSourceClicked(object sender, EventArgs args)
+		{
+			Random rnd = new();
+			HtmlWebViewSource htmlWebViewSource = new();
+			HtmlSourceWebView.Source = htmlWebViewSource;
+			htmlWebViewSource.Html += $"<h1>Updated Content {rnd.Next()}!</h1><br>";
+		}
+
 		void OnGoBackClicked(object sender, EventArgs args)
 		{
 			Debug.WriteLine($"CanGoBack {MauiWebView.CanGoBack}");
@@ -83,6 +91,12 @@ namespace Maui.Controls.Sample.Pages
 			await LoadMauiAsset();
 		}
 
+		async void OnSetUserAgentClicked(object sender, EventArgs e)
+		{
+			input.Text = "useragent.html";
+			await LoadMauiAsset();
+		}
+
 		async Task LoadMauiAsset()
 		{
 			using var stream = await FileSystem.OpenAppPackageFileAsync(input.Text.Trim());
@@ -100,6 +114,21 @@ namespace Maui.Controls.Sample.Pages
 		void OnEnableZoomControlsClicked(object sender, EventArgs e)
 		{
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
+		}
+
+		void OnLoadHtml5VideoClicked(object sender, EventArgs e)
+		{
+			MauiWebView.Source = new UrlWebViewSource { Url = "video.html" };
+		}
+
+		void OnLoadHttpBinClicked(object sender, EventArgs e)
+		{
+			// on httpbin.org find the section where you can load the cookies for the website.
+			// The cookie that is set below should show up for this to succeed.
+			MauiWebView.Cookies = new System.Net.CookieContainer();
+			MauiWebView.Cookies.Add(new System.Net.Cookie("MauiCookie", "Hmmm Cookies!", "/", "httpbin.org"));
+
+			MauiWebView.Source = new UrlWebViewSource { Url = "https://httpbin.org/#/Cookies/get_cookies" };
 		}
 	}
 }

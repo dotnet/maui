@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Graphics;
@@ -6,7 +7,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="Type[@FullName='Microsoft.Maui.Controls.Region']/Docs/*" />
-	public struct Region
+	public struct Region : IEquatable<Region>
 	{
 		// While Regions are currently rectangular, they could in the future be transformed into any shape.
 		// As such the internals of how it keeps shapes is hidden, so that future internal changes can occur to support shapes
@@ -116,5 +117,16 @@ namespace Microsoft.Maui.Controls
 
 			return new Region(rectangles, inflation);
 		}
+
+		public bool Equals(Region other) =>
+			Regions == other.Regions && _inflation == other._inflation;
+
+		public override bool Equals(object obj) => obj is Region other && Equals(other);
+
+		public override int GetHashCode() => Regions.GetHashCode() ^ _inflation?.GetHashCode() ?? 0;
+
+		public static bool operator ==(Region left, Region right) => left.Equals(right);
+
+		public static bool operator !=(Region left, Region right) => !(left == right);
 	}
 }

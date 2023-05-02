@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -11,24 +12,26 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
-		[Theory(DisplayName = "Gradient Background Initializes Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
-		)]
-		[InlineData(0xFFFF0000)]
-		[InlineData(0xFF00FF00)]
-		[InlineData(0xFF0000FF)]
-		public async Task GradientBackgroundInitializesCorrectly(uint color)
+		[Theory(DisplayName = "Gradient Background Initializes Correctly")]
+		[InlineData(0xFFFF0000, 0xFFFE2500)]
+		[InlineData(0xFF00FF00, 0xFF04F800)]
+		[InlineData(0xFF0000FF, 0xFF0432FE)]
+		public async Task GradientBackgroundInitializesCorrectly(uint colorToSet, uint expectedColor)
 		{
-			var expected = Color.FromUint(color);
+			var color = Color.FromUint(colorToSet);
+			var expected = Color.FromUint(expectedColor);
 
-			var brush = new LinearGradientPaintStub(Colors.Black, expected);
+			var brush = new LinearGradientPaintStub(Colors.Black, color);
 
 			var searchBar = new SearchBarStub
 			{
 				Background = brush,
+				Height = 71,
+				Width = 256,
+				Text = "Background"
 			};
 
-			await ValidateHasColor(searchBar, expected);
+			await ValidateHasColor(searchBar, expected, tolerance: .05);
 		}
 
 		[Fact]
@@ -110,17 +113,17 @@ namespace Microsoft.Maui.DeviceTests
 			string originalText = "Test";
 			var xplatCharacterSpacing = 4;
 
-			var slider = new SearchBarStub()
+			var searchBar = new SearchBarStub()
 			{
 				CharacterSpacing = xplatCharacterSpacing,
 				Text = originalText
 			};
 
-			var values = await GetValueAsync(slider, (handler) =>
+			var values = await GetValueAsync(searchBar, (handler) =>
 			{
 				return new
 				{
-					ViewValue = slider.CharacterSpacing,
+					ViewValue = searchBar.CharacterSpacing,
 					PlatformViewValue = GetNativeCharacterSpacing(handler)
 				};
 			});
@@ -161,7 +164,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return Colors.Transparent;
 
 			return textField.TextColor.ToColor();
@@ -175,7 +178,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return UITextAlignment.Left;
 
 			return textField.TextAlignment;
@@ -186,7 +189,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return UIControlContentVerticalAlignment.Center;
 
 			return textField.VerticalAlignment;
@@ -205,7 +208,7 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 			var textField = uiSearchBar.FindDescendantView<UITextField>();
 
-			if (textField == null)
+			if (textField is null)
 				return -1;
 
 			return textField.Font.PointSize;
@@ -216,6 +219,76 @@ namespace Microsoft.Maui.DeviceTests
 			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
 
 			return !uiSearchBar.UserInteractionEnabled;
+		}
+
+		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.DecimalPad;
+		}
+
+		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.EmailAddress;
+		}
+
+		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.PhonePad;
+		}
+
+		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.KeyboardType == UIKeyboardType.Url;
+		}
+
+		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+
+		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var uiSearchBar = GetNativeSearchBar(searchBarHandler);
+			var textField = uiSearchBar.FindDescendantView<UITextField>();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
+				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
+				textField.SpellCheckingType == UITextSpellCheckingType.No;
 		}
 	}
 }

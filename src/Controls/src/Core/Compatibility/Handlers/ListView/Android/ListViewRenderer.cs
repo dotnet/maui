@@ -191,7 +191,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var position = Control.GetPositionForView(viewCell);
 			var id = Control.GetItemIdAtPosition(position);
 
+#pragma warning disable CA1416 // Introduced in API 23: https://developer.android.com/reference/android/view/HapticFeedbackConstants#CONTEXT_CLICK
 			viewCell.PerformHapticFeedback(FeedbackConstants.ContextClick);
+#pragma warning restore CA1416
 			_adapter.OnItemClick(Control, viewCell, position, id);
 		}
 
@@ -205,7 +207,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var position = Control.GetPositionForView(viewCell);
 			var id = Control.GetItemIdAtPosition(position);
 
+#pragma warning disable CA1416 // Introduced in API 23: https://developer.android.com/reference/android/view/HapticFeedbackConstants#CONTEXT_CLICK
 			viewCell.PerformHapticFeedback(FeedbackConstants.ContextClick);
+#pragma warning restore CA1416
 			_adapter.OnItemLongClick(Control, viewCell, position, id);
 		}
 
@@ -577,7 +581,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					return;
 				}
 
-				_child.PlatformView.Layout(l, t, r, b);
+				_child.PlatformView.Layout(0, 0, r - l, b - t);
 			}
 
 			protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)

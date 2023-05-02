@@ -92,6 +92,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 
 		void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (e.PropertyName == AutomationProperties.HelpTextProperty.PropertyName)
 			{
 				SetContentDescription();
@@ -108,6 +109,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.FastRenderers
 			{
 				SetLabeledBy();
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 		}
 	}
 }

@@ -219,8 +219,15 @@ Task("Test")
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
-
-	CleanDirectories(TEST_RESULTS);
+	
+	if (!IsCIBuild())
+		CleanDirectories(TEST_RESULTS);
+	else
+	{
+		// Because we retry on CI we don't want to delete the previous failures
+		// We want to publish those files for reference
+		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+	}
 
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
@@ -254,7 +261,24 @@ Task("Test")
 			$"--verbosity=\"Debug\" ")
 	};
 
-	DotNetCoreTool("tool", settings);
+	bool testsFailed = true;
+	try {
+		DotNetCoreTool("tool", settings);
+		testsFailed = false;
+	} finally {
+
+		if (testsFailed && IsCIBuild())
+		{
+			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+			EnsureDirectoryExists(failurePath);
+			// The tasks will retry the tests and overwrite the failed results each retry
+			// we want to retain the failed results for diagnostic purposes
+			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
+
+			// We don't want these to upload
+			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
+		}
+	}
 
 	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
 	if (!string.IsNullOrEmpty(failed)) {
