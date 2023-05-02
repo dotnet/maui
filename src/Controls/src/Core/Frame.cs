@@ -9,13 +9,13 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	public partial class Frame : ContentView, IElementConfiguration<Frame>, IPaddingElement, IBorderElement, IContentView
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='HasShadowProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasShadow"/>.</summary>
 		public static readonly BindableProperty HasShadowProperty = BindableProperty.Create("HasShadow", typeof(bool), typeof(Frame), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Frame.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BindableProperty.Create(nameof(CornerRadius), typeof(float), typeof(Frame), -1.0f,
 									validateValue: (bindable, value) => ((float)value) == -1.0f || ((float)value) >= 0f);
 

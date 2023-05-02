@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -7,17 +7,17 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwitchCell']/Docs/*" />
 	public class SwitchCell : Cell
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='OnProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="On"/>.</summary>
 		public static readonly BindableProperty OnProperty = BindableProperty.Create("On", typeof(bool), typeof(SwitchCell), false, propertyChanged: (obj, oldValue, newValue) =>
 		{
 			var switchCell = (SwitchCell)obj;
 			switchCell.OnChanged?.Invoke(obj, new ToggledEventArgs((bool)newValue));
 		}, defaultBindingMode: BindingMode.TwoWay);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(SwitchCell), default(string));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='OnColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(SwitchCell), null);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/SwitchCell.xml" path="//Member[@MemberName='OnColor']/Docs/*" />

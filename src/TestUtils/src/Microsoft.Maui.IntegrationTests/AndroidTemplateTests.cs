@@ -68,7 +68,7 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
-			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLower()}";
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
 			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}

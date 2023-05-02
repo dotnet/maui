@@ -30,19 +30,19 @@ namespace Microsoft.Maui.Controls
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IsBusyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IconImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;
@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Controls
 
 		bool _hasAppeared;
 		private protected bool HasAppeared => _hasAppeared;
-
-		ReadOnlyCollection<Element> _logicalChildren;
 
 		View _titleView;
 
@@ -158,6 +156,11 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		// Todo rework Page to use AddLogical/RemoveLogical.
+		// Rework all the related parts of the code that interact with the `Page` InternalChildren
+		private protected override IList<Element> LogicalChildrenInternalBackingStore =>
+			InternalChildren;
+
 		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
 		{
 			get
@@ -172,9 +175,6 @@ namespace Microsoft.Maui.Controls
 					yield return titleViewPart2TheNavBar;
 			}
 		}
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
 
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 

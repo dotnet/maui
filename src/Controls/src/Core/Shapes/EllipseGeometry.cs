@@ -21,15 +21,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			RadiusY = radiusY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='CenterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Center"/>.</summary>
 		public static readonly BindableProperty CenterProperty =
 			BindableProperty.Create(nameof(Center), typeof(Point), typeof(EllipseGeometry), new Point());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='RadiusXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RadiusX"/>.</summary>
 		public static readonly BindableProperty RadiusXProperty =
 			BindableProperty.Create(nameof(RadiusX), typeof(double), typeof(EllipseGeometry), 0.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/EllipseGeometry.xml" path="//Member[@MemberName='RadiusYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RadiusY"/>.</summary>
 		public static readonly BindableProperty RadiusYProperty =
 			BindableProperty.Create(nameof(RadiusY), typeof(double), typeof(EllipseGeometry), 0.0);
 
