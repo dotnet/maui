@@ -2465,8 +2465,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 		[Theory, Category(GridStarSizing)]
 		[InlineData(0.1)]
+		[InlineData(1)]
 		[InlineData(10)]
 		[InlineData(60)]
+		[InlineData(1000)]
 		[InlineData(-0.1)]
 		[InlineData(-10)]
 		[InlineData(-60)]
@@ -2522,6 +2524,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.False(view0Dest.IntersectsWith(view1Dest));
 			Assert.False(view1Dest.IntersectsWith(view2Dest));
 			Assert.False(view0Dest.IntersectsWith(view2Dest));
+
+			// And ensure that the destination rects are actually tall enough to fill up the arranged height.
+			// They might be taller (e.g., if a window is resized to be too small for the content), but they should
+			// _not_ be _less_ than the target arrangement height.
+			var destinationHeight = view0Dest.Height + view1Dest.Height + view2Dest.Height;
+			Assert.True(destinationHeight >= measure.Height + heightDelta);
 		}
 
 		[Theory, Category(GridStarSizing)]
