@@ -73,8 +73,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return pixel;
 		}
 
-
-
 		public static UIImage AssertColorAtPoint(this UIImage bitmap, UIColor expectedColor, int x, int y)
 		{
 			try
@@ -161,18 +159,18 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS.UnitTests
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 
-		public static UIImage AssertContainsColor(this UIView view, UIColor expectedColor)
+		public static UIImage AssertContainsColor(this UIView view, UIColor expectedColor, double? tolerance = null)
 		{
-			return view.ToBitmap().AssertContainsColor(expectedColor);
+			return view.ToBitmap().AssertContainsColor(expectedColor, tolerance: tolerance);
 		}
 
-		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor)
+		public static UIImage AssertContainsColor(this UIImage bitmap, UIColor expectedColor, double? tolerance = null)
 		{
 			for (int x = 0; x < bitmap.Size.Width; x++)
 			{
 				for (int y = 0; y < bitmap.Size.Height; y++)
 				{
-					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor))
+					if (ColorComparison.ARGBEquivalent(bitmap.ColorAtPoint(x, y), expectedColor, tolerance: tolerance))
 					{
 						return bitmap;
 					}

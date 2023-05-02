@@ -358,8 +358,7 @@ namespace Microsoft.Maui.Controls
 			OnRefreshing(EventArgs.Empty);
 
 			ICommand command = RefreshCommand;
-			if (command != null)
-				command.Execute(null);
+			command?.Execute(null);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='EndRefresh']/Docs/*" />
