@@ -4,7 +4,7 @@ using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using TestUtils.Appium.UITests;
 
-namespace Maui.Controls.Sample.Sandbox.AppiumTests
+namespace Microsoft.Maui.AppiumTests
 {
 #if ANDROID
 	[TestFixture(TestDevice.Android)]

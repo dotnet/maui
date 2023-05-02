@@ -1,8 +1,9 @@
 ﻿using Microsoft.Maui.Appium;
 using NUnit.Framework;
 
-namespace Maui.Controls.Sample.Sandbox.AppiumTests
+namespace Microsoft.Maui.AppiumTests
 {
+	[TestFixture(TestDevice.Windows)]
 	public class MainPageTests : AppiumPlatformsTestBase
 	{
 		public MainPageTests(TestDevice testDevice) : base(testDevice)

@@ -10,7 +10,7 @@
 
    <PropertyGroup>
     <ApplicationTitle>Controls Appium Tests</ApplicationTitle>
-    <ApplicationId>com.microsoft.maui.controls.sandbox.appiumtests</ApplicationId>
+    <ApplicationId>com.microsoft.maui.controls.appiumtests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
