@@ -15,8 +15,8 @@
 
   <!-- Permission to receive remote notifications from Google Play Services -->
   <!-- Notice here that we have the package name of our application as a prefix on the permissions. -->
-  <uses-permission android:name="com.microsoft.maui.sample.permission.MAPS_RECEIVE" />
-  <permission android:name="com.microsoft.maui.sample.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
+  <uses-permission android:name="com.microsoft.maui.uitests.permission.MAPS_RECEIVE" />
+  <permission android:name="com.microsoft.maui.uitests.permission.MAPS_RECEIVE" android:protectionLevel="signature" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
