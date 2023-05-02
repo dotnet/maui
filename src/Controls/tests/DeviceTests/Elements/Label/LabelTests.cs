@@ -458,11 +458,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory (
-#if WINDOWS
-			Skip = "Appears that the layout is not getting rendered on Windows."
-#endif
-			)]
+		[Theory]
 		[InlineData(TextAlignment.Start, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.Start, LineBreakMode.TailTruncation)]
@@ -476,7 +472,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap, false)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap, false)]
-#elif __ANDROID__
+#else
 		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap)]
@@ -535,6 +531,18 @@ namespace Microsoft.Maui.DeviceTests
 			layout.HeightRequest = 300;
 			layout.WidthRequest = 100;
 
+#if WINDOWS
+			await AttachAndRun(layout, (handler) =>
+			{
+				var layoutPlatWidth = handler.PlatformView.Width;
+				Assert.Equal(labelStart.Width, layoutPlatWidth);
+				Assert.Equal(labelCenter.Width, layoutPlatWidth);
+				Assert.Equal(labelEnd.Width, layoutPlatWidth);
+				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layoutPlatWidth, 5));
+				var _ = isEqual;
+			});
+
+#else
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
@@ -546,17 +554,17 @@ namespace Microsoft.Maui.DeviceTests
 						Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
 						Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
 					}
-					// with LineBreakMode.NoWrap, we do not expect them to be equal if HorizontalOptions != LayoutOptions.Fill
+					// with LineBreakMode.NoWrap, we do not expect them to be equal if HorizontalOptions != LayoutOptions.Fill on iOS
 					else
 					{
 						Assert.NotEqual(labelStart.Width, layout.Width);
 						Assert.NotEqual(labelCenter.Width, layout.Width);
 						Assert.NotEqual(labelEnd.Width, layout.Width);
 					}
-
 					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 				});
 			});
+#endif
 		}
 
 		static readonly string LoremIpsum = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
