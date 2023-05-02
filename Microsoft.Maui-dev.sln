@@ -205,7 +205,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.Int
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.InternalsHiddenAssembly", "src\Controls\tests\Xaml.UnitTests.InternalsHiddenAssembly\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj", "{FB39FACE-BAF2-4F97-A249-E45BA63D77FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Sandbox.AppiumTests", "src\Controls\tests\Maui.Controls.Sample.Sandbox.AppiumTests\Maui.Controls.Sample.Sandbox.AppiumTests.csproj", "{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{FABB4FE3-AD90-479E-B7F1-BEF110181196}"
 EndProject

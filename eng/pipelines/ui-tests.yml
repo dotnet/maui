@@ -135,12 +135,12 @@ stages:
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
           iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
-          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
-          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
-          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/Maui.Controls.Sample.Sandbox.AppiumTests/Maui.Controls.Sample.Sandbox.AppiumTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
         # - name: blazorwebview
         #   desc: BlazorWebView
         #   androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome

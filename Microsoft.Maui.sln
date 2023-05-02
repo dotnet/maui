@@ -245,7 +245,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.DeviceTests", "src\Graphics\tests\DeviceTests\Graphics.DeviceTests.csproj", "{34969E49-FA6E-41BB-9813-5689BB14021E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Maui.Controls.Sample.Sandbox.AppiumTests", "src\Controls\tests\Maui.Controls.Sample.Sandbox.AppiumTests\Maui.Controls.Sample.Sandbox.AppiumTests.csproj", "{A23B108A-AB56-4692-B9DA-0E23602E3955}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{A23B108A-AB56-4692-B9DA-0E23602E3955}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{EDADE060-6B61-4006-BB7D-CB7710F08E87}"
 EndProject

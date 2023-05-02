@@ -27,7 +27,7 @@
       "src\\Controls\\tests\\Core.UnitTests\\Controls.Core.UnitTests.csproj",
       "src\\Controls\\tests\\CustomAttributes\\Controls.CustomAttributes.csproj",
       "src\\Controls\\tests\\DeviceTests\\Controls.DeviceTests.csproj",
-      "src\\Controls\\tests\\Maui.Controls.Sample.Sandbox.AppiumTests\\Maui.Controls.Sample.Sandbox.AppiumTests.csproj",
+      "src\\Controls\\tests\\UITests\\Controls.AppiumTests.csproj",
       "src\\Controls\\tests\\Xaml.UnitTests.ExternalAssembly\\Controls.Xaml.UnitTests.ExternalAssembly.csproj",
       "src\\Controls\\tests\\Xaml.UnitTests.InternalsHiddenAssembly\\Controls.Xaml.UnitTests.InternalsHiddenAssembly.csproj",
       "src\\Controls\\tests\\Xaml.UnitTests.InternalsVisibleAssembly\\Controls.Xaml.UnitTests.InternalsVisibleAssembly.csproj",
