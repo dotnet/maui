@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		int IBorderElement.CornerRadius => (int)CornerRadius;
 
 		// TODO fix iOS/WinUI to work the same as Android
-#if ANDROID
+#if ANDROID || WINDOWS
 		double IBorderElement.BorderWidth => 1;
 #else
 		// not currently used by frame
@@ -80,27 +80,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
-		{
-#if ANDROID
-			bounds = bounds.Inset(3); // Android is the only platform that has a FrameBorderThickness of 3
-#else
 
-			bounds = bounds.Inset(1);
-#endif
-			this.ArrangeContent(bounds);
-			return bounds.Size;
-		}
-
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
-		{
-#if ANDROID
-			var inset = Padding + 3; // Android is the only platform that has a FrameBorderThickness of 3
-#else
-			var inset = Padding + 1;
-#endif
-			return this.MeasureContent(inset, widthConstraint, heightConstraint);
-		}
 
 		bool IBorderElement.IsCornerRadiusSet() => IsSet(CornerRadiusProperty);
 
@@ -117,7 +97,6 @@ namespace Microsoft.Maui.Controls
 		// this code and Border into LayoutExtensions
 		// WinUI being fixed as part of
 		// https://github.com/dotnet/maui/issues/13552
-#if ANDROID
 		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			bounds = bounds.Inset(((IBorderElement)this).BorderWidth);
@@ -130,8 +109,6 @@ namespace Microsoft.Maui.Controls
 			var inset = Padding + ((IBorderElement)this).BorderWidth;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
-#endif
-
 	}
 
 	internal static class FrameExtensions
