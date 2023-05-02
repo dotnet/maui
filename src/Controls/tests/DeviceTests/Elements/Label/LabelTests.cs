@@ -15,6 +15,18 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Layout, LayoutHandler>();
+				});
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
@@ -76,10 +88,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		string TextForHandler(LabelHandler handler)
 		{
-#if __IOS__
+#if IOS || MACCATALYST
 			return handler.PlatformView.AttributedText?.Value;
-#elif __ANDROID__
-				return handler.PlatformView.TextFormatted.ToString();
+#elif ANDROID
+			return handler.PlatformView.TextFormatted.ToString();
 #elif WINDOWS
 			return handler.PlatformView.Text;
 #endif
@@ -230,6 +242,41 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedLines, platformValue);
 		}
 
+		[Fact]
+		public async Task ChangingTextTypeWithFormattedTextSwitchesTextSource()
+		{
+			SetupBuilder();
+
+			Label label;
+			var layout = new VerticalStackLayout
+			{
+				(label = new Label
+				{
+					WidthRequest = 200,
+					HeightRequest = 100,
+					BackgroundColor = Colors.Blue,
+					FormattedText = new FormattedString
+					{
+						Spans =
+						{
+							new Span { Text = "short", TextColor = Colors.Red, FontSize = 20 },
+							new Span { Text = " long second string"}
+						}
+					},
+				})
+			};
+
+			await AttachAndRun(layout, async (handler) =>
+			{
+				var platformView = handler.ToPlatform();
+				await platformView.AssertContainsColor(Colors.Red, MauiContext);
+
+				label.TextType = TextType.Html;
+
+				await platformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
+			});
+		}
+
 		[Theory]
 		[InlineData(TextAlignment.Center)]
 		[InlineData(TextAlignment.Start)]
@@ -262,10 +309,10 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(MauiContext);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(MauiContext);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
@@ -299,13 +346,13 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var initialHandler = CreateHandler<LabelHandler>(initialLabel);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap(MauiContext);
 
 				var updatedHandler = CreateHandler<LabelHandler>(updatedLabel);
 
 				updatedLabel.FormattedText = GetFormattedString();
 
-				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
+				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap(MauiContext);
 
 				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
@@ -359,10 +406,10 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(MauiContext);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(MauiContext);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
@@ -513,6 +560,50 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static readonly string LoremIpsum = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+
+		[Fact]
+		public async Task TextTypeAfterFontStuffIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				FontSize = 64,
+				FontFamily = "Baskerville",
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.TextType = TextType.Html;
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
+
+		[Fact]
+		public async Task FontStuffAfterTextTypeIsCorrect()
+		{
+			// Note: this is specifically a Controls-level rule that's inherited from Forms
+			// There's no reason other SDKs need to force font properties when dealing 
+			// with HTML text (since HTML can do that on its own)
+
+			var label = new Label
+			{
+				TextType = TextType.Html,
+				Text = "<p>Test</p>"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<LabelHandler>(label);
+				label.FontFamily = "Baskerville";
+				label.FontSize = 64;
+				AssertEquivalentFont(handler, label.ToFont());
+			});
+		}
 
 		Color TextColor(LabelHandler handler)
 		{

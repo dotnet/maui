@@ -11,21 +11,27 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class KeyboardManager
 	{
+		static AView GetInputView(this AView inputView)
+		{
+			if (inputView is WrapperView wv && wv.ChildCount > 0 && wv.GetChildAt(0) is AView view)
+				inputView = view;
+
+			if (inputView is SearchView searchView)
+				inputView = searchView.GetFirstChildOfType<EditText>() ?? inputView;
+
+			return inputView;
+		}
+
 		internal static bool HideKeyboard(this AView inputView)
 		{
+			inputView = inputView.GetInputView();
+
 			if (inputView?.Context is null)
 				throw new ArgumentNullException(nameof(inputView) + " must be set before the keyboard can be hidden.");
 
-			var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
-			AView tokenView = focusedView ?? inputView;
-			var context = tokenView.Context;
-
-			if (context is null)
-				return false;
-
-			using (var inputMethodManager = context.GetSystemService(Context.InputMethodService) as InputMethodManager)
+			using (var inputMethodManager = inputView.Context.GetSystemService(Context.InputMethodService) as InputMethodManager)
 			{
-				var windowToken = tokenView.WindowToken;
+				var windowToken = inputView.WindowToken;
 				if (windowToken is not null && inputMethodManager is not null)
 					return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
 			}
@@ -47,28 +53,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static bool ShowKeyboard(this SearchView searchView)
-		{
-			if (searchView?.Context is null || searchView?.Resources is null)
-			{
-				throw new ArgumentNullException(nameof(searchView));
-			}
-
-			var queryEditor = searchView.GetFirstChildOfType<EditText>();
-
-			return queryEditor?.ShowKeyboard() == true;
-			;
-		}
-
 		internal static bool ShowKeyboard(this AView view)
 		{
-			switch (view)
-			{
-				case SearchView searchView:
-					return searchView.ShowKeyboard();
-				case TextView textView:
-					return textView.ShowKeyboard();
-			}
+			if (view.GetInputView() is TextView textView)
+				return textView.ShowKeyboard();
 
 			return false;
 		}

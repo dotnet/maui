@@ -508,14 +508,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
 
-			// attach for windows because it uses control templates
-			var values = await GetValueAsync(entry, (handler) =>
-				handler.PlatformView.AttachAndRun(() =>
+			var values = await AttachAndRun(entry, (handler) =>
 					new
 					{
 						ViewValue = entry.VerticalTextAlignment,
 						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-					}));
+					});
 
 			Assert.Equal(textAlignment, values.ViewValue);
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
@@ -613,6 +611,24 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
 		{
+		}
+
+		[Category(TestCategory.Entry)]
+		public class EntryFocusTests : FocusHandlerTests<EntryHandler, EntryStub, VerticalStackLayoutStub>
+		{
+		}
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		{
+			protected override void SetNativeText(EntryHandler entryHandler, string text) =>
+				EntryHandlerTests.SetNativeText(entryHandler, text);
+
+			protected override int GetCursorStartPosition(EntryHandler entryHandler) =>
+				EntryHandlerTests.GetCursorStartPosition(entryHandler);
+
+			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
+				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
 		}
 	}
 }

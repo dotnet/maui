@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls
 			s_routeKeys = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Routing.xml" path="//Member[@MemberName='RouteProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
 		public static readonly BindableProperty RouteProperty =
 			BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
 				defaultValueCreator: CreateDefaultRoute);

@@ -8,19 +8,19 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public partial class TabbedPage : MultiPage<Page>, IBarElement, IElementConfiguration<TabbedPage>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarBackgroundColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarBackgroundColor"/>.</summary>
 		public static readonly BindableProperty BarBackgroundColorProperty = BarElement.BarBackgroundColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarBackgroundProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarBackground"/>.</summary>
 		public static readonly BindableProperty BarBackgroundProperty = BarElement.BarBackgroundProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarTextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='UnselectedTabColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="UnselectedTabColor"/>.</summary>
 		public static readonly BindableProperty UnselectedTabColorProperty = BindableProperty.Create(nameof(UnselectedTabColor), typeof(Color), typeof(TabbedPage), default(Color));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='SelectedTabColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedTabColor"/>.</summary>
 		public static readonly BindableProperty SelectedTabColorProperty = BindableProperty.Create(nameof(SelectedTabColor), typeof(Color), typeof(TabbedPage), default(Color));
 
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
