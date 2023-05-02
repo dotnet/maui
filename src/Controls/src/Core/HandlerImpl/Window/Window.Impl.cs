@@ -219,26 +219,10 @@ namespace Microsoft.Maui.Controls
 
 			_batchFrameUpdate++;
 
-			if (x != frame.X)
-			{
-				XProperty.PropertyChanging?.Invoke(this, x, frame.X);
-				OnPropertyChanging(nameof(X));
-			}
-			if (y != frame.Y)
-			{
-				YProperty.PropertyChanging?.Invoke(this, y, frame.Y);
-				OnPropertyChanging(nameof(Y));
-			}
-			if (width != frame.Width)
-			{
-				WidthProperty.PropertyChanging?.Invoke(this, width, frame.Width);
-				OnPropertyChanging(nameof(Width));
-			}
-			if (height != frame.Height)
-			{
-				HeightProperty.PropertyChanging?.Invoke(this, height, frame.Height);
-				OnPropertyChanging(nameof(Height));
-			}
+			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
+			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
+			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
+			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
 
 			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent);
 			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent);
@@ -251,28 +235,32 @@ namespace Microsoft.Maui.Controls
 
 			if (_batchFrameUpdate == 0)
 			{
-				if (x != frame.X)
-				{
-					OnPropertyChanged(nameof(X));
-					XProperty.PropertyChanged?.Invoke(this, x, frame.X);
-				}
-				if (y != frame.Y)
-				{
-					OnPropertyChanged(nameof(Y));
-					YProperty.PropertyChanged?.Invoke(this, y, frame.Y);
-				}
-				if (width != frame.Width)
-				{
-					OnPropertyChanged(nameof(Width));
-					WidthProperty.PropertyChanged?.Invoke(this, width, frame.Width);
-				}
-				if (height != frame.Height)
-				{
-					OnPropertyChanged(nameof(Height));
-					HeightProperty.PropertyChanged?.Invoke(this, height, frame.Height);
-				}
+				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
+				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
+				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
+				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
 
 				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
+			{
+				if (oldValue == newValue)
+					return;
+
+				property.PropertyChanging?.Invoke(this, oldValue, newValue);
+				OnPropertyChanging(name);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
+			{
+				if (oldValue == newValue)
+					return;
+
+				OnPropertyChanged(name);
+				property.PropertyChanged?.Invoke(this, oldValue, newValue);
 			}
 		}
 
