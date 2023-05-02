@@ -735,10 +735,6 @@ namespace Microsoft.Maui.Layouts
 
 			void DecompressDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount) 
 			{
-				// Reset the row definitions to the minimum sizes (in case Arrange has been called
-				// multiple times at different sizes without a new Measure call)
-				UseCompressedSize(definitions);
-
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
@@ -748,14 +744,14 @@ namespace Microsoft.Maui.Layouts
 
 			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
 			{
-				var sum = SumDefinitions(defs, spacing);
+				var sum = SumDefinitions(defs, spacing,	true);
 
 				// Remove all the star defintions from the current size
 				foreach (var def in defs)
 				{
 					if (def.IsStar)
 					{
-						sum -= def.Size;
+						sum -= def.CompressedSize;
 					}
 				}
 
@@ -779,7 +775,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (definition.IsStar)
 					{
-						maxCurrentSize = Math.Max(maxCurrentSize, definition.Size);
+						maxCurrentSize = Math.Max(maxCurrentSize, definition.CompressedSize);
 					}
 				}
 
@@ -788,7 +784,7 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (definition.IsStar)
 					{
-						totaldiff += maxCurrentSize - definition.Size;
+						totaldiff += maxCurrentSize - definition.CompressedSize;
 					}
 				}
 
@@ -798,13 +794,13 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (maxCurrentSize >= (starSize * definition.GridLength.Value))
 						{
-							var diff = maxCurrentSize - definition.Size;
+							var diff = maxCurrentSize - definition.CompressedSize;
 
 							if (diff > 0)
 							{
-								var scale = ((maxCurrentSize - definition.Size) / totaldiff);
+								var scale = ((maxCurrentSize - definition.CompressedSize) / totaldiff);
 								var portion = scale * availableSpace;
-								definition.Size += portion;
+								definition.Size = definition.CompressedSize + portion;
 							}
 						}
 						else
