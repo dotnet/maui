@@ -8,6 +8,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform implementation of <see cref="IStringSizeService"/> which
+	/// can measure a given string and return the dimensions.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
 	public class W2DStringSizeService
 #else

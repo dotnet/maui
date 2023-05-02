@@ -9,21 +9,28 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// Several extension methods to convert from Microsoft.Maui.Graphics types
+	/// into Windows platform types.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
 	public static class W2DExtensions
 #else
 	public static class GraphicsExtensions
 #endif
 	{
-#if MAUI_GRAPHICS_WIN2D
-		public static global::Windows.UI.Color AsColor(
-#else
+#if !MAUI_GRAPHICS_WIN2D
 		internal static global::Windows.UI.Color AsColor(this Color color, Color defaultColor, float alpha = 1) =>
 			AsWindowsColor(color, defaultColor, alpha);
-
-		public static global::Windows.UI.Color AsWindowsColor(
 #endif
-			this Color color, Color defaultColor, float alpha = 1)
+
+		public static global::Windows.UI.Color 
+#if MAUI_GRAPHICS_WIN2D
+			AsColor
+#else
+			AsWindowsColor
+#endif
+			(this Color color, Color defaultColor, float alpha = 1)
 		{
 			var finalColor = color ?? defaultColor;
 
@@ -35,15 +42,18 @@ namespace Microsoft.Maui.Graphics.Platform
 			return global::Windows.UI.Color.FromArgb(a, r, g, b);
 		}
 
-#if MAUI_GRAPHICS_WIN2D
-		public static global::Windows.UI.Color AsColor(
-#else
+#if !MAUI_GRAPHICS_WIN2D
 		internal static global::Windows.UI.Color AsColor(this Color color, float alpha = 1) =>
 			AsWindowsColor(color, alpha);
-
-		public static global::Windows.UI.Color AsWindowsColor(
 #endif
-			this Color color, float alpha = 1)
+
+		public static global::Windows.UI.Color 
+#if MAUI_GRAPHICS_WIN2D
+			AsColor
+#else
+			AsWindowsColor
+#endif
+			(this Color color, float alpha = 1)
 		{
 			var r = (byte)(color.Red * 255);
 			var g = (byte)(color.Green * 255);
@@ -95,8 +105,6 @@ namespace Microsoft.Maui.Graphics.Platform
 #if MAUI_GRAPHICS_WIN2D
 		public static CanvasGeometry AsPath(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
 			AsPath(path, 0, 0, 1, 1, creator, fillMode);
-
-		public static CanvasGeometry AsPath(
 #else
 		internal static CanvasGeometry AsPath(this PathF path, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
 			AsCanvasGeometry(path, creator, fillMode);
@@ -106,10 +114,15 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		internal static CanvasGeometry AsPath(this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding) =>
 			AsCanvasGeometry(path, ox, oy, fx, fy, creator, fillMode);
-		
-		public static CanvasGeometry AsCanvasGeometry(
 #endif
-			this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
+		
+		public static CanvasGeometry 
+#if MAUI_GRAPHICS_WIN2D
+			AsPath
+#else
+			AsCanvasGeometry
+#endif
+			(this PathF path, float ox, float oy, float fx, float fy, ICanvasResourceCreator creator, CanvasFilledRegionDetermination fillMode = CanvasFilledRegionDetermination.Winding)
 		{
 			var builder = new CanvasPathBuilder(creator);
 
@@ -246,12 +259,13 @@ namespace Microsoft.Maui.Graphics.Platform
 #endif
 		}
 
+		public static CanvasGeometry 
 #if MAUI_GRAPHICS_WIN2D
-		public static CanvasGeometry AsPathFromSegment(
+			AsPathFromSegment
 #else
-		public static CanvasGeometry AsCanvasGeometryFromSegment(
+			AsCanvasGeometryFromSegment
 #endif
-			this PathF path, int segmentIndex, float zoom, ICanvasResourceCreator creator)
+			(this PathF path, int segmentIndex, float zoom, ICanvasResourceCreator creator)
 		{
 			float scale = 1 / zoom;
 
