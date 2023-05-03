@@ -468,16 +468,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.End, LineBreakMode.HeadTruncation)]
 		[InlineData(TextAlignment.End, LineBreakMode.MiddleTruncation)]
 		[InlineData(TextAlignment.End, LineBreakMode.TailTruncation)]
-#if __IOS__
-		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap, false)]
-		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap, false)]
-		[InlineData(TextAlignment.End, LineBreakMode.NoWrap, false)]
-#else
 		[InlineData(TextAlignment.Start, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.Center, LineBreakMode.NoWrap)]
 		[InlineData(TextAlignment.End, LineBreakMode.NoWrap)]
-#endif
-		public async Task LabelTruncatesCorrectly(TextAlignment textAlignment, LineBreakMode lineBreakMode, bool isEqual = true)
+		public async Task LabelTruncatesCorrectly(TextAlignment textAlignment, LineBreakMode lineBreakMode)
 		{
 			EnsureHandlerCreated(builder =>
 			{
@@ -539,7 +533,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(labelCenter.Width, layoutPlatWidth);
 				Assert.Equal(labelEnd.Width, layoutPlatWidth);
 				Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layoutPlatWidth, 5));
-				var _ = isEqual;
 			});
 
 #else
@@ -548,19 +541,9 @@ namespace Microsoft.Maui.DeviceTests
 				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
 				await contentViewHandler.PlatformView.AttachAndRun(() =>
 				{
-					if (isEqual)
-					{
-						Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
-						Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
-						Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
-					}
-					// with LineBreakMode.NoWrap, we do not expect them to be equal if HorizontalOptions != LayoutOptions.Fill on iOS
-					else
-					{
-						Assert.NotEqual(labelStart.Width, layout.Width);
-						Assert.NotEqual(labelCenter.Width, layout.Width);
-						Assert.NotEqual(labelEnd.Width, layout.Width);
-					}
+					Assert.Equal(double.Round(labelStart.Width, 5), double.Round(layout.Width, 5));
+					Assert.Equal(double.Round(labelCenter.Width, 5), double.Round(layout.Width, 5));
+					Assert.Equal(double.Round(labelEnd.Width, 5), double.Round(layout.Width, 5));
 					Assert.Equal(double.Round(labelFill.Width, 5), double.Round(layout.Width, 5));
 				});
 			});
