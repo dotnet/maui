@@ -64,12 +64,14 @@ Task("uitest")
 	}
 
 	Information("Test Device: {0}", TEST_DEVICE);
+	Information("Test App Project: {0}", TEST_APP_PROJECT);
 	Information("Test App: {0}", TEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 
 	CleanDirectories(TEST_RESULTS);
 
-	DotNetCoreBuild(TEST_APP_PROJECT.FullPath,, new DotNetCoreBuildSettings {
+	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
+	DotNetCoreBuild(TEST_APP_PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
