@@ -448,13 +448,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
-			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform(), tolerance: tolerance));
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
@@ -496,16 +496,16 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext) =>
-			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext, tolerance: tolerance);
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
 			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
-			return AssertContainsColor(bitmap, expectedColor);
+			return AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
 		}
 
 		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor, IMauiContext mauiContext)

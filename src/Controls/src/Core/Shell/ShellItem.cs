@@ -329,10 +329,7 @@ namespace Microsoft.Maui.Controls
 		internal override void SendDisappearing()
 		{
 			base.SendDisappearing();
-			if (CurrentItem != null)
-			{
-				CurrentItem.SendDisappearing();
-			}
+			CurrentItem?.SendDisappearing();
 		}
 
 		protected override void OnParentSet()
