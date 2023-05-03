@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Layouts
 		{
 			_gridStructure ??= new GridStructure(Grid, bounds.Width, bounds.Height);
 
-			_gridStructure.DecompressStars(bounds.Size);
+			_gridStructure.PrepareForArrange(bounds.Size);
 
 			foreach (var view in Grid)
 			{
@@ -296,19 +296,19 @@ namespace Microsoft.Maui.Layouts
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
-			double GridCompressedHeight() 
+			double GridMinimumHeight() 
 			{
-				return SumDefinitions(_rows, _rowSpacing, true) + _padding.VerticalThickness;
+				return SumDefinitions(_rows, _rowSpacing, minimize: true) + _padding.VerticalThickness;
 			}
 
-			double GridCompressedWidth() 
+			double GridMinimumWidth() 
 			{
-				return SumDefinitions(_columns, _columnSpacing, true) + _padding.HorizontalThickness;
+				return SumDefinitions(_columns, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
 			}
 
 			public double MeasuredGridHeight()
 			{
-				var height = Dimension.IsExplicitSet(_explicitGridHeight) ? _explicitGridHeight : GridHeight();
+				var height = Dimension.IsExplicitSet(_explicitGridHeight) ? _explicitGridHeight : GridMinimumHeight();
 
 				if (_gridMaxHeight >= 0 && height > _gridMaxHeight)
 				{
@@ -325,7 +325,7 @@ namespace Microsoft.Maui.Layouts
 
 			public double MeasuredGridWidth()
 			{
-				var width = Dimension.IsExplicitSet(_explicitGridWidth) ? _explicitGridWidth : GridWidth();
+				var width = Dimension.IsExplicitSet(_explicitGridWidth) ? _explicitGridWidth : GridMinimumWidth();
 
 				if (_gridMaxWidth >= 0 && width > _gridMaxWidth)
 				{
@@ -340,20 +340,13 @@ namespace Microsoft.Maui.Layouts
 				return width;
 			}
 
-			static double SumDefinitions(Definition[] definitions, double spacing, bool compressed = false)
+			static double SumDefinitions(Definition[] definitions, double spacing, bool minimize = false)
 			{
 				double sum = 0;
 
 				for (int n = 0; n < definitions.Length; n++)
 				{
-					if (definitions[n].IsStar && compressed)
-					{
-						sum += definitions[n].CompressedSize;
-					}
-					else
-					{
-						sum += definitions[n].Size;
-					}
+					sum += minimize ? definitions[n].MinimumSize : definitions[n].Size;
 
 					if (n > 0)
 					{
@@ -387,7 +380,7 @@ namespace Microsoft.Maui.Layouts
 				ResolveSpans();
 
 				// Compress the star values to their minimums for measurement 
-				CompressStarMeasurements();
+				MinimizeStarsForMeasurement();
 			}
 
 			Size MeasureCell(Cell cell, double width, double height)
@@ -708,142 +701,16 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			static void UseCompressedSize(Definition[] defs)
+			void MinimizeStarsForMeasurement()
 			{
-				foreach (var def in defs)
-				{
-					if (def.IsStar)
-					{
-						def.Size = def.CompressedSize;
-					}
-				}
+				MinimizeStarRows();
+				MinimizeStarColumns();
 			}
 
-			public void DecompressStars(Size targetSize)
+			void MinimizeStarRows()
 			{
-				bool decompressVertical = _rowStarCount > 0
-					&& (Dimension.IsExplicitSet(_explicitGridHeight)
-					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill);
-
-				bool decompressHorizontal = _columnStarCount > 0
-					&& (Dimension.IsExplicitSet(_explicitGridWidth)
-					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill);
-
-				if (decompressVertical)
-				{
-					DecompressDefinitions(_rows, targetSize.Height, GridCompressedHeight(), _rowSpacing, _rowStarCount);
-				}
-
-				if (decompressHorizontal)
-				{
-					DecompressDefinitions(_columns, targetSize.Width, GridCompressedWidth(), _columnSpacing, _columnStarCount);
-				}
-			}
-
-			void DecompressDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount) 
-			{
-				// Figure out what the star value should be at this size
-				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
-
-				// Inflate the stars so that we fill up the space at this size
-				DecompressStars(targetSize, currentSize, definitions, starSize, starCount);
-			}
-
-			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
-			{
-				var sum = SumDefinitions(defs, spacing,	true);
-
-				// Remove all the star defintions from the current size
-				foreach (var def in defs)
-				{
-					if (def.IsStar)
-					{
-						sum -= def.CompressedSize;
-					}
-				}
-
-				return (targetSize - sum) / starCount;
-			}
-
-			void DecompressStars(double targetSize, double currentSize, Definition[] defs, double starSize, double starCount)
-			{
-				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
-
-				var availableSpace = targetSize - currentSize;
-
-				if (availableSpace <= 0)
-				{
-					return;
-				}
-
-				// Figure out which is the biggest star definition in this dimension
-				var maxCurrentSize = 0.0;
-				foreach (var definition in defs)
-				{
-					if (definition.IsStar)
-					{
-						maxCurrentSize = Math.Max(maxCurrentSize, definition.CompressedSize);
-					}
-				}
-
-				// Work out the total difference in size between the largest star definition and all 
-				// the smaller ones; we'll need that later to distribute available space.
-				double totaldiff = 0;
-				foreach (var definition in defs)
-				{
-					if (definition.IsStar)
-					{
-						totaldiff += maxCurrentSize - definition.CompressedSize;
-					}
-				}
-
-				foreach (var definition in defs)
-				{
-					if (!definition.IsStar)
-					{
-						continue;
-					}
-
-					// Figure out how large this definition would be at full size
-					double defStarValue = starSize * definition.GridLength.Value;
-
-					if (maxCurrentSize >= defStarValue)
-					{
-						// If that value at full size is less than the current biggest definition,
-						// then the total size isn't big enough for all the stars to expand; instead,
-						// we just need to fill up the remaining available space. How much we give to
-						// each star definition is inversely proportional to its size - the smaller
-						// definitions get expanded faster than the bigger ones.
-
-						// We ignore the biggest definitions - they can't expand until there's room for
-						// everyone to expand.
-						if (maxCurrentSize > definition.CompressedSize)
-						{
-							// Figure out how small this definition is relative to the total difference,
-							// and use that to determine how much of the available space this definition gets
-							var scale = ((maxCurrentSize - definition.CompressedSize) / totaldiff);
-							var portion = scale * availableSpace;
-							definition.Size = definition.CompressedSize + portion;
-						}
-					}
-					else
-					{
-						// Give the star row/column its full weighted star value
-						definition.Size = defStarValue;
-					}
-				}
-			}
-
-			void CompressStarMeasurements()
-			{
-				CompressStarRows();
-				CompressStarColumns();
-			}
-
-			void CompressStarRows()
-			{
-				// Iterate over the cells and inflate the compressed star row sizes 
-				// to the minimum required in order to contain the cells
+				// Iterate over the cells; determine if they span any star rows
+				// and find the mininum sizes for those star rows to contain the cell contents
 
 				for (int n = 0; n < _cells.Length; n++)
 				{
@@ -862,14 +729,12 @@ namespace Microsoft.Maui.Layouts
 
 					DetermineMinimumStarSizesInSpan(cellRequiredHeight, _rows, start, end);
 				}
-
-				UseCompressedSize(_rows);
 			}
 
-			void CompressStarColumns()
+			void MinimizeStarColumns()
 			{
-				// Iterate over the cells and inflate the star column sizes in the copy
-				// to the minimum required in order to contain the cells
+				// Iterate over the cells; determine if they span any star columns
+				// and find the mininum sizes for those star columns to contain the cell contents
 
 				for (int n = 0; n < _cells.Length; n++)
 				{
@@ -888,8 +753,6 @@ namespace Microsoft.Maui.Layouts
 
 					DetermineMinimumStarSizesInSpan(cellRequiredWidth, _columns, start, end);
 				}
-
-				UseCompressedSize(_columns);
 			}
 
 			static void DetermineMinimumStarSizesInSpan(double spaceNeeded, Definition[] definitions, int start, int end)
@@ -913,7 +776,7 @@ namespace Microsoft.Maui.Layouts
 					if (definitions[n].IsStar)
 					{
 						starsInSpan += 1;
-						spaceAvailable += definitions[n].CompressedSize;
+						spaceAvailable += definitions[n].MinimumSize;
 					}
 				}
 
@@ -926,8 +789,138 @@ namespace Microsoft.Maui.Layouts
 					{
 						if (definitions[n].IsStar)
 						{
-							definitions[n].CompressedSize += toAdd;
+							definitions[n].MinimumSize += toAdd;
 						}
+					}
+				}
+			}
+
+			public void PrepareForArrange(Size targetSize)
+			{
+				// Minimize all the star values (if any); then we can expand them to the target size if necessary
+				MinimizeStars(_rows);
+				MinimizeStars(_columns);
+
+				bool expandStarRows = _rowStarCount > 0
+					&& (Dimension.IsExplicitSet(_explicitGridHeight)
+					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill);
+
+				bool expandStarColumns = _columnStarCount > 0
+					&& (Dimension.IsExplicitSet(_explicitGridWidth)
+					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill);
+
+				if (expandStarRows)
+				{
+					ExpandStarDefinitions(_rows, targetSize.Height, GridMinimumHeight(), _rowSpacing, _rowStarCount);
+				}
+
+				if (expandStarColumns)
+				{
+					ExpandStarDefinitions(_columns, targetSize.Width, GridMinimumWidth(), _columnSpacing, _columnStarCount);
+				}
+			}
+
+			static void MinimizeStars(Definition[] defs)
+			{
+				foreach (var def in defs)
+				{
+					if (def.IsStar)
+					{
+						def.Size = def.MinimumSize;
+					}
+				}
+			}
+
+			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount) 
+			{
+				// Figure out what the star value should be at this size
+				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
+
+				// Inflate the stars so that we fill up the space at this size
+				ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
+			}
+
+			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
+			{
+				var sum = SumDefinitions(defs, spacing,	true);
+
+				// Remove all the star defintions from the current size
+				foreach (var def in defs)
+				{
+					if (def.IsStar)
+					{
+						sum -= def.MinimumSize;
+					}
+				}
+
+				return (targetSize - sum) / starCount;
+			}
+
+			void ExpandStars(double targetSize, double currentSize, Definition[] defs, double starSize, double starCount)
+			{
+				Debug.Assert(starCount > 0, "Assume that the caller has already checked for the existence of star rows/columns before using this.");
+
+				var availableSpace = targetSize - currentSize;
+
+				if (availableSpace <= 0)
+				{
+					return;
+				}
+
+				// Figure out which is the biggest star definition in this dimension
+				var maxCurrentSize = 0.0;
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						maxCurrentSize = Math.Max(maxCurrentSize, definition.MinimumSize);
+					}
+				}
+
+				// Work out the total difference in size between the largest star definition and all 
+				// the smaller ones; we'll need that later to distribute available space.
+				double totaldiff = 0;
+				foreach (var definition in defs)
+				{
+					if (definition.IsStar)
+					{
+						totaldiff += maxCurrentSize - definition.MinimumSize;
+					}
+				}
+
+				foreach (var definition in defs)
+				{
+					if (!definition.IsStar)
+					{
+						continue;
+					}
+
+					// Figure out how large this definition would be at full size
+					double defStarValue = starSize * definition.GridLength.Value;
+
+					if (maxCurrentSize >= defStarValue)
+					{
+						// If that value at full size is less than the current biggest definition,
+						// then the total size isn't big enough for all the stars to expand; instead,
+						// we just need to fill up the remaining available space. How much we give to
+						// each star definition is inversely proportional to its size - the smaller
+						// definitions get expanded faster than the bigger ones.
+
+						// We ignore the biggest definitions - they can't expand until there's room for
+						// everyone to expand.
+						if (maxCurrentSize > definition.MinimumSize)
+						{
+							// Figure out how small this definition is relative to the total difference,
+							// and use that to determine how much of the available space this definition gets
+							var scale = ((maxCurrentSize - definition.MinimumSize) / totaldiff);
+							var portion = scale * availableSpace;
+							definition.Size = definition.MinimumSize + portion;
+						}
+					}
+					else
+					{
+						// Give the star row/column its full weighted star value
+						definition.Size = defStarValue;
 					}
 				}
 			}
@@ -1145,16 +1138,30 @@ namespace Microsoft.Maui.Layouts
 		class Definition
 		{
 			readonly GridLength _gridLength;
+			private double _size;
 
 			/// <summary>
 			/// The current size of this definition
 			/// </summary>
-			public double Size { get; set; }
+			public double Size
+			{
+				get => _size; 
+				set
+				{
+					_size = value;
+					if (!IsStar)
+					{
+						MinimumSize = value;
+					}
+				}
+			}
 
 			/// <summary>
 			/// The minimum size of this definition
+			/// For absolute and auto definitions, this is the same as Size
+			/// For star definitions, this is the minimum size which can contain the contents of the row/column
 			/// </summary>
-			public double CompressedSize { get; set; }
+			public double MinimumSize { get; set; }
 
 			public void Update(double size)
 			{
