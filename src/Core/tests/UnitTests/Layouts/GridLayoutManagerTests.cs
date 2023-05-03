@@ -2851,7 +2851,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Measure the grid with a width constraint
 			var manager = new GridLayoutManager(grid);
 			var measure = manager.Measure(500, 100);
-			
+
 			manager.ArrangeChildren(new Rect(0, 0, 500, 100));
 
 			// At a width constraint of 500, we expect the star column to be 300 wide
