@@ -2724,7 +2724,6 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
 		}
 
-
 		[Theory, Category(GridStarSizing)]
 		[InlineData(0.1)]
 		[InlineData(1)]
@@ -2750,10 +2749,9 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view1, col: 1, row: 1);
 			SetLocation(grid, view2, col: 2, row: 2);
 
-			// Measure the Grid with no width constraint, then arrange it using the resulting size
+			// Measure the Grid with no constraints, then arrange it using the resulting size
 			var manager = new GridLayoutManager(grid);
-			var measure = manager.Measure(double.PositiveInfinity, 200);
-			Assert.Equal(120, measure.Width);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
 
 			// Now arrange it at a _different_ size
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
@@ -2789,6 +2787,76 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(view0Dest1, view0Dest2);
 			Assert.Equal(view1Dest1, view1Dest2);
 			Assert.Equal(view2Dest1, view2Dest2);
+		}
+
+		/*
+		 * These next two test cover the specific situation from https://github.com/dotnet/maui/issues/14818
+		 * Where the control in the * row/column is one that doesn't play nice with measurement. The control
+		 * is determined to return a measure size larger than the constraints it's given. We have to ensure 
+		 * that the sizes of the containing * row/column don't expand beyond their natural confines even if 
+		 * the containing control asks for it. (The control itself may still be larger than the row/column 
+		 * size, and when laid out it may exceed the boundaries of the row/column. But the row/column itself
+		 * must still adhere to the constraints given by the column definitions and grid size constraints.)
+		 */
+
+		[Theory]
+		[InlineData("100, *, 100")]
+		[InlineData("Auto, *, Auto")]
+		[InlineData("Auto, *, 100")]
+		[InlineData("100, *, Auto")]
+		public void StarRowsHandleGreedyMeasures(string rowDefinitions)
+		{
+			var grid = CreateGridLayout(rows: rowDefinitions);
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			// view0 is going to be a view that returns 500 high no matter what
+			var view0 = CreateTestView(new Size(100, 500));
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 0, row: 1);
+			SetLocation(grid, view1, col: 0, row: 2);
+
+			// Measure the grid with a height constraint
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, 500);
+
+			manager.ArrangeChildren(new Rect(0, 0, 100, 500));
+
+			// At a height constraint of 500 we expect the star row to be 300 high
+			// So view1 should be arranged at a Y value of 100 + 300 = 400 
+			AssertArranged(view1, new Rect(0, 400, 100, 100));
+		}
+
+		[Theory]
+		[InlineData("100, *, 100")]
+		[InlineData("Auto, *, Auto")]
+		[InlineData("Auto, *, 100")]
+		[InlineData("100, *, Auto")]
+		public void StarColumnsHandleGreedyMeasures(string columnDefinitions)
+		{
+			var grid = CreateGridLayout(columns: columnDefinitions);
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			// view0 is going to be a view that returns 500 wide no matter what
+			var view0 = CreateTestView(new Size(500, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 1, row: 0);
+			SetLocation(grid, view1, col: 2, row: 0);
+
+			// Measure the grid with a width constraint
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(500, 100);
+			
+			manager.ArrangeChildren(new Rect(0, 0, 500, 100));
+
+			// At a width constraint of 500, we expect the star column to be 300 wide
+			// So view1 should be arranged at an X value of 100 + 300 = 400 
+			AssertArranged(view1, new Rect(400, 0, 100, 100));
 		}
 	}
 }

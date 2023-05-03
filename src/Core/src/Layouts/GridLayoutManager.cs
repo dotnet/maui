@@ -481,7 +481,10 @@ namespace Microsoft.Maui.Layouts
 					}
 					else if (cell.ColumnSpan == 1)
 					{
-						_columns[cell.Column].Update(measure.Width);
+						if (_columns[cell.Column].IsAuto)
+						{
+							_columns[cell.Column].Update(measure.Width);
+						}
 					}
 
 					if (cell.IsRowSpanStar && cell.RowSpan > 1)
@@ -490,7 +493,10 @@ namespace Microsoft.Maui.Layouts
 					}
 					else if (cell.RowSpan == 1)
 					{
-						_rows[cell.Row].Update(measure.Height);
+						if (_rows[cell.Row].IsAuto)
+						{
+							_rows[cell.Row].Update(measure.Height);
+						}
 					}
 				}
 			}
@@ -645,7 +651,7 @@ namespace Microsoft.Maui.Layouts
 					if (definition.IsStar)
 					{
 						// Give the star row/column the appropriate portion of the space based on its weight
-						definition.Size += starSize * definition.GridLength.Value;
+						definition.Size = starSize * definition.GridLength.Value;
 					}
 				}
 			}
@@ -783,6 +789,10 @@ namespace Microsoft.Maui.Layouts
 						if (definitions[n].IsStar)
 						{
 							definitions[n].MinimumSize += toAdd;
+							if (definitions[n].MinimumSize > definitions[n].Size)
+							{
+								definitions[n].MinimumSize = definitions[n].Size;
+							}
 						}
 					}
 				}
