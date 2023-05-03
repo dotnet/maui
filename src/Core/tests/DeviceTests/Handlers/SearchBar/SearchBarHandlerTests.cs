@@ -120,11 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
-#if WINDOWS
-			, Skip = "This test currently fails on Windows due to https://github.com/dotnet/maui/issues/13507"
-#endif
-			)]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()

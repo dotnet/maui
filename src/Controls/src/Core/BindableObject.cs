@@ -219,8 +219,7 @@ namespace Microsoft.Maui.Controls
 			else
 				context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
 
-			if (context.Binding != null)
-				context.Binding.Unapply();
+			context.Binding?.Unapply();
 
 			BindingBase oldBinding = context.Binding;
 			context.Binding = binding ?? throw new ArgumentNullException(nameof(binding));
