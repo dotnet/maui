@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return;
 
 			Color bgColor = Element.BackgroundColor;
-			_backgroundDrawable.SetColor(bgColor?.ToPlatform() ?? AColor.White);
+			_backgroundDrawable.SetColor(bgColor?.ToPlatform() ?? AColor.Transparent);
 		}
 
 		void UpdateBackground()
