@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var imageView = platformButton as ImageView;
 
-			if(imageView is not null)
+			if (imageView is not null)
 			{
 				var bitmapDrawable = imageView.Drawable as BitmapDrawable;
 
