@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 	{
 		event EventHandler<VisualElementChangedEventArgs> _elementChanged;
 
-		readonly Dictionary<string, Action<bool>> _propertyHandlersWithInit = new Dictionary<string, Action<bool>>();
+		readonly Dictionary<string, Action<bool>> _propertyHandlersWithInit = new(StringComparer.Ordinal);
 
-		readonly Dictionary<string, Action> _propertyHandlers = new Dictionary<string, Action>();
+		readonly Dictionary<string, Action> _propertyHandlers = new(StringComparer.Ordinal);
 
 		readonly HashSet<string> _batchedProperties = new HashSet<string>();
 
