@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : ViewRenderer<Frame, WBorder>
 	{
-		const int FrameBorderThickness = 1;
-
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper)
 			{
@@ -149,8 +147,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (Element.BorderColor.IsNotDefault())
 			{
+				var borderWidth = Element is IBorderElement be? be.BorderWidth : 1;
+
+				if (borderWidth < 0 || borderWidth == Primitives.Dimension.Unset)
+					borderWidth = 0;
+
 				Control.BorderBrush = Element.BorderColor.ToPlatform();
-				Control.BorderThickness = WinUIHelpers.CreateThickness(FrameBorderThickness);
+				Control.BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
 			}
 			else
 			{
