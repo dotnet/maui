@@ -24,13 +24,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			searchBar.Focus();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				var searchBarHandler = CreateHandler(searchBar);
-				await searchBarHandler.PlatformView.AttachAndRun(async () =>
-				{
-					await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
-				});
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
@@ -46,13 +42,9 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = isEnabled
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				var searchBarHandler = CreateHandler(searchBar);
-				await searchBarHandler.PlatformView.AttachAndRun(async () =>
-				{
-					await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.Width != 0);
-				});
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.Width != 0);
 			});
 
 			var nativeIsTextPredictionEnabled = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);

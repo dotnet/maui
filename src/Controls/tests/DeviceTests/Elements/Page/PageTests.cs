@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class PageTests : ControlsHandlerTestBase
 	{
-		[Theory("Page Background Initializes Correctly With Background Prooperty")]
+		[Theory("Page Background Initializes Correctly With Background Property")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#0000FF")]
@@ -24,11 +24,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
 			{
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color, handler.MauiContext);
 			});
 		}
 
-		[Theory("Page Background Initializes Correctly With BackgroundColor Prooperty")]
+		[Theory("Page Background Initializes Correctly With BackgroundColor Property")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#0000FF")]
@@ -41,11 +41,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<PageHandler>(page, async (handler) =>
 			{
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color, handler.MauiContext);
 			});
 		}
 
-		[Theory("Page Background Updates Correctly With Background Prooperty")]
+		[Theory("Page Background Updates Correctly With Background Property")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#0000FF")]
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				page.Background = color;
 
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color, handler.MauiContext);
 			});
 		}
 
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				page.BackgroundColor = color;
 
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color, handler.MauiContext);
 			});
 		}
 

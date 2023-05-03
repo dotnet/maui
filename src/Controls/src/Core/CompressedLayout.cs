@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.CompressedLayout']/Docs/*" />
 	public static class CompressedLayout
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="//Member[@MemberName='IsHeadlessProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>IsHeadless</c>.</summary>
 		public static readonly BindableProperty IsHeadlessProperty =
 			BindableProperty.Create("IsHeadless", typeof(bool), typeof(CompressedLayout), default(bool),
 				propertyChanged: OnIsHeadlessPropertyChanged);
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey HeadlessOffsetPropertyKey =
 			BindableProperty.CreateReadOnly("HeadlessOffset", typeof(Point), typeof(CompressedLayout), default(Point));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CompressedLayout.xml" path="//Member[@MemberName='HeadlessOffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <c>HeadlessOffset</c>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindableProperty HeadlessOffsetProperty = HeadlessOffsetPropertyKey.BindableProperty;
 
