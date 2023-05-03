@@ -120,11 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
-#if WINDOWS
-			, Skip = "This test currently fails on Windows due to https://github.com/dotnet/maui/issues/13507"
-#endif
-			)]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
@@ -157,14 +153,10 @@ namespace Microsoft.Maui.DeviceTests
 				Width = 200
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, (handler) =>
 			{
-				var handler = CreateHandler(searchBar);
-				await AssertionExtensions.AttachAndRun(handler.PlatformView, () =>
-				{
-					var height = GetInputFieldHeight(handler);
-					Assert.True(height >= 44);
-				});
+				var height = GetInputFieldHeight(handler);
+				Assert.True(height >= 44);
 			});
 		}
 

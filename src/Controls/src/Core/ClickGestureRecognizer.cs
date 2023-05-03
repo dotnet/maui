@@ -8,16 +8,16 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.ClickGestureRecognizer']/Docs/*" />
 	public sealed class ClickGestureRecognizer : GestureRecognizer
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(ClickGestureRecognizer), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(ClickGestureRecognizer), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='NumberOfClicksRequiredProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="NumberOfClicksRequired"/>.</summary>
 		public static readonly BindableProperty NumberOfClicksRequiredProperty = BindableProperty.Create(nameof(NumberOfClicksRequired), typeof(int), typeof(ClickGestureRecognizer), 1);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='ButtonsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Buttons"/>.</summary>
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(ClickGestureRecognizer), ButtonsMask.Primary);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="//Member[@MemberName='.ctor']/Docs/*" />

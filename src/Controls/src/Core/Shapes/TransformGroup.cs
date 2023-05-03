@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Shapes
 	[ContentProperty("Children")]
 	public sealed class TransformGroup : Transform
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/TransformGroup.xml" path="//Member[@MemberName='ChildrenProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Children"/>.</summary>
 		public static readonly BindableProperty ChildrenProperty =
 			BindableProperty.Create(nameof(Children), typeof(TransformCollection), typeof(TransformGroup), null,
 				propertyChanged: OnTransformGroupChanged);

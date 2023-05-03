@@ -75,3 +75,4 @@ Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! 
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
+~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
