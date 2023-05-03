@@ -133,17 +133,17 @@ namespace Microsoft.Maui.Platform
 
 					if (child != null && IsViewInBounds(child, x, y))
 					{
-						if (child is AbsListView absListView)
-							return ShouldInterceptScrollChildrenTouch(absListView, isHorizontal);
-
-						if (child is RecyclerView recyclerView)
-							return ShouldInterceptScrollChildrenTouch(recyclerView, isHorizontal);
-
-						if (child is NestedScrollView scrollView)
-							return ShouldInterceptScrollChildrenTouch(scrollView, isHorizontal);
-
-						if (child is AWebView webView)
-							return ShouldInterceptScrollChildrenTouch(webView, isHorizontal);
+						switch (child)
+						{
+							case AbsListView absListView:
+								return ShouldInterceptScrollChildrenTouch(absListView, isHorizontal);
+							case RecyclerView recyclerView:
+								return ShouldInterceptScrollChildrenTouch(recyclerView, isHorizontal);
+							case NestedScrollView scrollView:
+								return ShouldInterceptScrollChildrenTouch(scrollView, isHorizontal);
+							case AWebView webView:
+								return ShouldInterceptScrollChildrenTouch(webView, isHorizontal);
+						}
 					}
 				}
 			}
