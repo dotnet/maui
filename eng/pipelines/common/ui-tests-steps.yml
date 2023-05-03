@@ -28,7 +28,6 @@ steps:
         defaults write -g NSAutomaticCapitalizationEnabled -bool false
         defaults write -g NSAutomaticTextCompletionEnabled -bool false
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-        automationmodetool enable-automationmode-without-authentication
     displayName: "Modify defaults"
     continueOnError: true
 
