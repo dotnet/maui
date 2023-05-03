@@ -54,9 +54,6 @@ namespace Microsoft.Maui.Layouts
 
 		class GridStructure
 		{
-			public int _id;
-			static int _idSource;
-
 			readonly IGridLayout _grid;
 			readonly double _gridWidthConstraint;
 			readonly double _gridHeightConstraint;
@@ -88,8 +85,6 @@ namespace Microsoft.Maui.Layouts
 
 			public GridStructure(IGridLayout grid, double widthConstraint, double heightConstraint)
 			{
-				_id = _idSource++;
-
 				_grid = grid;
 
 				_explicitGridHeight = _grid.Height;
@@ -610,7 +605,7 @@ namespace Microsoft.Maui.Layouts
 				return top;
 			}
 
-			double ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension, double starCount)
+			void ResolveStars(Definition[] defs, double availableSpace, Func<Cell, bool> cellCheck, Func<Size, double> dimension, double starCount)
 			{
 				Debug.Assert(starCount > 0, "The caller of ResolveStars has already checked that there are star values to resolve.");
 
@@ -619,7 +614,7 @@ namespace Microsoft.Maui.Layouts
 					// This can happen if an Auto-measured part of a span is larger than the Grid's constraint;
 					// There's a negative amount of space left for the Star values. Just bail, the
 					// Star values are already zero and they can't get any smaller.
-					return starCount;
+					return;
 				}
 
 				double starSize = 0;
@@ -653,8 +648,6 @@ namespace Microsoft.Maui.Layouts
 						definition.Size += starSize * definition.GridLength.Value;
 					}
 				}
-
-				return starCount;
 			}
 
 			void ResolveStarColumns(double widthConstraint)
