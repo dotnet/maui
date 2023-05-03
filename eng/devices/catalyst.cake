@@ -69,6 +69,13 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
+	DotNetCoreBuild(TEST_APP_PROJECT.FullPath,, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append($"-f {TARGET_FRAMEWORK}")
+				.Append("-t:Run")
+	});
+
 	Information("Build UITests project {0}",PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
@@ -76,8 +83,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
-				.Append("/bl:" + binlog),
-		//	ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
