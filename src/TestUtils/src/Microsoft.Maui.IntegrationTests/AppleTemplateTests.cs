@@ -46,7 +46,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", $"{Path.GetFileName(projectDir)}.app");
 
-			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID, 25),
+			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 

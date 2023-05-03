@@ -24,19 +24,16 @@ namespace Microsoft.Maui.DeviceTests
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(scroll, async (handler) =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					var expectedSize = new Size(100, 100);
-					await AssertContentSize(() => scroll.ContentSize, expectedSize);
+				var expectedSize = new Size(100, 100);
+				await AssertContentSize(() => scroll.ContentSize, expectedSize);
 
-					scroll.Content.WidthRequest = 200;
-					await AssertContentSizeChanged(changed);
+				scroll.Content.WidthRequest = 200;
+				await AssertContentSizeChanged(changed);
 
-					expectedSize = new Size(200, 100);
-					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
+				expectedSize = new Size(200, 100);
+				await AssertContentSize(() => scroll.ContentSize, expectedSize);
 			});
 		}
 
@@ -49,20 +46,16 @@ namespace Microsoft.Maui.DeviceTests
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(scroll, async (handler) =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					var expectedSize = new Size(100, 100);
-					await AssertContentSize(() => scroll.ContentSize, expectedSize);
+				var expectedSize = new Size(100, 100);
+				await AssertContentSize(() => scroll.ContentSize, expectedSize);
 
-					scroll.Content.HeightRequest = 200;
-					await AssertContentSizeChanged(changed);
+				scroll.Content.HeightRequest = 200;
+				await AssertContentSizeChanged(changed);
 
-					expectedSize = new Size(100, 200);
-					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
-
+				expectedSize = new Size(100, 200);
+				await AssertContentSize(() => scroll.ContentSize, expectedSize);
 			});
 		}
 
@@ -76,14 +69,11 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await SetUpScrollView(orientation, verticalMargin: verticalMargin, horizontalMargin: horizontalMargin);
 			var scroll = handler.VirtualView as ScrollView;
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					var expectedSize = new Size(expectedWidth, expectedHeight);
-					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
 
+			await AttachAndRun(scroll, async (handler) =>
+			{
+				var expectedSize = new Size(expectedWidth, expectedHeight);
+				await AssertContentSize(() => scroll.ContentSize, expectedSize);
 			});
 		}
 

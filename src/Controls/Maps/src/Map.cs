@@ -12,22 +12,30 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class Map : View
 	{
+		/// <summary>Bindable property for <see cref="MapType"/>.</summary>
 		public static readonly BindableProperty MapTypeProperty = BindableProperty.Create(nameof(MapType), typeof(MapType), typeof(Map), default(MapType));
 
+		/// <summary>Bindable property for <see cref="IsShowingUser"/>.</summary>
 		public static readonly BindableProperty IsShowingUserProperty = BindableProperty.Create(nameof(IsShowingUser), typeof(bool), typeof(Map), default(bool));
 
+		/// <summary>Bindable property for <see cref="IsTrafficEnabled"/>.</summary>
 		public static readonly BindableProperty IsTrafficEnabledProperty = BindableProperty.Create(nameof(IsTrafficEnabled), typeof(bool), typeof(Map), default(bool));
 
+		/// <summary>Bindable property for <see cref="IsScrollEnabled"/>.</summary>
 		public static readonly BindableProperty IsScrollEnabledProperty = BindableProperty.Create(nameof(IsScrollEnabled), typeof(bool), typeof(Map), true);
 
+		/// <summary>Bindable property for <see cref="IsZoomEnabled"/>.</summary>
 		public static readonly BindableProperty IsZoomEnabledProperty = BindableProperty.Create(nameof(IsZoomEnabled), typeof(bool), typeof(Map), true);
 
+		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty = BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(Map), default(IEnumerable),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemsSourcePropertyChanged((IEnumerable)o, (IEnumerable)n));
 
+		/// <summary>Bindable property for <see cref="ItemTemplate"/>.</summary>
 		public static readonly BindableProperty ItemTemplateProperty = BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(Map), default(DataTemplate),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplatePropertyChanged((DataTemplate)o, (DataTemplate)n));
 
+		/// <summary>Bindable property for <see cref="ItemTemplateSelector"/>.</summary>
 		public static readonly BindableProperty ItemTemplateSelectorProperty = BindableProperty.Create(nameof(ItemTemplateSelector), typeof(DataTemplateSelector), typeof(Map), default(DataTemplateSelector),
 			propertyChanged: (b, o, n) => ((Map)b).OnItemTemplateSelectorPropertyChanged());
 

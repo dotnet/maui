@@ -13,19 +13,19 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.DragGestureRecognizer']/Docs/*" />
 	public class DragGestureRecognizer : GestureRecognizer
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='CanDragProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CanDrag"/>.</summary>
 		public static readonly BindableProperty CanDragProperty = BindableProperty.Create(nameof(CanDrag), typeof(bool), typeof(DragGestureRecognizer), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DropCompletedCommand"/>.</summary>
 		public static readonly BindableProperty DropCompletedCommandProperty = BindableProperty.Create(nameof(DropCompletedCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DropCompletedCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DropCompletedCommandParameter"/>.</summary>
 		public static readonly BindableProperty DropCompletedCommandParameterProperty = BindableProperty.Create(nameof(DropCompletedCommandParameter), typeof(object), typeof(DragGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragStartingCommand"/>.</summary>
 		public static readonly BindableProperty DragStartingCommandProperty = BindableProperty.Create(nameof(DragStartingCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragGestureRecognizer.xml" path="//Member[@MemberName='DragStartingCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragStartingCommandParameter"/>.</summary>
 		public static readonly BindableProperty DragStartingCommandParameterProperty = BindableProperty.Create(nameof(DragStartingCommandParameter), typeof(object), typeof(DragGestureRecognizer), null);
 
 		bool _isDragActive;

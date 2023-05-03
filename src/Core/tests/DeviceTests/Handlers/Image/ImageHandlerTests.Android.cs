@@ -22,12 +22,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<CountedImageHandler>(image);
 				await image.Wait();
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				image.Source = new FileImageSourceStub("blue.png");
 				handler.UpdateValue(nameof(IImage.Source));
 				await image.Wait();
-				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 			});
 		}
 
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var result = await service.LoadDrawableAsync(imageSource, handler.PlatformView);
 
-					await handler.PlatformView.AssertColorAtCenterAsync(expectedColor.ToPlatform());
+					await handler.PlatformView.AssertColorAtCenterAsync(expectedColor.ToPlatform(), MauiContext);
 				});
 			});
 		}

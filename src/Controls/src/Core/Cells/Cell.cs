@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='DefaultCellHeight']/Docs/*" />
 		public const int DefaultCellHeight = 40;
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool), typeof(Cell), true, propertyChanged: OnIsEnabledPropertyChanged);
 
 		ObservableCollection<MenuItem> _contextActions;
@@ -228,8 +228,7 @@ namespace Microsoft.Maui.Controls
 			OnAppearing();
 
 			var container = RealParent as ListView;
-			if (container != null)
-				container.SendCellAppearing(this);
+			container?.SendCellAppearing(this);
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendDisappearing']/Docs/*" />
@@ -239,8 +238,7 @@ namespace Microsoft.Maui.Controls
 			OnDisappearing();
 
 			var container = RealParent as ListView;
-			if (container != null)
-				container.SendCellDisappearing(this);
+			container?.SendCellDisappearing(this);
 		}
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)

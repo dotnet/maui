@@ -28,7 +28,7 @@ namespace Microsoft.Maui.DeviceTests
 					}
 
 					await action(handler);
-				});
+				}, MauiContext);
 			});
 		}
 	}

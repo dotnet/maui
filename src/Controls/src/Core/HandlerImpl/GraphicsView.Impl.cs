@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<TouchEventArgs> EndInteraction;
 		public event EventHandler CancelInteraction;
 
+		/// <summary>Bindable property for <see cref="Drawable"/>.</summary>
 		public static readonly BindableProperty DrawableProperty =
 			BindableProperty.Create(nameof(Drawable), typeof(IDrawable), typeof(GraphicsView), null);
 
