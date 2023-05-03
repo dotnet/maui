@@ -19,6 +19,7 @@ public static class KeyboardAutoManagerScroll
 {
 	internal static bool IsKeyboardAutoScrollHandling;
 	static UIScrollView? LastScrollView;
+	static UIScrollView? ScrolledView;
 	static CGPoint StartingContentOffset;
 	static UIEdgeInsets StartingScrollIndicatorInsets;
 	static UIEdgeInsets StartingContentInsets;
@@ -453,6 +454,7 @@ public static class KeyboardAutoManagerScroll
 							{
 								newContentOffset.Y += innerScrollValue;
 								innerScrollValue = 0;
+								ScrolledView = superScrollView;
 
 								if (View.FindResponder<UIStackView>() is not null)
 									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
@@ -464,7 +466,7 @@ public static class KeyboardAutoManagerScroll
 						else
 						{
 							// add the amount we would have moved to the next scroll value
-							innerScrollValue += newContentOffset.Y;
+							innerScrollValue += newContentOffset.Y - superScrollView.ContentOffset.Y;
 						}
 					}
 
@@ -481,6 +483,28 @@ public static class KeyboardAutoManagerScroll
 			}
 
 			move += innerScrollValue;
+
+			// ContentInset logic
+			if (ScrolledView is not null)
+			{
+				var bottomInset = ScrolledView.Bounds.Height + ScrolledView.ContentOffset.Y - ScrolledView.ContentSize.Height;
+				var bottomScrollIndicatorInset = bottomInset - TextViewTopDistance;
+
+				bottomInset = nfloat.Max(StartingContentInsets.Bottom, bottomInset);
+				bottomScrollIndicatorInset = nfloat.Max(StartingScrollIndicatorInsets.Bottom, bottomScrollIndicatorInset);
+
+				if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+				{
+					bottomInset -= ScrolledView.SafeAreaInsets.Bottom;
+					bottomScrollIndicatorInset -= ScrolledView.SafeAreaInsets.Bottom;
+				}
+
+				var movedInsets = ScrolledView.ContentInset;
+				movedInsets.Bottom = bottomInset;
+
+				if (LastScrollView.ContentInset != movedInsets)
+					UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, movedInsets, bottomScrollIndicatorInset), () => { });
+			}
 		}
 
 		if (move >= 0)
@@ -510,6 +534,23 @@ public static class KeyboardAutoManagerScroll
 				UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 			}
 		}
+	}
+
+	static void AnimateInset(UIScrollView? scrollView, UIEdgeInsets movedInsets, nfloat bottomScrollIndicatorInset)
+	{
+		if (scrollView is null)
+			return;
+
+		scrollView.ContentInset = movedInsets;
+		UIEdgeInsets newscrollIndicatorInset;
+
+		if (OperatingSystem.IsIOSVersionAtLeast(11, 0))
+			newscrollIndicatorInset = scrollView.VerticalScrollIndicatorInsets;
+		else
+			newscrollIndicatorInset = scrollView.ScrollIndicatorInsets;
+
+		newscrollIndicatorInset.Bottom = bottomScrollIndicatorInset;
+		scrollView.ScrollIndicatorInsets = newscrollIndicatorInset;
 	}
 
 	static void AnimateStartingLastScrollView()
@@ -564,6 +605,11 @@ public static class KeyboardAutoManagerScroll
 
 			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateRootView(rect), () => { });
 		}
+
+		if (ScrolledView is not null && ScrolledView.ContentInset != UIEdgeInsets.Zero)
+			UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () => AnimateInset(ScrolledView, UIEdgeInsets.Zero, 0), () => { });
+
+		ScrolledView = null;
 		View = null;
 		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;

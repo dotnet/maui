@@ -76,3 +76,4 @@ Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! 
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
+~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
