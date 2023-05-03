@@ -144,16 +144,17 @@ namespace Microsoft.Maui.DeviceTests
 					nextPage = GetPage(pageSet[i]);
 					window.Page = nextPage;
 
-					if (window.Page is IPageContainer<Page> pc)
-						await OnLoadedAsync(pc.CurrentPage);
-					else
-						await OnLoadedAsync(window.Page);
+					var currentPage = window.Page;
+
+					currentPage = Controls.Platform.PageExtensions.GetCurrentPage(currentPage);
+
+					await OnLoadedAsync(currentPage);
 
 					var shouldHaveToolbar =
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
-					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(nextPage.Handler));
+					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(currentPage.Handler));
 				}
 			});
 
