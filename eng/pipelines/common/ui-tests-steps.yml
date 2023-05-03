@@ -18,7 +18,7 @@ steps:
       ${{ if ne(parameters.platform, 'windows') }}:
         platform: macos
       skipXcode: false
-      skipProvisioning: true
+      skipProvisioning: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: PowerShell@2
