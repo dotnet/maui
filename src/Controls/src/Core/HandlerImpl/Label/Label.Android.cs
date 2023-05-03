@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using Android.Text;
 using Microsoft.Maui.Controls.Platform;
@@ -33,29 +33,18 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		public static void MapTextType(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
+		public static void MapTextType(LabelHandler handler, Label label) => MapTextType((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
 		public static void MapLineBreakMode(LabelHandler handler, Label label) => MapLineBreakMode((ILabelHandler)handler, label);
 
 
 		public static void MapTextType(ILabelHandler handler, Label label)
 		{
-			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
+			handler.UpdateValue(nameof(ILabel.Text));
 		}
 
 		public static void MapText(ILabelHandler handler, Label label)
 		{
-			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
-		}
-
-		// TODO: NET8 make this public
-		internal static void MapTextColor(ILabelHandler handler, Label label)
-		{
-			handler.PlatformView?.UpdateTextColor(label);
-
-			if (label?.HasFormattedTextSpans ?? false)
-				return;
-
 			Platform.TextViewExtensions.UpdateText(handler.PlatformView, label);
 		}
 

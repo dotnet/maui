@@ -155,7 +155,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null)
+		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null, double? tolerance = null)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -167,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color, MauiContext);
+				await plaformView.AssertContainsColor(color, MauiContext, tolerance: tolerance);
 			});
 		}
 
@@ -202,7 +202,11 @@ namespace Microsoft.Maui.DeviceTests
 				return action.Invoke((IPlatformViewHandler)handler);
 			}, MauiContext, (view) =>
 			{
+				if (view.Handler is IPlatformViewHandler platformViewHandler)
+					return Task.FromResult(platformViewHandler);
+
 				var handler = view.ToHandler(MauiContext);
+				InitializeViewHandler(view, handler, MauiContext);
 				return Task.FromResult(handler);
 			});
 		}
