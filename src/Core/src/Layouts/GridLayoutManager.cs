@@ -291,12 +291,12 @@ namespace Microsoft.Maui.Layouts
 				return SumDefinitions(_columns, _columnSpacing) + _padding.HorizontalThickness;
 			}
 
-			double GridMinimumHeight() 
+			double GridMinimumHeight()
 			{
 				return SumDefinitions(_rows, _rowSpacing, minimize: true) + _padding.VerticalThickness;
 			}
 
-			double GridMinimumWidth() 
+			double GridMinimumWidth()
 			{
 				return SumDefinitions(_columns, _columnSpacing, minimize: true) + _padding.HorizontalThickness;
 			}
@@ -824,7 +824,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount) 
+			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount)
 			{
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
@@ -835,7 +835,7 @@ namespace Microsoft.Maui.Layouts
 
 			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
 			{
-				var sum = SumDefinitions(defs, spacing,	true);
+				var sum = SumDefinitions(defs, spacing, true);
 
 				// Remove all the star defintions from the current size
 				foreach (var def in defs)
@@ -1138,7 +1138,7 @@ namespace Microsoft.Maui.Layouts
 			/// </summary>
 			public double Size
 			{
-				get => _size; 
+				get => _size;
 				set
 				{
 					_size = value;
