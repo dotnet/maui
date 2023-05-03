@@ -91,6 +91,7 @@ namespace Microsoft.Maui.Appium
 
 			if (!string.IsNullOrEmpty(TestConfig.AppPath))
 				appiumOptions.App = TestConfig.AppPath;
+
 			switch (TestConfig.TestDevice)
 			{
 				case TestDevice.Android:
@@ -104,6 +105,7 @@ namespace Microsoft.Maui.Appium
 					break;
 				case TestDevice.Mac:
 					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
+					appiumOptions.AddAdditionalAppiumOption("showServerLogs", "true");
 					break;
 				case TestDevice.Windows:
 					break;
