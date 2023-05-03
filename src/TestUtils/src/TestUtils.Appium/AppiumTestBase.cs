@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Appium
 					break;
 				case TestDevice.Mac:
 					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
-					appiumOptions.AddAdditionalAppiumOption("showServerLogs", "true");
+					appiumOptions.AddAdditionalAppiumOption("showServerLogs", true);
 					break;
 				case TestDevice.Windows:
 					break;
