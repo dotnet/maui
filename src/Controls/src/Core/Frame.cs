@@ -55,13 +55,7 @@ namespace Microsoft.Maui.Controls
 
 		int IBorderElement.CornerRadius => (int)CornerRadius;
 
-		// TODO fix iOS/WinUI to work the same as Android
-#if ANDROID || WINDOWS
 		double IBorderElement.BorderWidth => 1;
-#else
-		// not currently used by frame
-		double IBorderElement.BorderWidth => -1d;
-#endif
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)CornerRadiusProperty.DefaultValue;
 

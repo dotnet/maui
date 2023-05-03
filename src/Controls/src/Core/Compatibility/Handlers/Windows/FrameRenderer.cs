@@ -149,9 +149,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				var borderWidth = Element is IBorderElement be? be.BorderWidth : 1;
 
-				if (borderWidth < 0 || borderWidth == Primitives.Dimension.Unset)
-					borderWidth = 0;
-
 				Control.BorderBrush = Element.BorderColor.ToPlatform();
 				Control.BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
 			}

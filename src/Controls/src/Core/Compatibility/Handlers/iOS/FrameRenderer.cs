@@ -9,8 +9,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
 	public class FrameRenderer : VisualElementRenderer<Frame>
 	{
-		const int FrameBorderThickness = 1;
-
 		public static IPropertyMapper<Frame, FrameRenderer> Mapper
 			= new PropertyMapper<Frame, FrameRenderer>(VisualElementRendererMapper);
 
@@ -127,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 			{
 				_actualView.Layer.BorderColor = Element.BorderColor.ToCGColor();
-				_actualView.Layer.BorderWidth = FrameBorderThickness;
+				_actualView.Layer.BorderWidth = (int)(Element is IBorderElement be ? be.BorderWidth : 1);
 			}
 
 			Layer.RasterizationScale = UIScreen.MainScreen.Scale;
@@ -158,8 +156,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			var borderThickness = (Element.BorderColor.IsNotDefault() ? FrameBorderThickness : 0) * 2;
+			var borderThickness = 0;
 
+			if (Element.BorderColor.IsNotDefault())
+			{
+				borderThickness = (int)(Element is IBorderElement be ? be.BorderWidth : 1);
+			}
+
+			borderThickness *= 2;
 			var availableSize = new CGSize(size.Width - borderThickness, size.Height - borderThickness);
 			var result = _actualView.SizeThatFits(availableSize);
 
