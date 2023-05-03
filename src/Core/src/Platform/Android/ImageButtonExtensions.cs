@@ -59,6 +59,8 @@ namespace Microsoft.Maui.Platform
 			{
 				var bitmapDrawable = imageView.Drawable as BitmapDrawable;
 
+				// Without ImageSource we do not apply Padding, although since there is no content
+				// there are no differences.
 				if (bitmapDrawable is null)
 					return;
 
