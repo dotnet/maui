@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Linq;
-using UIKit;
 using Foundation;
 using ObjCRuntime;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
