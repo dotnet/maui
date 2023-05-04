@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Controls
 				return new Window(_singleWindowMainPage);
 
 			var windowCreator = activationState.Context.Services.GetService<IWindowCreator>();
-			var window = windowCreator?.CreateWindow(activationState);
+			var window = windowCreator?.CreateWindow(this, activationState);
 			if (window != null)
 				return window;
 

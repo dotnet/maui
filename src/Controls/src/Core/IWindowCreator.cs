@@ -2,5 +2,5 @@
 
 public interface IWindowCreator
 {
-	Window CreateWindow(IActivationState? activationState);
+	Window CreateWindow(Application app, IActivationState? activationState);
 }
