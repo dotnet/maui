@@ -75,7 +75,10 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
 			if (handler.PlatformView is UIAction action)
-				action.Attributes = view.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+				action.Attributes = view.ToUIMenuElementAttributes();
+
+			if (handler.PlatformView is UICommand command)
+				command.Attributes = view.ToUIMenuElementAttributes();
 		}
 
 		internal static void Execute(UICommand uICommand)

@@ -33,17 +33,38 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			if (handler.PlatformView is null)
+			UpdateIsEnabled(handler, view);
+		}
+
+		static void UpdateIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			var menu = handler.PlatformView;
+
+			if (menu is null)
 				return;
 
-			foreach (var menuElement in handler.PlatformView.Children)
+			foreach (var child in menu.Children)
 			{
-				if (menuElement is UIAction action)
-					action.Attributes = view.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+				using (var menuEnumerator = view.GetEnumerator())
+				{
+					while (menuEnumerator.MoveNext())
+					{
+						var menuElement = menuEnumerator.Current;
+
+						if (child.Title == menuElement.Text)
+						{
+							if (child is UIAction action)
+								action.Attributes = menuElement.ToUIMenuElementAttributes();
+
+							if (child is UICommand command)
+								command.Attributes = menuElement.ToUIMenuElementAttributes();
+						}
+					}
+				}
 			}
 		}
 
-	public void Add(IMenuElement view)
+		public void Add(IMenuElement view)
 		{
 			Rebuild();
 		}
