@@ -11,14 +11,29 @@ namespace Microsoft.Maui.Platform
 {
 	public static class SliderExtensions
 	{
+		static void UpdateIncrement(this Slider nativeSlider, ISlider slider)
+		{
+			var difference = slider.Maximum - slider.Minimum;
+
+			double stepping = 1;
+
+			// Setting the Slider SmallChange property to 0 would throw an System.ArgumentException.
+			if (difference != 0)
+				stepping = Math.Min((difference) / 1000, 1);
+
+			nativeSlider.StepFrequency = stepping;
+		}
+
 		public static void UpdateMinimum(this Slider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Minimum = slider.Minimum;
+			nativeSlider.UpdateIncrement(slider);
 		}
 
 		public static void UpdateMaximum(this Slider nativeSlider, ISlider slider)
 		{
 			nativeSlider.Maximum = slider.Maximum;
+			nativeSlider.UpdateIncrement(slider);
 		}
 
 		public static void UpdateValue(this Slider nativeSlider, ISlider slider)
