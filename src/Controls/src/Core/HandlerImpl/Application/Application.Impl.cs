@@ -122,6 +122,11 @@ namespace Microsoft.Maui.Controls
 			if (_singleWindowMainPage != null)
 				return new Window(_singleWindowMainPage);
 
+			var windowCreator = activationState.Context.Services.GetService<IWindowCreator>();
+			var window = windowCreator?.CreateWindow(activationState);
+			if (window != null)
+				return window;
+
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 		}
 
