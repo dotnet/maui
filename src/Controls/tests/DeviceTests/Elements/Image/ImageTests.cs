@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -48,6 +49,29 @@ namespace Microsoft.Maui.DeviceTests
 						,handler.MauiContext
 #endif
 				);
+			});
+		}
+
+		[Fact]
+		public async Task ImageSetFromStreamRenders()
+		{
+			SetupBuilder();
+			var layout = new VerticalStackLayout();
+
+			using var stream = GetType().Assembly.GetManifestResourceStream("red-embedded.png");
+
+			var image = new Image
+			{
+				Source = ImageSource.FromStream(() => stream)
+			};
+
+			layout.Add(image);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				await image.Wait();
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}
 	}
