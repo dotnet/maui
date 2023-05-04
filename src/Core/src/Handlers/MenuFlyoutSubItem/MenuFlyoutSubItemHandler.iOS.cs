@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-	public void Add(IMenuElement view)
+		public void Add(IMenuElement view)
 		{
 			Rebuild();
 		}
