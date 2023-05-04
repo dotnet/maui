@@ -26,7 +26,7 @@
             <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1"></MenuFlyoutItem>
             <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
                 <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1"></MenuFlyoutItem>
-                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2"></MenuFlyoutItem>
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2 (Disabled)" IsEnabled="False" />
             </MenuFlyoutSubItem>
         </MenuBarItem>
     </views:BasePage.MenuBarItems>
