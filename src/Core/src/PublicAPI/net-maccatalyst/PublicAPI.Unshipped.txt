@@ -45,6 +45,8 @@ static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TVi
 static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapIsEnabled(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuFlyoutSubItem! view) -> void
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size

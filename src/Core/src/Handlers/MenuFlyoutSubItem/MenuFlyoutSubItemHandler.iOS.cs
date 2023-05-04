@@ -31,7 +31,19 @@ namespace Microsoft.Maui.Handlers
 			return menu;
 		}
 
-		public void Add(IMenuElement view)
+		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			if (handler.PlatformView is null)
+				return;
+
+			foreach (var menuElement in handler.PlatformView.Children)
+			{
+				if (menuElement is UIAction action)
+					action.Attributes = view.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+			}
+		}
+
+	public void Add(IMenuElement view)
 		{
 			Rebuild();
 		}
