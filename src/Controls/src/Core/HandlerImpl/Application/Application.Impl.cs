@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
@@ -122,7 +123,7 @@ namespace Microsoft.Maui.Controls
 			if (_singleWindowMainPage != null)
 				return new Window(_singleWindowMainPage);
 
-			var windowCreator = activationState.Context.Services.GetService<IWindowCreator>();
+			var windowCreator = activationState?.Context.Services.GetService<IWindowCreator>();
 			var window = windowCreator?.CreateWindow(this, activationState);
 			if (window != null)
 				return window;
