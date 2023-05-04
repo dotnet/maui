@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -26,6 +27,8 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEnumerable<string> Keys { get; set; }
+
+		string IAccelerator.Key => (Keys is not null) ? Keys.First() : string.Empty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)

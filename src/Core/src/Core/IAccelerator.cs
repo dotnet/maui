@@ -10,8 +10,8 @@ namespace Microsoft.Maui
 		public IEnumerable<string> Modifiers { get; }
 
 		/// <summary>
-		/// Specifies the values for each virtual key.
+		/// Specifies the values for the virtual key.
 		/// </summary>
-		public IEnumerable<string> Keys { get; }
+		public string Key { get; }
 	}
 }

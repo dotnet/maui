@@ -41,5 +41,5 @@ static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TVie
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 Microsoft.Maui.IAccelerator
-Microsoft.Maui.IAccelerator.Keys.get -> System.Collections.Generic.IEnumerable<string!>!
+Microsoft.Maui.IAccelerator.Key.get -> string!
 Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string!>!

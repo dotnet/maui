@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Windows.Security.Cryptography.Certificates;
 using Windows.System;
 
 namespace Microsoft.Maui.Platform
@@ -31,36 +32,24 @@ namespace Microsoft.Maui.Platform
 
 			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
 			
-			var keys = accelerator.Keys;
+			var key = accelerator.Key;
+			var modifiers = accelerator.Modifiers;
 
-			if (keys is not null)
+			if (modifiers is not null)
 			{
-				var keysCount = keys.Count();
-				bool hasKeys = keysCount > 0;
+				var modifiersCount = modifiers.Count();
+				bool hasModifierMask = modifiersCount > 0;
 
-				if (hasKeys)
+				if (hasModifierMask)
 				{
-					var key = keys!.ElementAt(0);
-					var modifiers = accelerator.Modifiers;
-
-					if (modifiers is not null)
-					{
-						var modifiersCount = modifiers.Count();
-						bool hasModifierMask = modifiersCount > 0;
-
-						if (hasModifierMask)
-						{
-							if (modifiersCount == 1)
-								result.Add(CreateSingleKeyAccelerator(modifiers!.ElementAt(0), key));
-							else
-								result.Add(CreateMultiKeyAccelerator(modifiers!, key));
-						}
-					}
+					if (modifiersCount == 1)
+						result.Add(CreateSingleKeyAccelerator(modifiers!.ElementAt(0), key));
 					else
-						result.Add(CreateSingleKeyAccelerator(string.Empty, key));
-
+						result.Add(CreateMultiKeyAccelerator(modifiers!, key));
 				}
 			}
+			else
+				result.Add(CreateSingleKeyAccelerator(string.Empty, key));
 
 			return result;
 		}
