@@ -424,8 +424,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
 
-			if (Element.RemainingItemsThreshold > -1 &&
-				ItemCount - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= Element.RemainingItemsThreshold)
+			var remainingItemsThreshold = Element.RemainingItemsThreshold;
+			if (remainingItemsThreshold > -1 &&
+				ItemCount - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= remainingItemsThreshold)
 			{
 				Element.SendRemainingItemsThresholdReached();
 			}
