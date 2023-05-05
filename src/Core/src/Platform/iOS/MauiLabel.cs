@@ -87,11 +87,11 @@ namespace Microsoft.Maui.Platform
 		{
 			var requestedSize = base.SizeThatFits(size);
 
-			// Let's be sure the label.Width is not larger than the container
+			// Let's be sure the label is not larger than the container
 			return AddInsets (new Size()
 			{
 				Width = nfloat.Min(requestedSize.Width, size.Width),
-				Height = requestedSize.Height
+				Height = nfloat.Min(requestedSize.Height, size.Height),
 			});
 		}
 
