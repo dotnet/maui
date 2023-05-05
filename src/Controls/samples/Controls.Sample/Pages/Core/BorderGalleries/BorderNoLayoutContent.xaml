@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BorderNoLayoutContent"
+    Title="Border using content without Layouts">
+ <ContentPage.Resources>
+
+        <Style x:Key="ButtonStyle" TargetType="Border">
+            <Style.Setters>
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <Ellipse />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="Stroke" Value="Gray" />
+                <Setter Property="StrokeThickness" Value="1"/>
+                <Setter Property="WidthRequest" Value="100" />
+                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="BackgroundColor" Value="AliceBlue" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="ButtonIcon" TargetType="Label">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="64" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style.Setters>
+        </Style>
+
+    </ContentPage.Resources>
+    <VerticalStackLayout
+        Spacing="10"
+        VerticalOptions="Center">  
+        <Border
+            Style="{StaticResource ButtonStyle}">
+            <Label
+                Style="{StaticResource ButtonIcon}"
+                Text="circle"
+                TextColor="#ff3333"
+                FontFamily="FontAwesomeSolid" />
+        </Border>
+        <Border
+            Style="{StaticResource ButtonStyle}">
+            <Label
+                Style="{StaticResource ButtonIcon}"
+                Text="play"
+                TextColor="#33aa33"
+                FontFamily="FontAwesomeSolid" />
+        </Border>
+        <Border
+            Style="{StaticResource ButtonStyle}">
+            <Label
+                Style="{StaticResource ButtonIcon}"
+                Text="stop"
+                TextColor="#0088ee"
+                FontFamily="FontAwesomeSolid" />
+        </Border>
+    </VerticalStackLayout>
+</ContentPage>

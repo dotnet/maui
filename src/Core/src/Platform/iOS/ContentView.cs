@@ -53,7 +53,8 @@ namespace Microsoft.Maui.Platform
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
 
-			SetClip();
+			if (RequireClip())
+				SetClip();
 
 			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
@@ -84,7 +85,8 @@ namespace Microsoft.Maui.Platform
 				if (value != null)
 					_clip = new WeakReference<IBorderStroke>(value);
 
-				SetClip();
+				if (RequireClip())
+					SetClip();
 			}
 		}
 
@@ -154,6 +156,30 @@ namespace Microsoft.Maui.Platform
 			var nativePath = path?.AsCGPath();
 
 			maskLayer.Path = nativePath;
+		}
+
+		bool RequireClip()
+		{
+			if (Clip is null || Subviews.Length == 0)
+				return false;
+
+			var frame = Frame;
+			var contentFrame = Subviews[0].Frame;
+
+			if (frame == CGRect.Empty || contentFrame == CGRect.Empty)
+				return false;
+
+			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
+			var strokeWidth = 2 * strokeThickness;
+
+			// If the size of the content is less than the size of the container taking into account also the strokeWidth,
+			// it is not necessary to clip.
+
+			if ((frame.Height - strokeWidth)  <= contentFrame.Height &&
+				(frame.Width - strokeWidth) <= contentFrame.Width)
+				return true;
+
+			return false;
 		}
 	}
 }

@@ -162,6 +162,8 @@ namespace Maui.Controls.Sample
 					fonts.AddFont("SegoeUI-Bold.ttf", "Segoe UI Bold");
 					fonts.AddFont("SegoeUI-Italic.ttf", "Segoe UI Italic");
 					fonts.AddFont("SegoeUI-Bold-Italic.ttf", "Segoe UI Bold Italic");
+					fonts.AddFont("Font Awesome 6 Free-Regular-400.otf", "FontAwesomeRegular");
+					fonts.AddFont("Font Awesome 6 Free-Solid-900.otf", "FontAwesomeSolid");
 				})
 				.ConfigureEssentials(essentials =>
 				{
