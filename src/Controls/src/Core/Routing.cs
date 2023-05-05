@@ -11,8 +11,8 @@ namespace Microsoft.Maui.Controls
 	public static class Routing
 	{
 		static int s_routeCount = 0;
-		static Dictionary<string, RouteFactory> s_routes = new Dictionary<string, RouteFactory>();
-		static Dictionary<string, Page> s_implicitPageRoutes = new Dictionary<string, Page>();
+		static Dictionary<string, RouteFactory> s_routes = new(StringComparer.Ordinal);
+		static Dictionary<string, Page> s_implicitPageRoutes = new(StringComparer.Ordinal);
 		static HashSet<string> s_routeKeys;
 
 		const string ImplicitPrefix = "IMPL_";

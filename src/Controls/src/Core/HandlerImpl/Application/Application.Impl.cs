@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		internal const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
 
 		readonly List<Window> _windows = new();
-		readonly Dictionary<string, WeakReference<Window>> _requestedWindows = new();
+		readonly Dictionary<string, WeakReference<Window>> _requestedWindows = new(StringComparer.Ordinal);
 		ILogger<Application>? _logger;
 
 		ILogger<Application>? Logger =>

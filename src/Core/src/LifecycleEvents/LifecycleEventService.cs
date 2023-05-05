@@ -6,7 +6,7 @@ namespace Microsoft.Maui.LifecycleEvents
 {
 	public class LifecycleEventService : ILifecycleEventService, ILifecycleBuilder
 	{
-		readonly Dictionary<string, List<Delegate>> _mapper = new Dictionary<string, List<Delegate>>();
+		readonly Dictionary<string, List<Delegate>> _mapper = new(StringComparer.Ordinal);
 
 		public LifecycleEventService(IEnumerable<LifecycleEventRegistration> registrations)
 		{
