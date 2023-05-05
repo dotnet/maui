@@ -194,16 +194,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void SetsPageFromIWindowCreator()
+		public void CreatesWindowFromIWindowCreator()
 		{
 			var app = new Application();
 
-			var window = new Window(new ContentPage 
-			{ 
-				Content = new Label 
-				{ 
-					Text = "Hello World" 
-				} 
+			var window = new Window(new ContentPage
+			{
+				Content = new Label
+				{
+					Text = "Hello World"
+				}
 			});
 			var windowCreator = Substitute.For<IWindowCreator>();
 			var services = Substitute.For<IServiceProvider>();
@@ -221,17 +221,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void IWindowCreatorNotRegistered()
+		public void FailsOnNoPageAndNoRegistrationForIWindowCreator()
 		{
 			var app = new Application();
 
-			var window = new Window(new ContentPage
-			{
-				Content = new Label
-				{
-					Text = "Hello World"
-				}
-			});
 			var services = Substitute.For<IServiceProvider>();
 			services.GetService(typeof(IWindowCreator)).Returns(null);
 			var mauiContext = Substitute.For<IMauiContext>();
@@ -240,9 +233,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			activationState.Context.Returns(mauiContext);
 
 			var iApp = (IApplication)app;
-			iApp.CreateWindow(activationState);
-			Assert.Single(app.Windows);
-			Assert.Same(window, app.Windows[0]);
+			var ex = Record.Exception(() => iApp.CreateWindow(activationState));
+			Assert.IsType<NotImplementedException>(ex);
+
+			Assert.Equal($"Either set {nameof(Application.MainPage)} or override {nameof(IApplication.CreateWindow)}.", ex.Message);
 		}
 
 		class StubApp : Application
