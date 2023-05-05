@@ -1,4 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Runtime.InteropServices;
+using Microsoft.Maui.IntegrationTests;
+using Microsoft.Maui.IntegrationTests.Android;
+using Microsoft.Maui.IntegrationTests.Apple;
+using NUnit.Framework;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
@@ -12,13 +17,15 @@ using OpenQA.Selenium.DevTools.V105.Page;
 
 namespace Microsoft.Maui.Appium
 {
-	public abstract class AppiumTestBase
+	public abstract class AppiumTestBase : BaseBuildTest
 	{
 		const int Port = 4723;
 		protected AppiumLocalService Server;
 		protected AppiumDriver? Driver;
 		protected AppiumOptions AppiumOptions;
 		protected TestConfig? TestConfig;
+		readonly Simulator TestSimulator = new();
+		readonly Emulator TestAvd = new();
 
 		public bool IsAndroid => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 		public bool IsWindows => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
@@ -29,6 +36,140 @@ namespace Microsoft.Maui.Appium
 			Server = GetServer();
 			Server.Start();
 		}
+
+		public void StartEmulators()
+		{
+			TestConfig ??= GetTestConfig();
+
+			if (TestConfig.TestDevice == TestDevice.Android)
+			{
+				AndroidEmulatorStart();
+			}
+		}
+
+		public void Teardown()
+		{
+			//this crashes on Android
+			if (!IsAndroid && !IsWindows)
+				Driver?.ResetApp();
+		}
+
+		public void TeardownOneTime()
+		{
+			Driver?.Quit();
+			Server.Dispose();
+
+			if (TestConfig == null)
+				return;
+
+			TerminateEmulators(TestConfig);
+		}
+
+		void TerminateEmulators(TestConfig testConfig)
+		{
+			if (testConfig.TestDevice == TestDevice.Android)
+			{
+				//remove app
+				AndroidEmulatorClear();
+				AndroidEmulatorStop();
+			}
+		}
+
+		public void InitializeEmulators()
+		{
+			TestConfig ??= GetTestConfig();
+
+			if (TestConfig.TestDevice == TestDevice.Android)
+			{
+				AndroidEmulatorInstall();
+			}
+
+			if (TestConfig.TestDevice == TestDevice.iOS)
+			{
+				//	AppleTemplateSetup();
+			}
+		}
+
+		public void AppleTemplateSetup()
+		{
+			if (!TestEnvironment.IsMacOS)
+				Assert.Ignore("Running Apple templates is only supported on macOS.");
+
+			TestSimulator.Shutdown();
+			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
+			TestSimulator.ShowWindow();
+		}
+
+		public void AndroidEmulatorInstall()
+		{
+			if (TestEnvironment.IsMacOS && RuntimeInformation.OSArchitecture == Architecture.Arm64)
+				TestAvd.Abi = "arm64-v8a";
+
+			TestAvd.InstallAvd();
+		}
+
+		public void AndroidEmulatorStart()
+		{
+			var emulatorLog = Path.Combine(TestDirectory, $"emulator-launch-{DateTime.UtcNow.ToFileTimeUtc()}.log");
+			Directory.CreateDirectory(TestDirectory);
+			File.Create(emulatorLog);
+			Assert.IsTrue(TestAvd.LaunchAndWaitForAvd(720, emulatorLog), "Failed to launch Test AVD.");
+		}
+
+		public void AndroidEmulatorStop()
+		{
+			Adb.KillEmulator(TestAvd.Id);
+
+			// adb.exe can lock certain files on windows, kill it after tests complete
+			if (TestEnvironment.IsWindows)
+			{
+				Adb.Run("kill-server", deviceId: TestAvd.Id);
+				foreach (var p in Process.GetProcessesByName("adb.exe"))
+					p.Kill();
+			}
+		}
+
+		public void AndroidEmulatorClear()
+		{
+			if (!string.IsNullOrEmpty(TestConfig?.AppId))
+				Adb.UninstallPackage(TestConfig.AppId);
+		}
+
+		public void BuildProject()
+		{
+			if (TestConfig == null)
+				throw new InvalidOperationException($"You need to provide a {TestConfig}");
+
+			if (string.IsNullOrEmpty(TestConfig.AppProjectPath))
+				throw new InvalidOperationException($"You need to specify {nameof(TestConfig.AppProjectPath)}");
+
+			string framework = TestConfig.FrameworkVersion;
+			string config = TestConfig.Configuration;
+			string target = "run";
+			string project = TestConfig.AppProjectPath;
+
+			if (TestConfig.TestDevice == TestDevice.Android)
+			{
+				framework = $"{framework}-android";
+			}
+
+			if (TestConfig.TestDevice == TestDevice.iOS)
+			{
+				framework = $"{framework}-android";
+			}
+
+			if (TestConfig.TestDevice == TestDevice.Windows)
+			{
+				//"net7.0-windows10.0.20348";
+				framework = $"{framework}-windows10.0.20348";
+				target = string.Empty;
+			}
+
+			//try build and run the application so it gets registered on the OS or on the Simulator.
+			var buildProject = DotnetInternal.Build(project, config, target, framework);
+			Assert.IsTrue(buildProject, $"Project {Path.GetFileName(project)} failed to build. Check test output/attachments for errors.");
+		}
+
 
 		public abstract TestConfig GetTestConfig();
 

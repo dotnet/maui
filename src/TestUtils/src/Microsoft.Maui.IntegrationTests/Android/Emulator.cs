@@ -62,7 +62,7 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			// Emulator process does not stop once the emulator is running, end it after 15 seconds and then begin polling for boot success
 			TestContext.WriteLine($"Launching AVD: {Name}...");
 			var emulatorOutput = ToolRunner.Run(EmulatorTool, launchArgs, out _, timeoutInSeconds: 15);
-			File.WriteAllText(logFile, emulatorOutput);
+		//	File.WriteAllText(logFile, emulatorOutput);
 			return Adb.WaitForEmulator(timeToWaitInSeconds, Id);
 		}
 

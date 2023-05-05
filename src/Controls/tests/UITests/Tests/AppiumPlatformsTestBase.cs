@@ -23,6 +23,25 @@ namespace Microsoft.Maui.AppiumTests
 			_testDevice = device;
 		}
 
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			InitializeEmulators();
+			StartEmulators();
+			
+			// Let's build and deploy the App Project
+			BuildProject();
+
+
+			InitialSetup();
+		}
+
+		[SetUp]
+		public void Setup()
+		{
+			StartEmulators();
+		}
+
 		[TearDown]
 		public void TearDown()
 		{
@@ -39,29 +58,24 @@ namespace Microsoft.Maui.AppiumTests
 				screenshot?.SaveAsFile(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-ScreenShot.png"));
 			}
 
-			//this crashes on Android
-			if (!IsAndroid && !IsWindows)
-				Driver?.ResetApp();
+			Teardown();
 		}
 
-
-		[OneTimeSetUp]
-		public void OneTimeSetup()
-		{
-			InitialSetup();
-		}
 
 		[OneTimeTearDown()]
 		public void OneTimeTearDown()
 		{
-			Teardown();
+			TeardownOneTime();
 		}
 
 		public override TestConfig GetTestConfig()
 		{
+			var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
+			var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 			var testConfig = new TestConfig(_testDevice, "com.microsoft.maui.uitests")
 			{
 				BundleId = "com.microsoft.maui.uitests",
+				AppProjectPath = appProjectPath
 			};
 			switch (_testDevice)
 			{
@@ -72,7 +86,7 @@ namespace Microsoft.Maui.AppiumTests
 					break;
 				case TestDevice.iOS:
 					testConfig.DeviceName = "iPhone X";
-					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4";
+					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "16.2";
 					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "";
 					break;
 				case TestDevice.Mac:
@@ -80,7 +94,8 @@ namespace Microsoft.Maui.AppiumTests
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
-					testConfig.AppPath = Environment.GetEnvironmentVariable("WINDOWS_APP_PATH") ?? "";
+					testConfig.AppPath = Environment.GetEnvironmentVariable("WINDOWS_APP_PATH") ??
+						Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\net7.0-windows10.0.20348\\win10-x64\\Controls.Sample.UITests.exe");
 					break;
 			}
 

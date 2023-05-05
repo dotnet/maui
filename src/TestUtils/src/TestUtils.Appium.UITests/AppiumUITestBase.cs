@@ -1,4 +1,6 @@
 ﻿using Microsoft.Maui.Appium;
+using Microsoft.Maui.IntegrationTests;
+using NUnit.Framework;
 using Xamarin.UITest;
 
 namespace TestUtils.Appium.UITests
@@ -13,7 +15,7 @@ namespace TestUtils.Appium.UITests
 		{
 			TestConfig = GetTestConfig();
 			SetPlatformAppiumOptions(AppiumOptions);
-
+	
 			Driver = GetDriver();
 			_app = new AppiumUITestApp(TestConfig.AppId, Driver);
 
@@ -22,12 +24,6 @@ namespace TestUtils.Appium.UITests
 				Driver?.ActivateApp(TestConfig.AppId);
 
 			//Driver?.LaunchApp();
-		}
-
-		public void Teardown()
-		{
-			Driver?.Quit();
-			Server.Dispose();
 		}
 	}
 }
