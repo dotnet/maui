@@ -95,7 +95,7 @@ Task("uitest")
 				ToolPath = toolPath,
 	});
 
-	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
+	//SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);

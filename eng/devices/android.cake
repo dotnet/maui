@@ -324,38 +324,38 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	if (DEVICE_BOOT_WAIT) {
-		Information("Waiting for the emulator to finish booting...");
+	// if (DEVICE_BOOT_WAIT) {
+	// 	Information("Waiting for the emulator to finish booting...");
 
-		// wait for it to finish booting (10 mins)
-		var waited = 0;
-		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
-			System.Threading.Thread.Sleep(1000);
-			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
-			if (waited++ > total)
-				break;
-		}
-		Information("Waited {0} seconds for the emulator to boot up.", waited);
-	}
+	// 	// wait for it to finish booting (10 mins)
+	// 	var waited = 0;
+	// 	var total = 60 * 10;
+	// 	while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+	// 		System.Threading.Thread.Sleep(1000);
+	// 		Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+	// 		if (waited++ > total)
+	// 			break;
+	// 	}
+	// 	Information("Waited {0} seconds for the emulator to boot up.", waited);
+	// }
 
-	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
-	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", adbSettings);
-	Information("{0}", string.Join("\n", lines));
+	// Information("Setting the ADB properties...");
+	// var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	// Information("{0}", string.Join("\n", lines));
+	// lines = AdbShell("getprop debug.mono.log", adbSettings);
+	// Information("{0}", string.Join("\n", lines));
 
-	//install apk on the emulator
-	Information("Install with xharness: {0}",TEST_APP);
-	var settings = new DotNetCoreToolSettings {
-		DiagnosticOutput = true,
-		ArgumentCustomization = args=>args.Append("run xharness android install " +
-			$"--app=\"{TEST_APP}\" " +
-			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
-			$"--output-directory=\"{TEST_RESULTS}\" " +
-			$"--verbosity=\"Debug\" ")
-	};
-	DotNetCoreTool("tool", settings);
+	// //install apk on the emulator
+	// Information("Install with xharness: {0}",TEST_APP);
+	// var settings = new DotNetCoreToolSettings {
+	// 	DiagnosticOutput = true,
+	// 	ArgumentCustomization = args=>args.Append("run xharness android install " +
+	// 		$"--app=\"{TEST_APP}\" " +
+	// 		$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
+	// 		$"--output-directory=\"{TEST_RESULTS}\" " +
+	// 		$"--verbosity=\"Debug\" ")
+	// };
+	// DotNetCoreTool("tool", settings);
 
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
