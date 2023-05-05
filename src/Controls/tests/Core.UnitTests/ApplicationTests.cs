@@ -1,4 +1,5 @@
 using System;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -179,6 +180,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<InvalidOperationException>(() => (window as IWindow).Created());
 			Assert.Equal(1, app.OnStartCount);
 
+		}
+
+		[Fact]
+		public void FailsOnNoPageOrWindowCreator()
+		{
+			IApplication app = new Application();
+			var ex = Record.Exception(() => app.CreateWindow(null));
+
+			Assert.IsType<NotImplementedException>(ex);
+
+			Assert.Equal($"Either set {nameof(Application.MainPage)} or override {nameof(IApplication.CreateWindow)}.", ex.Message);
+		}
+
+		[Fact]
+		public void SetsPageFromIWindowCreator()
+		{
+			var app = new Application();
+
+			var window = new Window(new ContentPage 
+			{ 
+				Content = new Label 
+				{ 
+					Text = "Hello World" 
+				} 
+			});
+			var windowCreator = Substitute.For<IWindowCreator>();
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IWindowCreator)).Returns(windowCreator);
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+			var activationState = Substitute.For<IActivationState>();
+			activationState.Context.Returns(mauiContext);
+
+			windowCreator.CreateWindow(app, activationState).Returns(window);
+			var iApp = (IApplication)app;
+			iApp.CreateWindow(activationState);
+			Assert.Single(app.Windows);
+			Assert.Same(window, app.Windows[0]);
+		}
+
+		[Fact]
+		public void IWindowCreatorNotRegistered()
+		{
+			var app = new Application();
+
+			var window = new Window(new ContentPage
+			{
+				Content = new Label
+				{
+					Text = "Hello World"
+				}
+			});
+			var services = Substitute.For<IServiceProvider>();
+			services.GetService(typeof(IWindowCreator)).Returns(null);
+			var mauiContext = Substitute.For<IMauiContext>();
+			mauiContext.Services.Returns(services);
+			var activationState = Substitute.For<IActivationState>();
+			activationState.Context.Returns(mauiContext);
+
+			var iApp = (IApplication)app;
+			iApp.CreateWindow(activationState);
+			Assert.Single(app.Windows);
+			Assert.Same(window, app.Windows[0]);
 		}
 
 		class StubApp : Application
