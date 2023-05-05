@@ -14,7 +14,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			MenuItem.SetAccelerator(CustomFileMenuFlyoutItem, Accelerator.FromString("ctrl+f"));
+			MenuItem.SetAccelerator(CustomFileMenuFlyoutItem, Accelerator.FromString("ctrl+shift+f"));
 		}
 
 		void ItemClicked(object sender, EventArgs e)
