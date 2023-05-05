@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 						var menuElement = menuEnumerator.Current;
 
 						if (child.Title == menuElement.Text)
-							child.UpdateIsEnabled(menuElement);	
+							child.UpdateIsEnabled(menuElement);
 					}
 				}
 
