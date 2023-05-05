@@ -4,7 +4,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.BorderNoLayoutContent"
     Title="Border using content without Layouts">
- <ContentPage.Resources>
+    <ContentPage.Resources>
+
+        <Style x:Key="InfoStyle" TargetType="Label">
+            <Setter Property="FontSize" Value="8" />
+        </Style>
 
         <Style x:Key="ButtonStyle" TargetType="Border">
             <Style.Setters>
@@ -23,39 +27,80 @@
 
         <Style x:Key="ButtonIcon" TargetType="Label">
             <Style.Setters>
-                <Setter Property="FontSize" Value="64" />
+                <Setter Property="FontSize" Value="48" />
+                <Setter Property="WidthRequest" Value="60" />
+                <Setter Property="HeightRequest" Value="60" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="VerticalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
                 <Setter Property="VerticalOptions" Value="Center" />
             </Style.Setters>
         </Style>
 
     </ContentPage.Resources>
-    <VerticalStackLayout
-        Spacing="10"
-        VerticalOptions="Center">  
-        <Border
-            Style="{StaticResource ButtonStyle}">
-            <Label
-                Style="{StaticResource ButtonIcon}"
-                Text="circle"
-                TextColor="#ff3333"
-                FontFamily="FontAwesomeSolid" />
-        </Border>
-        <Border
-            Style="{StaticResource ButtonStyle}">
-            <Label
-                Style="{StaticResource ButtonIcon}"
-                Text="play"
-                TextColor="#33aa33"
-                FontFamily="FontAwesomeSolid" />
-        </Border>
-        <Border
-            Style="{StaticResource ButtonStyle}">
-            <Label
-                Style="{StaticResource ButtonIcon}"
-                Text="stop"
-                TextColor="#0088ee"
-                FontFamily="FontAwesomeSolid" />
-        </Border>
-    </VerticalStackLayout>
+    <ScrollView>
+        <Grid
+            RowDefinitions="Auto, *">
+            <VerticalStackLayout
+                Spacing="10">
+                    <Label 
+                        Text="{Binding Source={x:Reference BorderWidthSlider}, Path=Value, StringFormat='{}Border Width: {0}'}"
+                        Style="{StaticResource InfoStyle}" />
+                    <Slider
+                        x:Name="BorderWidthSlider" 
+                        Maximum="20" 
+                        Minimum="0" 
+                        Value="5" />
+                <StackLayout
+                    Orientation="Horizontal">
+                    <CheckBox 
+                        x:Name="ContentBackgroundCheckBox"
+                        WidthRequest="48"
+                        VerticalOptions="Center"
+                        CheckedChanged="OnContentBackgroundCheckBoxChanged"/>
+                    <Label 
+                        Text="Show Content Background"
+                        VerticalOptions="Center"/>
+                </StackLayout>
+            </VerticalStackLayout>
+            <VerticalStackLayout
+                Grid.Row="1"
+                Spacing="10"
+                VerticalOptions="Center">
+                <Border
+                    StrokeThickness="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}"
+                    Style="{StaticResource ButtonStyle}">
+                    <Label
+                        x:Name="CircleLabel"
+                        BackgroundColor="Transparent"
+                        Style="{StaticResource ButtonIcon}"
+                        Text="circle"
+                        TextColor="#ff3333"
+                        FontFamily="FontAwesomeSolid" />
+                </Border>
+                <Border
+                    StrokeThickness="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}"
+                    Style="{StaticResource ButtonStyle}">
+                    <Label
+                        x:Name="PlayLabel"
+                        BackgroundColor="Transparent"
+                        Style="{StaticResource ButtonIcon}"
+                        Text="play"
+                        TextColor="#33aa33"
+                        FontFamily="FontAwesomeSolid" />
+                </Border>
+                <Border
+                    StrokeThickness="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}"
+                    Style="{StaticResource ButtonStyle}">
+                    <Label
+                        x:Name="StopLabel"
+                        BackgroundColor="Transparent"
+                        Style="{StaticResource ButtonIcon}"
+                        Text="stop"
+                        TextColor="#0088ee"
+                        FontFamily="FontAwesomeSolid" />
+                </Border>
+            </VerticalStackLayout>
+        </Grid>
+    </ScrollView>
 </ContentPage>
