@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Resizetizer
 
 				if (File.Exists(destination))
 				{
-					var resolution = dpi.Path.Split('-')[1].ToLower();
+					var resolution = dpi.Path.Split('-')[1].ToLowerInvariant();
 					foreach (var orientation in orientations)
 					{
 						var newImage = splashInfo.OutputName + "." + resolution + "." + orientation + ".png";

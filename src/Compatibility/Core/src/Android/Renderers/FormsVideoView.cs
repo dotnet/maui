@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		public override void SetVideoURI(global::Android.Net.Uri uri)
 		{
-			GetMetaData(uri, new Dictionary<string, string>());
+			GetMetaData(uri, new Dictionary<string, string>(StringComparer.Ordinal));
 			base.SetVideoURI(uri);
 		}
 

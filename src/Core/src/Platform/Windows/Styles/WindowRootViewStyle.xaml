@@ -3,6 +3,15 @@
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:maui="using:Microsoft.Maui.Platform">
 
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="TitleBarBackgroundColor" Color="#FF000000" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="TitleBarBackgroundColor" Color="#FFFFFFFF" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    
     <maui:DefaultOrUserDataTemplateSelector 
         UserTemplateName="MauiAppTitleBarTemplate" 
         DefaultTemplateName="MauiAppTitleBarTemplateDefault"
@@ -17,18 +26,23 @@
         <Border
             Canvas.ZIndex="1" 
             VerticalAlignment="Stretch"
+            Background="{ThemeResource TitleBarBackgroundColor}"
             Margin="0,0,0,0">
             <StackPanel Orientation="Horizontal" Margin="12, 0, 0, 0" x:Name="RootStackPanel">
                 <Image 
                     x:Name="AppFontIcon"
                     HorizontalAlignment="Left" 
                     VerticalAlignment="Center"
-                    Source="Square44x44Logo.png" 
+                    Source="Square44x44Logo.png"
+                    Visibility="{Binding WindowTitleIconVisibility}"
                     Width="16" 
                     Height="16"/>
                 <TextBlock 
                     x:Name="AppTitle"
                     VerticalAlignment="Center"
+                    Margin="{Binding WindowTitleMargin}"
+                    Text="{Binding WindowTitle}"
+                    Foreground="{Binding WindowTitleForeground}"
                     Style="{StaticResource CaptionTextBlockStyle}" />
             </StackPanel>
         </Border>
@@ -40,6 +54,8 @@
             HorizontalContentAlignment="Stretch"
             VerticalContentAlignment="Stretch"
             ContentTemplateSelector="{StaticResource MauiAppTitleBarTemplateSelector}"
+            Visibility="{Binding WindowTitleBarContentControlVisibility}"
+            MinHeight="{Binding WindowTitleBarContentControlMinHeight}"
             x:Name="AppTitleBarContentControl">
         </ContentControl>
     </DataTemplate>
@@ -87,8 +103,9 @@
                                             VerticalAlignment="Top"
                                             VerticalContentAlignment="Stretch"
                                             HorizontalContentAlignment="Stretch"
-                                            Canvas.ZIndex="1" 
-                                            Margin="0,0,0,0"
+                                            Canvas.ZIndex="1"
+                                            Margin="{Binding WindowTitleBarContainerMargin}"
+                                            DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
                                             ContentTemplateSelector="{StaticResource MauiAppTitleBarContainerTemplateSelector}"
                                             >
                             </ContentControl>

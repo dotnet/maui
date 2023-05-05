@@ -759,12 +759,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetTitleView(shell, layout);
 
 			// Should contain Layout in logical children of shell.
-			Assert.Contains(layout, shell.LogicalChildren);
+			Assert.Contains(layout, shell.LogicalChildrenInternal);
 
 			Shell.SetTitleView(shell, null);
 
 			// Should now be removed.
-			Assert.DoesNotContain(layout, shell.LogicalChildren);
+			Assert.DoesNotContain(layout, shell.LogicalChildrenInternal);
 		}
 
 		[Fact]
@@ -784,10 +784,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.FlyoutHeader = null;
 			shell.FlyoutHeader = layout;
 
-			Assert.Contains(layout, shell.LogicalChildren);
+			Assert.Contains(layout, shell.LogicalChildrenInternal);
 			shell.FlyoutHeader = null;
 
-			Assert.DoesNotContain(layout, shell.LogicalChildren);
+			Assert.DoesNotContain(layout, shell.LogicalChildrenInternal);
 		}
 
 

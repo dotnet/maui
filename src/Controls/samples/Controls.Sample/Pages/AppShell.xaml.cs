@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages
 			else
 			{
 				ItemsSource = Pages
-					.Where(page => page.Name.ToLower().Contains(newValue.ToLower(), StringComparison.OrdinalIgnoreCase))
+					.Where(page => page.Name.ToLowerInvariant().Contains(newValue.ToLowerInvariant(), StringComparison.OrdinalIgnoreCase))
 					.ToList();
 			}
 		}

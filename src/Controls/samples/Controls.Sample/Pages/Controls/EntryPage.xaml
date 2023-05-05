@@ -77,11 +77,16 @@
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <HorizontalStackLayout>
-                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
-                    <Label Text="Is Password" VerticalOptions="Center"/>
+                    <CheckBox 
+                        x:Name="chkIsPassword" 
+                        IsChecked="true" />
+                    <Label 
+                        Text="Is Password" 
+                        VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="pwdPassword"
+                    Keyboard="Numeric"
                     IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
                 <Label
                     Text="{Binding Text, Source={Reference pwdPassword}}"

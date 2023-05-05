@@ -1,9 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Xunit;
 using Xunit.Sdk;
 
@@ -18,6 +15,38 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
+
+		public Task AttachAndRun(IView view, Action<THandler> action) =>
+				AttachAndRun<bool>(view, (handler) =>
+				{
+					action(handler);
+					return Task.FromResult(true);
+				});
+
+		public Task AttachAndRun(IView view, Func<THandler, Task> action) =>
+				AttachAndRun<bool>(view, async (handler) =>
+				{
+					await action(handler);
+					return true;
+				});
+
+		public Task<T> AttachAndRun<T>(IView view, Func<THandler, T> action)
+		{
+			Func<THandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return AttachAndRun<T>(view, boop);
+		}
+
+		public Task<T> AttachAndRun<T>(IView view, Func<THandler, Task<T>> action)
+		{
+			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
+			{
+				return action.Invoke((THandler)handler);
+			}, MauiContext, async (view) => (IPlatformViewHandler)(await CreateHandlerAsync(view)));
+		}
 
 		protected Task<THandler> CreateHandlerAsync(IView view)
 		{
@@ -180,8 +209,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialNativeVal, newNativeVal);
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null) =>
-			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue);
+		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null, double? tolerance = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue, tolerance: tolerance);
 
 		protected void MockAccessibilityExpectations(TStub view)
 		{
