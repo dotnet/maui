@@ -10,7 +10,7 @@ namespace Microsoft.Maui
 	/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="Type[@FullName='Microsoft.Maui.WeakEventManager']/Docs/*" />
 	public class WeakEventManager
 	{
-		readonly Dictionary<string, List<Subscription>> _eventHandlers = new Dictionary<string, List<Subscription>>();
+		readonly Dictionary<string, List<Subscription>> _eventHandlers = new(StringComparer.Ordinal);
 
 		/// <include file="../docs/Microsoft.Maui/WeakEventManager.xml" path="//Member[@MemberName='AddEventHandler'][1]/Docs/*" />
 		public void AddEventHandler<TEventArgs>(EventHandler<TEventArgs> handler, [CallerMemberName] string eventName = "")
