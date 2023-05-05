@@ -53,8 +53,7 @@ namespace Microsoft.Maui.Platform
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
 
-			if (RequireClip())
-				SetClip();
+			UpdateClip();
 
 			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
 		}
@@ -85,8 +84,7 @@ namespace Microsoft.Maui.Platform
 				if (value != null)
 					_clip = new WeakReference<IBorderStroke>(value);
 
-				if (RequireClip())
-					SetClip();
+				UpdateClip();
 			}
 		}
 
@@ -120,7 +118,15 @@ namespace Microsoft.Maui.Platform
 			return child.Layer;
 		}
 
-		void SetClip()
+		void UpdateClip()
+		{
+			if (IsClipRequired())
+				AddClip();
+			else
+				RemoveClip();
+		}
+
+		void AddClip()
 		{
 			if (Subviews.Length == 0)
 				return;
@@ -158,14 +164,25 @@ namespace Microsoft.Maui.Platform
 			maskLayer.Path = nativePath;
 		}
 
-		bool RequireClip()
+		void RemoveClip()
+		{
+			ChildMaskLayer = null;
+
+			var layer = GetChildLayer();
+
+			if (layer is not null)
+				layer.Mask = null;
+		}
+
+		bool IsClipRequired()
 		{
 			if (Clip is null || Subviews.Length == 0)
 				return false;
 
 			var frame = Frame;
-			var contentFrame = Subviews[0].Frame;
-
+			var child = Subviews[0];
+			var contentFrame = child.Frame;
+	
 			if (frame == CGRect.Empty || contentFrame == CGRect.Empty)
 				return false;
 
@@ -174,9 +191,13 @@ namespace Microsoft.Maui.Platform
 
 			// If the size of the content is less than the size of the container taking into account also the strokeWidth,
 			// it is not necessary to clip.
+				
+			var layoutMargins = child.LayoutMargins;
+			var contentHeight = contentFrame.Height + layoutMargins.Top + layoutMargins.Bottom + strokeWidth;
+			var contentWidth = contentFrame.Width + layoutMargins.Left + layoutMargins.Right + strokeWidth;
 
-			if ((frame.Height - strokeWidth)  <= contentFrame.Height &&
-				(frame.Width - strokeWidth) <= contentFrame.Width)
+			if ((frame.Height - strokeWidth) <= contentHeight ||
+				(frame.Width - strokeWidth) <= contentWidth)
 				return true;
 
 			return false;
