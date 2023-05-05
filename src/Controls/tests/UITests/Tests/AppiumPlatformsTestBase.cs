@@ -28,10 +28,12 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			InitializeEmulators();
 			StartEmulators();
-			
-			// Let's build and deploy the App Project
-			BuildProject();
 
+			if (_testDevice == TestDevice.Windows || _testDevice == TestDevice.iOS)
+			{
+				// Let's build and deploy the App Project
+				BuildProject();
+			}
 
 			InitialSetup();
 		}
