@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
 using Xunit.Abstractions;
 
 namespace Microsoft.Maui.DeviceTests
@@ -135,7 +135,7 @@ namespace Microsoft.Maui.DeviceTests
 				for (int n = 0; n < itemCounts.Length; n++)
 				{
 					int itemsCount = itemCounts[n];
-					
+
 					GenerateItems(itemsCount, data);
 					collectionView.ItemsSource = data;
 
@@ -149,7 +149,7 @@ namespace Microsoft.Maui.DeviceTests
 					double expectedHeight = layoutOptions == LayoutOptions.Fill
 						? containerHeight
 						: Math.Min(itemsCount * templateHeight, containerHeight);
-					
+
 					if (itemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
 					{
 						Assert.Equal(expectedWidth, collectionView.Width, tolerance);

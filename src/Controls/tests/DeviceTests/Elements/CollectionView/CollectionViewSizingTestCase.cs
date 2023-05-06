@@ -1,6 +1,6 @@
 ﻿using System;
-using Microsoft.Maui.Controls;
 using System.Collections.Generic;
+using Microsoft.Maui.Controls;
 using Xunit.Abstractions;
 
 namespace Microsoft.Maui.DeviceTests

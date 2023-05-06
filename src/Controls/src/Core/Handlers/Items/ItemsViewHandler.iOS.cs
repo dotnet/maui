@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			// If contentSize does have a value, our target size is the smaller of it and the constraints
 
 			size.Width = contentSize.Width <= widthConstraint ? contentSize.Width : widthConstraint;
-			size.Height = contentSize.Height <= heightConstraint ? contentSize.Height: heightConstraint;
+			size.Height = contentSize.Height <= heightConstraint ? contentSize.Height : heightConstraint;
 
 			var virtualView = this.VirtualView as IView;
 
