@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -404,6 +405,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 			Assert.Equal(-1d, testPage.DoubleQueryParameter);
 			Assert.Null(testPage.ComplexObject);
+
+			// ensure that AppliedQueryAttributes is called with correct parameters each time
+			Assert.Equal(2, testPage.AppliedQueryAttributes.Count);
+			Assert.Equal(3, testPage.AppliedQueryAttributes[0].Count);
+			Assert.Equal(1, testPage.AppliedQueryAttributes[1].Count);
+			Assert.Equal($"{nameof(ShellTestPage.SomeQueryParameter)}", testPage.AppliedQueryAttributes[1].Keys.First());
 		}
 
 		[Fact]
