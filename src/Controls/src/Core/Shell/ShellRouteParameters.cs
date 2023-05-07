@@ -7,30 +7,86 @@ namespace Microsoft.Maui.Controls
 {
 	internal class ShellRouteParameters : Dictionary<string, object>
 	{
+		Dictionary<string, string> _queryStringParameters = new Dictionary<string, string>();
+
 		public ShellRouteParameters()
 		{
 		}
 
 		public ShellRouteParameters(ShellRouteParameters shellRouteParams) : base(shellRouteParams)
 		{
+			foreach (var queryParams in shellRouteParams._queryStringParameters)
+			{
+				_queryStringParameters[queryParams.Key] = queryParams.Value;
+			}
 		}
 
-		public ShellRouteParameters(IDictionary<string, object> shellRouteParams) : base(shellRouteParams)
+		internal ShellRouteParameters(ShellRouteParameters query, string prefix)
+			: base(query.Count)
 		{
+			foreach (var q in query)
+			{
+				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
+					continue;
+				var key = q.Key.Substring(prefix.Length);
+				if (key.IndexOf(".", StringComparison.Ordinal) != -1)
+					continue;
+				this.Add(key, q.Value);
+
+				if (query._queryStringParameters.ContainsKey(key))
+					_queryStringParameters.Add(key, query._queryStringParameters[key]);
+			}
 		}
 
-		public ShellRouteParameters(int count)
-			: base(count)
+		internal ShellRouteParameters(IDictionary<string, object> shellRouteParams) : base(shellRouteParams)
 		{
+			if (shellRouteParams is ShellRouteParameters shellRoute)
+			{
+				foreach (var queryParams in shellRoute._queryStringParameters)
+				{
+					_queryStringParameters[queryParams.Key] = queryParams.Value;
+				}
+			}
 		}
 
-		internal void Merge(IDictionary<string, string> input)
+		internal void ResetToQueryParameters()
 		{
-			if (input == null || input.Count == 0)
+			this.Clear();
+			foreach (var queryParam in _queryStringParameters)
+			{
+				this[queryParam.Key] = queryParam.Value;
+			}
+		}
+
+		internal void SetQueryStringParameters(string query)
+		{
+			_queryStringParameters = ParseQueryString(query);
+			if (_queryStringParameters == null || _queryStringParameters.Count == 0)
 				return;
 
-			foreach (var item in input)
-				Add(item.Key, item.Value);
+			foreach (var item in _queryStringParameters)
+			{
+				if (!this.ContainsKey(item.Key))
+					this[item.Key] = item.Value;
+			}
+		}
+
+		static Dictionary<string, string> ParseQueryString(string query)
+		{
+			if (query.StartsWith("?", StringComparison.Ordinal))
+				query = query.Substring(1);
+			Dictionary<string, string> lookupDict = new(StringComparer.Ordinal);
+			if (query == null)
+				return lookupDict;
+			foreach (var part in query.Split('&'))
+			{
+				var p = part.Split('=');
+				if (p.Length != 2)
+					continue;
+				lookupDict[p[0]] = p[1];
+			}
+
+			return lookupDict;
 		}
 	}
 

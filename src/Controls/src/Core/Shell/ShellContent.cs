@@ -295,7 +295,10 @@ namespace Microsoft.Maui.Controls
 			var type = content.GetType();
 			var queryPropertyAttributes = type.GetCustomAttributes(typeof(QueryPropertyAttribute), true);
 			if (queryPropertyAttributes.Length == 0)
+			{
+				ClearQueryIfAppliedToPage(query, content);
 				return;
+			}
 
 			foreach (QueryPropertyAttribute attrib in queryPropertyAttributes)
 			{
@@ -326,6 +329,16 @@ namespace Microsoft.Maui.Controls
 					if (prop != null && prop.CanWrite && prop.SetMethod.IsPublic)
 						prop.SetValue(content, null);
 				}
+			}
+
+			ClearQueryIfAppliedToPage(query, content);
+
+			static void ClearQueryIfAppliedToPage(ShellRouteParameters query, object content)
+			{
+				// Once we've applied the attributes to ContentPage lets remove the 
+				// parameters used during navigation
+				if (content is ContentPage)
+					query.ResetToQueryParameters();
 			}
 		}
 	}
