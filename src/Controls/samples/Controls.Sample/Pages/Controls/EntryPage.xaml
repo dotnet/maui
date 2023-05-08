@@ -121,6 +121,11 @@
                     ReturnCommand="{Binding ReturnCommand}"
                     ReturnCommandParameter="ReturnCommandParameter"/>
                 <Label
+                    Text="ReturnType"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    ReturnType="Next"/>
+                <Label
                     Text="Focus"
                     Style="{StaticResource Headline}" />
                 <Entry 
