@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Internals
 		public static readonly BindableProperty NameScopeProperty =
 			BindableProperty.CreateAttached("NameScope", typeof(INameScope), typeof(NameScope), default(INameScope));
 
-		readonly Dictionary<string, object> _names = new Dictionary<string, object>();
+		readonly Dictionary<string, object> _names = new(StringComparer.Ordinal);
 		readonly Dictionary<object, string> _values = new Dictionary<object, string>();
 
 		object INameScope.FindByName(string name)

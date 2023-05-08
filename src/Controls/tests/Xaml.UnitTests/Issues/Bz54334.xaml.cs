@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TestCase(true)]
 			[TestCase(false)]
-			public void Foo(bool useCompiledXaml)
+			public void FooBz54334(bool useCompiledXaml)
 			{
 				var app = Application.Current = new Bz54334App(useCompiledXaml);
 				var page = app.MainPage as Bz54334;
