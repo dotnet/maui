@@ -1,7 +1,10 @@
 ﻿using System;
 using Android.Graphics.Drawables;
+using Android.Runtime;
 using Android.Text;
 using Android.Views;
+using Android.Views.InputMethods;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
 using static Android.Views.View;
@@ -16,6 +19,8 @@ namespace Microsoft.Maui.Handlers
 		Drawable? _clearButtonDrawable;
 		bool _clearButtonVisible;
 		bool _set;
+
+		EditorActionListener ActionListener { get; } = new EditorActionListener();
 
 		protected override AppCompatEditText CreatePlatformView()
 		{
@@ -41,21 +46,25 @@ namespace Microsoft.Maui.Handlers
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void ConnectHandler(AppCompatEditText platformView)
 		{
+			ActionListener.Handler = this;
+			platformView.SetOnEditorActionListener(ActionListener);
+
 			platformView.TextChanged += OnTextChanged;
 			platformView.FocusChange += OnFocusedChange;
 			platformView.Touch += OnTouch;
-			platformView.EditorAction += OnEditorAction;
 		}
 
 		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
+			ActionListener.Handler = null;
+			platformView.SetOnEditorActionListener(null);
+
 			_clearButtonDrawable = null;
 
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
-			platformView.EditorAction -= OnEditorAction;
 
 			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
 			if (_set && platformView is MauiAppCompatEditText editText)
@@ -163,23 +172,6 @@ namespace Microsoft.Maui.Handlers
 				_clearButtonVisible && VirtualView != null &&
 				PlatformView.HandleClearButtonTouched(e, GetClearButtonDrawable);
 
-		void OnEditorAction(object? sender, EditorActionEventArgs e)
-		{
-			var returnType = VirtualView?.ReturnType;
-
-			if (returnType != null)
-			{
-				var currentInputImeFlag = returnType.Value.ToPlatform();
-
-				if (e.IsCompletedAction(currentInputImeFlag))
-				{
-					VirtualView?.Completed();
-				}
-			}
-
-			e.Handled = false;
-		}
-
 		private void OnSelectionChanged(object? sender, EventArgs e)
 		{
 			var cursorPosition = PlatformView.GetCursorPosition();
@@ -223,6 +215,33 @@ namespace Microsoft.Maui.Handlers
 
 			PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, null, null);
 			_clearButtonVisible = false;
+		}
+
+		void EditorAction(ImeAction actionId, KeyEvent? e)
+		{
+			var returnType = VirtualView?.ReturnType;
+
+			if (returnType != null)
+			{
+				var currentInputImeFlag = returnType.Value.ToPlatform();
+
+				if (actionId.IsCompletedAction(e, currentInputImeFlag))
+				{
+					VirtualView?.Completed();
+				}
+			}
+		}
+
+		class EditorActionListener : Java.Lang.Object, TextView.IOnEditorActionListener
+		{
+			public EntryHandler? Handler { get; set; }
+
+			public bool OnEditorAction(TextView? v, [GeneratedEnum] ImeAction actionId, KeyEvent? e)
+			{
+				Handler?.EditorAction(actionId, e);
+
+				return true;
+			}
 		}
 	}
 }
