@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			})();
 		";
 
-		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new Dictionary<string, WeakReference<BlazorWebViewHandler>>();
+		static private Dictionary<string, WeakReference<BlazorWebViewHandler>> s_webviewHandlerTable = new(StringComparer.Ordinal);
 
 		private TizenWebViewManager? _webviewManager;
 

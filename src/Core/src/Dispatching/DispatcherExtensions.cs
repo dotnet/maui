@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Dispatching
 		/// </summary>
 		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
 		/// <param name="action">The method to be executed by the dispatcher.</param>
-		/// <returns><see langword="true"/> if the operation in <paramref name="action"/> was dispatched successfully, otherwise <see langword="false"/>.</returns>
+		/// <returns><see cref="Task"/>.</returns>
 		public static Task DispatchAsync(this IDispatcher dispatcher, Action action) =>
 			dispatcher.DispatchAsync(() =>
 			{
@@ -81,7 +81,7 @@ namespace Microsoft.Maui.Dispatching
 		/// </summary>
 		/// <param name="dispatcher">The <see cref="IDispatcher"/> instance this method is called on.</param>
 		/// <param name="funcTask">The function to be executed by the dispatcher.</param>
-		/// <returns><see langword="true"/> if the operation in <paramref name="funcTask"/> was dispatched successfully, otherwise <see langword="false"/>.</returns>
+		/// <returns><see langword="Task"/>.</returns>
 		public static Task DispatchAsync(this IDispatcher dispatcher, Func<Task> funcTask) =>
 			dispatcher.DispatchAsync(async () =>
 			{
