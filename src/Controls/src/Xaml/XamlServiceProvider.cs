@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 	public class XmlNamespaceResolver : IXmlNamespaceResolver
 	{
-		readonly Dictionary<string, string> namespaces = new Dictionary<string, string>();
+		readonly Dictionary<string, string> namespaces = new Dictionary<string, string>(StringComparer.Ordinal);
 
 		public IDictionary<string, string> GetNamespacesInScope(XmlNamespaceScope scope) => throw new NotImplementedException();
 
