@@ -1324,6 +1324,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				return empty;
 			}
 
+			public override void ViewWillTransitionToSize(SizeF toSize, IUIViewControllerTransitionCoordinator coordinator)
+			{
+				base.ViewWillTransitionToSize(toSize, coordinator);
+
+				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad)
+					UpdateLeftBarButtonItem();
+			}
+
 			internal void UpdateLeftBarButtonItem(Page pageBeingRemoved = null)
 			{
 				NavigationRenderer n;
