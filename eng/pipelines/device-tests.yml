@@ -62,7 +62,7 @@ parameters:
       name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Monterey
+        - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
   - name: iosPool
     type: object
@@ -88,7 +88,7 @@ stages:
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ 'latest', '15.5', '14.5', '13.7', '12.4' ]
+        iosVersions: [ 'latest', '15.5', '14.5', '13.7']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30, 23 ]
@@ -110,18 +110,15 @@ stages:
           desc: Core
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
-          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
 

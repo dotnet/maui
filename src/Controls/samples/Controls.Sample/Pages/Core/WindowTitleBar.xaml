@@ -5,29 +5,28 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="WindowTitleBar">
 
-    <Grid
+    <VerticalStackLayout
         Padding="10"
-        RowDefinitions="Auto, Auto, Auto, Auto"
-        ColumnDefinitions="Auto">
+        Spacing="10">
 
         <Label
-            Grid.Row="0"
             Style="{StaticResource Headline}"
             Text="This page will eventually contain ways for you to ineract with the title bar but for now it's just here for validation."
             VerticalTextAlignment="Center" />
 
         <Label
-            Grid.Row="1"
             Text="The height of the title bar should match the caption buttons. The draggable area should span the entire height/width of the titlebar with no dead zones  This should all remain true as you resize the window and navigate around the app."
             VerticalTextAlignment="Center" />
-        
-        <Label Grid.Row="2"  Text="Push Modal and you shouldn't see overlapping content in the titlebar"
-                Style="{StaticResource Headline}"/>
-        
+
+        <Label
+            Text="Push Modal and you shouldn't see overlapping content in the titlebar"
+            Style="{StaticResource Headline}"/>
+
         <Button
             Grid.Row="3"
             Text="Push Modal"
             Clicked="OnPushModalClicked" />
-        
-    </Grid>
+
+    </VerticalStackLayout>
+
 </views:BasePage>

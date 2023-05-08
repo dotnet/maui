@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TestCase(true)]
 			[TestCase(false)]
-			public void Foo(bool useCompiledXaml)
+			public void FooBz54717(bool useCompiledXaml)
 			{
 				Application.Current = new MockApplication
 				{

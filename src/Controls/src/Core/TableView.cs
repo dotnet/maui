@@ -157,8 +157,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnSectionCollectionChanged(object sender, ChildCollectionChangedEventArgs childCollectionChangedEventArgs)
 		{
-			if (childCollectionChangedEventArgs.Args.NewItems != null)
-				childCollectionChangedEventArgs.Args.NewItems.Cast<Cell>().ForEach(cell => cell.Parent = this);
+			childCollectionChangedEventArgs.Args.NewItems?.Cast<Cell>().ForEach(cell => cell.Parent = this);
 			OnModelChanged();
 		}
 

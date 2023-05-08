@@ -1131,8 +1131,7 @@ namespace Microsoft.Maui.Controls.Internals
 					list.SetBinding(ShortNameProperty, GroupShortNameBinding.Clone());
 			}
 
-			if (_shortNames != null)
-				_shortNames.Reset();
+			_shortNames?.Reset();
 		}
 
 		static void SetGroup(TItem item, TemplatedItemsList<TView, TItem> group)
