@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Foldable
 			set => SetValue(SpanModeProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="SpanMode"/>.</summary>
 		public static readonly BindableProperty SpanModeProperty =
 			BindableProperty.Create(nameof(SpanMode), typeof(TwoPaneViewMode), typeof(WindowSpanModeStateTrigger), default(TwoPaneViewMode),
 				propertyChanged: OnSpanModeChanged);

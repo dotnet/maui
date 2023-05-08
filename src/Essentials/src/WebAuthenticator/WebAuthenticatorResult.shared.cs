@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Authentication
 		/// <summary>
 		/// The dictionary of key/value pairs parsed form the callback URI's query string.
 		/// </summary>
-		public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
+		public Dictionary<string, string> Properties { get; set; } = new(StringComparer.Ordinal);
 
 		/// <summary>Puts a key/value pair into the dictionary.</summary>
 		public void Put(string key, string value)

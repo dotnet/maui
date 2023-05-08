@@ -1,211 +1,263 @@
-﻿<views:BasePage 
+<views:BasePage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.LabelPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Label">
-    <views:BasePage.Content>
-        <ScrollView>
-            <VerticalStackLayout
-                Margin="12">
-                <Label
-                    Text="Default"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    Text="Label"/>
-                <Label
-                    Text="Label with Tooltip" ToolTipProperties.Text="This has a tooltip!" />
-                <Label
-                    Text="TextColor"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    TextColor="Red"
-                    Text="TextColor"/>
-                <Label
-                    Text="BackgroundColor"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    BackgroundColor="Blue"
-                    Text="Button"/>
-                <Label
-                    Text="Background"
-                    Style="{StaticResource Headline}" />
-                <Label 
-                    Text="Background">
-                    <Label.Background>
-                        <LinearGradientBrush EndPoint="1,0">
-                            <GradientStop Color="Yellow"  
-                                          Offset="0.1" />
-                            <GradientStop Color="Green"
-                                          Offset="1.0" />
-                        </LinearGradientBrush>
-                    </Label.Background>
-                </Label>
-                <Label
-                    Text="Html text"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    TextType="Html">
-                    <x:String>
-                        <![CDATA[
-                        <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
-                    ]]>
-                    </x:String>
-                </Label>
-                <Label
-                    Text="Html text from BindingContext"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    Text="{Binding HtmlString}"
-                    TextType="Html" />
-                <Label
-                    Text="HorizontalTextAlignment"
-                    Style="{StaticResource Headline}" />
-                <Label 
-                    BackgroundColor="LightGray"
-                    HorizontalTextAlignment="Start"
-                    Text="This should be at the start of the line" />
-                <Label 
-                    BackgroundColor="LightGray"
-                    HorizontalTextAlignment="Center"
-                    Text="This should be at the center of the line" />
-                <Label 
-                    HorizontalTextAlignment="End"
-                    Text="This should be at the end of the line" />
-                <Label
-                    BackgroundColor="LightGray"
-                    Text="VerticalTextAlignment"
-                    Style="{StaticResource Headline}" />    
-                <Label  
-                    BackgroundColor="LightGray"
-                    VerticalTextAlignment="Start"
-                    Text="This should be at the start"
-                    HeightRequest="100"/>
-                <Label 
-                    BackgroundColor="LightGray"
-                    VerticalTextAlignment="Center"
-                    Text="This should be at the center"
-                    HeightRequest="100"/>
-                <Label 
-                    BackgroundColor="LightGray"
-                    VerticalTextAlignment="End"
-                    Text="This should be at the bottom"
-                    HeightRequest="100"/>
-                <Label
-                    >
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="Plain old Text" />
-                            <Span Text=" " />
-                            <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
-                            <Span Text=" " />
-                            <Span Text="Strikethrough" TextDecorations="Strikethrough" />
-                            <Span Text=" " />
-                            <Span Text="Should be uppercase" TextTransform="Uppercase" />
-                            <Span Text=" " />
-                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
-                                <Span.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
-                                </Span.GestureRecognizers>
-                            </Span>
-                            <Span Text=" " />
-                            <Span Text="Big Font" FontSize="20" />
-                            <Span Text=" " />
-                            <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
-                            <Span Text=" " />
-                            <Span Text="Plain old Text" />
-                        </FormattedString>
-                    </Label.FormattedText>
+    <ScrollView>
+        <VerticalStackLayout
+            Margin="12">
 
-                </Label>
-                <Label
-                    Text="Html text"
-                    Style="{StaticResource Headline}"/>
-                <Label
-                    TextType="Html">
-                    <x:String>
-                        <![CDATA[
-                        <h1>Hello World!</h1><br/>Second Line<br/><b>Bold Line</b>
-                    ]]>
-                    </x:String>
-                </Label>
-                <Label
-                    Text="HorizontalTextAlignment"
-                    Style="{StaticResource Headline}" />
-                <Label 
-                    HorizontalTextAlignment="End"
-                    Text="This should be at the end of the line"
-                    />
-                <Label
-                    Text="VerticalTextAlignment"
-                    Style="{StaticResource Headline}" />
-                <Label 
-                    BackgroundColor="Pink"
-                    VerticalTextAlignment="End"
-                    Text="This should be at the bottom"
-                    HeightRequest="100"/>
-                <Label
-                    Text="MaxLines(2)"
-                    Style="{StaticResource Headline}" />
-                <Label
-                    MaxLines="2"
-                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
-                <Label
-                    Text="LineBreakMode (TailTruncation)"
-                    Style="{StaticResource Headline}" />
-                <Label  
-                    MaxLines="2"
-                    LineBreakMode ="TailTruncation"
-                    Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
-                <Label x:Name="labelFormattedString"
-                    >
-                    <Label.FormattedText>
-                        <FormattedString>
-                            <Span Text="Plain old Text" />
-                            <Span Text=" " />
-                            <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
-                            <Span Text=" " />
-                            <Span Text="Strikethrough" TextDecorations="Strikethrough" />
-                            <Span Text=" " />
-                            <Span Text="Should be uppercase" TextTransform="Uppercase" />
-                            <Span Text=" " />
-                            <Span Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
-                                <Span.GestureRecognizers>
-                                    <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
-                                </Span.GestureRecognizers>
-                            </Span>
-                            <Span Text=" " />
-                            <Span Text="Big Font" FontSize="20" />
-                            <Span Text=" " />
-                            <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
-                            <Span Text=" " />
-                            <Span Text="Plain old Text" />
-                        </FormattedString>
-                    </Label.FormattedText>
+            <!-- Basic Properties -->
+            <Label
+                Text="Basic Properties"
+                Style="{StaticResource Headline}"/>
+            <Label
+                Text="Defaults"/>
+            <Label
+                Text="Label with Tooltip"
+                ToolTipProperties.Text="This has a tooltip!"/>
+            <Label
+                TextColor="Red"
+                Text="This text should be RED"/>
+            <Label
+                BackgroundColor="Cyan"
+                Text="This has a solid CYAN background color"/>
+            <Label
+                Text="This has a YELLOW to GREEN background gradient">
+                <Label.Background>
+                    <LinearGradientBrush EndPoint="1,0">
+                        <GradientStop Color="Yellow"
+                                      Offset="0.1" />
+                        <GradientStop Color="Green"
+                                      Offset="1.0" />
+                    </LinearGradientBrush>
+                </Label.Background>
+            </Label>
 
-                </Label>
-                <Button
-                    Text="Change Formatted String"
-                    Clicked="ChangeFormattedString_Clicked" />
-                <Label
-                    Text="Clip"
-                    Style="{StaticResource Headline}" />
-                <Label
-                    HeightRequest="100"
-                    WidthRequest="100"
-                    Text="Clipped Content"
-                    TextColor="WhiteSmoke"
-                    HorizontalTextAlignment="Center"
-                    VerticalTextAlignment="Center"
-                    BackgroundColor="LimeGreen">
-                    <Label.Clip>
-                        <EllipseGeometry  
-                            RadiusX="50"
-                            RadiusY="50"
-                            Center="50, 50"/>
-                    </Label.Clip>
-                </Label>
-            </VerticalStackLayout>
-        </ScrollView>
-    </views:BasePage.Content>
+            <!-- HTML Text -->
+            <Label
+                Text="HTML Text"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                TextType="Html">
+                <x:String>
+                    <![CDATA[
+                    <h1>HTML Header</h1><br/>Second Line<br/><b>Bold Line</b>
+                ]]>
+                </x:String>
+            </Label>
+            <Label
+                Text="{Binding HtmlString}"
+                TextType="Html" />
+
+            <!-- Horizontal Text Alignment -->
+            <Label
+                Text="Horizontal Text Alignment"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                BackgroundColor="LightGray"
+                HorizontalTextAlignment="Start"
+                Text="This should be at the start of the line" />
+            <Label
+                BackgroundColor="Silver"
+                HorizontalTextAlignment="Center"
+                Text="This should be at the center of the line" />
+            <Label
+                BackgroundColor="LightGray"
+                HorizontalTextAlignment="End"
+                Text="This should be at the end of the line" />
+
+            <!-- Vertical Text Alignment -->
+            <Label
+                Text="Vertical Text Alignment"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                BackgroundColor="LightGray"
+                VerticalTextAlignment="Start"
+                Text="This should be at the start"
+                HeightRequest="100"/>
+            <Label
+                BackgroundColor="Silver"
+                VerticalTextAlignment="Center"
+                Text="This should be at the center"
+                HeightRequest="100"/>
+            <Label
+                BackgroundColor="LightGray"
+                VerticalTextAlignment="End"
+                Text="This should be at the bottom"
+                HeightRequest="100"/>
+
+            <!-- Formatted Text Spans -->
+            <Label
+                Text="Formatted Text Spans"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label x:Name="labelFormattedString">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span Text="Plain old Text" />
+                        <Span Text=" " />
+                        <Span Text="Colors" BackgroundColor="Cyan" TextColor="Navy" />
+                        <Span Text=" " />
+                        <Span Text="Strikethrough" TextDecorations="Strikethrough" />
+                        <Span Text=" " />
+                        <Span Text="Should be uppercase" TextTransform="Uppercase" />
+                        <Span Text=" " />
+                        <Span x:Name="GestureSpan" Text="Click Me" FontAttributes="Bold" TextDecorations="Underline" TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer Tapped="ClickGestureRecognizer_Clicked" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span Text=" " />
+                        <Span Text="Big Font" FontSize="20" />
+                        <Span Text=" " />
+                        <Span Text="Different Font" FontFamily="Dokdo" FontSize="18" />
+                        <Span Text=" " />
+                        <Span Text="Plain old Text" />
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+            <Button
+                Text="Change Formatted String"
+                Clicked="ChangeFormattedString_Clicked" />
+
+            <!-- Formatted Text Gestures -->
+            <Label
+                Text="Formatted Text Gestures"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                 Margin="10"
+                 HorizontalOptions="Center"
+                 TextColor="Black"
+                 BackgroundColor="CadetBlue">
+                <Label.FormattedText>
+                    <FormattedString>
+                        <Span
+                            Text="Two clickable spans in one line:&#10;" />
+                        <Span
+                            x:Name="Link1"
+                            TextDecorations="Underline"
+                            Text="Link1"
+                            TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink1Tapped"/>
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text=" " />
+                        <Span
+                            x:Name="Link2"
+                            Text="Link2&#10;"
+                            TextDecorations="Underline"
+                            TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink2Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                        <Span
+                            Text="Multiline tappable span:&#10;" />
+                        <Span
+                             x:Name="Link3"
+                             TextDecorations="Underline"
+                             Text="Link3_1&#10;Link3_2"
+                             TextColor="Blue">
+                            <Span.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Tapped="OnLink3Tapped" />
+                            </Span.GestureRecognizers>
+                        </Span>
+                    </FormattedString>
+                </Label.FormattedText>
+            </Label>
+
+            <!-- Maximum Lines -->
+            <Label
+                Text="Maximum Lines"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                Text="Only 1 Line:"
+                Style="{StaticResource Headline}"/>
+            <Label
+                MaxLines="1"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="Only 2 Lines:"
+                Style="{StaticResource Headline}"/>
+            <Label
+                MaxLines="2"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+
+            <!-- Line Break Mode -->
+            <Label
+                Text="Line Break Mode"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                Text="NoWrap"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="NoWrap"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="WordWrap"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="WordWrap"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="HeadTruncation"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="HeadTruncation"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="MiddleTruncation"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="MiddleTruncation"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="TailTruncation"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="TailTruncation"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+            <Label
+                Text="CharacterWrap"
+                Style="{StaticResource Headline}" />
+            <Label
+                LineBreakMode ="CharacterWrap"
+                Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat." />
+
+            <!-- Clipping -->
+            <Label
+                Text="Clipping"
+                Style="{StaticResource Headline}"
+                Margin="0,24,0,0"/>
+            <Label
+                HeightRequest="100"
+                WidthRequest="100"
+                Text="This Label is a GREEN Circle"
+                TextColor="WhiteSmoke"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                BackgroundColor="LimeGreen">
+                <Label.Clip>
+                    <EllipseGeometry
+                        RadiusX="50"
+                        RadiusY="50"
+                        Center="50, 50"/>
+                </Label.Clip>
+            </Label>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </views:BasePage>

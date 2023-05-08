@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 			internal const string Unfocused = "Unfocused";
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='VisualStateGroupsProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>VisualStateGroups</c>.</summary>
 		public static readonly BindableProperty VisualStateGroupsProperty =
 			BindableProperty.CreateAttached("VisualStateGroups", typeof(VisualStateGroupList), typeof(VisualElement),
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged, propertyChanging: VisualStateGroupsPropertyChanging,
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 
 		// Used to check for duplicate names; we keep it around because it's cheaper to create it once and clear it
 		// than to create one every time we need to validate
-		readonly HashSet<string> _names = new HashSet<string>();
+		readonly HashSet<string> _names = new HashSet<string>(StringComparer.Ordinal);
 
 		void Validate(IList<VisualStateGroup> groups)
 		{
