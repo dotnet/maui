@@ -227,6 +227,7 @@ namespace Microsoft.Maui.Handlers
 
 				if (actionId.IsCompletedAction(e, currentInputImeFlag))
 				{
+					PlatformView?.HideKeyboard();
 					VirtualView?.Completed();
 				}
 			}
