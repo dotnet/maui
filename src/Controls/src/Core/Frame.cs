@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
 		{
 #if !WINDOWS
-			bounds = bounds.Inset(((IBorderElement)this).BorderWidth);
+			bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
 			this.ArrangeContent(bounds);
 			return bounds.Size;
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 		{
 			var inset = Padding;
 #if !WINDOWS
-			inset += ((IBorderElement)this).BorderWidth;
+			inset += ((IBorderElement)this).BorderWidth; // Windows' implementation would cause an incorrect double-counting of the inset
 #endif
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
