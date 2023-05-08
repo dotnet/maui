@@ -17,6 +17,15 @@
     <ApplicationVersion>1</ApplicationVersion>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--
+      Uncomment the below to enabled unpackaged apps and change the
+      value of the "commandName" in the Properties\launchSettings.json
+      from "MsixPackage" to "Project".
+    -->
+    <!-- <WindowsPackageType>None</WindowsPackageType> -->
+  </PropertyGroup>
+
   <ItemGroup>
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
@@ -45,10 +54,10 @@
     <None Include="@(Compile)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-windows'))">
-    <Compile Remove="Handlers\Fonts\*.cs" />
     <Compile Remove="Handlers\Image\*.cs" />
     <Compile Remove="Handlers\ImageButton\*.cs" />
     <Compile Remove="Handlers\ShapeView\*.cs" />
+    <Content Include="Platforms\Windows\Assets\**" Link="Assets\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />

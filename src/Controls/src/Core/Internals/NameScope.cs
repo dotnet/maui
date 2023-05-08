@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Controls.Internals
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	public class NameScope : INameScope
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/NameScope.xml" path="//Member[@MemberName='NameScopeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="NameScope"/>.</summary>
 		public static readonly BindableProperty NameScopeProperty =
 			BindableProperty.CreateAttached("NameScope", typeof(INameScope), typeof(NameScope), default(INameScope));
 
-		readonly Dictionary<string, object> _names = new Dictionary<string, object>();
+		readonly Dictionary<string, object> _names = new(StringComparer.Ordinal);
 		readonly Dictionary<object, string> _values = new Dictionary<object, string>();
 
 		object INameScope.FindByName(string name)

@@ -13,8 +13,6 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
 	{
-		ReadOnlyCastingList<Element, IView> _logicalChildren;
-
 		protected ILayoutManager _layoutManager;
 
 		ILayoutManager LayoutManager
@@ -40,8 +38,8 @@ namespace Microsoft.Maui.Controls
 
 		IList IBindableLayout.Children => _children;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, IView>(_children);
 
 		public int Count => _children.Count;
 
@@ -77,7 +75,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsClippedToBoundsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
@@ -99,7 +97,7 @@ namespace Microsoft.Maui.Controls
 
 		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Padding']/Docs/*" />
@@ -293,6 +291,7 @@ namespace Microsoft.Maui.Controls
 			ViewHandler.ViewMapper = ControlsLayoutMapper;
 		}
 
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
 			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
 

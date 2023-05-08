@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		double _previousHorizontalOffset;
 		double _previousVerticalOffset;
+		double _previousItemSpacing;
+		double _previousHorizontalItemSpacing;
+		double _previousVerticalItemSpacing;
+
 		protected ListViewBase ListViewBase => PlatformView;
 		protected TItemsView ItemsView => VirtualView;
 		protected TItemsView Element => VirtualView;
@@ -279,18 +283,36 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void UpdateItemsLayout()
 		{
-			ListViewBase.IsSynchronizedWithCurrentItem = false;
+			if (ListViewBase is FormsGridView gridView)
+			{
+				if (Layout is LinearItemsLayout linearItemsLayout)
+				{
+					gridView.Orientation = linearItemsLayout.ToPlatform();
 
-			FindScrollViewer(ListViewBase);
+					gridView.Span = 1;
 
-			_defaultHorizontalScrollVisibility = null;
-			_defaultVerticalScrollVisibility = null;
+					if (linearItemsLayout.ItemSpacing != _previousItemSpacing)
+					{
+						_previousItemSpacing = linearItemsLayout.ItemSpacing;
+						gridView.ItemContainerStyle = linearItemsLayout.GetItemContainerStyle();
+					}
+				}
 
-			UpdateItemTemplate();
-			UpdateItemsSource();
-			UpdateVerticalScrollBarVisibility();
-			UpdateHorizontalScrollBarVisibility();
-			UpdateEmptyView();
+				if (Layout is GridItemsLayout gridItemsLayout)
+				{
+					gridView.Orientation = gridItemsLayout.ToPlatform();
+
+					gridView.Span = gridItemsLayout.Span;
+
+					if (gridItemsLayout.HorizontalItemSpacing != _previousHorizontalItemSpacing ||
+						gridItemsLayout.VerticalItemSpacing != _previousVerticalItemSpacing)
+					{
+						_previousHorizontalItemSpacing = gridItemsLayout.HorizontalItemSpacing;
+						_previousVerticalItemSpacing = gridItemsLayout.VerticalItemSpacing;
+						gridView.ItemContainerStyle = gridItemsLayout.GetItemContainerStyle();
+					}
+				}
+			}
 		}
 
 		void FindScrollViewer(ListViewBase listView)
@@ -423,6 +445,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
+
+			var remainingItemsThreshold = Element.RemainingItemsThreshold;
+			if (remainingItemsThreshold > -1 &&
+				ItemCount - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= remainingItemsThreshold)
+			{
+				Element.SendRemainingItemsThresholdReached();
+			}
 		}
 
 		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)

@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						return "?";
 					}
 
-					return FirstName[0].ToString().ToUpper();
+					return FirstName[0].ToString().ToUpperInvariant();
 				}
 			}
 		}
