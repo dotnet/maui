@@ -54,19 +54,5 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				return base.Description;
 			}
 		}
-
-		//public override void WriteActualValueTo (MessageWriter writer)
-		//{
-		//	var ex = actual as XamlParseException;
-		//	writer.WriteActualValue ((actual == null) ? null : actual.GetType ());
-		//	if (ex != null) {
-		//		if (ex.XmlInfo != null && ex.XmlInfo.HasLineInfo ())
-		//			writer.Write (" line {0}, position {1}", ex.XmlInfo.LineNumber, ex.XmlInfo.LinePosition);
-		//		else 
-		//			writer.Write (" no line info");
-		//		writer.WriteLine (" ({0})", ex.Message);
-		//		writer.Write (ex.StackTrace);
-		//	}
-		//}
 	}
 }
