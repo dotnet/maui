@@ -38,9 +38,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => new ReadOnlyCollection<Element>(_logicalChildren);
+		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, ISwipeItem>(_swipeItems);
 #if IOS
 		SwipeTransitionMode ISwipeView.SwipeTransitionMode =>
 			Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SwipeView.GetSwipeTransitionMode(this);
@@ -173,26 +174,13 @@ namespace Microsoft.Maui.Controls
 			return swipeItems;
 		}
 
-		internal void AddLogicalChild(Element element)
-		{
-			if (element is null)
-			{
-				return;
-			}
+		internal void AddLogicalChild(Element element) 
+			=> AddLogicalChildInternal(element);
 
-			if (_logicalChildren.Contains(element))
-				return;
-
-			_logicalChildren.Add(element);
-			element.Parent = this;
-			OnChildAdded(element);
-			VisualDiagnostics.OnChildAdded(this, element);
-		}
-
-		internal void ClearLogicalChildren()
+		internal new void ClearLogicalChildren()
 		{
 			// Reverse for-loop, so children can be removed while iterating
-			for (int i = _logicalChildren.Count - 1; i >= 0; i--)
+			for (int i = _swipeItems.Count - 1; i >= 0; i--)
 			{
 				RemoveLogicalChildByIndex(i);
 			}
@@ -200,22 +188,19 @@ namespace Microsoft.Maui.Controls
 
 		void RemoveLogicalChildByIndex(int index)
 		{
-			if (_logicalChildren.Count < index)
+			if (_swipeItems.Count < index)
 			{
 				return;
 			}
 
-			var element = _logicalChildren[index];
+			var element = _swipeItems[index] as Element;
 
 			if (element is null)
 			{
 				return;
 			}
 
-			element.Parent = null;
-			_logicalChildren.RemoveAt(index);
-			OnChildRemoved(element, index);
-			VisualDiagnostics.OnChildRemoved(this, element, index);
+			RemoveLogicalChildInternal(element);
 		}
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
