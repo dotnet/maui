@@ -77,8 +77,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendScrollFinished()
 		{
-			if (_scrollCompletionSource != null)
-				_scrollCompletionSource.TrySetResult(true);
+			_scrollCompletionSource?.TrySetResult(true);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='SetScrolledPosition']/Docs/*" />
