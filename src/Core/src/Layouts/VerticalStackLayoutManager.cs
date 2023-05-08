@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Layouts
 				}
 
 				spacingCount += 1;
-				var measure = child.Measure(childWidthConstraint, double.PositiveInfinity);
+				var measure = child.Measure(childWidthConstraint, heightConstraint);
 				measuredHeight += measure.Height;
 				measuredWidth = Math.Max(measuredWidth, measure.Width);
 			}
