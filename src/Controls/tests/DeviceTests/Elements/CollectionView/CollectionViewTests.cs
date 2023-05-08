@@ -123,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.VerticalOptions = layoutOptions;
 			}
 
-			var layout = new Grid() { HeightRequest = containerHeight, WidthRequest = containerWidth };
+			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };
 			layout.Add(collectionView);
 
 			ObservableCollection<string> data = new();
