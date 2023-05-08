@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls
 			return swipeItems;
 		}
 
-		internal void AddLogicalChild(Element element) 
+		internal void AddLogicalChild(Element element)
 			=> AddLogicalChildInternal(element);
 
 		internal new void ClearLogicalChildren()
