@@ -155,7 +155,12 @@ namespace Microsoft.Maui.Appium
 
 			if (TestConfig.TestDevice == TestDevice.iOS)
 			{
-				framework = $"{framework}-android";
+				framework = $"{framework}-ios";
+			}
+
+			if (TestConfig.TestDevice == TestDevice.Mac)
+			{
+				framework = $"{framework}-maccatalyst";
 			}
 
 			if (TestConfig.TestDevice == TestDevice.Windows)
