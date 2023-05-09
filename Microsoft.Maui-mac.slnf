@@ -52,6 +52,7 @@
       "src\\TestUtils\\src\\TestUtils\\TestUtils.csproj",
       "src\\TestUtils\\src\\TestUtils.Appium.UITests\\TestUtils.Appium.UITests.csproj",
       "src\\TestUtils\\src\\TestUtils.Appium\\TestUtils.Appium.csproj",
+      "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
       "src\\Workload\\Microsoft.NET.Sdk.Maui\\Microsoft.NET.Sdk.Maui.csproj"
     ]
