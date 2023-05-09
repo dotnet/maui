@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Runtime.CompilerServices;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -51,10 +52,14 @@ namespace Microsoft.Maui.Controls.Shapes
 			float w = (float)(width - StrokeThickness);
 			float h = (float)(height - StrokeThickness);
 
-			float topLeftCornerRadius = (float)CornerRadius.TopLeft;
-			float topRightCornerRadius = (float)CornerRadius.TopRight;
-			float bottomLeftCornerRadius = (float)CornerRadius.BottomLeft;
-			float bottomRightCornerRadius = (float)CornerRadius.BottomRight;
+			float density = 1f;
+#if ANDROID
+			density = (float)DeviceDisplay.MainDisplayInfo.Density;
+#endif
+			float topLeftCornerRadius = (float)CornerRadius.TopLeft * density;
+			float topRightCornerRadius = (float)CornerRadius.TopRight * density;
+			float bottomLeftCornerRadius = (float)CornerRadius.BottomLeft * density;
+			float bottomRightCornerRadius = (float)CornerRadius.BottomRight * density;
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
@@ -86,10 +91,14 @@ namespace Microsoft.Maui.Controls.Shapes
 			float w = (float)(width - StrokeThickness);
 			float h = (float)(height - StrokeThickness);
 
-			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft - strokeWidth);
-			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight - strokeWidth);
-			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft - strokeWidth);
-			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight - strokeWidth);
+			float density = 1f;
+#if ANDROID
+			density = (float)DeviceDisplay.MainDisplayInfo.Density;
+#endif
+			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft * density - strokeWidth);
+			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight * density - strokeWidth);
+			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft * density - strokeWidth);
+			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight * density - strokeWidth);
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
