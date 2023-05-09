@@ -41,8 +41,8 @@ namespace Microsoft.Maui.Layouts
 			if (view.HorizontalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Width))
 			{
 				// But if the element is set to fill horizontally and it doesn't have an explicitly set width,
-				// then we want the width of the entire bounds
-				consumedWidth = bounds.Width;
+				// then we want the minimum between its maximumWidth (if set) and the bounds' width
+				consumedWidth = IsExplicitSet(view.MaximumWidth) ? Math.Min(bounds.Width, view.MaximumWidth) : bounds.Width;
 			}
 
 			// And the actual frame width needs to subtract the margins
@@ -52,10 +52,10 @@ namespace Microsoft.Maui.Layouts
 			var consumedHeight = view.DesiredSize.Height;
 
 			// But, if the element is set to fill vertically and it doesn't have an explicitly set height,
-			// then we want the height of the entire bounds
+			// then we want the minimum between its maximumHeight (if set) and the bounds' height
 			if (view.VerticalLayoutAlignment == LayoutAlignment.Fill && !IsExplicitSet(view.Height))
 			{
-				consumedHeight = bounds.Height;
+				consumedHeight = IsExplicitSet(view.MaximumHeight) ? Math.Min(bounds.Height, view.MaximumHeight) : bounds.Height;
 			}
 
 			// And the actual frame height needs to subtract the margins
