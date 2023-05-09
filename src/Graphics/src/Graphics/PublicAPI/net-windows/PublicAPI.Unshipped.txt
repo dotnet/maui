@@ -1526,9 +1526,6 @@ override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineCap.set -> vo
 override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeLineJoin.set -> void
 override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SubtractFromClip(float x, float y, float width, float height) -> void
 override Microsoft.Maui.Graphics.Platform.PlatformCanvasState.Dispose() -> void
-static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Rotate(this System.Numerics.Matrix3x2 target, float radians) -> System.Numerics.Matrix3x2
-static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Scale(this System.Numerics.Matrix3x2 target, float sx, float sy) -> System.Numerics.Matrix3x2
-static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Translate(this System.Numerics.Matrix3x2 target, float dx, float dy) -> System.Numerics.Matrix3x2
 ~Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService.CreateContext(int width, int height, float displayScale = 1) -> Microsoft.Maui.Graphics.BitmapExportContext
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Session.get -> Microsoft.Graphics.Canvas.CanvasDrawingSession
 ~Microsoft.Maui.Graphics.Platform.PlatformCanvas.Session.set -> void
@@ -1571,8 +1568,3 @@ static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.Translate(this System
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.SetShadow(Microsoft.Maui.Graphics.SizeF offset, float blur, Microsoft.Maui.Graphics.Color color) -> void
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StateRestored(Microsoft.Maui.Graphics.Platform.PlatformCanvasState state) -> void
 ~override Microsoft.Maui.Graphics.Platform.PlatformCanvas.StrokeColor.set -> void
-~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsColor(this Microsoft.Maui.Graphics.Color color, float alpha = 1) -> Windows.UI.Color
-~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsColor(this Microsoft.Maui.Graphics.Color color, Microsoft.Maui.Graphics.Color defaultColor, float alpha = 1) -> Windows.UI.Color
-~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPath(this Microsoft.Maui.Graphics.PathF path, float ox, float oy, float fx, float fy, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination fillMode = Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination.Winding) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
-~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPath(this Microsoft.Maui.Graphics.PathF path, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator, Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination fillMode = Microsoft.Graphics.Canvas.Geometry.CanvasFilledRegionDetermination.Winding) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
-~static Microsoft.Maui.Graphics.Platform.GraphicsExtensions.AsPathFromSegment(this Microsoft.Maui.Graphics.PathF path, int segmentIndex, float zoom, Microsoft.Graphics.Canvas.ICanvasResourceCreator creator) -> Microsoft.Graphics.Canvas.Geometry.CanvasGeometry
