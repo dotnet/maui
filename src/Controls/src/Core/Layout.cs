@@ -65,6 +65,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentElement
 	{
+		bool IInputTransparentElement.CascadeInputTransparent2 => CascadeInputTransparent;
+		bool IInputTransparentElement.InputTransparent2 => InputTransparent;
+		Element IInputTransparentElement.Parent2 => Parent;
+
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,

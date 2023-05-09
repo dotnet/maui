@@ -554,7 +554,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InputTransparentProperty, value); }
 		}
 
-		bool IInputTransparentElement.CascadeInputTransparent => false;
+		bool IInputTransparentElement.CascadeInputTransparent2 => false;
+		bool IInputTransparentElement.InputTransparent2 => InputTransparent;
+		Element IInputTransparentElement.Parent2 => Parent;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
 		public bool IsEnabled

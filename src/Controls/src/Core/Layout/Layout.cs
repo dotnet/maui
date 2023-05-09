@@ -13,6 +13,10 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Children))]
 	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentElement
 	{
+		bool IInputTransparentElement.CascadeInputTransparent2 => CascadeInputTransparent;
+		bool IInputTransparentElement.InputTransparent2 => InputTransparent;
+		Element IInputTransparentElement.Parent2 => Parent;
+
 		protected ILayoutManager _layoutManager;
 
 		ILayoutManager LayoutManager
