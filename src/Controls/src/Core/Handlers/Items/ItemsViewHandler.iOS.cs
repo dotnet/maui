@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var potentialContentSize = Controller.GetSize();
 
 			// If contentSize comes back null, it means none of the content has been realized yet;
-			// we need to return the expansive size the the collection view wants by default to get
+			// we need to return the expansive size the collection view wants by default to get
 			// it to start measuring its content
 			if (potentialContentSize == null)
 			{
