@@ -24,7 +24,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
-	public class NavigationRenderer : UINavigationController, IPlatformViewHandler
+	public class NavigationRenderer : UINavigationController, INavigationViewHandler, IPlatformViewHandler
 	{
 		internal const string UpdateToolbarButtons = "Xamarin.UpdateToolbarButtons";
 		bool _appeared;
@@ -38,7 +38,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		bool _disposed;
 		IMauiContext _mauiContext;
 		IMauiContext MauiContext => _mauiContext;
-		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper);
+		public static IPropertyMapper<NavigationPage, NavigationRenderer> Mapper = new PropertyMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewMapper)
+		{
+			[PlatformConfiguration.iOSSpecific.NavigationPage.PrefersLargeTitlesProperty.PropertyName] = NavigationPage.MapPrefersLargeTitles,
+			[PlatformConfiguration.iOSSpecific.NavigationPage.IsNavigationBarTranslucentProperty.PropertyName] = NavigationPage.MapIsNavigationBarTranslucent,
+		};
+
 		public static CommandMapper<NavigationPage, NavigationRenderer> CommandMapper = new CommandMapper<NavigationPage, NavigationRenderer>(ViewHandler.ViewCommandMapper);
 		ViewHandlerDelegator<NavigationPage> _viewHandlerWrapper;
 		bool _navigating = false;
@@ -555,13 +560,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		void UpdateUseLargeTitles()
 		{
-			if (OperatingSystem.IsIOSVersionAtLeast(11) && NavPage != null)
-				NavigationBar.PrefersLargeTitles = NavPage.OnThisPlatform().PrefersLargeTitles();
+			_viewHandlerWrapper.UpdateProperty(PrefersLargeTitlesProperty.PropertyName);
 		}
 
 		void UpdateTranslucent()
 		{
-			NavigationBar.Translucent = NavPage.OnThisPlatform().IsNavigationBarTranslucent();
+			_viewHandlerWrapper.UpdateProperty(IsNavigationBarTranslucentProperty.PropertyName);
 		}
 
 		void InsertPageBefore(Page page, Page before)
@@ -1623,6 +1627,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		UIView IPlatformViewHandler.ContainerView => null;
 
 		UIViewController IPlatformViewHandler.ViewController => this;
+
+		IStackNavigationView INavigationViewHandler.VirtualView => NavPage;
+
+		UIView INavigationViewHandler.PlatformView => NativeView;
 
 		Size IViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) =>
 			_viewHandlerWrapper.GetDesiredSize(widthConstraint, heightConstraint);
