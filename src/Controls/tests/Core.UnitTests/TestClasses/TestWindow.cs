@@ -28,5 +28,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				_ = (app as IApplication).CreateWindow(null);
 			}
 		}
+
+
+	}
+
+	public static class TestWindowExtensions
+	{
+		public static T AddToTestWindow<T>(this T page)
+			where T : Page
+		{
+			return (T)new TestWindow(page).Page;
+		}
 	}
 }

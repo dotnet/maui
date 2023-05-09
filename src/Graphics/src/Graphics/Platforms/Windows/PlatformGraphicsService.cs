@@ -7,8 +7,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// Some useful APIs for Maui Graphics.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformGraphicsService instead.")]
 	internal class W2DGraphicsService
 #else
 	internal class PlatformGraphicsService

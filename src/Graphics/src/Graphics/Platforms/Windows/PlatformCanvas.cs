@@ -19,8 +19,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform implementation of <see cref="AbstractCanvas{T}"/>.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformCanvas instead.")]
 	public class W2DCanvas
 #else
 	public class PlatformCanvas

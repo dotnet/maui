@@ -4,8 +4,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform implementation of <see cref="ICanvasStateService{T}"/>
+	/// that creates new or copies of <see cref="PlatformCanvasState"/>.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformCanvasStateService instead.")]
 	public class W2DCanvasStateService
 #else
 	public class PlatformCanvasStateService

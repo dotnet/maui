@@ -6,8 +6,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform implementation of <see cref="IBitmapExportService"/>.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformBitmapExportService instead.")]
 	public class W2DBitmapExportService
 #else
 	public class PlatformBitmapExportService

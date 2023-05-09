@@ -8,8 +8,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform implementation of <see cref="IImageLoadingService"/> which
+	/// loads images into a new <see cref="IImage"/> instance.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformImageLoadingService instead.")]
 	public class W2DImageLoadingService
 #else
 	public class PlatformImageLoadingService

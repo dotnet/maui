@@ -13,8 +13,10 @@ namespace Microsoft.Maui.Graphics.Win2D
 namespace Microsoft.Maui.Graphics.Platform
 #endif
 {
+	/// <summary>
+	/// A Windows platform view that can be used to host drawings.
+	/// </summary>
 #if MAUI_GRAPHICS_WIN2D
-	[System.Obsolete("Use Microsoft.Maui.Graphics.Platform.PlatformGraphicsView instead.")]
 	public sealed class W2DGraphicsView
 #else
 	public class PlatformGraphicsView

@@ -1,4 +1,4 @@
-﻿#nullable disable
+#nullable disable
 using System;
 using Android.Text;
 using Microsoft.Maui.Controls.Platform;
