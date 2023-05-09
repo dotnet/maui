@@ -406,7 +406,7 @@ namespace Microsoft.Maui.DeviceTests
 			IReadOnlyList<Element> logicalChildren = null;
 			var collectionView = new CollectionView
 			{
-				ItemTemplate = new DataTemplate(() => new Label() {  HeightRequest = 30, WidthRequest = 200 }),
+				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = 30, WidthRequest = 200 }),
 				WidthRequest = 200,
 				HeightRequest = 200,
 			};
