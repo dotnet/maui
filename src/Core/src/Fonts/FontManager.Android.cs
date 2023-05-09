@@ -119,6 +119,11 @@ namespace Microsoft.Maui
 		{
 			try
 			{
+				var defaultTypeface = LoadDefaultTypeface(fontfamily);
+
+				if (defaultTypeface is not null)
+					return defaultTypeface;
+
 				return Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
 			}
 			catch (Exception ex)
@@ -128,6 +133,21 @@ namespace Microsoft.Maui
 			}
 
 			return null;
+		}
+
+		Typeface? LoadDefaultTypeface(string fontfamily)
+		{
+			switch (fontfamily.ToLowerInvariant())
+			{
+				case "monospace":
+					return Typeface.Monospace;
+				case "sansserif":
+					return Typeface.SansSerif;
+				case "serif":
+					return Typeface.Serif;
+				default:
+					return null;
+			}
 		}
 
 		Typeface? CreateTypeface((string? fontFamilyName, FontWeight weight, bool italic) fontData)
