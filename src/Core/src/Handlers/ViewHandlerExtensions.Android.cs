@@ -143,9 +143,7 @@ namespace Microsoft.Maui
 			}
 
 			var platformView = handler.ToPlatform();
-			var context = platformView?.Context;
-
-			if (platformView == null || context == null)
+			if (platformView == null)
 			{
 				return;
 			}
@@ -160,7 +158,7 @@ namespace Microsoft.Maui
 			// in order to properly handle any TextAlignment properties and some internal bookkeeping
 			if (virtualView.NeedsExactMeasure())
 			{
-				platformView.Measure(context.MakeMeasureSpecExact(frame.Width), context.MakeMeasureSpecExact(frame.Height));
+				platformView.Measure(platformView.MakeMeasureSpecExact(frame.Width), platformView.MakeMeasureSpecExact(frame.Height));
 			}
 		}
 
@@ -185,10 +183,10 @@ namespace Microsoft.Maui
 			return true;
 		}
 
-		internal static int MakeMeasureSpecExact(this Context context, double size)
+		internal static int MakeMeasureSpecExact(this PlatformView view, double size)
 		{
 			// Convert to a native size to create the spec for measuring
-			var deviceSize = (int)context!.ToPixels(size);
+			var deviceSize = (int)view.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
 	}

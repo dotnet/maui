@@ -225,7 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			[Theory]
 			[ClassData(typeof(ControlsPageTypesTestCases))]
-			public async Task NextMovesToNextEntry(string page)
+			public async Task NextMovesToNextEntry(ControlsPageTypesTestCase page)
 			{
 				bool isFocused = false;
 				EnsureHandlerCreated(builder =>
