@@ -23,9 +23,10 @@ namespace Microsoft.Maui.Controls
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
-		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
-			"InputTransparent", typeof(bool), typeof(VisualElement), default(bool),
-			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
+		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
+		//public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
+		//	"InputTransparent", typeof(bool), typeof(VisualElement), default(bool),
+		//	propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 

@@ -72,8 +72,9 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
-				propertyChanged: OnCascadeInputTransparentPropertyChanged);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+		//BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+		//		propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
