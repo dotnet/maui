@@ -31,9 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			UpdateLayout();
 			Controller = CreateController(ItemsView, _layout);
-			var x = base.OnCreatePlatformView();
-
-			return x;
+			return base.OnCreatePlatformView();
 		}
 
 		protected TItemsView ItemsView => VirtualView;
