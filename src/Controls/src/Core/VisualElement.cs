@@ -12,7 +12,7 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IInputTransparentElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -20,8 +20,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
+		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
+
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
-		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
+		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
+			"InputTransparent", typeof(bool), typeof(VisualElement), default(bool),
+			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
@@ -554,6 +558,8 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(InputTransparentProperty, value); }
 		}
 
+		bool IInputTransparentElement.CascadeInputTransparent => false;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
 		public bool IsEnabled
 		{
@@ -582,6 +588,40 @@ namespace Microsoft.Maui.Controls
 					return false;
 
 				return _isEnabledExplicit;
+			}
+		}
+
+		/// <summary>
+		/// This value represents the cumulative InputTransparent value.
+		/// All types that override this property need to also invoke
+		/// the RefreshInputTransparentProperty() method if the value will change.
+		/// 
+		/// This method is not virtual as none of the derived types actually need
+		/// to change the calculation. If this ever needs to change, then the
+		/// RefreshInputTransparentProperty() method should also call the
+		/// RefreshPropertyValue() method - just like how the
+		/// RefreshIsEnabledProperty() method does.
+		/// </summary>
+		private protected bool InputTransparentCore
+		{
+			get
+			{
+				//if (_inputTransparentExplicit == true)
+				//{
+				//	// If the explicitly set value is true, then nothing else matters
+				//	// And we can save the effort of a Parent check
+				//	return true;
+				//}
+
+				//var parent = Parent as IInputTransparentElement;
+				//while (parent is not null)
+				//{
+				//	if (parent.CascadeInputTransparent && parent.InputTransparent)
+				//		return true;
+				//	parent = parent.Parent as IInputTransparentElement;
+				//}
+
+				return _inputTransparentExplicit;
 			}
 		}
 
@@ -1275,6 +1315,23 @@ namespace Microsoft.Maui.Controls
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
 		}
 
+		static object CoerceInputTransparentProperty(BindableObject bindable, object value)
+		{
+			return value;
+			//if (bindable is VisualElement visualElement)
+			//{
+			//	visualElement._inputTransparentExplicit = (bool)value;
+			//	return visualElement.InputTransparentCore;
+			//}
+
+			//return false;
+		}
+
+		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			//(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
+		}
+
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			var element = (VisualElement)bindable;
@@ -1334,6 +1391,9 @@ namespace Microsoft.Maui.Controls
 			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
 				this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
 
+			//if (propertyName == null || propertyName == InputTransparentProperty.PropertyName)
+			//	this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
+
 			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
@@ -1343,6 +1403,20 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected void RefreshIsEnabledProperty() =>
 			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the InputTransparentCore property will change.
+		/// </summary>
+		private protected void RefreshInputTransparentProperty()
+		{
+			// This method does not need to call the
+			// this.RefreshPropertyValue(InputTransparentProperty, _inputTransparentExplicit);
+			// method because none of the derived types will affect this view. All we
+			// need to do is propagate the new value to all the children.
+
+			//(this as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.InputTransparentProperty.PropertyName);
+		}
 
 		void UpdateBoundsComponents(Rect bounds)
 		{
