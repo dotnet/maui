@@ -19,9 +19,13 @@ namespace Microsoft.Maui.IntegrationTests.Android
 
 		public bool InstallAvd()
 		{
+			System.Diagnostics.Debug.WriteLine($"Instaling AVD {SystemImageId}");
 			var installOutput = ToolRunner.Run(SdkManagerTool, $"\"{SystemImageId}\"", out int exitCode, timeoutInSeconds: 120);
 			if (exitCode != 0)
+			{
+				System.Diagnostics.Debug.WriteLine(installOutput);
 				TestContext.WriteLine(installOutput);
+			}
 
 			return exitCode == 0;
 		}
@@ -38,10 +42,14 @@ namespace Microsoft.Maui.IntegrationTests.Android
 			if (force)
 				createArgs += " -f";
 
+			System.Diagnostics.Debug.WriteLine($"Creating AVD {createArgs}");
+
 			var createOutput = ToolRunner.Run(AvdManagerTool, createArgs, out int exitCode, timeoutInSeconds: 15);
 			if (exitCode != 0)
+			{
+				System.Diagnostics.Debug.WriteLine(createOutput);
 				TestContext.WriteLine(createOutput);
-
+			}
 			return exitCode == 0;
 		}
 
