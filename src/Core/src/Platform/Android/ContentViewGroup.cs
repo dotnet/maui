@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Platform
 			var bounds = new Graphics.RectF(x, y, w, h);
 
 			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
-		
+
 			return platformPath;
 		}
 	}
