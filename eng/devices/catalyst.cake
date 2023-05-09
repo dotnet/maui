@@ -70,13 +70,13 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
-	DotNetCoreBuild(TEST_APP_PROJECT.FullPath, new DotNetCoreBuildSettings {
-			Configuration = CONFIGURATION,
-			ArgumentCustomization = args => args
-				.Append($"-f {TARGET_FRAMEWORK}")
-				.Append("-t:Run")
-	});
+	// Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
+	// DotNetCoreBuild(TEST_APP_PROJECT.FullPath, new DotNetCoreBuildSettings {
+	// 		Configuration = CONFIGURATION,
+	// 		ArgumentCustomization = args => args
+	// 			.Append($"-f {TARGET_FRAMEWORK}")
+	// 			.Append("-t:Run")
+	// });
 
 	Information("Build UITests project {0}",PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
