@@ -72,15 +72,17 @@ namespace Microsoft.Maui.Layouts
 		static double AlignHorizontal(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.HorizontalLayoutAlignment;
+			var desiredWidth = view.DesiredSize.Width;
 
 			if (alignment == LayoutAlignment.Fill && (IsExplicitSet(view.Width) || !double.IsInfinity(view.MaximumWidth)))
 			{
 				// If the view has an explicit width (or non-infinite MaxWidth) set and the layout alignment is Fill,
 				// we just treat the view as centered within the space it "fills"
 				alignment = LayoutAlignment.Center;
-			}
 
-			var desiredWidth = view.DesiredSize.Width;
+				// If the width is not set, we use the minimum between the MaxWidth or the bound's width
+				desiredWidth = IsExplicitSet(view.Width) ? desiredWidth : Math.Min(bounds.Width, view.MaximumWidth);
+			}
 
 			return AlignHorizontal(bounds.X, margin.Left, margin.Right, bounds.Width, desiredWidth, alignment);
 		}
@@ -107,12 +109,16 @@ namespace Microsoft.Maui.Layouts
 		static double AlignVertical(IView view, Rect bounds, Thickness margin)
 		{
 			var alignment = view.VerticalLayoutAlignment;
+			var desiredHeight = view.DesiredSize.Height;
 
 			if (alignment == LayoutAlignment.Fill && (IsExplicitSet(view.Height) || !double.IsInfinity(view.MaximumHeight)))
 			{
 				// If the view has an explicit height (or non-infinite MaxHeight) set and the layout alignment is Fill,
 				// we just treat the view as centered within the space it "fills"
 				alignment = LayoutAlignment.Center;
+
+				// If the height is not set, we use the minimum between the MaxHeight or the bound's height
+				desiredHeight = IsExplicitSet(view.Height) ? desiredHeight : Math.Min(bounds.Height, view.MaximumHeight);
 			}
 
 			double frameY = bounds.Y + margin.Top;
@@ -120,11 +126,11 @@ namespace Microsoft.Maui.Layouts
 			switch (alignment)
 			{
 				case LayoutAlignment.Center:
-					frameY += (bounds.Height - view.DesiredSize.Height) / 2;
+					frameY += (bounds.Height - desiredHeight) / 2;
 					break;
 
 				case LayoutAlignment.End:
-					frameY += bounds.Height - view.DesiredSize.Height;
+					frameY += bounds.Height - desiredHeight;
 					break;
 			}
 
