@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
@@ -79,7 +79,6 @@ namespace Microsoft.Maui.Handlers
 			var previousRootView = windowManager.RootView;
 
 			windowManager.Disconnect();
-			handler.VirtualView.Content.Handler?.DisconnectHandler();
 
 			windowManager.Connect(handler.VirtualView.Content.ToPlatform(handler.MauiContext));
 
