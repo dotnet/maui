@@ -332,6 +332,41 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(layoutFrame.Width > minExpectedWidth);
 		}
 
+		[Fact]
+		public async Task FrameBackgroundColor()
+		{
+			SetupBuilder();
+			var expectedColor = Colors.Green;
+
+			var frame = new Frame()
+			{
+				HeightRequest = 300,
+				WidthRequest = 300,
+				Content = new Label()
+				{
+					VerticalOptions = LayoutOptions.Center,
+					HorizontalOptions = LayoutOptions.Center,
+					Text = "BackgroundColor"
+				}
+			};
+
+			var layout = new StackLayout()
+			{
+				BackgroundColor = expectedColor,
+				Children =
+				{
+					frame
+				}
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var platformView = frame.ToPlatform(MauiContext);
+				platformView.AssertContainsColor(expectedColor, MauiContext);
+			});
+
+		}
+
 		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint, Func<Task> additionalTests = null)
 		{
 			additionalTests ??= () => Task.CompletedTask;
