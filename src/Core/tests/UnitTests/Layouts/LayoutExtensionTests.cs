@@ -332,7 +332,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var widthConstraint = 300;
 			var heightConstraint = 300;
 			var desiredSize = new Size(50, 50);
-			
+
 			var maxWidth = 100;
 
 			var element = Substitute.For<IView>();
