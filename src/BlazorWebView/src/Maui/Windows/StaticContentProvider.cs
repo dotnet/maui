@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			: "application/octet-stream";
 
 		internal static IDictionary<string, string> GetResponseHeaders(string contentType)
-			=> new Dictionary<string, string>()
+			=> new Dictionary<string, string>(StringComparer.Ordinal)
 			{
 				{ "Content-Type", contentType },
 				{ "Cache-Control", "no-cache, max-age=0, must-revalidate, no-store" },

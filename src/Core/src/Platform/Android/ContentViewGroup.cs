@@ -4,12 +4,13 @@ using Android.Graphics;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
 	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
-	public class ContentViewGroup : ViewGroup
+	public class ContentViewGroup : PlatformContentViewGroup
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -39,14 +40,6 @@ namespace Microsoft.Maui.Platform
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
-		}
-
-		protected override void DispatchDraw(Canvas? canvas)
-		{
-			if (Clip != null)
-				ClipChild(canvas);
-
-			base.DispatchDraw(canvas);
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -98,31 +91,34 @@ namespace Microsoft.Maui.Platform
 			set
 			{
 				_clip = value;
-				PostInvalidate();
+				// NOTE: calls PostInvalidate()
+				SetHasClip(_clip is not null);
 			}
 		}
 
 		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
 		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
 
-		void ClipChild(Canvas? canvas)
+		protected override Path? GetClipPath(int width, int height)
 		{
-			if (Clip == null || canvas == null)
-				return;
+			if (Clip is null || Clip?.Shape is null)
+				return null;
 
 			float density = _context.GetDisplayDensity();
 
 			float strokeThickness = (float)(Clip.StrokeThickness * density);
-			float offset = strokeThickness / 2;
-			float w = (canvas.Width / density) - strokeThickness;
-			float h = (canvas.Height / density) - strokeThickness;
 
-			var bounds = new Graphics.RectF(offset, offset, w, h);
-			var path = Clip.Shape?.PathForBounds(bounds);
-			var currentPath = path?.AsAndroidPath(scaleX: density, scaleY: density);
+			IShape clipShape = Clip.Shape;
 
-			if (currentPath != null)
-				canvas.ClipPath(currentPath);
+			float x = strokeThickness / 2;
+			float y = strokeThickness / 2;
+			float w = width - strokeThickness;
+			float h = height - strokeThickness;
+
+			var bounds = new Graphics.RectF(x, y, w, h);
+
+			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
+			return platformPath;
 		}
 	}
 }

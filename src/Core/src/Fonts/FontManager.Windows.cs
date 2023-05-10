@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graphics.Canvas.Text;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Storage;
 using Microsoft.UI.Xaml.Media;
 
 namespace Microsoft.Maui
@@ -146,16 +148,20 @@ namespace Microsoft.Maui
 			{
 				var fontUri = new Uri(fontFile, UriKind.RelativeOrAbsolute);
 
-				// CanvasFontSet only supports ms-appx:// and ms-appdata:// font URIs
-				if (fontUri.IsAbsoluteUri && (fontUri.Scheme == "ms-appx" || fontUri.Scheme == "ms-appdata"))
+				// unpackaged apps can't load files using packaged schemes
+				if (!AppInfoUtils.IsPackagedApp)
 				{
-					using (var fontSet = new CanvasFontSet(fontUri))
+					var path = fontUri.AbsolutePath.TrimStart('/');
+					if (FileSystemUtils.TryGetAppPackageFileUri(path, out var uri))
+						fontUri = new Uri(uri, UriKind.RelativeOrAbsolute);
+				}
+
+				using (var fontSet = new CanvasFontSet(fontUri))
+				{
+					if (fontSet.Fonts.Count != 0)
 					{
-						if (fontSet.Fonts.Count != 0)
-						{
-							var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
-							return props.Length == 0 ? null : props[0].Value;
-						}
+						var props = fontSet.GetPropertyValues(CanvasFontPropertyIdentifier.FamilyName);
+						return props.Length == 0 ? null : props[0].Value;
 					}
 				}
 

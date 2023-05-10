@@ -50,53 +50,54 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler<CheckedChangedEventArgs> CheckedChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty =
 			BindableProperty.Create(nameof(Content), typeof(object), typeof(RadioButton), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='ValueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Value"/>.</summary>
 		public static readonly BindableProperty ValueProperty =
 			BindableProperty.Create(nameof(Value), typeof(object), typeof(RadioButton), null,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnValuePropertyChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='IsCheckedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = BindableProperty.Create(
 			nameof(IsChecked), typeof(bool), typeof(RadioButton), false,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnIsCheckedPropertyChanged((bool)n),
 			defaultBindingMode: BindingMode.TwoWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='GroupNameProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="GroupName"/>.</summary>
 		public static readonly BindableProperty GroupNameProperty = BindableProperty.Create(
 			nameof(GroupName), typeof(string), typeof(RadioButton), null,
 			propertyChanged: (b, o, n) => ((RadioButton)b).OnGroupNamePropertyChanged((string)o, (string)n));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='TextTransformProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButton.xml" path="//Member[@MemberName='BorderWidthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BorderWidth"/>.</summary>
 		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
 		// If Content is set to a string, the string will be displayed using the native Text property
@@ -526,6 +527,8 @@ namespace Microsoft.Maui.Controls
 			object outerEllipseVisualStateDark = null;
 			object checkMarkVisualStateLight = null;
 			object checkMarkVisualStateDark = null;
+			object checkMarkFillVisualStateLight = null;
+			object checkMarkFillVisualStateDark = null;
 
 			if (!normalEllipse.TrySetDynamicThemeColor(
 				RadioButtonThemeColor,
@@ -568,8 +571,8 @@ namespace Microsoft.Maui.Controls
 					Ellipse.FillProperty,
 					SolidColorBrush.White,
 					SolidColorBrush.Black,
-					out _,
-					out _);
+					out checkMarkFillVisualStateLight,
+					out checkMarkFillVisualStateDark);
 			}
 
 			contentPresenter.SetBinding(MarginProperty, new Binding("Padding", source: RelativeBindingSource.TemplatedParent));
@@ -620,7 +623,7 @@ namespace Microsoft.Maui.Controls
 				{
 					Property = Shape.FillProperty,
 					TargetName = CheckedIndicator,
-					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkVisualStateLight, Dark = checkMarkVisualStateDark }
+					Value = dynamicCheckMarkThemeColor is not null ? dynamicCheckMarkThemeColor : new AppThemeBinding() { Light = checkMarkFillVisualStateLight, Dark = checkMarkFillVisualStateDark }
 				});
 			checkedStates.States.Add(checkedVisualState);
 

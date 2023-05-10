@@ -20,15 +20,15 @@ namespace Microsoft.Maui.Controls.Shapes
 			Point3 = point3;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/BezierSegment.xml" path="//Member[@MemberName='Point1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point1"/>.</summary>
 		public static readonly BindableProperty Point1Property =
 			BindableProperty.Create(nameof(Point1), typeof(Point), typeof(BezierSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/BezierSegment.xml" path="//Member[@MemberName='Point2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point2"/>.</summary>
 		public static readonly BindableProperty Point2Property =
 			BindableProperty.Create(nameof(Point2), typeof(Point), typeof(BezierSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/BezierSegment.xml" path="//Member[@MemberName='Point3Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point3"/>.</summary>
 		public static readonly BindableProperty Point3Property =
 			BindableProperty.Create(nameof(Point3), typeof(Point), typeof(BezierSegment), new Point(0, 0));
 

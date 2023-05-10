@@ -141,7 +141,7 @@
       </Parameters>
       <Docs>
         <param name="styleSheet">The style sheet to add</param>
-        <summary>Adds <paramref name="styleSheet" /> tho <see langword="this" /> resource dictionary's list of style sheets.</summary>
+        <summary>Adds <paramref name="styleSheet" /> to <see langword="this" /> resource dictionary's list of style sheets.</summary>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>

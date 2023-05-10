@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class TizenResourceXmlGenerator
 	{
-		static readonly IDictionary<string, string> resolutionMap = new Dictionary<string, string>
+		static readonly IDictionary<string, string> resolutionMap = new Dictionary<string, string>(StringComparer.Ordinal)
 		{
 			{ "LDPI", "from 0 to 240" },
 			{ "MDPI", "from 241 to 300" },

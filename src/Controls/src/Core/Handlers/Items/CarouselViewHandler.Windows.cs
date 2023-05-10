@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
-			ItemsView.Scrolled -= CarouselScrolled;
+			ItemsView.Scrolled += CarouselScrolled;
 			ListViewBase.SizeChanged += InitialSetup;
 
 			UpdateScrollBarVisibilityForLoop();

@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Microsoft.Maui.Graphics;
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		double _fallbackWidth;
 		double _fallbackHeight;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='FillProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Fill"/>.</summary>
 		public static readonly BindableProperty FillProperty =
 			BindableProperty.Create(nameof(Fill), typeof(Brush), typeof(Shape), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls.Shapes
 						(bindable as Shape)?.NotifyFillChanges();
 				});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Stroke"/>.</summary>
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Shape), null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -56,32 +57,32 @@ namespace Microsoft.Maui.Controls.Shapes
 						(bindable as Shape)?.NotifyStrokeChanges();
 				});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeThicknessProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Shape), 1.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashArrayProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Shape), null,
 				defaultValueCreator: bindable => new DoubleCollection());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeDashOffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
 			BindableProperty.Create(nameof(StrokeDashOffset), typeof(double), typeof(Shape), 0.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeLineCapProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeLineCap"/>.</summary>
 		public static readonly BindableProperty StrokeLineCapProperty =
 			BindableProperty.Create(nameof(StrokeLineCap), typeof(PenLineCap), typeof(Shape), PenLineCap.Flat);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeLineJoinProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeLineJoin"/>.</summary>
 		public static readonly BindableProperty StrokeLineJoinProperty =
 			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Shape), PenLineJoin.Miter);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='StrokeMiterLimitProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StrokeMiterLimit"/>.</summary>
 		public static readonly BindableProperty StrokeMiterLimitProperty =
 			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Shape), 10.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Shape.xml" path="//Member[@MemberName='AspectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Aspect"/>.</summary>
 		public static readonly BindableProperty AspectProperty =
 			BindableProperty.Create(nameof(Aspect), typeof(Stretch), typeof(Shape), Stretch.None);
 
@@ -256,6 +257,13 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			var path = GetPath();
 
+			TransformPathForBounds(path, viewBounds);
+
+			return path;
+		}
+
+		internal void TransformPathForBounds(PathF path, Graphics.Rect viewBounds)
+		{
 #if !(NETSTANDARD || !PLATFORM)
 
 			// TODO: not using this.GetPath().Bounds.Size;
@@ -335,8 +343,6 @@ namespace Microsoft.Maui.Controls.Shapes
 			if (!transform.IsIdentity)
 				path.Transform(transform);
 #endif
-
-			return path;
 		}
 
 		protected override void OnBindingContextChanged()
@@ -428,7 +434,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			return result;
 		}
 
-		internal double WidthForPathComputation
+		internal virtual double WidthForPathComputation
 		{
 			get
 			{
@@ -440,7 +446,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			}
 		}
 
-		internal double HeightForPathComputation
+		internal virtual double HeightForPathComputation
 		{
 			get
 			{

@@ -33,17 +33,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		Thickness GetNativePadding(ImageButtonHandler imageButtonHandler)
-		{
-			var shapeableImageView = GetPlatformImageButton(imageButtonHandler);
-
-			return new Thickness(
-				shapeableImageView.ContentPaddingLeft,
-				shapeableImageView.ContentPaddingTop,
-				shapeableImageView.ContentPaddingRight,
-				shapeableImageView.ContentPaddingBottom);
-		}
-
 		bool ImageSourceLoaded(ImageButtonHandler imageButtonHandler) =>
 			imageButtonHandler.PlatformView.Drawable != null;
 	}

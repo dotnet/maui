@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
+		Func<UICollectionViewCell> _getPrototype;
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
@@ -202,7 +203,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_initialized = true;
 
-			ItemsViewLayout.GetPrototype = GetPrototype;
+			_getPrototype ??= GetPrototype;
+			ItemsViewLayout.GetPrototype = _getPrototype;
 
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;

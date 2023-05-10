@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls
 			SnapPointsAlignment = SnapPointsAlignment.Center
 		};
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/LinearItemsLayout.xml" path="//Member[@MemberName='ItemSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemSpacing"/>.</summary>
 		public static readonly BindableProperty ItemSpacingProperty =
 			BindableProperty.Create(nameof(ItemSpacing), typeof(double), typeof(LinearItemsLayout), default(double),
 				validateValue: (bindable, value) => (double)value >= 0);
