@@ -6,7 +6,11 @@ using Windows.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media;
 #endif
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	internal static class FontExtensions
 	{
