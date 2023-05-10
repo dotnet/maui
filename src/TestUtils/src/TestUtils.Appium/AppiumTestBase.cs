@@ -24,8 +24,8 @@ namespace Microsoft.Maui.Appium
 		protected AppiumDriver? Driver;
 		protected AppiumOptions AppiumOptions;
 		protected TestConfig? TestConfig;
-		readonly Simulator TestSimulator = new();
-		readonly Emulator TestAvd = new();
+		protected Simulator TestSimulator = new();
+		protected Emulator TestAvd = new();
 
 		public bool IsAndroid => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
 		public bool IsWindows => Driver != null && Driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
@@ -44,6 +44,11 @@ namespace Microsoft.Maui.Appium
 			if (TestConfig.TestDevice == TestDevice.Android)
 			{
 				AndroidEmulatorStart();
+			}
+
+			if (TestConfig.TestDevice == TestDevice.iOS)
+			{
+				AppleSimulatorStart();
 			}
 		}
 
@@ -73,6 +78,10 @@ namespace Microsoft.Maui.Appium
 				AndroidEmulatorClear();
 				AndroidEmulatorStop();
 			}
+			if (testConfig.TestDevice == TestDevice.iOS)
+			{
+				AppleSimulatorStop();
+			}
 		}
 
 		public void InitializeEmulators()
@@ -83,14 +92,9 @@ namespace Microsoft.Maui.Appium
 			{
 				AndroidEmulatorInstall();
 			}
-
-			if (TestConfig.TestDevice == TestDevice.iOS)
-			{
-				//	AppleTemplateSetup();
-			}
 		}
 
-		public void AppleTemplateSetup()
+		public void AppleSimulatorStart()
 		{
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Running Apple templates is only supported on macOS.");
@@ -98,6 +102,11 @@ namespace Microsoft.Maui.Appium
 			TestSimulator.Shutdown();
 			Assert.IsTrue(TestSimulator.Launch(), $"Failed to boot simulator with UDID '{TestSimulator.GetUDID()}'.");
 			TestSimulator.ShowWindow();
+		}
+
+		public void AppleSimulatorStop()
+		{
+			TestSimulator.Shutdown();
 		}
 
 		public void AndroidEmulatorInstall()
@@ -148,6 +157,9 @@ namespace Microsoft.Maui.Appium
 			string target = "run";
 			string project = TestConfig.AppProjectPath;
 
+			List<string>? properties = null;
+			string appFile = string.Empty;
+			string? appFolder = string.Empty;
 			if (TestConfig.TestDevice == TestDevice.Android)
 			{
 				framework = $"{framework}-android";
@@ -156,6 +168,12 @@ namespace Microsoft.Maui.Appium
 			if (TestConfig.TestDevice == TestDevice.iOS)
 			{
 				framework = $"{framework}-ios";
+				string simulatorId = TestSimulator.GetUDID();
+				var deviceProperty = $"_DeviceName=:v2:udid={simulatorId}";
+				properties = new List<string> { deviceProperty };
+				appFolder = Path.GetDirectoryName(TestConfig.AppProjectPath.Replace("\\", "//", StringComparison.InvariantCultureIgnoreCase));
+				appFile = Path.Combine(appFolder!, "bin", config, framework, "iossimulator-x64", $"{Path.GetFileName(TestConfig.AppProjectPath?.Replace(".csproj", "", StringComparison.InvariantCultureIgnoreCase))}.app");
+				target = string.Empty;
 			}
 
 			if (TestConfig.TestDevice == TestDevice.Mac)
@@ -171,8 +189,13 @@ namespace Microsoft.Maui.Appium
 			}
 
 			//try build and run the application so it gets registered on the OS or on the Simulator.
-			var buildProject = DotnetInternal.Build(project, config, target, framework);
+			var buildProject = DotnetInternal.Build(project, config, target, framework, properties);
 			Assert.IsTrue(buildProject, $"Project {Path.GetFileName(project)} failed to build. Check test output/attachments for errors.");
+			if (TestConfig.TestDevice == TestDevice.iOS && !string.IsNullOrEmpty(appFile))
+			{
+				var resultDir = Path.Combine(appFolder!, "xh-results");
+				XHarness.RunAppleForTimeout(appFile, resultDir, TestSimulator.XHarnessID);
+			}
 		}
 
 
@@ -246,6 +269,8 @@ namespace Microsoft.Maui.Appium
 					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "MainActivity");
 					break;
 				case TestDevice.iOS:
+					if (string.IsNullOrEmpty(TestConfig.Udid))
+						TestConfig.Udid = TestSimulator.GetUDID();
 					appiumOptions.AddAdditionalAppiumOption(MobileCapabilityType.Udid, TestConfig.Udid);
 					appiumOptions.AddAdditionalAppiumOption(IOSMobileCapabilityType.BundleId, appId);
 					break;

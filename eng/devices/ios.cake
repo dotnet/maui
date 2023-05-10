@@ -222,29 +222,29 @@ Task("uitest")
 
 	CleanDirectories(TEST_RESULTS);
 
-	Information("Install with xharness: {0}",TEST_APP);
-	var settings = new DotNetCoreToolSettings {
-		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple install " +
-		$"--app=\"{TEST_APP}\" " +
-		$"--targets=\"{TEST_DEVICE}\" " +
-		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" ")
-	};
+	// Information("Install with xharness: {0}",TEST_APP);
+	// var settings = new DotNetCoreToolSettings {
+	// 	DiagnosticOutput = true,
+	// 	ArgumentCustomization = args => args.Append("run xharness apple install " +
+	// 	$"--app=\"{TEST_APP}\" " +
+	// 	$"--targets=\"{TEST_DEVICE}\" " +
+	// 	$"--output-directory=\"{TEST_RESULTS}\" " +
+	// 	$"--verbosity=\"Debug\" ")
+	// };
 
-	try {
-		DotNetCoreTool("tool", settings);
-	} finally {
+	// try {
+	// 	DotNetCoreTool("tool", settings);
+	// } finally {
 
-		var sims = ListAppleSimulators();
-	 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
-		var simXH = xharness.First();
-		Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
-		Information("The platform version to run tests: {0}", iosVersion);
-		SetEnvironmentVariable("IOS_SIMULATOR_UDID",simXH.UDID);
+	// 	var sims = ListAppleSimulators();
+	//  	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+	// 	var simXH = xharness.First();
+	// 	Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+	// 	Information("The platform version to run tests: {0}", iosVersion);
+	// 	SetEnvironmentVariable("IOS_SIMULATOR_UDID",simXH.UDID);
 		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersion);
 		
-	}
+	// }
 
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);

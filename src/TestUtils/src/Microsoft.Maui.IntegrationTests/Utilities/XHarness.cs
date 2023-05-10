@@ -42,8 +42,10 @@ namespace Microsoft.Maui.IntegrationTests
 				&& exitCode != 0;
 
 			if (!didTimeoutAsExpected)
+			{
+				System.Diagnostics.Debug.WriteLine(xhOutput);
 				TestContext.WriteLine(xhOutput);
-
+			}
 			return didTimeoutAsExpected;
 		}
 
