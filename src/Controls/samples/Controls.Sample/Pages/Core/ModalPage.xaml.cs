@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -29,11 +24,14 @@ namespace Maui.Controls.Sample.Pages
 
 		protected override void OnNavigatedTo(NavigatedToEventArgs args)
 		{
+			if (this.Window is null)
+				return;
+
 			if (PopModal.IsVisible)
 			{
 				this.Window.Title = "Modal Gallery";
 			}
-			else
+			else if (!String.IsNullOrWhiteSpace(_previousTitle))
 			{
 				this.Window.Title = _previousTitle;
 			}

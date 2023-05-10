@@ -43,7 +43,13 @@ namespace Microsoft.Maui.Platform
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
+			where T : ParentView
+#else
 			where T : class
+#endif
 		{
 			if (view is T t)
 				return t;
@@ -54,11 +60,7 @@ namespace Microsoft.Maui.Platform
 				if (parent != null)
 					return parent;
 
-#if TIZEN
 				view = view?.GetParent() as ParentView;
-#else
-				view = view?.GetParent();
-#endif
 			}
 
 			return default;
@@ -71,19 +73,11 @@ namespace Microsoft.Maui.Platform
 
 			while (view != null)
 			{
-#if TIZEN
 				var parent = view?.GetParent() as ParentView;
-#else
-				var parent = view?.GetParent();
-#endif
 				if (searchExpression(parent))
 					return parent;
 
-#if TIZEN
 				view = view?.GetParent() as ParentView;
-#else
-				view = view?.GetParent();
-#endif
 			}
 
 			return default;
@@ -91,7 +85,13 @@ namespace Microsoft.Maui.Platform
 
 #if WINDOWS || ANDROID
 		internal static T? GetParentOfType<T>(this PlatformView view)
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
+			where T : ParentView
+#else
 			where T : class
+#endif
 		{
 			if (view is T t)
 				return t;

@@ -10,7 +10,7 @@ namespace Microsoft.Maui.ApplicationModel
 	{
 		internal static IDictionary<string, string> ParseQueryString(string url)
 		{
-			var d = new Dictionary<string, string>();
+			var d = new Dictionary<string, string>(StringComparer.Ordinal);
 
 			if (string.IsNullOrWhiteSpace(url) || (url.IndexOf("?", StringComparison.Ordinal) == -1 && url.IndexOf("#", StringComparison.Ordinal) == -1))
 				return d;

@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	public static class NavigationPage
 	{
 		#region Translucent
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='IsNavigationBarTranslucentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsNavigationBarTranslucent"/>.</summary>
 		public static readonly BindableProperty IsNavigationBarTranslucentProperty =
 			BindableProperty.Create("IsNavigationBarTranslucent", typeof(bool),
 			typeof(NavigationPage), false);
@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 
 		#region StatusBarTextColorMode
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='StatusBarTextColorModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StatusBarTextColorMode"/>.</summary>
 		public static readonly BindableProperty StatusBarTextColorModeProperty =
 			BindableProperty.Create("StatusBarColorTextMode", typeof(StatusBarTextColorMode),
 			typeof(NavigationPage), StatusBarTextColorMode.MatchNavigationBarTextLuminosity);
@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 
 		#region PrefersLargeTitles
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='PrefersLargeTitlesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PrefersLargeTitles"/>.</summary>
 		public static readonly BindableProperty PrefersLargeTitlesProperty = BindableProperty.Create(nameof(PrefersLargeTitles), typeof(bool), typeof(Page), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetPrefersLargeTitles']/Docs/*" />
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 
 		#region HideNavigationBarSeparator
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='HideNavigationBarSeparatorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HideNavigationBarSeparator"/>.</summary>
 		public static readonly BindableProperty HideNavigationBarSeparatorProperty = BindableProperty.Create(nameof(HideNavigationBarSeparator), typeof(bool), typeof(Page), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/NavigationPage.xml" path="//Member[@MemberName='GetHideNavigationBarSeparator']/Docs/*" />

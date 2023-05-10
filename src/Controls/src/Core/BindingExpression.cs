@@ -377,8 +377,7 @@ namespace Microsoft.Maui.Controls
 				if (property.CanWrite && property.SetMethod.IsPublic && !property.SetMethod.IsStatic)
 				{
 					part.LastSetter = property.SetMethod;
-					var lastSetterParameters = part.LastSetter.GetParameters();
-					part.SetterType = lastSetterParameters[lastSetterParameters.Length - 1].ParameterType;
+					part.SetterType = property.PropertyType;
 
 					if (Binding.AllowChaining)
 					{

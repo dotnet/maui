@@ -176,10 +176,11 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 
 			var platformView = Control;
+
 			if (platformView == null)
 				return;
 
-			if (View.GestureRecognizers.Count == 0)
+			if (View.GestureController.CompositeGestureRecognizers.Count == 0)
 			{
 				platformView.Touch -= OnPlatformViewTouched;
 			}
