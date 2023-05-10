@@ -21,7 +21,9 @@ namespace Microsoft.Maui.Controls
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
-		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
+		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create(
+			"InputTransparent", typeof(bool), typeof(VisualElement), default(bool),
+			propertyChanged: OnInputTransparentPropertyChanged, coerceValue: CoerceInputTransparentProperty);
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
@@ -1275,6 +1277,15 @@ namespace Microsoft.Maui.Controls
 			(bindable as IPropertyPropagationController)?.PropagatePropertyChanged(VisualElement.IsEnabledProperty.PropertyName);
 		}
 
+		static object CoerceInputTransparentProperty(BindableObject bindable, object value)
+		{
+			return value;
+		}
+
+		static void OnInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+		}
+
 		static void OnIsFocusedPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			var element = (VisualElement)bindable;
@@ -1343,6 +1354,14 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected void RefreshIsEnabledProperty() =>
 			this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
+
+		/// <summary>
+		/// This method must always be called if some event occurs and the value of
+		/// the InputTransparentCore property will change.
+		/// </summary>
+		private protected void RefreshInputTransparentProperty()
+		{
+		}
 
 		void UpdateBoundsComponents(Rect bounds)
 		{

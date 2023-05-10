@@ -293,7 +293,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		public bool CascadeInputTransparent
 		{
@@ -322,6 +323,16 @@ namespace Microsoft.Maui.Controls
 				{
 					visualElement.InputTransparent = true;
 				}
+			}
+		}
+
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
+			{
+				layout.RefreshInputTransparentProperty();
 			}
 		}
 	}
