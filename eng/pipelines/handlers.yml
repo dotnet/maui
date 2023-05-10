@@ -140,7 +140,7 @@ stages:
             condition: or(
               ${{ parameters.BuildEverything }},
               ne(variables['Build.Reason'], 'PullRequest'),
-              eq('${{ BuildConfiguration }}', 'Release'))
+              eq('${{ BuildConfiguration }}', 'Debug'))
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}

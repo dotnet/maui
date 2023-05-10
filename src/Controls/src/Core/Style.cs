@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Controls
 
 		readonly WeakList<BindableObject> _targets = new();
 
+		bool _isFinalized;
+
 		Style _basedOnStyle;
 
 		string _baseResourceKey;
@@ -31,6 +33,8 @@ namespace Microsoft.Maui.Controls
 			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
 			Setters = new List<Setter>();
 		}
+
+		~Style() => _isFinalized = true;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='ApplyToDerivedTypes']/Docs/*" />
 		public bool ApplyToDerivedTypes { get; set; }
@@ -91,6 +95,9 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.Apply(BindableObject bindable)
 		{
+			if (_isFinalized)
+				throw new InvalidOperationException($"Style was finalized. target: {bindable}, Style: {this}");
+
 			lock (_targets)
 			{
 				_targets.Add(bindable);
@@ -106,6 +113,9 @@ namespace Microsoft.Maui.Controls
 
 		void IStyle.UnApply(BindableObject bindable)
 		{
+			if (_isFinalized)
+				throw new InvalidOperationException($"Style was finalized. target: {bindable}, Style: {this}");
+
 			UnApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));
 			bindable.RemoveDynamicResource(_basedOnResourceProperty);
 			lock (_targets)
