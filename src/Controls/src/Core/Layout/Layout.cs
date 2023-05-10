@@ -211,9 +211,6 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
 
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
-
 			// Take care of the Element internal bookkeeping
 			if (view is Element element)
 			{
@@ -241,9 +238,6 @@ namespace Microsoft.Maui.Controls
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
 
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
-
 			// Take care of the Element internal bookkeeping
 			if (view is Element element)
 			{
@@ -254,9 +248,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
-
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
 		}
 
 		void NotifyHandler(string action, int index, IView view)
@@ -304,27 +295,8 @@ namespace Microsoft.Maui.Controls
 
 		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper)
 		{
-			[nameof(CascadeInputTransparent)] = MapInputTransparent,
-			[nameof(IView.InputTransparent)] = MapInputTransparent,
 		};
 
-		void UpdateDescendantInputTransparent()
-		{
-			if (!InputTransparent || !CascadeInputTransparent)
-			{
-				// We only need to propagate values if the layout is InputTransparent AND Cascade is true
-				return;
-			}
-
-			// Set all the child InputTransparent values to match this one
-			for (int n = 0; n < Count; n++)
-			{
-				if (this[n] is VisualElement visualElement)
-				{
-					visualElement.InputTransparent = true;
-				}
-			}
-		}
 
 		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
