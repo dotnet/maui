@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls
 	public sealed class Setter : IValueProvider
 	{
 		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();
+		bool _isFinalized;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='TargetName']/Docs/*" />
 		public string TargetName { get; set; }
@@ -23,6 +24,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='Value']/Docs/*" />
 		public object Value { get; set; }
+
+		~Setter() => _isFinalized = true;
 
 		object IValueProvider.ProvideValue(IServiceProvider serviceProvider)
 		{
@@ -63,6 +66,9 @@ namespace Microsoft.Maui.Controls
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
 
+			if (_isFinalized)
+				throw new InvalidOperationException($"Setter was finalized. target: {target}, TargetName: {TargetName}, Property: {Property}, Value: {Value}");
+
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
@@ -95,6 +101,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (target == null)
 				throw new ArgumentNullException(nameof(target));
+
+			if (_isFinalized)
+				throw new InvalidOperationException($"Setter was finalized. target: {target}, TargetName: {TargetName}, Property: {Property}, Value: {Value}");
 
 			var targetObject = target;
 
