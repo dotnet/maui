@@ -3,12 +3,8 @@
 namespace Microsoft.Maui.Controls
 {
 	// There are 2 Layout types: Controls and Compatibility
-	interface IInputTransparentElement
+	interface IInputTransparentAffectingElement
 	{
-		bool InputTransparent2 { get; }
-
-		bool CascadeInputTransparent2 { get; }
-
-		Element Parent2 { get; }
+		bool CascadeInputTransparent { get; }
 	}
 }
