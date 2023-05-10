@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Appium
 			if (TestConfig.TestDevice == TestDevice.iOS && !string.IsNullOrEmpty(appFile))
 			{
 				var resultDir = Path.Combine(appFolder!, "xh-results");
-				XHarness.RunAppleForTimeout(appFile, resultDir, TestSimulator.XHarnessID);
+				XHarness.InstallRunAppleForTimeout(appFile, resultDir, TestSimulator.XHarnessID);
 			}
 		}
 

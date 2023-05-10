@@ -49,6 +49,35 @@ namespace Microsoft.Maui.IntegrationTests
 			return didTimeoutAsExpected;
 		}
 
+		public static bool InstallRunAppleForTimeout(string appPath, string resultDir, string targetDevice, int launchTimeoutSeconds = 75)
+		{
+			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
+			var args = $"apple install --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice} --timeout=\"{timeoutString}\" --verbosity=Debug";
+			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
+
+			//var args1 = $"apple just-run --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice} --timeout=\"{timeoutString}\" --verbosity=Debug";
+			//var xhOutput1 = RunForOutput(args1, out int exitCode1, launchTimeoutSeconds + 30);
+
+			var launchLogMatch = false;
+			var launchLog = Path.Combine(resultDir, $"{Path.GetFileNameWithoutExtension(appPath)}.log");
+			if (File.Exists(launchLog))
+			{
+				var launchLogContent = File.ReadAllText(launchLog);
+				launchLogMatch = Regex.IsMatch(launchLogContent, @"Killing process \d* as it was cancelled");
+			}
+
+			bool didTimeoutAsExpected = xhOutput.Contains($"Run timed out after {launchTimeoutSeconds} seconds", StringComparison.OrdinalIgnoreCase)
+				&& launchLogMatch
+				&& exitCode != 0;
+
+			if (!didTimeoutAsExpected)
+			{
+				System.Diagnostics.Debug.WriteLine(xhOutput);
+				TestContext.WriteLine(xhOutput);
+			}
+			return didTimeoutAsExpected;
+		}
+
 		public static bool InstallSimulator(string targetDevice)
 		{
 			return Run($"apple simulators install \"{targetDevice}\"");
