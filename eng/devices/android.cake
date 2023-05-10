@@ -289,40 +289,40 @@ Task("Test")
 Task("uitest")
 	.Does(() =>
 {
-	if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
+	// if (string.IsNullOrEmpty(TEST_APP)) {
+	// 	if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+	// 		throw new Exception("If no app was specified, an app must be provided.");
 		
-		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
-		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine("Release/net7.0-android").FullPath;
-		var apps = GetFiles(binDir + "/*-Signed.apk");
-		if (apps.Any()) {
-			TEST_APP = apps.FirstOrDefault().FullPath;
-		} else {
-			apps = GetFiles(binDir + "/*.apk");
-			TEST_APP = apps.First().FullPath;
-		}
-	}
-	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
-		var appFile = (FilePath)TEST_APP;
-		appFile = appFile.GetFilenameWithoutExtension();
-		TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
-	}
-	if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
-		TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
+	// 	var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
+	// 	Information("Test app bin folder {0}", binFolder);
+	// 	var binDir = binFolder.Combine("Release/net7.0-android").FullPath;
+	// 	var apps = GetFiles(binDir + "/*-Signed.apk");
+	// 	if (apps.Any()) {
+	// 		TEST_APP = apps.FirstOrDefault().FullPath;
+	// 	} else {
+	// 		apps = GetFiles(binDir + "/*.apk");
+	// 		TEST_APP = apps.First().FullPath;
+	// 	}
+	// }
+	// if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
+	// 	var appFile = (FilePath)TEST_APP;
+	// 	appFile = appFile.GetFilenameWithoutExtension();
+	// 	TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
+	// }
+	// if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
+	// 	TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
+	// }
+	// if (string.IsNullOrEmpty(TEST_RESULTS)) {
+	// 	TEST_RESULTS = TEST_APP + "-results";
+	// }
 
-	Information("Test App: {0}", TEST_APP);
-	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
-	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
-	Information("Test project: {0}", PROJECT);
+	// Information("Test App: {0}", TEST_APP);
+	// Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
+	// Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
+	// Information("Test Results Directory: {0}", TEST_RESULTS);
+	// Information("Test project: {0}", PROJECT);
 
-	CleanDirectories(TEST_RESULTS);
+	// CleanDirectories(TEST_RESULTS);
 
 	// if (DEVICE_BOOT_WAIT) {
 	// 	Information("Waiting for the emulator to finish booting...");

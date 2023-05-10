@@ -55,23 +55,23 @@ Task("Cleanup");
 Task("uitest")
 	.Does(() =>
 {
-	if (string.IsNullOrEmpty(TEST_APP) ) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"net7.0-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
-		Information("BinDir: {0}", binDir);
-		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		TEST_APP = apps.First().FullPath;
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
+	// if (string.IsNullOrEmpty(TEST_APP) ) {
+	// 	if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+	// 		throw new Exception("If no app was specified, an app must be provided.");
+	// 	var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"net7.0-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+	// 	Information("BinDir: {0}", binDir);
+	// 	var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+	// 	TEST_APP = apps.First().FullPath;
+	// }
+	// if (string.IsNullOrEmpty(TEST_RESULTS)) {
+	// 	TEST_RESULTS = TEST_APP + "-results";
+	// }
 
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
+	// Information("Test Device: {0}", TEST_DEVICE);
+	// Information("Test App: {0}", TEST_APP);
+	// Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	CleanDirectories(TEST_RESULTS);
+	// CleanDirectories(TEST_RESULTS);
 
 	Information("Build UITests project {0}",PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -90,8 +90,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
-				.Append("/bl:" + binlog)
-				.Append("/maxcpucount:1"),
+				.Append("/bl:" + binlog),
 				ToolPath = toolPath,
 	});
 

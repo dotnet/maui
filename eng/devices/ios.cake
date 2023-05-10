@@ -202,25 +202,25 @@ Task("Test")
 Task("uitest")
 	.Does(() =>
 {
-	if (string.IsNullOrEmpty(TEST_APP) ) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
-			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = USE_DOTNET
-			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
-			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
-		Information("BinDir: {0}", binDir);
-		var apps = GetDirectories(binDir + "/*.app");
-		TEST_APP = apps.First().FullPath;
-	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
-	}
+	// if (string.IsNullOrEmpty(TEST_APP) ) {
+	// 	if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+	// 		throw new Exception("If no app was specified, an app must be provided.");
+	// 	var binDir = USE_DOTNET
+	// 		? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
+	// 		: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+	// 	Information("BinDir: {0}", binDir);
+	// 	var apps = GetDirectories(binDir + "/*.app");
+	// 	TEST_APP = apps.First().FullPath;
+	// }
+	// if (string.IsNullOrEmpty(TEST_RESULTS)) {
+	// 	TEST_RESULTS = TEST_APP + "-results";
+	// }
 
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
+	// Information("Test Device: {0}", TEST_DEVICE);
+	// Information("Test App: {0}", TEST_APP);
+	// Information("Test Results Directory: {0}", TEST_RESULTS);
 
-	CleanDirectories(TEST_RESULTS);
+	// CleanDirectories(TEST_RESULTS);
 
 	// Information("Install with xharness: {0}",TEST_APP);
 	// var settings = new DotNetCoreToolSettings {
