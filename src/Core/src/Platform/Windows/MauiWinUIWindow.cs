@@ -19,7 +19,7 @@ namespace Microsoft.Maui
 
 		IntPtr _windowIcon;
 		bool _enableResumeEvent;
-		UI.Xaml.UIElement? _customTitleBar;
+		bool _isActivated;
 
 		public MauiWinUIWindow()
 		{
@@ -32,7 +32,8 @@ namespace Microsoft.Maui
 			// We set this to true by default so later on if it's
 			// set to false we know the user toggled this to false 
 			// and then we can react accordingly
-			ExtendsContentIntoTitleBar = true;
+			if (AppWindowTitleBar.IsCustomizationSupported())
+				base.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
 
 			SubClassingWin32();
 			SetIcon();
@@ -42,13 +43,25 @@ namespace Microsoft.Maui
 		{
 			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
 			{
+				// We have to track isActivated calls because WinUI will call OnActivated Twice
+				// when maximizing a window
+				// https://github.com/microsoft/microsoft-ui-xaml/issues/7343
+				if (_isActivated)
+					return;
+
+				_isActivated = true;
+
 				if (_enableResumeEvent)
-					MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
+					Services?.InvokeLifecycleEvents<WindowsLifecycle.OnResumed>(del => del(this));
 				else
 					_enableResumeEvent = true;
 			}
+			else
+			{
+				_isActivated = false;
+			}
 
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnActivated>(del => del(this, args));
+			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnActivated>(del => del(this, args));
 		}
 
 		private void OnClosedPrivate(object sender, UI.Xaml.WindowEventArgs args)
@@ -60,23 +73,25 @@ namespace Microsoft.Maui
 				DestroyIcon(_windowIcon);
 				_windowIcon = IntPtr.Zero;
 			}
+
+			Window = null;
 		}
 
 		protected virtual void OnClosed(object sender, UI.Xaml.WindowEventArgs args)
 		{
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnClosed>(del => del(this, args));
+			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnClosed>(del => del(this, args));
 		}
 
 		protected virtual void OnVisibilityChanged(object sender, UI.Xaml.WindowVisibilityChangedEventArgs args)
 		{
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
+			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnVisibilityChanged>(del => del(this, args));
 		}
 
 		public IntPtr WindowHandle => _windowManager.WindowHandle;
 
 		void SubClassingWin32()
 		{
-			MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
+			Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformWindowSubclassed>(
 				del => del(this, new WindowsPlatformWindowSubclassedEventArgs(WindowHandle)));
 
 			_windowManager.WindowMessage += OnWindowMessage;
@@ -120,7 +135,7 @@ namespace Microsoft.Maui
 					}
 				}
 
-				MauiWinUIApplication.Current.Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
+				Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
 					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
 			}
 		}
@@ -153,31 +168,22 @@ namespace Microsoft.Maui
 
 		SizeInt32 IPlatformSizeRestrictedWindow.MaximumSize { get; set; } = DefaultMaximumSize;
 
-		internal UI.Xaml.UIElement? MauiCustomTitleBar
-		{
-			get => _customTitleBar;
-			set
-			{
-				_customTitleBar = value;
-				SetTitleBar(_customTitleBar);
-				UpdateTitleOnCustomTitleBar();
-			}
-		}
+		internal IWindow? Window { get; private set; }
 
-		internal void UpdateTitleOnCustomTitleBar()
-		{
-			if (_customTitleBar is UI.Xaml.FrameworkElement fe &&
-				fe.GetDescendantByName<TextBlock>("AppTitle") is TextBlock tb)
-			{
-				tb.Text = Title;
-			}
-		}
+		internal IServiceProvider? Services =>
+			Window?.Handler?.GetServiceProvider() ??
+			MauiWinUIApplication.Current.Services;
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);
 
 		[DllImport("user32.dll", SetLastError = true)]
 		static extern int DestroyIcon(IntPtr hIcon);
+
+		internal void SetWindow(IWindow window)
+		{
+			Window = window;
+		}
 	}
 
 	interface IPlatformSizeRestrictedWindow

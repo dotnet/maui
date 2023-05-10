@@ -676,6 +676,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileMatches($"mipmap-xhdpi/{Path.GetFileNameWithoutExtension(bg)}_foreground.png", new object[] { fgScale, bg, fg, "xh", "f" });
 			}
 
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("drawable-hdpi/cat.png");
+				AssertFileExists("drawable-hdpi/dog.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("drawable-hdpi/dot.png");
+				AssertFileExists("drawable-hdpi/cat.png");
+			}
+
 			//[Theory]
 			//[InlineData(1, 1, "dotnet_background.svg", "tall_image.png", 300, 300)]
 			//[InlineData(1, 1, "dotnet_background.svg", "wide_image.png", 300, 300)]
@@ -1015,6 +1052,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 					$"\"filename\": \"{outputName}20x20@2x.png\"",
 					$"\"size\": \"20x20\",");
 			}
+
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("cat.png");
+				AssertFileExists("dog.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("dot.png");
+				AssertFileExists("cat.png");
+			}
 		}
 
 		public class ExecuteForWindows : ExecuteForApp
@@ -1334,6 +1408,43 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				AssertFileSize("not_working.scale-100.png", 24, 24);
 
 				AssertFileContains("not_working.scale-100.png", 0xFF71559B, 2, 6);
+			}
+
+			[Fact]
+			public void NonExistantFilesAreDeleted()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "dog",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("cat.scale-150.png");
+				AssertFileExists("dog.scale-150.png");
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+
+				items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "cat",
+					}),
+				};
+
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileNotExists("dot.scale-150.png");
+				AssertFileExists("cat.scale-150.png");
 			}
 		}
 

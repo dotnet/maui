@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
-			request.IsFocused = platformView.BecomeFirstResponder();
+			request.TrySetResult(platformView.BecomeFirstResponder());
 		}
 
 		public static void Unfocus(this UIView platformView, IView view)
@@ -728,6 +728,35 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static T? FindResponder<T>(this UIViewController controller) where T : UIViewController
+		{
+			var nextResponder = controller.View as UIResponder;
+			while (nextResponder is not null)
+			{
+				nextResponder = nextResponder.NextResponder;
+
+				if (nextResponder is T responder && responder != controller)
+					return responder;
+			}
+			return null;
+		}
+
+		internal static T? FindTopController<T>(this UIView view) where T : UIViewController
+		{
+			var bestController = view.FindResponder<T>();
+			var tempController = bestController;
+
+			while (tempController is not null)
+			{
+				tempController = tempController.FindResponder<T>();
+
+				if (tempController is not null)
+					bestController = tempController;
+			}
+
+			return bestController;
+		}
+
 		internal static UIView? FindNextView(this UIView? view, UIView containerView, Func<UIView, bool> isValidType)
 		{
 			UIView? nextView = null;
@@ -739,7 +768,17 @@ namespace Microsoft.Maui.Platform
 				if (siblings is null)
 					break;
 
-				nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
+				// TableView and ListView cells may not be in order so handle separately
+				if (view.FindResponder<UITableView>() is UITableView tableView)
+				{
+					nextView = view.FindNextInTableView(tableView, isValidType);
+
+					if (nextView is null)
+						view = tableView;
+				}
+
+				else
+					nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
 
 				view = view.Superview;
 			}
@@ -753,7 +792,7 @@ namespace Microsoft.Maui.Platform
 		static UIView? FindNextView(this UIView? view, int index, Func<UIView, bool> isValidType)
 		{
 			// search through the view's siblings and traverse down their branches
-			var siblings = view?.Superview?.Subviews;
+			var siblings = view is UITableView table ? table.VisibleCells : view?.Superview?.Subviews;
 
 			if (siblings is null)
 				return null;
@@ -776,6 +815,31 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		static UIView? FindNextInTableView(this UIView view, UITableView table, Func<UIView, bool> isValidType)
+		{
+			if (isValidType(view))
+			{
+				var index = view.FindTableViewCellIndex(table);
+
+				return index == -1 ? null : table.FindNextView(index + 1, isValidType);
+			}
+
+			return null;
+		}
+
+		static int FindTableViewCellIndex(this UIView view, UITableView table)
+		{
+			var cells = table.VisibleCells;
+			var viewCell = view.FindResponder<UITableViewCell>();
+
+			for (int i = 0; i < cells.Length; i++)
+			{
+				if (cells[i] == viewCell)
+					return i;
+			}
+			return -1;
+		}
+
 		internal static void ChangeFocusedView(this UIView view, UIView? newView)
 		{
 			if (newView is null)
@@ -783,6 +847,39 @@ namespace Microsoft.Maui.Platform
 
 			else
 				newView.BecomeFirstResponder();
+		}
+
+		internal static UIView? GetContainerView(this UIView? startingPoint)
+		{
+			var rootView = startingPoint?.FindResponder<ContainerViewController>()?.View;
+
+			if (rootView is not null)
+				return rootView;
+
+			var firstViewController = startingPoint?.FindTopController<UIViewController>();
+
+			if (firstViewController?.ViewIfLoaded is not null)
+				return firstViewController.ViewIfLoaded.FindDescendantView<ContentView>();
+
+			return null;
+		}
+
+		internal static UIView? FindFirstResponder(this UIView? superview)
+		{
+			if (superview is null)
+				return null;
+
+			if (superview.IsFirstResponder)
+				return superview;
+
+			foreach (var subview in superview.Subviews)
+			{
+				var subviewFirstResponder = subview.FindFirstResponder();
+				if (subviewFirstResponder is not null)
+					return subviewFirstResponder;
+			}
+
+			return null;
 		}
 	}
 }

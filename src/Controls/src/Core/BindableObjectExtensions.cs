@@ -70,6 +70,45 @@ namespace Microsoft.Maui.Controls
 			return returnIfNotSet;
 		}
 
+		internal static bool TrySetDynamicThemeColor(
+			this BindableObject bindableObject,
+			string resourceKey,
+			BindableProperty bindableProperty,
+			out object outerColor)
+		{
+			if (Application.Current.TryGetResource(resourceKey, out outerColor))
+			{
+				bindableObject.SetDynamicResource(bindableProperty, resourceKey);
+				return true;
+			}
+
+			return false;
+		}
+
+		internal static bool TrySetAppTheme(
+			this BindableObject self,
+			string lightResourceKey,
+			string darkResourceKey,
+			BindableProperty bindableProperty,
+			Brush defaultDark,
+			Brush defaultLight,
+			out object outerLight,
+			out object outerDark)
+		{
+			if (!Application.Current.TryGetResource(lightResourceKey, out outerLight))
+			{
+				outerLight = defaultLight;
+			}
+
+			if (!Application.Current.TryGetResource(darkResourceKey, out outerDark))
+			{
+				outerDark = defaultDark;
+			}
+
+			self.SetAppTheme(bindableProperty, outerLight, outerDark);
+			return (Brush)outerLight != defaultLight || (Brush)outerDark != defaultDark;
+		}
+
 		public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, T light, T dark) => self.SetBinding(targetProperty, new AppThemeBinding { Light = light, Dark = dark });
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetAppThemeColor']/Docs/*" />

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -12,16 +13,23 @@ namespace Microsoft.Maui.Controls
 	public class Border : View, IContentView, IBorderView, IPaddingElement
 	{
 		float[]? _strokeDashPattern;
-		ReadOnlyCollection<Element>? _logicalChildren;
 
-		internal ObservableCollection<Element> InternalChildren { get; } = new();
+		WeakNotifyPropertyChangedProxy? _strokeShapeProxy = null;
+		PropertyChangedEventHandler? _strokeShapeChanged;
+		WeakNotifyPropertyChangedProxy? _strokeProxy = null;
+		PropertyChangedEventHandler? _strokeChanged;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
+		~Border()
+		{
+			_strokeShapeProxy?.Unsubscribe();
+			_strokeProxy?.Unsubscribe();
+		}
 
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(Border), null, propertyChanged: ContentChanged);
 
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public View? Content
@@ -36,28 +44,112 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
 		public static readonly BindableProperty StrokeShapeProperty =
-			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle());
+			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle(),
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.StopNotifyingStrokeShapeChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.NotifyStrokeShapeChanges();
+				});
 
+		void NotifyStrokeShapeChanges()
+		{
+			var strokeShape = StrokeShape;
+
+			if (strokeShape is VisualElement visualElement)
+			{
+				SetInheritedBindingContext(visualElement, BindingContext);
+				visualElement.Parent = this;
+				_strokeShapeChanged ??= (sender, e) => OnPropertyChanged(nameof(StrokeShape));
+				_strokeShapeProxy ??= new();
+				_strokeShapeProxy.Subscribe(visualElement, _strokeShapeChanged);
+			}
+		}
+
+		void StopNotifyingStrokeShapeChanges()
+		{
+			var strokeShape = StrokeShape;
+
+			if (strokeShape is VisualElement visualElement)
+			{
+				SetInheritedBindingContext(visualElement, null);
+				visualElement.Parent = null;
+				_strokeShapeProxy?.Unsubscribe();
+			}
+		}
+
+		/// <summary>Bindable property for <see cref="Stroke"/>.</summary>
 		public static readonly BindableProperty StrokeProperty =
-			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
+			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null,
+				propertyChanging: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.StopNotifyingStrokeChanges();
+				},
+				propertyChanged: (bindable, oldvalue, newvalue) =>
+				{
+					if (newvalue is not null)
+						(bindable as Border)?.NotifyStrokeChanges();
+				});
 
+		void NotifyStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is ImmutableBrush)
+				return;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, BindingContext);
+				_strokeChanged ??= (sender, e) => OnPropertyChanged(nameof(Stroke));
+				_strokeProxy ??= new();
+				_strokeProxy.Subscribe(stroke, _strokeChanged);
+			}
+		}
+
+		void StopNotifyingStrokeChanges()
+		{
+			var stroke = Stroke;
+
+			if (stroke is ImmutableBrush)
+				return;
+
+			if (stroke is not null)
+			{
+				SetInheritedBindingContext(stroke, null);
+				_strokeProxy?.Unsubscribe();
+			}
+		}
+
+		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
 
+		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
 				defaultValueCreator: bindable => new DoubleCollection());
 
+		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
 			BindableProperty.Create(nameof(StrokeDashOffset), typeof(double), typeof(Border), 0.0);
 
+		/// <summary>Bindable property for <see cref="StrokeLineCap"/>.</summary>
 		public static readonly BindableProperty StrokeLineCapProperty =
 			BindableProperty.Create(nameof(StrokeLineCap), typeof(PenLineCap), typeof(Border), PenLineCap.Flat);
 
+		/// <summary>Bindable property for <see cref="StrokeLineJoin"/>.</summary>
 		public static readonly BindableProperty StrokeLineJoinProperty =
 			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Border), PenLineJoin.Miter);
 
+		/// <summary>Bindable property for <see cref="StrokeMiterLimit"/>.</summary>
 		public static readonly BindableProperty StrokeMiterLimitProperty =
 			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Border), 10.0);
 
@@ -176,17 +268,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (oldValue is Element oldElement)
 				{
-					int index = border.InternalChildren.IndexOf(oldElement);
-					if (border.InternalChildren.Remove(oldElement))
-					{
-						border.OnChildRemoved(oldElement, index);
-					}
+					border.RemoveLogicalChildInternal(oldElement);
 				}
 
 				if (newValue is Element newElement)
 				{
-					border.InternalChildren.Add(newElement);
-					border.OnChildAdded(newElement);
+					border.AddLogicalChildInternal(newElement);
 				}
 			}
 
@@ -216,6 +303,8 @@ namespace Microsoft.Maui.Controls
 				propertyName == WidthProperty.PropertyName ||
 				propertyName == StrokeShapeProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.Shape));
+			else if (propertyName == StrokeThicknessProperty.PropertyName)
+				UpdateStrokeShape();
 			else if (propertyName == StrokeDashArrayProperty.PropertyName)
 				Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
 		}
@@ -223,6 +312,14 @@ namespace Microsoft.Maui.Controls
 		void OnStrokeDashArrayChanged(object? sender, NotifyCollectionChangedEventArgs e)
 		{
 			Handler?.UpdateValue(nameof(IBorderStroke.StrokeDashPattern));
+		}
+
+		void UpdateStrokeShape()
+		{
+			if (StrokeShape is Shape strokeShape)
+			{
+				strokeShape.StrokeThickness = StrokeThickness;
+			}
 		}
 	}
 }

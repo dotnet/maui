@@ -5,6 +5,7 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.AppCompat.View.Menu;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
@@ -88,6 +89,22 @@ namespace Microsoft.Maui.DeviceTests
 				ToolbarItem toolbarItem = toolbarItems[i];
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+
+				if (primaryCommand is MenuItemImpl menuItemImpl)
+				{
+					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
+					{
+						Assert.True(menuItemImpl.RequiresActionButton(), "Secondary Menu Item `SetShowAsAction` not set correctly");
+					}
+					else
+					{
+						Assert.False(menuItemImpl.RequiresActionButton(), "Primary Menu Item `SetShowAsAction` not set correctly");
+					}
+				}
+				else
+				{
+					throw new Exception($"MenuItem type is not MenuItemImpl. Please rework test to work with {primaryCommand}");
+				}
 			}
 
 			return true;
@@ -137,15 +154,30 @@ namespace Microsoft.Maui.DeviceTests
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
+			if (navManager?.RootView is null)
+				return null;
+
 			var appbarLayout =
-				navManager?.RootView?.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+				navManager.RootView.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+
+			if (appbarLayout is null &&
+				navManager.RootView is ContainerView cv &&
+				cv.CurrentView is Shell shell)
+			{
+				if (shell.Handler is Controls.Platform.Compatibility.IShellContext sr)
+				{
+					var layout = sr.CurrentDrawerLayout;
+					var content = layout?.GetFirstChildOfType<Controls.Platform.Compatibility.CustomFrameLayout>();
+					appbarLayout = content?.GetFirstChildOfType<AppBarLayout>();
+				}
+			}
 
 			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
 
 			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
 				MaterialToolbar;
 
-			if (toolBar == null)
+			if (toolBar is null)
 			{
 				appbarLayout =
 					(navManager?.RootView as AViewGroup)?.GetFirstChildOfType<AppBarLayout>();
@@ -222,12 +254,27 @@ namespace Microsoft.Maui.DeviceTests
 			public override void OnResume()
 			{
 				base.OnResume();
+
+				bool isCreated = (_window as Window)?.IsCreated ?? false;
+				bool isActivated = (_window as Window)?.IsActivated ?? false;
+
+				if (!isCreated)
+					_window.Created();
+
+				if (!isActivated)
+					_window.Activated();
+
 				_taskCompletionSource.SetResult(true);
 			}
 
 			public override void OnDestroy()
 			{
 				base.OnDestroy();
+				bool isDestroyed = (_window as Window)?.IsDestroyed ?? false;
+
+				if (!isDestroyed)
+					_window.Destroying();
+
 				_finishedDestroying.SetResult(true);
 			}
 		}

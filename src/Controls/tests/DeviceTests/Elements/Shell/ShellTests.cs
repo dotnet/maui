@@ -8,6 +8,8 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -16,6 +18,10 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
+
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -32,7 +38,43 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
+			});
+		}
+
+		[Fact]
+		public async Task PageLayoutDoesNotExceedWindowBounds()
+		{
+			SetupBuilder();
+
+			var button = new Button()
+			{
+				Text = "Test me"
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = button
+			};
+
+			var shell = new Shell()
+			{
+				CurrentItem = contentPage,
+				FlyoutBehavior = FlyoutBehavior.Disabled
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				var pageBounds = contentPage.GetBoundingBox();
+				var window = contentPage.Window;
+
+				Assert.True(pageBounds.X >= 0);
+				Assert.True(pageBounds.Y >= 0);
+				Assert.True(pageBounds.Width <= window.Width);
+				Assert.True(pageBounds.Height <= window.Height);
 			});
 		}
 
@@ -104,6 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
 			{
 				finished = true;
+				return Task.CompletedTask;
 			});
 
 			Assert.True(finished);
@@ -517,7 +560,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if IOS || MACCATALYST
 		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
 		public async Task TitleViewSetOnShellWorksAfterNavigation()
 		{
@@ -584,7 +626,6 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			});
 		}
-#endif
 
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
@@ -661,7 +702,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS
+#if !IOS && !MACCATALYST
 		[Fact]
 		public async Task ChangingToNewMauiContextDoesntCrash()
 		{
@@ -673,11 +714,7 @@ namespace Microsoft.Maui.DeviceTests
 
 
 			var window = new Controls.Window(shell);
-			var mauiContextStub1 = new ContextStub(ApplicationServices);
-#if ANDROID
-			var activity = mauiContextStub1.GetActivity();
-			mauiContextStub1.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-#endif
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -687,11 +724,8 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.GoToAsync("//FlyoutItem2");
 			}, mauiContextStub1);
 
-			var mauiContextStub2 = new ContextStub(ApplicationServices);
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
 
-#if ANDROID
-			mauiContextStub2.Context = new Android.Views.ContextThemeWrapper(activity, Resource.Style.Maui_MainTheme_NoActionBar);
-#endif
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
 				await OnLoadedAsync(shell.CurrentPage);
@@ -804,8 +838,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Toolbar Title Initializes")]
-		public async Task ToolbarTitleIntializes()
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
 		{
 			SetupBuilder();
 			var navPage = new Shell()
@@ -820,6 +854,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				string title = GetToolbarTitle(handler);
 				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
 			});
 		}
 
@@ -923,6 +958,73 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+		[Fact(DisplayName = "Pages Do Not Leak")]
+		public async Task PagesDoNotLeak()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+			});
+
+			WeakReference pageReference = null;
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new CollectionView(),
+					}
+				};
+				pageReference = new WeakReference(page);
+
+				await shell.Navigation.PushAsync(page);
+				await shell.Navigation.PopAsync();
+			});
+
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
+			{
+				if (!pageReference.IsAlive)
+					break;
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+
+			Assert.NotNull(pageReference);
+			Assert.False(pageReference.IsAlive, "Page should not be alive!");
+		}
+
+		[Fact(DisplayName = "Can Reuse Pages")]
+		public async Task CanReusePages()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+			var reusedPage = new ContentPage
+			{
+				Content = new Label { Text = "HEY" }
+			};
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(reusedPage);
+				await shell.Navigation.PopAsync();
+				await shell.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
 
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>

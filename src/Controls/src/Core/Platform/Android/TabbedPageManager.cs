@@ -277,8 +277,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
 			ViewPager2 pager = _viewPager;
-			var adapter = (MultiPageFragmentStateAdapter<Page>)pager.Adapter;
-			adapter.CountOverride = Element.Children.Count;
+
+			if (pager.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			{
+				adapter.CountOverride = Element.Children.Count;
+			}
+
 			if (IsBottomTabPlacement)
 			{
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -329,14 +333,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void NotifyDataSetChanged()
 		{
-			if (_viewPager?.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			var adapter = _viewPager?.Adapter;
+			if (adapter is not null)
 			{
 				var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
 
 				// If the modification to the backing collection has changed the position of the current item
 				// then we need to update the viewpager so it remains selected
 				if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
-					_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), false);
+					_viewPager.SetCurrentItem(currentIndex, false);
 
 				adapter.NotifyDataSetChanged();
 			}

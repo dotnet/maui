@@ -113,7 +113,7 @@ namespace Samples.ViewModel
 
 				await LoadVideoAsync(photo);
 
-				Console.WriteLine($"CaptureVideoAsync COMPLETED: {PhotoPath}");
+				Console.WriteLine($"CaptureVideoAsync COMPLETED: {VideoPath}");
 			}
 			catch (Exception ex)
 			{
