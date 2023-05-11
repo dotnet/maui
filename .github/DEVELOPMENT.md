@@ -2,6 +2,10 @@
 
 This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
+## NOTE
+
+In order to open the MAUI solution files and build the product, you must run the MAUI Build Task scripts at least once. You can do this by following the "[Opening the Repository](#opening-the-repository)" directions below.
+
 ## Requirements
 
 ### Visual Studio
