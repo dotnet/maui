@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Graphics.Text.Renderer
 			if (string.IsNullOrEmpty(css))
 				return null;
 
-			var values = new Dictionary<string, string>();
+			var values = new Dictionary<string, string>(StringComparer.Ordinal);
 
 			var entries = css.Split(';');
 			foreach (var entry in entries)
