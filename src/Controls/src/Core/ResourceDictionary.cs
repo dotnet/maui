@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 
 		bool _isFinalized;
 
-		~Style() => _isFinalized = true;
+		~ResourceDictionary() => _isFinalized = true;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
