@@ -62,13 +62,13 @@ steps:
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
-      testRunTitle: '$(System.PhaseName)'
+      testRunTitle: '$(System.PhaseName) (attempt: $(System.JobAttempt))'
 
   - task: PublishBuildArtifacts@1
     displayName: Publish Artifacts
     condition: always()
     inputs:
-      artifactName: $(System.PhaseName)
+      artifactName: $(System.PhaseName)_attempt_$(System.JobAttempt)
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
