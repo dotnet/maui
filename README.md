@@ -11,6 +11,15 @@
 * [.NET MAUI Samples](https://github.com/dotnet/maui-samples)
 * [Development Guide](./.github/DEVELOPMENT.md)
 
+## Source Build TL;DR. ##
+
+Checkout the MAUI repository and run the following:
+
+```
+dotnet tool restore
+dotnet cake --target=dotnet-build --workloads=global
+```
+
 ## Overview
 
 .NET Multi-platform App UI (.NET MAUI) is the evolution of Xamarin.Forms that expands capabilities beyond mobile Android and iOS into desktop apps for Windows and macOS. With .NET MAUI, you can build apps that perform great for any device that runs Windows, macOS, Android, & iOS from a single codebase. Coupled with Visual Studio productivity tools and emulators, .NET and Visual Studio significantly speed up the development process for building apps that target the widest possible set of devices. Use a single development stack that supports the best of breed solutions for all modern workloads with a unified SDK, base class libraries, and toolchain. [Read More](https://docs.microsoft.com/dotnet/maui/what-is-maui)
