@@ -101,7 +101,7 @@ namespace Microsoft.Maui
 		}
 
 		Typeface? FindFont(string fileWithExtension)
-		{	
+		{
 			var result = LoadTypefaceFromAsset(fileWithExtension, warning: false);
 			if (result != null)
 				return result;
