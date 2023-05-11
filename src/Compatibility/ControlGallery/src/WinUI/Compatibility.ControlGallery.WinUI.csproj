@@ -99,6 +99,16 @@
     <Content Include="xamarinstore.jpg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Compatibility\**\*.cs" />
+    <Compile Remove="Compatibility\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Compatibility\WinUIStartup.cs" />
+  </ItemGroup>
+
+  
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

@@ -8,5 +8,5 @@ using Microsoft.Maui.Controls.ControlGallery;
 using Microsoft.Maui.Controls.ControlGallery.WinUI;
 
 // Deliberately broken image source and handler so we can test handling of image loading errors
-[assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
+// [assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
 [assembly: Microsoft.Maui.Controls.ResolutionGroupName(Microsoft.Maui.Controls.ControlGallery.Issues.Effects.ResolutionGroupName)]
