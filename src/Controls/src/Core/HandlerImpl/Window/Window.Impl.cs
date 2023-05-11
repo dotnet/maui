@@ -577,22 +577,8 @@ namespace Microsoft.Maui.Controls
 
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable is not Window window)
-				return;
-
 			if (oldValue is Page oldPage)
 				oldPage.SendDisappearing();
-
-			if (newValue is IToolbarElement toolbarElement &&
-				toolbarElement.Toolbar is Toolbar tb &&
-				newValue is not Shell)
-			{
-				window.Toolbar = tb;
-			}
-			else
-			{
-				window.Toolbar = null;
-			}
 		}
 
 		void OnPageChanged(Page? oldPage, Page? newPage)
