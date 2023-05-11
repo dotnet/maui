@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.IO;
 using Android.Graphics;
+using Android.Graphics.Fonts;
 using Android.Util;
 using Microsoft.Extensions.Logging;
 using AApplication = Android.App.Application;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui
 		}
 
 		Typeface? FindFont(string fileWithExtension)
-		{
+		{	
 			var result = LoadTypefaceFromAsset(fileWithExtension, warning: false);
 			if (result != null)
 				return result;
@@ -119,11 +120,6 @@ namespace Microsoft.Maui
 		{
 			try
 			{
-				var defaultTypeface = LoadDefaultTypeface(fontfamily);
-
-				if (defaultTypeface is not null)
-					return defaultTypeface;
-
 				return Typeface.CreateFromAsset(AApplication.Context.Assets, FontNameToFontFile(fontfamily));
 			}
 			catch (Exception ex)
@@ -142,6 +138,7 @@ namespace Microsoft.Maui
 				case "monospace":
 					return Typeface.Monospace;
 				case "sansserif":
+				case "sans-serif":
 					return Typeface.SansSerif;
 				case "serif":
 					return Typeface.Serif;
@@ -160,7 +157,9 @@ namespace Microsoft.Maui
 
 			if (!string.IsNullOrWhiteSpace(fontFamily))
 			{
-				if (GetFromAssets(fontFamily) is Typeface typeface)
+				if (LoadDefaultTypeface(fontFamily) is Typeface systemTypeface)
+					result = systemTypeface;
+				else if (GetFromAssets(fontFamily) is Typeface typeface)
 					result = typeface;
 				else
 					result = Typeface.Create(fontFamily, style);
