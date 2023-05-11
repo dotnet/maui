@@ -2,8 +2,7 @@
   <Import Project="$(MauiSrcDirectory)Maui.InTree.targets" Condition=" '$(UseMaui)' != 'true' " />
   <Import Project="$(MauiRootDirectory)Directory.Build.targets" />
 
-  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
-    <ProjectCapability Include="DiagnoseCapabilities" />
+  <ItemGroup>
     <ProjectCapability Include="MauiSingleProject" />
     <ProjectCapability Remove="Maui" />
     <ProjectCapability Remove="MauiAssets" />
