@@ -354,11 +354,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var icon = imageView?.Image;
 
-			if (icon == null || (targetColor == null && defaultTintColor == null))
+			if (icon is null || (targetColor is null && defaultTintColor is null))
 				return;
 
 			var newIcon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
-			imageView.TintColor = targetColor?.ToPlatform() ?? defaultTintColor;
+			imageView.TintColor = targetColor is not null ? targetColor.ToPlatform() : defaultTintColor;
 			imageView.Image = newIcon;
 		}
 
@@ -366,14 +366,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var icon = button.ImageView?.Image;
 
-			if (icon == null || (targetColor == null && defaultTintColor == null))
+			if (icon is null || (targetColor is null && defaultTintColor is null))
 				return;
 
 			var newIcon = icon.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate);
 			button.SetImage(newIcon, UIControlState.Normal);
 			button.SetImage(newIcon, UIControlState.Selected);
 			button.SetImage(newIcon, UIControlState.Highlighted);
-			button.TintColor = button.ImageView.TintColor = targetColor != null ? targetColor.ToPlatform() : defaultTintColor;
+			button.TintColor = button.ImageView.TintColor = targetColor is not null ? targetColor.ToPlatform() : defaultTintColor;
 		}
 
 		protected virtual void Dispose(bool disposing)
