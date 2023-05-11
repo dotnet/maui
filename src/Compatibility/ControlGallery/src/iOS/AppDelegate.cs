@@ -8,10 +8,10 @@ using Foundation;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -27,7 +27,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 [assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
 [assembly: ExportEffect(typeof(BorderEffect), nameof(BorderEffect))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class BorderEffect : PlatformEffect
 	{

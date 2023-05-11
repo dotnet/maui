@@ -1,16 +1,16 @@
 using System;
 using Foundation;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class _57114Renderer : Handlers.Compatibility.ViewRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{

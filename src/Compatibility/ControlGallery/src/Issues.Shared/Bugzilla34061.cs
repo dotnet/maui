@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Issue(IssueTracker.Bugzilla, 34061, "RelativeLayout - First child added after page display does not appear")]
 	public class Bugzilla34061 : TestContentPage
 	{
-		readonly RelativeLayout _layout = new RelativeLayout();
+		readonly Compatibility.RelativeLayout _layout = new Compatibility.RelativeLayout();
 
 		protected override void Init()
 		{

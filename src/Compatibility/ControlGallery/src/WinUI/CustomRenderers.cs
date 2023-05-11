@@ -3,9 +3,9 @@ using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
@@ -15,14 +15,14 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 
 #pragma warning disable CS0612 // Type or member is obsolete
-[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.TextBoxViewRenderer))]
+[assembly: ExportRenderer(typeof(Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla42602.TextBoxView), typeof(Microsoft.Maui.Controls.ControlGallery.WinUI.TextBoxViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue1683.EntryKeyboardFlags), typeof(EntryRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue1683.EditorKeyboardFlags), typeof(EditorRendererKeyboardFlags))]
 [assembly: ExportRenderer(typeof(Issue3273.SortableListView), typeof(SortableListViewRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEntry), typeof(Issue2172OldEntryRenderer))]
 [assembly: ExportRenderer(typeof(Issue2172OldEditor), typeof(Issue2172OldEditorRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	[System.Obsolete]
 	public class EntryRendererKeyboardFlags : EntryRenderer

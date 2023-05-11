@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using ObjCRuntime;
 using UIKit;
 
@@ -11,7 +11,7 @@ using UIKit;
 [assembly: ExportRenderer(typeof(Bugzilla38731.PageFour), typeof(CustomRendererBugzila38731))]
 #pragma warning restore CS0612 // Type or member is obsolete
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	[System.Obsolete]
 	public class CustomRendererBugzila38731 : Platform.iOS.PageRenderer

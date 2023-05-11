@@ -14,7 +14,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Text = "Load Next Image Control to Test",
 						Command = new Command(() =>
 						{
-							var activeImage = layout.Children.Last();
+							var activeImage = (View)layout.Children.Last();
 							int nextIndex = imageControls.ToList().IndexOf(activeImage) + 1;
 
 							if(nextIndex >= imageControls.Length)

@@ -2,9 +2,9 @@
 using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS.CustomRenderers;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
@@ -13,7 +13,7 @@ using UIKit;
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Issue12372Button), typeof(_12372CustomRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
+namespace Microsoft.Maui.Controls.ControlGallery.iOS.CustomRenderers
 {
 	[System.Obsolete]
 	public class _12372CustomRenderer : ButtonRenderer

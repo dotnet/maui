@@ -2,13 +2,13 @@
 using System.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Effects;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Platform;
 
 [assembly: ExportEffect(typeof(AttachedStateEffectRenderer), AttachedStateEffect.EffectName)]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class AttachedStateEffectRenderer : PlatformEffect
 	{

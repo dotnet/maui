@@ -1,14 +1,14 @@
 ﻿using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues.Helpers;
 using Microsoft.Maui.Controls.Internals;
 using ObjCRuntime;
 using UIKit;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	[Preserve(AllMembers = true)]
 	public class SampleNativeControl : ISampleNativeControl

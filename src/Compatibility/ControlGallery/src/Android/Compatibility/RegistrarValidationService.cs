@@ -1,12 +1,12 @@
 ﻿using AndroidX.Fragment.App;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.Android;
 using Microsoft.Maui.Platform;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class RegistrarValidationService : IRegistrarValidationService
 	{

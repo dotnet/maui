@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Input;
@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml.Media;
 
 [assembly: ExportRenderer(typeof(Bugzilla57114._57114View), typeof(_57114Renderer))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	public class _57114Renderer : Handlers.Compatibility.VisualElementRenderer<Bugzilla57114._57114View, _57114NativeView>
 	{

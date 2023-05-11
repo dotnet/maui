@@ -3,15 +3,15 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 
 [assembly: ExportRenderer(typeof(Issue11132Control), typeof(_11132CustomRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class _11132CustomRenderer : Handlers.Compatibility.VisualElementRenderer<Issue11132Control>
 	{

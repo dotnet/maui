@@ -5,10 +5,10 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Maps.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Maps;
 using ObjCRuntime;
 using UIKit;
@@ -39,7 +39,7 @@ using UIKit;
 [assembly: ExportRenderer(typeof(TableView), typeof(PerformanceTrackingTableView))]
 [assembly: ExportRenderer(typeof(Frame), typeof(PerformanceTrackingFrame))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public interface IDrawnObservable
 	{

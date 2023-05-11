@@ -5,12 +5,12 @@ using Android.Content;
 using Android.Graphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Android;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Android;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
 
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
 	{

@@ -1,16 +1,16 @@
 ﻿using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportRenderer(typeof(Issue9767NavigationPage), typeof(_9767CustomRenderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class _9767CustomRenderer : Handlers.Compatibility.NavigationRenderer
 	{

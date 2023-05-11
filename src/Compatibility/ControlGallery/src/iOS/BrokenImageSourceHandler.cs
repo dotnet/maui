@@ -3,16 +3,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using ObjCRuntime;
 using UIKit;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(_51173Image), typeof(_51173CustomImageRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public sealed class BrokenImageSourceHandler : IImageSourceHandler
 	{

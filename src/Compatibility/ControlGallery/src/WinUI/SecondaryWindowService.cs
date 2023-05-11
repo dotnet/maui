@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 using Microsoft.UI.Xaml;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using Windows.UI.ViewManagement;
 
 [assembly: Dependency(typeof(SecondaryWindowService))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	class SecondaryWindowService : ISecondaryWindowService
 	{

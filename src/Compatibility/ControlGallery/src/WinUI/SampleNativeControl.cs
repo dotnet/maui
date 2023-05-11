@@ -1,13 +1,13 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery.Issues.Helpers;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 
 [assembly: Dependency(typeof(SampleNativeControl))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	public class SampleNativeControl : ISampleNativeControl
 	{

@@ -14,7 +14,7 @@ using Windows.Graphics.Display;
 using Windows.System;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	public class WinUIMauiProgram
 	{

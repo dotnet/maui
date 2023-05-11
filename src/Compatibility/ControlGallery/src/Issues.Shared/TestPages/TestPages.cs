@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Dispatching;
 using NUnit.Framework.Interfaces;
@@ -18,14 +19,25 @@ using Xamarin.UITest;
 [assembly: Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 #if UITEST
 	using IApp = Xamarin.UITest.IApp;
 #endif
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../../../src/Android/bin/Debug/net6.0-android/com.microsoft.mauicompatibilitygallery-Signed.apk";
+		public static string ApkPath
+		{
+			get
+			{
+				var directories = Directory.GetDirectories("../../../../../src/Android/bin/Debug/", "*android*");
+
+				if (directories.Length == 0)
+					throw new Exception("Unable to locate apk path");
+
+				return $"{directories[0]}/com.microsoft.mauicompatibilitygallery-Signed.apk";
+			}
+		}
 
 		public static string MacOSPath = "../../../../src/MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 
@@ -842,7 +854,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			if (makeSureFlyoutStaysOpen)
 			{
 				System.Threading.Thread.Sleep(500);
-				if(RunningApp.Query(text).Count() == 0)
+				if (RunningApp.Query(text).Count() == 0)
 					this.ShowFlyout(flyoutIcon);
 			}
 
@@ -872,12 +884,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 }
 
 #if UITEST
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	using System;
 	using NUnit.Framework;
 
-// Run setup once for all tests in the Microsoft.Maui.Controls.ControlGallery.Issues namespace
+	// Run setup once for all tests in the Microsoft.Maui.Controls.ControlGallery.Issues namespace
 	// (instead of once for each test)
 	[SetUpFixture]
 	public class IssuesSetup

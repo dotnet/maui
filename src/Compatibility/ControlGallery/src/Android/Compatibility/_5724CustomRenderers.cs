@@ -4,7 +4,7 @@ using System.Linq;
 using Android.Content;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat;
 using Microsoft.Maui.Controls.ControlGallery.Android;
 using Microsoft.Maui.Controls.Platform;

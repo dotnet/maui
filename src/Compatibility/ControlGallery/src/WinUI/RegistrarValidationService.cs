@@ -1,10 +1,10 @@
 ﻿using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 
 [assembly: Dependency(typeof(RegistrarValidationService))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	[System.Obsolete]
 	public class RegistrarValidationService : IRegistrarValidationService

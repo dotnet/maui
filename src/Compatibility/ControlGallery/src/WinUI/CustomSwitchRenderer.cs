@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Compatibility.Platform.UWP;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.WinUI;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
@@ -10,7 +10,7 @@ using WResourceDictionary = Microsoft.UI.Xaml.ResourceDictionary;
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(CustomSwitch), typeof(CustomSwitchRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	// Used in Issue7253.cs
 	[System.Obsolete]

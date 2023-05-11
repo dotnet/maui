@@ -1,18 +1,18 @@
 ﻿using System;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS.CustomRenderers;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using ObjCRuntime;
 using UIKit;
-using static Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue6368;
+using static Microsoft.Maui.Controls.ControlGallery.Issues.Issue6368;
 
 #pragma warning disable CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(RoundedLabel), typeof(RoundedLabelRenderer))]
 #pragma warning restore CS0612 // Type or member is obsolete
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomRenderers
+namespace Microsoft.Maui.Controls.ControlGallery.iOS.CustomRenderers
 {
 	[System.Obsolete]
 	public class RoundedLabelRenderer : LabelRenderer

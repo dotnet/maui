@@ -7,15 +7,15 @@ using Foundation;
 using MapKit;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
-[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CollectionViewRenderer))]
+[assembly: ExportRenderer(typeof(Bugzilla21177.CollectionView), typeof(Microsoft.Maui.Controls.ControlGallery.iOS.CollectionViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeCell), typeof(NativeiOSCellRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView2), typeof(NativeiOSListViewRenderer))]
 [assembly: ExportRenderer(typeof(NativeListView), typeof(NativeListViewRenderer))]
@@ -31,7 +31,7 @@ using RectangleF = CoreGraphics.CGRect;
 #pragma warning restore CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
 	{
