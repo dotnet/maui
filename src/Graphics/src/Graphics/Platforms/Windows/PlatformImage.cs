@@ -5,20 +5,37 @@ using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Windows.Storage.Streams;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
-	internal class W2DImage : IImage
+	/// <summary>
+	/// A Windows platform implementation of <see cref="IImage"/>.
+	/// </summary>
+#if MAUI_GRAPHICS_WIN2D
+	internal class W2DImage
+#else
+	public class PlatformImage
+#endif
+		: IImage
 	{
 		private readonly ICanvasResourceCreator _creator;
 		private CanvasBitmap _bitmap;
 
-		public W2DImage(ICanvasResourceCreator creator, CanvasBitmap bitmap)
+#if MAUI_GRAPHICS_WIN2D
+		public W2DImage(
+#else
+		public PlatformImage(
+#endif
+			ICanvasResourceCreator creator, CanvasBitmap bitmap)
 		{
 			_creator = creator;
 			_bitmap = bitmap;
 		}
 
-		public CanvasBitmap PlatformImage => _bitmap;
+		public CanvasBitmap PlatformRepresentation => _bitmap;
 
 		public void Dispose()
 		{
@@ -109,7 +126,11 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public IImage ToPlatformImage()
 		{
-			throw new NotImplementedException();
+#if MAUI_GRAPHICS_WIN2D
+			return new Platform.PlatformImage(_creator, _bitmap);
+#else
+			return this;
+#endif
 		}
 
 		public IImage ToImage(int width, int height, float scale = 1f)
@@ -119,12 +140,12 @@ namespace Microsoft.Maui.Graphics.Win2D
 
 		public static IImage FromStream(Stream stream, ImageFormat format = ImageFormat.Png)
 		{
-			var creator = W2DGraphicsService.Creator;
+			var creator = PlatformGraphicsService.Creator;
 			if (creator == null)
 				throw new Exception("No resource creator has been registered globally or for this thread.");
 
 			var bitmap = AsyncPump.Run(async () => await CanvasBitmap.LoadAsync(creator, stream.AsRandomAccessStream()));
-			return new W2DImage(creator, bitmap);
+			return new PlatformImage(creator, bitmap);
 		}
 	}
 }
