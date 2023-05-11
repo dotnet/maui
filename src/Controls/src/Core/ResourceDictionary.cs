@@ -26,7 +26,9 @@ namespace Microsoft.Maui.Controls
 
 		bool _isFinalized;
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
 		~ResourceDictionary() => _isFinalized = true;
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='Source']/Docs/*" />
 		[System.ComponentModel.TypeConverter(typeof(RDSourceTypeConverter))]
