@@ -4,14 +4,23 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
+#else
+namespace Microsoft.Maui.Graphics.Platform
+#endif
 {
 	/// <summary>
 	/// Provides a pump that supports running asynchronous methods on the current thread.
 	///
 	/// From MSDN blog post: http://blogs.msdn.com/b/pfxteam/archive/2012/01/20/10259049.aspx
 	/// </summary>
-	public static class AsyncPump
+#if MAUI_GRAPHICS_WIN2D
+	public
+#else
+	internal
+#endif
+	static class AsyncPump
 	{
 		/// <summary>Runs the specified asynchronous function.</summary>
 		/// <param name="func">The asynchronous function to execute.</param>

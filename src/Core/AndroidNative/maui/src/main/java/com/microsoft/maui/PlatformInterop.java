@@ -2,10 +2,17 @@ package com.microsoft.maui;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PathEffect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
+import android.os.Build;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -371,6 +378,81 @@ public class PlatformInterop {
             }
         }
         return null;
+    }
+
+    /**
+     * Sets many values at once on a Paint object
+     * @param paint
+     * @param strokeWidth
+     * @param strokeJoin
+     * @param strokeCap
+     * @param strokeMiter
+     * @param pathEffect
+     */
+    public static void setPaintValues(Paint paint, float strokeWidth, Paint.Join strokeJoin, Paint.Cap strokeCap, float strokeMiter, PathEffect pathEffect)
+    {
+        paint.setStrokeWidth(strokeWidth);
+        paint.setStrokeJoin(strokeJoin);
+        paint.setStrokeCap(strokeCap);
+        paint.setStrokeMiter(strokeMiter);
+        if (pathEffect != null) {
+            paint.setPathEffect(pathEffect);
+        }
+    }
+
+    /**
+     * Calls canvas.saveLayer(), draws paths for clipPath & borderPaint, then canvas.restoreToCount()
+     * @param drawable
+     * @param canvas
+     * @param width
+     * @param height
+     * @param clipPath
+     * @param borderPaint
+     */
+    public static void drawMauiDrawablePath(PaintDrawable drawable, Canvas canvas, int width, int height, @NonNull Path clipPath, Paint borderPaint)
+    {
+        int saveCount = canvas.saveLayer(0, 0, width, height, null);
+
+        Paint paint = drawable.getPaint();
+        if (paint != null) {
+            canvas.drawPath(clipPath, paint);
+        }
+        if (borderPaint != null) {
+            canvas.drawPath(clipPath, borderPaint);
+        }
+
+        canvas.restoreToCount(saveCount);
+    }
+
+    /**
+     * Gets the value of android.R.attr.windowBackground from the given Context
+     * @param context
+     * @return the color or -1 if not found
+     */
+    public static int getWindowBackgroundColor(Context context)
+    {
+        TypedValue value = new TypedValue();
+        if (!context.getTheme().resolveAttribute(android.R.attr.windowBackground, value, true) && isColorType(value)) {
+            return value.data;
+        } else {
+            return -1;
+        }
+    }
+
+    /**
+     * Needed because TypedValue.isColorType() is only API Q+
+     * https://github.com/aosp-mirror/platform_frameworks_base/blob/1d896eeeb8744a1498128d62c09a3aa0a2a29a16/core/java/android/util/TypedValue.java#L266-L268
+     * @param value
+     * @return true if the TypedValue is a Color
+     */
+    private static boolean isColorType(TypedValue value)
+    {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return value.isColorType();
+        } else {
+            // Implementation from AOSP
+            return (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT);
+        }
     }
 
     private static class ColorStates
