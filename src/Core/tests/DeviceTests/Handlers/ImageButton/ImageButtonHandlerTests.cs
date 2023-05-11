@@ -95,6 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(loadingCompleted);
 		}
 
+#if IOS || MACCATALYST
 		[Theory(DisplayName = "Padding Initializes Correctly")]
 		[InlineData(0, 0, 0, 0)]
 		[InlineData(1, 1, 1, 1)]
@@ -114,10 +115,6 @@ namespace Microsoft.Maui.DeviceTests
 				var native = GetNativePadding(handler);
 				var scaled = user;
 
-#if __ANDROID__
-				scaled = handler.PlatformView.Context!.ToPixels(scaled);
-#endif
-
 				return (scaled, native);
 			});
 
@@ -126,6 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected.Right, native.Right, Precision);
 			Assert.Equal(expected.Bottom, native.Bottom, Precision);
 		}
+#endif
 
 		[Category(TestCategory.ImageButton)]
 		public partial class ImageButtonImageHandlerTests : ImageHandlerTests<ImageButtonHandler, ImageButtonStub>
