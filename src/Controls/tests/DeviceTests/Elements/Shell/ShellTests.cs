@@ -20,6 +20,10 @@ using Xunit;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
