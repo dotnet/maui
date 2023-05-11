@@ -172,8 +172,15 @@ namespace Microsoft.Maui.Controls
 			Apply(Target);
 		}
 
+		~MergedStyle() => _isFinalized = true;
+
+		bool _isFinalized;
+
 		void SetStyle(IStyle implicitStyle, IList<Style> classStyles, IStyle style)
 		{
+			if (_isFinalized)
+				throw new InvalidOperationException($"MergedStyle was finalized. implicitStyle: {implicitStyle}, style: {style}");
+
 			bool shouldReApplyStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles || Style != style;
 			bool shouldReApplyClassStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles;
 			bool shouldReApplyImplicitStyle = implicitStyle != ImplicitStyle && (Style as Style == null || ((Style)Style).CanCascade);
