@@ -23,28 +23,21 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{
+#if IOS || ANDROID || WINDOWS || TIZEN
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
-		IImageSourceServiceProvider ImageSourceServiceProvider =>
-			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
+#endif
 
-		readonly Func<IImageSourcePart?> _imageSourcePart;
-		Action<PlatformImage?>? SetImage { get; }
-		PlatformView? PlatformView => Handler.PlatformView as PlatformView;
+		readonly WeakReference<ISetImageHandler> _handler;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		IElementHandler Handler { get; }
-
-		public ImageSourcePartLoader(
-			IElementHandler handler,
-			Func<IImageSourcePart?> imageSourcePart,
-			Action<PlatformImage?> setImage)
+		[Obsolete("To be removed in a future release")]
+		public ImageSourcePartLoader(IElementHandler handler, Func<IImageSourcePart?> imageSourcePart, Action<PlatformImage?> setImage)
+			: this((ISetImageHandler)handler)
 		{
-			Handler = handler;
-			_imageSourcePart = imageSourcePart;
-
-			SetImage = setImage;
 		}
+
+		public ImageSourcePartLoader(ISetImageHandler handler) => _handler = new(handler);
 
 		public void Reset()
 		{
@@ -53,18 +46,20 @@ namespace Microsoft.Maui.Platform
 
 		public async Task UpdateImageSourceAsync()
 		{
-			if (PlatformView is null)
+			if (!_handler.TryGetTarget(out var handler) || handler.PlatformView is not PlatformView platformView)
 			{
 				return;
 			}
 
 			var token = this.SourceManager.BeginLoad();
-			var imageSource = _imageSourcePart();
+			var imageSource = handler.VirtualView as IImageSourcePart;
 
 			if (imageSource?.Source is not null)
 			{
-#if __IOS__ || __ANDROID__ || WINDOWS || TIZEN
-				var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
+#if IOS || ANDROID || WINDOWS || TIZEN
+				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, handler.SetImageSource, token)
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
@@ -74,7 +69,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
-				SetImage?.Invoke(null);
+				handler.SetImageSource(null);
 			}
 		}
 	}

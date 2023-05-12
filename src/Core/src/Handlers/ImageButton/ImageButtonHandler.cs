@@ -23,7 +23,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageButtonHandler : IImageButtonHandler
+	public partial class ImageButtonHandler : IImageButtonHandler, ISetImageHandler
 	{
 		public static IPropertyMapper<IImage, IImageHandler> ImageMapper = new PropertyMapper<IImage, IImageHandler>(ImageHandler.Mapper);
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
 		public ImageButtonHandler() : base(Mapper)
 		{

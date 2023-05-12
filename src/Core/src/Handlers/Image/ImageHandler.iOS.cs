@@ -9,22 +9,11 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, UIImageView>
 	{
-		protected override UIImageView CreatePlatformView() => new MauiImageView();
-
-		protected override void ConnectHandler(UIImageView platformView)
-		{
-			base.ConnectHandler(platformView);
-
-			if (PlatformView is MauiImageView imageView)
-				imageView.WindowChanged += OnWindowChanged;
-		}
+		protected override UIImageView CreatePlatformView() => new MauiImageView(this);
 
 		protected override void DisconnectHandler(UIImageView platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			if (platformView is MauiImageView imageView)
-				imageView.WindowChanged -= OnWindowChanged;
 
 			SourceLoader.Reset();
 		}
@@ -52,10 +41,10 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(UIImage? obj) =>
+		void ISetImageHandler.SetImageSource(UIImage? obj) =>
 			PlatformView.Image = obj;
 
-		void OnWindowChanged(object? sender, EventArgs e)
+		internal void NotifyWindowChanged()
 		{
 			if (SourceLoader.SourceManager.IsResolutionDependent)
 				UpdateValue(nameof(IImage.Source));

@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
-		void OnSetImageSource(Drawable? obj)
+		void ISetImageHandler.SetImageSource(Drawable? obj)
 		{
 			PlatformView.Icon = obj;
 		}

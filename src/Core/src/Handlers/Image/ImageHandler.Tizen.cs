@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(MauiImageSource? obj)
+		void ISetImageHandler.SetImageSource(MauiImageSource? obj)
 		{
 			if (obj == null)
 				return;

@@ -15,6 +15,9 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
+#if !WINDOWS
+		, ISetImageHandler
+#endif
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =
 			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ViewHandler.ElementMapper)
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Handlers
 #if !WINDOWS
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader SourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
 
 		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image) =>

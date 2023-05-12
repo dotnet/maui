@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as Button)?.UpdatePadding(imageButton);
 		}
 
-		void OnSetImageSource(ImageSource? nativeImageSource)
+		void ISetImageHandler.SetImageSource(ImageSource? nativeImageSource)
 		{
 			PlatformView.UpdateImageSource(nativeImageSource);
 		}

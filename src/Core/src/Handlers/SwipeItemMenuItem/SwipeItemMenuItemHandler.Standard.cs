@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapVisibility(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view) { }
 
-		void OnSetImageSource(object? obj)
+		void ISetImageHandler.SetImageSource(object? obj)
 		{
 			throw new NotImplementedException();
 		}

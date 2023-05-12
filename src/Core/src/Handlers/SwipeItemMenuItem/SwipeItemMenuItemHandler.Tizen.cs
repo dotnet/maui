@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		void OnSetImageSource(MauiImageSource? obj)
+		void ISetImageHandler.SetImageSource(MauiImageSource? obj)
 		{
 			if (obj != null)
 				PlatformView.Icon.ResourceUrl = obj.ResourceUrl;

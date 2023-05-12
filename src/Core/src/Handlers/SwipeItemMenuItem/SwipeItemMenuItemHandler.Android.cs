@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Handlers
 				var icons = textView.GetCompoundDrawables();
 				if (icons.Length > 1 && icons[1] != null)
 				{
-					OnSetImageSource(icons[1]);
+					((ISetImageHandler)this).SetImageSource(icons[1]);
 				}
 			}
 
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
-		void OnSetImageSource(Drawable? drawable)
+		void ISetImageHandler.SetImageSource(Drawable? drawable)
 		{
 			if (drawable != null)
 			{
