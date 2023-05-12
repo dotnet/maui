@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : UITextView
 	{
+		internal const string TextSetOrChangedNotification = "TextSetOrChanged";
 		readonly UILabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 
@@ -34,7 +35,10 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
-		public event EventHandler? TextSetOrChanged;
+		private void TextSetOrChanged() {
+				var notification = NSNotification.FromName(TextSetOrChangedNotification, this);
+				NSNotificationCenter.DefaultCenter.PostNotification(notification);
+		}
 
 		public string? PlaceholderText
 		{
@@ -76,7 +80,7 @@ namespace Microsoft.Maui.Platform
 				if (old != value)
 				{
 					HidePlaceholderIfTextIsPresent(value);
-					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+					TextSetOrChanged();
 				}
 			}
 		}
@@ -104,7 +108,7 @@ namespace Microsoft.Maui.Platform
 				if (old?.Value != value?.Value)
 				{
 					HidePlaceholderIfTextIsPresent(value?.Value);
-					TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+					TextSetOrChanged();
 				}
 			}
 		}
@@ -143,7 +147,7 @@ namespace Microsoft.Maui.Platform
 		void OnChanged(object? sender, EventArgs e)
 		{
 			HidePlaceholderIfTextIsPresent(Text);
-			TextSetOrChanged?.Invoke(this, EventArgs.Empty);
+			TextSetOrChanged();
 		}
 
 		void ShouldCenterVertically()

@@ -1,7 +1,5 @@
 ﻿using System;
-using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -35,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 #endif
-
+		
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -51,7 +49,8 @@ namespace Microsoft.Maui.Handlers
 			platformView.ShouldChangeText += OnShouldChangeText;
 			platformView.Started += OnStarted;
 			platformView.Ended += OnEnded;
-			platformView.TextSetOrChanged += OnTextPropertySet;
+			// register to native notitications
+			base.RegisterToNotifications(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiTextView platformView)
@@ -59,12 +58,20 @@ namespace Microsoft.Maui.Handlers
 			platformView.ShouldChangeText -= OnShouldChangeText;
 			platformView.Started -= OnStarted;
 			platformView.Ended -= OnEnded;
-			platformView.TextSetOrChanged -= OnTextPropertySet;
 
 			if (_set)
 				platformView.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
+		}
+
+		protected override void OnNativeViewChanged(NSNotification notification)
+		{
+			switch(notification.Name) {
+			case MauiTextView.TextSetOrChangedNotification:
+				OnTextPropertySet(notification.Object, EventArgs.Empty);
+				break;
+			}
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)

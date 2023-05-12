@@ -1657,7 +1657,6 @@ Microsoft.Maui.Platform.MauiTextView.PlaceholderText.get -> string?
 Microsoft.Maui.Platform.MauiTextView.PlaceholderText.set -> void
 Microsoft.Maui.Platform.MauiTextView.PlaceholderTextColor.get -> UIKit.UIColor?
 Microsoft.Maui.Platform.MauiTextView.PlaceholderTextColor.set -> void
-Microsoft.Maui.Platform.MauiTextView.TextSetOrChanged -> System.EventHandler?
 Microsoft.Maui.Platform.MauiTextView.VerticalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Platform.MauiTextView.VerticalTextAlignment.set -> void
 Microsoft.Maui.Platform.MauiTimePicker
