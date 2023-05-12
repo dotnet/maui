@@ -96,29 +96,29 @@ stages:
         iosVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       projects:
-        # - name: essentials
-        #   desc: Essentials
-        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-        #   android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
-        # - name: graphics
-        #   desc: Graphics
-        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-        #   android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
-        # - name: core
-        #   desc: Core
-        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
-        #   android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+        - name: essentials
+          desc: Essentials
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        - name: graphics
+          desc: Graphics
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+        - name: core
+          desc: Core
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
-        # - name: blazorwebview
-        #   desc: BlazorWebView
-        #   androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
-        #   android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
-        #   ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+        - name: blazorwebview
+          desc: BlazorWebView
+          androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+          ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
 
