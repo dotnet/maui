@@ -63,6 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Assert.Equal(1, loaded);
 					Assert.Equal(0, unloaded);
+					return Task.CompletedTask;
 				});
 
 				Assert.Equal(1, loaded);

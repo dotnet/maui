@@ -23,5 +23,11 @@ namespace Microsoft.Maui.Graphics
 
 		public override int GetHashCode()
 			=> Name.GetHashCode() ^ Weight.GetHashCode() ^ FontStyleType.GetHashCode();
+
+		public override bool Equals(object? obj) => obj is FontSource other && Equals(other);
+
+		public static bool operator ==(FontSource left, FontSource right) => left.Equals(right);
+
+		public static bool operator !=(FontSource left, FontSource right) => !(left == right);
 	}
 }

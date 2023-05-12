@@ -179,6 +179,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
 		public bool ContainsKey(string key)
 		{
+			// Note that this only checks the inner dictionary and ignores the merged dictionaries. This is apparently an intended 
+			// behavior to support Hot Reload. 
+
 			return _innerDictionary.ContainsKey(key);
 		}
 

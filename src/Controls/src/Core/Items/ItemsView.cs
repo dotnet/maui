@@ -142,6 +142,15 @@ namespace Microsoft.Maui.Controls
 			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
 		}
 
+		internal void ClearLogicalChildren()
+		{
+			// Reverse for-loop, so children can be removed while iterating
+			for (int i = _logicalChildren.Count - 1; i >= 0; i--)
+			{
+				RemoveLogicalChild(_logicalChildren[i]);
+			}
+		}
+
 		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren.AsReadOnly();
 
 		internal static readonly BindableProperty InternalItemsLayoutProperty =

@@ -4,6 +4,13 @@
     <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
     <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
     <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
+
+    <!-- 
+      Indicates that the Microsoft.Maui.Controls.Compatibility package should be implicitly
+      referenced.  This will eventually switch to false by default and become opt, in,
+      however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
+    -->
+    <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">true</UseMauiCompat>
   </PropertyGroup>
 
   <!--
@@ -35,6 +42,8 @@
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
+  </ItemGroup>
+  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
@@ -43,9 +52,6 @@
     <_MauiImplicitPackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </_MauiImplicitPackageReference>
-  </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
-    <_MauiRequiredImplicitPackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="@MicrosoftWindowsSDKBuildToolsPackageVersion@" PrivateAssets="all" />
   </ItemGroup>
   <!-- Always install the required dependecies, such as build tools for the SDK itself -->
   <ItemGroup>

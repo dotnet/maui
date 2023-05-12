@@ -64,6 +64,11 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this AView platformView, FocusRequest request)
 		{
+			platformView?.Focus(request, null);
+		}
+
+		internal static void Focus(this AView platformView, FocusRequest request, Action? focusRequested)
+		{
 			request.IsFocused = true;
 
 			// Android does the actual focus/unfocus work on the main looper
@@ -83,6 +88,9 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				platformView?.RequestFocus();
+
+				if (platformView?.RequestFocus() == true)
+					focusRequested?.Invoke();
 			}
 		}
 
@@ -190,10 +198,20 @@ namespace Microsoft.Maui.Platform
 				mauiDrawable.Dispose();
 			}
 
+			// Android will reset the padding when setting a Background drawable
+			// So we need to reapply the padding after
+			var padLeft = platformView.PaddingLeft;
+			var padTop = platformView.PaddingTop;
+			var padRight = platformView.PaddingRight;
+			var padBottom = platformView.PaddingBottom;
+
 			var previousDrawable = platformView.Background;
 			var backgroundDrawable = paint!.ToDrawable(platformView.Context);
 			LayerDrawable layer = new LayerDrawable(new Drawable[] { backgroundDrawable!, previousDrawable! });
 			platformView.Background = layer;
+
+			// Apply previous padding
+			platformView.SetPadding(padLeft, padTop, padRight, padBottom);
 		}
 
 		public static void UpdateBackground(this AView platformView, Paint? background) =>

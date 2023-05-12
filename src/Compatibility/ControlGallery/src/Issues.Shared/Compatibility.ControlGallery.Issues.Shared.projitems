@@ -19,6 +19,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Issue13126_2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13551.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Issue13916.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue15542.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Issue15565.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RadioButtonTemplateFromStyle.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellSearchHandlerItemSizing.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ShellWithCustomRendererDisabledAnimations.cs" />

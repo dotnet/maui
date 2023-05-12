@@ -76,6 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			else
 				tableViewCell.AccessibilityElementsHidden = false;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (cell.IsSet(AutomationProperties.NameProperty))
 				tableViewCell.AccessibilityLabel = cell.GetValue(AutomationProperties.NameProperty).ToString();
 			else
@@ -85,6 +86,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				tableViewCell.AccessibilityHint = cell.GetValue(AutomationProperties.HelpTextProperty).ToString();
 			else
 				tableViewCell.AccessibilityHint = null;
+#pragma warning restore CS0618 // Type or member is obsolete
+
 		}
 
 		public virtual void SetBackgroundColor(UITableViewCell tableViewCell, Cell cell, UIColor color)

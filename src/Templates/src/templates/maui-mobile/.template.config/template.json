@@ -59,8 +59,7 @@
       "applicationId": {
         "type": "parameter",
         "description": "Overrides the $(ApplicationId) in the project",
-        "datatype": "string",
-        "replaces": "com.companyname.MauiApp.1"
+        "datatype": "string"
       },
       "msExtensionsVersion": {
         "type": "parameter",
@@ -89,6 +88,39 @@
         "type": "generated",
         "generator": "guid",
         "replaces": "$guid9$"
+      },
+      "nameToLower":{
+        "type": "generated",
+        "generator": "casing",
+        "parameters": {
+          "source" : "name",
+          "toLower": true
+        }
+      },
+      "defaultAppId":{
+        "type": "generated",
+        "generator": "join",
+        "parameters": {
+          "symbols": [
+            {
+              "type": "const",
+              "value": "com.companyname."
+            },
+            {
+              "type": "ref",
+              "value": "nameToLower"
+            }
+          ]
+        }
+      },
+      "finalAppId":{
+        "type":"generated",
+        "generator": "coalesce",
+        "parameters": {
+          "sourceVariableName": "applicationId",
+          "fallbackVariableName": "defaultAppId"
+        },
+        "replaces": "com.companyname.mauiapp"
       }
     },
     "defaultName": "MauiApp1"

@@ -156,6 +156,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			return false;
 		}
 
+		public override void ViewDidDisappear(bool animated)
+		{
+			// If this page is removed from the View Hierarchy we need to resolve any
+			// pending navigation operations
+			var sourcesToComplete = new List<TaskCompletionSource<bool>>();
+
+			foreach (var item in _completionTasks.Values)
+			{
+				sourcesToComplete.Add(item);
+			}
+
+			_completionTasks.Clear();
+
+			foreach (var source in sourcesToComplete)
+				source.TrySetResult(false);
+
+			_popCompletionTask?.TrySetResult(false);
+			_popCompletionTask = null;
+
+
+			base.ViewDidDisappear(animated);
+		}
+
 		public override void ViewWillAppear(bool animated)
 		{
 			if (_disposed)

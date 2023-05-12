@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
+using System.ComponentModel;
 
 #if ANDROID
 using Android.Graphics.Drawables;
@@ -333,7 +334,10 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				Assert.Empty(handler.ImageEvents);
+				// We expect that if the Image is created with no Source set, the platform image view
+				// will get a `null` image set
+				Assert.NotEmpty(handler.ImageEvents);
+				Assert.Null(handler.ImageEvents[0].Value);
 
 				await handler.PlatformView.AssertContainsColor(expectedColor);
 			});
@@ -460,5 +464,57 @@ namespace Microsoft.Maui.DeviceTests
 		static int GetDrawableId(string image) =>
 			MauiProgram.DefaultContext.Resources.GetDrawableId(MauiProgram.DefaultContext.PackageName, image);
 #endif
+
+		[Fact]
+		public async Task UpdatingSourceToNullClearsImage()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<CountedImageHandler>(image);
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				handler.ImageEvents.Clear();
+
+				image.Source = null;
+				handler.UpdateValue(nameof(IImage.Source));
+
+				await image.Wait();
+
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+			});
+		}
+
+		[Fact]
+		public async Task UpdatingSourceToNonexistentSourceClearsImage()
+		{
+			var image = new TStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				Source = new FileImageSourceStub("red.png"),
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<ImageHandler>(image);
+				await image.Wait();
+				await handler.PlatformView.AssertContainsColor(Colors.Red);
+
+				image.Source = new FileImageSourceStub("fail.png");
+				handler.UpdateValue(nameof(IImage.Source));
+				await handler.PlatformView.AttachAndRun(() => { });
+
+				await image.Wait(5000);
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+			});
+		}
 	}
 }

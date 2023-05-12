@@ -174,6 +174,7 @@ namespace Microsoft.Maui.Authentication
 			}
 			catch (Exception ex)
 			{
+				// TODO change this to ILogger?
 				Console.WriteLine(ex);
 			}
 			return false;

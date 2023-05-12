@@ -277,8 +277,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			e.Apply((o, i, c) => SetupPage((Page)o), (o, i) => TeardownPage((Page)o), Reset);
 
 			ViewPager2 pager = _viewPager;
-			var adapter = (MultiPageFragmentStateAdapter<Page>)pager.Adapter;
-			adapter.CountOverride = Element.Children.Count;
+
+			if (pager.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			{
+				adapter.CountOverride = Element.Children.Count;
+			}
+
 			if (IsBottomTabPlacement)
 			{
 				BottomNavigationView bottomNavigationView = _bottomNavigationView;
@@ -329,14 +333,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		void NotifyDataSetChanged()
 		{
-			if (_viewPager?.Adapter is MultiPageFragmentStateAdapter<Page> adapter)
+			var adapter = _viewPager?.Adapter;
+			if (adapter is not null)
 			{
 				var currentIndex = Element.Children.IndexOf(Element.CurrentPage);
 
 				// If the modification to the backing collection has changed the position of the current item
 				// then we need to update the viewpager so it remains selected
 				if (_viewPager.CurrentItem != currentIndex && currentIndex < Element.Children.Count && currentIndex >= 0)
-					_viewPager.SetCurrentItem(Element.Children.IndexOf(Element.CurrentPage), false);
+					_viewPager.SetCurrentItem(currentIndex, false);
 
 				adapter.NotifyDataSetChanged();
 			}
@@ -549,41 +554,50 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected virtual ColorStateList GetItemTextColorStates()
 		{
-			if (_originalTabTextColors == null)
-				_originalTabTextColors = (IsBottomTabPlacement) ? _bottomNavigationView.ItemTextColor : _tabLayout.TabTextColors;
+			if (_originalTabTextColors is null)
+				_originalTabTextColors = IsBottomTabPlacement ? _bottomNavigationView.ItemTextColor : _tabLayout.TabTextColors;
 
 			Color barItemColor = BarItemColor;
 			Color barTextColor = Element.BarTextColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
 
-			if (barItemColor == null && barTextColor == null && barSelectedItemColor == null)
+			if (barItemColor is null && barTextColor is null && barSelectedItemColor is null)
 				return _originalTabTextColors;
 
-			if (_newTabTextColors != null)
+			if (_newTabTextColors is not null)
 				return _newTabTextColors;
 
 			int checkedColor;
-			int defaultColor;
 
-			if (barTextColor != null)
+			// The new default color to use may have a color if BarItemColor is not null or the original colors for text
+			// are not null either. If it does not happens, this variable will be null and the ColorStateList of the
+			// original colors is used.
+			int? defaultColor = null;
+
+			if (barTextColor is not null)
 			{
 				checkedColor = barTextColor.ToPlatform().ToArgb();
 				defaultColor = checkedColor;
 			}
 			else
 			{
-				defaultColor = barItemColor.ToPlatform().ToArgb();
+				if (barItemColor is not null)
+					defaultColor = barItemColor.ToPlatform().ToArgb();
 
-				if (barItemColor == null && _originalTabTextColors != null)
+				if (barItemColor is null && _originalTabTextColors is not null)
 					defaultColor = _originalTabTextColors.DefaultColor;
 
-				checkedColor = defaultColor;
+				if (!defaultColor.HasValue)
+					return _originalTabTextColors;
+				else
+					checkedColor = defaultColor.Value;
 
-				if (barSelectedItemColor != null)
+				if (barSelectedItemColor is not null)
 					checkedColor = barSelectedItemColor.ToPlatform().ToArgb();
 			}
 
-			_newTabTextColors = GetColorStateList(defaultColor, checkedColor);
+			_newTabTextColors = GetColorStateList(defaultColor.Value, checkedColor);
+
 			return _newTabTextColors;
 		}
 

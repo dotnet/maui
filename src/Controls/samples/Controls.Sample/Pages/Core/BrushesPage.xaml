@@ -4,6 +4,23 @@
     x:Class="Maui.Controls.Sample.Pages.BrushesPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Brushes">
+    <TabbedPage.Resources>
+        <ResourceDictionary>
+
+            <LinearGradientBrush x:Key="SharedLinearGradientBrush" StartPoint="0,1" EndPoint="0,0">
+                <GradientStop Color="Blue" Offset="0.3"/>
+                <GradientStop Color="Purple" Offset="0.6"/>
+                <GradientStop Color="Green" Offset="0.9"/>
+            </LinearGradientBrush>
+
+            <RadialGradientBrush x:Key="SharedRadialGradientBrush" Center="0.5, 0.5">
+                <GradientStop Color="Blue" Offset="0.3"/>
+                <GradientStop Color="Purple" Offset="0.6"/>
+                <GradientStop Color="Green" Offset="0.9"/>
+            </RadialGradientBrush>
+
+        </ResourceDictionary>
+    </TabbedPage.Resources>
     <ContentPage
         Title="SolidColorBrush">
         <ScrollView>
@@ -263,6 +280,143 @@
                     HeightRequest="120"
                     WidthRequest="120"
                     StyleClass="radialGradientStyleWithCssRight" />
+            </StackLayout>
+        </ScrollView>
+    </ContentPage>
+    <ContentPage
+        Title="Brush Changes">
+        <ScrollView>
+            <StackLayout
+                x:Name="BrushChangesLayout"
+                Margin="12">
+                <Label
+                    FontAttributes="Bold"
+                    Text="Sharing Brushes Resources"
+                    SemanticProperties.Description="In this section, we use the same brush with different Views."
+                    ToolTipProperties.Text="In this section, we use the same brush with different Views."/>
+                <!-- VALIDATE BRUSH RESOURCES -->
+                <Label
+                    Text="Static"/>
+                <Polygon
+                    Fill="{StaticResource SharedLinearGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Polygon
+                    Fill="{StaticResource SharedLinearGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    Text="Dynamic"/>
+                <Polygon
+                    Fill="{DynamicResource SharedLinearGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Polygon
+                    Fill="{DynamicResource SharedLinearGradientBrush}"
+                    Points="10,10 100,20 150,45 70,50" />
+                <Label
+                    FontAttributes="Bold"
+                    Text="Update Brush Colors"
+                    SemanticProperties.Description="In this section, we update brushes properties to validate that the changes are notified."
+                    ToolTipProperties.Text="In this section, we update brushes properties to validate that the changes are notified."/>
+                <Label
+                    Text="SolidColorBrush"/>
+                <Border
+                    x:Name="SolidBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120">
+                    <Border.Background>
+                        <SolidColorBrush Color="Red" />
+                    </Border.Background>
+                </Border>
+                <Polygon
+                    x:Name="SolidBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray">
+                    <Polygon.Fill>
+                        <SolidColorBrush Color="Red" />
+                    </Polygon.Fill>
+                </Polygon>
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Color"
+                        Clicked="OnUpdateSolidColorClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonSolidColorClicked"/>
+                </HorizontalStackLayout>
+                <Label
+                    Text="LinearGradientBrush"/>
+                <Border
+                    x:Name="LinearBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120"
+                    Background="{StaticResource SharedLinearGradientBrush}" />
+                <Polygon
+                    x:Name="LinearBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray"
+                    Fill="{StaticResource SharedLinearGradientBrush}" />
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Colors"
+                        Clicked="OnUpdateLinearColorsClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonLinearColorsClicked"/>
+                </HorizontalStackLayout>
+                <Label
+                    Text="RadialGradientBrush"/>
+                <Border
+                    x:Name="RadialBrushBorder"
+                    Stroke="LightGray"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="120"
+                    Background="{StaticResource SharedRadialGradientBrush}" />
+                <Polygon
+                    x:Name="RadialBrushPolygon"
+                    Points="10,10 100,20 150,45 70,50"
+                    Stroke="LightGray"
+                    Fill="{StaticResource SharedRadialGradientBrush}" />
+                <HorizontalStackLayout>
+                    <Button
+                        Text="Update Colors"
+                        Clicked="OnUpdateRadialColorsClicked"/>
+                    <Button
+                        Text="Remove Polygon"
+                        Clicked="OnRemovePolygonRadialColorsClicked"/>
+                </HorizontalStackLayout>
+                <Label
+                    FontAttributes="Bold"
+                    Text="BindingContext"
+                    SemanticProperties.Description="In this section, validate the BindingContext propagation binding values to the GradientBrush colors."
+                    ToolTipProperties.Text="In this section, validate the BindingContext propagation binding values to the GradientBrush colors."/>
+                <Label
+                    Text="Brush BindingContext"
+                    Style="{StaticResource Headline}" />
+                <Border
+                    x:Name="BindingContextBorder"
+                    StrokeShape="RoundRectangle 12"
+                    HeightRequest="100">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="{Binding Start}" x:Name="gstop1" />
+                            <GradientStop Offset="1" Color="{Binding Stop}" x:Name="gstop2" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <StackLayout>
+                        <Label BindingContext="{x:Reference Name=gstop1}" Text="{Binding Color}"/>
+                        <Label BindingContext="{x:Reference Name=gstop2}" Text="{Binding Color}"/>
+                    </StackLayout>
+                </Border>
+                <Polygon
+                    Points="10,10 100,20 150,45 70,50">
+                    <Polygon.Fill>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Offset="0" Color="{Binding Start}" />
+                            <GradientStop Offset="1" Color="{Binding Stop}" />
+                        </LinearGradientBrush>
+                    </Polygon.Fill>
+                </Polygon> 
             </StackLayout>
         </ScrollView>
     </ContentPage>

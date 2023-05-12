@@ -1,25 +1,26 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Authentication
 {
 	/// <summary>
-	/// Web Authenticator Result parsed from the callback Url.
+	/// Represents a Web Authenticator Result object parsed from the callback Url.
 	/// </summary>
 	/// <remarks>
-	/// All of the querystring or url fragment properties are parsed into a dictionary and can be accessed by their key.
+	/// All of the query string or url fragment properties are parsed into a dictionary and can be accessed by their key.
 	/// </remarks>
 	public class WebAuthenticatorResult
 	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="WebAuthenticatorResult"/> class.
+		/// </summary>
 		public WebAuthenticatorResult()
 		{
 		}
 
 		/// <summary>
-		/// Create a new instance by parsing a Uri's querystring parameters.
+		/// Initializes a new instance of the <see cref="WebAuthenticatorResult"/> class by parsing a URI's query string parameters.
 		/// </summary>
 		/// <param name="uri">The callback uri that was used to end the authentication sequence.</param>
 		public WebAuthenticatorResult(Uri uri) : this(uri, null)
@@ -27,8 +28,8 @@ namespace Microsoft.Maui.Authentication
 		}
 
 		/// <summary>
-		/// 
-		/// Create a new instance by parsing a Uri's querystring parameters.</summary>
+		/// Initializes a new instance of the <see cref="WebAuthenticatorResult"/> class by parsing a URI's query string parameters.
+		/// </summary>
 		/// <remarks>
 		/// If the responseDecoder is non-null, then it is used to decode the fragment or query string 
 		/// returned by the authorization service.  Otherwise, a default response decoder is used.
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Authentication
 		public DateTimeOffset Timestamp { get; set; } = new DateTimeOffset(DateTime.UtcNow);
 
 		/// <summary>
-		/// The dictionary of key/value pairs parsed form the callback URI's querystring.
+		/// The dictionary of key/value pairs parsed form the callback URI's query string.
 		/// </summary>
 		public Dictionary<string, string> Properties { get; set; } = new Dictionary<string, string>();
 

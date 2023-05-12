@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Platform
 		WindowRootView _rootView;
 		bool _disconnected = true;
 		bool _isActiveRootManager;
+		bool _applyTemplateFinished;
 
 		public NavigationRootManager(Window platformWindow)
 		{
@@ -40,6 +41,8 @@ namespace Microsoft.Maui.Platform
 				_platformWindow.ExtendsContentIntoTitleBar = true;
 				UpdateAppTitleBar(true);
 			}
+
+			_applyTemplateFinished = true;
 		}
 
 		void OnAppTitleBarChanged(object? sender, EventArgs e)
@@ -97,6 +100,9 @@ namespace Microsoft.Maui.Platform
 			}
 
 			_disconnected = false;
+
+			if (_applyTemplateFinished)
+				OnApplyTemplateFinished(_rootView, EventArgs.Empty);
 		}
 
 		public virtual void Disconnect()

@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 			b.SetValue(EmptyViewTemplateProperty, value);
 		}
 
-		static BindableLayoutController GetBindableLayoutController(BindableObject b)
+		internal static BindableLayoutController GetBindableLayoutController(BindableObject b)
 		{
 			return (BindableLayoutController)b.GetValue(BindableLayoutControllerProperty);
 		}
@@ -201,6 +201,8 @@ namespace Microsoft.Maui.Controls
 	class BindableLayoutController
 	{
 		readonly WeakReference<IBindableLayout> _layoutWeakReference;
+		readonly WeakNotifyCollectionChangedProxy _collectionChangedProxy = new();
+		readonly NotifyCollectionChangedEventHandler _collectionChangedEventHandler;
 		IEnumerable _itemsSource;
 		DataTemplate _itemTemplate;
 		DataTemplateSelector _itemTemplateSelector;
@@ -219,7 +221,10 @@ namespace Microsoft.Maui.Controls
 		public BindableLayoutController(IBindableLayout layout)
 		{
 			_layoutWeakReference = new WeakReference<IBindableLayout>(layout);
+			_collectionChangedEventHandler = ItemsSourceCollectionChanged;
 		}
+
+		~BindableLayoutController() => _collectionChangedProxy.Unsubscribe();
 
 		internal void StartBatchUpdate()
 		{
@@ -234,16 +239,16 @@ namespace Microsoft.Maui.Controls
 
 		void SetItemsSource(IEnumerable itemsSource)
 		{
-			if (_itemsSource is INotifyCollectionChanged c)
+			if (_itemsSource is INotifyCollectionChanged)
 			{
-				c.CollectionChanged -= ItemsSourceCollectionChanged;
+				_collectionChangedProxy.Unsubscribe();
 			}
 
 			_itemsSource = itemsSource;
 
-			if (_itemsSource is INotifyCollectionChanged c1)
+			if (_itemsSource is INotifyCollectionChanged c)
 			{
-				c1.CollectionChanged += ItemsSourceCollectionChanged;
+				_collectionChangedProxy.Subscribe(c, _collectionChangedEventHandler);
 			}
 
 			if (!_isBatchUpdate)

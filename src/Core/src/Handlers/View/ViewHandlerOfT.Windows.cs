@@ -20,9 +20,9 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var oldParent = (Panel?)PlatformView.Parent;
-
 			var oldIndex = oldParent?.Children.IndexOf(PlatformView);
-			oldParent?.Children.Remove(PlatformView);
+			if (oldIndex is int oldIdx && oldIdx >= 0)
+				oldParent?.Children.RemoveAt(oldIdx);
 
 			ContainerView ??= new WrapperView();
 			((WrapperView)ContainerView).Child = PlatformView;
@@ -43,9 +43,9 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			var oldParent = (Panel?)ContainerView.Parent;
-
 			var oldIndex = oldParent?.Children.IndexOf(ContainerView);
-			oldParent?.Children.Remove(ContainerView);
+			if (oldIndex is int oldIdx && oldIdx >= 0)
+				oldParent?.Children.RemoveAt(oldIdx);
 
 			CleanupContainerView(ContainerView);
 			ContainerView = null;

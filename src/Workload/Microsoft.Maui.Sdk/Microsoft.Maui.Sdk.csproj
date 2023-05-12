@@ -21,7 +21,6 @@
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
-    <_ValuesToReplace Include="MicrosoftWindowsSDKBuildToolsPackageVersion" PropertyName="MicrosoftWindowsSDKBuildToolsPackageVersion" />
     <_ValuesToReplace Include="MicrosoftExtensionsPackageVersion" PropertyName="MicrosoftExtensionsPackageVersion" />
     <_ValuesToReplace Include="MicrosoftExtensionsServicingPackageVersion" PropertyName="MicrosoftExtensionsServicingPackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />

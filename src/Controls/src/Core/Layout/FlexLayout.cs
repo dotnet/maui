@@ -483,6 +483,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_root == null)
 				return;
+
+			if (child is not BindableObject)
+			{
+				// If this is a pure Core IView, we need to track all the flex properties
+				// locally because we don't have attached properties for them
+				_viewInfo.Add(child, new FlexInfo());
+			}
+
 			var item = (child as FlexLayout)?._root ?? new Flex.Item();
 			InitItemProperties(child, item);
 			if (child is not FlexLayout)

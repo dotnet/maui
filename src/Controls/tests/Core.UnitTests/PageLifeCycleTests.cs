@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, firstModalPage.AppearingCount);
 		}
 
-		class LCPage : ContentPage
+		public class LCPage : ContentPage
 		{
 			public NavigatedFromEventArgs NavigatedFromArgs { get; private set; }
 			public NavigatingFromEventArgs NavigatingFromArgs { get; private set; }

@@ -8,7 +8,8 @@
     <IsPackable>true</IsPackable>
     <IsTrimmable>true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591;NU5104;RS0041;RS0026</NoWarn>
+    <NoWarn>$(NoWarn);NU5104;RS0041;RS0026</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1591</WarningsAsErrors>
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

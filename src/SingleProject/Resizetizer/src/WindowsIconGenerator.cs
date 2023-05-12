@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
@@ -27,10 +28,19 @@ namespace Microsoft.Maui.Resizetizer
 			string destination = Path.Combine(destinationFolder, $"{fileName}.ico");
 			Directory.CreateDirectory(destinationFolder);
 
+			var (sourceExists, sourceModified) = Utils.FileExists(Info.Filename);
+			var (destinationExists, destinationModified) = Utils.FileExists(destination);
+
 			Logger.Log($"Generating ICO: {destination}");
 
 			var tools = new SkiaSharpAppIconTools(Info, Logger);
 			var dpi = new DpiPath(fileName, 1.0m, size: new SKSize(64, 64));
+
+			if (destinationModified > sourceModified)
+			{
+				Logger.Log($"Skipping `{Info.Filename}` => `{destination}` file is up to date.");
+				return new ResizedImageInfo { Dpi = dpi, Filename = destination };
+			}
 
 			MemoryStream memoryStream = new MemoryStream();
 			tools.Resize(dpi, destination, () => memoryStream);

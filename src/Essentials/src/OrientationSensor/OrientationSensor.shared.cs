@@ -192,19 +192,39 @@ namespace Microsoft.Maui.Devices.Sensors
 			$"{nameof(Orientation.W)}: {Orientation.W}";
 	}
 
+	/// <summary>
+	/// Concrete implementation of the <see cref="IOrientationSensor"/> APIs.
+	/// </summary>
 	public partial class OrientationSensorImplementation : IOrientationSensor
 	{
 		bool UseSyncContext => SensorSpeed == SensorSpeed.Default || SensorSpeed == SensorSpeed.UI;
 
 		SensorSpeed SensorSpeed { get; set; } = SensorSpeed.Default;
 
+		/// <summary>
+		/// Occurs when the orientation reading changes.
+		/// </summary>
 		public event EventHandler<OrientationSensorChangedEventArgs>? ReadingChanged;
 
+		/// <summary>
+		/// Gets a value indicating whether reading the orientation sensor is supported on this device.
+		/// </summary>
 		public bool IsSupported
 			=> PlatformIsSupported;
 
+		/// <summary>
+		/// Gets a value indicating whether the orientation sensor is actively being monitored.
+		/// </summary>
 		public bool IsMonitoring { get; private set; }
 
+		/// <summary>
+		/// Start monitoring for changes to the orientation.
+		/// </summary>
+		/// <remarks>
+		/// Will throw <see cref="FeatureNotSupportedException"/> if not supported on device.
+		/// Will throw <see cref="InvalidOperationException"/> if <see cref="IsMonitoring"/> is <see langword="true"/>.
+		/// </remarks>
+		/// <param name="sensorSpeed">The speed to listen for changes.</param>
 		public void Start(SensorSpeed sensorSpeed)
 		{
 			if (!PlatformIsSupported)
@@ -227,6 +247,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			}
 		}
 
+		/// <summary>
+		/// Stop monitoring for changes to the orientation.
+		/// </summary>
 		public void Stop()
 		{
 			if (!PlatformIsSupported)

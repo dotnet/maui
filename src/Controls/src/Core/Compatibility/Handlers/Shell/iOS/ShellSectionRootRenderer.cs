@@ -6,6 +6,7 @@ using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 
@@ -130,7 +131,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutHeader();
 		}
 
+		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
+		{
+			base.TraitCollectionDidChange(previousTraitCollection);
 
+			var application = _shellContext?.Shell?.FindMauiContext().Services.GetService<IApplication>();
+			application?.ThemeChanged();
+		}
 
 		void IDisconnectable.Disconnect()
 		{

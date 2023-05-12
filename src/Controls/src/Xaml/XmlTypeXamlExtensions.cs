@@ -68,8 +68,9 @@ namespace Microsoft.Maui.Controls.Xaml
 			for (var i = 0; i < lookupNames.Count; i++)
 			{
 				var name = lookupNames[i];
-				if (name.IndexOf(":", StringComparison.Ordinal) != -1)
-					name = name.Substring(name.LastIndexOf(':') + 1);
+				var lastIndex = name.LastIndexOf(":", StringComparison.Ordinal);
+				if (lastIndex != -1)
+					name = name.Substring(lastIndex + 1);
 				if (typeArguments != null)
 					name += "`" + typeArguments.Count; //this will return an open generic Type
 				lookupNames[i] = name;

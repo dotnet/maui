@@ -21,23 +21,33 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsOn(SwitchHandler switchHandler) =>
 		  GetNativeSwitch(switchHandler).On;
 
-		async Task ValidateTrackColor(ISwitch switchStub, Color color, Action action = null)
+		async Task ValidateTrackColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null)
 		{
 			var expected = await GetValueAsync(switchStub, handler =>
 			{
 				var native = GetNativeSwitch(handler);
 				action?.Invoke();
+				if (!string.IsNullOrEmpty(updatePropertyValue))
+				{
+					handler.UpdateValue(updatePropertyValue);
+				}
+
 				return native.OnTintColor.ToColor();
 			});
 			Assert.Equal(expected, color);
 		}
 
-		async Task ValidateThumbColor(ISwitch switchStub, Color color, Action action = null)
+		async Task ValidateThumbColor(ISwitch switchStub, Color color, Action action = null, string updatePropertyValue = null)
 		{
 			var expected = await GetValueAsync(switchStub, handler =>
 			{
 				var native = GetNativeSwitch(handler);
 				action?.Invoke();
+				if (!string.IsNullOrEmpty(updatePropertyValue))
+				{
+					handler.UpdateValue(updatePropertyValue);
+				}
+
 				return native.ThumbTintColor.ToColor();
 			});
 

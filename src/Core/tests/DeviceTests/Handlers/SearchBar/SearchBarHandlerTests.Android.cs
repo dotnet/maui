@@ -1,11 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
-using Android.Content;
+using Android.Text;
+using Android.Text.Method;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -220,10 +218,89 @@ namespace Microsoft.Maui.DeviceTests
 			var searchView = GetNativeSearchBar(searchBarHandler);
 			var editText = searchView.GetChildrenOfType<EditText>().First();
 
-			if (editText == null)
+			if (editText is null)
 				return false;
 
 			return !editText.Focusable && !editText.FocusableInTouchMode;
+		}
+
+		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return editText.KeyListener is NumberKeyListener
+				&& (inputTypes.HasFlag(InputTypes.NumberFlagDecimal) && inputTypes.HasFlag(InputTypes.ClassNumber) && inputTypes.HasFlag(InputTypes.NumberFlagSigned));
+		}
+
+		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return (inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationEmailAddress));
+		}
+
+		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassPhone);
+		}
+
+		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextVariationUri);
+		}
+
+		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
 	}
 }

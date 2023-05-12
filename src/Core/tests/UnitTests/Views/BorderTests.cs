@@ -1,4 +1,8 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests.Views
@@ -27,6 +31,86 @@ namespace Microsoft.Maui.UnitTests.Views
 			border.Content = content;
 
 			Assert.True(border.BindingContext == bindingContext);
+		}
+
+		[Fact]
+		public void TestStrokeShapeBindingContext()
+		{
+			var context = new object();
+
+			var parent = new Border
+			{
+				BindingContext = context
+			};
+
+			var strokeShape = new Rectangle();
+
+			parent.StrokeShape = strokeShape;
+
+			Assert.Same(context, ((Rectangle)parent.StrokeShape).BindingContext);
+		}
+
+		[Fact]
+		public async Task BorderStrokeShapeSubscribed()
+		{
+			var strokeShape = new RoundRectangle { CornerRadius = new CornerRadius(12) };
+			var border = new Border { StrokeShape = strokeShape };
+
+			bool fired = false;
+			border.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Border.StrokeShape))
+					fired = true;
+			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(border);
+
+			strokeShape.CornerRadius = new CornerRadius(24);
+
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Fact]
+		public async Task BorderStrokeSubscribed()
+		{
+			var stroke = new SolidColorBrush(Colors.Red);
+			var border = new Border { Stroke = stroke };
+
+			bool fired = false;
+			border.PropertyChanged += (sender, e) =>
+			{
+				if (e.PropertyName == nameof(Border.Stroke))
+					fired = true;
+			};
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			GC.KeepAlive(border);
+
+			stroke.Color = Colors.Green;
+			Assert.True(fired, "PropertyChanged did not fire!");
+		}
+
+		[Theory]
+		[InlineData(typeof(Rectangle))]
+		[InlineData(typeof(RoundRectangle))]
+		[InlineData(typeof(Ellipse))]
+		public async Task BorderStrokeShapeDoesNotLeak(Type type)
+		{
+			var strokeShape = (Shape)Activator.CreateInstance(type);
+			var reference = new WeakReference(new Border { StrokeShape = strokeShape });
+
+			strokeShape = null;
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Border should not be alive!");
 		}
 
 		[Fact]

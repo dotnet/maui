@@ -336,7 +336,7 @@ namespace Microsoft.Maui.Layouts
 
 			void MeasureCells()
 			{
-				AutoMeasurePass();
+				KnownMeasurePass();
 
 				if (!_isStarWidthPrecomputable)
 				{
@@ -367,15 +367,28 @@ namespace Microsoft.Maui.Layouts
 				return result;
 			}
 
-			void AutoMeasurePass()
+			void KnownMeasurePass()
 			{
 				for (int n = 0; n < _cells.Length; n++)
 				{
 					var cell = _cells[n];
 
+					bool treatCellHeightAsAuto = TreatCellHeightAsAuto(cell);
+					bool treatCellWidthAsAuto = TreatCellWidthAsAuto(cell);
+
 					if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
 					{
+						// We still have some unknown measure constraints (* rows/columns that need to have
+						// the Auto measurements settled before we can measure them). So mark this cell for the 
+						// second pass, once we know the constraints.
 						cell.NeedsSecondPass = true;
+
+						if (!(treatCellHeightAsAuto || treatCellWidthAsAuto))
+						{
+							// If neither span of this cell includes _any_ Auto values, then there's no reason
+							// to measure it at all during this pass; we can skip it for now
+							continue;
+						}
 					}
 
 					var measureWidth = double.IsNaN(cell.MeasureWidth) ? double.PositiveInfinity : cell.MeasureWidth;
@@ -383,7 +396,7 @@ namespace Microsoft.Maui.Layouts
 
 					var measure = MeasureCell(cell, measureWidth, measureHeight);
 
-					if (cell.IsColumnSpanAuto)
+					if (treatCellWidthAsAuto)
 					{
 						if (cell.ColumnSpan == 1)
 						{
@@ -395,7 +408,7 @@ namespace Microsoft.Maui.Layouts
 						}
 					}
 
-					if (cell.IsRowSpanAuto)
+					if (treatCellHeightAsAuto)
 					{
 						if (cell.RowSpan == 1)
 						{
@@ -736,7 +749,13 @@ namespace Microsoft.Maui.Layouts
 
 			public void DecompressStars(Size targetSize)
 			{
-				if (_grid.VerticalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridHeight))
+				bool decompressVertical = Dimension.IsExplicitSet(_explicitGridHeight)
+					|| _grid.VerticalLayoutAlignment == LayoutAlignment.Fill && targetSize.Height > MeasuredGridHeight();
+
+				bool decompressHorizontal = Dimension.IsExplicitSet(_explicitGridWidth)
+					|| _grid.HorizontalLayoutAlignment == LayoutAlignment.Fill && targetSize.Width > MeasuredGridWidth();
+
+				if (decompressVertical)
 				{
 					// Reset the size on all star rows
 					ZeroOutStarSizes(_rows);
@@ -745,7 +764,7 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(targetSize.Height, true);
 				}
 
-				if (_grid.HorizontalLayoutAlignment == LayoutAlignment.Fill || Dimension.IsExplicitSet(_explicitGridWidth))
+				if (decompressHorizontal)
 				{
 					// Reset the size on all star columns
 					ZeroOutStarSizes(_columns);
@@ -961,13 +980,8 @@ namespace Microsoft.Maui.Layouts
 				{
 					UpdateKnownMeasureWidth(cell);
 				}
-				else if (cell.IsColumnSpanAuto)
+				else if (TreatCellWidthAsAuto(cell))
 				{
-					cell.MeasureWidth = double.PositiveInfinity;
-				}
-				else if (cell.IsColumnSpanStar && double.IsInfinity(_gridWidthConstraint))
-				{
-					// Because the Grid isn't horizontally constrained, we treat * columns as Auto 
 					cell.MeasureWidth = double.PositiveInfinity;
 				}
 
@@ -980,17 +994,44 @@ namespace Microsoft.Maui.Layouts
 				{
 					UpdateKnownMeasureHeight(cell);
 				}
-				else if (cell.IsRowSpanAuto)
+				else if (TreatCellHeightAsAuto(cell))
 				{
-					cell.MeasureHeight = double.PositiveInfinity;
-				}
-				else if (cell.IsRowSpanStar && double.IsInfinity(_gridHeightConstraint))
-				{
-					// Because the Grid isn't vertically constrained, we treat * rows as Auto 
 					cell.MeasureHeight = double.PositiveInfinity;
 				}
 
 				// For all other situations, we'll have to wait until we've measured the Auto rows
+			}
+
+			bool TreatCellWidthAsAuto(Cell cell)
+			{
+				if (cell.IsColumnSpanAuto)
+				{
+					return true;
+				}
+
+				if (double.IsInfinity(_gridWidthConstraint) && cell.IsColumnSpanStar)
+				{
+					// Because the Grid isn't horizontally constrained, we treat * columns as Auto 
+					return true;
+				}
+
+				return false;
+			}
+
+			bool TreatCellHeightAsAuto(Cell cell)
+			{
+				if (cell.IsRowSpanAuto)
+				{
+					return true;
+				}
+
+				if (double.IsInfinity(_gridHeightConstraint) && cell.IsRowSpanStar)
+				{
+					// Because the Grid isn't vertically constrained, we treat * rows  as Auto 
+					return true;
+				}
+
+				return false;
 			}
 		}
 

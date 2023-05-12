@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Graphics
 
 		public void SetBorderDash(float[]? strokeDashArray, double strokeDashOffset)
 		{
-			if (strokeDashArray == null || strokeDashArray.Length == 0 || strokeDashOffset <= 0)
+			if (strokeDashArray is null || strokeDashArray.Length == 0)
 				_borderPathEffect = null;
 			else
 			{

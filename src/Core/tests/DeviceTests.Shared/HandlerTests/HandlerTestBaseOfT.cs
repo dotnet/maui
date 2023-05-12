@@ -178,9 +178,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialNativeVal, newNativeVal);
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Action action = null) =>
-			ValidateHasColor(view, color, typeof(THandler), action);
-			
+		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue);
+
 		void MockAccessibilityExpectations(TStub view)
 		{
 #if IOS || MACCATALYST

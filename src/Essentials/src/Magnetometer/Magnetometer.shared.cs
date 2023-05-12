@@ -176,6 +176,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		public static bool operator !=(MagnetometerData left, MagnetometerData right) =>
 		   !left.Equals(right);
 
+		/// <inheritdoc cref="object.GetHashCode"/>
 		public override int GetHashCode() =>
 			MagneticField.GetHashCode();
 

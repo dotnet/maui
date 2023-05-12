@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Storage
 		/// <summary>
 		/// Determines whether or not a file exists in the app package.
 		/// </summary>
-		/// <param name="filename">The name of the file (excluding the path) to load from the app package.</param>
+		/// <param name="filename">The path of the file (relative to the app package) to check the existence of.</param>
 		/// <returns><see langword="true"/> when the specified file exists in the app package, otherwise <see langword="false"/>.</returns>
 		public static Task<bool> AppPackageFileExistsAsync(string filename)
 			=> Current.AppPackageFileExistsAsync(filename);
@@ -89,15 +89,19 @@ namespace Microsoft.Maui.Storage
 	/// </summary>
 	public partial class FileSystemImplementation
 	{
+		/// <inheritdoc cref="IFileSystem.CacheDirectory"/>
 		public string CacheDirectory
 			=> PlatformCacheDirectory;
 
+		/// <inheritdoc cref="IFileSystem.AppDataDirectory"/>
 		public string AppDataDirectory
 			=> PlatformAppDataDirectory;
 
+		/// <inheritdoc cref="IFileSystem.OpenAppPackageFileAsync(string)"/>
 		public Task<Stream> OpenAppPackageFileAsync(string filename)
 			=> PlatformOpenAppPackageFileAsync(filename);
 
+		/// <inheritdoc cref="IFileSystem.AppPackageFileExistsAsync(string)"/>
 		public Task<bool> AppPackageFileExistsAsync(string filename)
 			=> PlatformAppPackageFileExistsAsync(filename);
 	}

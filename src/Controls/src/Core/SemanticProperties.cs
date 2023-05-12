@@ -47,9 +47,11 @@ namespace Microsoft.Maui.Controls
 			SemanticProperties.DescriptionProperty,
 			SemanticProperties.HintProperty,
 			SemanticProperties.HeadingLevelProperty,
+#pragma warning disable CS0618 // Type or member is obsolete
 			AutomationProperties.NameProperty,
 			AutomationProperties.LabeledByProperty,
 			AutomationProperties.HelpTextProperty,
+#pragma warning restore CS0618 // Type or member is obsolete
 			AutomationProperties.IsInAccessibleTreeProperty,
 		};
 

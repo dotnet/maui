@@ -1120,7 +1120,8 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
-				if (_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+				if (_owner.Shell is null ||
+					_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
 				{
 					await base.OnPushModal(modal, animated);
 					return;

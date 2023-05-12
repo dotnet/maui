@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory(DisplayName = "Background Initializes Correctly"
 #if IOS
-			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
+			, Skip = "This test is currently invalid on iOS https://github.com/dotnet/maui/issues/13693"
 #endif
 			)]
 		[InlineData(0xFFFF0000)]
@@ -24,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			var searchBar = new SearchBarStub
 			{
 				Background = new SolidPaintStub(expected),
-				Text = "Background"
+				Text = "Background",
 			};
 
 			await ValidateHasColor(searchBar, expected);
@@ -120,16 +120,21 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
+#if WINDOWS
+			, Skip = "This test currently fails on Windows due to https://github.com/dotnet/maui/issues/13507"
+#endif
+			)]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
 			{
-				CancelButtonColor = Colors.MediumPurple
+				Text = "Search",
+				Width = 200,
+				CancelButtonColor = Colors.Yellow,
 			};
 
-			await ValidateHasColor(searchBar, Colors.MediumPurple, () => searchBar.CancelButtonColor = Colors.MediumPurple);
+			await ValidateHasColor(searchBar, Colors.Yellow);
 		}
 
 		[Fact(DisplayName = "Null Cancel Button Color Doesn't Crash")]
@@ -176,6 +181,121 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsReadOnly, GetNativeIsReadOnly, searchBar.IsReadOnly);
+		}
+
+		[Theory(DisplayName = "Validates Numeric Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), true)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateNumericKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Email Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), true)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateEmailKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsEmailKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Telephone Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), true)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateTelephoneKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsTelephoneKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Url Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), true)]
+		public async Task ValidateUrlKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsUrlKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Text Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), true)]
+		[InlineData(nameof(Keyboard.Url), false)]
+#if WINDOWS
+		// The Text keyboard is the default one on Windows
+		[InlineData(nameof(Keyboard.Default), true)]
+		// Plain is the same as the Default keyboard on Windows
+		[InlineData(nameof(Keyboard.Plain), true)]
+#else
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+#endif
+		public async Task ValidateTextKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsTextKeyboard, expected);
+		}
+
+		[Theory(DisplayName = "Validates Chat Keyboard")]
+		[InlineData(nameof(Keyboard.Chat), true)]
+		[InlineData(nameof(Keyboard.Default), false)]
+		[InlineData(nameof(Keyboard.Email), false)]
+		[InlineData(nameof(Keyboard.Numeric), false)]
+		[InlineData(nameof(Keyboard.Plain), false)]
+		[InlineData(nameof(Keyboard.Telephone), false)]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Url), false)]
+		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
+		{
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var searchBar = new SearchBarStub() { Keyboard = keyboard };
+
+			await ValidatePropertyInitValue(searchBar, () => expected, GetNativeIsChatKeyboard, expected);
 		}
 
 		[Category(TestCategory.SearchBar)]

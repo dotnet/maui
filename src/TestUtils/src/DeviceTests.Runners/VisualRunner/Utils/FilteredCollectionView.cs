@@ -39,6 +39,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 			get { return filterArgument; }
 			set
 			{
+				if (filterArgument.Equals(value))
+				{
+					return;
+				}
+
 				filterArgument = value;
 				RefreshFilter();
 			}

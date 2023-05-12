@@ -21,13 +21,14 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var navPage = new NavigationPage(new ContentPage());
+			var navPage = new NavigationPage(new ContentPage() { Content = new Label() { Text = "Root Page" } });
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
 				async (handler) =>
 				{
 					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
-					ContentPage backgroundColorContentPage = new ContentPage();
+					ContentPage backgroundColorContentPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
+
 
 					if (useColor)
 						backgroundColorContentPage.BackgroundColor = Colors.Purple;
@@ -35,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 						backgroundColorContentPage.Background = SolidColorBrush.Purple;
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
+					await OnLoadedAsync(backgroundColorContentPage);
 
 					var modalRootView =
 						backgroundColorContentPage.FindMauiContext().GetNavigationRootManager().RootView;
@@ -45,6 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
 
 					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(backgroundColorContentPage);
 
 					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
 					Assert.DoesNotContain(modalRootView, windowRootViewContainer.Children);
