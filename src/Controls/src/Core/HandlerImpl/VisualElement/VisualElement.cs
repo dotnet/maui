@@ -8,7 +8,9 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement
 	{
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
+#pragma warning disable CS0618 // Type or member is obsolete
 			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper)
+#pragma warning restore CS0618 // Type or member is obsolete
 			{
 #if WINDOWS
 				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName] = MapAccessKeyHorizontalOffset,
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			[nameof(IView.Focus)] = MapFocus,
 		};
 
-		internal static void RemapForControls()
+		internal static new void RemapForControls()
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
 			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;

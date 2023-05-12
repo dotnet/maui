@@ -14,6 +14,20 @@ namespace Microsoft.Maui.Controls
 		public static void MapFont(LabelHandler handler, Label label) => MapFont((ILabelHandler)handler, label);
 		public static void MapTextColor(LabelHandler handler, Label label) => MapTextColor((ILabelHandler)handler, label);
 
+		public static void MapTextDecorations(ILabelHandler handler, Label label) =>
+			MapTextDecorations(handler, label, (h, v) => LabelHandler.MapTextDecorations(handler, label));
+
+		public static void MapCharacterSpacing(ILabelHandler handler, Label label) =>
+			MapCharacterSpacing(handler, label, (h, v) => LabelHandler.MapCharacterSpacing(handler, label));
+
+		public static void MapLineHeight(ILabelHandler handler, Label label) =>
+			MapLineHeight(handler, label, (h, v) => LabelHandler.MapLineHeight(handler, label));
+
+		public static void MapFont(ILabelHandler handler, Label label) =>
+			MapFont(handler, label, (h, v) => LabelHandler.MapFont(handler, label));
+
+		public static void MapTextColor(ILabelHandler handler, Label label) =>
+			MapTextColor(handler, label, (h, v) => LabelHandler.MapTextColor(handler, label));
 
 		public static void MapTextType(ILabelHandler handler, Label label)
 		{
@@ -27,7 +41,7 @@ namespace Microsoft.Maui.Controls
 			MapFormatting(handler, label);
 		}
 
-		public static void MapTextDecorations(ILabelHandler handler, Label label)
+		static void MapTextDecorations(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
 			if (!IsPlainText(label))
 				return;
@@ -35,7 +49,7 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.MapTextDecorations(handler, label);
 		}
 
-		public static void MapCharacterSpacing(ILabelHandler handler, Label label)
+		static void MapCharacterSpacing(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
 			if (!IsPlainText(label))
 				return;
@@ -43,7 +57,7 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.MapCharacterSpacing(handler, label);
 		}
 
-		public static void MapLineHeight(ILabelHandler handler, Label label)
+		static void MapLineHeight(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
 			if (!IsPlainText(label))
 				return;
@@ -51,7 +65,7 @@ namespace Microsoft.Maui.Controls
 			LabelHandler.MapLineHeight(handler, label);
 		}
 
-		public static void MapFont(ILabelHandler handler, Label label)
+		static void MapFont(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
 			if (label.HasFormattedTextSpans)
 				return;
@@ -63,10 +77,10 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			LabelHandler.MapFont(handler, label);
+			baseMethod?.Invoke(handler, label);
 		}
 
-		public static void MapTextColor(ILabelHandler handler, Label label)
+		static void MapTextColor(ILabelHandler handler, Label label, Action<IElementHandler, IElement> baseMethod)
 		{
 			if (label.HasFormattedTextSpans)
 				return;
@@ -78,7 +92,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			LabelHandler.MapTextColor(handler, label);
+			baseMethod?.Invoke(handler, label);
 		}
 
 		public static void MapLineBreakMode(ILabelHandler handler, Label label)

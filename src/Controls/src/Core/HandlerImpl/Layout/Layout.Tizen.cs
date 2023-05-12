@@ -1,21 +1,16 @@
 ﻿#nullable disable
+using System;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Layout
 	{
 		public static void MapInputTransparent(LayoutHandler handler, Layout layout) =>
-			UpdateInputTransparent(handler, layout);
+			MapInputTransparent((ILayoutHandler)handler, layout);
 
-		public static void MapInputTransparent(ILayoutHandler handler, Layout layout) =>
-			UpdateInputTransparent(handler, layout);
-
-		static void MapInputTransparent(IViewHandler handler, IView layout) =>
-			UpdateInputTransparent(handler, layout);
-
-		static void UpdateInputTransparent(IViewHandler handler, IView view)
+		public static void MapInputTransparent(ILayoutHandler handler, Layout layout)
 		{
-			if (handler.PlatformView is not Microsoft.Maui.Platform.LayoutViewGroup platformView ||
-				view is not Layout layout)
+			if (handler.PlatformView is not Microsoft.Maui.Platform.LayoutViewGroup platformView)
 			{
 				return;
 			}
@@ -32,6 +27,19 @@ namespace Microsoft.Maui.Controls
 				// Only LayoutViewGroup event was disabled but children are allowed
 				platformView.InputTransparent = layout.InputTransparent;
 				platformView.Sensitive = true;
+			}
+		}
+
+		[Obsolete]
+		static void MapInputTransparent(IViewHandler handler, IView view)
+		{
+			if (handler is ILayoutHandler layoutHandler && view is Layout layout)
+			{
+				MapInputTransparent(layoutHandler, layout);
+			}
+			else
+			{
+				ControlsVisualElementMapper.UpdateProperty(handler, view, nameof(IView.InputTransparent));
 			}
 		}
 	}
