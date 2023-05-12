@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Core.UnitTests;
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TestCase(true)]
 			[TestCase(false)]
-			public void FooBz54334(bool useCompiledXaml)
+			public async Task FooBz54334(bool useCompiledXaml)
 			{
 				var app = Application.Current = new Bz54334App(useCompiledXaml);
 				var page = app.MainPage as Bz54334;
@@ -78,9 +79,25 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
 				Assert.That(l1.TextColor, Is.EqualTo(Colors.Blue));
 
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
 				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
 				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
 				Assert.That(l1.TextColor, Is.EqualTo(Colors.Red));
+
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
 
 				WeakReferenceMessenger.Default.Send<ContentPage, string>(page, "ChangeTheme");
 				Assert.That(l0.TextColor, Is.EqualTo(Colors.Black));
