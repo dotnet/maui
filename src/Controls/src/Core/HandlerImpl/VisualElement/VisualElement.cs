@@ -10,17 +10,6 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
 			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper)
 			{
-#if WINDOWS
-				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName] = MapAccessKeyHorizontalOffset,
-				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName] = MapAccessKeyPlacement,
-				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName] = MapAccessKey,
-				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName] = MapAccessKeyVerticalOffset,
-#endif
-				[nameof(BackgroundColor)] = MapBackgroundColor,
-				[nameof(Page.BackgroundImageSource)] = MapBackgroundImageSource,
-				[SemanticProperties.DescriptionProperty.PropertyName] = MapSemanticPropertiesDescriptionProperty,
-				[SemanticProperties.HintProperty.PropertyName] = MapSemanticPropertiesHintProperty,
-				[SemanticProperties.HeadingLevelProperty.PropertyName] = MapSemanticPropertiesHeadingLevelProperty,
 				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 			};
 
@@ -29,9 +18,21 @@ namespace Microsoft.Maui.Controls
 			[nameof(IView.Focus)] = MapFocus,
 		};
 
-		internal static void RemapForControls()
+		internal static new void RemapForControls()
 		{
-			ViewHandler.ViewMapper = ControlsVisualElementMapper;
+#if WINDOWS
+			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
+			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
+			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
+			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
+#endif
+			ViewHandler.ViewMapper.AppendToMapping(nameof(BackgroundColor), MapBackgroundColor);
+			ViewHandler.ViewMapper.AppendToMapping(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
+			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
+			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
+			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
+			//ViewHandler.ViewMapper.AppendToMapping(nameof(IViewHandler.ContainerView), MapContainerView);
+
 			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;
 		}
 

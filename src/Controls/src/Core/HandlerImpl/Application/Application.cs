@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 #endif
 			};
 
-		internal static void RemapForControls()
+		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Application legacy behaviors
 			ApplicationHandler.Mapper = ControlsApplicationMapper;
