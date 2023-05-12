@@ -35,9 +35,10 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
-		private void TextSetOrChanged() {
-				var notification = NSNotification.FromName(TextSetOrChangedNotification, this);
-				NSNotificationCenter.DefaultCenter.PostNotification(notification);
+		private void TextSetOrChanged()
+		{
+			var notification = NSNotification.FromName(TextSetOrChangedNotification, this);
+			NSNotificationCenter.DefaultCenter.PostNotification(notification);
 		}
 
 		public string? PlaceholderText

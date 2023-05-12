@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 #endif
-		
+
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -67,10 +67,11 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void OnNativeViewChanged(NSNotification notification)
 		{
-			switch(notification.Name) {
-			case MauiTextView.TextSetOrChangedNotification:
-				OnTextPropertySet(notification.Object, EventArgs.Empty);
-				break;
+			switch (notification.Name)
+			{
+				case MauiTextView.TextSetOrChangedNotification:
+					OnTextPropertySet(notification.Object, EventArgs.Empty);
+					break;
 			}
 		}
 
