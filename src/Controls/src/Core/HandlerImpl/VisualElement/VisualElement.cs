@@ -8,7 +8,10 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement
 	{
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
-			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper);
+			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper)
+			{
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
+			};
 
 		static CommandMapper<IView, IViewHandler> ControlsViewCommandMapper = new(ViewHandler.ViewCommandMapper)
 		{
@@ -28,7 +31,7 @@ namespace Microsoft.Maui.Controls
 			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
 			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
 			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
-			ViewHandler.ViewMapper.AppendToMapping(nameof(IViewHandler.ContainerView), MapContainerView);
+			//ViewHandler.ViewMapper.AppendToMapping(nameof(IViewHandler.ContainerView), MapContainerView);
 
 			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;
 		}
@@ -60,6 +63,8 @@ namespace Microsoft.Maui.Controls
 
 		static void MapContainerView(IViewHandler arg1, IView arg2)
 		{
+			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
+
 			if (arg2 is VisualElement ve)
 			{
 				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
