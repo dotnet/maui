@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Controls
 				[SemanticProperties.DescriptionProperty.PropertyName] = MapSemanticPropertiesDescriptionProperty,
 				[SemanticProperties.HintProperty.PropertyName] = MapSemanticPropertiesHintProperty,
 				[SemanticProperties.HeadingLevelProperty.PropertyName] = MapSemanticPropertiesHeadingLevelProperty,
-				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 			};
 
 		static CommandMapper<IView, IViewHandler> ControlsViewCommandMapper = new(ViewHandler.ViewCommandMapper)
@@ -31,6 +30,8 @@ namespace Microsoft.Maui.Controls
 
 		internal static void RemapForControls()
 		{
+			ViewHandler.ViewMapper.AppendToMapping(nameof(IViewHandler.ContainerView), MapContainerView);
+
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
 			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;
 		}
@@ -62,8 +63,6 @@ namespace Microsoft.Maui.Controls
 
 		static void MapContainerView(IViewHandler arg1, IView arg2)
 		{
-			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
-
 			if (arg2 is VisualElement ve)
 			{
 				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
