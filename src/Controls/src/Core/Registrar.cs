@@ -272,7 +272,7 @@ namespace Microsoft.Maui.Controls.Internals
 			Registered = new Registrar<IRegisterable>();
 		}
 
-		internal static Dictionary<string, Type> Effects { get; } = new Dictionary<string, Type>();
+		internal static Dictionary<string, Type> Effects { get; } = new(StringComparer.Ordinal);
 
 		internal static Dictionary<string, IList<StylePropertyAttribute>> StyleProperties => LazyStyleProperties.Value;
 
@@ -319,7 +319,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static Dictionary<string, IList<StylePropertyAttribute>> LoadStyleSheets()
 		{
-			var properties = new Dictionary<string, IList<StylePropertyAttribute>>();
+			var properties = new Dictionary<string, IList<StylePropertyAttribute>>(StringComparer.Ordinal);
 			if (DisableCSS)
 				return properties;
 			var assembly = typeof(StylePropertyAttribute).Assembly;

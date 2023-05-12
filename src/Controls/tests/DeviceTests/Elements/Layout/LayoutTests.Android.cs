@@ -1,9 +1,10 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact, Category(TestCategory.Layout)]
 		public async Task NestedButtonHasExpectedIconPosition()
 		{
-			var layout= new HorizontalStackLayout();
+			var layout = new HorizontalStackLayout();
 
 			var button = new Button()
 			{
@@ -36,6 +37,28 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(100, position);
+		}
+
+		void ValidateInputTransparentOnPlatformView(IView view)
+		{
+			var handler = view.ToHandler(MauiContext);
+			if (handler.PlatformView is LayoutViewGroup lvg)
+			{
+				Assert.Equal(view.InputTransparent, lvg.InputTransparent);
+				if (handler.ContainerView is WrapperView wv)
+					Assert.False(wv.InputTransparent);
+
+				return;
+			}
+
+			if (view.InputTransparent)
+			{
+				Assert.True(view.ToPlatform(MauiContext) is WrapperView wv && wv.InputTransparent);
+			}
+			else
+			{
+				Assert.True(view.ToPlatform(MauiContext) is not WrapperView wv || !wv.InputTransparent);
+			}
 		}
 	}
 }

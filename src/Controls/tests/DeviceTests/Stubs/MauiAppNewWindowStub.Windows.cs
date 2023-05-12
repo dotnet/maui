@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (_plaformWindow is null)
 			{
 				_plaformWindow = platformWindow;
-				_window.Created();
+				InvokeWindowCreated();
 				_plaformWindow.Activated += OnActivated;
 				_plaformWindow.Closed += OnClosed;
 			}
@@ -43,7 +43,35 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				_handler = value;
 
 				if (value is not null)
+				{
+					InvokeWindowCreated();
+				}
+			}
+		}
+
+		void InvokeWindowCreated()
+		{
+			if (Window is not null)
+			{
+				if (!Window.IsCreated)
 					_window.Created();
+			}
+			else
+			{
+				_window.Created();
+			}
+		}
+
+		void InvokeWindowDestroying()
+		{
+			if (Window is not null)
+			{
+				if (!Window.IsDestroyed)
+					_window.Destroying();
+			}
+			else
+			{
+				_window.Destroying();
 			}
 		}
 
@@ -54,13 +82,24 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				_plaformWindow.Activated -= OnActivated;
 				_plaformWindow.Closed -= OnClosed;
 				_plaformWindow = null;
-				_window.Destroying();
+				InvokeWindowDestroying();
 			}
 		}
 
 		void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
-			_window.Activated();
+			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
+			{
+				if (Window is not null)
+				{
+					if (!Window.IsActivated)
+						_window.Activated();
+				}
+				else
+				{
+					_window.Activated();
+				}
+			}
 		}
 
 		public IElement Parent => null;

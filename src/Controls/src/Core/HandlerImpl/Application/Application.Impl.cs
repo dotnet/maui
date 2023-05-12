@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		internal const string MauiWindowIdKey = "__MAUI_WINDOW_ID__";
 
 		readonly List<Window> _windows = new();
-		readonly Dictionary<string, WeakReference<Window>> _requestedWindows = new();
+		readonly Dictionary<string, WeakReference<Window>> _requestedWindows = new(StringComparer.Ordinal);
 		ILogger<Application>? _logger;
 
 		ILogger<Application>? Logger =>
@@ -82,10 +82,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				var oldIndex = InternalChildren.IndexOf(windowElement);
-				InternalChildren.RemoveAt(oldIndex);
-				windowElement.Parent = null;
-				OnChildRemoved(windowElement, oldIndex);
+				RemoveLogicalChildInternal(windowElement);
 			}
 
 			_windows.Remove(window);
@@ -134,9 +131,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				windowElement.Parent = this;
-				InternalChildren.Add(windowElement);
-				OnChildAdded(windowElement);
+				AddLogicalChildInternal(windowElement);
 			}
 
 			if (window is NavigableElement ne)
