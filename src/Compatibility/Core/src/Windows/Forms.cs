@@ -13,7 +13,9 @@ using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
 namespace Microsoft.Maui.Controls.Compatibility
 {
 	[Obsolete]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct InitializationOptions
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 	{
 		public InitializationOptions(UI.Xaml.LaunchActivatedEventArgs args)
 		{

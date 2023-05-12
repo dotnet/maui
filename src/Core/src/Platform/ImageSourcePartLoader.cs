@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Platform
 		{
 			Handler = handler;
 			_imageSourcePart = imageSourcePart;
+
 			SetImage = setImage;
 		}
 
@@ -52,27 +53,28 @@ namespace Microsoft.Maui.Platform
 
 		public async Task UpdateImageSourceAsync()
 		{
-			if (PlatformView != null)
+			if (PlatformView is null)
 			{
-				var token = this.SourceManager.BeginLoad();
-				var imageSource = _imageSourcePart();
+				return;
+			}
 
-				if (imageSource != null)
-				{
+			var token = this.SourceManager.BeginLoad();
+			var imageSource = _imageSourcePart();
+
+			if (imageSource?.Source is not null)
+			{
 #if __IOS__ || __ANDROID__ || WINDOWS || TIZEN
-					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
-						.ConfigureAwait(false);
+				var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
+					.ConfigureAwait(false);
 
-					SourceManager.CompleteLoad(result);
+				SourceManager.CompleteLoad(result);
 #else
-					await Task.CompletedTask;
+				await Task.CompletedTask;
 #endif
-				}
-				else
-				{
-					SetImage?.Invoke(null);
-					SourceManager.CompleteLoad(null);
-				}
+			}
+			else
+			{
+				SetImage?.Invoke(null);
 			}
 		}
 	}

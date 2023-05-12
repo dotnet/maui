@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
@@ -11,21 +12,64 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
-using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
-using CoreGraphics;
-
-#if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
-#endif
+using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "Page Adjust When Top Tabs Are Present")]
+		public async Task PageAdjustsWhenTopTabsArePresent()
+		{
+			SetupBuilder();
+			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
+			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
+
+			var mainTab1 = new Tab()
+			{
+				Items =
+				{
+					new ShellContent() { Content = pageWithTopTabs, Title = "tab 1" },
+					new ShellContent() { Content = new ContentPage(), Title = "tab 2" }
+				}
+			};
+
+			var mainTab2 = new Tab()
+			{
+				Items =
+				{
+					new ShellContent() { Content = pageWithoutTopTabs, Title = "tab 3"  }
+				}
+			};
+
+			var shell = new Shell()
+			{
+				Items = { mainTab1, mainTab2 }
+			};
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(pageWithTopTabs.Content);
+				var boundsWithTopTabs = pageWithTopTabs.Content.GetPlatformViewBounds();
+				shell.CurrentItem = mainTab2;
+				await OnFrameSetToNotEmpty(pageWithoutTopTabs.Content);
+				var boundsWithoutTopTabs = pageWithoutTopTabs.Content.GetPlatformViewBounds();
+				Assert.Equal(ShellSectionRootRenderer.HeaderHeight, (boundsWithTopTabs.Top - boundsWithoutTopTabs.Top), 1);
+
+				shell.CurrentItem = mainTab1;
+				await OnFrameSetToNotEmpty(pageWithTopTabs.Content);
+
+				var boundsWithTopTabsNavigatedBack = pageWithTopTabs.Content.GetPlatformViewBounds();
+				Assert.Equal(boundsWithTopTabsNavigatedBack, boundsWithTopTabs);
+			});
+		}
+
 		[Fact(DisplayName = "Swiping Away Modal Propagates to Shell")]
 		public async Task SwipingAwayModalPropagatesToShell()
 		{
@@ -200,6 +244,35 @@ namespace Microsoft.Maui.DeviceTests
 					navigatingFired++;
 					e.Cancel();
 				}
+			});
+		}
+
+		[Fact(DisplayName = "TitleView renders correctly")]
+		public async Task TitleViewRendersCorrectly()
+		{
+			SetupBuilder();
+
+			var expected = Colors.Red;
+
+			var shellTitleView = new VerticalStackLayout { BackgroundColor = expected };
+			var titleViewContent = new Label { Text = "TitleView" };
+			shellTitleView.Children.Add(titleViewContent);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+				Assert.NotNull(shell.Handler);
+				var platformShellTitleView = shellTitleView.ToPlatform();
+				Assert.Equal(platformShellTitleView, GetTitleView(handler));
+				Assert.NotEqual(platformShellTitleView.Frame, CGRect.Empty);
+				Assert.Equal(platformShellTitleView.BackgroundColor.ToColor(), expected);
 			});
 		}
 

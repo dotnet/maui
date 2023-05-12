@@ -61,32 +61,32 @@ namespace FormsGallery
                 }
             };
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Grid",
                     FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label)),
                     HorizontalOptions = LayoutOptions.Center
                 }, 0, 3, 0, 1);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Autosized cell",
                     TextColor = Color.White,
                     BackgroundColor = Color.Blue
                 }, 0, 1);
     
-            grid.Children.Add(new BoxView
+            grid.Add(new BoxView
                 {
                     Color = Color.Silver,
                     HeightRequest = 0
                 }, 1, 1);
     
-            grid.Children.Add(new BoxView
+            grid.Add(new BoxView
                 {
                     Color = Color.Teal
                 }, 0, 2);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Leftover space",
                     TextColor = Color.Purple,
@@ -95,7 +95,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center,
                 }, 1, 2);
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Span two rows (or more if you want)",
                     TextColor = Color.Yellow,
@@ -104,7 +104,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center
                 }, 2, 3, 1, 3);
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Span 2 columns",
                     TextColor = Color.Blue,
@@ -113,7 +113,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center
                 }, 0, 2, 3, 4);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Fixed 100x100",
                     TextColor = Color.Aqua,

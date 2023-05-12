@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics.Platform;
+using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -13,10 +14,15 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IShapeViewHandler handler, IShapeView shapeView)
 		{
-			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.ToPlatform().UpdateBackground(shapeView);
+			// If Fill and Background are not null, will use Fill for the Shape background
+			// and Background for the ShapeView background.
+			if (shapeView.Background is not null && shapeView.Fill is not null)
+			{
+				handler.UpdateValue(nameof(IViewHandler.ContainerView));
+				handler.ToPlatform().UpdateBackground(shapeView);
 
-			handler.PlatformView?.InvalidateShape(shapeView);
+				handler.PlatformView?.InvalidateShape(shapeView);
+			}
 		}
 
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)

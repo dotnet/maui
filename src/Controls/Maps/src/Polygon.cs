@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class Polygon : MapElement
 	{
+		/// <summary>Bindable property for <see cref="FillColor"/>.</summary>
 		public static readonly BindableProperty FillColorProperty = BindableProperty.Create(
 			nameof(FillColor),
 			typeof(Color),

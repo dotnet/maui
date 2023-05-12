@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Point = point;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineSegment.xml" path="//Member[@MemberName='PointProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point"/>.</summary>
 		public static readonly BindableProperty PointProperty =
 			BindableProperty.Create(nameof(Point), typeof(Point), typeof(LineSegment), new Point(0, 0));
 

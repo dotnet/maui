@@ -90,14 +90,16 @@ namespace Microsoft.Maui.Resizetizer
 			if (PlatformType == "tizen")
 			{
 				var tizenResourceXmlGenerator = new TizenResourceXmlGenerator(IntermediateOutputPath, Logger);
-				tizenResourceXmlGenerator.Generate();
+				var r = tizenResourceXmlGenerator.Generate();
+				if (r is not null)
+					resizedImages.Add(r);
 			}
 
 			var copiedResources = new List<TaskItem>();
 
 			foreach (var img in resizedImages)
 			{
-				var attr = new Dictionary<string, string>();
+				var attr = new Dictionary<string, string>(StringComparer.Ordinal);
 				string itemSpec = Path.GetFullPath(img.Filename);
 
 				// Fix the item spec to be relative for mac
@@ -170,10 +172,21 @@ namespace Microsoft.Maui.Resizetizer
 
 				var destination = Resizer.GetRasterFileDestination(img, dpi, IntermediateOutputPath)
 					.Replace("{name}", appIconName);
+				var (sourceExists, sourceModified) = Utils.FileExists(img.Filename);
+				var (destinationExists, destinationModified) = Utils.FileExists(destination);
 
 				LogDebugMessage($"App Icon Destination: " + destination);
 
+				if (destinationModified > sourceModified)
+				{
+					Logger.Log($"Skipping `{img.Filename}` => `{destination}` file is up to date.");
+					resizedImages.Add(new ResizedImageInfo() { Dpi = dpi, Filename = destination });
+					continue;
+				}
+
 				appTool.Resize(dpi, destination);
+				var r = appTool.Resize(dpi, destination);
+				resizedImages.Add(r);
 			}
 		}
 

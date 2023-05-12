@@ -8,20 +8,27 @@ namespace Microsoft.Maui.Controls.Platform
 	internal partial class ModalNavigationManager
 	{
 		NavigationStack _modalStack => WindowMauiContext.GetModalStack();
-		IPageController CurrentPageController => _navModel.CurrentPage;
+		IPageController CurrentPageController => CurrentPage!;
+
+		Task SyncModalStackWhenPlatformIsReadyAsync() =>
+			SyncPlatformModalStackAsync();
+
+		bool IsModalPlatformReady => true;
 
 		partial void OnPageAttachedHandler()
 		{
 			WindowMauiContext.GetPlatformWindow().SetBackButtonPressedHandler(OnBackButtonPressed);
 		}
 
-		public async Task<Page> PopModalAsync(bool animated)
+		async Task<Page> PopModalPlatformAsync(bool animated)
 		{
-			Page modal = _navModel.PopModal();
+			Page modal = CurrentPlatformModalPage;
+			_platformModalPages.Remove(modal);
+
 			((IPageController)modal).SendDisappearing();
 
 			var modalRenderer = modal.Handler as IPlatformViewHandler;
-			if (modalRenderer != null)
+			if (modalRenderer is not null)
 			{
 				await _modalStack.Pop(animated);
 				CurrentPageController?.SendAppearing();
@@ -30,24 +37,23 @@ namespace Microsoft.Maui.Controls.Platform
 			return modal;
 		}
 
-		public async Task PushModalAsync(Page modal, bool animated)
+		async Task PushModalPlatformAsync(Page modal, bool animated)
 		{
 			CurrentPageController?.SendDisappearing();
-			_navModel.PushModal(modal);
+			_platformModalPages.Add(modal);
 
 			var nativeView = modal.ToPlatform(WindowMauiContext);
 
 			await _modalStack.Push(nativeView, animated);
 
 			// Verify that the modal is still on the stack
-			if (_navModel.CurrentPage == modal)
+			if (CurrentPage == modal)
 				((IPageController)modal).SendAppearing();
 		}
 
 		bool OnBackButtonPressed()
 		{
-			Page root = _navModel.LastRoot;
-			bool handled = root?.SendBackButtonPressed() ?? false;
+			bool handled = CurrentPage?.SendBackButtonPressed() ?? false;
 
 			return handled;
 		}

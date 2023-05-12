@@ -414,7 +414,7 @@ namespace Microsoft.Maui.Platform
 				// If you try to access `ChildFragmentManager` and the `NavHost`
 				// isn't attached to a context then android will throw an IllegalStateException
 				if (_navHost.IsAlive() &&
-					_navHost?.Context != null &&
+					_navHost.Context is not null &&
 					_navHost.ChildFragmentManager.IsAlive())
 				{
 					return _navHost.ChildFragmentManager;

@@ -386,6 +386,7 @@
             MauiSplashScreen="@(MauiSplashScreen)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
+
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <LibraryResourceDirectories Condition="Exists('$(_MauiIntermediateSplashScreen)')" Include="$(_MauiIntermediateSplashScreen)">
@@ -579,14 +580,24 @@
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
             Images="@(MauiImage->Distinct())">
+              <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
         <ItemGroup>
             <!-- Get Images that were generated -->
             <!-- Either from the task, or if the task was skipped (up to date), use the wildcard lookup -->
-            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' != ''" Include="@(CopiedResources)" />
-            <_ResizetizerCollectedImages Condition="'@(CopiedResources)' == ''" Include="$(_MauiIntermediateImages)**\*" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources->Count())' != '0'" Include="@(_CopiedResources)" />
+            <_ResizetizerExistingImages Include="$(_MauiIntermediateImages)\**\*" />
+            <_ResizetizerImagesToDelete Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
+            <_ResizetizerCollectedImages Condition="'@(_CopiedResources)' == ''" Include="@(_ResizetizerExistingImages->'%(FullPath)')" />
+            <_ResizetizerImagesToDelete Remove="@(_ResizetizerCollectedImages)" />
         </ItemGroup>
+
+        <!-- Remove files which are no longer needed -->
+        <Delete
+            Condition="'@(_ResizetizerImagesToDelete->Count())' != '0'"
+            Files="@(_ResizetizerImagesToDelete)"
+        />
 
         <!-- iOS -->
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">

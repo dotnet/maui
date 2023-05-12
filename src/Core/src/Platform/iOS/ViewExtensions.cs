@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this UIView platformView, FocusRequest request)
 		{
-			request.IsFocused = platformView.BecomeFirstResponder();
+			request.TrySetResult(platformView.BecomeFirstResponder());
 		}
 
 		public static void Unfocus(this UIView platformView, IView view)
@@ -268,23 +268,16 @@ namespace Microsoft.Maui.Platform
 
 			var layer = view.Layer;
 
-			UpdateBackgroundLayerFrame(layer, view.Bounds);
-		}
-
-		static void UpdateBackgroundLayerFrame(CALayer layer, CGRect bounds)
-		{
 			if (layer == null || layer.Sublayers == null || layer.Sublayers.Length == 0)
 				return;
 
 			foreach (var sublayer in layer.Sublayers)
 			{
-				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != bounds)
+				if (sublayer.Name == BackgroundLayerName && sublayer.Frame != view.Bounds)
 				{
-					sublayer.Frame = bounds;
+					sublayer.Frame = view.Bounds;
 					break;
 				}
-
-				UpdateBackgroundLayerFrame(sublayer, bounds);
 			}
 		}
 
@@ -735,43 +728,116 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static UIView? FindNextView(this UIView view, UIView superView, Func<UIView, bool> isValidType)
+		internal static T? FindResponder<T>(this UIViewController controller) where T : UIViewController
 		{
-			var passedOriginal = false;
+			var nextResponder = controller.View as UIResponder;
+			while (nextResponder is not null)
+			{
+				nextResponder = nextResponder.NextResponder;
 
-			var nextView = superView.FindNextView(view, ref passedOriginal, isValidType);
+				if (nextResponder is T responder && responder != controller)
+					return responder;
+			}
+			return null;
+		}
+
+		internal static T? FindTopController<T>(this UIView view) where T : UIViewController
+		{
+			var bestController = view.FindResponder<T>();
+			var tempController = bestController;
+
+			while (tempController is not null)
+			{
+				tempController = tempController.FindResponder<T>();
+
+				if (tempController is not null)
+					bestController = tempController;
+			}
+
+			return bestController;
+		}
+
+		internal static UIView? FindNextView(this UIView? view, UIView containerView, Func<UIView, bool> isValidType)
+		{
+			UIView? nextView = null;
+
+			while (view is not null && view != containerView && nextView is null)
+			{
+				var siblings = view.Superview?.Subviews;
+
+				if (siblings is null)
+					break;
+
+				// TableView and ListView cells may not be in order so handle separately
+				if (view.FindResponder<UITableView>() is UITableView tableView)
+				{
+					nextView = view.FindNextInTableView(tableView, isValidType);
+
+					if (nextView is null)
+						view = tableView;
+				}
+
+				else
+					nextView = view.FindNextView(siblings.IndexOf(view) + 1, isValidType);
+
+				view = view.Superview;
+			}
 
 			// if we did not find the next view, try to find the first one
-			nextView ??= superView.FindNextView(null, ref passedOriginal, isValidType);
+			nextView ??= containerView.Subviews?[0]?.FindNextView(0, isValidType);
 
 			return nextView;
 		}
 
-		static UIView? FindNextView(this UIView view, UIView? origView, ref bool passedOriginal, Func<UIView, bool> isValidType)
+		static UIView? FindNextView(this UIView? view, int index, Func<UIView, bool> isValidType)
 		{
-			foreach (var child in view.Subviews)
+			// search through the view's siblings and traverse down their branches
+			var siblings = view is UITableView table ? table.VisibleCells : view?.Superview?.Subviews;
+
+			if (siblings is null)
+				return null;
+
+			for (int i = index; i < siblings.Length; i++)
 			{
-				if (isValidType(child))
+				var sibling = siblings[i];
+
+				if (sibling.Subviews is not null && sibling.Subviews.Length > 0)
 				{
-					if (origView is null)
-						return child;
-
-					if (passedOriginal)
-						return child;
-
-					if (child == origView)
-						passedOriginal = true;
+					var childVal = sibling.Subviews[0].FindNextView(0, isValidType);
+					if (childVal is not null)
+						return childVal;
 				}
 
-				else if (child.Subviews.Length > 0 && !child.Hidden && child.Alpha > 0f)
-				{
-					var nextLevel = child.FindNextView(origView, ref passedOriginal, isValidType);
-					if (nextLevel is not null)
-						return nextLevel;
-				}
+				if (isValidType(sibling))
+					return sibling;
 			}
 
 			return null;
+		}
+
+		static UIView? FindNextInTableView(this UIView view, UITableView table, Func<UIView, bool> isValidType)
+		{
+			if (isValidType(view))
+			{
+				var index = view.FindTableViewCellIndex(table);
+
+				return index == -1 ? null : table.FindNextView(index + 1, isValidType);
+			}
+
+			return null;
+		}
+
+		static int FindTableViewCellIndex(this UIView view, UITableView table)
+		{
+			var cells = table.VisibleCells;
+			var viewCell = view.FindResponder<UITableViewCell>();
+
+			for (int i = 0; i < cells.Length; i++)
+			{
+				if (cells[i] == viewCell)
+					return i;
+			}
+			return -1;
 		}
 
 		internal static void ChangeFocusedView(this UIView view, UIView? newView)
@@ -781,6 +847,39 @@ namespace Microsoft.Maui.Platform
 
 			else
 				newView.BecomeFirstResponder();
+		}
+
+		internal static UIView? GetContainerView(this UIView? startingPoint)
+		{
+			var rootView = startingPoint?.FindResponder<ContainerViewController>()?.View;
+
+			if (rootView is not null)
+				return rootView;
+
+			var firstViewController = startingPoint?.FindTopController<UIViewController>();
+
+			if (firstViewController?.ViewIfLoaded is not null)
+				return firstViewController.ViewIfLoaded.FindDescendantView<ContentView>();
+
+			return null;
+		}
+
+		internal static UIView? FindFirstResponder(this UIView? superview)
+		{
+			if (superview is null)
+				return null;
+
+			if (superview.IsFirstResponder)
+				return superview;
+
+			foreach (var subview in superview.Subviews)
+			{
+				var subviewFirstResponder = subview.FindFirstResponder();
+				if (subviewFirstResponder is not null)
+					return subviewFirstResponder;
+			}
+
+			return null;
 		}
 	}
 }

@@ -15,6 +15,140 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory(DisplayName = "Validates Keyboard updates correctly using IsPassword")]
+		[InlineData(nameof(Keyboard.Text), false)]
+		[InlineData(nameof(Keyboard.Numeric), true)]
+		public async Task ValidateNumericKeyboardUpdatesCorrectlyWithIsPassword(string keyboardName, bool expected)
+		{
+			var layout = new LayoutStub();
+
+			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
+
+			var entry = new EntryStub()
+			{
+				IsPassword = false,
+				Keyboard = keyboard,
+				Text = "Password"
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Change IsPassword"
+			};
+
+			layout.Add(entry);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				entry.IsPassword = !entry.IsPassword;
+				clicked = true;
+			};
+
+			await PerformClick(button); // IsPassword = true
+			Assert.True(clicked);
+
+			await PerformClick(button); // IsPassword = false
+
+			await ValidatePropertyInitValue(entry, () => expected, GetNativeIsNumericKeyboard, expected);
+		}
+
+		[Fact(DisplayName = "Entry Background Updates Correctly")]
+		public async Task BackgroundUpdatesCorrectly()
+		{
+			var expected = Colors.Red;
+
+			var layout = new LayoutStub();
+
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				Background = new SolidPaintStub(Colors.Yellow),
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Change Background"
+			};
+
+			layout.Add(entry);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				entry.Background = new SolidPaintStub(expected);
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			await ValidateHasColor(entry, expected);
+		}
+
+		[Theory(DisplayName = "ClearButton Color Initializes Correctly")]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
+		public async Task ClearButtonColorInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var entry = new EntryStub()
+			{
+				Text = "Test",
+				TextColor = expected,
+				ClearButtonVisibility = ClearButtonVisibility.WhileEditing
+			};
+
+			entry.Focus();
+
+			await ValidateHasColor(entry, expected);
+		}
+
+		[Fact(DisplayName = "Padding is the same after background changes")]
+		public async Task PaddingDoesntChangeAfterBackground()
+		{
+			var paddingLeft = 0;
+			var paddingTop = 0;
+			var paddingRight = 0;
+			var paddingBottom = 0;
+
+			var entry = new EntryStub();
+
+			entry.PropertyMapperOverrides = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				["MyCustomization"] = (handler, view) =>
+				{
+					handler.PlatformView.SetPadding(paddingLeft, paddingTop, paddingRight, paddingBottom);
+				}
+			};
+
+			var paddingLeftNative = await GetValueAsync(entry, h => h.PlatformView.PaddingLeft);
+			var paddingRightNative = await GetValueAsync(entry, h => h.PlatformView.PaddingRight);
+			var paddingTopNative = await GetValueAsync(entry, h => h.PlatformView.PaddingTop);
+			var paddingBottomNative = await GetValueAsync(entry, h => h.PlatformView.PaddingBottom);
+			Assert.Equal(paddingLeft, paddingLeftNative);
+			Assert.Equal(paddingTop, paddingTopNative);
+			Assert.Equal(paddingRight, paddingRightNative);
+			Assert.Equal(paddingBottom, paddingBottomNative);
+			entry.Background = new SolidPaint(Colors.Red);
+			var paddingLeftNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingLeft);
+			var paddingRightNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingRight);
+			var paddingTopNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingTop);
+			var paddingBottomNativeAfter = await GetValueAsync(entry, h => h.PlatformView.PaddingBottom);
+			Assert.Equal(paddingLeft, paddingLeftNative);
+			Assert.Equal(paddingTop, paddingTopNativeAfter);
+			Assert.Equal(paddingRight, paddingRightNativeAfter);
+			Assert.Equal(paddingBottom, paddingBottomNativeAfter);
+		}
+
+
 		[Fact(DisplayName = "PlaceholderColor Initializes Correctly")]
 		public async Task PlaceholderColorInitializesCorrectly()
 		{
@@ -267,6 +401,17 @@ namespace Microsoft.Maui.DeviceTests
 				return editText.SelectionEnd - editText.SelectionStart;
 
 			return -1;
+		}
+
+		AppCompatButton GetNativeButton(ButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				GetNativeButton(CreateHandler<ButtonHandler>(button)).PerformClick();
+			});
 		}
 	}
 }

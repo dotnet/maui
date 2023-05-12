@@ -12,6 +12,7 @@
                     Text="HtmlWebViewSource (String)"
                     Style="{StaticResource Headline}"/>
                 <WebView 
+                    x:Name="HtmlSourceWebView"
                     HeightRequest="150"
                     HorizontalOptions="FillAndExpand">
                     <WebView.Source>
@@ -31,6 +32,9 @@
                         </HtmlWebViewSource>
                     </WebView.Source>
                 </WebView>
+                <Button
+                    Text="Update Source"
+                    Clicked="OnUpdateHtmlSourceClicked"/>
                 <Label
                     Text="HtmlWebViewSource (File)"
                     Style="{StaticResource Headline}"/>
@@ -53,8 +57,7 @@
                         </HtmlWebViewSource>
                     </WebView.Source>
                 </WebView>
-                <StackLayout
-                    Orientation="Horizontal">
+                <HorizontalStackLayout>
                     <Entry 
                         x:Name="input"
                         WidthRequest="150" 
@@ -66,9 +69,8 @@
                         Clicked="OnLoadHtmlFileClicked" 
                         HeightRequest="48" 
                         WidthRequest="150" />
-                </StackLayout>
-                <StackLayout
-                    Orientation="Horizontal">
+                </HorizontalStackLayout>
+                <HorizontalStackLayout>
                     <Entry 
                         x:Name="userAgent"
                         Text="{Binding UserAgent, Source={x:Reference FileWebView}}"
@@ -80,7 +82,7 @@
                         Clicked="OnSetUserAgentClicked"
                         HeightRequest="48" 
                         WidthRequest="150" />
-                </StackLayout>
+                </HorizontalStackLayout>
                 <Label
                     Text="UrlWebViewSource"
                     Style="{StaticResource Headline}"/>
@@ -123,21 +125,36 @@
 					x:Name="EvalResultLabel"
                     Text="..."
                     Style="{StaticResource Headline}"/>
+                <Label
+                    Text="HTML5 Video"
+                    Style="{StaticResource Headline}"/>
                 <Button
                     Text="Load HTML5 Video"
                     Clicked="OnLoadHtml5VideoClicked" />
-                <StackLayout
+                <Label
+                    Text="Cookies"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load httpbin.org with Cookies"
+                    Clicked="OnLoadHttpBinClicked" />
+                <VerticalStackLayout
                     IsVisible="{OnPlatform Android=True, Default=False}">
                     <Label
                         Text="Platform Specifics"
                         Style="{StaticResource Headline}"/>
+                    <Label
+                        Text="Mixed Content Mode"
+                        Style="{StaticResource Headline}"/>
                     <Button
                         Text="Allow MixedContentMode"
                         Clicked="OnAllowMixedContentClicked"/>
+                    <Label
+                        Text="Zoom Controls"
+                        Style="{StaticResource Headline}"/>
                     <Button
                         Text="Enable Zoom Controls"
                         Clicked="OnEnableZoomControlsClicked"/>
-                </StackLayout>
+                </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

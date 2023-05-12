@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
@@ -1185,6 +1187,81 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			AssertNoErrorsLogged();
 		}
 
+
+		[Theory, Category("[Binding] Complex paths")]
+		[InlineData(BindingMode.OneWay)]
+		[InlineData(BindingMode.OneWayToSource)]
+		[InlineData(BindingMode.TwoWay)]
+		public async Task WeakPropertyChangedProxyDoesNotLeak(BindingMode mode)
+		{
+			var proxies = new List<WeakReference>();
+			WeakReference weakViewModel = null, weakBindable = null;
+
+			int i = 0;
+			void create()
+			{
+				if (i++ < 1024)
+				{
+					create();
+					return;
+				}
+
+				var binding = new Binding("Model.Model[1]");
+				var bindable = new MockBindable();
+				weakBindable = new WeakReference(bindable);
+
+				var viewmodel = new ComplexMockViewModel
+				{
+					Model = new ComplexMockViewModel
+					{
+						Model = new ComplexMockViewModel()
+					}
+				};
+
+				weakViewModel = new WeakReference(viewmodel);
+
+				bindable.BindingContext = viewmodel;
+				bindable.SetBinding(MockBindable.TextProperty, binding);
+
+				// Access private members:
+				// WeakPropertyChangedProxy proxy = binding._expression._parts[i]._listener;
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				var expression = binding.GetType().GetField("_expression", flags).GetValue(binding);
+				Assert.NotNull(expression);
+				var parts = expression.GetType().GetField("_parts", flags).GetValue(expression) as IEnumerable;
+				Assert.NotNull(parts);
+				foreach (var part in parts)
+				{
+					var listener = part.GetType().GetField("_listener", flags).GetValue(part);
+					if (listener == null)
+						continue;
+					proxies.Add(new WeakReference(listener));
+				}
+				Assert.NotEmpty(proxies); // Should be at least 1
+			};
+			create();
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWay)
+				Assert.False(weakViewModel.IsAlive, "ViewModel wasn't collected");
+
+			if (mode == BindingMode.TwoWay || mode == BindingMode.OneWayToSource)
+				Assert.False(weakBindable.IsAlive, "Bindable wasn't collected");
+
+			// WeakPropertyChangedProxy won't go away until the second GC, BindingExpressionPart unsubscribes in its finalizer
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			foreach (var proxy in proxies)
+			{
+				Assert.False(proxy.IsAlive, "WeakPropertyChangedProxy wasn't collected");
+			}
+		}
+
 		[Theory, Category("[Binding] Complex paths")]
 		[InlineData(BindingMode.OneWay)]
 		[InlineData(BindingMode.OneWayToSource)]
@@ -1968,32 +2045,21 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BindingUnsubscribesForDeadTarget()
+		public async Task BindingUnsubscribesForDeadTarget()
 		{
-			TestViewModel viewmodel = new TestViewModel();
+			var viewmodel = new TestViewModel();
 
-			int i = 0;
-			Action create = null;
-			create = () =>
 			{
-				if (i++ < 1024)
-				{
-					create();
-					return;
-				}
-
 				var button = new Button();
 				button.SetBinding(Button.TextProperty, "Foo");
 				button.BindingContext = viewmodel;
-			};
-
-			create();
+			}
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			GC.Collect();
 
 			viewmodel.OnPropertyChanged("Foo");
 
@@ -2003,7 +2069,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
-			TestViewModel viewModel = new TestViewModel();
+			var viewModel = new TestViewModel();
 			WeakReference bindingRef;
 
 			{
@@ -2018,10 +2084,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			//NOTE: this was the only way I could "for sure" get the binding to get GC'd
+			await Task.Yield();
 			GC.Collect();
-			await Task.Delay(10);
-			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
 		}

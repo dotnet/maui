@@ -37,5 +37,33 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(page.HasNavigatedTo);
 			});
 		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task PrefersLargeTitles(bool enabled)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+			Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navPage, enabled);
+
+			var largeTitles = await GetValueAsync(navPage, (handler) => (handler.ViewController as UINavigationController).NavigationBar.PrefersLargeTitles);
+			Assert.Equal(enabled, largeTitles);
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task TranslucentNavigationBar(bool enabled)
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var navPage = new NavigationPage(page) { Title = "App Page" };
+			Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetIsNavigationBarTranslucent(navPage, enabled);
+
+			var translucent = await GetValueAsync(navPage, (handler) => (handler.ViewController as UINavigationController).NavigationBar.Translucent);
+			Assert.Equal(enabled, translucent);
+		}
 	}
 }

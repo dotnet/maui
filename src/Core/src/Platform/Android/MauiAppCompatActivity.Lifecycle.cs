@@ -89,12 +89,5 @@ namespace Microsoft.Maui
 
 			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnRestoreInstanceState>(del => del(this, savedInstanceState));
 		}
-
-		protected override void OnDestroy()
-		{
-			base.OnDestroy();
-
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnDestroy>(del => del(this));
-		}
 	}
 }

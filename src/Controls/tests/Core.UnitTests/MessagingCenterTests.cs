@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Sdk;
 
@@ -261,8 +262,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(((TestSubcriber)wr.Target).Successful);  // Since it's still alive, the subscriber should still have received the message and updated the property
 		}
 
-		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
-		public void SubscriberCollectableAfterUnsubscribeEvenIfHeldByClosure()
+		[Fact]
+		public async Task SubscriberCollectableAfterUnsubscribeEvenIfHeldByClosure()
 		{
 			WeakReference wr = null;
 
@@ -279,6 +280,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			MessagingCenter.Unsubscribe<TestPublisher>(wr.Target, "test");
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 

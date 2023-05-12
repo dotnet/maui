@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -98,6 +100,34 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.Equal(expected, result);
+		}
+
+		[Fact]
+		public async Task MauiScrollViewGetsFullHeightInHorizontalOrientation()
+		{
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var sv = new MauiScrollView(MauiContext.Context);
+				sv.SetOrientation(ScrollOrientation.Horizontal);
+				var content = new Button(MauiContext.Context);
+				sv.SetContent(content);
+
+				var hsv = sv.FindViewWithTag("Microsoft.Maui.Android.HorizontalScrollView") as MauiHorizontalScrollView;
+
+				Assert.NotNull(hsv);
+
+				sv.Measure(
+					MeasureSpec.MakeMeasureSpec(1000, Android.Views.MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(1000, Android.Views.MeasureSpecMode.Exactly));
+
+				sv.Layout(0, 0, 1000, 1000);
+
+				var measuredWidth = hsv.MeasuredWidth;
+				var measuredHeight = hsv.MeasuredHeight;
+
+				Assert.Equal(1000, measuredWidth);
+				Assert.Equal(1000, measuredHeight);
+			});
 		}
 	}
 }

@@ -95,136 +95,76 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
+Task("android-aar")
+    .Does(() =>
+    {
+        var root = "./src/Core/AndroidNative/";
+
+        var gradlew = root + "gradlew";
+        if (IsRunningOnWindows())
+            gradlew += ".bat";
+
+        var exitCode = StartProcess(
+            MakeAbsolute((FilePath)gradlew),
+            new ProcessSettings
+            {
+                Arguments = $"createAar --rerun-tasks",
+                WorkingDirectory = root
+            });
+
+        if (exitCode != 0)
+        {
+            if (IsCIBuild() || target == "android-aar")
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
+    });
+
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+        {
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+        }
         else
-            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf", maxCpuCount: 1);
+        {
+            RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
+        }
     });
 
 Task("dotnet-samples")
     .Does(() =>
     {
-        var tempDir = PrepareSeparateBuildContext("samplesTest", false);
+        var tempDir = PrepareSeparateBuildContext("samplesTest");
 
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
             ["UseWorkload"] = "true",
             // ["GenerateAppxPackageOnBuild"] = "true",
             ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1, binlogPrefix: "sample-");
+        }, binlogPrefix: "sample-");
     });
 
-Task("dotnet-templates")
+Task("dotnet-samples-test")
     .Does(() =>
     {
-        if (localDotnet)
-            SetDotNetEnvironmentVariables();
-
-        var dn = localDotnet ? dotnetPath : "dotnet";
-
-        var tempDir = PrepareSeparateBuildContext("templatesTest", true);
-
-        // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
-        var designTime = new Dictionary<string, string> {
-            { "DesignTimeBuild", "true" },
-            { "BuildingInsideVisualStudio", "true" },
-            { "SkipCompilerExecution", "true" },
-            // NOTE: this overrides a default setting that supports VS Mac
-            // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
-            { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
-        };
-
-        var properties = new Dictionary<string, string> {
-            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-            { "RestoreNoCache", "true" },
-            // { "GenerateAppxPackageOnBuild", "true" },
-            { "RestorePackagesPath", tempDir.Combine("packages").FullPath },
-            { "RestoreConfigFile", tempDir.CombineWithFilePath("NuGet.config").FullPath },
-
-            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
-            //Try not restore dependecies of 6.0.10
-            { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
-        };
-
-        var templates = new Dictionary<string, Action<DirectoryPath>> {
-            { "maui:maui", null },
-            { "mauiblazor:maui-blazor", null },
-            { "mauilib:mauilib", null },
-            { "mauicorelib:mauilib", dir => {
-                CleanDirectories(dir.Combine("Platforms").FullPath);
-                ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
-                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
-            } },
-            { "mauiunpackaged:maui", dir => {
-                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
-            } },
-            { "mauiblazorunpackaged:maui-blazor", dir => {
-                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
-            } },
-        };
-
-        var alsoPack = new [] {
-            "mauilib"
-        };
-
-        foreach (var template in templates)
+        var buildSettings = new DotNetCoreBuildSettings
         {
-            foreach (var forceDotNetBuild in new [] { true, false })
-            {
-                // macOS does not support msbuild
-                if (!IsRunningOnWindows() && !forceDotNetBuild)
-                    continue;
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .SetConfiguration(configuration)
+        };
+        DotNetCoreBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
 
-                var type = forceDotNetBuild ? "DotNet" : "MSBuild";
-                var projectName = template.Key.Split(":")[0];
-                var templateName = template.Key.Split(":")[1];
-
-                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
-
-                projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
-
-                // Create
-                StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
-
-                // Modify
-                if (template.Value != null)
-                    template.Value(projectName);
-
-                // Enable Tizen
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "<!-- <TargetFrameworks>",
-                    "<TargetFrameworks>");
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "</TargetFrameworks> -->",
-                    "</TargetFrameworks>");
-
-                // Build
-                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, binlogPrefix: "template-");
-
-                // Pack
-                if (alsoPack.Contains(templateName)) {
-                    var packProperties = new Dictionary<string, string>(properties);
-                    packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
-                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack", binlogPrefix: "template-");
-                }
-            }
-        }
-
-        try
+        var testSettings = new DotNetCoreTestSettings
         {
-            CleanDirectories(tempDir.FullPath);
-        }
-        catch
-        {
-            Information("Unable to clean up templates directory.");
-        }
+            Filter = "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
+        };
+        DotNetCoreTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
     });
 
 Task("dotnet-test")
@@ -241,6 +181,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -265,6 +206,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -472,7 +414,7 @@ Task("dotnet-diff")
 
 // Tasks for Local Development
 Task("VS")
-    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -485,7 +427,9 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
-        StartVisualStudioForDotNet6();
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioForDotNet();
     }); 
 
 // Keeping this for users that are already using this.
@@ -563,7 +507,24 @@ void SetDotNetEnvironmentVariables()
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
-void StartVisualStudioForDotNet6()
+void UseLocalNuGetCacheFolder(bool reset = false)
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    EnsureDirectoryExists(packages);
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioForDotNet()
 {
     string sln = Argument<string>("sln", null);
 
@@ -576,11 +537,11 @@ void StartVisualStudioForDotNet6()
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui.sln";
+            sln = "./Microsoft.Maui-windows.slnf";
         }
         else
         {
-            sln = "_omnisharp.sln";
+            sln = "./Microsoft.Maui-mac.slnf";
         }
     }
 
@@ -698,7 +659,7 @@ void RunTestWithLocalDotNet(string csproj)
         });
 }
 
-DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectoryProps = false)
+DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
 {
     var dir = GetTempDirectory().Combine(dirName);
     EnsureDirectoryExists(dir);
@@ -722,9 +683,15 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
         $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
         $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
 
-    // Create empty Directory.Build.props/targets
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    // Create empty or copy test Directory.Build.props/targets
+    if (string.IsNullOrEmpty(props))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+    else
+        CopyFile(props, dir.CombineWithFilePath("Directory.Build.props"));
+    if (string.IsNullOrEmpty(targets))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    else
+        CopyFile(targets, dir.CombineWithFilePath("Directory.Build.targets"));
 
     return MakeAbsolute(dir);
 }

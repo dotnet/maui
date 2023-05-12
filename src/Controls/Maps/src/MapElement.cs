@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -9,12 +9,14 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class MapElement : Element
 	{
+		/// <summary>Bindable property for <see cref="StrokeColor"/>.</summary>
 		public static readonly BindableProperty StrokeColorProperty = BindableProperty.Create(
 			nameof(StrokeColor),
 			typeof(Color),
 			typeof(MapElement),
 			null);
 
+		/// <summary>Bindable property for <see cref="StrokeWidth"/>.</summary>
 		public static readonly BindableProperty StrokeWidthProperty = BindableProperty.Create(
 			nameof(StrokeWidth),
 			typeof(float),

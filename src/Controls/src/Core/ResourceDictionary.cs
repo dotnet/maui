@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	{
 		const string GetResourcePathUriScheme = "maui://";
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
-		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
+		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 
@@ -179,6 +179,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ResourceDictionary.xml" path="//Member[@MemberName='ContainsKey']/Docs/*" />
 		public bool ContainsKey(string key)
 		{
+			// Note that this only checks the inner dictionary and ignores the merged dictionaries. This is apparently an intended 
+			// behavior to support Hot Reload. 
+
 			return _innerDictionary.ContainsKey(key);
 		}
 

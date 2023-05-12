@@ -17,13 +17,13 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 
 			var openButton = new Button
 			{
-				HorizontalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Fill,
 				Text = "Open SwipeView"
 			};
 
 			var closeButton = new Button
 			{
-				HorizontalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Fill,
 				Text = "Close SwipeView"
 			};
 
@@ -60,48 +60,99 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				Text = "File"
 			};
 
-			swipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "File Invoked", "Ok"); };
+			swipeItem.Invoked += (sender, e) => { DisplayAlert("SwipeView", "SwipeItem Invoked", "Ok"); };
 
-			var swipeItems = new SwipeItems { swipeItem };
+			var swipeItems1 = new SwipeItems { swipeItem };
 
-			swipeItems.Mode = SwipeMode.Reveal;
+			swipeItems1.Mode = SwipeMode.Reveal;
 
-			var swipeContent = new Grid
+			var swipeContent1 = new Grid
 			{
 				BackgroundColor = Colors.Gray
 			};
 
-			var fileSwipeLabel = new Label
+			var swipeContentText1 = new Label
 			{
 				HorizontalOptions = LayoutOptions.Center,
 				VerticalOptions = LayoutOptions.Center,
-				Text = "Swipe to Right (File)"
+				Text = "Swipe to Right (SwipeItem)"
 			};
 
-			swipeContent.Children.Add(fileSwipeLabel);
+			swipeContent1.Children.Add(swipeContentText1);
 
-			var swipeView = new SwipeView
+			var swipeView1 = new SwipeView
 			{
 				HeightRequest = 60,
 				WidthRequest = 300,
-				LeftItems = swipeItems,
-				Content = swipeContent
+				LeftItems = swipeItems1,
+				Content = swipeContent1
 			};
 
-			swipeLayout.Children.Add(swipeView);
+			var infoLabel = new Label
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				TextColor = Colors.White,
+				Text = "View"
+			};
+
+			var swipeItemContent = new Grid
+			{
+				BackgroundColor = Colors.Red,
+			};
+
+			swipeItemContent.Children.Add(infoLabel);
+
+			var swipeItemView = new SwipeItemView
+			{
+				Content = swipeItemContent
+			};
+
+			swipeItemView.Invoked += (sender, e) => { DisplayAlert("SwipeView", "SwipeItemView Invoked", "Ok"); };
+
+			var swipeItems2 = new SwipeItems { swipeItemView };
+
+			swipeItems2.Mode = SwipeMode.Reveal;
+
+			var swipeContent2 = new Grid
+			{
+				BackgroundColor = Colors.Gray
+			};
+
+			var swipeContentText2 = new Label
+			{
+				HorizontalOptions = LayoutOptions.Center,
+				VerticalOptions = LayoutOptions.Center,
+				Text = "Swipe to Right (SwipeItemView)"
+			};
+
+			swipeContent2.Children.Add(swipeContentText2);
+
+			var swipeView2 = new SwipeView
+			{
+				HeightRequest = 60,
+				WidthRequest = 300,
+				LeftItems = swipeItems2,
+				Content = swipeContent2
+			};
+
+			swipeLayout.Children.Add(swipeView1);
+			swipeLayout.Children.Add(swipeView2);
 
 			Content = swipeLayout;
 
 			openButton.Clicked += (sender, e) =>
 			{
 				bool animated = animatedCheckBox.IsChecked;
-				swipeView.Open(OpenSwipeItem.LeftItems, animated);
+				swipeView1.Open(OpenSwipeItem.LeftItems, animated);
+				swipeView2.Open(OpenSwipeItem.LeftItems, animated);
 			};
 
 			closeButton.Clicked += (sender, e) =>
 			{
 				bool animated = animatedCheckBox.IsChecked;
-				swipeView.Close(animated);
+				swipeView1.Close(animated);
+				swipeView2.Close(animated);
 			};
 		}
 	}

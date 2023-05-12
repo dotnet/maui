@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Versioning;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.LifecycleEvents;
 using ObjCRuntime;
@@ -124,6 +125,30 @@ namespace Microsoft.Maui.Platform
 			userActivity.AddUserInfoEntries(userInfo);
 
 			return userActivity;
+		}
+
+		public static void UpdateUserInterfaceStyle(this IApplication application)
+		{
+			if (application is null)
+				return;
+
+			var currentViewController = WindowStateManager.Default.GetCurrentUIViewController(false);
+
+			if (currentViewController is null)
+				return;
+
+			switch (application.UserAppTheme)
+			{
+				case AppTheme.Light:
+					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Light;
+					break;
+				case AppTheme.Dark:
+					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Dark;
+					break;
+				default:
+					currentViewController.OverrideUserInterfaceStyle = UIUserInterfaceStyle.Unspecified;
+					break;
+			}
 		}
 	}
 }
