@@ -135,9 +135,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 			return base.FinishedLaunching(uiApplication, launchOptions);
 		}
 
-		
 
-		
+
+
 
 		#region Stuff for repro of Bugzilla case 40911
 
