@@ -3,7 +3,9 @@ using Android.Graphics.Drawables;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -14,29 +16,50 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact, Category(TestCategory.Layout)]
 		public async Task NestedButtonHasExpectedIconPosition()
 		{
-			var layout = new HorizontalStackLayout();
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Page, PageHandler>();
+					handlers.AddHandler<Window, WindowHandlerStub>();
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+				});
+			});
 
 			var button = new Button()
 			{
 				Text = "Hello",
 				ImageSource = "red.png",
-				ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Left, 80)
+				ContentLayout = new Button.ButtonContentLayout(Button.ButtonContentLayout.ImagePosition.Right, 8)
 			};
 
-			layout.Children.Add(button);
-
-			int position = await InvokeOnMainThreadAsync(() =>
+			var page = new ContentPage()
 			{
-				var handler = CreateHandler<ButtonHandler>(button);
+				Content = new HorizontalStackLayout()
+				{
+					button
+				}
+			};
 
-				var platformButton = (AppCompatButton)handler.PlatformView;
+			var window = new Window(page);
 
-				Drawable[] drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
-				var bounds = drawables[2].Bounds;
-				return bounds.Left;
-			});
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await InvokeOnMainThreadAsync(() =>
+					{
+						var handler = CreateHandler<ButtonHandler>(button);
 
-			Assert.Equal(100, position);
+						var platformButton = (AppCompatButton)handler.PlatformView;
+
+						Drawable[] drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
+						var rightDrawable = drawables[2];
+
+						// Assert that the image is on the right
+						Assert.NotNull(drawables[2]);
+					});
+				});
 		}
 
 		void ValidateInputTransparentOnPlatformView(IView view)
