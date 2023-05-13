@@ -42,20 +42,18 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
-				await AttachAndRun(page, (_) =>
-				{
-					var handler = CreateHandler<ButtonHandler>(button);
+			await AttachAndRun(page, (_) =>
+			{
+				var handler = CreateHandler<ButtonHandler>(button);
 
-					var platformButton = (AppCompatButton)handler.PlatformView;
+				var platformButton = (AppCompatButton)handler.PlatformView;
 
-					Drawable[] drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
-					var rightDrawable = drawables[2];
+				Drawable[] drawables = TextViewCompat.GetCompoundDrawablesRelative(platformButton);
+				var rightDrawable = drawables[2];
 
-					// Assert that the image is on the right
-					Assert.NotNull(drawables[2]);
-				})
-			);
+				// Assert that the image is on the right
+				Assert.NotNull(drawables[2]);
+			});
 		}
 
 		void ValidateInputTransparentOnPlatformView(IView view)
