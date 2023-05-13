@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await InvokeOnMainThreadAsync(async () =>
-				await page.ToPlatform(MauiContext).AttachAndRun(() =>
+				await AttachAndRun(page, (_) =>
 				{
 					var handler = CreateHandler<ButtonHandler>(button);
 
