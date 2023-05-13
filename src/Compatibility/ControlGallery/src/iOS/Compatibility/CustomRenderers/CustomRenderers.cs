@@ -31,8 +31,45 @@ using RectangleF = CoreGraphics.CGRect;
 #pragma warning restore CS0612 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(Issue5830.ExtendedEntryCell), typeof(ExtendedEntryCellRenderer))]
 [assembly: ExportRenderer(typeof(Issue13390), typeof(Issue13390Renderer))]
+#pragma warning disable CS0612 // Type or member is obsolete
+[assembly: ExportRenderer(typeof(DisposePage), typeof(DisposePageRenderer))]
+[assembly: ExportRenderer(typeof(DisposeLabel), typeof(DisposeLabelRenderer))]
+#pragma warning restore CS0612 // Type or member is obsolete
+// Deliberately broken image source and handler so we can test handling of image loading errors
+[assembly: ExportImageSourceHandler(typeof(FailImageSource), typeof(BrokenImageSourceHandler))]
+#pragma warning disable CS0618 // Type or member is obsolete
+[assembly: ExportRenderer(typeof(WkWebView), typeof(WkWebViewRenderer))]
+#pragma warning restore CS0618 // Type or member is obsolete
 namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
+	[System.Obsolete]
+	public class DisposePageRenderer : PageRenderer
+	{
+		protected override void Dispose(bool disposing)
+		{
+			if (disposing)
+			{
+				((DisposePage)Element).SendRendererDisposed();
+			}
+			base.Dispose(disposing);
+
+		}
+	}
+
+	[System.Obsolete]
+	public class DisposeLabelRenderer : LabelRenderer
+	{
+		protected override void Dispose(bool disposing)
+		{
+
+			if (disposing)
+			{
+				((DisposeLabel)Element).SendRendererDisposed();
+			}
+			base.Dispose(disposing);
+		}
+	}
+
 	public class Issue13390Renderer : Controls.Handlers.Compatibility.ShellRenderer
 	{
 		protected override Controls.Platform.Compatibility.IShellFlyoutRenderer CreateFlyoutRenderer()
