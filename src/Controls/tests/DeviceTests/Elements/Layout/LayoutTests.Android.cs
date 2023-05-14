@@ -42,7 +42,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await AttachAndRun(page, (_) =>
+			await CreateHandlerAndAddToWindow(page, () =>
 			{
 				var handler = CreateHandler<ButtonHandler>(button);
 
