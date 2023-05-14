@@ -47,8 +47,9 @@ namespace Microsoft.Maui.Controls.Platform
 				switch (contentLayout.Position)
 				{
 					case ButtonContentLayout.ImagePosition.Top:
-						materialButton.Icon = icon;
+						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTop;
+						materialButton.Icon = icon;
 						break;
 					case ButtonContentLayout.ImagePosition.Bottom:
 						materialButton.Icon = null;
