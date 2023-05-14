@@ -39,6 +39,19 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			}
 		}
 
+		public static string iOSPath
+		{
+			get
+			{
+				var directories = Directory.GetDirectories("../../../../../src/iOS/bin/Debug/", "*ios*");
+
+				if (directories.Length == 0)
+					throw new Exception("Unable to locate ios path");
+
+				return $"{directories[0]}/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app";
+			}
+		}
+
 		public static string MacOSPath = "../../../../src/MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 
 		// Have to continue using the old BundleId for now; Test Cloud doesn't like
@@ -101,6 +114,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __IOS__
 		static IApp InitializeiOSApp()
 		{
+			/*
 			string UDID = "";
 
 			if (TestContext.Parameters.Exists("UDID"))
@@ -128,14 +142,14 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
 			{
 				iOSVersion = _iosVersion;
-			}
+			}*/
 
 			// Running on the simulator
-			// var app = ConfigureApp.iOS
-			//				  .PreferIdeSettings()
-			//		  		  .AppBundle("../../../Microsoft.Maui.Controls.ControlGallery.iOS/bin/iPhoneSimulator/Debug/CompatibilityControlGalleryiOS.app")
-			//				  .Debug()
-			//				  .StartApp();
+			var app = ConfigureApp.iOS
+							.PreferIdeSettings()
+							.AppBundle(AppPaths.iOSPath)
+							.Debug()
+							.StartApp();
 
 			return app;
 		}

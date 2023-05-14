@@ -87,7 +87,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.iOS
 			App.IOSVersion = int.Parse(versionPart[0]);
 
 #if ENABLE_TEST_CLOUD
-			//Xamarin.Calabash.Start();
+            Xamarin.Calabash.Start();
 #endif
 
 			//Forms.Init();
