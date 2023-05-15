@@ -18,7 +18,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 		{
 			InitializeComponent();
 
-			_demoFilteredItemSource = new DemoFilteredItemSource(filter: ItemMatches);
+			_demoFilteredItemSource = new DemoFilteredItemSource(count: 200, filter: ItemMatches);
 
 			CollectionView.ItemsSource = _demoFilteredItemSource.Items;
 
