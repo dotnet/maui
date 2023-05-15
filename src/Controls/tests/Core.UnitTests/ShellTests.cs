@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -253,6 +254,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(new ShellItem());
 
 			Assert.Equal(shellItem, shell.CurrentItem);
+		}
+
+		[Fact]
+		public void AddRemoveItemsDoesNotCrash()
+		{
+			var shell = new Shell();
+
+			var rootItem = new FlyoutItem()
+			{
+				FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems
+			};
+
+			for (int i = 0; i < 3; i++)
+			{
+				var shellContent = new ShellContent { 
+					Content = new ContentPage(),
+					Title = $"Item {i}",
+				};
+				rootItem.Items.Add(shellContent);
+			}
+			shell.Items.Add(rootItem);
+			shell.CurrentItem = rootItem.Items[0];
+
+			shell.Items.ElementAt(0).Items.RemoveAt(1);
+			shell.CurrentItem = rootItem.Items[1];
+
+			Assert.Same(shell.CurrentSection, rootItem.Items[1]);
+			Assert.True(shell.Items.ElementAt(0).Items.Count == 2);
+			Assert.True(shell.CurrentSection.Title == "Item 2");
 		}
 
 		[Fact]

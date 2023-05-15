@@ -209,10 +209,13 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (navItems.TryGetWithData(newItem, out NavigationViewItemViewModel vm1))
 					SelectedItem = vm1;
-				else if (navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel vm2))
-					SelectedItem = vm2;
-				else if (navItems.TryGetWithData(newItem.CurrentItem.CurrentItem, out NavigationViewItemViewModel vm3))
-					SelectedItem = vm3;
+				else if (newItem.CurrentItem != null)
+				{
+					if (navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel vm2))
+						SelectedItem = vm2;
+					else if (navItems.TryGetWithData(newItem.CurrentItem.CurrentItem, out NavigationViewItemViewModel vm3))
+						SelectedItem = vm3;
+				}
 			}
 
 			var handler = CreateShellItemView();
