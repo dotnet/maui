@@ -268,7 +268,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			for (int i = 0; i < 3; i++)
 			{
-				var shellContent = new ShellContent { 
+				var shellContent = new ShellContent
+				{
 					Content = new ContentPage(),
 					Title = $"Item {i}",
 				};
