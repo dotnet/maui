@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System;
+using System.Transactions;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 using NSubstitute;
 using Xunit;
@@ -91,10 +93,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		 * depending on the target platform.
 		 */
 
-		(IFlexLayout, IView) SetUpUnconstrainedTest()
+		(IFlexLayout, IView) SetUpUnconstrainedTest(Action<FlexLayout> configure = null)
 		{
 			var root = new Grid(); // FlexLayout requires a parent, at least for now
-			var flexLayout = new FlexLayout() as IFlexLayout;
+
+			var controlsFlexLayout = new FlexLayout();
+			configure?.Invoke(controlsFlexLayout);
+
+			var flexLayout = controlsFlexLayout as IFlexLayout;
 
 			var view = Substitute.For<IView>();
 			var size = new Size(100, 100);
@@ -128,6 +134,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			var flexFrame = flexLayout.GetFlexFrame(view);
 
 			Assert.Equal(100, flexFrame.Width);
+		}
+
+		[Theory]
+		[InlineData(double.PositiveInfinity, 400, FlexDirection.RowReverse)]
+		[InlineData(double.PositiveInfinity, 400, FlexDirection.Row)]
+		[InlineData(400, double.PositiveInfinity, FlexDirection.ColumnReverse)]
+		[InlineData(400, double.PositiveInfinity, FlexDirection.Column)]
+		public void UnconstrainedMeasureHonorsFlexDirection(double widthConstraint, double heightConstraint,
+			FlexDirection flexDirection)
+		{
+			(var flexLayout, var view) = SetUpUnconstrainedTest((fl) => { fl.Direction = flexDirection; });
+
+			_ = flexLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			var flexFrame = flexLayout.GetFlexFrame(view);
+
+			Assert.Equal(0, flexFrame.X);
+			Assert.Equal(0, flexFrame.Y);
 		}
 	}
 }
