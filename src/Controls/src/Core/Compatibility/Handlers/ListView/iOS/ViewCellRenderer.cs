@@ -41,20 +41,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return cell;
 		}
 
-
-
-
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		protected override void DisconnectHandler(UITableViewCell platformView)
-#pragma warning restore RS0016 // Add public types and members to the declared API
-		{
-			if (platformView is ViewTableCell vtc)
-			{
-				vtc.ViewCell = null;
-			}
-		}
-
-
 		internal class ViewTableCell : UITableViewCell, INativeElementView
 		{
 			IMauiContext MauiContext => _viewCell.FindMauiContext();
@@ -184,6 +170,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
 				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
+				ContentView.ClearSubviews();
 				ContentView.AddSubview(newRenderer.VirtualView.ToPlatform());
 				return (IPlatformViewHandler)newRenderer;
 			}
