@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -34,6 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
+		List<string> _cellReuseIds = new List<string>();
 
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
@@ -89,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(), indexPath) as UICollectionViewCell;
+			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
 			switch (cell)
 			{
@@ -339,6 +341,41 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+#if NET8_0_OR_GREATER
+		protected
+#else
+		internal
+#endif
+		virtual string DetermineCellReuseId(NSIndexPath indexPath)
+		{
+			if (ItemsView.ItemTemplate != null)
+			{
+				var item = ItemsSource[indexPath];
+
+				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
+
+				var cellOrientation = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? "v" : "h";
+				var cellType = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? typeof(VerticalCell) : typeof(HorizontalCell);
+
+				var reuseId = $"_maui_{cellOrientation}_{dataTemplate.Id}";
+
+				if (!_cellReuseIds.Contains(reuseId))
+				{
+					CollectionView.RegisterClassForCell(cellType, new NSString(reuseId));
+					_cellReuseIds.Add(reuseId);
+				}
+
+				return reuseId;
+			}
+
+			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				? HorizontalDefaultCell.ReuseId
+				: VerticalDefaultCell.ReuseId;
+		}
+
+#if NET8_0_OR_GREATER
+		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
+#endif
 		protected virtual string DetermineCellReuseId()
 		{
 			if (ItemsView.ItemTemplate != null)
