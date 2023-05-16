@@ -8,9 +8,7 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement
 	{
 		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
-#pragma warning disable CS0618 // Type or member is obsolete
 			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper)
-#pragma warning restore CS0618 // Type or member is obsolete
 			{
 #if WINDOWS
 				[PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName] = MapAccessKeyHorizontalOffset,
@@ -64,9 +62,7 @@ namespace Microsoft.Maui.Controls
 
 		static void MapContainerView(IViewHandler arg1, IView arg2)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
 			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (arg2 is VisualElement ve)
 			{
