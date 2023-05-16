@@ -1054,7 +1054,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void UnapplyingStyleDefaultToImplicit1()
 		{
-			var stackLayout = new StackLayout {
+			var stackLayout = new StackLayout
+			{
 				Resources = new ResourceDictionary {
 					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
 				}

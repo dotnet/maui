@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			return this;
 		}
 
-		
+
 
 		internal void Apply(BindableObject target, SetterSpecificity specificity)
 		{
@@ -137,12 +137,12 @@ namespace Microsoft.Maui.Controls
 		//200: local style, inline css,
 		//300-n: VSM, n = max(99, distance between the RD and the target)
 		//300: !important (not implemented)
-		public int Style { get; } 
+		public int Style { get; }
 
 		//CSS Specificity, see https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity
 		public int Id { get; }
 		public int Class { get; }
-		public int Type { get;  }
+		public int Type { get; }
 
 		public SetterSpecificity(int vsm, int manual, int dynamicresource, int binding, int style, int id, int @class, int type)
 		{
@@ -156,23 +156,32 @@ namespace Microsoft.Maui.Controls
 			Type = type;
 		}
 
-		public SetterSpecificity(int style, int id, int @class, int type) : this(0, 0, 0,0 , style, id, @class, type)
+		public SetterSpecificity(int style, int id, int @class, int type) : this(0, 0, 0, 0, style, id, @class, type)
 		{
 		}
 
 		public int CompareTo(SetterSpecificity other)
 		{
 			//everything coming from Style has lower priority than something that does not
-			if (Style != other.Style && Style == 0) return 1;
-			if (Style != other.Style && other.Style == 0) return -1;
-			if (Style != other.Style) return Style.CompareTo(other.Style);
+			if (Style != other.Style && Style == 0)
+				return 1;
+			if (Style != other.Style && other.Style == 0)
+				return -1;
+			if (Style != other.Style)
+				return Style.CompareTo(other.Style);
 
-			if (Vsm != other.Vsm) return Vsm.CompareTo(other.Vsm);
-			if (Manual != other.Manual) return Manual.CompareTo(other.Manual);
-			if (DynamicResource != other.DynamicResource) return DynamicResource.CompareTo(other.DynamicResource);
-			if (Binding != other.Binding) return Binding.CompareTo(other.Binding);
-			if (Id != other.Id) return Id.CompareTo(other.Id);
-			if (Class != other.Class) return Class.CompareTo(other.Class);
+			if (Vsm != other.Vsm)
+				return Vsm.CompareTo(other.Vsm);
+			if (Manual != other.Manual)
+				return Manual.CompareTo(other.Manual);
+			if (DynamicResource != other.DynamicResource)
+				return DynamicResource.CompareTo(other.DynamicResource);
+			if (Binding != other.Binding)
+				return Binding.CompareTo(other.Binding);
+			if (Id != other.Id)
+				return Id.CompareTo(other.Id);
+			if (Class != other.Class)
+				return Class.CompareTo(other.Class);
 			return Type.CompareTo(other.Type);
 		}
 

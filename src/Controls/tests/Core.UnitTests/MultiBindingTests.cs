@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var label2 = GenerateNameLabel(nameof(group.Person2), BindingMode.TwoWay);
 			stack.Children.Add(label2);
-			label2.SetValueCore(Label.TextProperty, $"DoNothing {oldMiddleName} {oldLastName.ToUpperInvariant()}", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None,specificity: SetterSpecificity.ManualValueSetter);
+			label2.SetValueCore(Label.TextProperty, $"DoNothing {oldMiddleName} {oldLastName.ToUpperInvariant()}", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None, specificity: SetterSpecificity.ManualValueSetter);
 			Assert.Equal($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpperInvariant()}", group.Person2.FullName);
 			Assert.Equal($"DoNothing {oldMiddleName} {oldLastName.ToUpperInvariant()}", label2.Text);
 

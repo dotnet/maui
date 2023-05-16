@@ -959,7 +959,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StyleValueIsOverridenByValue()
 		{
 			var label = new Label();
-			label.SetValue(Label.TextProperty, "Foo", new SetterSpecificity(100,0,0,0));
+			label.SetValue(Label.TextProperty, "Foo", new SetterSpecificity(100, 0, 0, 0));
 			Assert.Equal("Foo", label.Text);
 
 			label.SetValue(Label.TextProperty, "Bar");
@@ -970,7 +970,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StyleBindingIsOverridenByValue()
 		{
 			var label = new Label();
-			label.SetBinding(Label.TextProperty, new Binding("foo"), new SetterSpecificity(0,0,0,1,200,0,0,0));
+			label.SetBinding(Label.TextProperty, new Binding("foo"), new SetterSpecificity(0, 0, 0, 1, 200, 0, 0, 0));
 			label.BindingContext = new { foo = "Foo" };
 			Assert.Equal("Foo", label.Text);
 
@@ -982,7 +982,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void StyleDynResourceIsOverridenByValue()
 		{
 			var label = new Label();
-			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0,0,1,0,200,0,0,0));
+			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			label.Resources = new ResourceDictionary {
 				{"foo", "Foo"}
 			};
@@ -1021,7 +1021,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			label.BindingContext = new { foo = "Foo", bar = "Bar" };
-			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			label.Resources = new ResourceDictionary {
 				{"foo", "Foo"},
 			};
@@ -1073,7 +1073,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"bar", "Bar"}
 			};
 			label.BindingContext = new { foo = "Foo", bar = "Bar" };
-			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 
 			Assert.Equal("Foo", label.Text);
 
@@ -1167,7 +1167,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetValue(Label.TextProperty, "Foo");
 			Assert.Equal("Foo", label.Text);
 
-			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			Assert.Equal("Foo", label.Text);
 		}
 
@@ -1199,7 +1199,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("Foo", label.Text);
 
-			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			Assert.Equal("Foo", label.Text);
 		}
 
@@ -1271,7 +1271,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var label = new Label();
 			label.BindingContext = new { foo = "Foo", bar = "Bar" };
-			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			label.Resources = new ResourceDictionary {
 				{"foo", "Foo"},
 			};
@@ -1293,7 +1293,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetValue(Label.TextProperty, "Foo", new SetterSpecificity(100, 0, 0, 0));
 			Assert.Equal("Foo", label.Text);
 
-			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			Assert.Equal("Bar", label.Text);
 		}
 
@@ -1306,10 +1306,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"bar", "Bar"}
 			};
 			label.BindingContext = new { foo = "Foo", bar = "Bar" };
-			label.SetBinding(Label.TextProperty, new Binding("foo"), new SetterSpecificity(0,0,0,1,200,0,0,0));
+			label.SetBinding(Label.TextProperty, new Binding("foo"), new SetterSpecificity(0, 0, 0, 1, 200, 0, 0, 0));
 			Assert.Equal("Foo", label.Text);
 
-			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			Assert.Equal("Bar", label.Text);
 		}
 
@@ -1322,11 +1322,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				{"bar", "Bar"}
 			};
 			label.BindingContext = new { foo = "Foo", bar = "Bar" };
-			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "foo", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 
 			Assert.Equal("Foo", label.Text);
 
-			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1,0, 200, 0, 0, 0));
+			label.SetDynamicResource(Label.TextProperty, "bar", new SetterSpecificity(0, 0, 1, 0, 200, 0, 0, 0));
 			Assert.Equal("Bar", label.Text);
 		}
 

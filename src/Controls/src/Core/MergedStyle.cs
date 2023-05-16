@@ -98,16 +98,16 @@ namespace Microsoft.Maui.Controls
 			Apply(bindable);
 		}
 
-		 void Apply(BindableObject bindable)
+		void Apply(BindableObject bindable)
 		{
 			//FIXME compute specificity
-			ImplicitStyle?.Apply(bindable, new SetterSpecificity(100,0,0,0));
+			ImplicitStyle?.Apply(bindable, new SetterSpecificity(100, 0, 0, 0));
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					//FIXME compute specificity
-					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(200,0,1,0));
+					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(200, 0, 1, 0));
 			//FIXME compute specificity
-			Style?.Apply(bindable, new SetterSpecificity(200,0,0,0));
+			Style?.Apply(bindable, new SetterSpecificity(200, 0, 0, 0));
 		}
 
 		public Type TargetType { get; }

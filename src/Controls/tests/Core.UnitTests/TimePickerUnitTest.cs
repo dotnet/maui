@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[Fact("Issue #745")]
 		public void ZeroTimeIsValid()
-		{			
+		{
 			_ = new TimePicker
 			{
 				Time = new TimeSpan(0, 0, 0)

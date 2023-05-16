@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls
 		internal IList<Setter> Setters { get; }
 
 		//FIXME: add speicificity as ctor argument
-		internal SetterSpecificity Specificity { get; } 
+		internal SetterSpecificity Specificity { get; }
 
 		void IAttachedObject.AttachTo(BindableObject bindable)
 		{

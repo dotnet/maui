@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 					if (!convertedValues.TryGetValue(decl, out value))
 						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
 					//FIXME: compute distance
-					styleable.SetValue(property, value, new SetterSpecificity(100,0,0,0));
+					styleable.SetValue(property, value, new SetterSpecificity(100, 0, 0, 0));
 				}
 			}
 

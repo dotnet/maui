@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls
 		void SelectRadioButton(object sender, EventArgs e)
 		{
 			if (IsEnabled)
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);			
+				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
 		}
 
 		void OnIsCheckedPropertyChanged(bool isChecked)

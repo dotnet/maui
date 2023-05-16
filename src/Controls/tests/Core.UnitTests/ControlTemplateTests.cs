@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			viewModel.Name = "Raz";
 
 			Assert.Equal("Raz", page.Name);
- 			Assert.Equal("Raz", entry.Text);
+			Assert.Equal("Raz", entry.Text);
 		}
 	}
 }

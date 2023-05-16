@@ -1708,7 +1708,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bindable.SetBinding(MockBindable.TextProperty, new Binding("Monkeys", BindingMode.OneWay));
 			Assert.True(MockApplication.MockLogger.Messages.Count == 1, "An error was not logged");
-//			Assert.Equal(bindable.Text, MockBindable.TextProperty.DefaultValue);
+			//			Assert.Equal(bindable.Text, MockBindable.TextProperty.DefaultValue);
 		}
 
 		[Fact]

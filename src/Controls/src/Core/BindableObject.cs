@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var original = bpcontext.Values.LastOrDefault().Value;
-			var newValue = bpcontext.Values.Count >=2 ? bpcontext.Values[bpcontext.Values.Keys[bpcontext.Values.Count - 2]] : null;
+			var newValue = bpcontext.Values.Count >= 2 ? bpcontext.Values[bpcontext.Values.Keys[bpcontext.Values.Count - 2]] : null;
 			var changed = !Equals(original, newValue);
 			if (changed)
 			{
@@ -233,14 +233,14 @@ namespace Microsoft.Maui.Controls
 
 			context.Binding?.Unapply();
 			context.BindingSpecificity = specificity;
-			
+
 			BindingBase oldBinding = context.Binding;
 			context.Binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
 			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
 
 			binding.Apply(BindingContext, this, targetProperty, false, specificity);
-			
+
 
 		}
 
@@ -250,7 +250,7 @@ namespace Microsoft.Maui.Controls
 		{
 			//I wonder if we coulnd't treat bindingcoutext with specificities
 			BindablePropertyContext bpContext = bindable.GetContext(BindingContextProperty);
-			if (bpContext != null && bpContext.Values.LastOrDefault().Key.CompareTo(SetterSpecificity.ManualValueSetter) >=0)
+			if (bpContext != null && bpContext.Values.LastOrDefault().Key.CompareTo(SetterSpecificity.ManualValueSetter) >= 0)
 				return;
 
 			object oldContext = bindable._inheritedContext?.Target;
@@ -519,7 +519,7 @@ namespace Microsoft.Maui.Controls
 			var originalSpecificity = context.Values.LastOrDefault().Key;
 
 			//if the last value was set from handler, override it
-			if (  specificity != SetterSpecificity.FromHandler
+			if (specificity != SetterSpecificity.FromHandler
 				&& originalSpecificity == SetterSpecificity.FromHandler)
 			{
 				context.Values.Remove(SetterSpecificity.FromHandler);
@@ -630,7 +630,7 @@ namespace Microsoft.Maui.Controls
 			var context = new BindablePropertyContext { Property = property };
 			context.Values.Add(SetterSpecificity.DefaultValue, defaultValueCreator != null ? defaultValueCreator(this) : property.DefaultValue);
 
-			if (defaultValueCreator != null)			
+			if (defaultValueCreator != null)
 				context.Attributes = BindableContextAttributes.IsDefaultValueCreated;
 
 			_properties.Add(property, context);
@@ -705,7 +705,7 @@ namespace Microsoft.Maui.Controls
 			public SetterSpecificity BindingSpecificity = SetterSpecificity.FromBinding;
 
 			public Queue<SetValueArgs> DelayedSetters;
-			public BindableProperty Property;			
+			public BindableProperty Property;
 			public SortedList<SetterSpecificity, object> Values = new();
 		}
 
