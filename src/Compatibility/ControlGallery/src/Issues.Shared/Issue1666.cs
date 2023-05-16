@@ -12,7 +12,7 @@ using NUnit.Framework;
 
 public class WkWebView : WebView { }
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 
 #if UITEST
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			var jsAlerts = new Grid();
 			jsAlerts.Children.AddHorizontal(new[] { buttonJsAlert, buttonJsPrompt, buttonJsConfirm });
 
-			var buttons = new Grid();
+			var buttons = new Compatibility.Grid();
 			buttons.Children.AddVertical(vcr);
 			buttons.Children.AddVertical(evals);
 			buttons.Children.AddVertical(jsAlerts);

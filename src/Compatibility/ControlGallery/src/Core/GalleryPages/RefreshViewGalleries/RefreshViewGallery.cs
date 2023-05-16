@@ -4,7 +4,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class RefreshViewGallery : ContentPage
