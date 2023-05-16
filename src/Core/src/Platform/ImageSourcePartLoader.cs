@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		[Obsolete("To be removed in a future release")]
+		[Obsolete("Use ImageSourcePartLoader(ISetImageHandler handler) instead.")]
 		public ImageSourcePartLoader(IElementHandler handler, Func<IImageSourcePart?> imageSourcePart, Action<PlatformImage?> setImage)
 			: this((ISetImageHandler)handler)
 		{
