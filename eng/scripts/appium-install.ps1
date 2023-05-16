@@ -1,4 +1,6 @@
 node -v
+npm install -g npm
+node -v
 npm install -g appium@next
 appium -v
 $x = appium driver list --installed --json  | ConvertFrom-Json
