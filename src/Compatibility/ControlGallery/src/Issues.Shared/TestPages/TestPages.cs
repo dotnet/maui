@@ -593,11 +593,15 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #endif
 	public abstract class TestShell : Shell
 	{
+#if ANDROID
+		protected const string FlyoutIconAutomationId = "Open navigation drawer";
+#else
 		protected const string FlyoutIconAutomationId = "OK";
+#endif
 #if __IOS__ || WINDOWS
 		protected const string BackButtonAutomationId = "Back";
 #else
-		protected const string BackButtonAutomationId = "OK";
+		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
 #if UITEST
