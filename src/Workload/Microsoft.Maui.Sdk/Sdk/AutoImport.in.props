@@ -2,6 +2,10 @@
 <!-- all <ItemGroup/>'s must include $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@'))  -->
 <Project>
 
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_DOTNET_VERSION@')) ">
+    <EolWorkload Include="maui" Url="https://aka.ms/maui-support-policy" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <MauiXaml>
       <SubType>Designer</SubType>
