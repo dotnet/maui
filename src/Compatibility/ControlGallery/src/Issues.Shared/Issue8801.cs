@@ -280,10 +280,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				{
 					return GetRootPage(tabPage.CurrentPage);
 				}
-				else if (page is CarouselPage carouselPage)
-				{
-					return GetRootPage(carouselPage.CurrentPage);
-				}
 				if (page is ContentPage cPage)
 				{
 					return cPage;

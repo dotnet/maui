@@ -216,10 +216,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 					}
 #endif
 #if __IOS__
-				if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
-				{
-					return;
-				}
+					if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
+					{
+						return;
+					}
 #endif
 
 #if WINDOWS
@@ -444,38 +444,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 		[TearDown]
 		public virtual void TearDown()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestTearDown(Isolate);
-		}
-#endif
-
-		protected abstract void Init();
-	}
-
-	internal abstract class TestCarouselPage : CarouselPage
-	{
-#if UITEST
-		public IApp RunningApp => AppSetup.RunningApp;
-
-		protected virtual bool Isolate => false;
-#endif
-
-		protected TestCarouselPage()
-		{
-#if APP
-			Init();
-#endif
-		}
-
-#if UITEST
-		[SetUp]
-		public void Setup()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestSetup(GetType(), Isolate);
-		}
-
-		[TearDown]
-		public void TearDown()
 		{
 			(RunningApp as ScreenshotConditionalApp).TestTearDown(Isolate);
 		}
