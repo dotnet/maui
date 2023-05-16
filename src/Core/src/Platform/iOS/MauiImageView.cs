@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		[Obsolete("To be removed in a future release")]
+		[Obsolete("No longer fired on iOS, as it introduces a memory leak.")]
 		public event EventHandler? WindowChanged
 		{
 			add { }
