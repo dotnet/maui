@@ -2,7 +2,7 @@
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 
 	public class FlowDirectionGalleryLandingPage : ContentPage
@@ -206,16 +206,16 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				string parentType = ParentPage.GetType().ToString();
 				switch (parentType)
 				{
-					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryMDP":
+					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryMDP":
 						FlowDirectionGalleryLandingPage.PushFlyoutPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryCarP":
+					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryCarP":
 						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryNP":
+					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryNP":
 						FlowDirectionGalleryLandingPage.PushNavigationPage(newDirection);
 						break;
-					case "Microsoft.Maui.Controls.Compatibility.ControlGallery.FlowDirectionGalleryTP":
+					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryTP":
 						FlowDirectionGalleryLandingPage.PushTabbedPage(newDirection);
 						break;
 				}

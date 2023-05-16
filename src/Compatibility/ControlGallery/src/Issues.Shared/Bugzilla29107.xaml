@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-				 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-				 x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla29107">
+				 xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+				 x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla29107">
 	<StackLayout Orientation="Vertical" HorizontalOptions="FillAndExpand" Padding="20">
 		<Frame OutlineColor="Gray" Padding="5">
 			<Label Text="" VerticalOptions="End" HorizontalOptions="Start" />

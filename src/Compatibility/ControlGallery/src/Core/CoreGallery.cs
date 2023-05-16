@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformTestsGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.ShapesGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.AppThemeGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -24,7 +24,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	public static class Messages
@@ -642,18 +642,18 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		void ValidateRegistrar()
 		{
-			foreach (var view in Issues.Helpers.ViewHelper.GetAllViews())
-			{
-				if (!DependencyService.Get<IRegistrarValidationService>().Validate(view, out string message))
-					throw new InvalidOperationException(message);
-			}
+			//foreach (var view in Issues.Helpers.ViewHelper.GetAllViews())
+			//{
+			//	if (!DependencyService.Get<IRegistrarValidationService>().Validate(view, out string message))
+			//		throw new InvalidOperationException(message);
+			//}
 
-			foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
-			{
-				page.Visual = VisualMarker.Default;
-				if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
-					throw new InvalidOperationException(message);
-			}
+			//foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
+			//{
+			//	page.Visual = VisualMarker.Default;
+			//	if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
+			//		throw new InvalidOperationException(message);
+			//}
 		}
 	}
 

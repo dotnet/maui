@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Hosting;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	/// <summary>
 	/// Provides application-specific behavior to supplement the default Application class.

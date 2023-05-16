@@ -2,7 +2,7 @@
 <ContentPage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue11709"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11709"
     Title="Issue 11709">
     <Grid>
         <Grid.RowDefinitions>
