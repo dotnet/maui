@@ -8,6 +8,10 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, IPlatformViewHandler, new()
 		where TView : class, IView, ITextInput, new()
 	{
+		protected abstract int GetPlatformCursorPosition(THandler handler);
+
+		protected abstract int GetPlatformSelectionLength(THandler handler);
+
 		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
 		[InlineData(2)]
 		public async Task CursorPositionInitializesCorrectly(int initialPosition)
@@ -118,8 +122,154 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialLength, value);
 		}
 
-		protected abstract int GetPlatformCursorPosition(THandler handler);
+		[Theory(DisplayName = "CursorPosition Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
 
-		protected abstract int GetPlatformSelectionLength(THandler handler);
+			var editor = new TView
+			{
+				Text = text
+			};
+
+			await ValidatePropertyUpdatesValue<int, THandler>(
+				editor,
+				nameof(ITextInput.CursorPosition),
+				GetPlatformCursorPosition,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "CursorPosition is Capped to Text's Length")]
+		[InlineData(30)]
+		public async Task CursorPositionIsCapped(int initialPosition)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new TView
+			{
+				Text = text,
+				CursorPosition = initialPosition
+			};
+
+			await ValidatePropertyInitValue<int, THandler>(
+				editor,
+				() => editor.CursorPosition,
+				GetPlatformCursorPosition,
+				text.Length);
+		}
+
+		[Theory(DisplayName = "Unset CursorPosition is kept at zero at initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetCursorPositionKeepsToZeroOnInitialization(string text)
+		{
+			var editor = new TView
+			{
+				Text = text
+			};
+
+			await ValidatePropertyInitValue<int, THandler>(
+				editor,
+				() => editor.CursorPosition,
+				GetPlatformCursorPosition,
+				0);
+		}
+
+		[Theory(DisplayName = "CursorPosition moves to the end on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task CursorPositionMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var editor = new TView
+			{
+				Text = "Test"
+			};
+
+			await AttachAndRunFocusAffectedControl<TView, THandler>(editor, handler => editor.Text = text);
+
+			Assert.Equal(text.Length, editor.CursorPosition);
+		}
+
+		[Theory(DisplayName = "SelectionLength Updates Correctly")]
+		[InlineData(2, 5)]
+		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new TView
+			{
+				Text = text,
+			};
+
+			await ValidatePropertyUpdatesValue<int, THandler>(
+				editor,
+				nameof(ITextInput.SelectionLength),
+				GetPlatformSelectionLength,
+				setValue,
+				unsetValue
+			);
+		}
+
+		[Theory(DisplayName = "SelectionLength is Capped to Text Length")]
+		[InlineData(30)]
+		public async Task SelectionLengthIsCapped(int selectionLength)
+		{
+			string text = "This is TEXT!";
+
+			var editor = new TView
+			{
+				Text = text,
+				SelectionLength = selectionLength
+			};
+
+			await ValidatePropertyInitValue<int, THandler>(
+				editor,
+				() => editor.SelectionLength,
+				GetPlatformSelectionLength,
+				text.Length);
+		}
+
+		[Theory(DisplayName = "Unset SelectionLength is kept at zero at initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task UnsetSelectionLengthKeepsToZeroOnInitialization(string text)
+		{
+			var editor = new TView
+			{
+				Text = text
+			};
+
+			await ValidatePropertyInitValue<int, THandler>(
+				editor,
+				() => editor.SelectionLength,
+				GetPlatformSelectionLength,
+				0);
+		}
+
+		[Theory(DisplayName = "SelectionLength is kept at zero on text change after initialization")]
+		[InlineData("This is a test!!!")]
+		[InlineData("a")]
+		[InlineData("")]
+		[InlineData(" ")]
+		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
+		{
+			var editor = new TView
+			{
+				Text = "Test"
+			};
+
+			await AttachAndRunFocusAffectedControl<TView, THandler>(editor, handler => editor.Text = text);
+
+			Assert.Equal(0, editor.SelectionLength);
+		}
 	}
 }
