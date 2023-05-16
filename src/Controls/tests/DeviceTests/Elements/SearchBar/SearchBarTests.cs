@@ -54,5 +54,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+#if false
+		// TODO: The search bar controls are composite cntrols and need to be attached to the UI to run
+		[Category(TestCategory.SearchBar)]
+		[Category(TestCategory.TextInput)]
+		public class SearchBarTextInputTests : TextInputTests<SearchBarHandler, SearchBar>
+		{
+			protected override int GetPlatformSelectionLength(SearchBarHandler handler) =>
+				SearchBarTests.GetPlatformSelectionLength(handler);
+
+			protected override int GetPlatformCursorPosition(SearchBarHandler handler) =>
+				SearchBarTests.GetPlatformCursorPosition(handler);
+		}
+#endif
+
+		[Category(TestCategory.SearchBar)]
+		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
+		public class SearchBarTextInputFocusTests : TextInputFocusTests<SearchBarHandler, SearchBar>
+		{
+		}
 	}
 }

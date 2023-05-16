@@ -118,23 +118,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
-		[InlineData(2)]
-		public async Task CursorPositionInitializesCorrectly(int initialPosition)
-		{
-			var entry = new Entry
-			{
-				Text = "This is TEXT!",
-				CursorPosition = initialPosition
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.CursorPosition,
-				GetPlatformCursorPosition,
-				initialPosition);
-		}
-
 		[Theory(DisplayName = "CursorPosition Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
@@ -215,23 +198,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, entry.CursorPosition);
 		}
 
-		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
-		[InlineData(2)]
-		public async Task SelectionLengthInitializesCorrectly(int initialLength)
-		{
-			var entry = new Entry
-			{
-				Text = "This is TEXT!",
-				SelectionLength = initialLength
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.SelectionLength,
-				GetPlatformSelectionLength,
-				initialLength);
-		}
-
 		[Theory(DisplayName = "SelectionLength Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
@@ -310,6 +276,24 @@ namespace Microsoft.Maui.DeviceTests
 			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
 
 			Assert.Equal(0, entry.SelectionLength);
+		}
+
+		[Category(TestCategory.Entry)]
+		[Category(TestCategory.TextInput)]
+		public class EntryTextInputTests : TextInputTests<EntryHandler, Entry>
+		{
+			protected override int GetPlatformSelectionLength(EntryHandler handler) =>
+				EntryTests.GetPlatformSelectionLength(handler);
+
+			protected override int GetPlatformCursorPosition(EntryHandler handler) =>
+				EntryTests.GetPlatformCursorPosition(handler);
+		}
+
+		[Collection(RunInNewWindowCollection)]
+		[Category(TestCategory.Entry)]
+		[Category(TestCategory.TextInput)]
+		public class EntryTextInputFocusTests : TextInputFocusTests<EntryHandler, Entry>
+		{
 		}
 	}
 }
