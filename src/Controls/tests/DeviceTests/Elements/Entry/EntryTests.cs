@@ -225,32 +225,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-#if WINDOWS
-			// Windows is more complicated as we have different logic depending on the view being focused or not
-			// and when we attach to the UI, there is only a single control so windows cannot unfocus.
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handler.AddHandler<Entry, EntryHandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayout
-			{
-				WidthRequest = 100,
-				HeightRequest = 150,
-			};
-
-			var dummy = new Entry();
-			layout.Add(dummy);
-			layout.Add(entry);
-
-			await AttachAndRun(layout, handler => entry.Text = text);
-#else
-			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
-#endif
+			await AttachAndRunFocusAffectedControl<Entry, EntryHandler>(entry, handler => entry.Text = text);
 
 			Assert.Equal(text.Length, entry.CursorPosition);
 		}
@@ -362,32 +337,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
-#if WINDOWS
-			// Windows is more complicated as we have different logic depending on the view being focused or not
-			// and when we attach to the UI, there is only a single control so windows cannot unfocus.
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handler.AddHandler<Entry, EntryHandler>();
-				});
-			});
-
-			var layout = new VerticalStackLayout
-			{
-				WidthRequest = 100,
-				HeightRequest = 150,
-			};
-
-			var dummy = new Entry();
-			layout.Add(dummy);
-			layout.Add(entry);
-
-			await AttachAndRun(layout, handler => entry.Text = text);
-#else
-			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
-#endif
+			await AttachAndRunFocusAffectedControl<Entry, EntryHandler>(entry, handler => entry.Text = text);
 
 			Assert.Equal(0, entry.SelectionLength);
 		}
