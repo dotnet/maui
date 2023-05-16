@@ -1,6 +1,8 @@
 #nullable enable
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
+Microsoft.Maui.Handlers.IImageHandler.OnWindowChanged() -> void
+Microsoft.Maui.Handlers.ImageHandler.OnWindowChanged() -> void
 Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
@@ -16,7 +18,7 @@ Microsoft.Maui.IImageSourcePartSetter
 Microsoft.Maui.IImageSourcePartSetter.SetImageSource(UIKit.UIImage? obj) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.IImageSourcePartSetter! handler) -> void
-Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.ImageHandler! handler) -> void
+Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
 Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool

@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Handlers
 		void IImageSourcePartSetter.SetImageSource(UIImage? obj) =>
 			PlatformView.Image = obj;
 
-		internal void NotifyWindowChanged()
+		public void OnWindowChanged()
 		{
 			if (SourceLoader.SourceManager.IsResolutionDependent)
 				UpdateValue(nameof(IImage.Source));
