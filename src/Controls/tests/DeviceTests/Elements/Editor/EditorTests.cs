@@ -96,23 +96,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Theory(DisplayName = "CursorPosition Initializes Correctly")]
-		[InlineData(2)]
-		public async Task CursorPositionInitializesCorrectly(int initialPosition)
-		{
-			var editor = new Editor
-			{
-				Text = "This is TEXT!",
-				CursorPosition = initialPosition
-			};
-
-			await ValidatePropertyInitValue<int, EditorHandler>(
-				editor,
-				() => editor.CursorPosition,
-				GetPlatformCursorPosition,
-				initialPosition);
-		}
-
 		[Theory(DisplayName = "CursorPosition Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task CursorPositionUpdatesCorrectly(int setValue, int unsetValue)
@@ -208,23 +191,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(text.Length, editor.CursorPosition);
 		}
 
-		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
-		[InlineData(2)]
-		public async Task SelectionLengthInitializesCorrectly(int initialLength)
-		{
-			var editor = new Editor
-			{
-				Text = "This is TEXT!",
-				SelectionLength = initialLength
-			};
-
-			await ValidatePropertyInitValue<int, EditorHandler>(
-				editor,
-				() => editor.SelectionLength,
-				GetPlatformSelectionLength,
-				initialLength);
-		}
-
 		[Theory(DisplayName = "SelectionLength Updates Correctly")]
 		[InlineData(2, 5)]
 		public async Task SelectionLengthUpdatesCorrectly(int setValue, int unsetValue)
@@ -318,6 +284,24 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRunFocusAffectedControl<Editor, EditorHandler>(editor, handler => editor.Text = text);
 
 			Assert.Equal(0, editor.SelectionLength);
+		}
+
+		[Category(TestCategory.Editor)]
+		[Category(TestCategory.TextInput)]
+		public class EditorTextInputTests : TextInputTests<EditorHandler, Editor>
+		{
+			protected override int GetPlatformSelectionLength(EditorHandler handler) =>
+				EditorTests.GetPlatformSelectionLength(handler);
+
+			protected override int GetPlatformCursorPosition(EditorHandler handler) =>
+				EditorTests.GetPlatformCursorPosition(handler);
+		}
+
+		[Collection(RunInNewWindowCollection)]
+		[Category(TestCategory.Editor)]
+		[Category(TestCategory.TextInput)]
+		public class EditorTextInputFocusTests : TextInputFocusTests<EditorHandler, Editor>
+		{
 		}
 	}
 }
