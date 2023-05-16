@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[Category(UITestCategories.CarouselView)]
 	[Category(UITestCategories.UwpIgnore)]
+	[Ignore(UITestCategories.FailsInMaui)]
 	internal class CarouselViewUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery()

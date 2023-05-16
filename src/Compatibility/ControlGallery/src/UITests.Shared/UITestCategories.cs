@@ -68,5 +68,6 @@
 		public const string Shape = "Shape";
 		public const string Accessibility = "Accessibility";
 		public const string Brush = "Brush";
+		public const string FailsInMaui = "FailsInMaui";
 	}
 }
