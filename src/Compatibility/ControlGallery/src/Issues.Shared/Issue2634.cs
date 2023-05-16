@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2634, "Keyboard causes view to scroll incorrectly", PlatformAffected.iOS)]
@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slFirstName.Children.Add(lblFirstNameLabel);
 				slFirstName.Children.Add(_firstNameEntry);
-				gridAddData.Children.Add(slFirstName, 1, 4, 1, 2);
+				gridAddData.Add(slFirstName, 1, 4, 1, 2);
 
 				var slMiddleName = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblMiddleNameLabel = new Label
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slMiddleName.Children.Add(lblMiddleNameLabel);
 				slMiddleName.Children.Add(entMiddleName);
-				gridAddData.Children.Add(slMiddleName, 1, 4, 3, 4);
+				gridAddData.Add(slMiddleName, 1, 4, 3, 4);
 
 				var slLastName = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblLastNameLabel = new Label
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slLastName.Children.Add(lblLastNameLabel);
 				slLastName.Children.Add(entLastName);
-				gridAddData.Children.Add(slLastName, 1, 4, 5, 6);
+				gridAddData.Add(slLastName, 1, 4, 5, 6);
 
 				var slDob = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblDobLabel = new Label
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slDob.Children.Add(lblDobLabel);
 				slDob.Children.Add(entDob);
-				gridAddData.Children.Add(slDob, 1, 7);
+				gridAddData.Add(slDob, 1, 7);
 
 				var slGender = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblGenderLabel = new Label
@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				slGender.Children.Add(lblGenderLabel);
 
 
-				gridAddData.Children.Add(slGender, 3, 7);
+				gridAddData.Add(slGender, 3, 7);
 
 				var slHomePhone = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblHomePhoneLabel = new Label
@@ -192,7 +192,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slHomePhone.Children.Add(lblHomePhoneLabel);
 				slHomePhone.Children.Add(entHomePhone);
-				gridAddData.Children.Add(slHomePhone, 1, 9);
+				gridAddData.Add(slHomePhone, 1, 9);
 
 				var slMobilePhone = new StackLayout { Orientation = StackOrientation.Vertical };
 				var lblMobilePhoneLabel = new Label
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 				slMobilePhone.Children.Add(lblMobilePhoneLabel);
 				slMobilePhone.Children.Add(entMobilePhone);
-				gridAddData.Children.Add(slMobilePhone, 3, 9);
+				gridAddData.Add(slMobilePhone, 3, 9);
 				#endregion
 
 				string breakText = "_______________________________________________________________________________________________________________________________________________________________________________";
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					HasShadow = true
 				};
 
-				var rl = new RelativeLayout();
+				var rl = new Compatibility.RelativeLayout();
 				rl.Children.Add(bvBackground, Compatibility.Constraint.Constant(0), Compatibility.Constraint.Constant(0),
 					Compatibility.Constraint.RelativeToParent((parent) =>
 					   parent.Width),
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					slTotal.Children.Add(slNameGender);
 					slTotal.Children.Add(slDobPhone);
 
-					grid.Children.Add(slTotal, 1, 0);
+					grid.Add(slTotal, 1, 0);
 					return new ViewCell
 					{
 						View = grid

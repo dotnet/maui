@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// Uses a custom renderer on Android to override SetupPageTransition.
 	// While these transitions are often desired, they can appear to cause the "flash"
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Title = "Page 1";
 				BackgroundColor = Colors.Gray;
 
-				var relativeLayout = new RelativeLayout { };
+				var relativeLayout = new Compatibility.RelativeLayout { };
 
 				relativeLayout.Children.Add(new StackLayout
 				{
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Title = "Page 2";
 				BackgroundColor = Colors.Gray;
-				var relativeLayout = new RelativeLayout { };
+				var relativeLayout = new Compatibility.RelativeLayout { };
 				relativeLayout.Children.Add(new StackLayout
 				{
 					VerticalOptions = LayoutOptions.Center,
