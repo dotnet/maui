@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class RadialGradientExplorerGallery : ContentPage
 	{
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Grad
 			GradientColorPicker.FadeTo(1, AnimationSpeed, Easing.SinInOut);
 			GradientColorPicker.TranslateTo(0, 0, AnimationSpeed, Easing.SinInOut);
 
-			if (((Frame)sender).Parent is Layout<View> layout)
+			if (((Frame)sender).Parent is Layout layout)
 				_layout = layout;
 		}
 
