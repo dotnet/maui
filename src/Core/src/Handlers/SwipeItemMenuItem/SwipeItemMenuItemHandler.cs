@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
 #if !WINDOWS
-		, ISetImageHandler
+		, IImageSourcePartSetter
 #endif
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =

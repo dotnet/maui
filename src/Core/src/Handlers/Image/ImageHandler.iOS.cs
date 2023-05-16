@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void ISetImageHandler.SetImageSource(UIImage? obj) =>
+		void IImageSourcePartSetter.SetImageSource(UIImage? obj) =>
 			PlatformView.Image = obj;
 
 		internal void NotifyWindowChanged()

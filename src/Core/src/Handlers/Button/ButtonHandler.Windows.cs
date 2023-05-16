@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 				.UpdateImageSourceAsync()
 				.FireAndForget(handler);
 
-		void ISetImageHandler.SetImageSource(ImageSource? platformImageSource)
+		void IImageSourcePartSetter.SetImageSource(ImageSource? platformImageSource)
 		{
 			PlatformView.UpdateImageSource(platformImageSource);
 		}

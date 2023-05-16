@@ -27,17 +27,17 @@ namespace Microsoft.Maui.Platform
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
 #endif
 
-		readonly WeakReference<ISetImageHandler> _handler;
+		readonly WeakReference<IImageSourcePartSetter> _handler;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		[Obsolete("Use ImageSourcePartLoader(ISetImageHandler handler) instead.")]
+		[Obsolete("Use ImageSourcePartLoader(IImageSourcePartSetter handler) instead.")]
 		public ImageSourcePartLoader(IElementHandler handler, Func<IImageSourcePart?> imageSourcePart, Action<PlatformImage?> setImage)
-			: this((ISetImageHandler)handler)
+			: this((IImageSourcePartSetter)handler)
 		{
 		}
 
-		public ImageSourcePartLoader(ISetImageHandler handler) => _handler = new(handler);
+		public ImageSourcePartLoader(IImageSourcePartSetter handler) => _handler = new(handler);
 
 		public void Reset()
 		{

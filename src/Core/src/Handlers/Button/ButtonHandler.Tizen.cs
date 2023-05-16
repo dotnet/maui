@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Pressed();
 		}
 
-		void ISetImageHandler.SetImageSource(MauiImageSource? image)
+		void IImageSourcePartSetter.SetImageSource(MauiImageSource? image)
 		{
 			if (image == null)
 				return;

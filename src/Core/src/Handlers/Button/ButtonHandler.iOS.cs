@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
-		void ISetImageHandler.SetImageSource(UIImage? image)
+		void IImageSourcePartSetter.SetImageSource(UIImage? image)
 		{
 			if (image != null)
 			{

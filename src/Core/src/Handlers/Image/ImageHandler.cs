@@ -14,7 +14,7 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ImageHandler : IImageHandler, ISetImageHandler
+	public partial class ImageHandler : IImageHandler, IImageSourcePartSetter
 	{
 		public static IPropertyMapper<IImage, IImageHandler> Mapper = new PropertyMapper<IImage, IImageHandler>(ViewHandler.ViewMapper)
 		{
