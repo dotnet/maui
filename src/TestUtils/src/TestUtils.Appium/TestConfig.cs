@@ -29,6 +29,12 @@ namespace Microsoft.Maui.Appium
 					break;
 			}
 			AppId = appID;
+			FrameworkVersion = "net7.0";
+#if DEBUG
+			Configuration = "Debug";
+#else
+			Configuration = "Release";
+#endif
 		}
 
 		public string PlatformName { get; private set; } = string.Empty;
@@ -48,6 +54,12 @@ namespace Microsoft.Maui.Appium
 		public bool FullReset { get; set; }
 
 		public TestDevice TestDevice { get; private set; }
+
+		public string? AppProjectPath { get; set; }
+
+		public string Configuration { get; set; }
+
+		public string FrameworkVersion { get; set; }
 
 	}
 }

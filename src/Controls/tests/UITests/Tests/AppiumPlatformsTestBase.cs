@@ -1,4 +1,6 @@
-﻿using System.Reflection;
+﻿using System;
+using System.IO;
+using System.Reflection;
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -59,16 +61,19 @@ namespace Microsoft.Maui.AppiumTests
 
 		public override TestConfig GetTestConfig()
 		{
+			
+			var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
+			var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 			var testConfig = new TestConfig(_testDevice, "com.microsoft.maui.uitests")
 			{
 				BundleId = "com.microsoft.maui.uitests",
+				AppProjectPath = appProjectPath
 			};
+			var windowsExe = "Controls.Sample.UITests.exe";
+			var windoesExePath = Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\{testConfig.FrameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
 			switch (_testDevice)
 			{
 				case TestDevice.Android:
-					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppPackage, "com.microsoft.maui.uitests");
-					// activity { com.microsoft.maui.uitests / crc64fa090d87c1ce7f0b.MainActivity}
-					//_appiumOptions.AddAdditionalAppiumOption(AndroidMobileCapabilityType.AppActivity, "MainActivity");
 					break;
 				case TestDevice.iOS:
 					testConfig.DeviceName = "iPhone X";
@@ -76,11 +81,12 @@ namespace Microsoft.Maui.AppiumTests
 					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "";
 					break;
 				case TestDevice.Mac:
-
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
-					testConfig.AppPath = Environment.GetEnvironmentVariable("WINDOWS_APP_PATH") ?? "";
+					testConfig.AppPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH")) ?
+									windoesExePath :
+									Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
 					break;
 			}
 
