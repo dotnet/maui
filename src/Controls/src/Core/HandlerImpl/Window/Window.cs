@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 #endif
 
 #if WINDOWS
-			WindowHandler.Mapper.ReplaceMapping<Window, IWindowHandler>(nameof(ITitledElement.Title), MapTitle);
+			WindowHandler.Mapper.PrependToMapping<Window, IWindowHandler>(nameof(ITitledElement.Title), MapTitle);
 #endif
 		}
 	}
