@@ -187,8 +187,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var contentSize = CollectionView.CollectionViewLayout.CollectionViewContentSize;
 
-			if (_initialized && (_previousContentSize.Width != contentSize.Width
-				|| _previousContentSize.Height != contentSize.Height))
+			bool widthChanged = _previousContentSize.Width != contentSize.Width;
+			bool heightChanged = _previousContentSize.Height != contentSize.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
 			{
 				var screenFrame = CollectionView.Window.Frame;
 				var screenWidth = screenFrame.Width;
@@ -203,12 +205,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// If either size is smaller than that, we need to invalidate to ensure that the 
 				// CollectionView is re-measured and set to the correct size.
 
-				if (contentSize.Width < screenWidth || contentSize.Width < screenWidth)
+				if (widthChanged && (contentSize.Width < screenWidth || _previousContentSize.Width < screenWidth))
 				{
 					invalidate = true;
 				}
 
-				if (contentSize.Height < screenHeight || contentSize.Height < screenHeight)
+				if (heightChanged && (contentSize.Height < screenHeight || _previousContentSize.Height < screenHeight))
 				{
 					invalidate = true;
 				}
