@@ -27,15 +27,12 @@ namespace Microsoft.Maui.Controls.Platform
 			var cursorOffset = newText.Length - oldText.Length;
 			int cursorPosition = hasFocus ? platformControl.GetCursorPosition(cursorOffset) : newText.Length;
 
-			if (oldText != newText)
-			{
-				if (passwordBox is not null)
-					passwordBox.Password = newText;
-				else
-					platformControl.Text = newText;
+			if (oldText != newText && passwordBox is not null)
+				passwordBox.Password = newText;
+			else if (oldText != newText)
+				platformControl.Text = newText;
 
-				platformControl.Select(cursorPosition, 0);
-			}
+			platformControl.Select(cursorPosition, 0);
 		}
 	}
 
