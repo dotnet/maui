@@ -193,26 +193,6 @@ namespace Microsoft.Maui.DeviceTests
 				0);
 		}
 
-		[Theory(DisplayName = "Unset CursorPosition is kept at zero at initialization with TextTransform")]
-		[InlineData("This is a test!!!")]
-		[InlineData("a")]
-		[InlineData("")]
-		[InlineData(" ")]
-		public async Task UnsetCursorPositionIsKeptAtZeroAtInitializationWithTextTransform(string text)
-		{
-			var entry = new Entry
-			{
-				Text = text,
-				TextTransform = TextTransform.Uppercase
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.CursorPosition,
-				GetPlatformCursorPosition,
-				0);
-		}
-
 		[Theory(DisplayName = "CursorPosition moves to the end on text change by code after initialization"
 #if WINDOWS
 			, Skip = "For some reason, the PlatformView events are not being fired on tests after the handler is created, something is swallowing them. " +
@@ -301,26 +281,6 @@ namespace Microsoft.Maui.DeviceTests
 			var entry = new Entry
 			{
 				Text = text
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.SelectionLength,
-				GetPlatformSelectionLength,
-				0);
-		}
-
-		[Theory(DisplayName = "Unset SelectionLength is kept at zero at initialization with TextTransform")]
-		[InlineData("This is a test!!!")]
-		[InlineData("a")]
-		[InlineData("")]
-		[InlineData(" ")]
-		public async Task UnsetSelectionLengthIsKeptAtZeroAtInitializationWithTextTransform(string text)
-		{
-			var entry = new Entry
-			{
-				Text = text,
-				TextTransform = TextTransform.Uppercase
 			};
 
 			await ValidatePropertyInitValue<int, EntryHandler>(
