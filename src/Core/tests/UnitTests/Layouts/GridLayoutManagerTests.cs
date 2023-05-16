@@ -2895,7 +2895,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			SetLocation(grid, view0, row: 0, col: 0, rowSpan: rowSpan);
 
 			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
-			
+
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<Double>(expectedHeight));
 		}
 	}
