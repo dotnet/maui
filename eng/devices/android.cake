@@ -3,25 +3,30 @@
 #load "../cake/helpers.cake"
 
 string TARGET = Argument("target", "Test");
+const string defaultVersion = "30";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? "android-emulator-32_30");
+string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-32_{defaultVersion}");
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
+var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net8.0-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("ANDROID_TEST_APP") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("ANDROID_TEST_APP_PROJECT") ?? "");
 var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TEST_APP_PACKAGE_NAME") ?? "");
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
+var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
+
 // other
-string CONFIGURATION = "Debug"; // needs to be debug so unit tests get discovered
+string CONFIGURATION = Argument("configuration", "Debug");
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";
@@ -122,7 +127,7 @@ Teardown(context =>
 	if (emulatorProcess == null || !DEVICE_BOOT || TARGET.ToLower() == "boot")
 		return;
 
-	// stop and cleanup the emulator
+	//stop and cleanup the emulator
 	AdbEmuKill(adbSettings);
 
 	System.Threading.Thread.Sleep(5000);
@@ -189,6 +194,7 @@ Task("Test")
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).FullPath;
+		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
@@ -278,6 +284,95 @@ Task("Test")
 	if (!string.IsNullOrEmpty(failed)) {
 		throw new Exception($"At least {failed} test(s) failed.");
 	}
+});
+
+Task("uitest")
+	.Does(() =>
+{
+	if (string.IsNullOrEmpty(TEST_APP)) {
+		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+			throw new Exception("If no app was specified, an app must be provided.");
+		
+		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
+		Information("Test app bin folder {0}", binFolder);
+		var binDir = binFolder.Combine("Release/net7.0-android").FullPath;
+		var apps = GetFiles(binDir + "/*-Signed.apk");
+		if (apps.Any()) {
+			TEST_APP = apps.FirstOrDefault().FullPath;
+		} else {
+			apps = GetFiles(binDir + "/*.apk");
+			TEST_APP = apps.First().FullPath;
+		}
+	}
+	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
+		var appFile = (FilePath)TEST_APP;
+		appFile = appFile.GetFilenameWithoutExtension();
+		TEST_APP_PACKAGE_NAME = appFile.FullPath.Replace("-Signed", "");
+	}
+	if (string.IsNullOrEmpty(TEST_APP_INSTRUMENTATION)) {
+		TEST_APP_INSTRUMENTATION = TEST_APP_PACKAGE_NAME + ".TestInstrumentation";
+	}
+	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+		TEST_RESULTS = TEST_APP + "-results";
+	}
+
+	Information("Test App: {0}", TEST_APP);
+	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
+	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
+	Information("Test Results Directory: {0}", TEST_RESULTS);
+	Information("Test project: {0}", PROJECT);
+
+	CleanDirectories(TEST_RESULTS);
+
+	if (DEVICE_BOOT_WAIT) {
+		Information("Waiting for the emulator to finish booting...");
+
+		// wait for it to finish booting (10 mins)
+		var waited = 0;
+		var total = 60 * 10;
+		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+			System.Threading.Thread.Sleep(1000);
+			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
+			if (waited++ > total)
+				break;
+		}
+		Information("Waited {0} seconds for the emulator to boot up.", waited);
+	}
+
+	Information("Setting the ADB properties...");
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	Information("{0}", string.Join("\n", lines));
+
+	//install apk on the emulator
+	Information("Install with xharness: {0}",TEST_APP);
+	var settings = new DotNetCoreToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args=>args.Append("run xharness android install " +
+			$"--app=\"{TEST_APP}\" " +
+			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
+			$"--output-directory=\"{TEST_RESULTS}\" " +
+			$"--verbosity=\"Debug\" ")
+	};
+	DotNetCoreTool("tool", settings);
+
+	//we need to build tests first to pass ExtraDefineConstants
+	Information("Build UITests project {0}", PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=ANDROID")
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
+
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_android.log");
+
+	Information("Run UITests project {0}",PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
 });
 
 RunTarget(TARGET);
