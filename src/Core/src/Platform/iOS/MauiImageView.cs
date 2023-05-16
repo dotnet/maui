@@ -11,12 +11,12 @@ namespace Microsoft.Maui.Platform
 
 		public MauiImageView(ImageHandler handler) => _handler = new WeakReference<ImageHandler>(handler);
 
-		[Obsolete("To be removed in a future release")]
+		[Obsolete("Use MauiImageView(ImageHandler handler) instead.")]
 		public MauiImageView()
 		{
 		}
 
-		[Obsolete("To be removed in a future release")]
+		[Obsolete("Use MauiImageView(ImageHandler handler) instead.")]
 		public MauiImageView(CGRect frame)
 			: base(frame)
 		{
