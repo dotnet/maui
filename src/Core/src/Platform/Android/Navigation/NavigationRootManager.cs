@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Platform
 			if (view is IFlyoutView)
 			{
 				var containerView = view.ToContainerView(mauiContext);
-				navigationLayout = containerView.FindViewById<CoordinatorLayout>(Resource.Id.navigation_layout);
 
 				if (containerView is DrawerLayout dl)
 				{
