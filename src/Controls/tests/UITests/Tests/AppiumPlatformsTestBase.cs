@@ -61,7 +61,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public override TestConfig GetTestConfig()
 		{
-			
+
 			var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
 			var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 			var testConfig = new TestConfig(_testDevice, "com.microsoft.maui.uitests")
