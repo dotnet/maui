@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Common;
 using System.Diagnostics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
@@ -966,6 +967,11 @@ namespace Microsoft.Maui.Layouts
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
 				{
 					measureWidth += _columns[column].Size;
+
+					if (column > cell.Column)
+					{
+						measureWidth += _columnSpacing;
+					}
 				}
 
 				cell.MeasureWidth = measureWidth;
@@ -977,6 +983,11 @@ namespace Microsoft.Maui.Layouts
 				for (int row = cell.Row; row < cell.Row + cell.RowSpan; row++)
 				{
 					measureHeight += _rows[row].Size;
+
+					if (row > cell.Row)
+					{
+						measureHeight += _rowSpacing;
+					}
 				}
 
 				cell.MeasureHeight = measureHeight;

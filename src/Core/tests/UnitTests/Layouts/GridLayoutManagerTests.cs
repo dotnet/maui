@@ -2858,5 +2858,45 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// So view1 should be arranged at an X value of 100 + 300 = 400 
 			AssertArranged(view1, new Rect(400, 0, 100, 100));
 		}
+
+		[Theory]
+		[InlineData("100", 1, 10, 100)]
+		[InlineData("100, 100", 2, 0, 100 + 0 + 100)]
+		[InlineData("100, 100", 2, 10, 100 + 10 + 100)]
+		[InlineData("100, 100, 50", 3, 20, 100 + 20 + 100 + 20 + 50)]
+		public void SpannedColumnMeasureIncludesSpacing(string columnDefinitions, int columnSpan, double spacing, double expectedWidth)
+		{
+			var grid = CreateGridLayout(columns: columnDefinitions);
+			grid.ColumnSpacing.Returns(spacing);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: columnSpan);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			view0.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<Double>());
+		}
+
+		[Theory]
+		[InlineData("100", 1, 10, 100)]
+		[InlineData("100, 100", 2, 0, 100 + 0 + 100)]
+		[InlineData("100, 100", 2, 10, 100 + 10 + 100)]
+		[InlineData("100, 100, 50", 3, 20, 100 + 20 + 100 + 20 + 50)]
+		public void SpannedRowMeasureIncludesSpacing(string rowDefinitions, int rowSpan, double spacing, double expectedHeight)
+		{
+			var grid = CreateGridLayout(rows: rowDefinitions);
+			grid.RowSpacing.Returns(spacing);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: rowSpan);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+			
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<Double>(expectedHeight));
+		}
 	}
 }
