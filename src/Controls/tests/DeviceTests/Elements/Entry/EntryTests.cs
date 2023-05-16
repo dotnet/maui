@@ -98,62 +98,6 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Theory(DisplayName = "Unset SelectionLength is kept at zero at initialization")]
-		[InlineData("This is a test!!!")]
-		[InlineData("a")]
-		[InlineData("")]
-		[InlineData(" ")]
-		public async Task UnsetSelectionLengthIsKeptAtZeroAtInitialization(string text)
-		{
-			var entry = new Entry
-			{
-				Text = text
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.SelectionLength,
-				GetPlatformSelectionLength,
-				0);
-		}
-
-		[Theory(DisplayName = "Unset SelectionLength is kept at zero at initialization with TextTransform")]
-		[InlineData("This is a test!!!")]
-		[InlineData("a")]
-		[InlineData("")]
-		[InlineData(" ")]
-		public async Task UnsetSelectionLengthIsKeptAtZeroAtInitializationWithTextTransform(string text)
-		{
-			var entry = new Entry
-			{
-				Text = text,
-				TextTransform = TextTransform.Uppercase
-			};
-
-			await ValidatePropertyInitValue<int, EntryHandler>(
-				entry,
-				() => entry.SelectionLength,
-				GetPlatformSelectionLength,
-				0);
-		}
-
-		[Theory(DisplayName = "SelectionLength is kept at zero on text change by code after initialization")]
-		[InlineData("This is a test!!!")]
-		[InlineData("a")]
-		[InlineData("")]
-		[InlineData(" ")]
-		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
-		{
-			var entry = new Entry
-			{
-				Text = "Test"
-			};
-
-			await AttachAndRunFocusAffectedControl<Entry, EntryHandler>(entry, handler => entry.Text = text);
-
-			Assert.Equal(0, entry.SelectionLength);
-		}
-
 		[Category(TestCategory.Entry)]
 		[Category(TestCategory.TextInput)]
 		public class EntryTextInputTests : TextInputTests<EntryHandler, Entry>
