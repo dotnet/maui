@@ -213,12 +213,7 @@ namespace Microsoft.Maui.DeviceTests
 				0);
 		}
 
-		[Theory(DisplayName = "CursorPosition moves to the end on text change by code after initialization"
-#if WINDOWS
-			, Skip = "For some reason, the PlatformView events are not being fired on tests after the handler is created, something is swallowing them. " +
-					 "This was tested on a real app and it's working correctly."
-#endif
-			)]
+		[Theory(DisplayName = "CursorPosition moves to the end on text change by code after initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]
@@ -230,7 +225,32 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
+#if WINDOWS
+			// Windows is more complicated as we have different logic depending on the view being focused or not
+			// and when we attach to the UI, there is only a single control so windows cannot unfocus.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<Entry, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 100,
+				HeightRequest = 150,
+			};
+
+			var dummy = new Entry();
+			layout.Add(dummy);
+			layout.Add(entry);
+
+			await AttachAndRun(layout, handler => entry.Text = text);
+#else
 			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
+#endif
 
 			Assert.Equal(text.Length, entry.CursorPosition);
 		}
@@ -330,12 +350,7 @@ namespace Microsoft.Maui.DeviceTests
 				0);
 		}
 
-		[Theory(DisplayName = "SelectionLength is kept at zero on text change by code after initialization"
-#if WINDOWS
-			, Skip = "For some reason, the PlatformView events are not being fired on tests after the handler is created, something is swallowing them. " +
-					 "This was tested on a real app and it's working correctly."
-#endif
-			)]
+		[Theory(DisplayName = "SelectionLength is kept at zero on text change by code after initialization")]
 		[InlineData("This is a test!!!")]
 		[InlineData("a")]
 		[InlineData("")]
@@ -347,7 +362,32 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test"
 			};
 
+#if WINDOWS
+			// Windows is more complicated as we have different logic depending on the view being focused or not
+			// and when we attach to the UI, there is only a single control so windows cannot unfocus.
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<Entry, EntryHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 100,
+				HeightRequest = 150,
+			};
+
+			var dummy = new Entry();
+			layout.Add(dummy);
+			layout.Add(entry);
+
+			await AttachAndRun(layout, handler => entry.Text = text);
+#else
 			await SetValueAsync<string, EntryHandler>(entry, text, (h, s) => h.VirtualView.Text = s);
+#endif
 
 			Assert.Equal(0, entry.SelectionLength);
 		}
