@@ -10,6 +10,28 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarTests : ControlsHandlerTestBase
 	{
+		// TODO: remove these 2 tests and use SearchBarTextInputTests below
+
+		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
+		{
+			var control = new SearchBar() { Text = text, TextTransform = transform };
+			var platformText = await GetPlatformText(await CreateHandlerAsync<SearchBarHandler>(control));
+			Assert.Equal(expected, platformText);
+		}
+
+		[Theory(DisplayName = "Text is Transformed Correctly after Initialization")]
+		[ClassData(typeof(TextTransformCases))]
+		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
+		{
+			var control = new SearchBar() { Text = text };
+			var handler = await CreateHandlerAsync<SearchBarHandler>(control);
+			await InvokeOnMainThreadAsync(() => control.TextTransform = transform);
+			var platformText = await GetPlatformText(handler);
+			Assert.Equal(expected, platformText);
+		}
+
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]
@@ -47,23 +69,11 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override int GetPlatformCursorPosition(SearchBarHandler handler) =>
 				SearchBarTests.GetPlatformCursorPosition(handler);
-		}
-#endif
-
-		[Category(TestCategory.SearchBar)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class SearchBarTextInputTextTransformTests : TextInputTextTransformTests<SearchBarHandler, SearchBar>
-		{
-			protected override int GetPlatformSelectionLength(SearchBarHandler handler) =>
-				SearchBarTests.GetPlatformSelectionLength(handler);
-
-			protected override int GetPlatformCursorPosition(SearchBarHandler handler) =>
-				SearchBarTests.GetPlatformCursorPosition(handler);
 
 			protected override Task<string> GetPlatformText(SearchBarHandler handler) =>
 				SearchBarTests.GetPlatformText(handler);
 		}
+#endif
 
 		[Category(TestCategory.SearchBar)]
 		[Category(TestCategory.TextInput)]
