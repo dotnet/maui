@@ -169,7 +169,7 @@ stages:
                 inputs:
                   SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/${{ BuildConfiguration }}/net7.0-android
                   Contents: '**/*.apk'
-                  TargetFolder: '$(build.artifactstagingdirectory)/android/app'
+                  TargetFolder: '$(build.artifactstagingdirectory)/android/app/${{ BuildConfiguration }}'
                   CleanTargetFolder: true
                   OverWrite: true'
              
@@ -192,7 +192,7 @@ stages:
                 inputs:
                   SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}/net7.0-ios
                   Contents: '**/*.ipa'
-                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app'
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/${{ BuildConfiguration }}'
                   CleanTargetFolder: true
                   OverWrite: true'
 
