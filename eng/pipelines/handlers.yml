@@ -163,6 +163,77 @@ stages:
                 displayName: 'Build .NET Maui'
               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
                 displayName: 'Run Unit Tests'
+              
+              - task: CopyFiles@2
+                displayName: 'Copy Android APK'
+                inputs:
+                  SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/${{ BuildConfiguration }}/net7.0-android
+                  Contents: '**/*.apk'
+                  TargetFolder: '$(build.artifactstagingdirectory)/android/app'
+                  CleanTargetFolder: true
+                  OverWrite: true'
+             
+              - task: CopyFiles@2
+                displayName: 'Copy Android Files for UITest'
+                inputs:
+                  Contents: |
+                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472/Newtonsoft.Json.*
+                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//nunit.*
+                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//NUnit3.*
+                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//Plugin.*
+                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//Xamarin.*
+
+                  TargetFolder: '$(build.artifactstagingdirectory)/android'
+                  CleanTargetFolder: true
+                  flattenFolders: true
+
+              - task: CopyFiles@2
+                displayName: 'Copy iOS ipa'
+                inputs:
+                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}/net7.0-ios
+                  Contents: '**/*.ipa'
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app'
+                  CleanTargetFolder: true
+                  OverWrite: true'
+
+              - task: CopyFiles@2
+                displayName: 'Copy iOS Files for UITest'
+                inputs:
+                  Contents: |
+                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Newtonsoft.Json.*
+                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/nunit.*
+                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/NUnit3.*
+                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Plugin.*
+                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Xamarin.*
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios'
+                  flattenFolders: true
+
+              # - task: CopyFiles@2
+              #   displayName: 'Copy iOS dSYM'
+              #   inputs:
+              #     SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/
+              #     TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
+              #     CleanTargetFolder: false
+              #     flattenFolders: false
+
+              - task: CopyFiles@2
+                displayName: 'Copy iOS App'
+                inputs:
+                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/$(BuildConfiguration)/net7.0-ios/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.app/'
+                  CleanTargetFolder: false
+                  flattenFolders: false
+
+              - task: CopyFiles@2
+                displayName: 'Copy test-cloud.exe'
+                inputs:
+                  Contents: '**/Xamarin.UITest.*/tools/test-cloud.exe'
+                  TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
+                  OverWrite: true
+                  flattenFolders: true
+
+
+                  
               - task: PublishTestResults@2
                 condition: always()
                 inputs:
