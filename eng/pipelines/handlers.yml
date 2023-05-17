@@ -211,7 +211,7 @@ stages:
               # - task: CopyFiles@2
               #   displayName: 'Copy iOS dSYM'
               #   inputs:
-              #     SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/$(BuildConfiguration)/XamarinFormsControlGalleryiOS.app.dSYM/
+              #     SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/$(BuildConfiguration)/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app.dSYM/
               #     TargetFolder: '$(build.artifactstagingdirectory)/ios/iPhone/XamarinFormsControlGalleryiOS.app.dSYM/'
               #     CleanTargetFolder: false
               #     flattenFolders: false
