@@ -85,26 +85,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override int GetPlatformCursorPosition(EditorHandler handler) =>
 				EditorTests.GetPlatformCursorPosition(handler);
-		}
-
-		[Category(TestCategory.Editor)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class EditorTextInputTextTransformTests : TextInputTextTransformTests<EditorHandler, Editor>
-		{
-			protected override int GetPlatformSelectionLength(EditorHandler handler) =>
-				EditorTests.GetPlatformSelectionLength(handler);
-
-			protected override int GetPlatformCursorPosition(EditorHandler handler) =>
-				EditorTests.GetPlatformCursorPosition(handler);
 
 			protected override Task<string> GetPlatformText(EditorHandler handler) =>
 				EditorTests.GetPlatformText(handler);
 		}
 
-		[Collection(RunInNewWindowCollection)]
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
 		public class EditorTextInputFocusTests : TextInputFocusTests<EditorHandler, Editor>
 		{
 		}
