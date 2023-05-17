@@ -38,13 +38,23 @@ namespace Microsoft.Maui.Handlers
 			MapWidth(this, VirtualView);
 		}
 
-		public static void MapHeight(IImageHandler handler, IImage view) =>
+		public static void MapHeight(IImageHandler handler, IImage view)
+		{
 			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
 			// is set to Auto when the container is introduced
-			(handler.ContainerView as FrameworkElement)!.Height = view.Height;
+			if (handler.ContainerView is FrameworkElement element)
+			{
+				element.Height = view.Height;
+			}
+		}
 
-		public static void MapWidth(IImageHandler handler, IImage view) =>
-			(handler.ContainerView as FrameworkElement)!.Width = view.Width;
+		public static void MapWidth(IImageHandler handler, IImage view)
+		{
+			if (handler.ContainerView is FrameworkElement element)
+			{
+				element.Width = view.Width;
+			}
+		}
 
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
@@ -55,7 +65,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapAspect(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			handler.PlatformView?.UpdateAspect(image, (handler.ContainerView as WrapperView)!);
+
+			if (handler.ContainerView is FrameworkElement element)
+			{
+				handler.PlatformView?.UpdateAspect(image, element);
+			}
 		}
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
