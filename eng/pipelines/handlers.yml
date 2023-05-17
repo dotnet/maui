@@ -167,9 +167,9 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy Android APK'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/${{ BuildConfiguration }}/net7.0-android
+                  SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/${{ BuildConfiguration }}/net7.0-android/
                   Contents: '**/*.apk'
-                  TargetFolder: '$(build.artifactstagingdirectory)/android/app/${{ BuildConfiguration }}'
+                  TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}/app/'
                   CleanTargetFolder: true
                   OverWrite: true'
              
@@ -183,7 +183,8 @@ stages:
                     NUnit3.*
                     Plugin.*
                     Xamarin.*
-                  TargetFolder: '$(build.artifactstagingdirectory)/android'
+                    Microsoft.*
+                  TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}'
                   CleanTargetFolder: true
                   flattenFolders: true
 
@@ -192,7 +193,7 @@ stages:
                 inputs:
                   SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}/net7.0-ios
                   Contents: '**/*.ipa'
-                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/${{ BuildConfiguration }}'
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}/app/'
                   CleanTargetFolder: true
                   OverWrite: true'
 
@@ -206,7 +207,8 @@ stages:
                     NUnit3.*
                     Plugin.*
                     Xamarin.*
-                  TargetFolder: '$(build.artifactstagingdirectory)/ios'
+                    Microsoft.*
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}'
                   flattenFolders: true
 
               # - task: CopyFiles@2
@@ -221,7 +223,7 @@ stages:
                 displayName: 'Copy iOS App'
                 inputs:
                   SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
-                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/'
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/'
                   CleanTargetFolder: false
                   flattenFolders: false
 
@@ -232,8 +234,6 @@ stages:
                   TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
                   OverWrite: true
                   flattenFolders: true
-
-
                   
               - task: PublishTestResults@2
                 condition: always()
