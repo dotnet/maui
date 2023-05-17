@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		override string DetermineCellReuseId(NSIndexPath indexPath)
 		{
 			var itemIndex = GetIndexFromIndexPath(indexPath);
-			base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
+			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
 
 		protected override void RegisterViewTypes()
