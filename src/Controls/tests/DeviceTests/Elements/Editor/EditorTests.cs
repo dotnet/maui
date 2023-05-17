@@ -77,6 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
 		public class EditorTextInputTests : TextInputTests<EditorHandler, Editor>
 		{
 			protected override int GetPlatformSelectionLength(EditorHandler handler) =>
@@ -88,6 +89,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.Editor)]
 		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
 		public class EditorTextInputTextTransformTests : TextInputTextTransformTests<EditorHandler, Editor>
 		{
 			protected override int GetPlatformSelectionLength(EditorHandler handler) =>

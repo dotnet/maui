@@ -39,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 		// TODO: The search bar controls are composite controls and need to be attached to the UI to run
 		[Category(TestCategory.SearchBar)]
 		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
 		public class SearchBarTextInputTests : TextInputTests<SearchBarHandler, SearchBar>
 		{
 			protected override int GetPlatformSelectionLength(SearchBarHandler handler) =>
@@ -51,6 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Category(TestCategory.SearchBar)]
 		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
 		public class SearchBarTextInputTextTransformTests : TextInputTextTransformTests<SearchBarHandler, SearchBar>
 		{
 			protected override int GetPlatformSelectionLength(SearchBarHandler handler) =>
