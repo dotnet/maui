@@ -45,9 +45,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var cursorPosition = textView.IsFirstResponder ? textView.GetCursorPosition(cursorOffset) : newText.Length;
 
 			if (oldText != newText)
+			{
 				textView.Text = newText;
 
-			textView.SetTextRange(cursorPosition, 0);
+				textView.SetTextRange(cursorPosition, 0);
+			}
 		}
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
@@ -67,9 +69,11 @@ namespace Microsoft.Maui.Controls.Platform
 			var cursorPosition = textField.IsEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
 
 			if (oldText != newText)
+			{
 				textField.Text = newText;
 
-			textField.SetTextRange(cursorPosition, 0);
+				textField.SetTextRange(cursorPosition, 0);
+			}
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
