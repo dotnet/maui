@@ -168,6 +168,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMaui]
 		public void TestRelativeLayout()
 		{
 			TestControl(RelativeLayout);

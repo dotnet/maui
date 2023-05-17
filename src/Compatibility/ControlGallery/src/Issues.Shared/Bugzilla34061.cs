@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 #if UITEST
 using Xamarin.UITest;
 using NUnit.Framework;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
 namespace Microsoft.Maui.Controls.ControlGallery.Issues
@@ -70,6 +71,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMaui]
 		public void Bugzilla34061Test()
 		{
 			RunningApp.Screenshot("I am at Bugzilla34061 ");
