@@ -146,6 +146,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return base.DetermineCellReuseId();
 		}
 
+
+#if NET8_0_OR_GREATER
+		protected
+#else
+		internal
+#endif
+		override string DetermineCellReuseId(NSIndexPath indexPath)
+		{
+			var itemIndex = GetIndexFromIndexPath(indexPath);
+			base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
+		}
+
 		protected override void RegisterViewTypes()
 		{
 			CollectionView.RegisterClassForCell(typeof(CarouselTemplatedCell), CarouselTemplatedCell.ReuseId);
