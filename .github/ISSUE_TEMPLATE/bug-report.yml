@@ -44,20 +44,6 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
-        - 6.0.312
-        - 6.0.400
-        - 6.0.408
-        - 6.0.419
-        - 6.0.424
-        - 6.0.486
-        - 6.0.536
-        - 6.0.540
-        - 6.0.541
-        - 6.0.547
-        - 6.0.548
-        - 6.0.550
-        - 6.0.552
-        - 6.0.553
         - 7.0.49
         - 7.0.52
         - 7.0.58
@@ -77,20 +63,7 @@ body:
       label: Last version that worked well
       description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
       options:
-        - 6.0.312
-        - 6.0.400
-        - 6.0.408
-        - 6.0.419
-        - 6.0.424
-        - 6.0.486
-        - 6.0.536
-        - 6.0.540
-        - 6.0.541
-        - 6.0.547
-        - 6.0.548
-        - 6.0.550
-        - 6.0.552
-        - 6.0.553
+        - 6.0
         - 7.0.49
         - 7.0.52
         - 7.0.58
