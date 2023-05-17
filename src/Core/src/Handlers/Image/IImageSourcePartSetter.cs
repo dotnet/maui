@@ -10,7 +10,7 @@ using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
 using PlatformImage = System.Object;
 #endif
 
-namespace Microsoft.Maui
+namespace Microsoft.Maui.Handlers
 {
 	public interface IImageSourcePartSetter : IElementHandler
 	{
