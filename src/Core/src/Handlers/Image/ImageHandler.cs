@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Handlers
 #if __ANDROID__ || WINDOWS || TIZEN
 			[nameof(IImage.Background)] = MapBackground,
 #endif
+			[nameof(IImage.Height)] = MapHeight,
+			[nameof(IImage.Width)] = MapWidth,
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
 			[nameof(IImage.Source)] = MapSource,

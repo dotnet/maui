@@ -2710,7 +2710,6 @@ static Microsoft.Maui.Platform.GraphicsViewExtensions.UpdateDrawable(this Micros
 static Microsoft.Maui.Platform.ImageExtensions.GetImageSourceSize(this Microsoft.UI.Xaml.Media.ImageSource! source, Microsoft.UI.Xaml.FrameworkElement? element = null) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Platform.ImageExtensions.ToIconSource(this Microsoft.Maui.IImageSource! source, Microsoft.Maui.IMauiContext! mauiContext) -> Microsoft.UI.Xaml.Controls.IconSource?
 static Microsoft.Maui.Platform.ImageViewExtensions.Clear(this Microsoft.UI.Xaml.Controls.Image! imageView) -> void
-static Microsoft.Maui.Platform.ImageViewExtensions.UpdateAspect(this Microsoft.UI.Xaml.Controls.Image! imageView, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this Microsoft.UI.Xaml.Controls.Image! imageView, Microsoft.Maui.IImageSourcePart! image) -> void
 static Microsoft.Maui.Platform.KeyboardExtensions.ToInputScope(this Microsoft.Maui.Keyboard! self) -> Microsoft.UI.Xaml.Input.InputScope!
 static Microsoft.Maui.Platform.KeyboardExtensions.ToInputScopeName(this Microsoft.Maui.Keyboard! self) -> Microsoft.UI.Xaml.Input.InputScopeName!

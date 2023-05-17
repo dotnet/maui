@@ -1,4 +1,5 @@
 ﻿#nullable enable
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 
@@ -11,9 +12,13 @@ namespace Microsoft.Maui.Platform
 			imageView.Source = null;
 		}
 
-		public static void UpdateAspect(this WImage imageView, IImage image)
+		public static void UpdateAspect(this WImage imageView, IImage image, WrapperView wrapper)
 		{
 			imageView.Stretch = image.Aspect.ToStretch();
+			imageView.VerticalAlignment = VerticalAlignment.Center;
+			imageView.HorizontalAlignment = HorizontalAlignment.Center;
+			wrapper.Height = image.Height;
+			wrapper.Width = image.Width;
 		}
 
 		public static void UpdateIsAnimationPlaying(this WImage imageView, IImageSourcePart image)

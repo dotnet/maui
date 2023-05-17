@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -16,9 +17,34 @@ namespace Microsoft.Maui.Handlers
 			SourceLoader.Reset();
 		}
 
-		public override bool NeedsContainer =>
-			VirtualView?.Background != null ||
-			base.NeedsContainer;
+		public override bool NeedsContainer => true;
+
+		protected override void SetupContainer()
+		{
+			base.SetupContainer();
+
+			// VerticalAlignment only works when the child's Height is Auto
+			PlatformView.Height = double.NaN;
+
+			MapHeight(this, VirtualView);
+			MapWidth(this, VirtualView);
+		}
+
+		protected override void RemoveContainer()
+		{
+			base.RemoveContainer();
+
+			MapHeight(this, VirtualView);
+			MapWidth(this, VirtualView);
+		}
+
+		public static void MapHeight(IImageHandler handler, IImage view) =>
+			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
+			// is set to Auto when the container is introduced
+			(handler.ContainerView as FrameworkElement)!.Height = view.Height;
+
+		public static void MapWidth(IImageHandler handler, IImage view) =>
+			(handler.ContainerView as FrameworkElement)!.Width = view.Width;
 
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
@@ -26,8 +52,11 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform().UpdateBackground(image);
 		}
 
-		public static void MapAspect(IImageHandler handler, IImage image) =>
-			handler.PlatformView?.UpdateAspect(image);
+		public static void MapAspect(IImageHandler handler, IImage image)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.PlatformView?.UpdateAspect(image, (handler.ContainerView as WrapperView)!);
+		}
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
 			handler.PlatformView?.UpdateIsAnimationPlaying(image);
