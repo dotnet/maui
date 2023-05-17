@@ -84,7 +84,7 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>8.0.100-preview.4</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>8.0.100-preview.4</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
