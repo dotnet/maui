@@ -9,6 +9,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32487, " webview in tabbedpage has black margin")]
+#if UITEST
+	[Category(Compatibility.UITests.UITestCategories.TabbedPage)]
+#endif
 	public class Bugzilla32487 : TestTabbedPage
 	{
 		protected override void Init()
