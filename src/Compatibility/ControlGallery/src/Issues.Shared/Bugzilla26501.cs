@@ -85,10 +85,10 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Category(UITestCategories.InputTransparent)]
 	[Category(UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Bugzilla)]
+	[FailsOnMaui]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]
-	[FailsOnMaui]
+	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]	
 	public class Bugzilla26501 : TestContentPage
 	{
 		protected override void Init()
