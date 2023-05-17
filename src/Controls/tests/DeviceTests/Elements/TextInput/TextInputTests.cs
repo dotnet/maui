@@ -29,6 +29,44 @@ namespace Microsoft.Maui.DeviceTests
 				initialPosition);
 		}
 
+		[Theory]
+		[InlineData(2)]
+		public async Task CursorPositionInitializesCorrectlyWithUpdateCursorPositionLast(int initialPosition)
+		{
+			var entry = new TView
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			{
+				handler.UpdateValue(nameof(ITextInput.CursorPosition));
+				return GetPlatformCursorPosition(handler);
+			});
+
+			Assert.Equal(initialPosition, value);
+		}
+
+		[Theory]
+		[InlineData(2)]
+		public async Task CursorPositionInitializesCorrectlyWithUpdateTextLast(int initialPosition)
+		{
+			var entry = new TView
+			{
+				Text = "This is TEXT!",
+				CursorPosition = initialPosition
+			};
+
+			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			{
+				handler.UpdateValue(nameof(ITextInput.Text));
+				return GetPlatformCursorPosition(handler);
+			});
+
+			Assert.Equal(initialPosition, value);
+		}
+
 		[Theory(DisplayName = "SelectionLength Initializes Correctly")]
 		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectly(int initialLength)
@@ -44,6 +82,44 @@ namespace Microsoft.Maui.DeviceTests
 				() => entry.SelectionLength,
 				GetPlatformSelectionLength,
 				initialLength);
+		}
+
+		[Theory]
+		[InlineData(2)]
+		public async Task SelectionLengthInitializesCorrectlyWithUpdateCursorPositionLast(int initialLength)
+		{
+			var entry = new TView
+			{
+				Text = "This is TEXT!",
+				SelectionLength = initialLength
+			};
+
+			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			{
+				handler.UpdateValue(nameof(ITextInput.CursorPosition));
+				return GetPlatformSelectionLength(handler);
+			});
+
+			Assert.Equal(initialLength, value);
+		}
+
+		[Theory]
+		[InlineData(2)]
+		public async Task SelectionLengthInitializesCorrectlyWithUpdateTextLast(int initialLength)
+		{
+			var entry = new TView
+			{
+				Text = "This is TEXT!",
+				SelectionLength = initialLength
+			};
+
+			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			{
+				handler.UpdateValue(nameof(ITextInput.Text));
+				return GetPlatformSelectionLength(handler);
+			});
+
+			Assert.Equal(initialLength, value);
 		}
 
 		[Theory(DisplayName = "CursorPosition Updates Correctly")]
