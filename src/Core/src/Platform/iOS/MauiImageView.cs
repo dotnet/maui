@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiImageView : UIImageView
 	{
-		WeakReference<IImageHandler>? _handler;
+		readonly WeakReference<IImageHandler>? _handler;
 
 		public MauiImageView(IImageHandler handler) => _handler = new(handler);
 
