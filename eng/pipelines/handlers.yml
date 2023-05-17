@@ -176,13 +176,13 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy Android Files for UITest'
                 inputs:
+                  SourceFolder: src/Compatibility/ControlGallery/test/Android.UITests/bin/${{ BuildConfiguration }}/net472/
                   Contents: |
-                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472/Newtonsoft.Json.*
-                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//nunit.*
-                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//NUnit3.*
-                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//Plugin.*
-                    src/Compatibility/ControlGallery/test/Android.UITests/bin/$(BuildConfiguration)/net472//Xamarin.*
-
+                    Newtonsoft.Json.*
+                    nunit.*
+                    NUnit3.*
+                    Plugin.*
+                    Xamarin.*
                   TargetFolder: '$(build.artifactstagingdirectory)/android'
                   CleanTargetFolder: true
                   flattenFolders: true
@@ -199,12 +199,13 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy iOS Files for UITest'
                 inputs:
+                  SourceFolder: src/Compatibility/ControlGallery/test/iOS.UITests/bin/${{ BuildConfiguration }}/net472/
                   Contents: |
-                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Newtonsoft.Json.*
-                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/nunit.*
-                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/NUnit3.*
-                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Plugin.*
-                    src/Compatibility/ControlGallery/test/iOS.UITests/bin/$(BuildConfiguration)/net472/Xamarin.*
+                    Newtonsoft.Json.*
+                    nunit.*
+                    NUnit3.*
+                    Plugin.*
+                    Xamarin.*
                   TargetFolder: '$(build.artifactstagingdirectory)/ios'
                   flattenFolders: true
 
@@ -219,8 +220,8 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy iOS App'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/$(BuildConfiguration)/net7.0-ios/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
-                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.app/'
+                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
+                  TargetFolder: '$(build.artifactstagingdirectory)/ios/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/'
                   CleanTargetFolder: false
                   flattenFolders: false
 
