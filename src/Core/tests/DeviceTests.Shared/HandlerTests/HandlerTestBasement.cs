@@ -210,12 +210,26 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(handler);
 			});
 		}
+
 		public Task AttachAndRun<TPlatformHandler>(IView view, Func<TPlatformHandler, Task> action)
 			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
 			=>
 			view.AttachAndRun<bool, TPlatformHandler>(async (handler) =>
 			{
 				await action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
+
+		public Task AttachAndRun<TPlatformHandler>(IView view, Action<TPlatformHandler> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+			view.AttachAndRun<bool, TPlatformHandler>((handler) =>
+			{
+				action(handler);
 				return true;
 			}, MauiContext, async (view) =>
 			{

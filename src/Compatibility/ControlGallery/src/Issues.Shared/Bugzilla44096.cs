@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.IsEnabled)]
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 			AddTapGesture(result, stackLayout);
 
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsEnabled = true,
 				WidthRequest = 250,

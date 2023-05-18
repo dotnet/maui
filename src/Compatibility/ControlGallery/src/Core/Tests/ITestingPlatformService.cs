@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	public interface ITestingPlatformService
 	{

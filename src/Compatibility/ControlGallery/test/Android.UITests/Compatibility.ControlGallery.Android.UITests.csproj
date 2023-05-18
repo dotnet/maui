@@ -28,7 +28,6 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">
