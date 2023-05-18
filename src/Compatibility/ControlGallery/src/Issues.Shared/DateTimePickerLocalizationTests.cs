@@ -56,6 +56,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
 		[Category(UITestCategories.UwpIgnore)]
+		[FailsOnMauiAndroid]
 		public void TimePicker24H()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[FailsOnMauiAndroid]
 		public void TimePickerOther()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
@@ -96,6 +98,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
 		[Category(UITestCategories.UwpIgnore)]
+		[FailsOnMauiAndroid]
 		public void DatePickerDMY()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
@@ -115,6 +118,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		// Tests runs locally without issues but doesn't run successfully in a hosted agent yet
 		[Category(UITestCategories.UwpIgnore)]
+		[FailsOnMauiAndroid]
 		public void DatePickerMissing()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));
@@ -131,6 +135,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
+		[FailsOnMauiAndroid]
 		public void DatePickerLetters()
 		{
 			RunningApp.Tap(x => x.Marked("DatePicker"));

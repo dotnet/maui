@@ -19,10 +19,11 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Issue(IssueTracker.Bugzilla, 34061, "RelativeLayout - First child added after page display does not appear")]
 	public class Bugzilla34061 : TestContentPage
 	{
-		readonly Compatibility.RelativeLayout _layout = new Compatibility.RelativeLayout();
+		Compatibility.RelativeLayout _layout;
 
 		protected override void Init()
 		{
+			_layout = new Compatibility.RelativeLayout();
 			var label = new Label { Text = "Some content goes here", HorizontalOptions = LayoutOptions.Center };
 
 			var addButton = new Button { Text = "Add Popover", AutomationId = "btnAdd" };

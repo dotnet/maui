@@ -83,14 +83,14 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #if ANDROID
 	public class FailsOnMauiAndroid : IgnoreAttribute
 	{
-		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiIOS))
+		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiAndroid))
 		{
 		}
 	}
 #else
 	public class FailsOnMauiAndroid : CategoryAttribute
 	{
-		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiIOS))
+		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiAndroid))
 		{
 		}
 	}

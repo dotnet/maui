@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests.Shared
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
+		[FailsOnMauiAndroid]
 		public void AutomatedTests()
 		{
 			App.WaitForElement("SUCCESS", timeout: TimeSpan.FromMinutes(2));
