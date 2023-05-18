@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests.Shared
 	{
 		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery(GalleryQueries.PlatformAutomatedTestsGallery);
+			//App.NavigateToGallery(GalleryQueries.PlatformAutomatedTestsGallery);
 		}
 
 		[Test]

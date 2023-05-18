@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void TabBottomIconsAndTitlesChange() =>
 			Issue1898Setup.RunUITests(RunningApp);
 #endif

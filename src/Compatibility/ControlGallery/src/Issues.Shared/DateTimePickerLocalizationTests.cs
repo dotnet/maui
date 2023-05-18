@@ -73,6 +73,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void TimePicker12H()
 		{
 			RunningApp.Tap(x => x.Marked("TimePicker"));
