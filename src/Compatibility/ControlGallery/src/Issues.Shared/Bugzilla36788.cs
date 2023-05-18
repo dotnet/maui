@@ -125,6 +125,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[FailsOnMaui]
 		public void Bugzilla36788Test ()
