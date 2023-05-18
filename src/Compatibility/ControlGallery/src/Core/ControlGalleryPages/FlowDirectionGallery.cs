@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		{
 
 			var np = new Button { Text = "Try NavigationPage", Command = new Command(() => { PushNavigationPage(DeviceDirection); }) };
-			var mdp = new Button { Text = "Try FlyoutPage", Command = new Command(() => { PushFlyoutPage(DeviceDirection); }) };			
+			var mdp = new Button { Text = "Try FlyoutPage", Command = new Command(() => { PushFlyoutPage(DeviceDirection); }) };
 			var tp = new Button { Text = "Try TabbedPage", Command = new Command(() => { PushTabbedPage(DeviceDirection); }) };
 			var cp = new Button { Text = "Try ContentPage", Command = new Command(() => { PushContentPage(DeviceDirection); }) };
 

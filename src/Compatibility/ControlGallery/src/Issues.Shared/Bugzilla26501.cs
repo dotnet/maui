@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[FailsOnMaui]
 #endif
 	[Preserve(AllMembers = true)]
-	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]	
+	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]
 	public class Bugzilla26501 : TestContentPage
 	{
 		protected override void Init()
