@@ -167,7 +167,7 @@ namespace Microsoft.Maui.DeviceTests
 				$"InputTransparent: {view.InputTransparent}. UserInteractionEnabled: {platformView.UserInteractionEnabled}");
 		}
 
-		async Task WaitForLayout(UIView view, CGRect initialFrame, int timeout) 
+		async Task WaitForLayout(UIView view, CGRect initialFrame, int timeout)
 		{
 			int interval = 100;
 
@@ -196,11 +196,11 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			var level0 = new Controls.ContentView() { FlowDirection = FlowDirection.RightToLeft};
+			var level0 = new Controls.ContentView() { FlowDirection = FlowDirection.RightToLeft };
 			var level1 = new Grid() { HorizontalOptions = LayoutOptions.End, WidthRequest = 200 };
 			var level2 = new Grid() { HorizontalOptions = LayoutOptions.Start, WidthRequest = 200 };
 			var button = new Button() { Text = "Hello", HorizontalOptions = LayoutOptions.Start, WidthRequest = 100 };
-			
+
 			level0.Content = level1;
 			level1.Add(level2);
 			level2.Add(button);
