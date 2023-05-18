@@ -9,13 +9,6 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IEntry, EntryHandler> ControlsEntryMapper =
 			new PropertyMapper<Entry, EntryHandler>(EntryHandler.Mapper);
 
-		static CommandMapper<IEntry, IEntryHandler> ControlsCommandMapper = new(EntryHandler.CommandMapper)
-		{
-#if ANDROID
-			[nameof(IEntry.Focus)] = MapFocus
-#endif
-		};
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
@@ -30,7 +23,9 @@ namespace Microsoft.Maui.Controls
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(Text), MapText);
 			EntryHandler.Mapper.ReplaceMapping<Entry, IEntryHandler>(nameof(TextTransform), MapText);
 
-			EntryHandler.CommandMapper = ControlsCommandMapper;
+#if ANDROID
+			EntryHandler.CommandMapper.AppendToMapping(nameof(IEntry.Focus), MapFocus);
+#endif
 		}
 	}
 }

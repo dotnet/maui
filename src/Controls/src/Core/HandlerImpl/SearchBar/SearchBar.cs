@@ -9,13 +9,6 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<ISearchBar, SearchBarHandler> ControlsSearchBarMapper =
 			new PropertyMapper<SearchBar, SearchBarHandler>(SearchBarHandler.Mapper);
 
-		static CommandMapper<ISearchBar, ISearchBarHandler> ControlsCommandMapper = new(SearchBarHandler.CommandMapper)
-		{
-#if ANDROID
-			[nameof(ISearchBar.Focus)] = MapFocus
-#endif
-		};
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
@@ -27,7 +20,9 @@ namespace Microsoft.Maui.Controls
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(Text), MapText);
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(TextTransform), MapText);
 
-			SearchBarHandler.CommandMapper = ControlsCommandMapper;
+#if ANDROID
+			SearchBarHandler.CommandMapper.AppendToMapping(nameof(ISearchBar.Focus), MapFocus);
+#endif
 		}
 	}
 }

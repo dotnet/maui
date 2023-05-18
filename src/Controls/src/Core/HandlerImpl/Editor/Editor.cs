@@ -9,13 +9,6 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IEditor, EditorHandler> ControlsEditorMapper =
 			new PropertyMapper<Editor, EditorHandler>(EditorHandler.Mapper);
 
-		static CommandMapper<IEditor, IEditorHandler> ControlsCommandMapper = new(EditorHandler.CommandMapper)
-		{
-#if ANDROID
-			[nameof(IEditor.Focus)] = MapFocus
-#endif
-		};
-
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
@@ -25,7 +18,9 @@ namespace Microsoft.Maui.Controls
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(Text), MapText);
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapText);
 
-			EditorHandler.CommandMapper = ControlsCommandMapper;
+#if ANDROID
+			EditorHandler.CommandMapper.AppendToMapping(nameof(IEditor.Focus), MapFocus);
+#endif
 		}
 	}
 }
