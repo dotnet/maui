@@ -33,6 +33,10 @@ namespace Microsoft.Maui.Controls
 			// And we map some of the other property handlers to Controls-specific versions that avoid stepping on HTML text settings
 
 			LabelHandler.Mapper = ControlsLabelMapper;
+
+#if ANDROID
+			LabelHandler.CommandMapper.AppendToMapping<Label, ILabelHandler>(nameof(Frame), MapFrame);
+#endif
 		}
 	}
 }

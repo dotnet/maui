@@ -13,6 +13,7 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+*REMOVED*override Microsoft.Maui.Platform.MauiTextView.OnLayout(bool changed, int l, int t, int r, int b) -> void
 Microsoft.Maui.Platform.ShapeExtensions
 Microsoft.Maui.PlatformContentViewGroup
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
