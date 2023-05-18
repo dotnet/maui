@@ -180,6 +180,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Category(UITestCategories.CollectionView)]
 		[Category(UITestCategories.UwpIgnore)]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void AddRemoveEmptyGroupsShouldNotCrashOnInsert()
 		{

@@ -80,10 +80,10 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			}
 		}
 
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[TestCase("CarouselView (XAML, Horizontal)", 0)]
 		[TestCase("CarouselView (XAML, Horizontal, Loop)", 0)]
 		[TestCase("CarouselView Set CurrentItem", 3)]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[TestCase("CarouselView Set CurrentItem Loop", 3)]
 		public void CarouselViewGoToNextCurrentItem(string subgallery, int indexToTest)
 		{
@@ -222,8 +222,8 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			}
 		}
 
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[TestCase("CarouselView (Code, Horizontal)")]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		//[TestCase("CarouselView (XAML, Horizontal)")]
 		public void CarouselViewHorizontal(string subgallery)
 		{
@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		[TestCase("CarouselView SetPosition Ctor")]
 		[TestCase("CarouselView SetPosition Appearing")]
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		//[TestCase("CarouselView (XAML, Horizontal)")]
 		public async System.Threading.Tasks.Task CarouselViewSetPosition(string subgallery)
 		{
