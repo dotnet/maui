@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (handler) =>
 				{
-					var currentPage = (rootPage as IPageContainer<Page>).CurrentPage;
+					var currentPage = rootPage.GetCurrentPage();
 					await currentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
 					Assert.Equal(1, currentPage.Navigation.ModalStack.Count);
