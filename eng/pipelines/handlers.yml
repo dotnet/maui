@@ -183,6 +183,7 @@ stages:
                     Plugin.*
                     Xamarin.*
                     Microsoft.*
+                    DocoptNet*
                   TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}'
                   CleanTargetFolder: false
                   flattenFolders: true
@@ -206,6 +207,7 @@ stages:
                     Plugin.*
                     Xamarin.*
                     Microsoft.*
+                    DocoptNet*
                   TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}'
                   flattenFolders: true
 
