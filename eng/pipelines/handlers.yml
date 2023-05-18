@@ -170,8 +170,7 @@ stages:
                   SourceFolder: src/Compatibility/ControlGallery/src/Android/bin/${{ BuildConfiguration }}/net7.0-android/
                   Contents: '**/*.apk'
                   TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}/app/'
-                  CleanTargetFolder: true
-                  OverWrite: true'
+                  CleanTargetFolder: false
              
               - task: CopyFiles@2
                 displayName: 'Copy Android Files for UITest'
@@ -185,7 +184,7 @@ stages:
                     Xamarin.*
                     Microsoft.*
                   TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}'
-                  CleanTargetFolder: true
+                  CleanTargetFolder: false
                   flattenFolders: true
 
               - task: CopyFiles@2
@@ -194,8 +193,7 @@ stages:
                   SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}/net7.0-ios
                   Contents: '**/*.ipa'
                   TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}/app/'
-                  CleanTargetFolder: true
-                  OverWrite: true'
+                  CleanTargetFolder: false
 
               - task: CopyFiles@2
                 displayName: 'Copy iOS Files for UITest'
