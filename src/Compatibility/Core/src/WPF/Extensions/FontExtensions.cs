@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.WPF
 			return self.FontFamily == null && self.FontSize == Device.GetNamedSize(NamedSize.Default, typeof(Label), true) && self.FontAttributes == FontAttributes.None;
 		}
 
-		static Dictionary<string, FontFamily> FontFamilies = new Dictionary<string, FontFamily>();
+		static Dictionary<string, FontFamily> FontFamilies = new(StringComparer.Ordinal);
 
 
 		public static FontFamily ToFontFamily(this string fontFamily, string defaultFontResource = "FontFamilySemiBold")

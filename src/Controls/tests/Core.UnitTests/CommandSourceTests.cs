@@ -158,6 +158,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void CommandCanExecuteUpdatesEnabled()
+		{
+			var source = CreateSource();
+
+			bool result = false;
+
+			var bindingContext = new
+			{
+				Command = new Command(() => { }, () => result)
+			};
+
+			source.SetBinding(CommandProperty, "Command");
+			source.BindingContext = bindingContext;
+
+			Assert.False((bool)source.GetValue(IsEnabledProperty));
+
+			result = true;
+
+			bindingContext.Command.ChangeCanExecute();
+
+			Assert.True((bool)source.GetValue(IsEnabledProperty));
+		}
+
+		[Fact]
 		public void EnabledUpdatesDoNotRemoveBindings()
 		{
 			var vm = new BoolViewModel { Toggle = true };
@@ -172,7 +196,57 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(source.GetIsBound(IsEnabledProperty));
 		}
 
+		[Theory]
+		[InlineData(true, true, true)]
+		[InlineData(true, false, false)]
+		[InlineData(false, true, false)]
+		[InlineData(false, false, false)]
+		public void EnabledAndCommandAreCorrect(bool viewEnabled, bool commandEnabled, bool expectedEnabled)
+		{
+			var source = CreateSource();
+			source.SetValue(IsEnabledProperty, viewEnabled);
+			source.SetValue(CommandProperty, new Command(() => { }, () => commandEnabled));
+
+			Assert.Equal(expectedEnabled, (bool)source.GetValue(IsEnabledProperty));
+		}
+
+		[Theory]
+		[InlineData(true, true, false)]
+		[InlineData(true, false, false)]
+		[InlineData(false, true, true)]
+		[InlineData(false, false, false)]
+		public void EnabledUpdatesDoNotOverrideCommand(bool viewEnabled, bool commandEnabled, bool expectedEnabled)
+		{
+			var source = CreateSource();
+			source.SetValue(IsEnabledProperty, viewEnabled);
+			source.SetValue(CommandProperty, new Command(() => { }, () => commandEnabled));
+
+			source.SetValue(IsEnabledProperty, !viewEnabled);
+
+			Assert.Equal(expectedEnabled, (bool)source.GetValue(IsEnabledProperty));
+		}
+
+		[Theory]
+		[InlineData(true, true, false)]
+		[InlineData(true, false, true)]
+		[InlineData(false, true, false)]
+		[InlineData(false, false, false)]
+		public void CommandUpdatesDoNotOverrideEnabled(bool viewEnabled, bool commandEnabled, bool expectedEnabled)
+		{
+			var source = CreateSource();
+
+			source.SetValue(IsEnabledProperty, viewEnabled);
+			var command = new Command(() => { }, () => commandEnabled);
+			source.SetValue(CommandProperty, command);
+
+			commandEnabled = !commandEnabled;
+			command.ChangeCanExecute();
+
+			Assert.Equal(expectedEnabled, (bool)source.GetValue(IsEnabledProperty));
+		}
+
 		protected abstract T CreateSource();
+
 		protected abstract void Activate(T source);
 
 		protected abstract BindableProperty IsEnabledProperty

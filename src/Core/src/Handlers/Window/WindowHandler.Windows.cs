@@ -2,8 +2,8 @@ using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Graphics;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -29,13 +29,31 @@ namespace Microsoft.Maui.Handlers
 				// THEN attach the event to reduce churn
 				appWindow.Changed += OnWindowChanged;
 			}
+
+			var windowRootContentManager = MauiContext
+				?.GetNavigationRootManager();
+
+			if (windowRootContentManager is not null)
+			{
+				windowRootContentManager.OnApplyTemplateFinished += WindowRootContentManagerOnApplyTemplateFinished;
+			}
+		}
+
+		void WindowRootContentManagerOnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 		}
 
 		protected override void DisconnectHandler(UI.Xaml.Window platformView)
 		{
-			MauiContext
-				?.GetNavigationRootManager()
-				?.Disconnect();
+			var windowRootContentManager = MauiContext
+				?.GetNavigationRootManager();
+
+			if (windowRootContentManager is not null)
+			{
+				windowRootContentManager.OnApplyTemplateFinished -= WindowRootContentManagerOnApplyTemplateFinished;
+				windowRootContentManager.Disconnect();
+			}
 
 			if (platformView.Content is WindowRootViewContainer container)
 			{
@@ -135,6 +153,36 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is DisplayDensityRequest request)
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
+		}
+
+		internal static void MapTitleBarDragRectangles(IWindowHandler handler, IWindow window)
+		{
+			if (!AppWindowTitleBar.IsCustomizationSupported())
+				return;
+
+			var titleBar = handler.PlatformView.AppWindow.TitleBar;
+			var titleBarRects = window.TitleBarDragRectangles;
+
+			if (titleBarRects is null)
+			{
+				titleBar.SetDragRectangles(null);
+			}
+			else
+			{
+				var density = handler.PlatformView.GetDisplayDensity();
+				RectInt32[] dragRects = new RectInt32[titleBarRects.Length];
+				for (var i = 0; i < titleBarRects.Length; i++)
+				{
+					Rect rect = titleBarRects[i];
+					dragRects[i] = new RectInt32(
+					(int)(rect.X * density),
+					(int)(rect.Y * density),
+					(int)(rect.Width * density),
+					(int)(rect.Height * density));
+				}
+
+				titleBar.SetDragRectangles(dragRects);
+			}
 		}
 
 		void OnWindowChanged(AppWindow sender, AppWindowChangedEventArgs args)

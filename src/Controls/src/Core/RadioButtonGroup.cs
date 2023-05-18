@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections;
 
 namespace Microsoft.Maui.Controls
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls
 			return (RadioButtonGroupController)b.GetValue(RadioButtonGroupControllerProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='GroupNameProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>GroupName</c>.</summary>
 		public static readonly BindableProperty GroupNameProperty =
 			BindableProperty.Create("GroupName", typeof(string), typeof(Maui.ILayout), null,
 			propertyChanged: (b, o, n) => { GetRadioButtonGroupController(b).GroupName = (string)n; });
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(GroupNameProperty, groupName);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadioButtonGroup.xml" path="//Member[@MemberName='SelectedValueProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>SelectedValue</c>.</summary>
 		public static readonly BindableProperty SelectedValueProperty =
 			BindableProperty.Create("SelectedValue", typeof(object), typeof(Maui.ILayout), null,
 			defaultBindingMode: BindingMode.TwoWay,

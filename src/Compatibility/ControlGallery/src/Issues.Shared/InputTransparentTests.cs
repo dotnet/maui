@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.InputTransparent)]
@@ -159,8 +159,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			get
 			{
-				return (BuildMenu().Content as Layout).InternalChildren.SelectMany(
-					element => (element as Layout).InternalChildren.Select(view => (view as Button).Text));
+				return (BuildMenu().Content as Layout).SelectMany(
+					element => (element as Layout).Select(view => (view as Button).Text));
 			}
 		}
 

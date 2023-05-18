@@ -1,4 +1,3 @@
-#if PLATFORM && !TIZEN
 using System;
 using System.IO;
 using System.Threading;
@@ -8,12 +7,11 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Media;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public abstract partial class HandlerTestBase<THandler, TStub>
-		where THandler : class, IViewHandler, new()
-		where TStub : IStubBase, IView, new()
 	{
 		[Fact]
 		public async Task DisconnectHandlerDoesntCrash()
@@ -84,6 +82,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Description = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
@@ -94,6 +94,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
+			MockAccessibilityExpectations(view);
+
 			view.Semantics.Hint = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
 
@@ -101,7 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Description is set correctly"
-#if __ANDROID__
+#if ANDROID
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -114,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Semantic Hint is set correctly"
-#if __ANDROID__
+#if ANDROID
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
@@ -148,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Clip Initializes ContainerView Correctly")]
-		public async Task ContainerViewInitializesCorrectly()
+		public async virtual Task ContainerViewInitializesCorrectly()
 		{
 			var view = new TStub
 			{
@@ -158,9 +160,65 @@ namespace Microsoft.Maui.DeviceTests
 				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
 			};
 
-			var handler = await CreateHandlerAsync(view);
+			await CreateHandlerAsync(view);
+			await view.AssertHasContainer(true);
+		}
 
-			Assert.NotNull(handler.ContainerView);
+		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again")]
+		public virtual async Task ContainerViewRemainsIfShadowMapperRunsAgain()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100,
+				Background = new SolidPaintStub(Colors.Red),
+				Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50)
+			};
+
+			var handler = await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler(view);
+				handler.UpdateValue(nameof(IView.Shadow));
+				return handler;
+			});
+
+			await view.AssertHasContainer(true);
+		}
+
+		[Fact(DisplayName = "ContainerView Adds And Removes")]
+		public virtual async Task ContainerViewAddsAndRemoves()
+		{
+			var view = new TStub
+			{
+				Height = 100,
+				Width = 100
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler(view);
+
+				// This is a view that always has a container
+				// so there's nothing to test here
+				if (handler.HasContainer)
+					return;
+
+				await AttachAndRun(view,
+					async (handler) =>
+					{
+						await view.AssertHasContainer(false);
+						view.Clip = new EllipseGeometryStub(new Graphics.Point(50, 50), 50, 50);
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(true);
+						view.Clip = null;
+						handler.UpdateValue(nameof(IView.Clip));
+						await Task.Delay(10);
+						await view.AssertHasContainer(false);
+					});
+
+				return;
+			});
 		}
 
 		[Theory(DisplayName = "Native View Bounds are not empty"
@@ -183,7 +241,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotEqual(platformViewBounds, new Graphics.Rect());
 		}
 
-		[Theory(DisplayName = "Native View Bounding Box are not empty"
+		[Theory(DisplayName = "Native View Bounding Box is not empty"
 #if WINDOWS
 			, Skip = "https://github.com/dotnet/maui/issues/9054"
 #endif
@@ -191,7 +249,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
-		public async Task ReturnsNonEmptyNativeBoundingBounds(int size)
+		public virtual async Task ReturnsNonEmptyNativeBoundingBox(int size)
 		{
 			var view = new TStub()
 			{
@@ -200,8 +258,7 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
-			Assert.NotEqual(nativeBoundingBox, new Graphics.Rect());
-
+			Assert.NotEqual(nativeBoundingBox, Graphics.Rect.Zero);
 
 			// Currently there's an issue with label/progress where they don't set the frame size to
 			// the explicit Width and Height values set
@@ -229,27 +286,16 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			else if (view is IProgress)
 			{
-				if (!CloseEnough(size, nativeBoundingBox.Size.Width))
-					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
+				AssertWithinTolerance(size, nativeBoundingBox.Size.Width);
 			}
 			else
 			{
-				if (!CloseEnough(size, nativeBoundingBox.Size.Height) || !CloseEnough(size, nativeBoundingBox.Size.Width))
-					Assert.Equal(new Size(size, size), nativeBoundingBox.Size);
-			}
-
-			bool CloseEnough(double value1, double value2)
-			{
-				return System.Math.Abs(value2 - value1) < 0.2;
+				var expectedSize = new Size(size, size);
+				AssertWithinTolerance(expectedSize, nativeBoundingBox.Size);
 			}
 		}
 
-
-		[Theory(DisplayName = "Native View Transforms are not empty"
-#if __IOS__
-					, Skip = "https://github.com/dotnet/maui/issues/3600"
-#endif
-			)]
+		[Theory(DisplayName = "PlatformView Transforms are not empty")]
 		[InlineData(1)]
 		[InlineData(100)]
 		[InlineData(1000)]
@@ -268,7 +314,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "View Renders To Image"
-#if !__ANDROID__
+#if !ANDROID
 			, Skip = "iOS and Windows can't render elements to images from test runner. It's missing the required root windows."
 #endif
 			)]
@@ -313,4 +359,3 @@ namespace Microsoft.Maui.DeviceTests
 		}
 	}
 }
-#endif

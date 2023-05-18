@@ -7,7 +7,7 @@ using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class ImageButtonTests : CommandSourceTests<ImageButton>
+	public class ImageButtonTests : VisualElementCommandSourceTests<ImageButton>
 	{
 		[Fact]
 		public void TestSizing()
@@ -212,7 +212,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				catch (TaskCanceledException ex)
 				{
 					cancelled = true;
-					throw ex;
+					throw;
 				}
 
 				if (cancellationToken.IsCancellationRequested)
@@ -379,31 +379,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-
-		[Fact]
-		public void CommandCanExecuteUpdatesEnabled()
-		{
-			var button = new ImageButton();
-
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { }, () => result)
-			};
-
-			button.SetBinding(ImageButton.CommandProperty, "Command");
-			button.BindingContext = bindingContext;
-
-			Assert.False(button.IsEnabled);
-
-			result = true;
-
-			bindingContext.Command.ChangeCanExecute();
-
-			Assert.True(button.IsEnabled);
-		}
-
 		[Fact]
 		public void ButtonClickWhenCommandCanExecuteFalse()
 		{
@@ -429,10 +404,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(element, vsgList);
 
 			element.SendPressed();
-			Assert.Equal(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.Equal(PressedStateName, stateGroup.CurrentState.Name);
 
 			element.SendReleased();
-			Assert.NotEqual(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }

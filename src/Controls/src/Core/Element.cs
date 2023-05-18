@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,10 +15,10 @@ namespace Microsoft.Maui.Controls
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationIdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AutomationId"/>.</summary>
 		public static readonly BindableProperty AutomationIdProperty = BindableProperty.Create(nameof(AutomationId), typeof(string), typeof(Element), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassIdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ClassId"/>.</summary>
 		public static readonly BindableProperty ClassIdProperty = BindableProperty.Create(nameof(ClassId), typeof(string), typeof(Element), null);
 
 		IList<BindableObject> _bindableResources;
@@ -35,6 +36,10 @@ namespace Microsoft.Maui.Controls
 		Element _parentOverride;
 
 		string _styleId;
+
+		IReadOnlyList<Element> _logicalChildrenReadonly;
+
+		IList<Element> _internalChildren;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs/*" />
 		public string AutomationId
@@ -55,6 +60,7 @@ namespace Microsoft.Maui.Controls
 			get => (string)GetValue(ClassIdProperty);
 			set => SetValue(ClassIdProperty, value);
 		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Effects']/Docs/*" />
 		public IList<Effect> Effects
 		{
@@ -96,7 +102,119 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal virtual IReadOnlyList<Element> LogicalChildrenInternal => EmptyChildren;
+		// Leaving this internal for now.
+		// If users want to add/remove from this they can use
+		// AddLogicalChildren and RemoveLogicalChildren on the respective control
+		// if available.
+		//
+		// Ultimately I don't think we'll need these to be virtual but some controls (layout)
+		// are going to take a more focused effort so I'd rather just do that in a 
+		// separate PR. I don't think there's ever a scenario where a subclass needs
+		// to replace the backing store.
+		// If everyone just uses AddLogicalChildren and RemoveLogicalChildren
+		// and then overrides OnChildAdded/OnChildRemoved
+		// that should be sufficient
+		internal IReadOnlyList<Element> LogicalChildrenInternal
+		{
+			get
+			{
+				SetupChildren();
+				return _logicalChildrenReadonly;
+			}
+		}
+
+		private protected virtual IList<Element> LogicalChildrenInternalBackingStore
+		{
+			get
+			{
+				_internalChildren ??= new List<Element>();
+				return _internalChildren;
+			}
+		}
+
+		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Do not use! This is to be removed! Just used by Hot Reload! To be replaced with IVisualTreeElement!")]
+		public ReadOnlyCollection<Element> LogicalChildren =>
+			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
+
+		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
+
+		void SetupChildren()
+		{
+			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
+		}
+
+		internal void InsertLogicalChildInternal(int index, Element element)
+		{
+			if (element is null)
+			{
+				return;
+			}
+
+			SetupChildren();
+
+			LogicalChildrenInternalBackingStore.Insert(index, element);
+			OnChildAdded(element);
+		}
+
+		internal void AddLogicalChildInternal(Element element)
+		{
+			if (element is null)
+			{
+				return;
+			}
+
+			SetupChildren();
+
+			LogicalChildrenInternalBackingStore.Add(element);
+			OnChildAdded(element);
+		}
+
+		internal bool RemoveLogicalChildInternal(Element element)
+		{
+			if (element is null)
+			{
+				return false;
+			}
+
+			if (LogicalChildrenInternalBackingStore is null)
+				return false;
+
+			var oldLogicalIndex = LogicalChildrenInternalBackingStore.IndexOf(element);
+			if (oldLogicalIndex < 0)
+				return false;
+
+			RemoveLogicalChildInternal(element, oldLogicalIndex);
+
+			return true;
+		}
+
+		internal void ClearLogicalChildren()
+		{
+			if (LogicalChildrenInternalBackingStore is null)
+				return;
+
+			if (LogicalChildrenInternal == EmptyChildren)
+				return;
+
+			// Reverse for-loop, so children can be removed while iterating
+			for (int i = LogicalChildrenInternalBackingStore.Count - 1; i >= 0; i--)
+			{
+				RemoveLogicalChildInternal(LogicalChildrenInternalBackingStore[i], i);
+			}
+		}
+
+		/// <summary>
+		/// This doesn't validate that the oldLogicalIndex is correct, so be sure you're passing in the
+		/// correct index
+		/// </summary>
+		internal bool RemoveLogicalChildInternal(Element element, int oldLogicalIndex)
+		{
+			LogicalChildrenInternalBackingStore.Remove(element);
+			OnChildRemoved(element, oldLogicalIndex);
+
+			return true;
+		}
 
 		internal IEnumerable<Element> AllChildren
 		{
@@ -116,14 +234,6 @@ namespace Microsoft.Maui.Controls
 
 		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
 		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
-
-		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='LogicalChildren']/Docs/*" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("Do not use! This is to be removed! Just used by Hot Reload! To be replaced with IVisualTreeElement!")]
-		public ReadOnlyCollection<Element> LogicalChildren =>
-			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
 
 		internal bool Owned { get; set; }
 
@@ -199,7 +309,7 @@ namespace Microsoft.Maui.Controls
 					((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
 				}
 
-				object context = value != null ? value.BindingContext : null;
+				object context = value?.BindingContext;
 				if (value != null)
 				{
 					value.SetChildInheritedBindingContext(this, context);
@@ -321,7 +431,8 @@ namespace Microsoft.Maui.Controls
 			base.SetDynamicResource(property, key);
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => LogicalChildrenInternal;
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+			=> LogicalChildrenInternal;
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent;
 

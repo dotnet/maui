@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿#nullable disable
+using Microsoft.UI.Xaml;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 
 namespace Microsoft.Maui.Controls

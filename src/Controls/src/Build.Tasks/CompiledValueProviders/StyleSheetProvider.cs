@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Controls.XamlC
 			{
 				var style = (styleNode as ValueNode).Value as string;
 				yield return Create(Ldstr, style);
-				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromString",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String") },
 																	   isStatic: true));
@@ -52,31 +52,31 @@ namespace Microsoft.Maui.Controls.XamlC
 				while (!(rootNode is ILRootNode))
 					rootNode = rootNode.Parent;
 
-				var rootTargetPath = RDSourceTypeConverter.GetPathForType(module, ((ILRootNode)rootNode).TypeReference);
+				var rootTargetPath = RDSourceTypeConverter.GetPathForType(context, module, ((ILRootNode)rootNode).TypeReference);
 				var uri = new Uri(source, UriKind.Relative);
 
 				var resourcePath = ResourceDictionary.RDSourceTypeConverter.GetResourcePath(uri, rootTargetPath);
 				//fail early
-				if (XamlCTask.GetResourceIdForPath(module, resourcePath) == null)
+				if (XamlCTask.GetResourceIdForPath(context.Cache, module, resourcePath) == null)
 					throw new XamlParseException($"Resource '{source}' not found.", node);
 
 				yield return Create(Ldstr, resourcePath); //resourcePath
 
 				yield return Create(Ldtoken, module.ImportReference(((ILRootNode)rootNode).TypeReference));
-				yield return Create(Call, module.ImportMethodReference(("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
-				yield return Create(Callvirt, module.ImportPropertyGetterReference(("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true)); //assembly
+				yield return Create(Call, module.ImportMethodReference(context.Cache, ("mscorlib", "System", "Type"), methodName: "GetTypeFromHandle", parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") }, isStatic: true));
+				yield return Create(Callvirt, module.ImportPropertyGetterReference(context.Cache, ("mscorlib", "System", "Type"), propertyName: "Assembly", flatten: true)); //assembly
 
 				foreach (var instruction in node.PushXmlLineInfo(context))
 					yield return instruction; //lineinfo
 
-				yield return Create(Call, module.ImportMethodReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
+				yield return Create(Call, module.ImportMethodReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet"),
 																	   methodName: "FromResource",
 																	   parameterTypes: new[] { ("mscorlib", "System", "String"), ("mscorlib", "System.Reflection", "Assembly"), ("System.Xml.ReaderWriter", "System.Xml", "IXmlLineInfo") },
 																	   isStatic: true));
 			}
 
 			//the variable is of type `object`. fix that
-			var vardef = new VariableDefinition(module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet")));
+			var vardef = new VariableDefinition(module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls.StyleSheets", "StyleSheet")));
 			yield return Create(Stloc, vardef);
 			vardefref.VariableDefinition = vardef;
 		}

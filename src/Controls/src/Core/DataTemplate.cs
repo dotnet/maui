@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -43,6 +44,8 @@ namespace Microsoft.Maui.Controls
 		public IDictionary<BindableProperty, object> Values { get; } = new Dictionary<BindableProperty, object>();
 
 		string IDataTemplateController.IdString => _idString;
+
+		internal int Id => _id;
 
 		int IDataTemplateController.Id => _id;
 

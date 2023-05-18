@@ -7,7 +7,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public interface IStubBase : IView, IVisualTreeElement, IToolTipElement
+	public interface IStubBase : IView, IVisualTreeElement, IToolTipElement, IPropertyMapperView
 	{
 		new string AutomationId { get; set; }
 
@@ -59,6 +59,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		new bool InputTransparent { get; set; }
 		new IElement Parent { get; set; }
+
+		PropertyMapper PropertyMapperOverrides { get; set; }
 	}
 
 }

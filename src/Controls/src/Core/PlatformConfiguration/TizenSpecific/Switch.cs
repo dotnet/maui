@@ -1,3 +1,4 @@
+#nullable disable
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Switch']/Docs/*" />
 	public static class Switch
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(nameof(Color), typeof(Color), typeof(FormsElement), null);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Switch.xml" path="//Member[@MemberName='GetColor'][1]/Docs/*" />

@@ -23,7 +23,7 @@
     "postActions": [
         {
             "id": "openInEditor",
-            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+            "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\" && HostIdentifier != \"vs\")",
             "description": "Opens Class1.cs in the editor.",
             "manualInstructions": [],
             "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
@@ -47,6 +47,10 @@
         ],
         "replaces": "DOTNET_TFM",
         "defaultValue": "DOTNET_TFM_VALUE"
+      },
+      "HostIdentifier": {
+          "type": "bind",
+          "binding": "HostIdentifier"
       }
     },
     "defaultName": "MauiLib1"

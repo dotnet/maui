@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,10 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal class AttachedCollection<T> : ObservableCollection<T>, ICollection<T>, IAttachedObject where T : BindableObject, IAttachedObject
 	{
-		readonly List<WeakReference> _associatedObjects = new List<WeakReference>();
-
-		const int CleanupTrigger = 128;
-		int _cleanupThreshold = CleanupTrigger;
+		readonly WeakList<BindableObject> _associatedObjects = new();
 
 		public AttachedCollection()
 		{
@@ -37,13 +35,10 @@ namespace Microsoft.Maui.Controls
 
 		protected override void ClearItems()
 		{
-			foreach (WeakReference weakbindable in _associatedObjects)
+			foreach (var bindable in _associatedObjects)
 			{
 				foreach (T item in this)
 				{
-					var bindable = weakbindable.Target as BindableObject;
-					if (bindable == null)
-						continue;
 					item.DetachFrom(bindable);
 				}
 			}
@@ -53,11 +48,8 @@ namespace Microsoft.Maui.Controls
 		protected override void InsertItem(int index, T item)
 		{
 			base.InsertItem(index, item);
-			foreach (WeakReference weakbindable in _associatedObjects)
+			foreach (var bindable in _associatedObjects)
 			{
-				var bindable = weakbindable.Target as BindableObject;
-				if (bindable == null)
-					continue;
 				item.AttachTo(bindable);
 			}
 		}
@@ -66,8 +58,7 @@ namespace Microsoft.Maui.Controls
 		{
 			lock (_associatedObjects)
 			{
-				_associatedObjects.Add(new WeakReference(bindable));
-				CleanUpWeakReferences();
+				_associatedObjects.Add(bindable);
 			}
 			foreach (T item in this)
 				item.AttachTo(bindable);
@@ -79,27 +70,15 @@ namespace Microsoft.Maui.Controls
 				item.DetachFrom(bindable);
 			lock (_associatedObjects)
 			{
-				for (var i = 0; i < _associatedObjects.Count; i++)
-				{
-					object target = _associatedObjects[i].Target;
-
-					if (target == null || target == bindable)
-					{
-						_associatedObjects.RemoveAt(i);
-						i--;
-					}
-				}
+				_associatedObjects.Remove(bindable);
 			}
 		}
 
 		protected override void RemoveItem(int index)
 		{
 			T item = this[index];
-			foreach (WeakReference weakbindable in _associatedObjects)
+			foreach (var bindable in _associatedObjects)
 			{
-				var bindable = weakbindable.Target as BindableObject;
-				if (bindable == null)
-					continue;
 				item.DetachFrom(bindable);
 			}
 
@@ -109,34 +88,17 @@ namespace Microsoft.Maui.Controls
 		protected override void SetItem(int index, T item)
 		{
 			T old = this[index];
-			foreach (WeakReference weakbindable in _associatedObjects)
+			foreach (var bindable in _associatedObjects)
 			{
-				var bindable = weakbindable.Target as BindableObject;
-				if (bindable == null)
-					continue;
 				old.DetachFrom(bindable);
 			}
 
 			base.SetItem(index, item);
 
-			foreach (WeakReference weakbindable in _associatedObjects)
+			foreach (var bindable in _associatedObjects)
 			{
-				var bindable = weakbindable.Target as BindableObject;
-				if (bindable == null)
-					continue;
 				item.AttachTo(bindable);
 			}
-		}
-
-		void CleanUpWeakReferences()
-		{
-			if (_associatedObjects.Count < _cleanupThreshold)
-			{
-				return;
-			}
-
-			_associatedObjects.RemoveAll(t => t == null || !t.IsAlive);
-			_cleanupThreshold = _associatedObjects.Count + CleanupTrigger;
 		}
 	}
 }

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		{
 		}
 
-		public IDictionary<string, string> Declarations { get; set; } = new Dictionary<string, string>();
+		public IDictionary<string, string> Declarations { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
 		Dictionary<KeyValuePair<string, string>, object> convertedValues = new Dictionary<KeyValuePair<string, string>, object>();
 
 		public static Style Parse(CssReader reader, char stopChar = '\0')

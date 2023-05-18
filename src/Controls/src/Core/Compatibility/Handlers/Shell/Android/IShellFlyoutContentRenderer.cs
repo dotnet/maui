@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using AView = Android.Views.View;
 

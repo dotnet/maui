@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Controls.Shapes;
 
 using WMatrix = Microsoft.UI.Xaml.Media.Matrix;

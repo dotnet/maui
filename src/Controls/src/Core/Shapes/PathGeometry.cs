@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -30,12 +31,12 @@ namespace Microsoft.Maui.Controls.Shapes
 			FillRule = fillRule;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FiguresProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Figures"/>.</summary>
 		public static readonly BindableProperty FiguresProperty =
 			BindableProperty.Create(nameof(Figures), typeof(PathFigureCollection), typeof(PathGeometry), null,
 				propertyChanged: OnPathFigureCollectionChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PathGeometry.xml" path="//Member[@MemberName='FillRuleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FillRule"/>.</summary>
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(PathGeometry), FillRule.EvenOdd);
 

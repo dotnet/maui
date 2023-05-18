@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.Application;
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	public static class Application
 	{
 		#region PanGestureRecognizerShouldRecognizeSimultaneously
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='PanGestureRecognizerShouldRecognizeSimultaneouslyProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>PanGestureRecognizerShouldRecognizeSimultaneously</c>.</summary>
 		public static readonly BindableProperty PanGestureRecognizerShouldRecognizeSimultaneouslyProperty = BindableProperty.Create("PanGestureRecognizerShouldRecognizeSimultaneously", typeof(bool), typeof(Application), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetPanGestureRecognizerShouldRecognizeSimultaneously'][1]/Docs/*" />
@@ -36,7 +37,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 
 		#region HandleControlUpdatesOnMainThread
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='HandleControlUpdatesOnMainThreadProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>HandleControlUpdatesOnMainThread</c>.</summary>
 		public static readonly BindableProperty HandleControlUpdatesOnMainThreadProperty = BindableProperty.Create("HandleControlUpdatesOnMainThread", typeof(bool), typeof(Application), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetHandleControlUpdatesOnMainThread'][1]/Docs/*" />
@@ -66,7 +67,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 		#endregion
 
 		#region EnableAccessibilityScalingForNamedFontSizes
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='EnableAccessibilityScalingForNamedFontSizesProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>EnableAccessibilityScalingForNamedFontSize</c>.</summary>
 		public static readonly BindableProperty EnableAccessibilityScalingForNamedFontSizesProperty = BindableProperty.Create("EnableAccessibilityScalingForNamedFontSizes", typeof(bool), typeof(Application), true);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Application.xml" path="//Member[@MemberName='GetEnableAccessibilityScalingForNamedFontSizes'][1]/Docs/*" />

@@ -17,11 +17,21 @@ namespace Microsoft.Maui.Graphics
 		public readonly FontStyleType FontStyleType;
 
 		public bool Equals(FontSource other)
-			=> Name.Equals(other.Name)
+			=> Name.Equals(other.Name, StringComparison.Ordinal)
 				&& Weight.Equals(other.Weight)
 				&& FontStyleType.Equals(other.FontStyleType);
 
-		public override int GetHashCode()
-			=> Name.GetHashCode() ^ Weight.GetHashCode() ^ FontStyleType.GetHashCode();
+		public override int GetHashCode() => Name.GetHashCode(
+#if !NETSTANDARD2_0
+					StringComparison.Ordinal
+#endif
+				)
+				^ Weight.GetHashCode() ^ FontStyleType.GetHashCode();
+
+		public override bool Equals(object? obj) => obj is FontSource other && Equals(other);
+
+		public static bool operator ==(FontSource left, FontSource right) => left.Equals(right);
+
+		public static bool operator !=(FontSource left, FontSource right) => !(left == right);
 	}
 }

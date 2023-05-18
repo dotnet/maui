@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
 	{
@@ -14,10 +15,18 @@
 				[nameof(TextTransform)] = MapText,
 			};
 
+		static CommandMapper<ISearchBar, ISearchBarHandler> ControlsCommandMapper = new(SearchBarHandler.CommandMapper)
+		{
+#if ANDROID
+			[nameof(ISearchBar.Focus)] = MapFocus
+#endif
+		};
+
 		internal static new void RemapForControls()
 		{
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 			SearchBarHandler.Mapper = ControlsSearchBarMapper;
+			SearchBarHandler.CommandMapper = ControlsCommandMapper;
 		}
 	}
 }

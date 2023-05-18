@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
@@ -7,8 +8,6 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("View")]
 	public class ViewCell : Cell
 	{
-		ReadOnlyCollection<Element> _logicalChildren;
-
 		View _view;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ViewCell.xml" path="//Member[@MemberName='View']/Docs/*" />
@@ -24,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 				if (_view != null)
 				{
-					OnChildRemoved(_view, 0);
+					RemoveLogicalChildInternal(_view);
 					_view.ComputedConstraint = LayoutConstraint.None;
 				}
 
@@ -33,18 +32,12 @@ namespace Microsoft.Maui.Controls
 				if (_view != null)
 				{
 					_view.ComputedConstraint = LayoutConstraint.Fixed;
-					_logicalChildren = new ReadOnlyCollection<Element>(new List<Element>(new[] { View }));
-					OnChildAdded(_view);
+					AddLogicalChildInternal(_view);
 				}
-				else
-				{
-					_logicalChildren = null;
-				}
+
 				ForceUpdateSize();
 				OnPropertyChanged();
 			}
 		}
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? base.LogicalChildrenInternal;
 	}
 }

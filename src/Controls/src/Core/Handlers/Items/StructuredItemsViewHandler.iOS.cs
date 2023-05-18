@@ -1,4 +1,5 @@
-﻿using ObjCRuntime;
+﻿#nullable disable
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

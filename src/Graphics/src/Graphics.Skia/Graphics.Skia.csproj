@@ -6,7 +6,7 @@
     <AssemblyName>Microsoft.Maui.Graphics.Skia</AssemblyName>
     <IsTrimmable>false</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;RS0026;RS0027;RS0041</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,8 +23,10 @@
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
-  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
+  <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 
 </Project>

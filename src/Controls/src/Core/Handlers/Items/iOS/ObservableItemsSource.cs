@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Specialized;
@@ -9,8 +10,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	internal class ObservableItemsSource : IObservableItemsViewSource
 	{
-		readonly UICollectionViewController _collectionViewController;
-		protected readonly UICollectionView CollectionView;
+		readonly WeakReference<UICollectionViewController> _collectionViewController;
 		readonly bool _grouped;
 		readonly int _section;
 		readonly IEnumerable _itemsSource;
@@ -18,8 +18,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public ObservableItemsSource(IEnumerable itemSource, UICollectionViewController collectionViewController, int group = -1)
 		{
-			_collectionViewController = collectionViewController;
-			CollectionView = _collectionViewController.CollectionView;
+			_collectionViewController = new(collectionViewController);
 
 			_section = group < 0 ? 0 : group;
 			_grouped = group >= 0;
@@ -33,6 +32,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal event NotifyCollectionChangedEventHandler CollectionViewUpdating;
 		internal event NotifyCollectionChangedEventHandler CollectionViewUpdated;
+
+		internal UICollectionView CollectionView => _collectionViewController.TryGetTarget(out var controller) ? controller.CollectionView : null;
 
 		public int Count { get; private set; }
 
@@ -124,9 +125,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void CollectionChanged(NotifyCollectionChangedEventArgs args)
 		{
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return;
+
 			// Force UICollectionView to get the internal accounting straight
-			if (!CollectionView.Hidden)
-				CollectionView.NumberOfItemsInSection(_section);
+			var collectionView = controller.CollectionView;
+			if (!collectionView.Hidden)
+				collectionView.NumberOfItemsInSection(_section);
 
 			switch (args.Action)
 			{
@@ -152,14 +157,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Reload()
 		{
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return;
+
 			var args = new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset);
 
 			Count = ItemsCount();
 
 			OnCollectionViewUpdating(args);
 
-			CollectionView.ReloadData();
-			CollectionView.CollectionViewLayout.InvalidateLayout();
+			var collectionView = controller.CollectionView;
+			collectionView.ReloadData();
+			collectionView.CollectionViewLayout.InvalidateLayout();
 
 			OnCollectionViewUpdated(args);
 		}
@@ -176,7 +185,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var startIndex = args.NewStartingIndex > -1 ? args.NewStartingIndex : IndexOf(args.NewItems[0]);
 
 			// Queue up the updates to the UICollectionView
-			Update(() => CollectionView.InsertItems(CreateIndexesFrom(startIndex, count)), args);
+			Update(c => c.InsertItems(CreateIndexesFrom(startIndex, count)), args);
 		}
 
 		void Remove(NotifyCollectionChangedEventArgs args)
@@ -195,7 +204,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			var count = args.OldItems.Count;
 			Count -= count;
 
-			Update(() => CollectionView.DeleteItems(CreateIndexesFrom(startIndex, count)), args);
+			Update(c => c.DeleteItems(CreateIndexesFrom(startIndex, count)), args);
 		}
 
 		void Replace(NotifyCollectionChangedEventArgs args)
@@ -208,7 +217,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 				// We are replacing one set of items with a set of equal size; we can do a simple item range update
 
-				Update(() => CollectionView.ReloadItems(CreateIndexesFrom(startIndex, newCount)), args);
+				Update(c => c.ReloadItems(CreateIndexesFrom(startIndex, newCount)), args);
 				return;
 			}
 
@@ -227,14 +236,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var oldPath = NSIndexPath.Create(_section, args.OldStartingIndex);
 				var newPath = NSIndexPath.Create(_section, args.NewStartingIndex);
 
-				Update(() => CollectionView.MoveItem(oldPath, newPath), args);
+				Update(c => c.MoveItem(oldPath, newPath), args);
 				return;
 			}
 
 			var start = Math.Min(args.OldStartingIndex, args.NewStartingIndex);
 			var end = Math.Max(args.OldStartingIndex, args.NewStartingIndex) + count;
 
-			Update(() => CollectionView.ReloadItems(CreateIndexesFrom(start, end)), args);
+			Update(c => c.ReloadItems(CreateIndexesFrom(start, end)), args);
 		}
 
 		internal int ItemsCount()
@@ -280,15 +289,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return -1;
 		}
 
-		void Update(Action update, NotifyCollectionChangedEventArgs args)
+		void Update(Action<UICollectionView> update, NotifyCollectionChangedEventArgs args)
 		{
-			if (CollectionView.Hidden)
+			if (!_collectionViewController.TryGetTarget(out var controller))
+				return;
+
+			var collectionView = controller.CollectionView;
+			if (collectionView.Hidden)
 			{
 				return;
 			}
 
 			OnCollectionViewUpdating(args);
-			update();
+			update(collectionView);
 			OnCollectionViewUpdated(args);
 		}
 

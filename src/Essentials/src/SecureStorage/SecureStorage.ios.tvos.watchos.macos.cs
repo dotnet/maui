@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Storage
 				{
 					case SecStatusCode.DuplicateItem:
 						{
+							// TODO: Use Logger here?
 							Debug.WriteLine("Duplicate item found. Attempting to remove and add again.");
 
 							// try to remove and add again
@@ -111,6 +112,7 @@ namespace Microsoft.Maui.Storage
 							}
 							else
 							{
+								// TODO: Use Logger here?
 								Debug.WriteLine("Unable to remove key.");
 							}
 						}

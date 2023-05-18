@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Internals;
@@ -11,10 +12,10 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey NavigationPropertyKey =
 			BindableProperty.CreateReadOnly("Navigation", typeof(INavigation), typeof(VisualElement), default(INavigation));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Navigation"/>.</summary>
 		public static readonly BindableProperty NavigationProperty = NavigationPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/NavigableElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty =
 			BindableProperty.Create("Style", typeof(Style), typeof(VisualElement), default(Style),
 				propertyChanged: (bindable, oldvalue, newvalue) => ((NavigableElement)bindable)._mergedStyle.Style = (Style)newvalue);

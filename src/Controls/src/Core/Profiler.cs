@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -8,12 +9,14 @@ namespace Microsoft.Maui.Controls.Internals
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls.Internals/Profile.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.Profile']/Docs/*" />
 	[EditorBrowsable(EditorBrowsableState.Never)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 	public struct Profile : IDisposable
 	{
 		const int Capacity = 1000;
 
 		[DebuggerDisplay("{Name,nq} {Id} {Ticks}")]
 		public struct Datum
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public string Name;
 			public string Id;

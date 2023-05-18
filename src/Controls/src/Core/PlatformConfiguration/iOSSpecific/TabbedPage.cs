@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 {
 	using FormsElement = Maui.Controls.TabbedPage;
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.TabbedPage']/Docs/*" />
 	public static class TabbedPage
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/TabbedPage.xml" path="//Member[@MemberName='TranslucencyModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TranslucencyMode"/>.</summary>
 		public static readonly BindableProperty TranslucencyModeProperty =
 			BindableProperty.Create("TranslucencyMode",
 				typeof(TranslucencyMode), typeof(TabbedPage), TranslucencyMode.Default);

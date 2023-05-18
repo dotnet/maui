@@ -23,14 +23,14 @@ namespace Microsoft.Maui.Controls.XamlC
 			var parts = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList();
 
 			yield return Create(Ldc_I4, parts.Count);
-			yield return Create(Newobj, module.ImportCtorReference(("System.Collections", "System.Collections.Generic", "List`1"),
+			yield return Create(Newobj, module.ImportCtorReference(context.Cache, ("System.Collections", "System.Collections.Generic", "List`1"),
 																   parameterTypes: new[] { ("mscorlib", "System", "Int32") },
 																   classArguments: new[] { ("mscorlib", "System", "String") }));
 			foreach (var part in parts)
 			{
 				yield return Create(Dup);
 				yield return Create(Ldstr, part);
-				yield return Create(Callvirt, module.ImportMethodReference(("mscorlib", "System.Collections.Generic", "ICollection`1"),
+				yield return Create(Callvirt, module.ImportMethodReference(context.Cache, ("mscorlib", "System.Collections.Generic", "ICollection`1"),
 																		   methodName: "Add",
 																		   paramCount: 1,
 																		   classArguments: new[] { ("mscorlib", "System", "String") }));

@@ -1,3 +1,4 @@
+#nullable disable
 using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace Microsoft.Maui.Controls.Platform

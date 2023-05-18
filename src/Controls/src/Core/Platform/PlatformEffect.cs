@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIView;

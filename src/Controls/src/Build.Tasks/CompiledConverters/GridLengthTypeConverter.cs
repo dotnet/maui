@@ -21,28 +21,28 @@ namespace Microsoft.Maui.Controls.XamlC
 
 				if (value.Equals("auto", StringComparison.OrdinalIgnoreCase))
 				{
-					yield return Create(Ldsfld, module.ImportFieldReference(("Microsoft.Maui", "Microsoft.Maui", "GridLength"), nameof(GridLength.Auto), isStatic: true));
+					yield return Create(Ldsfld, module.ImportFieldReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "GridLength"), nameof(GridLength.Auto), isStatic: true));
 					yield break;
 				}
 				if (value.Equals("*", StringComparison.OrdinalIgnoreCase))
 				{
-					yield return Create(Ldsfld, module.ImportFieldReference(("Microsoft.Maui", "Microsoft.Maui", "GridLength"), nameof(GridLength.Star), isStatic: true));
+					yield return Create(Ldsfld, module.ImportFieldReference(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "GridLength"), nameof(GridLength.Star), isStatic: true));
 					yield break;
 				}
 				if (value.EndsWith("*", StringComparison.OrdinalIgnoreCase) && double.TryParse(value.Substring(0, value.Length - 1), NumberStyles.Number, CultureInfo.InvariantCulture, out var length))
 				{
 					yield return Create(Ldc_R8, length);
 					yield return Create(Ldc_I4, (int)GridUnitType.Star);
-					yield return Create(Newobj, module.ImportCtorReference(
-							type: module.GetTypeDefinition(("Microsoft.Maui", "Microsoft.Maui", "GridLength")),
-							parameterTypes: new[] { module.TypeSystem.Double, module.GetTypeDefinition(("Microsoft.Maui", "Microsoft.Maui", "GridUnitType")) }));
+					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
+							type: module.GetTypeDefinition(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "GridLength")),
+							parameterTypes: new[] { module.TypeSystem.Double, module.GetTypeDefinition(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "GridUnitType")) }));
 					yield break;
 				}
 				if (double.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out length))
 				{
 					yield return Create(Ldc_R8, length);
-					yield return Create(Newobj, module.ImportCtorReference(
-							type: module.GetTypeDefinition(("Microsoft.Maui", "Microsoft.Maui", "GridLength")),
+					yield return Create(Newobj, module.ImportCtorReference(context.Cache,
+							type: module.GetTypeDefinition(context.Cache, ("Microsoft.Maui", "Microsoft.Maui", "GridLength")),
 							parameterTypes: new[] { module.TypeSystem.Double }));
 					yield break;
 				}

@@ -1,9 +1,14 @@
 ﻿using System.IO;
+using SkiaSharp;
 
 namespace Microsoft.Maui.Resizetizer
 {
 	internal class Resizer
 	{
+		public const string RasterFileExtension = ".png";
+
+		SkiaSharpTools tools;
+
 		public Resizer(ResizeImageInfo info, string intermediateOutputPath, ILogger logger)
 		{
 			Info = info;
@@ -17,16 +22,36 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ResizeImageInfo Info { get; private set; }
 
-		SkiaSharpTools tools;
+		public SKSize? BaseSize => Info.BaseSize;
 
-		public string GetFileDestination(DpiPath dpi)
-			=> GetFileDestination(Info, dpi, IntermediateOutputPath);
+		protected SkiaSharpTools Tools =>
+			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Logger);
 
-		public static string GetFileDestination(ResizeImageInfo info, DpiPath dpi, string intermediateOutputPath)
+		public string GetRasterFileDestination(DpiPath dpi, bool includeIntermediate = true, bool includeScale = true)
+			=> GetRasterFileDestination(Info, dpi, includeIntermediate ? IntermediateOutputPath : null, includeScale);
+
+		public string GetFileDestination(DpiPath dpi, bool includeIntermediate = true, bool includeScale = true)
+			=> GetFileDestination(Info, dpi, includeIntermediate ? IntermediateOutputPath : null, includeScale);
+
+		public static string GetRasterFileDestination(ResizeImageInfo info, DpiPath dpi, string intermediateOutputPath = default, bool includeScale = true)
 		{
-			var fullIntermediateOutputPath = new DirectoryInfo(intermediateOutputPath);
+			var destination = GetFileDestination(info, dpi, intermediateOutputPath, includeScale);
 
-			var destination = Path.Combine(fullIntermediateOutputPath.FullName, dpi.Path, info.OutputName + dpi.FileSuffix + info.OutputExtension);
+			if (info.OutputIsVector)
+				destination = Path.ChangeExtension(destination, RasterFileExtension);
+
+			return destination;
+		}
+
+		public static string GetFileDestination(ResizeImageInfo info, DpiPath dpi, string intermediateOutputPath = default, bool includeScale = true)
+		{
+			var destination = Path.Combine(dpi.Path, info.OutputName + (includeScale ? dpi.FileSuffix : dpi.NameSuffix) + info.OutputExtension);
+
+			if (!string.IsNullOrEmpty(intermediateOutputPath))
+			{
+				var fullIntermediateOutputPath = new DirectoryInfo(intermediateOutputPath);
+				destination = Path.Combine(fullIntermediateOutputPath.FullName, destination);
+			}
 
 			var fileInfo = new FileInfo(destination);
 			if (!fileInfo.Directory.Exists)
@@ -37,10 +62,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ResizedImageInfo CopyFile(DpiPath dpi, string inputsFile)
 		{
-			var destination = GetFileDestination(dpi);
-
-			if (Info.IsVector)
-				destination = Path.ChangeExtension(destination, ".png");
+			var destination = GetRasterFileDestination(dpi);
 
 			if (IsUpToDate(Info.Filename, destination, inputsFile, Logger))
 				return new ResizedImageInfo { Filename = destination, Dpi = dpi };
@@ -57,9 +79,9 @@ namespace Microsoft.Maui.Resizetizer
 		{
 			var fileIn = new FileInfo(inputFile);
 			var fileOut = new FileInfo(outputFile);
-			var fileInputs = new FileInfo(inputsFile);
+			var fileInputs = inputsFile is null ? null : new FileInfo(inputsFile);
 
-			if (fileIn.Exists && fileOut.Exists && fileInputs.Exists
+			if (fileIn.Exists && fileOut.Exists && fileInputs?.Exists == true
 				&& fileIn.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc
 				&& fileInputs.LastWriteTimeUtc <= fileOut.LastWriteTimeUtc)
 			{
@@ -75,7 +97,7 @@ namespace Microsoft.Maui.Resizetizer
 			var destination = GetFileDestination(dpi);
 
 			if (Info.IsVector)
-				destination = Path.ChangeExtension(destination, ".png");
+				destination = Path.ChangeExtension(destination, RasterFileExtension);
 
 			if (IsUpToDate(Info.Filename, destination, inputsFile, Logger))
 				return new ResizedImageInfo { Filename = destination, Dpi = dpi };
@@ -85,10 +107,10 @@ namespace Microsoft.Maui.Resizetizer
 			return new ResizedImageInfo { Filename = destination, Dpi = dpi };
 		}
 
-		void Rasterize(DpiPath dpi, string destination)
-		{
-			tools ??= SkiaSharpTools.Create(Info.IsVector, Info.Filename, Info.BaseSize, Info.Color, Info.TintColor, Logger);
-			tools.Resize(dpi, destination);
-		}
+		public SKSize GetOriginalSize() =>
+			Tools.GetOriginalSize();
+
+		void Rasterize(DpiPath dpi, string destination) =>
+			Tools.Resize(dpi, destination);
 	}
 }

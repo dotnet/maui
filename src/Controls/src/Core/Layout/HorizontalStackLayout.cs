@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls

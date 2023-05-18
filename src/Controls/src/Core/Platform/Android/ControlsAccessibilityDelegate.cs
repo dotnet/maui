@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using AndroidX.Core.View;
+﻿using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls.Platform;
 using PlatformView = Android.Views.View;

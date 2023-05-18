@@ -1,3 +1,4 @@
+#nullable disable
 #pragma warning disable 1591
 //------------------------------------------------------------------------------
 // This file was manually curated so we could avoid 5,167 fields.

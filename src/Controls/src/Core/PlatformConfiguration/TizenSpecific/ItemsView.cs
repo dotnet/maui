@@ -1,9 +1,11 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.ItemsView;
 
 	public static class ItemsView
 	{
+		/// <summary>Bindable property for attached property <c>FocusedItemScrollPosition</c>.</summary>
 		public static readonly BindableProperty FocusedItemScrollPositionProperty = BindableProperty.Create("FocusedItemScrollPosition", typeof(ScrollToPosition), typeof(FormsElement), ScrollToPosition.MakeVisible);
 
 

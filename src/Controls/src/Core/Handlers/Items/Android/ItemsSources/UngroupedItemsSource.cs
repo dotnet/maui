@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#nullable disable
+using System.Collections;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

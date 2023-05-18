@@ -495,6 +495,30 @@ namespace Microsoft.Maui.DeviceTests
 				() => entry.CharacterSpacing = newSize);
 		}
 
+		[Theory(DisplayName = "Vertical TextAlignment Initializes Correctly")]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalTextAlignmentInitializesCorrectly(TextAlignment textAlignment)
+		{
+			var entry = new EntryStub
+			{
+				VerticalTextAlignment = textAlignment
+			};
+
+			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
+
+			var values = await AttachAndRun(entry, (handler) =>
+					new
+					{
+						ViewValue = entry.VerticalTextAlignment,
+						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+					});
+
+			Assert.Equal(textAlignment, values.ViewValue);
+			Assert.Equal(platformAlignment, values.PlatformViewValue);
+		}
+
 #if ANDROID
 		[Fact]
 		public async Task NextMovesToNextEntrySuccessfully()
@@ -587,6 +611,24 @@ namespace Microsoft.Maui.DeviceTests
 		[Category(TestCategory.Entry)]
 		public class EntryTextStyleTests : TextStyleHandlerTests<EntryHandler, EntryStub>
 		{
+		}
+
+		[Category(TestCategory.Entry)]
+		public class EntryFocusTests : FocusHandlerTests<EntryHandler, EntryStub, VerticalStackLayoutStub>
+		{
+		}
+
+		[Category(TestCategory.Entry)]
+		public class EntryTextInputTests : TextInputHandlerTests<EntryHandler, EntryStub>
+		{
+			protected override void SetNativeText(EntryHandler entryHandler, string text) =>
+				EntryHandlerTests.SetNativeText(entryHandler, text);
+
+			protected override int GetCursorStartPosition(EntryHandler entryHandler) =>
+				EntryHandlerTests.GetCursorStartPosition(entryHandler);
+
+			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
+				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
 		}
 	}
 }

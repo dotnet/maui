@@ -54,7 +54,6 @@ namespace Microsoft.Maui.Platform
 			if (view is IFlyoutView)
 			{
 				var containerView = view.ToContainerView(mauiContext);
-				navigationLayout = containerView.FindViewById<CoordinatorLayout>(Resource.Id.navigation_layout);
 
 				if (containerView is DrawerLayout dl)
 				{
@@ -125,16 +124,16 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view == null)
 			{
-				if (_viewFragment != null)
+				if (_viewFragment != null && !FragmentManager.IsDestroyed(_mauiContext.Context))
 				{
 					FragmentManager
 						.BeginTransaction()
 						.Remove(_viewFragment)
 						.SetReorderingAllowed(true)
 						.Commit();
-
-					_viewFragment = null;
 				}
+
+				_viewFragment = null;
 			}
 			else
 			{

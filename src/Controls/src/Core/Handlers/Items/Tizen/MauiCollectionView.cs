@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using System.Collections.Specialized;
+﻿using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;

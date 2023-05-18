@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using Android.Views;
@@ -78,8 +79,10 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			string separator;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
 			var hint = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(hint))
 				separator = "";
@@ -165,7 +168,9 @@ namespace Microsoft.Maui.Controls.Platform
 			if (element == null || control == null)
 				return;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			var elemValue = (VisualElement)element.GetValue(AutomationProperties.LabeledByProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (elemValue != null)
 			{
@@ -231,8 +236,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal static string ConcatenateNameAndHelpText(BindableObject Element)
 		{
+#pragma warning disable CS0618 // Type or member is obsolete
 			var name = (string)Element.GetValue(AutomationProperties.NameProperty);
 			var helpText = (string)Element.GetValue(AutomationProperties.HelpTextProperty);
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (string.IsNullOrWhiteSpace(name))
 				return helpText;

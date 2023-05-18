@@ -10,10 +10,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	static class XmlTypeExtensions
 	{
-		static Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>> s_xmlnsDefinitions =
-			new Dictionary<ModuleDefinition, IList<XmlnsDefinitionAttribute>>();
-		static object _nsLock = new object();
-
 		static IList<XmlnsDefinitionAttribute> GatherXmlnsDefinitionAttributes(ModuleDefinition module)
 		{
 			var xmlnsDefinitions = new List<XmlnsDefinitionAttribute>();
@@ -51,11 +47,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 			}
 
-			s_xmlnsDefinitions[module] = xmlnsDefinitions;
 			return xmlnsDefinitions;
 		}
 
-		public static TypeReference GetTypeReference(string xmlType, ModuleDefinition module, BaseNode node)
+		public static TypeReference GetTypeReference(XamlCache cache, string xmlType, ModuleDefinition module, BaseNode node)
 		{
 			var split = xmlType.Split(':');
 			if (split.Length > 2)
@@ -73,40 +68,38 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				name = split[0];
 			}
 			var namespaceuri = node.NamespaceResolver.LookupNamespace(prefix) ?? "";
-			return GetTypeReference(new XmlType(namespaceuri, name, null), module, node as IXmlLineInfo);
+			return GetTypeReference(new XmlType(namespaceuri, name, null), cache, module, node as IXmlLineInfo);
 		}
 
-		public static TypeReference GetTypeReference(string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
+		public static TypeReference GetTypeReference(XamlCache cache, string namespaceURI, string typename, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			return new XmlType(namespaceURI, typename, null).GetTypeReference(module, xmlInfo);
+			return new XmlType(namespaceURI, typename, null).GetTypeReference(cache, module, xmlInfo);
 		}
 
-		public static bool TryGetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo, out TypeReference typeReference)
+		public static bool TryGetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo, out TypeReference typeReference)
 		{
-			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = null;
-			lock (_nsLock)
-			{
-				if (!s_xmlnsDefinitions.TryGetValue(module, out xmlnsDefinitions))
-					xmlnsDefinitions = GatherXmlnsDefinitionAttributes(module);
-			}
+			IList<XmlnsDefinitionAttribute> xmlnsDefinitions = cache.GetXmlsDefinitions(module, GatherXmlnsDefinitionAttributes);
 
 			var typeArguments = xmlType.TypeArguments;
 
 			TypeReference type = xmlType.GetTypeReference(xmlnsDefinitions, module.Assembly.Name.Name, (typeInfo) =>
 			{
 				string typeName = typeInfo.typeName.Replace('+', '/'); //Nested types
-				return module.GetTypeDefinition((typeInfo.assemblyName, typeInfo.clrNamespace, typeName));
+				var type = module.GetTypeDefinition(cache, (typeInfo.assemblyName, typeInfo.clrNamespace, typeName));
+				if (type is not null && type.IsPublicOrVisibleInternal(module))
+					return type;
+				return null;
 			});
 
 			if (type != null && typeArguments != null && type.HasGenericParameters)
-				type = module.ImportReference(type).MakeGenericInstanceType(typeArguments.Select(x => GetTypeReference(x, module, xmlInfo)).ToArray());
+				type = module.ImportReference(type).MakeGenericInstanceType(typeArguments.Select(x => x.GetTypeReference(cache, module, xmlInfo)).ToArray());
 
 			return (typeReference = (type == null) ? null : module.ImportReference(type)) != null;
 		}
 
-		public static TypeReference GetTypeReference(this XmlType xmlType, ModuleDefinition module, IXmlLineInfo xmlInfo)
+		public static TypeReference GetTypeReference(this XmlType xmlType, XamlCache cache, ModuleDefinition module, IXmlLineInfo xmlInfo)
 		{
-			if (TryGetTypeReference(xmlType, module, xmlInfo, out TypeReference typeReference))
+			if (TryGetTypeReference(xmlType, cache, module, xmlInfo, out TypeReference typeReference))
 				return typeReference;
 
 			throw new BuildException(BuildExceptionCode.TypeResolution, xmlInfo, null, $"{xmlType.NamespaceUri}:{xmlType.Name}");

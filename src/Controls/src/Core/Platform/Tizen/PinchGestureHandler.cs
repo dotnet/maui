@@ -1,5 +1,3 @@
-#nullable enable
-
 using Microsoft.Maui.Graphics;
 using NGestureDetector = Tizen.NUI.GestureDetector;
 using NGestureStateType = Tizen.NUI.Gesture.StateType;

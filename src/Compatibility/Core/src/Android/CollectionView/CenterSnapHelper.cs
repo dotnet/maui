@@ -1,3 +1,4 @@
+#nullable disable
 using AndroidX.RecyclerView.Widget;
 using AView = Android.Views.View;
 

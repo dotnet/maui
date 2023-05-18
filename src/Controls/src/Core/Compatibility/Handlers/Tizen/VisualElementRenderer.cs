@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Microsoft.Maui.Controls.Platform;
+﻿using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Tizen.UIExtensions.NUI;
 using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;

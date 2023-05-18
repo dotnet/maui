@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -9,45 +10,45 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="Type[@FullName='Microsoft.Maui.Controls.ImageButton']/Docs/*" />
-	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, IImageElement
+	public partial class ImageButton : View, IImageController, IElementConfiguration<ImageButton>, IBorderElement, IButtonController, IViewController, IPaddingElement, IButtonElement, ICommandElement, IImageElement
 	{
 		const int DefaultCornerRadius = -1;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = ButtonElement.CommandProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = ButtonElement.CommandParameterProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = BorderElement.CornerRadiusProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderWidthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BorderWidth"/>.</summary>
 		public static readonly BindableProperty BorderWidthProperty = BorderElement.BorderWidthProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='BorderColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BorderColor"/>.</summary>
 		public static readonly BindableProperty BorderColorProperty = BorderElement.BorderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='SourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = ImageElement.SourceProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='AspectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Aspect"/>.</summary>
 		public static readonly BindableProperty AspectProperty = ImageElement.AspectProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsOpaqueProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsOpaque"/>.</summary>
 		public static readonly BindableProperty IsOpaqueProperty = ImageElement.IsOpaqueProperty;
 
 		internal static readonly BindablePropertyKey IsLoadingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsLoading), typeof(bool), typeof(ImageButton), default(bool));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsLoadingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLoading"/>.</summary>
 		public static readonly BindableProperty IsLoadingProperty = IsLoadingPropertyKey.BindableProperty;
 
 		internal static readonly BindablePropertyKey IsPressedPropertyKey = BindableProperty.CreateReadOnly(nameof(IsPressed), typeof(bool), typeof(ImageButton), default(bool));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='IsPressedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsPressed"/>.</summary>
 		public static readonly BindableProperty IsPressedProperty = IsPressedPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ImageButton.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public event EventHandler Clicked;
@@ -123,11 +124,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (ImageSource)GetValue(SourceProperty); }
 			set { SetValue(SourceProperty, value); }
-		}
-
-		bool IButtonElement.IsEnabledCore
-		{
-			set { SetValueCore(IsEnabledProperty, value); }
 		}
 
 		protected override void OnBindingContextChanged()
@@ -227,9 +223,6 @@ namespace Microsoft.Maui.Controls
 		void IImageElement.OnImageSourceSourceChanged(object sender, EventArgs e) =>
 			ImageElement.ImageSourceSourceChanged(this, e);
 
-		void IButtonElement.OnCommandCanExecuteChanged(object sender, EventArgs e) =>
-			ButtonElement.CommandCanExecuteChanged(this, EventArgs.Empty);
-
 		bool IImageElement.IsAnimationPlaying
 		{
 			get => false;
@@ -242,5 +235,11 @@ namespace Microsoft.Maui.Controls
 		bool IBorderElement.IsBorderWidthSet() => IsSet(BorderWidthProperty);
 
 		bool IImageController.GetLoadAsAnimation() => false;
+
+		protected override bool IsEnabledCore =>
+			base.IsEnabledCore && CommandElement.GetCanExecute(this);
+
+		void ICommandElement.CanExecuteChanged(object sender, EventArgs e) =>
+			RefreshIsEnabledProperty();
 	}
 }

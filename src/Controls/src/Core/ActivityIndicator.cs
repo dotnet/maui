@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -6,10 +7,10 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="Type[@FullName='Microsoft.Maui.Controls.ActivityIndicator']/Docs/*" />
 	public partial class ActivityIndicator : View, IColorElement, IElementConfiguration<ActivityIndicator>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='IsRunningProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsRunning"/>.</summary>
 		public static readonly BindableProperty IsRunningProperty = BindableProperty.Create("IsRunning", typeof(bool), typeof(ActivityIndicator), default(bool));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ActivityIndicator.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<ActivityIndicator>> _platformConfigurationRegistry;

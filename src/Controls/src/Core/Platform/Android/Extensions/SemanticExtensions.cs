@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using AndroidX.Core.View;
+﻿using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using AView = Android.Views.View;
 

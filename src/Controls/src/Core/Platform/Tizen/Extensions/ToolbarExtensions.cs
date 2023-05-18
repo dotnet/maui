@@ -1,10 +1,10 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Tizen.NUI.BaseComponents;
 using Tizen.UIExtensions.NUI;
+using GColor = Microsoft.Maui.Graphics.Color;
 using MaterialIcons = Tizen.UIExtensions.Common.GraphicsView.MaterialIcons;
 using NView = Tizen.NUI.BaseComponents.View;
 using TButton = Tizen.UIExtensions.NUI.Button;
@@ -107,6 +107,24 @@ namespace Microsoft.Maui.Controls.Platform
 			platformToolbar.Label.TextColor = textColor.IsNotDefault() ? textColor.ToPlatform() : platformToolbar.GetAccentColor();
 		}
 
+		public static void UpdateBarTextColor(this MauiToolbar platformToolbar, GColor color)
+		{
+			platformToolbar.Label.TextColor = color.IsNotDefault() ? color.ToPlatform() : platformToolbar.GetAccentColor();
+		}
+
+		public static void UpdateBarIconColor(this MauiToolbar platformToolbar, GColor color)
+		{
+			if (platformToolbar.Icon != null && platformToolbar.Icon is TMaterialIconButton button)
+			{
+				button.Color = color.IsNotDefault() ? color.ToPlatform() : platformToolbar.GetAccentColor();
+			}
+		}
+
+		public static void UpdateBarBackgroundColor(this MauiToolbar platformToolbar, GColor color)
+		{
+			platformToolbar.BackgroundColor = color.IsNotDefault() ? color.ToPlatform().ToNative() : s_defaultBackgroundColor.ToNative();
+		}
+
 		public static void UpdateMenuItems(this MauiToolbar platformToolbar, Toolbar toolbar)
 		{
 			platformToolbar.Actions.Clear();
@@ -152,7 +170,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static TColor GetAccentColor(this MauiToolbar platformToolbar)
 		{
 			var grayscale = (platformToolbar.BackgroundColor.R + platformToolbar.BackgroundColor.G + platformToolbar.BackgroundColor.B) / 3.0f;
-			return grayscale > 0.5 ? TColor.Black : TColor.White;
+			return grayscale > 0.6 ? TColor.Black : TColor.White;
 		}
 
 		static IEnumerable<NView> GetPrimaryActionButtons(MauiToolbar platformToolbar, IEnumerable<ToolbarItem> toolbarItems)
@@ -194,7 +212,7 @@ namespace Microsoft.Maui.Controls.Platform
 		static NView CreateToolbarButton(MauiToolbar platformToolbar, ToolbarItem item)
 		{
 			var grayscale = (platformToolbar.BackgroundColor.R + platformToolbar.BackgroundColor.G + platformToolbar.BackgroundColor.B) / 3.0f;
-			var accentColor = grayscale > 0.5 ? TColor.Black : TColor.White;
+			var accentColor = grayscale > 0.6 ? TColor.Black : TColor.White;
 
 			var button = new TButton
 			{

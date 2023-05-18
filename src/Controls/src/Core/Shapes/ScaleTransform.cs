@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.ScaleTransform']/Docs/*" />
@@ -25,22 +26,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			CenterY = centerY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='ScaleXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScaleX"/>.</summary>
 		public static readonly BindableProperty ScaleXProperty =
 			BindableProperty.Create(nameof(ScaleX), typeof(double), typeof(ScaleTransform), 1.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='ScaleYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScaleY"/>.</summary>
 		public static readonly BindableProperty ScaleYProperty =
 			BindableProperty.Create(nameof(ScaleY), typeof(double), typeof(ScaleTransform), 1.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='CenterXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterX"/>.</summary>
 		public static readonly BindableProperty CenterXProperty =
 			BindableProperty.Create(nameof(CenterX), typeof(double), typeof(ScaleTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ScaleTransform.xml" path="//Member[@MemberName='CenterYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterY"/>.</summary>
 		public static readonly BindableProperty CenterYProperty =
 			BindableProperty.Create(nameof(CenterY), typeof(double), typeof(ScaleTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);

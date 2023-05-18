@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Controls.Internals;
 
 [assembly: Microsoft.Maui.Controls.Dependency(typeof(Microsoft.Maui.Controls.Compatibility.Platform.Tizen.PlatformSizeService))]

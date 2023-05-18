@@ -1,0 +1,34 @@
+<!-- Workarounds for WinUI -->
+<Project>
+
+  <!--
+    NOTE: workaround https://github.com/NuGet/Home/issues/6461
+    We should also follow Android, iOS, etc. workloads.
+  -->
+  <PropertyGroup>
+    <Version Condition=" '$(ApplicationDisplayVersion)' != '' ">$(ApplicationDisplayVersion)</Version>
+  </PropertyGroup>
+
+  <Target Name="_AddMauiPriFiles" AfterTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <_ReferenceRelatedPaths
+          Include="@(ReferencePath->'%(RootDir)%(Directory)%(FileName).pri')"
+          Condition="Exists('%(RootDir)%(Directory)%(FileName).pri')"
+      />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/3108
+  -->
+  <Target
+    Name="_MauiAddImplicitDefineConstantsBeforeXamlPreCompile"
+    BeforeTargets="XamlPreCompile"
+    DependsOnTargets="AddImplicitDefineConstants" />
+
+  <!--
+    Workaround for https://github.com/microsoft/WindowsAppSDK/issues/2684
+  -->
+  <Import Project="WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' " />
+
+</Project>

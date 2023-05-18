@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='DefaultItemVisualState']/Docs/*" />
 		public const string DefaultItemVisualState = "DefaultItem";
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='LoopProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Loop"/>.</summary>
 		public static readonly BindableProperty LoopProperty = BindableProperty.Create(nameof(Loop), typeof(bool), typeof(CarouselView), true, BindingMode.OneTime);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='Loop']/Docs/*" />
@@ -31,7 +32,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(LoopProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PeekAreaInsetsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PeekAreaInsets"/>.</summary>
 		public static readonly BindableProperty PeekAreaInsetsProperty = BindableProperty.Create(nameof(PeekAreaInsets), typeof(Thickness), typeof(CarouselView), default(Thickness));
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PeekAreaInsets']/Docs/*" />
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey VisibleViewsPropertyKey = BindableProperty.CreateReadOnly(nameof(VisibleViews), typeof(ObservableCollection<View>), typeof(CarouselView), null, defaultValueCreator: (b) => new ObservableCollection<View>());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='VisibleViewsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VisibleViews"/>.</summary>
 		public static readonly BindableProperty VisibleViewsProperty = VisibleViewsPropertyKey.BindableProperty;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='VisibleViews']/Docs/*" />
@@ -51,13 +52,13 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey IsDraggingPropertyKey = BindableProperty.CreateReadOnly(nameof(IsDragging), typeof(bool), typeof(CarouselView), false);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsDraggingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsDragging"/>.</summary>
 		public static readonly BindableProperty IsDraggingProperty = IsDraggingPropertyKey.BindableProperty;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsDragging']/Docs/*" />
 		public bool IsDragging => (bool)GetValue(IsDraggingProperty);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsBounceEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsBounceEnabled"/>.</summary>
 		public static readonly BindableProperty IsBounceEnabledProperty =
 			BindableProperty.Create(nameof(IsBounceEnabled), typeof(bool), typeof(CarouselView), true);
 
@@ -68,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsBounceEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsSwipeEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsSwipeEnabled"/>.</summary>
 		public static readonly BindableProperty IsSwipeEnabledProperty =
 			BindableProperty.Create(nameof(IsSwipeEnabled), typeof(bool), typeof(CarouselView), true);
 
@@ -79,7 +80,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsSwipeEnabledProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='IsScrollAnimatedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsScrollAnimated"/>.</summary>
 		public static readonly BindableProperty IsScrollAnimatedProperty =
 		BindableProperty.Create(nameof(IsScrollAnimated), typeof(bool), typeof(CarouselView), true);
 
@@ -90,16 +91,16 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IsScrollAnimatedProperty, value); }
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 		BindableProperty.Create(nameof(CurrentItem), typeof(object), typeof(CarouselView), default, BindingMode.TwoWay,
 			propertyChanged: CurrentItemPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemChangedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CurrentItemChangedCommand"/>.</summary>
 		public static readonly BindableProperty CurrentItemChangedCommandProperty =
 			BindableProperty.Create(nameof(CurrentItemChangedCommand), typeof(ICommand), typeof(CarouselView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='CurrentItemChangedCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CurrentItemChangedCommandParameter"/>.</summary>
 		public static readonly BindableProperty CurrentItemChangedCommandParameterProperty =
 			BindableProperty.Create(nameof(CurrentItemChangedCommandParameter), typeof(object), typeof(CarouselView));
 
@@ -147,16 +148,16 @@ namespace Microsoft.Maui.Controls
 			carouselView.OnCurrentItemChanged(args);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PositionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Position"/>.</summary>
 		public static readonly BindableProperty PositionProperty =
 		BindableProperty.Create(nameof(Position), typeof(int), typeof(CarouselView), default(int), BindingMode.TwoWay,
 			propertyChanged: PositionPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PositionChangedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PositionChangedCommand"/>.</summary>
 		public static readonly BindableProperty PositionChangedCommandProperty =
 			BindableProperty.Create(nameof(PositionChangedCommand), typeof(ICommand), typeof(CarouselView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='PositionChangedCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PositionChangedCommandParameter"/>.</summary>
 		public static readonly BindableProperty PositionChangedCommandParameterProperty =
 			BindableProperty.Create(nameof(PositionChangedCommandParameter), typeof(object),
 				typeof(CarouselView));
@@ -182,7 +183,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PositionChangedCommandParameterProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/CarouselView.xml" path="//Member[@MemberName='ItemsLayoutProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsLayout"/>.</summary>
 		public static readonly BindableProperty ItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(LinearItemsLayout), typeof(ItemsView),
 				LinearItemsLayout.CarouselDefault);

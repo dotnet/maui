@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls.Platform
+﻿#nullable disable
+namespace Microsoft.Maui.Controls.Platform
 {
 	internal partial class AlertManager
 	{

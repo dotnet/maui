@@ -298,6 +298,23 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+		[Fact(DisplayName = "Html Text Initializes Correctly")]
+		public async Task HtmlTextInitializesCorrectly()
+		{
+			var label = new LabelStub()
+			{
+				TextType = TextType.Html,
+				Text = "<h2><strong>Test1&nbsp;</strong>Test2</h2>"
+			};
+
+			var platformText = await GetValueAsync(label, (handler) =>
+			{
+				return handler.PlatformView.Text;
+			});
+
+			Assert.NotNull(platformText);
+		}
+
 		[Category(TestCategory.Label)]
 		public class LabelTextStyleTests : TextStyleHandlerTests<LabelHandler, LabelStub>
 		{

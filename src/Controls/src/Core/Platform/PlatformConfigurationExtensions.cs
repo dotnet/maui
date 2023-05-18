@@ -1,3 +1,4 @@
+#nullable disable
 #if __IOS__ || MACCATALYST
 using CurrentPlatform = Microsoft.Maui.Controls.PlatformConfiguration.iOS;
 #elif __ANDROID__

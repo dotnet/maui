@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
@@ -7,10 +8,10 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.BoxView']/Docs/*" />
 	public partial class BoxView : View, IColorElement, ICornerElement, IElementConfiguration<BoxView>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BoxView.xml" path="//Member[@MemberName='CornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CornerRadius"/>.</summary>
 		public static readonly BindableProperty CornerRadiusProperty = CornerElement.CornerRadiusProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<BoxView>> _platformConfigurationRegistry;

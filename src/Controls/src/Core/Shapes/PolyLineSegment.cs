@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.PolyLineSegment']/Docs/*" />
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Points = points;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/PolyLineSegment.xml" path="//Member[@MemberName='PointsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Points"/>.</summary>
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(PolyLineSegment), null);
 

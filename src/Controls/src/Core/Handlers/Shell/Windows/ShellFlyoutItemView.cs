@@ -1,3 +1,4 @@
+#nullable disable
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;

@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	public class NullEffect : Effect

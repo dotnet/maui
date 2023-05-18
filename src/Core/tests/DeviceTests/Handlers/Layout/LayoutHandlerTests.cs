@@ -9,8 +9,8 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	[Category(TestCategory.Layout)]
 	public partial class LayoutHandlerTests : CoreHandlerTestBase<LayoutHandler, LayoutStub>
 	{
-		[Fact(DisplayName = "Shadow Initializes Correctly", 
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Fact(DisplayName = "Shadow Initializes Correctly",
+			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/13692")]
 		public async Task ShadowInitializesCorrectly()
 		{
 			var xPlatShadow = new ShadowStub

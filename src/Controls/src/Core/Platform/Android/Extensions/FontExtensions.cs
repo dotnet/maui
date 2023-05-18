@@ -1,4 +1,3 @@
-#nullable enable
 using Android.Graphics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-using NView = Tizen.NUI.BaseComponents.View;
+﻿using NView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

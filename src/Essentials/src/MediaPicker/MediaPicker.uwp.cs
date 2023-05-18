@@ -1,10 +1,20 @@
+// Using code based on https://github.com/richardrigutins/maui-sample-windows-camera-workaround/blob/4e8ab1eb2fe36e9d8253773705df508b7979a968/src/MauiSampleCamera/Platforms/Windows/CustomMediaPicker.uwp.cs
+// Authors:
+//  - https://github.com/GiampaoloGabba
+//  - https://github.com/richardrigutins
+
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
+using Windows.Foundation.Collections;
 using Windows.Media.Capture;
+using Windows.Storage;
 using Windows.Storage.Pickers;
+using Windows.System;
+using WinRT.Interop;
+using WinLauncher = Windows.System.Launcher;
 
 namespace Microsoft.Maui.Media
 {
@@ -38,7 +48,7 @@ namespace Microsoft.Maui.Media
 			var result = await picker.PickSingleFileAsync();
 
 			// cancelled
-			if (result == null)
+			if (result is null)
 				return null;
 
 			// picked
@@ -53,7 +63,7 @@ namespace Microsoft.Maui.Media
 
 		public async Task<FileResult> CaptureAsync(MediaPickerOptions options, bool photo)
 		{
-			var captureUi = new CameraCaptureUI();
+			var captureUi = new WinUICameraCaptureUI();
 
 			if (photo)
 				captureUi.PhotoSettings.Format = CameraCaptureUIPhotoFormat.Jpeg;
@@ -62,10 +72,93 @@ namespace Microsoft.Maui.Media
 
 			var file = await captureUi.CaptureFileAsync(photo ? CameraCaptureUIMode.Photo : CameraCaptureUIMode.Video);
 
-			if (file != null)
+			if (file is not null)
 				return new FileResult(file);
 
 			return null;
+		}
+
+		class WinUICameraCaptureUI
+		{
+			const string WindowsCameraAppPackageName = "Microsoft.WindowsCamera_8wekyb3d8bbwe";
+			const string WindowsCameraAppUri = "microsoft.windows.camera.picker:";
+
+			const string CacheFolderName = ".Microsoft.Maui.Media.MediaPicker";
+			const string CacheFileName = "capture";
+
+			public WinUICameraCaptureUIPhotoCaptureSettings PhotoSettings { get; } = new();
+
+			public WinUICameraCaptureUIVideoCaptureSettings VideoSettings { get; } = new();
+
+			public async Task<StorageFile> CaptureFileAsync(CameraCaptureUIMode mode)
+			{
+				var hwnd = WindowStateManager.Default.GetActiveWindowHandle(true);
+
+				var options = new LauncherOptions();
+				InitializeWithWindow.Initialize(options, hwnd);
+
+				options.TreatAsUntrusted = false;
+				options.DisplayApplicationPicker = false;
+				options.TargetApplicationPackageFamilyName = WindowsCameraAppPackageName;
+
+				var extension = mode == CameraCaptureUIMode.Photo
+					? PhotoSettings.GetFormatExtension()
+					: VideoSettings.GetFormatExtension();
+
+				var tempLocation = await StorageFolder.GetFolderFromPathAsync(FileSystem.CacheDirectory);
+				var tempFolder = await tempLocation.CreateFolderAsync(CacheFolderName, CreationCollisionOption.OpenIfExists);
+				var tempFile = await tempFolder.CreateFileAsync($"{CacheFileName}{extension}", CreationCollisionOption.GenerateUniqueName);
+				var token = global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.AddFile(tempFile);
+
+				var set = new ValueSet();
+				if (mode == CameraCaptureUIMode.Photo)
+				{
+					set.Add("MediaType", "photo");
+					set.Add("PhotoFileToken", token);
+				}
+				else
+				{
+					set.Add("MediaType", "video");
+					set.Add("VideoFileToken", token);
+				}
+
+				var uri = new Uri(WindowsCameraAppUri);
+				var result = await WinLauncher.LaunchUriForResultsAsync(uri, options, set);
+
+				global::Windows.ApplicationModel.DataTransfer.SharedStorageAccessManager.RemoveFile(token);
+
+				if (result.Status == LaunchUriStatus.Success && result.Result is not null)
+					return tempFile;
+
+				return null;
+			}
+		}
+
+		class WinUICameraCaptureUIPhotoCaptureSettings
+		{
+			public CameraCaptureUIPhotoFormat Format { get; set; }
+
+			public string GetFormatExtension() =>
+				Format switch
+				{
+					CameraCaptureUIPhotoFormat.Jpeg => ".jpg",
+					CameraCaptureUIPhotoFormat.Png => ".png",
+					CameraCaptureUIPhotoFormat.JpegXR => ".jpg",
+					_ => ".jpg",
+				};
+		}
+
+		class WinUICameraCaptureUIVideoCaptureSettings
+		{
+			public CameraCaptureUIVideoFormat Format { get; set; }
+
+			public string GetFormatExtension() =>
+				Format switch
+				{
+					CameraCaptureUIVideoFormat.Mp4 => ".mp4",
+					CameraCaptureUIVideoFormat.Wmv => ".wmv",
+					_ => ".mp4",
+				};
 		}
 	}
 }

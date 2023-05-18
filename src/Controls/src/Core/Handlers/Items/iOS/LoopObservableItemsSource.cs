@@ -1,3 +1,5 @@
+#nullable disable
+using System;
 using System.Collections;
 using Foundation;
 using ObjCRuntime;
@@ -25,8 +27,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.CreateIndexesFrom(startIndex, count);
 			}
 
+			var collectionView = CollectionView;
+			if (collectionView is null)
+				return Array.Empty<NSIndexPath>();
+
 			return IndexPathHelpers.GenerateLoopedIndexPathRange(Section,
-				(int)CollectionView.NumberOfItemsInSection(Section), LoopBy, startIndex, count);
+				(int)collectionView.NumberOfItemsInSection(Section), LoopBy, startIndex, count);
 		}
 	}
 }

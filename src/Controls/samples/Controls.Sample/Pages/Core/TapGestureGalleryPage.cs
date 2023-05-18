@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample.Pages
 		Label relativeToToggleButtonPosition = new Label();
 		Label relativeToContainerPosition = new Label();
 		Button toggleButton;
+		int clickCount = 0;
 
 		public TapGestureGalleryPage()
 		{
@@ -184,6 +185,8 @@ namespace Maui.Controls.Sample.Pages
 		void HandleTapCommand(Color backgroundColor)
 		{
 			changeColorBoxView.BackgroundColor = backgroundColor;
+			changeColorBoxView.Text = $"Tap Gesture Gallery: {clickCount}";
+			clickCount++;
 		}
 	}
 }

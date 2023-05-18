@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -324,9 +325,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
 				else
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 					v.StartDrag(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CA1416
 			});
 		}
 

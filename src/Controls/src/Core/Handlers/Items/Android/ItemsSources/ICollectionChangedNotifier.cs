@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls.Handlers.Items
+﻿#nullable disable
+namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	// Lets observable items sources notify observers about dataset changes
 	internal interface ICollectionChangedNotifier

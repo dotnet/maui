@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.Label;
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Label.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.Label']/Docs/*" />
 	public static class Label
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Label.xml" path="//Member[@MemberName='FontWeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontWeight"/>.</summary>
 		public static readonly BindableProperty FontWeightProperty = BindableProperty.Create("FontWeight", typeof(string), typeof(FormsElement), FontWeight.None);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific/Label.xml" path="//Member[@MemberName='GetFontWeight'][1]/Docs/*" />

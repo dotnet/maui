@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Devices;
 using Rect = Microsoft.Maui.Graphics.Rect;
 
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Shapes
 			Rect = rect;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RectangleGeometry.xml" path="//Member[@MemberName='RectProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Rect"/>.</summary>
 		public static readonly BindableProperty RectProperty =
 			BindableProperty.Create(nameof(Rect), typeof(Rect), typeof(RectangleGeometry), new Rect());
 

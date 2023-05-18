@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,9 +8,11 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class MenuBarItem : BaseMenuItem, IMenuBarItem
 	{
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty =
 			BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuBarItem), null);
 
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(nameof(IsEnabled), typeof(bool),
 			typeof(MenuBarItem), true);
 
@@ -34,11 +37,10 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(TextProperty, value);
 		}
 
-		ReadOnlyCastingList<Element, IMenuElement> _logicalChildren;
-		readonly ObservableCollection<IMenuElement> _menus = new ObservableCollection<IMenuElement>();
+		readonly List<IMenuElement> _menus = new List<IMenuElement>();
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCastingList<Element, IMenuElement>(_menus);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, IMenuElement>(_menus);
 
 		public IMenuElement this[int index]
 		{
@@ -57,14 +59,8 @@ namespace Microsoft.Maui.Controls
 		public void Add(IMenuElement item)
 		{
 			var index = _menus.Count;
-			_menus.Add(item);
+			AddLogicalChildInternal((Element)item);
 			NotifyHandler(nameof(IMenuBarItemHandler.Add), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		public void Clear()
@@ -95,27 +91,15 @@ namespace Microsoft.Maui.Controls
 
 		public void Insert(int index, IMenuElement item)
 		{
-			_menus.Insert(index, item);
+			InsertLogicalChildInternal(index, (Element)item);
 			NotifyHandler(nameof(IMenuBarItemHandler.Insert), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		public bool Remove(IMenuElement item)
 		{
 			var index = _menus.IndexOf(item);
-			var result = _menus.Remove(item);
-			NotifyHandler(nameof(IMenuBarItemHandler.Remove), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
+			var result = RemoveLogicalChildInternal((Element)item, index);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 
 			return result;
 		}
@@ -123,14 +107,8 @@ namespace Microsoft.Maui.Controls
 		public void RemoveAt(int index)
 		{
 			var item = _menus[index];
-			_menus.RemoveAt(index);
-			NotifyHandler(nameof(IMenuBarItemHandler.Remove), index, item);
-
-			// Take care of the Element internal bookkeeping
-			if (item is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
+			RemoveLogicalChildInternal((Element)item, index);
+			NotifyHandler(nameof(IMenuFlyoutHandler.Remove), index, item);
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.ComponentModel;
 using Android.Content;
 using Microsoft.Maui.Controls.Platform;

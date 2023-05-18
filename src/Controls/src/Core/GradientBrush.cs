@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 
 		public event EventHandler InvalidateGradientBrushRequested;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientBrush.xml" path="//Member[@MemberName='GradientStopsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="GradientStops"/>.</summary>
 		public static readonly BindableProperty GradientStopsProperty =
 			BindableProperty.Create(nameof(GradientStops), typeof(GradientStopCollection), typeof(GradientBrush), null,
 				propertyChanged: OnGradientStopsChanged);

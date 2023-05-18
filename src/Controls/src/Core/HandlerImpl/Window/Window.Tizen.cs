@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using NWindow = Tizen.NUI.Window;
 
 namespace Microsoft.Maui.Controls

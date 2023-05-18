@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
 
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty("Content")]
 	public partial class ContentView : TemplatedView
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View), typeof(ContentView), null, propertyChanged: TemplateUtilities.OnContentChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ContentView.xml" path="//Member[@MemberName='Content']/Docs/*" />
@@ -21,12 +22,15 @@ namespace Microsoft.Maui.Controls
 		{
 			base.OnBindingContextChanged();
 
-			View content = Content;
+			IView content = Content;
+
+			if (content == null && (this as IContentView)?.PresentedContent is IView presentedContent)
+				content = presentedContent;
+
 			ControlTemplate controlTemplate = ControlTemplate;
-			if (content != null && controlTemplate != null)
-			{
-				SetInheritedBindingContext(content, BindingContext);
-			}
+
+			if (content is BindableObject bindableContent && controlTemplate != null)
+				SetInheritedBindingContext(bindableContent, BindingContext);
 		}
 
 		internal override void OnControlTemplateChanged(ControlTemplate oldValue, ControlTemplate newValue)

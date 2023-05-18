@@ -32,7 +32,6 @@ using Rectangle = Microsoft.Maui.Controls.Compatibility.Shapes.Rectangle;
 [assembly: ExportRenderer(typeof(ActivityIndicator), typeof(ActivityIndicatorRenderer))]
 [assembly: ExportRenderer(typeof(Frame), typeof(FrameRenderer))]
 [assembly: ExportRenderer(typeof(ListView), typeof(ListViewRenderer))]
-[assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
 [assembly: ExportRenderer(typeof(ImageButton), typeof(ImageButtonRenderer))]
 [assembly: ExportRenderer(typeof(EmbeddedFont), typeof(EmbeddedFontLoader))]
 [assembly: ExportRenderer(typeof(Path), typeof(PathRenderer))]

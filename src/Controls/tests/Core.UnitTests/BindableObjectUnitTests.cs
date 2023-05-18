@@ -521,12 +521,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void CoerceValue()
 		{
 			var property = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), null,
-				coerceValue: (bo, o) => ((string)o).ToUpper());
+				coerceValue: (bo, o) => ((string)o).ToUpperInvariant());
 
 			const string value = "value";
 			var mock = new MockBindable();
 			mock.SetValue(property, value);
-			Assert.Equal(value.ToUpper(), mock.GetValue(property));
+			Assert.Equal(value.ToUpperInvariant(), mock.GetValue(property));
 		}
 
 		[Fact]

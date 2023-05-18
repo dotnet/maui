@@ -21,11 +21,11 @@ namespace Microsoft.Maui.Controls.XamlC
 				yield return Instruction.Create(OpCodes.Ldnull);
 				yield break;
 			}
-			var bpRef = GetBindablePropertyFieldReference(value, module, node);
+			var bpRef = GetBindablePropertyFieldReference(value, context, module, node);
 			yield return Instruction.Create(OpCodes.Ldsfld, bpRef);
 		}
 
-		public FieldReference GetBindablePropertyFieldReference(string value, ModuleDefinition module, BaseNode node)
+		public FieldReference GetBindablePropertyFieldReference(string value, ILContext context, ModuleDefinition module, BaseNode node)
 		{
 			FieldReference bpRef = null;
 			string typeName = null, propertyName = null;
@@ -70,11 +70,11 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (typeName == null || propertyName == null)
 				throw new BuildException(Conversion, node, null, value, typeof(BindableProperty));
 
-			var typeRef = XmlTypeExtensions.GetTypeReference(typeName, module, node);
+			var typeRef = XmlTypeExtensions.GetTypeReference(context.Cache, typeName, module, node);
 			if (typeRef == null)
 				throw new BuildException(TypeResolution, node, null, typeName);
 
-			bpRef = GetBindablePropertyFieldReference(typeRef, propertyName, module);
+			bpRef = GetBindablePropertyFieldReference(context.Cache, typeRef, propertyName, module);
 			if (bpRef == null)
 				throw new BuildException(PropertyResolution, node, null, propertyName, typeRef.Name);
 			return bpRef;
@@ -103,10 +103,10 @@ namespace Microsoft.Maui.Controls.XamlC
 				return target.XmlType.Name;
 		}
 
-		public static FieldReference GetBindablePropertyFieldReference(TypeReference typeRef, string propertyName, ModuleDefinition module)
+		public static FieldReference GetBindablePropertyFieldReference(XamlCache cache, TypeReference typeRef, string propertyName, ModuleDefinition module)
 		{
 			TypeReference declaringTypeReference;
-			FieldReference bpRef = typeRef.GetField(fd => fd.Name == $"{propertyName}Property" && fd.IsStatic && fd.IsPublic, out declaringTypeReference);
+			FieldReference bpRef = typeRef.GetField(cache, fd => fd.Name == $"{propertyName}Property" && fd.IsStatic && fd.IsPublic, out declaringTypeReference);
 			if (bpRef != null)
 			{
 				bpRef = module.ImportReference(bpRef.ResolveGenericParameters(declaringTypeReference));

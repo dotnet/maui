@@ -1,4 +1,5 @@
-﻿using Android.Content;
+﻿#nullable disable
+using Android.Content;
 using AndroidX.RecyclerView.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

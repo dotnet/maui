@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls.Shapes
@@ -27,22 +28,22 @@ namespace Microsoft.Maui.Controls.Shapes
 			CenterY = centerY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='AngleXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AngleX"/>.</summary>
 		public static readonly BindableProperty AngleXProperty =
 			BindableProperty.Create(nameof(AngleX), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='AngleYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AngleY"/>.</summary>
 		public static readonly BindableProperty AngleYProperty =
 			BindableProperty.Create(nameof(AngleY), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='CenterXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterX"/>.</summary>
 		public static readonly BindableProperty CenterXProperty =
 			BindableProperty.Create(nameof(CenterX), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/SkewTransform.xml" path="//Member[@MemberName='CenterYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterY"/>.</summary>
 		public static readonly BindableProperty CenterYProperty =
 			BindableProperty.Create(nameof(CenterY), typeof(double), typeof(SkewTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);

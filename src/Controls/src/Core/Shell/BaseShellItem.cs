@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -26,7 +27,9 @@ namespace Microsoft.Maui.Controls
 
 		protected private ObservableCollection<Element> DeclaredChildren { get; } = new ObservableCollection<Element>();
 		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => new ReadOnlyCollection<Element>(_logicalChildren);
+
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> _logicalChildren;
 
 		#region PropertyKeys
 
@@ -34,27 +37,27 @@ namespace Microsoft.Maui.Controls
 
 		#endregion PropertyKeys
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='FlyoutIconProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FlyoutIcon"/>.</summary>
 		public static readonly BindableProperty FlyoutIconProperty =
 			BindableProperty.Create(nameof(FlyoutIcon), typeof(ImageSource), typeof(BaseShellItem), null, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IconProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Icon"/>.</summary>
 		public static readonly BindableProperty IconProperty =
 			BindableProperty.Create(nameof(Icon), typeof(ImageSource), typeof(BaseShellItem), null, BindingMode.OneWay,
 				propertyChanged: OnIconChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsCheckedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty = IsCheckedPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
 			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BaseShellItem), true, BindingMode.OneWay);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(BaseShellItem), null, BindingMode.OneTime, propertyChanged: OnTitlePropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BaseShellItem.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BaseShellItem), true);
 
@@ -321,6 +324,7 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
 			nameof(Window), typeof(Window), typeof(BaseShellItem), null);
 
+		/// <summary>Bindable property for <see cref="Window"/>.</summary>
 		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
 
 		public Window Window => (Window)GetValue(WindowProperty);

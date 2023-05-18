@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.NavigationPage;
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.NavigationPage']/Docs/*" />
 	public static class NavigationPage
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/NavigationPage.xml" path="//Member[@MemberName='BackButtonIconProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>BackButtonIcon</c>.</summary>
 		public static readonly BindableProperty BackButtonIconProperty =
 			BindableProperty.Create("BackButtonIcon", typeof(string),
 				typeof(NavigationPage), default(string));

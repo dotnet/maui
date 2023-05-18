@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Microsoft.UI.Xaml;
 
 namespace Microsoft.Maui.Controls.Handlers

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -11,6 +12,7 @@ using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Navigation;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
@@ -37,7 +39,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			_shellAppearance = appearance;
 
-			if (appearance != null)
+			if (appearance is not null)
 				SetAppearance(appearance);
 			else
 				ResetAppearance();
@@ -58,6 +60,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		bool _appearanceSet;
 		public IShellItemController ShellItemController => ShellItem;
 		IMauiContext MauiContext => ShellContext.Shell.Handler.MauiContext;
+		IMenuItem _updateMenuItemTitle;
+		IMenuItem _updateMenuItemIcon;
+		ShellSection _updateMenuItemSource;
 
 		public ShellItemRenderer(IShellContext shellContext) : base(shellContext)
 		{
@@ -72,10 +77,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_navigationArea = PlatformInterop.CreateNavigationBarArea(context, _outerLayout);
 			_bottomView = PlatformInterop.CreateNavigationBar(context, Resource.Attribute.bottomNavigationViewStyle, _outerLayout, this);
 
-			if (ShellItem == null)
+			if (ShellItem is null)
 				throw new InvalidOperationException("Active Shell Item not set. Have you added any Shell Items to your Shell?");
 
-			if (ShellItem.CurrentItem == null)
+			if (ShellItem.CurrentItem is null)
 				throw new InvalidOperationException($"Content not found for active {ShellItem}. Title: {ShellItem.Title}. Route: {ShellItem.Route}.");
 
 			HookEvents(ShellItem);
@@ -91,12 +96,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void Destroy()
 		{
-			if (ShellItem != null)
+			if (ShellItem is not null)
 				UnhookEvents(ShellItem);
 
 			((IShellController)ShellContext?.Shell)?.RemoveAppearanceObserver(this);
 
-			if (_bottomSheetDialog != null)
+			if (_bottomSheetDialog is not null)
 			{
 				_bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
 				_bottomSheetDialog?.Dispose();
@@ -107,7 +112,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_appearanceTracker?.Dispose();
 			_outerLayout?.Dispose();
 
-			if (_bottomView != null)
+			if (_bottomView is not null)
 			{
 				_bottomView?.SetOnItemSelectedListener(null);
 				_bottomView?.Background?.Dispose();
@@ -142,9 +147,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetAppearance(ShellAppearance appearance)
 		{
-			if (_bottomView == null ||
+			if (_bottomView is null ||
 				_bottomView.Visibility == ViewStates.Gone ||
-				DisplayedPage == null)
+				DisplayedPage is null)
 			{
 				return;
 			}
@@ -228,7 +233,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						(result) =>
 						{
 							image.SetImageDrawable(result?.Value);
-							if (result?.Value != null)
+							if (result?.Value is not null)
 							{
 								var color = Colors.Black.MultiplyAlpha(0.6f).ToPlatform();
 								result.Value.SetTint(color);
@@ -286,13 +291,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnDisplayedPageChanged(newPage, oldPage);
 
-			if (oldPage != null)
+			if (oldPage is not null)
 				oldPage.PropertyChanged -= OnDisplayedElementPropertyChanged;
 
-			if (newPage != null)
+			if (newPage is not null)
 				newPage.PropertyChanged += OnDisplayedElementPropertyChanged;
 
-			if (newPage != null && !_menuSetup)
+			if (newPage is not null && !_menuSetup)
 			{
 				SetupMenu();
 			}
@@ -357,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			OnShellSectionChanged();
 
-			if (_bottomSheetDialog != null)
+			if (_bottomSheetDialog is not null)
 			{
 				_bottomSheetDialog.DismissEvent -= OnMoreSheetDismissed;
 				_bottomSheetDialog.Dispose();
@@ -376,24 +381,53 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			base.OnShellSectionPropertyChanged(sender, e);
 
-			if (e.PropertyName == BaseShellItem.IsEnabledProperty.PropertyName)
+			if (e.IsOneOf(BaseShellItem.TitleProperty, BaseShellItem.IconProperty, BaseShellItem.IsEnabledProperty))
 			{
-				var content = (ShellSection)sender;
-				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(content);
+				var shellSection = (ShellSection)sender;
+				var index = ((IShellItemController)ShellItem).GetItems().IndexOf(shellSection);
 
 				var itemCount = ((IShellItemController)ShellItem).GetItems().Count;
 				var maxItems = _bottomView.MaxItemCount;
+				IMenuItem menuItem = null;
 
-				if (itemCount > maxItems && index > maxItems - 2)
-					return;
+				if (!(itemCount > maxItems && index > maxItems - 2))
+				{
+					menuItem = _bottomView.Menu.FindItem(index);
+				}
 
-				var menuItem = _bottomView.Menu.FindItem(index);
-				UpdateShellSectionEnabled(content, menuItem);
-			}
-			else if (e.PropertyName == BaseShellItem.TitleProperty.PropertyName ||
-				e.PropertyName == BaseShellItem.IconProperty.PropertyName)
-			{
-				SetupMenu();
+				if (menuItem is not null)
+				{
+					if (e.Is(BaseShellItem.IsEnabledProperty))
+					{
+						UpdateShellSectionEnabled(shellSection, menuItem);
+					}
+					else if (e.Is(BaseShellItem.IconProperty))
+					{
+						_updateMenuItemIcon = menuItem;
+					}
+					else if (e.Is(BaseShellItem.TitleProperty))
+					{
+						_updateMenuItemTitle = menuItem;
+					}
+				}
+
+				// This is primarily used so that `SetupMenu` is still called when the
+				// title and icon property change calls happen. We don't want to break users
+				// that are dependent on that behavior
+				if (e.IsOneOf(BaseShellItem.IconProperty, BaseShellItem.TitleProperty))
+				{
+					try
+					{
+						_updateMenuItemSource = shellSection;
+						SetupMenu();
+					}
+					finally
+					{
+						_updateMenuItemIcon = null;
+						_updateMenuItemTitle = null;
+						_updateMenuItemSource = null;
+					}
+				}
 			}
 		}
 
@@ -405,7 +439,35 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void SetupMenu(IMenu menu, int maxBottomItems, ShellItem shellItem)
 		{
-			if (DisplayedPage == null)
+			if ((_updateMenuItemIcon is not null || _updateMenuItemTitle is not null) &&
+				_menuSetup &&
+				_updateMenuItemSource is not null &&
+				_bottomView.IsAlive() &&
+				_bottomView.IsAttachedToWindow)
+			{
+				if (_updateMenuItemIcon is not null)
+				{
+					var menuItem = _updateMenuItemIcon;
+					var shellSection = _updateMenuItemSource;
+					_updateMenuItemSource = null;
+					_updateMenuItemIcon = null;
+
+					UpdateShellSectionIcon(shellSection, menuItem);
+					return;
+				}
+				else if (_updateMenuItemTitle is not null)
+				{
+					var menuItem = _updateMenuItemTitle;
+					var shellSection = _updateMenuItemSource;
+					_updateMenuItemSource = null;
+					_updateMenuItemIcon = null;
+
+					UpdateShellSectionTitle(shellSection, menuItem);
+					return;
+				}
+			}
+
+			if (DisplayedPage is null)
 				return;
 
 			if (ShellItemController.ShowTabs)
@@ -424,6 +486,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			UpdateTabBarVisibility();
+		}
+
+		protected virtual void UpdateShellSectionIcon(ShellSection shellSection, IMenuItem menuItem)
+		{
+			BottomNavigationViewUtils.SetMenuItemIcon(menuItem, shellSection.Icon, MauiContext)
+				.FireAndForget(e => MauiContext?.CreateLogger<ShellItemRenderer>()?
+						.LogWarning(e, "Failed to Update Shell Section Icon"));
+		}
+
+		protected virtual void UpdateShellSectionTitle(ShellSection shellSection, IMenuItem menuItem)
+		{
+			BottomNavigationViewUtils.SetMenuItemTitle(menuItem, shellSection.Title);
 		}
 
 		protected virtual void UpdateShellSectionEnabled(ShellSection shellSection, IMenuItem menuItem)
@@ -452,12 +526,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		protected virtual void UpdateTabBarVisibility()
 		{
-			if (DisplayedPage == null)
+			if (DisplayedPage is null)
 				return;
 
 			_bottomView.Visibility = ShellItemController.ShowTabs ? ViewStates.Visible : ViewStates.Gone;
 
-			if (_shellAppearance != null && !_appearanceSet)
+			if (_shellAppearance is not null && !_appearanceSet)
 			{
 				SetAppearance(_shellAppearance);
 			}

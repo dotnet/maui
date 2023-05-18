@@ -1,4 +1,5 @@
-﻿namespace Microsoft.Maui.Controls
+﻿#nullable disable
+namespace Microsoft.Maui.Controls
 {
 	public partial class Picker
 	{
@@ -6,6 +7,9 @@
 		{
 #if IOS
 			[PlatformConfiguration.iOSSpecific.Picker.UpdateModeProperty.PropertyName] = MapUpdateMode,
+#elif WINDOWS
+			[nameof(Picker.HorizontalOptions)] = MapHorizontalOptions,
+			[nameof(Picker.VerticalOptions)] = MapVerticalOptions,
 #endif
 			[nameof(Picker.ItemsSource)] = (handler, _) => handler.UpdateValue(nameof(IPicker.Items))
 		};

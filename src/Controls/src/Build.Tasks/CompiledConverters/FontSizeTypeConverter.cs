@@ -32,19 +32,22 @@ namespace Microsoft.Maui.Controls.XamlC
 					{
 						yield return Instruction.Create(OpCodes.Ldloc, context.Variables[parent]);
 						yield return Instruction.Create(OpCodes.Callvirt, module.ImportMethodReference(
+							context.Cache,
 							module.TypeSystem.Object,
 							methodName: "GetType"));
 					}
 					else
 					{
-						yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Label")));
+						yield return Instruction.Create(OpCodes.Ldtoken, module.ImportReference(context.Cache, ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Label")));
 						yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(
+							context.Cache,
 							("mscorlib", "System", "Type"),
 							methodName: "GetTypeFromHandle",
 							parameterTypes: new[] { ("mscorlib", "System", "RuntimeTypeHandle") },
 							isStatic: true));
 					}
 					yield return Instruction.Create(OpCodes.Call, module.ImportMethodReference(
+							context.Cache,
 							("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "Device"),
 							methodName: "GetNamedSize",
 							parameterTypes: new[] { ("Microsoft.Maui.Controls", "Microsoft.Maui.Controls", "NamedSize"), ("System.Runtime", "System", "Type") },

@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using Android.Content;
 using AViewGroup = Android.Views.ViewGroup;
 using PlatformView = Android.Views.View;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests.TestClasses
+namespace Microsoft.Maui.Controls.ControlGallery.Tests.TestClasses
 {
 	public class CustomButton : Button
 	{

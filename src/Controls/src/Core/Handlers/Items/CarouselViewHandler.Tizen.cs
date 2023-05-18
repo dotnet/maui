@@ -1,4 +1,5 @@
-﻿using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
+﻿#nullable disable
+using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

@@ -28,6 +28,8 @@ namespace Microsoft.Maui.Resizetizer
 					: Path.GetExtension(Filename)
 				: Path.GetExtension(Alias);
 
+		public bool OutputIsVector => IsVectorExtension(OutputExtension);
+
 		public SKSize? BaseSize { get; set; }
 
 		public bool Resize { get; set; } = true;
@@ -47,7 +49,10 @@ namespace Microsoft.Maui.Resizetizer
 		public double ForegroundScale { get; set; } = 1.0;
 
 		private static bool IsVectorFilename(string? filename)
-			=> Path.GetExtension(filename)?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
+			=> IsVectorExtension(Path.GetExtension(filename));
+
+		private static bool IsVectorExtension(string? extension)
+			=> extension?.Equals(".svg", StringComparison.OrdinalIgnoreCase) ?? false;
 
 		public static ResizeImageInfo Parse(ITaskItem image)
 			=> Parse(new[] { image })[0];

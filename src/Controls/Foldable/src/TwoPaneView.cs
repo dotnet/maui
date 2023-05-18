@@ -47,35 +47,45 @@ namespace Microsoft.Maui.Controls.Foldable
 		double _previousWidth = -1;
 		double _previousHeight = -1;
 
+		/// <summary>Bindable property for <see cref="TallModeConfiguration"/>.</summary>
 		public static readonly BindableProperty TallModeConfigurationProperty
 			= BindableProperty.Create("TallModeConfiguration", typeof(TwoPaneViewTallModeConfiguration), typeof(TwoPaneView), defaultValue: TwoPaneViewTallModeConfiguration.TopBottom, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="WideModeConfiguration"/>.</summary>
 		public static readonly BindableProperty WideModeConfigurationProperty
 			= BindableProperty.Create("WideModeConfiguration", typeof(TwoPaneViewWideModeConfiguration), typeof(TwoPaneView), defaultValue: TwoPaneViewWideModeConfiguration.LeftRight, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="Pane1"/>.</summary>
 		public static readonly BindableProperty Pane1Property
 			= BindableProperty.Create("Pane1", typeof(View), typeof(TwoPaneView), propertyChanged: (b, o, n) => OnPanePropertyChanged(b, o, n, 0));
 
+		/// <summary>Bindable property for <see cref="Pane2"/>.</summary>
 		public static readonly BindableProperty Pane2Property
 			= BindableProperty.Create("Pane2", typeof(View), typeof(TwoPaneView), propertyChanged: (b, o, n) => OnPanePropertyChanged(b, o, n, 1));
 
 		static readonly BindablePropertyKey ModePropertyKey
 			= BindableProperty.CreateReadOnly("Mode", typeof(TwoPaneViewMode), typeof(TwoPaneView), defaultValue: TwoPaneViewMode.SinglePane, propertyChanged: OnModePropertyChanged);
 
+		/// <summary>Bindable property for <see cref="Mode"/>.</summary>
 		public static readonly BindableProperty ModeProperty = ModePropertyKey.BindableProperty;
 
+		/// <summary>Bindable property for <see cref="PanePriority"/>.</summary>
 		public static readonly BindableProperty PanePriorityProperty
 			= BindableProperty.Create("PanePriority", typeof(TwoPaneViewPriority), typeof(TwoPaneView), defaultValue: TwoPaneViewPriority.Pane1, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="MinTallModeHeight"/>.</summary>
 		public static readonly BindableProperty MinTallModeHeightProperty
 			= BindableProperty.Create("MinTallModeHeight", typeof(double), typeof(TwoPaneView), defaultValueCreator: OnMinModePropertyCreate, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="MinWideModeWidth"/>.</summary>
 		public static readonly BindableProperty MinWideModeWidthProperty
 			= BindableProperty.Create("MinWideModeWidth", typeof(double), typeof(TwoPaneView), defaultValueCreator: OnMinModePropertyCreate, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="Pane1Length"/>.</summary>
 		public static readonly BindableProperty Pane1LengthProperty
 			= BindableProperty.Create("Pane1Length", typeof(GridLength), typeof(TwoPaneView), defaultValue: GridLength.Star, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="Pane2Length"/>.</summary>
 		public static readonly BindableProperty Pane2LengthProperty
 			= BindableProperty.Create("Pane2Length", typeof(GridLength), typeof(TwoPaneView), defaultValue: GridLength.Star, propertyChanged: TwoPaneViewLayoutPropertyChanged);
 

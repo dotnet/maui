@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Controls.Shapes;
 using WFoundation = Windows.Foundation;

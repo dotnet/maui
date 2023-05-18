@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,9 +26,9 @@ namespace Microsoft.Maui.Controls
 
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='ModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Mode"/>.</summary>
 		public static readonly BindableProperty ModeProperty = BindableProperty.Create(nameof(Mode), typeof(SwipeMode), typeof(SwipeItems), SwipeMode.Reveal);
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='SwipeBehaviorOnInvokedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SwipeBehaviorOnInvoked"/>.</summary>
 		public static readonly BindableProperty SwipeBehaviorOnInvokedProperty = BindableProperty.Create(nameof(SwipeBehaviorOnInvoked), typeof(SwipeBehaviorOnInvoked), typeof(SwipeItems), SwipeBehaviorOnInvoked.Auto);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Mode']/Docs/*" />

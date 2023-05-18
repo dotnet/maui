@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using ObjCRuntime;
 using UIKit;
@@ -5,6 +6,7 @@ using PointF = CoreGraphics.CGPoint;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility
 {
+	[Obsolete("Scrolling is now handled by KeyboardAutoManagerScroll.")]
 	public class ShellScrollViewTracker : IDisposable, IShellContentInsetObserver
 	{
 		#region IShellContentInsetObserver

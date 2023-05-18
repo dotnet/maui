@@ -28,7 +28,6 @@ using Microsoft.Maui.Controls.Compatibility.Platform.GTK.Renderers;
 #pragma warning restore CS0618 // Type or member is obsolete
 [assembly: ExportRenderer(typeof(FlyoutPage), typeof(FlyoutPageRenderer))]
 [assembly: ExportRenderer(typeof(NavigationPage), typeof(NavigationPageRenderer))]
-[assembly: ExportRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer))]
 [assembly: ExportRenderer(typeof(Page), typeof(PageRenderer))]
 [assembly: ExportRenderer(typeof(Picker), typeof(PickerRenderer))]
 [assembly: ExportRenderer(typeof(ProgressBar), typeof(ProgressBarRenderer))]

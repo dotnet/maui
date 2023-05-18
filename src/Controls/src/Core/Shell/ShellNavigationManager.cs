@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -491,7 +492,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (query.StartsWith("?", StringComparison.Ordinal))
 				query = query.Substring(1);
-			Dictionary<string, string> lookupDict = new Dictionary<string, string>();
+			Dictionary<string, string> lookupDict = new(StringComparer.Ordinal);
 			if (query == null)
 				return lookupDict;
 			foreach (var part in query.Split('&'))

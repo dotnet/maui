@@ -1,3 +1,4 @@
+#nullable disable
 using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls

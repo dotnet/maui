@@ -1,3 +1,4 @@
+#nullable disable
 // error CS0618: 'FragmentStatePagerAdapter' is obsolete:
 #pragma warning disable 618
 using System.Collections.Generic;

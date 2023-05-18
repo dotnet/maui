@@ -1662,6 +1662,8 @@ Microsoft.Maui.Platform.MauiToolbar.Collapse() -> void
 Microsoft.Maui.Platform.MauiToolbar.Expand() -> void
 Microsoft.Maui.Platform.MauiToolbar.IconPressed -> System.EventHandler?
 Microsoft.Maui.Platform.MauiToolbar.MauiToolbar() -> void
+Microsoft.Maui.Platform.MauiToolbar.SearchBar.get -> Tizen.NUI.BaseComponents.View?
+Microsoft.Maui.Platform.MauiToolbar.SearchBar.set -> void
 Microsoft.Maui.Platform.MauiToolbar.SendIconPressed() -> void
 Microsoft.Maui.Platform.MauiTVFlyoutView
 Microsoft.Maui.Platform.MauiTVFlyoutView.MauiTVFlyoutView() -> void
@@ -2133,6 +2135,8 @@ override Microsoft.Maui.VisualDiagnosticsOverlay.RemoveWindowElement(Microsoft.M
 override Microsoft.Maui.VisualDiagnosticsOverlay.RemoveWindowElements() -> void
 override sealed Microsoft.Maui.Handlers.ViewHandler<TVirtualView, TPlatformView>.SetVirtualView(Microsoft.Maui.IElement! view) -> void
 readonly Microsoft.Maui.LockableObservableListWrapper._list -> System.Collections.ObjectModel.ObservableCollection<string!>!
+readonly Microsoft.Maui.Platform.MauiSearchBar.DefaultBackgroundColor -> Tizen.NUI.Color!
+readonly Microsoft.Maui.Platform.MauiSearchBar.Radius -> double
 readonly Microsoft.Maui.PropertyMapper._mapper -> System.Collections.Generic.Dictionary<string!, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>!>!
 static Microsoft.Maui.Animations.AnimationLerpingExtensions.GenericLerp<T>(this T start, T end, double progress, double toggleThreshold = 0.5) -> T
 static Microsoft.Maui.Animations.AnimationLerpingExtensions.Lerp(this double start, double end, double progress) -> double
@@ -2643,6 +2647,7 @@ static Microsoft.Maui.Platform.ButtonExtensions.UpdateText(this Tizen.UIExtensio
 static Microsoft.Maui.Platform.ButtonExtensions.UpdateTextColor(this Tizen.UIExtensions.NUI.Button! platformButton, Microsoft.Maui.ITextStyle! button) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateForeground(this Tizen.UIExtensions.NUI.GraphicsView.CheckBox! platformCheck, Microsoft.Maui.ICheckBox! check) -> void
 static Microsoft.Maui.Platform.CheckBoxExtensions.UpdateIsChecked(this Tizen.UIExtensions.NUI.GraphicsView.CheckBox! platformCheck, Microsoft.Maui.ICheckBox! check) -> void
+static Microsoft.Maui.Platform.ColorExtensions.GetAccentColor(this Microsoft.Maui.Graphics.Color! color) -> Microsoft.Maui.Graphics.Color!
 static Microsoft.Maui.Platform.ColorExtensions.ToNUIColor(this Microsoft.Maui.Graphics.Color! c) -> Tizen.NUI.Color?
 static Microsoft.Maui.Platform.ColorExtensions.ToPlatform(this Microsoft.Maui.Graphics.Color! c) -> Tizen.UIExtensions.Common.Color
 static Microsoft.Maui.Platform.ColorExtensions.WithAlpha(this Microsoft.Maui.Graphics.Color! color, double alpha) -> Microsoft.Maui.Graphics.Color!

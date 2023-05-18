@@ -1,4 +1,5 @@
-﻿using System.Collections.Specialized;
+﻿#nullable disable
+using System.Collections.Specialized;
 using Microsoft.UI.Xaml.Controls;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

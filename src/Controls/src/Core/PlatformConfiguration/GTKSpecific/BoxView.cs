@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 {
 	using FormsElement = Maui.Controls.BoxView;
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific.BoxView']/Docs/*" />
 	public static class BoxView
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.GTKSpecific/BoxView.xml" path="//Member[@MemberName='HasCornerRadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>HasCornerRadius</c>.</summary>
 		public static readonly BindableProperty HasCornerRadiusProperty =
 			BindableProperty.Create("HasCornerRadius", typeof(bool),
 				typeof(BoxView), default(bool));

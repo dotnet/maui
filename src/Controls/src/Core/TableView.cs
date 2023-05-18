@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -14,10 +15,10 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Root))]
 	public class TableView : View, ITableViewController, IElementConfiguration<TableView>, IVisualTreeElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='RowHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RowHeight"/>.</summary>
 		public static readonly BindableProperty RowHeightProperty = BindableProperty.Create("RowHeight", typeof(int), typeof(TableView), -1);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableView.xml" path="//Member[@MemberName='HasUnevenRowsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HasUnevenRows"/>.</summary>
 		public static readonly BindableProperty HasUnevenRowsProperty = BindableProperty.Create("HasUnevenRows", typeof(bool), typeof(TableView), false);
 
 		readonly Lazy<PlatformConfigurationRegistry<TableView>> _platformConfigurationRegistry;
@@ -156,8 +157,7 @@ namespace Microsoft.Maui.Controls
 
 		void OnSectionCollectionChanged(object sender, ChildCollectionChangedEventArgs childCollectionChangedEventArgs)
 		{
-			if (childCollectionChangedEventArgs.Args.NewItems != null)
-				childCollectionChangedEventArgs.Args.NewItems.Cast<Cell>().ForEach(cell => cell.Parent = this);
+			childCollectionChangedEventArgs.Args.NewItems?.Cast<Cell>().ForEach(cell => cell.Parent = this);
 			OnModelChanged();
 		}
 

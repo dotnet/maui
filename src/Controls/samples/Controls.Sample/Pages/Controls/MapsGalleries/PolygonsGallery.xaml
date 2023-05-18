@@ -4,16 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://xamarin.com/schemas/2014/forms/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:maps="clr-namespace:Microsoft.Maui.Controls.Maps;assembly=Microsoft.Maui.Controls.Maps"
+    xmlns:maps="http://schemas.microsoft.com/dotnet/2021/maui/maps"
     xmlns:sensors="clr-namespace:Microsoft.Maui.Devices.Sensors;assembly=Microsoft.Maui.Essentials"
     mc:Ignorable="d"
     x:Class="Maui.Controls.Sample.Pages.MapsGalleries.PolygonsGallery"
     Title="Polygon/Polyline Gallery">
     <StackLayout>
-        <Map 
+        <maps:Map 
             x:Name="MapElementsMap">
             <x:Arguments>
-                <MapSpan>
+                <maps:MapSpan>
                     <x:Arguments>
                         <sensors:Location>
                             <x:Arguments>
@@ -24,9 +24,9 @@
                         <x:Double>0.1</x:Double>
                         <x:Double>0.1</x:Double>
                     </x:Arguments>
-                </MapSpan>
+                </maps:MapSpan>
             </x:Arguments>
-            <Map.MapElements>
+            <maps:Map.MapElements>
                 <maps:Polygon 
                     StrokeColor="#FF9900"
                     StrokeWidth="8"
@@ -213,8 +213,8 @@
                         </sensors:Location>
                     </maps:Polyline.Geopath>
                 </maps:Polyline>
-            </Map.MapElements>
-        </Map>
+            </maps:Map.MapElements>
+        </maps:Map>
         <Button 
             Text="Clear MapElements"
             Clicked="OnClearMapElementsClicked"/>

@@ -1,4 +1,3 @@
-#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -443,6 +442,70 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return false;
+		}
+
+		static internal bool RequestFocus(this VisualElement view)
+		{
+			// if there is an attached handler, we use that and we will end up in the MapFocus method below
+			if (view.Handler is IViewHandler handler)
+				return handler.InvokeWithResult(nameof(IView.Focus), new FocusRequest());
+
+			// if there is no handler, we need to still run some code
+			var focusRequest = new FocusRequest();
+			MapFocus(view, null, focusRequest);
+			return focusRequest.Result;
+		}
+
+		static internal void MapFocus(this IView view, IViewHandler? handler, FocusRequest focusRequest)
+		{
+			if (view is VisualElement ve)
+			{
+				// the virtual view is already focused
+				if (ve.IsFocused)
+				{
+					focusRequest.TrySetResult(true);
+					return;
+				}
+
+				// if there are legacy events, then use that
+				if (ve.HasFocusChangeRequestedEvent)
+				{
+					var arg = new VisualElement.FocusRequestArgs { Focus = true };
+					ve.InvokeFocusChangeRequested(arg);
+					focusRequest.TrySetResult(arg.Result);
+					return;
+				}
+			}
+
+			// otherwise, fall back to "base"
+			if (handler is not null)
+			{
+				ViewHandler.MapFocus(handler, view, focusRequest);
+				return;
+			}
+
+			// if there was nothing that handles this, then nothing changed
+			focusRequest.TrySetResult(false);
+		}
+
+		internal static IMauiContext? GetCurrentlyPresentedMauiContext(this Element element)
+		{
+			var window = (element as Window) ?? (element as IWindowController)?.Window;
+
+			if (window is null)
+				return null;
+
+			var modalStack = window.Navigation.ModalStack;
+			if (modalStack.Count > 0)
+			{
+				var currentPage = modalStack[modalStack.Count - 1];
+				if (currentPage.Handler?.MauiContext is IMauiContext mauiContext)
+				{
+					return mauiContext;
+				}
+			}
+
+			return window.Handler?.MauiContext;
 		}
 	}
 }

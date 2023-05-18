@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -42,7 +43,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='CenterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Center"/>.</summary>
 		public static readonly BindableProperty CenterProperty = BindableProperty.Create(
 			nameof(Center), typeof(Point), typeof(RadialGradientBrush), new Point(0.5, 0.5));
 
@@ -53,7 +54,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CenterProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/RadialGradientBrush.xml" path="//Member[@MemberName='RadiusProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Radius"/>.</summary>
 		public static readonly BindableProperty RadiusProperty = BindableProperty.Create(
 			nameof(Radius), typeof(double), typeof(RadialGradientBrush), 0.5d);
 

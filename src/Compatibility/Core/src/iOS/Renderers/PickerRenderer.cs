@@ -233,7 +233,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			else
 			{
 				// Using VSM color management; take whatever is in Element.PlaceholderColor
-				var color = targetColor == null ? _defaultPlaceholderColor : targetColor;
+				var color = targetColor ?? _defaultPlaceholderColor;
 				UpdateAttributedPlaceholder(formatted.ToNSAttributedString(Element.RequireFontManager(), defaultColor: color));
 			}
 

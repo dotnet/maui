@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,7 +6,7 @@ using System.Reflection;
 
 namespace Microsoft.Maui.Controls
 {
-	public interface IMessagingCenter
+	internal interface IMessagingCenter
 	{
 		void Send<TSender, TArgs>(TSender sender, string message, TArgs args) where TSender : class;
 
@@ -21,8 +22,8 @@ namespace Microsoft.Maui.Controls
 	}
 
 	/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="Type[@FullName='Microsoft.Maui.Controls.MessagingCenter']/Docs/*" />
-	[Obsolete("We recommend migrating to `CommunityToolkit.MVVM.WeakReferenceMessenger`: https://www.nuget.org/packages/CommunityToolkit.Mvvm")]
-	public class MessagingCenter : IMessagingCenter
+	[Obsolete("We recommend migrating to `CommunityToolkit.Mvvm.Messaging.WeakReferenceMessenger`: https://www.nuget.org/packages/CommunityToolkit.Mvvm")]
+	internal class MessagingCenter : IMessagingCenter
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/MessagingCenter.xml" path="//Member[@MemberName='Instance']/Docs/*" />
 		public static IMessagingCenter Instance { get; } = new MessagingCenter();

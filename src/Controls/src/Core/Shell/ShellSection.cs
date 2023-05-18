@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -197,12 +198,12 @@ namespace Microsoft.Maui.Controls
 		}
 		#endregion
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='CurrentItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellContent), typeof(ShellSection), null, BindingMode.TwoWay,
 				propertyChanged: OnCurrentItemChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="//Member[@MemberName='ItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Items"/>.</summary>
 		public static readonly BindableProperty ItemsProperty = ItemsPropertyKey.BindableProperty;
 
 		Page _displayedPage;
@@ -406,6 +407,11 @@ namespace Microsoft.Maui.Controls
 							if (!isLast)
 								continue;
 						}
+
+						// This is the page that we will eventually get to once we've finished
+						// modifying the existing navigation stack
+						// So we want to fire appearing on it						
+						navPage.SendAppearing();
 
 						IsPoppingModalStack = true;
 
@@ -961,7 +967,8 @@ namespace Microsoft.Maui.Controls
 					}
 					else
 					{
-						presentedPage.SendAppearing();
+
+						this.FindParentOfType<Shell>().SendPageAppearing(presentedPage);
 					}
 				}
 			}
@@ -1113,7 +1120,8 @@ namespace Microsoft.Maui.Controls
 
 			protected override async Task OnPushModal(Page modal, bool animated)
 			{
-				if (_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
+				if (_owner.Shell is null ||
+					_owner.Shell.NavigationManager.AccumulateNavigatedEvents)
 				{
 					await base.OnPushModal(modal, animated);
 					return;

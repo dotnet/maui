@@ -1,3 +1,4 @@
+#nullable disable
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 
 namespace Microsoft.Maui.Controls.Platform

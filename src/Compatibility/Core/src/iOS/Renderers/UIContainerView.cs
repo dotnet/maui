@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		internal bool MeasureIfNeeded()
 		{
-			if (View == null)
+			if (View is null)
 				return false;
 
 			if (double.IsNaN(MeasuredHeight) || Frame.Width != View.Width)
@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 		void ReMeasure()
 		{
-			if (Height != null && MatchHeight)
+			if (Height is not null && MatchHeight)
 			{
 				MeasuredHeight = Height.Value;
 			}
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 
 			if (disposing)
 			{
-				if (_view != null)
+				if (_view is not null)
 					_view.MeasureInvalidated -= OnMeasureInvalidated;
 
 				_renderer?.Dispose();

@@ -1,6 +1,4 @@
-﻿#nullable enable
-
-#if IOS
+﻿#if IOS
 using PlatformView = UIKit.UIView;
 #elif MACOS
 using PlatformView = AppKit.NSView;

@@ -280,16 +280,17 @@ namespace Microsoft.Maui.Platform
 		{
 			var previousCursorPosition = editText.SelectionStart;
 			var keyboard = textInput.Keyboard;
-			var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+			editText.InputType = keyboard.ToInputType();
 
 			if (keyboard is not CustomKeyboard)
 			{
-				// TODO: IsSpellCheckEnabled handling must be here.
-
-				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				if (!editText.InputType.HasFlag(InputTypes.TextFlagNoSuggestions))
 				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
 					if (!textInput.IsTextPredictionEnabled)
-						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+						editText.InputType |= InputTypes.TextFlagNoSuggestions;
 				}
 			}
 
@@ -298,25 +299,18 @@ namespace Microsoft.Maui.Platform
 				editText.KeyListener = LocalizedDigitsKeyListener.Create(editText.InputType);
 			}
 
-			bool hasPassword = false;
-
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
-				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
-
-				hasPassword = true;
+				if (editText.InputType.HasFlag(InputTypes.ClassText))
+					editText.InputType |= InputTypes.TextVariationPassword;
+				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
-
-			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;
 
-			if (hasPassword && textInput is IElement element)
+			if (textInput is IElement element)
 			{
 				var services = element.Handler?.MauiContext?.Services;
 
@@ -357,16 +351,16 @@ namespace Microsoft.Maui.Platform
 			if (motionEvent is null)
 				return false;
 
+			if (motionEvent.Action != MotionEventActions.Up)
+				return false;
+
 			var rBounds = getClearButtonDrawable?.Invoke()?.Bounds;
 			var buttonWidth = rBounds?.Width();
 
 			if (buttonWidth <= 0)
 				return false;
 
-			if (motionEvent.Action != MotionEventActions.Up)
-				return false;
-
-			var x = motionEvent.RawX;
+			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 
 			var flowDirection = platformView.LayoutDirection;

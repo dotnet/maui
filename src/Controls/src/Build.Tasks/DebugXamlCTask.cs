@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 {
 	public class DebugXamlCTask : XamlTask
 	{
+		readonly XamlCache cache = new();
+
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
@@ -42,7 +44,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					foreach (var resource in module.Resources.OfType<EmbeddedResource>())
 					{
 						LoggingHelper.LogMessage(Low, $"{new string(' ', 4)}Resource: {resource.Name}");
-						if (!resource.IsXaml(module, out var classname))
+						if (!resource.IsXaml(cache, module, out var classname))
 						{
 							LoggingHelper.LogMessage(Low, $"{new string(' ', 6)}skipped.");
 							continue;

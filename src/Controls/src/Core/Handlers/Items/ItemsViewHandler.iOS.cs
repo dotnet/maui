@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Foundation;
@@ -34,7 +35,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected TItemsView ItemsView => VirtualView;
 
-		protected ItemsViewController<TItemsView> Controller { get; private set; }
+		protected internal ItemsViewController<TItemsView> Controller { get; private set; }
 
 		protected abstract ItemsViewLayout SelectLayout();
 

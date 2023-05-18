@@ -44,18 +44,17 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
-        - 6.0 Release Candidate 2 or older
-        - 6.0 Release Candidate 3
-        - 6.0.312
-        - 6.0.400
-        - 6.0.408
-        - 6.0.419
-        - 6.0.424
-        - 6.0.486
-        - 7.0 Release Candidate 1
-        - 7.0 Release Candidate 2
-        - 7.0 (current)
-        - Unknown/Other (please specify)
+        - 7.0.49
+        - 7.0.52
+        - 7.0.58
+        - 7.0.59
+        - 7.0.81
+        - 7.0.86
+        - 8.0.0-preview.1.7762
+        - 8.0.0-preview.2.7871
+        - 8.0.0-preview.3.8149
+        - 8.0.0-preview.4.8333
+        - Unknown/Other
     validations:
       required: true
   - type: dropdown
@@ -64,15 +63,17 @@ body:
       label: Last version that worked well
       description: Is there a version on which this _did_ work? If yes, which one? If no or unknown, please select `Unknown/Other`.  Run `dotnet workload list` to find your version.
       options:
-        - 6.0 Release Candidate 2 or older
-        - 6.0 Release Candidate 3
-        - 6.0.312
-        - 6.0.400
-        - 6.0.408
-        - 6.0.419
-        - 6.0.424
-        - 7.0 Release Candidate 1
-        - 7.0 Release Candidate 2
+        - 6.0
+        - 7.0.49
+        - 7.0.52
+        - 7.0.58
+        - 7.0.59
+        - 7.0.81
+        - 7.0.86
+        - 8.0.0-preview.1.7762
+        - 8.0.0-preview.2.7871
+        - 8.0.0-preview.3.8149
+        - 8.0.0-preview.4.8333
         - Unknown/Other
     validations:
       required: true

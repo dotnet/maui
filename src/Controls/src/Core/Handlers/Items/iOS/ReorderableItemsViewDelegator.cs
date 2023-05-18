@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			NSIndexPath targetIndexPath;
 
-			var itemsView = ViewController.ItemsView;
+			var itemsView = ViewController?.ItemsView;
 			if (itemsView?.IsGrouped == true)
 			{
 				if (originalIndexPath.Section == proposedIndexPath.Section || itemsView.CanMixGroups)

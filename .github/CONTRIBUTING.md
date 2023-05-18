@@ -2,6 +2,8 @@
 
 Thank you for your interest in contributing to .NET MAUI! In this document, we'll outline what you need to know about contributing and how to get started.
 
+First and foremost: if you are thinking about contributing a bigger change or feature, **please open an issue or talk to a core team member first**! By doing this we can coordinate and see if the change you are going to work on is something that aligns with out current priorities and is something we can commit to reviewing and merging within reasonable time. We would want to prevent that you are investing a lot of your valuable time in something that might not be in line with what we want for .NET MAUI.
+
 ## Code of Conduct
 
 Please see our [Code of Conduct](CODE_OF_CONDUCT.md).
@@ -18,7 +20,7 @@ Have a look at our [Development Guide](DEVELOPMENT.md) to learn about setting up
 
 ### What to work on
 
-If you're looking for something to work on, please browse our [Handler Property Backlog](https://github.com/dotnet/maui/projects/4). Any issue that is not already assigned is up for grabs. Make sure to read over the [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) to acquaint yourself on how you can get started in contributing to our handler conversion efforts. Included is also a sample PR you can model after.
+If you're looking for something to work on, please browse our [backlog](https://github.com/dotnet/maui/issues?q=is%3Aopen+is%3Aissue+milestone%3ABacklog). Any issue that is not already assigned is up for grabs. 
 
 Follow the style used by the [.NET Foundation](https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/coding-style.md), with two primary exceptions:
 
@@ -29,7 +31,7 @@ Read and follow our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
 
 ### Pull Request Requirements
 
-Please refer to our [Handler Property PR Guidelines](https://github.com/dotnet/maui/wiki/Handler-Property-PR-Guidelines) and [Pull Request template](PULL_REQUEST_TEMPLATE.md).
+Please refer to our [Pull Request template](PULL_REQUEST_TEMPLATE.md).
 
 Please check the "Allow edits from maintainers" checkbox on your pull request. This allows us to quickly make minor fixes and resolve conflicts for you.
 

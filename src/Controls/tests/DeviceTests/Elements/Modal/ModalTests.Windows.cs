@@ -21,20 +21,22 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var navPage = new NavigationPage(new ContentPage());
+			var navPage = new NavigationPage(new ContentPage() { Content = new Label() { Text = "Root Page" } });
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
 				async (handler) =>
 				{
 					var windowRootViewContainer = (WPanel)handler.PlatformView.Content;
-					ContentPage backgroundColorContentPage = new ContentPage();
+					ContentPage backgroundColorContentPage = new ContentPage() { Content = new Label() { Text = "Modal Page" } };
+
 
 					if (useColor)
-						backgroundColorContentPage.BackgroundColor = Colors.Purple;
+						backgroundColorContentPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
 					else
-						backgroundColorContentPage.Background = SolidColorBrush.Purple;
+						backgroundColorContentPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
+					await OnLoadedAsync(backgroundColorContentPage);
 
 					var modalRootView =
 						backgroundColorContentPage.FindMauiContext().GetNavigationRootManager().RootView;
@@ -45,6 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
 
 					await navPage.CurrentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(backgroundColorContentPage);
 
 					Assert.Equal(0, windowRootViewContainer.Children.IndexOf(rootPageRootView));
 					Assert.DoesNotContain(modalRootView, windowRootViewContainer.Children);
@@ -57,8 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage) { Title = "Original Title" };
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
 				{
 					var rootView = handler.PlatformView.Content;
@@ -67,19 +71,18 @@ namespace Microsoft.Maui.DeviceTests
 					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
 
-					var customTitleBar = modalPage
+					var modalNavigationRootManager = modalPage
 						.FindMauiContext()
-						.GetNavigationRootManager()
-						.AppTitleBarContentControl;
+						.GetNavigationRootManager();
 
 
 					var mauiWindow = (MauiWinUIWindow)handler.PlatformView;
-					Assert.Equal(mauiWindow.MauiCustomTitleBar, customTitleBar);
-					(handler.VirtualView as Window).Title = "Update Title";
+					Assert.Equal("Original Title", mauiWindow.Title);
+					Assert.Equal(modalNavigationRootManager.WindowTitle, mauiWindow.Title);
 
-					var customTitle = mauiWindow.MauiCustomTitleBar.GetDescendantByName<UI.Xaml.Controls.TextBlock>("AppTitle");
-
-					Assert.Equal("Update Title", customTitle.Text);
+					window.Title = "Update Title";
+					Assert.Equal("Update Title", mauiWindow.Title);
+					Assert.Equal(modalNavigationRootManager.WindowTitle, mauiWindow.Title);
 				});
 		}
 	}

@@ -1,3 +1,4 @@
+#nullable disable
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -48,11 +49,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var (VisibleItems, First, Center, Last) = GetVisibleItemsIndexPath();
 			int firstVisibleItemIndex = -1, centerItemIndex = -1, lastVisibleItemIndex = -1;
-			if (VisibleItems)
+			if (VisibleItems && ViewController is CarouselViewController vc)
 			{
-				firstVisibleItemIndex = ViewController.GetIndexFromIndexPath(First);
-				centerItemIndex = ViewController.GetIndexFromIndexPath(Center);
-				lastVisibleItemIndex = ViewController.GetIndexFromIndexPath(Last);
+				firstVisibleItemIndex = vc.GetIndexFromIndexPath(First);
+				centerItemIndex = vc.GetIndexFromIndexPath(Center);
+				lastVisibleItemIndex = vc.GetIndexFromIndexPath(Last);
 			}
 			return (VisibleItems, firstVisibleItemIndex, centerItemIndex, lastVisibleItemIndex);
 		}

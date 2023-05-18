@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Android.Content;
 using Android.Graphics;
 using Android.Views;
@@ -9,11 +10,9 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : ViewGroup
+	public partial class WrapperView : PlatformWrapperView
 	{
 		const int MaximumRadius = 100;
-
-		readonly Android.Graphics.Rect _viewBounds;
 
 		APath _currentPath;
 		SizeF _lastPathSize;
@@ -31,10 +30,6 @@ namespace Microsoft.Maui.Platform
 		public WrapperView(Context context)
 			: base(context)
 		{
-			_viewBounds = new Android.Graphics.Rect();
-
-			SetClipChildren(false);
-			SetWillNotDraw(true);
 		}
 
 		protected override void OnDetachedFromWindow()
@@ -65,51 +60,12 @@ namespace Microsoft.Maui.Platform
 			_borderView?.Layout(0, 0, child.MeasuredWidth, child.MeasuredHeight);
 		}
 
-		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
-		{
-			if (ChildCount == 0 || GetChildAt(0) is not View child)
-			{
-				base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-				return;
-			}
-
-			_viewBounds.Set(
-				0, 0, MeasureSpec.GetSize(widthMeasureSpec), MeasureSpec.GetSize(heightMeasureSpec));
-
-			child.Measure(widthMeasureSpec, heightMeasureSpec);
-
-			SetMeasuredDimension(child.MeasuredWidth, child.MeasuredHeight);
-		}
-
 		public override void RequestLayout()
 		{
 			// Redraw shadow (if exists)
 			_invalidateShadow = true;
 
 			base.RequestLayout();
-		}
-
-		protected override void DispatchDraw(Canvas canvas)
-		{
-			// If is not shadowed, skip
-			if (Shadow?.Paint != null)
-			{
-				DrawShadow(canvas);
-			}
-			else
-			{
-				if (_shadowBitmap != null)
-				{
-					ClearShadowResources();
-				}
-			}
-
-			// Clip the child view
-			if (Clip != null)
-				ClipChild(canvas);
-
-			// Draw child`s
-			base.DispatchDraw(canvas);
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent e)
@@ -125,13 +81,19 @@ namespace Microsoft.Maui.Platform
 		partial void ClipChanged()
 		{
 			_invalidateClip = _invalidateShadow = true;
-			PostInvalidate();
+			SetHasClip(Clip is not null);
 		}
 
 		partial void ShadowChanged()
 		{
 			_invalidateShadow = true;
-			PostInvalidate();
+
+			bool hasShadow = Shadow?.Paint is not null;
+			SetHasShadow(hasShadow);
+			if (!hasShadow && _shadowBitmap is not null)
+			{
+				ClearShadowResources();
+			}
 		}
 
 		partial void BorderChanged()
@@ -152,10 +114,10 @@ namespace Microsoft.Maui.Platform
 			_borderView.UpdateBorderStroke(Border);
 		}
 
-		void ClipChild(Canvas canvas)
+		protected override APath GetClipPath(int width, int height)
 		{
 			var density = Context.GetDisplayDensity();
-			var newSize = new SizeF(canvas.Width, canvas.Height);
+			var newSize = new SizeF(width, height);
 			var bounds = new Graphics.RectF(Graphics.Point.Zero, newSize / density);
 
 			if (_invalidateClip || _lastPathSize != newSize || _currentPath == null)
@@ -167,11 +129,10 @@ namespace Microsoft.Maui.Platform
 				_lastPathSize = newSize;
 			}
 
-			if (_currentPath != null)
-				canvas.ClipPath(_currentPath);
+			return _currentPath;
 		}
 
-		void DrawShadow(Canvas canvas)
+		protected override void DrawShadow(Canvas canvas, int viewWidth, int viewHeight)
 		{
 			if (_shadowCanvas == null)
 				_shadowCanvas = new Canvas();
@@ -189,18 +150,6 @@ namespace Microsoft.Maui.Platform
 			// If need to redraw shadow
 			if (_invalidateShadow)
 			{
-				var viewHeight = _viewBounds.Height();
-				var viewWidth = _viewBounds.Width();
-
-				if (GetChildAt(0) is AView child)
-				{
-					if (viewHeight == 0)
-						viewHeight = child.MeasuredHeight;
-
-					if (viewWidth == 0)
-						viewWidth = child.MeasuredWidth;
-				}
-
 				// If bounds is zero
 				if (viewHeight != 0 && viewWidth != 0)
 				{
@@ -219,7 +168,7 @@ namespace Microsoft.Maui.Platform
 
 					// Create the local copy of all content to draw bitmap as a
 					// bottom layer of natural canvas.
-					base.DispatchDraw(_shadowCanvas);
+					ViewGroupDispatchDraw(_shadowCanvas);
 
 					// Get the alpha bounds of bitmap
 					Bitmap extractAlpha = _shadowBitmap.ExtractAlpha();
@@ -268,7 +217,8 @@ namespace Microsoft.Maui.Platform
 					else
 					{
 						var bounds = new Graphics.RectF(0, 0, canvas.Width, canvas.Height);
-						var path = Clip.PathForBounds(bounds)?.AsAndroidPath();
+						var density = Context.GetDisplayDensity();
+						var path = Clip.PathForBounds(bounds)?.AsAndroidPath(scaleX: density, scaleY: density);
 
 						path.Offset(shadowOffsetX, shadowOffsetY);
 
@@ -304,6 +254,76 @@ namespace Microsoft.Maui.Platform
 			_shadowCanvas = null;
 			_shadowPaint = null;
 			_shadowBitmap = null;
+		}
+
+		public override ViewStates Visibility
+		{
+			get => base.Visibility;
+			set
+			{
+				base.Visibility = value;
+
+				if (value != ViewStates.Visible)
+				{
+					return;
+				}
+
+				for (int n = 0; n < this.ChildCount; n++)
+				{
+					var child = GetChildAt(n);
+					child.Visibility = ViewStates.Visible;
+				}
+			}
+		}
+
+		internal static void SetupContainer(AView platformView, Context context, AView containerView, Action<AView> setWrapperView)
+		{
+			if (context == null || platformView == null || containerView != null)
+				return;
+
+			var oldParent = (ViewGroup)platformView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(platformView);
+			oldParent?.RemoveView(platformView);
+
+			containerView ??= new WrapperView(context);
+			setWrapperView.Invoke(containerView);
+
+			((ViewGroup)containerView).AddView(platformView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(containerView, idx);
+			else
+				oldParent?.AddView(containerView);
+		}
+
+		internal static void RemoveContainer(AView platformView, Context context, AView containerView, Action clearWrapperView)
+		{
+			if (context == null || platformView == null || containerView == null || platformView.Parent != containerView)
+			{
+				CleanupContainerView(containerView, clearWrapperView);
+				return;
+			}
+
+			var oldParent = (ViewGroup)containerView.Parent;
+
+			var oldIndex = oldParent?.IndexOfChild(containerView);
+			oldParent?.RemoveView(containerView);
+
+			CleanupContainerView(containerView, clearWrapperView);
+
+			if (oldIndex is int idx && idx >= 0)
+				oldParent?.AddView(platformView, idx);
+			else
+				oldParent?.AddView(platformView);
+
+			void CleanupContainerView(AView containerView, Action clearWrapperView)
+			{
+				if (containerView is ViewGroup vg)
+					vg.RemoveAllViews();
+
+				clearWrapperView.Invoke();
+			}
 		}
 	}
 }

@@ -1,5 +1,3 @@
-#nullable enable
-
 using System;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
@@ -9,15 +7,16 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.TapGestureRecognizer']/Docs/*" />
 	public sealed class TapGestureRecognizer : GestureRecognizer
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TapGestureRecognizer), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(TapGestureRecognizer), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='NumberOfTapsRequiredProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="NumberOfTapsRequired"/>.</summary>
 		public static readonly BindableProperty NumberOfTapsRequiredProperty = BindableProperty.Create("NumberOfTapsRequired", typeof(int), typeof(TapGestureRecognizer), 1);
 
+		/// <summary>Bindable property for <see cref="Buttons"/>.</summary>
 		public static readonly BindableProperty ButtonsProperty = BindableProperty.Create(nameof(Buttons), typeof(ButtonsMask), typeof(TapGestureRecognizer), ButtonsMask.Primary);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TapGestureRecognizer.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />

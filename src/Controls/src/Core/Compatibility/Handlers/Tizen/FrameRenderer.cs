@@ -1,5 +1,3 @@
-#nullable enable
-
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;

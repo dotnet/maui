@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;

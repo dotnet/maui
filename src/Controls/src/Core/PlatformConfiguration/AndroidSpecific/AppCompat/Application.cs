@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat
 {
 	using FormsElement = Maui.Controls.Application;
@@ -5,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 	/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.Application']/Docs/*" />
 	public static class Application
 	{
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendDisappearingEventOnPauseProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SendDisappearingEventOnPause"/>.</summary>
 		public static readonly BindableProperty SendDisappearingEventOnPauseProperty = BindableProperty.Create(nameof(SendDisappearingEventOnPause), typeof(bool), typeof(Application), true);
 
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendDisappearingEventOnPause'][1]/Docs/*" />
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return config;
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='SendAppearingEventOnResumeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SendAppearingEventOnResume"/>.</summary>
 		public static readonly BindableProperty SendAppearingEventOnResumeProperty = BindableProperty.Create(nameof(SendAppearingEventOnResume), typeof(bool), typeof(Application), true);
 
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetSendAppearingEventOnResume'][1]/Docs/*" />
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompa
 			return config;
 		}
 
-		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='ShouldPreserveKeyboardOnResumeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ShouldPreserveKeyboardOnResume"/>.</summary>
 		public static readonly BindableProperty ShouldPreserveKeyboardOnResumeProperty = BindableProperty.Create(nameof(ShouldPreserveKeyboardOnResume), typeof(bool), typeof(Application), false);
 
 		/// <include file="../../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat/Application.xml" path="//Member[@MemberName='GetShouldPreserveKeyboardOnResume'][1]/Docs/*" />

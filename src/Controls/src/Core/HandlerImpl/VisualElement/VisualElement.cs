@@ -1,3 +1,5 @@
+#nullable disable
+using System;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -19,11 +21,18 @@ namespace Microsoft.Maui.Controls
 				[SemanticProperties.DescriptionProperty.PropertyName] = MapSemanticPropertiesDescriptionProperty,
 				[SemanticProperties.HintProperty.PropertyName] = MapSemanticPropertiesHintProperty,
 				[SemanticProperties.HeadingLevelProperty.PropertyName] = MapSemanticPropertiesHeadingLevelProperty,
+				[nameof(IViewHandler.ContainerView)] = MapContainerView,
 			};
+
+		static CommandMapper<IView, IViewHandler> ControlsViewCommandMapper = new(ViewHandler.ViewCommandMapper)
+		{
+			[nameof(IView.Focus)] = MapFocus,
+		};
 
 		internal static void RemapForControls()
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
+			ViewHandler.ViewCommandMapper = ControlsViewCommandMapper;
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
@@ -49,6 +58,24 @@ namespace Microsoft.Maui.Controls
 		{
 			UpdateSemantics();
 			Handler?.UpdateValue(nameof(IView.Semantics));
+		}
+
+		static void MapContainerView(IViewHandler arg1, IView arg2)
+		{
+			Element.ControlsElementMapper.UpdateProperty(arg1, arg2, nameof(IViewHandler.ContainerView));
+
+			if (arg2 is VisualElement ve)
+			{
+				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
+			}
+		}
+
+		static void MapFocus(IViewHandler handler, IView view, object args)
+		{
+			if (args is not FocusRequest fr)
+				return;
+
+			view.MapFocus(handler, fr);
 		}
 	}
 }

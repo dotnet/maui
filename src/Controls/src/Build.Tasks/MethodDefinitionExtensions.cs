@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					paramType = (declaringTypeRef as GenericInstanceType).GenericArguments[index];
 				}
 				var argType = context.Variables[arguments[i] as IElementNode].VariableType;
-				if (!argType.InheritsFromOrImplements(paramType))
+				if (!argType.InheritsFromOrImplements(context.Cache, paramType))
 					return false;
 			}
 			return true;

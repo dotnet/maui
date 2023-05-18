@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 using System.Windows.Input;
@@ -8,12 +9,12 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Content))]
 	public partial class SwipeItemView : ContentView, Controls.ISwipeItem, Maui.ISwipeItemView
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(SwipeItemView), null,
 			propertyChanging: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanging(),
 			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItemView.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(SwipeItemView), null,
 			propertyChanged: (bo, o, n) => ((SwipeItemView)bo).OnCommandParameterChanged());
 

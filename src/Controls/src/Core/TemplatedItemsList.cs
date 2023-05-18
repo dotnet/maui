@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,8 +19,10 @@ namespace Microsoft.Maui.Controls.Internals
 												where TView : BindableObject, IItemsView<TItem>
 												where TItem : BindableObject
 	{
+		/// <summary>Bindable property for <see cref="Name"/>.</summary>
 		public static readonly BindableProperty NameProperty = BindableProperty.Create("Name", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
+		/// <summary>Bindable property for <see cref="ShortName"/>.</summary>
 		public static readonly BindableProperty ShortNameProperty = BindableProperty.Create("ShortName", typeof(string), typeof(TemplatedItemsList<TView, TItem>), null);
 
 		static readonly BindablePropertyKey HeaderContentPropertyKey = BindableProperty.CreateReadOnly("HeaderContent", typeof(TItem), typeof(TemplatedItemsList<TView, TItem>), null);
@@ -533,8 +536,10 @@ namespace Microsoft.Maui.Controls.Internals
 
 		public TItem ActivateContent(int index, object item)
 		{
-			TItem content = ItemTemplate != null ? (TItem)ItemTemplate.CreateContent(item, _itemsView) : _itemsView.CreateDefault(item);
-
+			if (ItemTemplate?.CreateContent(item, _itemsView) is not TItem content)
+			{
+				content = _itemsView.CreateDefault(item);
+			}
 			content = UpdateContent(content, index, item);
 
 			return content;
@@ -1126,8 +1131,7 @@ namespace Microsoft.Maui.Controls.Internals
 					list.SetBinding(ShortNameProperty, GroupShortNameBinding.Clone());
 			}
 
-			if (_shortNames != null)
-				_shortNames.Reset();
+			_shortNames?.Reset();
 		}
 
 		static void SetGroup(TItem item, TemplatedItemsList<TView, TItem> group)

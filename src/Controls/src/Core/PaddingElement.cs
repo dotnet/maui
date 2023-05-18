@@ -1,7 +1,9 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	static class PaddingElement
 	{
+		/// <summary>Bindable property for <see cref="IPaddingElement.Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty =
 			BindableProperty.Create(nameof(IPaddingElement.Padding), typeof(Thickness), typeof(IPaddingElement), default(Thickness),
 									propertyChanged: OnPaddingPropertyChanged,
@@ -17,6 +19,7 @@ namespace Microsoft.Maui.Controls
 			return ((IPaddingElement)bindable).PaddingDefaultValueCreator();
 		}
 
+		/// <summary>Bindable property for attached property <c>PaddingLeft</c>.</summary>
 		public static readonly BindableProperty PaddingLeftProperty =
 			BindableProperty.Create("PaddingLeft", typeof(double), typeof(IPaddingElement), default(double),
 									propertyChanged: OnPaddingLeftChanged);
@@ -28,6 +31,7 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(PaddingProperty, padding);
 		}
 
+		/// <summary>Bindable property for attached property <c>PaddingTop</c>.</summary>
 		public static readonly BindableProperty PaddingTopProperty =
 			BindableProperty.Create("PaddingTop", typeof(double), typeof(IPaddingElement), default(double),
 									propertyChanged: OnPaddingTopChanged);
@@ -39,6 +43,7 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(PaddingProperty, padding);
 		}
 
+		/// <summary>Bindable property for attached property <c>PaddingRight</c>.</summary>
 		public static readonly BindableProperty PaddingRightProperty =
 			BindableProperty.Create("PaddingRight", typeof(double), typeof(IPaddingElement), default(double),
 									propertyChanged: OnPaddingRightChanged);
@@ -50,6 +55,7 @@ namespace Microsoft.Maui.Controls
 			bindable.SetValue(PaddingProperty, padding);
 		}
 
+		/// <summary>Bindable property for attached property <c>PaddingBottom</c>.</summary>
 		public static readonly BindableProperty PaddingBottomProperty =
 			BindableProperty.Create("PaddingBottom", typeof(double), typeof(IPaddingElement), default(double),
 									propertyChanged: OnPaddingBottomChanged);

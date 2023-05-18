@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿#nullable disable
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -6,11 +7,9 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
+		static ImmutableBrush defaultBrush;
 		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Default']/Docs/*" />
-		public static Brush Default
-		{
-			get { return new SolidColorBrush(null); }
-		}
+		public static Brush Default => defaultBrush ??= new(null);
 
 		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
 

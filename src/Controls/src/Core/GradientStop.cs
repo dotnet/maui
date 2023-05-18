@@ -1,11 +1,12 @@
-﻿using Microsoft.Maui.Graphics;
+#nullable disable
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="Type[@FullName='Microsoft.Maui.Controls.GradientStop']/Docs/*" />
 	public class GradientStop : Element
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = BindableProperty.Create(
 			nameof(Color), typeof(Color), typeof(GradientStop), null);
 
@@ -16,7 +17,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ColorProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/GradientStop.xml" path="//Member[@MemberName='OffsetProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Offset"/>.</summary>
 		public static readonly BindableProperty OffsetProperty = BindableProperty.Create(
 			nameof(Offset), typeof(float), typeof(GradientStop), 0f);
 

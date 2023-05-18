@@ -1,5 +1,3 @@
-#nullable enable
-
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;

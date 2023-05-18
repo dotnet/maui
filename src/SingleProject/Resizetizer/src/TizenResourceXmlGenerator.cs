@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class TizenResourceXmlGenerator
 	{
-		static readonly IDictionary<string, string> resolutionMap = new Dictionary<string, string>
+		static readonly IDictionary<string, string> resolutionMap = new Dictionary<string, string>(StringComparer.Ordinal)
 		{
 			{ "LDPI", "from 0 to 240" },
 			{ "MDPI", "from 241 to 300" },
@@ -27,7 +28,7 @@ namespace Microsoft.Maui.Resizetizer
 
 		public ILogger Logger { get; private set; }
 
-		public void Generate()
+		public ResizedImageInfo Generate()
 		{
 			XmlDocument doc = new XmlDocument();
 			XmlNode docNode = doc.CreateXmlDeclaration("1.0", "UTF-8", "yes");
@@ -54,12 +55,13 @@ namespace Microsoft.Maui.Resizetizer
 
 			string outputResourceDir = Path.Combine(IntermediateOutputPath, "res");
 			string outputContentsDir = Path.Combine(outputResourceDir, "contents");
+			string destination = Path.Combine(outputResourceDir, "res.xml");
 
 			var contentsDirInfo = new DirectoryInfo(outputContentsDir);
 			if (!contentsDirInfo.Exists)
 			{
 				Logger.Log("No 'res/contents/' directory to generate res.xml.");
-				return;
+				return null;
 			}
 			foreach (DirectoryInfo subDir in contentsDirInfo.GetDirectories())
 			{
@@ -80,8 +82,9 @@ namespace Microsoft.Maui.Resizetizer
 					}
 				}
 			}
-			doc.Save(Path.Combine(outputResourceDir, "res.xml"));
+			doc.Save(destination);
 			Logger.Log($"res.xml file has been saved in {outputResourceDir}");
+			return new ResizedImageInfo() { Dpi = DpiPath.Tizen.Original, Filename = destination };
 		}
 	}
 }

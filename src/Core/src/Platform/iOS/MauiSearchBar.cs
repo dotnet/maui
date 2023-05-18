@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.Design;
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
@@ -58,6 +59,9 @@ namespace Microsoft.Maui.Platform
 			var editor = this.GetSearchTextField();
 
 			base.WillMoveToWindow(window);
+
+			if (editor != null)
+				ResignFirstResponderTouchGestureRecognizer.Update(editor, window);
 
 			if (editor != null)
 			{

@@ -1,4 +1,5 @@
-﻿using System;
+#nullable disable
+using System;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
 
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="Type[@FullName='Microsoft.Maui.Controls.TextCell']/Docs/*" />
 	public class TextCell : Cell
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create("Command", typeof(ICommand), typeof(TextCell), default(ICommand),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty = BindableProperty.Create("CommandParameter", typeof(object), typeof(TextCell), default(object),
 			propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
@@ -37,16 +38,16 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create("Text", typeof(string), typeof(TextCell), default(string));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='DetailProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Detail"/>.</summary>
 		public static readonly BindableProperty DetailProperty = BindableProperty.Create("Detail", typeof(string), typeof(TextCell), default(string));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create("TextColor", typeof(Color), typeof(TextCell), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='DetailColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DetailColor"/>.</summary>
 		public static readonly BindableProperty DetailColorProperty = BindableProperty.Create("DetailColor", typeof(Color), typeof(TextCell), null);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/TextCell.xml" path="//Member[@MemberName='Command']/Docs/*" />

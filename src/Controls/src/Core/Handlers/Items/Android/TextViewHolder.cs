@@ -1,4 +1,5 @@
-﻿using Android.Widget;
+﻿#nullable disable
+using Android.Widget;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {

@@ -1,7 +1,7 @@
 using System;
 using AppKit;
-using GraphicsTester.Scenarios;
 using Foundation;
+using GraphicsTester.Scenarios;
 using Microsoft.Maui.Graphics;
 
 namespace GraphicsTester.Mac

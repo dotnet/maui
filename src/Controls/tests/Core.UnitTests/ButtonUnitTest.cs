@@ -5,8 +5,7 @@ using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class ButtonUnitTest
-		: CommandSourceTests<Button>
+	public class ButtonUnitTest : VisualElementCommandSourceTests<Button>
 	{
 		[Fact]
 		public void MeasureInvalidatedOnTextChange()
@@ -161,30 +160,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void CommandCanExecuteUpdatesEnabled()
-		{
-			var button = new Button();
-
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { }, () => result)
-			};
-
-			button.SetBinding(Button.CommandProperty, "Command");
-			button.BindingContext = bindingContext;
-
-			Assert.False(button.IsEnabled);
-
-			result = true;
-
-			bindingContext.Command.ChangeCanExecute();
-
-			Assert.True(button.IsEnabled);
-		}
-
-		[Fact]
 		public void ButtonContentLayoutTypeConverterTest()
 		{
 			var converter = new Button.ButtonContentTypeConverter();
@@ -244,10 +219,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			VisualStateManager.SetVisualStateGroups(element, vsgList);
 
 			element.SendPressed();
-			Assert.Equal(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.Equal(PressedStateName, stateGroup.CurrentState.Name);
 
 			element.SendReleased();
-			Assert.NotEqual(stateGroup.CurrentState.Name, PressedStateName);
+			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
 		}
 	}
 }

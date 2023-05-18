@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void IsXamlTrue(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsTrue(resource.IsXaml(assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
+			Assert.IsTrue(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
 			Assert.AreEqual(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
 		}
 
@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		public void IsXamlFalse(string name)
 		{
 			var resource = GetResource(name);
-			Assert.IsFalse(resource.IsXaml(assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
+			Assert.IsFalse(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
 		}
 	}
 }

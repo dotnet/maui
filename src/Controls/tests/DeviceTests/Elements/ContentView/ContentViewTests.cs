@@ -51,5 +51,30 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(GetContentChildCount(contentViewHandler) == 3);
 			});
 		}
+
+		[Fact]
+		public async Task PropagateContextCorrectly()
+		{
+			SetupBuilder();
+
+			var bindingContext = new object();
+
+			var child = new Label { Text = "Content 1" };
+
+			var contentView = new Microsoft.Maui.Controls.ContentView
+			{
+				BindingContext = bindingContext
+			};
+
+			var contentViewHandler = await CreateHandlerAsync<ContentViewHandler>(contentView);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				contentView.Content = child;
+				Assert.Equal(1, GetChildCount(contentViewHandler));
+				Assert.True(GetContentChildCount(contentViewHandler) == 0);
+				Assert.True(child.BindingContext == bindingContext);
+			});
+		}
 	}
 }

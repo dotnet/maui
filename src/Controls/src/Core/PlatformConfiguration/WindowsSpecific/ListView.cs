@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
@@ -9,7 +10,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		#region SelectionMode
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/ListView.xml" path="//Member[@MemberName='SelectionModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
 		public static readonly BindableProperty SelectionModeProperty =
 			BindableProperty.CreateAttached("WindowsSelectionMode", typeof(ListViewSelectionMode),
 				typeof(ListView), ListViewSelectionMode.Accessible);

@@ -1,15 +1,18 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific
 {
 	using FormsElement = Maui.Controls.ScrollView;
 
 	public static class ScrollView
 	{
+		/// <summary>Bindable property for attached property <c>VerticalScrollStep</c>.</summary>
 		public static readonly BindableProperty VerticalScrollStepProperty = BindableProperty.Create("VerticalScrollStep", typeof(int), typeof(FormsElement), -1,
 			coerceValue: (bindable, value) =>
 			{
 				return ((int)value < 0) ? -1 : value;
 			});
 
+		/// <summary>Bindable property for attached property <c>HorizontalScrollStep</c>.</summary>
 		public static readonly BindableProperty HorizontalScrollStepProperty = BindableProperty.Create("HorizontalScrollStep", typeof(int), typeof(FormsElement), -1,
 			coerceValue: (bindable, value) =>
 			{

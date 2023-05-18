@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='IsCheckedVisualState']/Docs/*" />
 		public const string IsCheckedVisualState = "IsChecked";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='IsCheckedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsChecked"/>.</summary>
 		public static readonly BindableProperty IsCheckedProperty =
 			BindableProperty.Create(nameof(IsChecked), typeof(bool), typeof(CheckBox), false,
 				propertyChanged: (bindable, oldValue, newValue) =>
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls
 					((CheckBox)bindable).ChangeVisualState();
 				}, defaultBindingMode: BindingMode.TwoWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='ColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Color"/>.</summary>
 		public static readonly BindableProperty ColorProperty = ColorElement.ColorProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/CheckBox.xml" path="//Member[@MemberName='Color']/Docs/*" />

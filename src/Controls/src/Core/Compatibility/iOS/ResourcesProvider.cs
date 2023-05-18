@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Runtime.Versioning;
 #if __MOBILE__

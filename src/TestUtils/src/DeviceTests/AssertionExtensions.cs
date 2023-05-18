@@ -1,6 +1,9 @@
 using System;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
@@ -53,7 +56,89 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
-#if !TIZEN && PLATFORM
+		public static Task AssertHasContainer(this IView view, bool expectation)
+		{
+			// On Windows the `Parent` of an element only initializes when the view is added
+			// to the Visual Tree
+			var platformViewHandler = (IPlatformViewHandler)view.Handler!;
+			var platformView = platformViewHandler.PlatformView!;
+
+#if WINDOWS
+			var mauiContext = platformViewHandler.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
+			var dispatcher = mauiContext.GetDispatcher();
+			return dispatcher.DispatchAsync(async () =>
+			{
+				if (platformView.XamlRoot is null)
+				{
+					if (!expectation)
+						await AttachAndRun(platformView, RunAssertions, mauiContext);
+					else
+						await AttachAndRun(platformViewHandler.ContainerView!, RunAssertions, mauiContext);
+				}
+				else
+					RunAssertions();
+			});
+
+#else
+			RunAssertions();
+			return Task.CompletedTask;
+#endif
+			void RunAssertions()
+			{
+				Assert.Equal(expectation, view.Handler?.HasContainer ?? false);
+				Assert.Equal(expectation, view.Handler?.ContainerView is not null);
+				var parentView = platformView?.GetParent();
+				Assert.Equal(expectation, parentView is WrapperView);
+			}
+		}
+
+		public static Task AttachAndRun<THandler>(this IView view, Action<THandler> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+		where THandler : IPlatformViewHandler =>
+			view.AttachAndRun<bool, THandler>((handler) =>
+			{
+				action(handler);
+				return Task.FromResult(true);
+			}, mauiContext, createHandler);
+
+		public static Task AttachAndRun<THandler>(this IView view, Func<THandler, Task> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler =>
+				view.AttachAndRun<bool, THandler>(async (handler) =>
+				{
+					await action(handler);
+					return true;
+				}, mauiContext, createHandler);
+
+		public static Task<T> AttachAndRun<T, THandler>(this IView view, Func<THandler, T> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler
+		{
+			Func<THandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return view.AttachAndRun<T, THandler>(boop, mauiContext, createHandler);
+		}
+
+		public static Task<T> AttachAndRun<T, THandler>(this IView view, Func<THandler, Task<T>> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
+			where THandler : IPlatformViewHandler
+		{
+			var dispatcher = mauiContext.GetDispatcher();
+
+			if (dispatcher.IsDispatchRequired)
+				return dispatcher.DispatchAsync(Run);
+
+			return Run();
+
+			async Task<T> Run()
+			{
+				var handler = await createHandler(view);
+#if WINDOWS
+				return await view.ToPlatform(mauiContext).AttachAndRun<T>((window) => action(handler), mauiContext);
+#else
+				return await view.ToPlatform().AttachAndRun(() => action(handler));
+#endif
+			}
+		}
 
 		public static Task WaitForKeyboardToShow(this IView view, int timeout = 1000)
 		{
@@ -75,12 +160,29 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task SendValueToKeyboard(this IView view, char value, int timeout = 1000) =>
 			view.ToPlatform().SendValueToKeyboard(value, timeout);
 
-
 		public static Task SendKeyboardReturnType(this IView view, ReturnType returnType, int timeout = 1000) =>
 			view.ToPlatform().SendKeyboardReturnType(returnType, timeout);
 
-		public static Task ShowKeyboardForView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().ShowKeyboardForView(timeout);
+		public static Task ShowKeyboardForView(this IView view, int timeout = 1000, string? message = null)
+		{
+			try
+			{
+				return view.ToPlatform().ShowKeyboardForView(timeout);
+			}
+			catch (Exception ex)
+			{
+				if (!string.IsNullOrEmpty(message))
+					throw new Exception(message, ex);
+				else
+					throw;
+			}
+		}
+
+		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
+			view.ToPlatform().HideKeyboardForView(timeout, message);
+
+		public static Task WaitForUnFocused(this IView view, int timeout = 1000) =>
+			view.ToPlatform().WaitForUnFocused(timeout);
 
 		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
 			view.ToPlatform().WaitForFocused(timeout);
@@ -91,10 +193,37 @@ namespace Microsoft.Maui.DeviceTests
 		public static bool IsAccessibilityElement(this IView view) =>
 			view.ToPlatform().IsAccessibilityElement();
 
-
 		public static bool IsExcludedWithChildren(this IView view) =>
 			view.ToPlatform().IsExcludedWithChildren();
-#endif
 
+		public static IDisposable OnUnloaded(this IElement element, Action action)
+		{
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView is not null)
+			{
+				return platformViewHandler.PlatformView.OnUnloaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+		}
+
+		public static IDisposable OnLoaded(this IElement element, Action action)
+		{
+			if (element.Handler is IPlatformViewHandler platformViewHandler &&
+				platformViewHandler.PlatformView is not null)
+			{
+				return platformViewHandler.PlatformView.OnLoaded(action);
+			}
+
+			throw new InvalidOperationException("Handler is not set on element");
+		}
+
+		public static bool IsLoadedOnPlatform(this IElement element)
+		{
+			if (element.Handler is not IPlatformViewHandler pvh)
+				return false;
+
+			return pvh.PlatformView?.IsLoaded() == true;
+		}
 	}
 }

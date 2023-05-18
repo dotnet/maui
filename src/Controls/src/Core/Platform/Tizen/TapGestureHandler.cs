@@ -1,5 +1,3 @@
-#nullable enable
-
 using NGestureDetector = Tizen.NUI.GestureDetector;
 using NTapGestureDetector = Tizen.NUI.TapGestureDetector;
 

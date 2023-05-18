@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -16,14 +17,14 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.CreateReadOnly(nameof(MenuItems), typeof(MenuItemCollection), typeof(ShellContent), null,
 				defaultValueCreator: bo => new MenuItemCollection());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='MenuItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MenuItems"/>.</summary>
 		public static readonly BindableProperty MenuItemsProperty = MenuItemsPropertyKey.BindableProperty;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='ContentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty =
 			BindableProperty.Create(nameof(Content), typeof(object), typeof(ShellContent), null, BindingMode.OneTime, propertyChanged: OnContentChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ShellContent.xml" path="//Member[@MemberName='ContentTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ContentTemplate"/>.</summary>
 		public static readonly BindableProperty ContentTemplateProperty =
 			BindableProperty.Create(nameof(ContentTemplate), typeof(DataTemplate), typeof(ShellContent), null, BindingMode.OneTime);
 
@@ -138,13 +139,13 @@ namespace Microsoft.Maui.Controls
 				page.ParentSet += OnPresentedPageParentSet;
 				void OnPresentedPageParentSet(object sender, EventArgs e)
 				{
-					page.SendAppearing();
+					this.FindParentOfType<Shell>().SendPageAppearing(page);
 					(sender as Page).ParentSet -= OnPresentedPageParentSet;
 				}
 			}
 			else if (IsVisibleContent && page.IsVisible)
 			{
-				page.SendAppearing();
+				this.FindParentOfType<Shell>().SendPageAppearing(page);
 			}
 		}
 

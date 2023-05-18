@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,10 +8,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	class ListSource : IItemsViewSource, IList
 	{
-		IList _itemsSource;
+		readonly IList _itemsSource;
 
 		public ListSource()
 		{
+			_itemsSource = new List<object>();
 		}
 
 		public ListSource(IList list)

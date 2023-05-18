@@ -27,6 +27,7 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
 
     @Override
     protected void onResourceCleared(@Nullable Drawable placeholder) {
+		this.view.setImageDrawable(placeholder);
     }
 
     @Override
@@ -57,10 +58,10 @@ public class MauiCustomViewTarget extends CustomViewTarget<ImageView, Drawable> 
     }
 
     private void clear() {
-        post(() -> {
+        //post(() -> {
             // TODO: Explicitly release image
             // https://github.com/dotnet/maui/issues/6464
             // https://github.com/dotnet/maui/pull/6543
-        });
+        //});
     }
 }

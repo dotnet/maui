@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+﻿#nullable disable
+using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using AMixedContentHandling = Android.Webkit.MixedContentHandling;
 using AWebView = Android.Webkit.WebView;
 

@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -6,14 +7,18 @@ namespace Microsoft.Maui.Controls
 {
 	static class ImageElement
 	{
+		/// <summary>Bindable property for <c>ImageSource</c>.</summary>
 		public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create("ImageSource", typeof(ImageSource), typeof(IImageElement), default(ImageSource),
 			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
 
+		/// <summary>Bindable property for <see cref="IImageElement.Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create(nameof(IImageElement.Source), typeof(ImageSource), typeof(IImageElement), default(ImageSource),
 			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
 
+		/// <summary>Bindable property for <see cref="IImageElement.Aspect"/>.</summary>
 		public static readonly BindableProperty AspectProperty = BindableProperty.Create(nameof(IImageElement.Aspect), typeof(Aspect), typeof(IImageElement), Aspect.AspectFit);
 
+		/// <summary>Bindable property for <see cref="IImageElement.IsOpaque"/>.</summary>
 		public static readonly BindableProperty IsOpaqueProperty = BindableProperty.Create(nameof(IImageElement.IsOpaque), typeof(bool), typeof(IImageElement), false);
 
 		internal static readonly BindableProperty IsAnimationPlayingProperty = BindableProperty.Create(nameof(IImageElement.IsAnimationPlaying), typeof(bool), typeof(IImageElement), false);

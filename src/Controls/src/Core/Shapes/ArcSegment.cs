@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Converters;
 
@@ -22,23 +23,23 @@ namespace Microsoft.Maui.Controls.Shapes
 			IsLargeArc = isLargeArc;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='PointProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point"/>.</summary>
 		public static readonly BindableProperty PointProperty =
 			BindableProperty.Create(nameof(Point), typeof(Point), typeof(ArcSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='SizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Size"/>.</summary>
 		public static readonly BindableProperty SizeProperty =
 			BindableProperty.Create(nameof(Size), typeof(Size), typeof(ArcSegment), new Size(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='RotationAngleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RotationAngle"/>.</summary>
 		public static readonly BindableProperty RotationAngleProperty =
 			BindableProperty.Create(nameof(RotationAngle), typeof(double), typeof(ArcSegment), 0.0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='SweepDirectionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SweepDirection"/>.</summary>
 		public static readonly BindableProperty SweepDirectionProperty =
 			BindableProperty.Create(nameof(SweepDirection), typeof(SweepDirection), typeof(ArcSegment), SweepDirection.CounterClockwise);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/ArcSegment.xml" path="//Member[@MemberName='IsLargeArcProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsLargeArc"/>.</summary>
 		public static readonly BindableProperty IsLargeArcProperty =
 			BindableProperty.Create(nameof(IsLargeArc), typeof(bool), typeof(ArcSegment), false);
 

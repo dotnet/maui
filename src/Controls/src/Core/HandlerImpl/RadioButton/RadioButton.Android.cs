@@ -1,5 +1,4 @@
-﻿#nullable enable
-using AView = Android.Views.View;
+﻿using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
 {

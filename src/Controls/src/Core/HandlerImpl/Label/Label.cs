@@ -1,3 +1,4 @@
+#nullable disable
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -13,9 +14,6 @@ namespace Microsoft.Maui.Controls
 			[nameof(TextTransform)] = MapText,
 #if WINDOWS
 			[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
-#endif
-#if ANDROID
-			[nameof(TextColor)] = MapTextColor,
 #endif
 #if IOS
 			[nameof(TextDecorations)] = MapTextDecorations,

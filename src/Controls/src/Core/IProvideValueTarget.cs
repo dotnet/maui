@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Xaml
 {
 	public interface IProvideValueTarget

@@ -50,6 +50,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 						GalleryBuilder.NavButton("Alternate Layout Galleries", () => new AlternateLayoutGallery(), Navigation),
 						GalleryBuilder.NavButton("Header/Footer Galleries", () => new HeaderFooterGallery(), Navigation),
 						GalleryBuilder.NavButton("Nested CollectionViews", () => new NestedGalleries.NestedCollectionViewGallery(), Navigation),
+						GalleryBuilder.NavButton("Online images", () => new OnlineImages(), Navigation),
+						GalleryBuilder.NavButton("Adaptive CollectionView Gallery", () => new AdaptiveCollectionView(), Navigation),
 					}
 				}
 			};

@@ -7,6 +7,7 @@ using Foundation;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using UIKit;
 using WebKit;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	internal class IOSWebViewManager : WebViewManager
 	{
 		private readonly BlazorWebViewHandler _blazorMauiWebViewHandler;
+		private readonly ILogger _logger;
 		private readonly WKWebView _webview;
 		private readonly string _contentRootRelativeToAppRoot;
 
@@ -33,8 +35,9 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <param name="jsComponents">Describes configuration for adding, removing, and updating root components from JavaScript code.</param>
 		/// <param name="contentRootRelativeToAppRoot">Path to the directory containing application content files.</param>
 		/// <param name="hostPageRelativePath">Path to the host page within the fileProvider.</param>
+		/// <param name="logger">Logger to send log messages to.</param>
 
-		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath)
+		public IOSWebViewManager(BlazorWebViewHandler blazorMauiWebViewHandler, WKWebView webview, IServiceProvider provider, Dispatcher dispatcher, IFileProvider fileProvider, JSComponentConfigurationStore jsComponents, string contentRootRelativeToAppRoot, string hostPageRelativePath, ILogger logger)
 			: base(provider, dispatcher, BlazorWebViewHandler.AppOriginUri, fileProvider, jsComponents, hostPageRelativePath)
 		{
 			ArgumentNullException.ThrowIfNull(nameof(blazorMauiWebViewHandler));
@@ -47,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					$"Please add all the required services by calling '{nameof(IServiceCollection)}.{nameof(BlazorWebViewServiceCollectionExtensions.AddMauiBlazorWebView)}' in the application startup code.");
 			}
 
+			_logger = logger;
 			_blazorMauiWebViewHandler = blazorMauiWebViewHandler;
 			_webview = webview;
 			_contentRootRelativeToAppRoot = contentRootRelativeToAppRoot;
@@ -57,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		/// <inheritdoc />
 		protected override void NavigateCore(Uri absoluteUri)
 		{
+			_logger.NavigatingToUri(absoluteUri);
 			using var nsUrl = new NSUrl(absoluteUri.ToString());
 			using var request = new NSUrlRequest(nsUrl);
 			_webview.LoadRequest(request);
@@ -217,6 +222,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			public override void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 			{
 				var requestUrl = navigationAction.Request.Url;
+				var uri = new Uri(requestUrl.ToString());
+
 				UrlLoadingStrategy strategy;
 
 				// TargetFrame is null for navigation to a new window (`_blank`)
@@ -228,14 +235,17 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				else
 				{
 					// Invoke the UrlLoading event to allow overriding the default link handling behavior
-					var uri = new Uri(requestUrl.ToString());
 					var callbackArgs = UrlLoadingEventArgs.CreateWithDefaultLoadingStrategy(uri, BlazorWebViewHandler.AppOriginUri);
 					_webView.UrlLoading(callbackArgs);
+					_webView.Logger.NavigationEvent(uri, callbackArgs.UrlLoadingStrategy);
+
 					strategy = callbackArgs.UrlLoadingStrategy;
 				}
 
 				if (strategy == UrlLoadingStrategy.OpenExternally)
 				{
+					_webView.Logger.LaunchExternalBrowser(uri);
+
 #pragma warning disable CA1416, CA1422 // TODO: OpenUrl(...) has [UnsupportedOSPlatform("ios10.0")]
 					UIApplication.SharedApplication.OpenUrl(requestUrl);
 #pragma warning restore CA1416, CA1422

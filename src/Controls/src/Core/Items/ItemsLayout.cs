@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.ItemsLayout']/Docs/*" />
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Controls
 			Orientation = orientation;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayout.xml" path="//Member[@MemberName='SnapPointsAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SnapPointsAlignment"/>.</summary>
 		public static readonly BindableProperty SnapPointsAlignmentProperty =
 			BindableProperty.Create(nameof(SnapPointsAlignment), typeof(SnapPointsAlignment), typeof(ItemsLayout),
 				SnapPointsAlignment.Start);
@@ -23,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(SnapPointsAlignmentProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsLayout.xml" path="//Member[@MemberName='SnapPointsTypeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SnapPointsType"/>.</summary>
 		public static readonly BindableProperty SnapPointsTypeProperty =
 			BindableProperty.Create(nameof(SnapPointsType), typeof(SnapPointsType), typeof(ItemsLayout),
 				SnapPointsType.None);

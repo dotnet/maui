@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		{
 			var parentVar = Context.Variables[(IElementNode)node];
 			return parentVar.VariableType.FullName == "Microsoft.Maui.Controls.ResourceDictionary"
-				|| parentVar.VariableType.ResolveCached().BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
+				|| parentVar.VariableType.ResolveCached(Context.Cache).BaseType?.FullName == "Microsoft.Maui.Controls.ResourceDictionary";
 		}
 
 		public bool SkipChildren(INode node, INode parentNode)

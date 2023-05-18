@@ -125,10 +125,15 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 		}
 
-		public bool Focus() => false;
+		public bool Focus()
+		{
+			FocusRequest focusRequest = new FocusRequest();
+			return Handler?.InvokeWithResult(nameof(IView.Focus), focusRequest) ?? false;
+		}
 
 		public void Unfocus()
 		{
+			IsFocused = false;
 		}
 
 		public Size Measure(double widthConstraint, double heightConstraint)
@@ -146,6 +151,14 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent as IVisualTreeElement;
 
+		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() =>
+			PropertyMapperOverrides;
+
+		public PropertyMapper PropertyMapperOverrides
+		{
+			get;
+			set;
+		}
 
 		public bool IsLoaded
 		{

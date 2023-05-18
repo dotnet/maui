@@ -7,7 +7,7 @@ using Xunit;
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
 
-	public class SearchBarUnitTests : BaseTestFixture
+	public class SearchBarUnitTests : VisualElementCommandSourceTests<SearchBar>
 	{
 		[Fact]
 		public void TestConstructor()
@@ -89,30 +89,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(finalText, newText);
 		}
 
-		[Fact]
-		public void CommandCanExecuteUpdatesEnabled()
-		{
-			var searchBar = new SearchBar();
-
-			bool result = false;
-
-			var bindingContext = new
-			{
-				Command = new Command(() => { }, () => result)
-			};
-
-			searchBar.SetBinding(SearchBar.SearchCommandProperty, "Command");
-			searchBar.BindingContext = bindingContext;
-
-			Assert.False(searchBar.IsEnabled);
-
-			result = true;
-
-			bindingContext.Command.ChangeCanExecute();
-
-			Assert.True(searchBar.IsEnabled);
-		}
-
 		class MyCommand : ICommand
 		{
 			public bool CanExecute(object parameter)
@@ -133,5 +109,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var searchBar = new SearchBar();
 			searchBar.SearchCommand = new MyCommand();
 		}
+
+		protected override BindableProperty IsEnabledProperty => SearchBar.IsEnabledProperty;
+
+		protected override BindableProperty CommandProperty => SearchBar.SearchCommandProperty;
+
+		protected override BindableProperty CommandParameterProperty => SearchBar.SearchCommandParameterProperty;
+
+		protected override SearchBar CreateSource() => new SearchBar();
+
+		protected override void Activate(SearchBar source) => ((ISearchBarController)source).OnSearchButtonPressed();
 	}
 }

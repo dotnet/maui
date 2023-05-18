@@ -1,4 +1,5 @@
-﻿using Android.Text;
+﻿#nullable disable
+using Android.Text;
 using Android.Widget;
 using AndroidX.Core.Widget;
 using Microsoft.Maui.Controls.Internals;
@@ -17,30 +18,45 @@ namespace Microsoft.Maui.Controls.Platform
 			editText.ImeOptions = imeOptions;
 		}
 
+		static (string oldText, string newText) GetTexts(EditText editText, InputView inputView)
+		{
+			var oldText = editText.Text ?? string.Empty;
+
+			var inputType = editText.InputType;
+
+			bool isPasswordEnabled =
+				(inputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
+				(inputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
+
+			var newText = TextTransformUtilites.GetTransformedText(inputView?.Text,
+					isPasswordEnabled ? TextTransform.None : inputView.TextTransform);
+
+			return (oldText, newText);
+		}
+
 		public static void UpdateText(this EditText editText, InputView inputView)
 		{
-			bool isPasswordEnabled =
-				(editText.InputType & InputTypes.TextVariationPassword) == InputTypes.TextVariationPassword ||
-				(editText.InputType & InputTypes.NumberVariationPassword) == InputTypes.NumberVariationPassword;
-
-			// Setting the text causes the cursor to be reset to position zero.
-			// So, let's retain the current cursor position and calculate a new cursor
-			// position if the text was modified by a Converter.
-			var oldText = editText.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(
-				inputView?.Text,
-				isPasswordEnabled ? TextTransform.None : inputView.TextTransform
-				);
+			(var oldText, var newText) = GetTexts(editText, inputView);
 
 			if (oldText != newText)
+			{
 				editText.Text = newText;
 
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			int cursorPosition = editText.IsFocused ? editText.GetCursorPosition(cursorOffset) : editText.Text.Length;
+				// When updating from xplat->plat, we set the selection (cursor) to the end of the text
+				editText.SetSelection(newText.Length);
+			}
+		}
 
-			editText.SetSelection(cursorPosition);
+		internal static void UpdateTextFromPlatform(this EditText editText, InputView inputView)
+		{
+			(var oldText, var newText) = GetTexts(editText, inputView);
+
+			if (oldText != newText)
+			{
+				// This update is happening while inputting text into the EditText, so we want to avoid 
+				// resettting the cursor position and selection
+				editText.SetTextKeepState(newText);
+			}
 		}
 	}
 }

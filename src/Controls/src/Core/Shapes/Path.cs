@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.ComponentModel;
 
@@ -16,12 +17,12 @@ namespace Microsoft.Maui.Controls.Shapes
 			Data = data;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='DataProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Data"/>.</summary>
 		public static readonly BindableProperty DataProperty =
 			 BindableProperty.Create(nameof(Data), typeof(Geometry), typeof(Path), null,
 				 propertyChanged: OnGeometryPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Path.xml" path="//Member[@MemberName='RenderTransformProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RenderTransform"/>.</summary>
 		public static readonly BindableProperty RenderTransformProperty =
 			BindableProperty.Create(nameof(RenderTransform), typeof(Transform), typeof(Path), null,
 				propertyChanged: OnTransformPropertyChanged);

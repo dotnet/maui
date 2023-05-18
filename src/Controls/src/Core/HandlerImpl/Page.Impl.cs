@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -45,12 +46,14 @@ namespace Microsoft.Maui.Controls
 			HasNavigatedTo = true;
 			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
 			NavigatingFrom?.Invoke(this, args);
 			OnNavigatingFrom(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
@@ -58,6 +61,7 @@ namespace Microsoft.Maui.Controls
 			HasNavigatedTo = false;
 			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
 		}
 
 		public event EventHandler<NavigatedToEventArgs> NavigatedTo;

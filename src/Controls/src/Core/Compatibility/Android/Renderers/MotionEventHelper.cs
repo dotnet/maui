@@ -1,3 +1,4 @@
+#nullable disable
 using Android.Views;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Android

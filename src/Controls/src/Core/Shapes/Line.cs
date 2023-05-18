@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs/*" />
@@ -16,19 +17,19 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y2 = y2;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="X1"/>.</summary>
 		public static readonly BindableProperty X1Property =
 			BindableProperty.Create(nameof(X1), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Y1"/>.</summary>
 		public static readonly BindableProperty Y1Property =
 			BindableProperty.Create(nameof(Y1), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="X2"/>.</summary>
 		public static readonly BindableProperty X2Property =
 			BindableProperty.Create(nameof(X2), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Y2"/>.</summary>
 		public static readonly BindableProperty Y2Property =
 			BindableProperty.Create(nameof(Y2), typeof(double), typeof(Line), 0.0d);
 

@@ -4,18 +4,70 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
 
 using NativeTextAlignment = Microsoft.UI.Xaml.TextAlignment;
-//using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
+using NativeVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryHandlerTests
 	{
+		[Theory(DisplayName = "VerticalTextAlignment Works Correctly with hidden Entry")]
+		[InlineData(TextAlignment.Start)]
+		[InlineData(TextAlignment.Center)]
+		[InlineData(TextAlignment.End)]
+		public async Task VerticalTextAlignmentWorksCorrectlyWithHiddenEntry(TextAlignment textAlignment)
+		{
+			var layout = new LayoutStub();
+
+			var entry = new EntryStub
+			{
+				Text = "Test",
+				Visibility = Visibility.Collapsed,
+				VerticalTextAlignment = textAlignment,
+			};
+
+			var button = new ButtonStub
+			{
+				Text = "Change TextAlignment"
+			};
+
+			layout.Add(entry);
+			layout.Add(button);
+
+			var clicked = false;
+
+			button.Clicked += delegate
+			{
+				entry.Visibility = Visibility.Visible;
+				clicked = true;
+			};
+
+			await PerformClick(button);
+
+			Assert.True(clicked);
+
+			var platformAlignment = GetNativeVerticalTextAlignment(textAlignment);
+
+			// Attach for windows because it uses control templates
+
+			var values = await AttachAndRun(entry, (handler) =>
+					new
+					{
+						ViewValue = entry.VerticalTextAlignment,
+						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
+					});
+
+			Assert.Equal(textAlignment, values.ViewValue);
+			Assert.Equal(platformAlignment, values.PlatformViewValue);
+		}
+
 		[Theory(DisplayName = "MaxLength Works Correctly")]
 		[InlineData("123")]
 		[InlineData("Hello")]
@@ -101,13 +153,39 @@ namespace Microsoft.Maui.DeviceTests
 		NativeTextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).TextAlignment;
 
-		//NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler) =>
-		//	GetNativeEntry(entryHandler).VerticalAlignment;
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(EntryHandler entryHandler)
+		{
+			var textBox = GetNativeEntry(entryHandler);
+
+			var sv = textBox.GetDescendantByName<ScrollViewer>("ContentElement");
+			var placeholder = textBox.GetDescendantByName<TextBlock>("PlaceholderTextContentPresenter");
+
+			Assert.Equal(sv.VerticalAlignment, placeholder.VerticalAlignment);
+
+			return sv.VerticalAlignment;
+		}
+
+		NativeVerticalAlignment GetNativeVerticalTextAlignment(TextAlignment textAlignment) =>
+			textAlignment.ToPlatformVerticalAlignment();
 
 		int GetNativeCursorPosition(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).GetCursorPosition();
 
 		int GetNativeSelectionLength(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).SelectionLength;
+
+		Button GetNativeButton(ButtonHandler buttonHandler) =>
+			buttonHandler.PlatformView;
+
+		Task PerformClick(IButton button)
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var platformButton = GetNativeButton(CreateHandler<ButtonHandler>(button));
+				var ap = new ButtonAutomationPeer(platformButton);
+				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+				ip?.Invoke();
+			});
+		}
 	}
 }

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Platform;
@@ -9,7 +10,9 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
+using Windows.UI;
 using Xunit;
+using Xunit.Sdk;
 using WColor = Windows.UI.Color;
 
 namespace Microsoft.Maui.DeviceTests
@@ -18,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static Task<string> CreateColorAtPointErrorAsync(this CanvasBitmap bitmap, WColor expectedColor, int x, int y) =>
 			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
-			
+
 		public static Task WaitForKeyboardToShow(this FrameworkElement view, int timeout = 1000)
 		{
 			throw new NotImplementedException();
@@ -39,9 +42,58 @@ namespace Microsoft.Maui.DeviceTests
 			throw new NotImplementedException();
 		}
 
-		public static Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
+		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			throw new NotImplementedException();
+			if (view is AutoSuggestBox searchView)
+			{
+				var queryEditor = searchView.GetFirstDescendant<TextBox>();
+
+				if (queryEditor is null)
+					throw new Exception("Unable to locate TextBox on AutoSuggestBox");
+
+				view = queryEditor;
+			}
+
+			TaskCompletionSource focusSource = new TaskCompletionSource();
+			view.GotFocus += OnFocused;
+
+			try
+			{
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+			}
+			finally
+			{
+				view.GotFocus -= OnFocused;
+			}
+
+			void OnFocused(object? sender, RoutedEventArgs e)
+			{
+				view.GotFocus -= OnFocused;
+				focusSource.SetResult();
+			}
+		}
+
+		public static async Task WaitForUnFocused(this FrameworkElement view, int timeout = 1000)
+		{
+			TaskCompletionSource focusSource = new TaskCompletionSource();
+			view.LostFocus += OnUnFocused;
+
+			try
+			{
+				await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+			}
+			finally
+			{
+				view.LostFocus -= OnUnFocused;
+			}
+
+			await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
+
+			void OnUnFocused(object? sender, RoutedEventArgs e)
+			{
+				view.LostFocus -= OnUnFocused;
+				focusSource.SetResult();
+			}
 		}
 
 		public static Task FocusView(this FrameworkElement view, int timeout = 1000)
@@ -50,6 +102,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static Task ShowKeyboardForView(this FrameworkElement view, int timeout = 1000)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Task HideKeyboardForView(this FrameworkElement view, int timeout = 1000, string? message = null)
 		{
 			throw new NotImplementedException();
 		}
@@ -82,49 +139,62 @@ namespace Microsoft.Maui.DeviceTests
 				: WColor.FromArgb(255, pixel.R, pixel.G, pixel.B);
 		}
 
-		public static Task AttachAndRun(this FrameworkElement view, Action action) =>
-			view.AttachAndRun(() =>
+		public static Task AttachAndRun(this FrameworkElement view, Action action, IMauiContext mauiContext) =>
+			view.AttachAndRun(window => action(), mauiContext);
+
+		public static Task AttachAndRun(this FrameworkElement view, Action<Window> action, IMauiContext mauiContext) =>
+			view.AttachAndRun((window) =>
 			{
-				action();
+				action(window);
 				return Task.FromResult(true);
-			});
+			}, mauiContext);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action) =>
-			view.AttachAndRun(() =>
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<T> action, IMauiContext mauiContext) =>
+			view.AttachAndRun(window => action(), mauiContext);
+
+		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, T> action, IMauiContext mauiContext) =>
+			view.AttachAndRun((window) =>
 			{
-				var result = action();
+				var result = action(window);
 				return Task.FromResult(result);
-			});
+			}, mauiContext);
 
-		public static Task AttachAndRun(this FrameworkElement view, Func<Task> action) =>
-			view.AttachAndRun(async () =>
-			{
-				await action();
-				return true;
-			});
+		// Windows does ok running these tests in parallel but there's definitely
+		// a limit where it'll eventually be too many windows.
+		// So, for now we're limiting this to 10 parallel windows which seems 
+		// to work fine.
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
 
-		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action)
+		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext mauiContext)
 		{
 			if (view.Parent is Border wrapper)
 				view = wrapper;
 
 			TaskCompletionSource? tcs = null;
 			TaskCompletionSource? unloadedTcs = null;
-			Window? window = null;
 
 			if (view.Parent == null)
 			{
-				// prepare to wait for element to be in the UI
-				tcs = new TaskCompletionSource();
-				unloadedTcs = new TaskCompletionSource();
+				T result;
 
-				view.Loaded += OnViewLoaded;
-
-				// attach to the UI
-				Grid grid;
-				window = new Window
+				try
 				{
-					Content = new Grid
+					await _attachAndRunSemaphore.WaitAsync();
+
+					// prepare to wait for element to be in the UI
+					tcs = new TaskCompletionSource();
+					unloadedTcs = new TaskCompletionSource();
+
+					view.Loaded += OnViewLoaded;
+
+					// attach to the UI
+					Grid grid;
+					var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
+
+					if (window.Content is not null)
+						throw new Exception("The window retrieved from the service is already attached to existing content");
+
+					window.Content = new Grid
 					{
 						HorizontalAlignment = HorizontalAlignment.Center,
 						VerticalAlignment = VerticalAlignment.Center,
@@ -140,32 +210,42 @@ namespace Microsoft.Maui.DeviceTests
 								}
 							})
 						}
+					};
+
+					window.Activate();
+
+					// wait for element to be loaded
+					await tcs.Task;
+					view.Unloaded += OnViewUnloaded;
+
+					try
+					{
+						result = await Run(() => action(window));
 					}
-				};
-				window.Activate();
-
-				// wait for element to be loaded
-				await tcs.Task;
-				view.Unloaded += OnViewUnloaded;
-
-				T result;
-				try
-				{
-					result = await Run(action);
+					finally
+					{
+						grid.Children.Clear();
+						await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
+						await Task.Delay(10);
+						window.Close();
+					}
 				}
 				finally
 				{
-					grid.Children.Clear();
-					await unloadedTcs.Task.WaitAsync(TimeSpan.FromSeconds(5));
-					await Task.Delay(10);
-					window.Close();
+					_attachAndRunSemaphore.Release();
 				}
 
 				return result;
 			}
 			else
 			{
-				return await Run(action);
+				// Window is not a XAML type so is never on the hierarchy
+				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
+
+				if (window.Content.XamlRoot != view.XamlRoot)
+					throw new Exception("The window retrieved from the service is different than the window this view is attached to");
+
+				return await Run(() => action(window));
 			}
 
 			static async Task<T> Run(Func<Task<T>> action)
@@ -186,11 +266,20 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view) =>
-			view.AttachAndRun(async () =>
+		public static Task<CanvasBitmap> ToBitmap(this FrameworkElement view, IMauiContext mauiContext) =>
+			view.AttachAndRun(async (window) =>
 			{
 				if (view.Parent is Border wrapper)
 					view = wrapper;
+
+				var device = CanvasDevice.GetSharedDevice();
+
+				// HELP?
+				// The simple act of doing a window capture results in the next render method
+				// working on DirectX controls (such as Win2D).
+				// We could use this window bitmap directly, but that is extra effort to crop
+				// to the view bounds... so until this breaks...
+				using var windowBitmap = await CaptureHelper.RenderAsync(window, device);
 
 				var bmp = new RenderTargetBitmap();
 				await bmp.RenderAsync(view);
@@ -198,10 +287,8 @@ namespace Microsoft.Maui.DeviceTests
 				var width = bmp.PixelWidth;
 				var height = bmp.PixelHeight;
 
-				var device = CanvasDevice.GetSharedDevice();
-
 				return CanvasBitmap.CreateFromBytes(device, pixels, width, height, DirectXPixelFormat.B8G8R8A8UIntNormalized);
-			});
+			}, mauiContext);
 
 		public static CanvasBitmap AssertColorAtPoint(this CanvasBitmap bitmap, WColor expectedColor, uint x, uint y) =>
 			bitmap.AssertColorAtPoint(expectedColor, (int)x, (int)y);
@@ -231,9 +318,24 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor)
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor(), withinRectModifier, tolerance: tolerance);
+
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
-			var colors = bitmap.GetPixelColors();
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
+
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
 
 			foreach (var c in colors)
 			{
@@ -247,48 +349,87 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor) =>
-			AssertContainsColor(view, expectedColor.ToWindowsColor());
+		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToWindowsColor(), mauiContext, tolerance: tolerance);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
-			var bitmap = await view.ToBitmap();
-			return await AssertContainsColor(bitmap, expectedColor);
+			var bitmap = await view.ToBitmap(mauiContext);
+			return await AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y)
+		public static Task<CanvasBitmap> AssertDoesNotContainColor(this CanvasBitmap bitmap, Graphics.Color unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+			=> bitmap.AssertDoesNotContainColor(unexpectedColor.ToWindowsColor(), withinRectModifier);
+
+		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this CanvasBitmap bitmap, WColor unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
-			var bitmap = await view.ToBitmap();
+			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
+
+			if (withinRectModifier is not null)
+				imageRect = withinRectModifier.Invoke(imageRect);
+
+			if (imageRect.Width == 0 || imageRect.Height == 0)
+			{
+				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
+				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				return bitmap;
+			}
+
+			var colors = bitmap.GetPixelColors((int)imageRect.X, (int)imageRect.Y, (int)imageRect.Width, (int)imageRect.Height);
+
+			foreach (var c in colors)
+			{
+				if (c.IsEquivalent(unexpectedColor))
+				{
+					Assert.True(false, await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
+				}
+			}
+
+			return bitmap;
+		}
+
+		public static Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, Maui.Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
+			AssertDoesNotContainColor(view, unexpectedColor.ToWindowsColor(), mauiContext);
+
+		public static async Task<CanvasBitmap> AssertDoesNotContainColor(this FrameworkElement view, WColor unexpectedColor, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			return await AssertDoesNotContainColor(bitmap, unexpectedColor);
+		}
+
+		public static async Task<CanvasBitmap> AssertColorAtPointAsync(this FrameworkElement view, WColor expectedColor, int x, int y, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtCenter(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomLeft(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomLeft(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtBottomRight(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtBottomRight(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtBottomRight(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopLeft(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopLeft(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopLeft(expectedColor);
 		}
 
-		public static async Task<CanvasBitmap> AssertColorAtTopRight(this FrameworkElement view, WColor expectedColor)
+		public static async Task<CanvasBitmap> AssertColorAtTopRight(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
-			var bitmap = await view.ToBitmap();
+			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtTopRight(expectedColor);
 		}
 

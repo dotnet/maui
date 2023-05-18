@@ -14,7 +14,7 @@ class PointTypeConverter : ICompiledTypeConverter
 		var module = context.Body.Method.Module;
 		if (!string.IsNullOrEmpty(value) && Point.TryParse(value.Trim(), out var point))
 		{
-			foreach (var instruction in CreatePoint(module, point))
+			foreach (var instruction in CreatePoint(context, module, point))
 			{
 				yield return instruction;
 			}
@@ -23,11 +23,11 @@ class PointTypeConverter : ICompiledTypeConverter
 		throw new BuildException(BuildExceptionCode.Conversion, node, null, value, typeof(Point));
 	}
 
-	public IEnumerable<Instruction> CreatePoint(ModuleDefinition module, Point point)
+	public IEnumerable<Instruction> CreatePoint(ILContext context, ModuleDefinition module, Point point)
 	{
 		yield return Instruction.Create(OpCodes.Ldc_R8, point.X);
 		yield return Instruction.Create(OpCodes.Ldc_R8, point.Y);
-		yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Point"), parameterTypes: new[] {
+		yield return Instruction.Create(OpCodes.Newobj, module.ImportCtorReference(context.Cache, ("Microsoft.Maui.Graphics", "Microsoft.Maui.Graphics", "Point"), parameterTypes: new[] {
 					("mscorlib", "System", "Double"),
 					("mscorlib", "System", "Double")}));
 	}

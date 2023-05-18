@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Media
 			for (var i = 0; i < parts.Count && !cancelToken.IsCancellationRequested; i++)
 			{
 				// We require the utterance id to be set if we want the completed listener to fire
-				var map = new Dictionary<string, string>
+				var map = new Dictionary<string, string>(StringComparer.Ordinal)
 				{
 					{ AndroidTextToSpeech.Engine.KeyParamUtteranceId, $"{guid}.{i}" }
 				};

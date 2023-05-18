@@ -1,5 +1,3 @@
-#nullable enable
-
 using NColor = Tizen.NUI.Color;
 using NView = Tizen.NUI.BaseComponents.View;
 
@@ -15,6 +13,6 @@ namespace Microsoft.Maui.Controls.Platform
 
 		NView? Footer { get; set; }
 
-		NColor BackgroundColor { get; set; }
+		NColor? BackgroundColor { get; set; }
 	}
 }

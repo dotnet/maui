@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Controls.Platform;
 

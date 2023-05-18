@@ -18,7 +18,7 @@
     <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
@@ -41,4 +41,7 @@
   <ItemGroup>
     <None Include="..\..\..\..\Assets\icon.png" PackagePath="icon.png" Pack="true" />
   </ItemGroup>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
+
 </Project>

@@ -1,3 +1,4 @@
+#nullable disable
 namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 {
 	using System;
@@ -6,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.TabbedPage']/Docs/*" />
 	public static class TabbedPage
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='IsSwipePagingEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsSwipePagingEnabled"/>.</summary>
 		public static readonly BindableProperty IsSwipePagingEnabledProperty =
 			BindableProperty.Create("IsSwipePagingEnabled", typeof(bool),
 			typeof(TabbedPage), true);
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='IsSmoothScrollEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsSmoothScrollEnabled"/>.</summary>
 		public static readonly BindableProperty IsSmoothScrollEnabledProperty =
 			BindableProperty.Create("IsSmoothScrollEnabled", typeof(bool),
 			typeof(TabbedPage), true);
@@ -94,7 +95,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='OffscreenPageLimitProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="OffscreenPageLimit"/>.</summary>
 		public static readonly BindableProperty OffscreenPageLimitProperty =
 			BindableProperty.Create("OffscreenPageLimit", typeof(int),
 			typeof(TabbedPage), 3, validateValue: (binding, value) => (int)value >= 0);
@@ -124,7 +125,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/TabbedPage.xml" path="//Member[@MemberName='ToolbarPlacementProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ToolbarPlacement"/>.</summary>
 		public static readonly BindableProperty ToolbarPlacementProperty =
 			BindableProperty.Create("ToolbarPlacement", typeof(ToolbarPlacement),
 			typeof(TabbedPage), ToolbarPlacement.Top);

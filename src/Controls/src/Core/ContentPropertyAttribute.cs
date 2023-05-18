@@ -1,3 +1,4 @@
+#nullable disable
 //
 // ContentPropertyAttribute.cs
 //

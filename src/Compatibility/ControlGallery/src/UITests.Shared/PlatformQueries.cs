@@ -72,7 +72,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static readonly string Label = "UILabel";
 		public static readonly string ListView = "UITableView";
 		public static readonly string Map = "MKMapView";
-		public static readonly string OpenGLView = "GLKView";
 		public static readonly string Picker = "UITextField";
 		public static readonly string Pin = "MKPinAnnotationView";
 		public static readonly string ProgressBar = "UIProgressView";
@@ -98,7 +97,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public static readonly string Label = "android.widget.TextView";
 		public static readonly string ListView = "android.widget.ListView";
 		public static readonly string Map = "android.gms.maps.GoogleMap";
-		public static readonly string OpenGLView = "android.widget.GLSurfaceView";
 		public static readonly string Picker = "android.widget.EditText";
 		public static readonly string Pin = "android.gms.maps.model.Marker";
 		public static readonly string ProgressBar = "android.widget.ProgressBar";

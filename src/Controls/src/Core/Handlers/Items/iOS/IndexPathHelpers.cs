@@ -1,3 +1,4 @@
+#nullable disable
 using Foundation;
 
 namespace Microsoft.Maui.Controls.Handlers.Items

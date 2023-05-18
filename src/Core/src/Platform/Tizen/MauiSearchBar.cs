@@ -4,9 +4,9 @@ using Microsoft.Maui.Graphics.Skia.Views;
 using Tizen.NUI;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
+using NColor = Tizen.NUI.Color;
 using TSize = Tizen.UIExtensions.Common.Size;
 using TTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
-using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {
@@ -14,7 +14,9 @@ namespace Microsoft.Maui.Platform
 	{
 		const double IconSize = 24;
 		const double IconMargin = 8;
-		const double Radius = 8;
+
+		public readonly double Radius = 8;
+		public readonly NColor DefaultBackgroundColor = new NColor(0.9f, 0.9f, 0.9f, 1);
 
 		Entry _entry;
 		SkiaGraphicsView _searchButton;
@@ -22,7 +24,7 @@ namespace Microsoft.Maui.Platform
 
 		public MauiSearchBar()
 		{
-			BackgroundColor = new NColor(0.9f, 0.9f, 0.9f, 1);
+			BackgroundColor = DefaultBackgroundColor;
 
 			_entry = new Entry
 			{

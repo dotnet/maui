@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		#region ToolbarPlacement
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='ToolbarPlacementProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ToolbarPlacement"/>.</summary>
 		public static readonly BindableProperty ToolbarPlacementProperty =
 			BindableProperty.CreateAttached("ToolbarPlacement", typeof(ToolbarPlacement),
 				typeof(FormsElement), ToolbarPlacement.Default);
@@ -48,7 +49,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		#region ToolbarDynamicOverflowEnabled
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/Page.xml" path="//Member[@MemberName='ToolbarDynamicOverflowEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ToolbarDynamicOverflowEnabled</c>.</summary>
 		public static readonly BindableProperty ToolbarDynamicOverflowEnabledProperty =
 			BindableProperty.CreateAttached("ToolbarDynamicOverflowEnabled", typeof(bool),
 				typeof(FormsElement), true);

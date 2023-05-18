@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Shapes;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Handlers
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapData(IShapeViewHandler handler, Path path)
 		{
-			handler.PlatformView?.InvalidateShape(path);
+			handler.PlatformView?.UpdateShape(path);
 		}
 
 		public static void MapRenderTransform(IShapeViewHandler handler, Path path)

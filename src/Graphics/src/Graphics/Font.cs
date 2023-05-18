@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Graphics
 		public FontStyleType StyleType { get; private set; }
 
 		public bool Equals(IFont other)
-			=> StyleType == other.StyleType && Weight == other.Weight && Name.Equals(other.Name);
+			=> StyleType == other.StyleType && Weight == other.Weight && Name.Equals(other.Name, StringComparison.Ordinal);
 
 		public override bool Equals(object obj)
 			=> obj is IFont font && Equals(font);
@@ -55,5 +55,9 @@ namespace Microsoft.Maui.Graphics
 
 		public bool IsDefault
 			=> string.IsNullOrEmpty(Name);
+
+		public static bool operator ==(Font left, Font right) => left.Equals(right);
+
+		public static bool operator !=(Font left, Font right) => !(left == right);
 	}
 }

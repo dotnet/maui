@@ -1,11 +1,10 @@
-#nullable enable
-
 using System;
 
 namespace Microsoft.Maui.Controls
 {
 	public class ToolTipProperties
 	{
+		/// <summary>Bindable property for attached property <c>Text</c>.</summary>
 		public static readonly BindableProperty TextProperty =
  			BindableProperty.CreateAttached("Text", typeof(string), typeof(ToolTipProperties), defaultValue: null, propertyChanged: OnToolTipPropertyChanged);
 

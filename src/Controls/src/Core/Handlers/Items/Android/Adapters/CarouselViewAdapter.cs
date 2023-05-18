@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Content;
 using AndroidX.RecyclerView.Widget;
 
@@ -17,17 +18,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override int ItemCount => CarouselView.Loop && !(ItemsSource is EmptySource)
 			&& ItemsSource.Count > 0 ? CarouselViewLoopManager.LoopScale : ItemsSource.Count;
 
+		public override int GetItemViewType(int position)
+		{
+			int positionInList = GetPositionInList(position);
+
+			if (positionInList < 0)
+				return ItemViewType.TextItem;
+
+			return base.GetItemViewType(positionInList);
+		}
+
 		public override void OnBindViewHolder(RecyclerView.ViewHolder holder, int position)
 		{
-			if (CarouselView == null || ItemsSource == null)
+			int positionInList = GetPositionInList(position);
+
+			if (positionInList < 0)
 				return;
-
-			bool hasItems = ItemsSource != null && ItemsSource.Count > 0;
-
-			if (!hasItems)
-				return;
-
-			int positionInList = (CarouselView.Loop && hasItems) ? position % ItemsSource.Count : position;
 
 			switch (holder)
 			{
@@ -38,6 +44,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					BindTemplatedItemViewHolder(templatedItemViewHolder, ItemsSource.GetItem(positionInList));
 					break;
 			}
+		}
+
+		int GetPositionInList(int position)
+		{
+			if (CarouselView == null || ItemsSource == null)
+				return -1;
+
+			bool hasItems = ItemsSource != null && ItemsSource.Count > 0;
+
+			if (!hasItems)
+				return -1;
+
+			return (CarouselView.Loop && hasItems) ? position % ItemsSource.Count : position;
 		}
 	}
 }

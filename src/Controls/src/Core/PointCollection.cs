@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿#nullable disable
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 

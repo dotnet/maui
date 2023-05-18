@@ -1,9 +1,10 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿#nullable disable
+using Microsoft.Maui.Controls.Internals;
 using Tizen.UIExtensions.NUI;
-using TEntry = Tizen.UIExtensions.NUI.Entry;
 using TEditor = Tizen.UIExtensions.NUI.Editor;
-using TLabel = Tizen.UIExtensions.NUI.Label;
+using TEntry = Tizen.UIExtensions.NUI.Entry;
 using TFormattedString = Tizen.UIExtensions.Common.FormattedString;
+using TLabel = Tizen.UIExtensions.NUI.Label;
 using TSpan = Tizen.UIExtensions.Common.Span;
 
 namespace Microsoft.Maui.Controls.Platform

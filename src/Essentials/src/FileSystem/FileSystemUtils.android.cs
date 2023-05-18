@@ -261,7 +261,9 @@ namespace Microsoft.Maui.Storage
 			if (!string.IsNullOrEmpty(value) && int.TryParse(value, out var flagsInt))
 			{
 				var flags = (DocumentContractFlags)flagsInt;
+#pragma warning disable CA1416 // Introduced in API 24: https://developer.android.com/reference/android/provider/DocumentsContract.Document#FLAG_VIRTUAL_DOCUMENT
 				return flags.HasFlag(DocumentContractFlags.VirtualDocument);
+#pragma warning restore CA1416
 			}
 
 			return false;

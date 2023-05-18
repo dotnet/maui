@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9686, "[Bug, CollectionView,iOS] Foundation.Monotouch Exception in Grouped CollectionView",
 			PlatformAffected.iOS)]

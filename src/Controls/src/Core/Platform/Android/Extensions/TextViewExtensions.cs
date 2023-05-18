@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using Android.Text;
 using Android.Widget;
 using Microsoft.Maui.Controls.Internals;

@@ -7,6 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -14,6 +18,10 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
+
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -30,9 +38,71 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
 		}
+
+		[Fact]
+		public async Task PageLayoutDoesNotExceedWindowBounds()
+		{
+			SetupBuilder();
+
+			var button = new Button()
+			{
+				Text = "Test me"
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = button
+			};
+
+			var shell = new Shell()
+			{
+				CurrentItem = contentPage,
+				FlyoutBehavior = FlyoutBehavior.Disabled
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				var pageBounds = contentPage.GetBoundingBox();
+				var window = contentPage.Window;
+
+				Assert.True(pageBounds.X >= 0);
+				Assert.True(pageBounds.Y >= 0);
+				Assert.True(pageBounds.Width <= window.Width);
+				Assert.True(pageBounds.Height <= window.Height);
+			});
+		}
+
+#if ANDROID || IOS || MACCATALYST
+		[Fact]
+		public async Task SearchHandlerRendersCorrectly()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
+				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
+
+				Shell.SetSearchHandler(shell, new SearchHandler() { SearchBoxVisibility = SearchBoxVisibility.Expanded });
+			});
+
+			await CreateHandlerAndAddToWindow<ShellRenderer>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+				await Task.Delay(100);
+				await shell.GoToAsync("//FlyoutItem2");
+
+				// No crash using SearchHandler
+			});
+		}
+#endif
 
 		[Fact]
 		public async Task FlyoutWithAsMultipleItemsRendersWithoutCrashing()
@@ -76,6 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
 			{
 				finished = true;
+				return Task.CompletedTask;
 			});
 
 			Assert.True(finished);
@@ -428,9 +499,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
-		[Fact(DisplayName = "TitleView Causes a Crash When Switching Tabs")]
-		public async Task TitleViewCausesACrashWhenSwitchingTabs()
+		[Fact(DisplayName = "TitleView Updates to Currently Visible Page")]
+		public async Task TitleViewUpdateToCurrentlyVisiblePage()
 		{
 			SetupBuilder();
 
@@ -474,27 +544,86 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				await OnLoadedAsync(page1);
-				// GotoAsync which switching tabs/flyout items currently
-				// doesn't resolve after navigated has finished which is why we have the
-				// delays
-				// https://github.com/dotnet/maui/issues/6193
 				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
 				await shell.GoToAsync("//Item2");
-				await Task.Delay(200);
-				await OnLoadedAsync(page2);
-				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item1");
-				await Task.Delay(200);
-				await OnLoadedAsync(page1);
-				Assert.Equal(titleView1.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView1.Handler != null && titleView1.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item2");
-				await Task.Delay(200);
-				await OnLoadedAsync(page2);
-				Assert.Equal(titleView2.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
 				await shell.GoToAsync("//Item3");
-				await Task.Delay(200);
-				await OnLoadedAsync(page3);
-				Assert.Equal(shellTitleView.ToPlatform(), GetTitleView(handler));
+
+				Assert.True(await AssertionExtensions.Wait(() => shellTitleView.Handler != null && shellTitleView.ToPlatform() == GetTitleView(handler)));
+			});
+		}
+
+		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
+		public async Task TitleViewSetOnShellWorksAfterNavigation()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage();
+			var page2 = new ContentPage();
+			var page3 = new ContentPage();
+
+			var shellTitleView = new Editor();
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Item1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Route = "Item2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(page1);
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				await shell.GoToAsync("//Item2");
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				await shell.GoToAsync("//Item1");
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				await shell.GoToAsync("//Item2");
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				await shell.Navigation.PushAsync(page3);
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				await shell.Navigation.PopAsync();
+				Assert.True(await AssertionExtensions.Wait(WaitCondition));
+
+				bool WaitCondition()
+				{
+					if (shellTitleView.Handler == null)
+						return false;
+
+					var titleView = GetTitleView(handler);
+
+					if (titleView == null)
+						return false;
+
+					return shellTitleView.ToPlatform() == titleView;
+				}
 			});
 		}
 
@@ -573,6 +702,41 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !IOS && !MACCATALYST
+		[Fact]
+		public async Task ChangingToNewMauiContextDoesntCrash()
+		{
+			SetupBuilder();
+
+			var shell = new Shell();
+			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
+			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
+
+
+			var window = new Controls.Window(shell);
+			var mauiContextStub1 = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+				await Task.Delay(100);
+				await shell.GoToAsync("//FlyoutItem2");
+			}, mauiContextStub1);
+
+			var mauiContextStub2 = ContextStub.CreateNew(MauiContext);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+				await OnNavigatedToAsync(shell.CurrentPage);
+				await Task.Delay(100);
+				await shell.GoToAsync("//FlyoutItem1");
+				await shell.GoToAsync("//FlyoutItem2");
+			}, mauiContextStub2);
+		}
+#endif
+
 		[Theory]
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
@@ -632,6 +796,233 @@ namespace Microsoft.Maui.DeviceTests
 
 				command.ChangeCanExecute();
 				Assert.NotNull(shell.Handler);
+			});
+		}
+
+		[Fact(DisplayName = "LifeCycleEvents Fire When Navigating Top Tabs")]
+		public async Task LifeCycleEventsFireWhenNavigatingTopTabs()
+		{
+			SetupBuilder();
+
+			var page1 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 1", Background = SolidColorBrush.Purple } };
+			var page2 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 2", Background = SolidColorBrush.Green } };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.Items.Add(new Tab()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Title = "Tab 1",
+							Content = page1
+						},
+						new ShellContent()
+						{
+							Title = "Tab 2",
+							Content = page2
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnNavigatedToAsync(page1);
+
+				Assert.Equal(0, page2.OnNavigatedToCount);
+				await TapToSelect(page2);
+				Assert.Equal(page2.Parent, shell.CurrentItem.CurrentItem.CurrentItem);
+				page2.AssertLifeCycleCounts();
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title")]
+		public async Task ToolbarTitle()
+		{
+			SetupBuilder();
+			var navPage = new Shell()
+			{
+				CurrentItem = new ContentPage()
+				{
+					Title = "Page Title"
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				string title = GetToolbarTitle(handler);
+				Assert.Equal("Page Title", title);
+				return Task.CompletedTask;
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title View Updates")]
+		public async Task ToolbarTitleViewUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var page2 = new ContentPage()
+			{
+				Title = "Page 2"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			var titleView1 = new VerticalStackLayout();
+			var titleView2 = new Label();
+
+			Shell.SetTitleView(page2, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(page2);
+				Assert.True(await AssertionExtensions.Wait(() => titleView1.Handler != null && titleView1.ToPlatform() == GetTitleView(handler)));
+				Shell.SetTitleView(page2, titleView2);
+				Assert.True(await AssertionExtensions.Wait(() => titleView2.Handler != null && titleView2.ToPlatform() == GetTitleView(handler)));
+			});
+		}
+
+		[Fact(DisplayName = "Toolbar Title Updates")]
+		public async Task ToolbarTitleUpdates()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var page2 = new ContentPage()
+			{
+				Title = "Page 2"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(page2);
+				Assert.True(await AssertionExtensions.Wait(() => "Page 2" == GetToolbarTitle(handler)));
+				page2.Title = "New Title";
+				page1.Title = "Previous Page Title"; // Ensuring this doesn't influence title
+				Assert.True(await AssertionExtensions.Wait(() => "New Title" == GetToolbarTitle(handler)));
+			});
+		}
+
+#if !WINDOWS
+		[Fact(DisplayName = "Title View Measures")]
+		public async Task TitleViewMeasures()
+		{
+			SetupBuilder();
+			var page1 = new ContentPage()
+			{
+				Title = "Page 1"
+			};
+
+			var navPage = new Shell()
+			{
+				CurrentItem = page1
+			};
+
+			var titleView1 = new VerticalStackLayout()
+			{
+				new Label()
+				{
+					Text = "Title View"
+				}
+			};
+
+			Shell.SetTitleView(page1, titleView1);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(titleView1);
+				var containerSize = GetTitleViewExpectedSize(handler);
+				var titleView1PlatformSize = titleView1.GetBoundingBox();
+				Assert.Equal(containerSize.Width, titleView1PlatformSize.Width);
+				Assert.Equal(containerSize.Height, titleView1PlatformSize.Height);
+				Assert.True(containerSize.Height > 0);
+				Assert.True(containerSize.Width > 0);
+
+			});
+		}
+#endif
+
+		[Fact(DisplayName = "Pages Do Not Leak")]
+		public async Task PagesDoNotLeak()
+		{
+			SetupBuilder();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
+			});
+
+			WeakReference pageReference = null;
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await OnLoadedAsync(shell.CurrentPage);
+
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new CollectionView(),
+					}
+				};
+				pageReference = new WeakReference(page);
+
+				await shell.Navigation.PushAsync(page);
+				await shell.Navigation.PopAsync();
+			});
+
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
+			{
+				if (!pageReference.IsAlive)
+					break;
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+
+			Assert.NotNull(pageReference);
+			Assert.False(pageReference.IsAlive, "Page should not be alive!");
+		}
+
+		[Fact(DisplayName = "Can Reuse Pages")]
+		public async Task CanReusePages()
+		{
+			SetupBuilder();
+			var rootPage = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+			var reusedPage = new ContentPage
+			{
+				Content = new Label { Text = "HEY" }
+			};
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				await shell.Navigation.PushAsync(reusedPage);
+				await shell.Navigation.PopAsync();
+				await shell.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
 			});
 		}
 

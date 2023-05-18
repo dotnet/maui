@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,9 +31,9 @@ namespace Microsoft.Maui.Controls
 
 		readonly Dictionary<BindableProperty, BindablePropertyContext> _properties = new Dictionary<BindableProperty, BindablePropertyContext>(4);
 		bool _applying;
-		object _inheritedContext;
+		WeakReference _inheritedContext;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BindingContext"/>.</summary>
 		public static readonly BindableProperty BindingContextProperty =
 			BindableProperty.Create(nameof(BindingContext), typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
@@ -40,7 +41,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContext']/Docs/*" />
 		public object BindingContext
 		{
-			get => _inheritedContext ?? GetValue(BindingContextProperty);
+			get => _inheritedContext?.Target ?? GetValue(BindingContextProperty);
 			set => SetValue(BindingContextProperty, value);
 		}
 
@@ -236,7 +237,9 @@ namespace Microsoft.Maui.Controls
 			if (bpContext != null && ((bpContext.Attributes & BindableContextAttributes.IsManuallySet) != 0))
 				return;
 
-			if (ReferenceEquals(bindable._inheritedContext, value))
+			object oldContext = bindable._inheritedContext?.Target;
+
+			if (ReferenceEquals(oldContext, value))
 				return;
 
 			if (bpContext != null && bpContext.Binding != null)
@@ -248,7 +251,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				bindable._inheritedContext = value;
+				bindable._inheritedContext = new WeakReference(value);
 				bindable.ApplyBindings(skipBindingContext: true, fromBindingContextChanged: true);
 				bindable.OnBindingContextChanged();
 			}
@@ -551,7 +554,7 @@ namespace Microsoft.Maui.Controls
 
 		static void BindingContextPropertyBindingChanging(BindableObject bindable, BindingBase oldBindingBase, BindingBase newBindingBase)
 		{
-			object context = bindable._inheritedContext;
+			object context = bindable._inheritedContext?.Target;
 
 			if (context == null && oldBindingBase is Binding oldBinding)
 				context = oldBinding.Context;

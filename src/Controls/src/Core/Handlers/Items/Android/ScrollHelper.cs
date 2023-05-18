@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable disable
+using System;
 using AndroidX.RecyclerView.Widget;
 using ARect = Android.Graphics.Rect;
 

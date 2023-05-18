@@ -1,3 +1,4 @@
+#nullable disable
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -14,57 +15,57 @@ namespace Microsoft.Maui.Controls
 	{
 		Flex.Item _root;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='DirectionProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="Direction"/>.</summary>
 		public static readonly BindableProperty DirectionProperty =
 			BindableProperty.Create(nameof(Direction), typeof(FlexDirection), typeof(FlexLayout), FlexDirection.Row,
 									propertyChanged: OnDirectionPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='JustifyContentProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="JustifyContent"/>.</summary>
 		public static readonly BindableProperty JustifyContentProperty =
 			BindableProperty.Create(nameof(JustifyContent), typeof(FlexJustify), typeof(FlexLayout), FlexJustify.Start,
 									propertyChanged: OnJustifyContentPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignContentProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="AlignContent"/>.</summary>
 		public static readonly BindableProperty AlignContentProperty =
 			BindableProperty.Create(nameof(AlignContent), typeof(FlexAlignContent), typeof(FlexLayout), FlexAlignContent.Stretch,
 									propertyChanged: OnAlignContentPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="AlignItems"/>.</summary>
 		public static readonly BindableProperty AlignItemsProperty =
 			BindableProperty.Create(nameof(AlignItems), typeof(FlexAlignItems), typeof(FlexLayout), FlexAlignItems.Stretch,
 									propertyChanged: OnAlignItemsPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='PositionProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="Position"/>.</summary>
 		public static readonly BindableProperty PositionProperty =
 			BindableProperty.Create(nameof(Position), typeof(FlexPosition), typeof(FlexLayout), FlexPosition.Relative,
 									propertyChanged: OnPositionPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='WrapProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <see cref="Wrap"/>.</summary>
 		public static readonly BindableProperty WrapProperty =
 			BindableProperty.Create(nameof(Wrap), typeof(FlexWrap), typeof(FlexLayout), FlexWrap.NoWrap,
 									propertyChanged: OnWrapPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='OrderProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Order</c>.</summary>
 		public static readonly BindableProperty OrderProperty =
 			BindableProperty.CreateAttached("Order", typeof(int), typeof(FlexLayout), default(int),
 											propertyChanged: OnOrderPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='GrowProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Grow</c>.</summary>
 		public static readonly BindableProperty GrowProperty =
 			BindableProperty.CreateAttached("Grow", typeof(float), typeof(FlexLayout), default(float),
 											propertyChanged: OnGrowPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='ShrinkProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Shrink</c>.</summary>
 		public static readonly BindableProperty ShrinkProperty =
 			BindableProperty.CreateAttached("Shrink", typeof(float), typeof(FlexLayout), 1f,
 											propertyChanged: OnShrinkPropertyChanged, validateValue: (bindable, value) => (float)value >= 0);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='AlignSelfProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>AlignSelf</c>.</summary>
 		public static readonly BindableProperty AlignSelfProperty =
 			BindableProperty.CreateAttached("AlignSelf", typeof(FlexAlignSelf), typeof(FlexLayout), FlexAlignSelf.Auto,
 											propertyChanged: OnAlignSelfPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/FlexLayout.xml" path="//Member[@MemberName='BasisProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>Basis</c>.</summary>
 		public static readonly BindableProperty BasisProperty =
 			BindableProperty.CreateAttached("Basis", typeof(FlexBasis), typeof(FlexLayout), FlexBasis.Auto,
 											propertyChanged: OnBasisPropertyChanged);
@@ -482,6 +483,14 @@ namespace Microsoft.Maui.Controls
 		{
 			if (_root == null)
 				return;
+
+			if (child is not BindableObject)
+			{
+				// If this is a pure Core IView, we need to track all the flex properties
+				// locally because we don't have attached properties for them
+				_viewInfo.Add(child, new FlexInfo());
+			}
+
 			var item = (child as FlexLayout)?._root ?? new Flex.Item();
 			InitItemProperties(child, item);
 			if (child is not FlexLayout)

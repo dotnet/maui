@@ -1,5 +1,4 @@
-﻿#nullable enable
-using Microsoft.Maui.Controls.Internals;
+﻿using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.UI.Xaml.Controls;
 

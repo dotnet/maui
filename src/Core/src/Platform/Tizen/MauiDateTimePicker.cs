@@ -4,9 +4,9 @@ using Tizen.NUI.BaseComponents;
 using Tizen.NUI.Components;
 using Tizen.UIExtensions.NUI;
 using NButton = Tizen.UIExtensions.NUI.Button;
-using NView = Tizen.NUI.BaseComponents.View;
 using NFontAttributes = Tizen.UIExtensions.Common.FontAttributes;
 using NTextAlignment = Tizen.UIExtensions.Common.TextAlignment;
+using NView = Tizen.NUI.BaseComponents.View;
 using TColor = Tizen.UIExtensions.Common.Color;
 
 namespace Microsoft.Maui.Platform
