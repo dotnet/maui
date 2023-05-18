@@ -1,3 +1,5 @@
+using System.IO.Path;
+
 bool isCleanSet = HasArgument("clean") || IsTarget("clean");
 
 Task("Clean")
@@ -66,7 +68,9 @@ string GetAndroidSDKPath()
     var ANDROID_SDK_ROOT = Argument("android", EnvironmentVariable("ANDROID_SDK_ROOT") ?? EnvironmentVariable("ANDROID_HOME"));
 
     if (string.IsNullOrEmpty(ANDROID_SDK_ROOT)) {
-        throw new Exception("Environment variable 'ANDROID_SDK_ROOT' or 'ANDROID_HOME' must be set to the Android SDK root.");    
+        ANDROID_SDK_ROOT = IsRunningOnWindows()
+            ? Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Android", "android-sdk")
+            : Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Library", "Developer", "Xamarin", "android-sdk-macosx");
     }
 
     return ANDROID_SDK_ROOT;
