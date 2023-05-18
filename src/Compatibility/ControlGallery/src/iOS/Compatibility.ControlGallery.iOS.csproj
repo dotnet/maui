@@ -18,7 +18,7 @@
     <DefineConstants>$(DefineConstants);iOS;IOS</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' And '$(OS)' != 'Windows_NT' ">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
     <ArchiveOnBuild>true</ArchiveOnBuild>
   </PropertyGroup>

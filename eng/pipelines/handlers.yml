@@ -78,6 +78,7 @@ parameters:
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: build-windows
+        runtimeId: iossimulator-x64
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
@@ -85,6 +86,7 @@ parameters:
         bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
+        runtimeId: ios-arm64
   - name: PackPlatforms
     type: object
     default:
@@ -220,7 +222,7 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy iOS App'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
+                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/{{ BuildPlatform.runtimeId }}/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
                   TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/'
                   CleanTargetFolder: false
                   flattenFolders: false
