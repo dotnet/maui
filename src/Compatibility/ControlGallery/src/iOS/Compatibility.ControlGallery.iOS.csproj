@@ -18,6 +18,11 @@
     <DefineConstants>$(DefineConstants);iOS;IOS</DefineConstants>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+    <ArchiveOnBuild>true</ArchiveOnBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--<PackageReference Include="AdvancedColorPicker" Version="2.0.1" />-->
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
