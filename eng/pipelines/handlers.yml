@@ -222,7 +222,7 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy iOS App'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/{{ BuildPlatform.runtimeId }}/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
+                  SourceFolder: src/Compatibility/ControlGallery/src/iOS/bin/${{ BuildConfiguration }}//net7.0-ios/${{ BuildPlatform.runtimeId }}/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/
                   TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}/app/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app/'
                   CleanTargetFolder: false
                   flattenFolders: false
