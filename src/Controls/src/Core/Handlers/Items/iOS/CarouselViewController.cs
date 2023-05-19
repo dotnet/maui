@@ -135,15 +135,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override UICollectionViewDelegateFlowLayout CreateDelegator() => new CarouselViewDelegator(ItemsViewLayout, this);
 
-#if NET8_0_OR_GREATER
 		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
-#endif
 		protected override string DetermineCellReuseId()
 		{
 			if (Carousel.ItemTemplate != null)
 				return CarouselTemplatedCell.ReuseId;
 
 			return base.DetermineCellReuseId();
+		}
+
+		protected override string DetermineCellReuseId(NSIndexPath indexPath)
+		{
+			var itemIndex = GetIndexFromIndexPath(indexPath);
+			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
 
 		protected override void RegisterViewTypes()

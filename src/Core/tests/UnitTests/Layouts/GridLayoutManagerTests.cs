@@ -2898,5 +2898,55 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<Double>(expectedHeight));
 		}
+
+    [Theory, Category(GridStarSizing)]
+		[InlineData(0, 0)]
+		[InlineData(16, 0)]
+		[InlineData(0, 16)]
+		[InlineData(16, 16)]
+		[InlineData(-16, 16)]
+		[InlineData(-16, -16)]
+		[InlineData(16, -16)]
+		public void StarColumnsAccountForPadding(double left, double right)
+		{
+			var grid = CreateGridLayout(columns: "*,48", rows: "200");
+			grid.Width.Returns(200);
+			grid.Padding.Returns(new Thickness(left, 0, right, 0));
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, row: 0, colSpan: 2);
+
+			MeasureAndArrange(grid, 900, 900);
+
+			// We expect the left edge of the view to be inset by the left padding,
+			// and the width of the view to be the width of the Grid minus all padding
+			AssertArranged(view0, new Rect(left, 0, 200 - left - right, 200));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0, 0)]
+		[InlineData(16, 0)]
+		[InlineData(0, 16)]
+		[InlineData(16, 16)]
+		[InlineData(-16, 16)]
+		[InlineData(-16, -16)]
+		[InlineData(16, -16)]
+		public void StarRowsAccountForPadding(double top, double bottom)
+		{
+			var grid = CreateGridLayout(rows: "*,48", columns: "200");
+			grid.Height.Returns(200);
+			grid.Padding.Returns(new Thickness(0, top, 0, bottom));
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, row: 0, rowSpan: 2);
+
+			MeasureAndArrange(grid, 900, 900);
+
+			// We expect the top edge of the view to be inset by the top padding,
+			// and the height of the view to be the height of the Grid minus all padding
+			AssertArranged(view0, new Rect(0, top, 200, 200 - top - bottom));
+		}
 	}
 }
