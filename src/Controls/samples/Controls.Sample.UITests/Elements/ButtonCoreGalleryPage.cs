@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls.Internals;
+﻿using System;
 using System.Collections.Generic;
-using System;
 using System.Linq;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample
 {

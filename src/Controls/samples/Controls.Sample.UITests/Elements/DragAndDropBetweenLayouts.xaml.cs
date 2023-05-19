@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
 			e.Data.Properties.Add("Source", sl);
-			
+
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.LightBlue;
 			else

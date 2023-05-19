@@ -7,7 +7,7 @@ namespace Microsoft.Maui.AppiumTests
 		public static readonly string RadioButton = "android.widget.RadioButton";
 		public const string RadioButtonGallery = "* marked:'RadioButton Core Gallery'";
 
-		public RadioButtonUITests(TestDevice device) 
+		public RadioButtonUITests(TestDevice device)
 			: base(device)
 		{
 			PlatformViewType = RadioButton;

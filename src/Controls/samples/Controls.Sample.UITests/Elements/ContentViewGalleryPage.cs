@@ -1,9 +1,9 @@
-﻿using Microsoft.Maui;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 
 namespace Maui.Controls.Sample
 {
@@ -81,7 +81,7 @@ namespace Maui.Controls.Sample
 			_layout.Children.Add(_picker);
 			_layout.Children.Add(_targetEntry);
 			_layout.Children.Add(goButton);
-			if(_contentViews.Any())
+			if (_contentViews.Any())
 			{
 				_layout.Children.Add(_contentViews[_currentIndex]);
 			}
@@ -122,7 +122,7 @@ namespace Maui.Controls.Sample
 
 			var targetContainer = _contentViews[index];
 
-			if(_layout.Children.Count == 4)
+			if (_layout.Children.Count == 4)
 			{
 				_layout.Children.RemoveAt(3);
 			}

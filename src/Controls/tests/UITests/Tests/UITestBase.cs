@@ -78,8 +78,8 @@ namespace Microsoft.Maui.AppiumTests
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
-					testConfig.AppPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH")) 
-						? windoesExePath 
+					testConfig.AppPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
+						? windoesExePath
 						: Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
 					break;
 			}

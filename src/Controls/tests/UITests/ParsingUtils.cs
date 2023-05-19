@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Controls;
+﻿using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.AppiumTests
 {

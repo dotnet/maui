@@ -61,7 +61,7 @@
 				return false;
 			}
 
-			return 
+			return
 				PlatformName == rhsTestConfig.PlatformName &&
 				AutomationName == rhsTestConfig.AutomationName &&
 				DeviceName == rhsTestConfig.DeviceName &&

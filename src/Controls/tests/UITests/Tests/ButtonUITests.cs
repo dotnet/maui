@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Appium;
-using Maui.Controls.Sample;
+﻿using Maui.Controls.Sample;
+using Microsoft.Maui.Appium;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests

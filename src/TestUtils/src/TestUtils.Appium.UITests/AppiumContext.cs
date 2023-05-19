@@ -119,7 +119,7 @@ namespace TestUtils.Appium.UITests
 
 		public void Dispose()
 		{
-			foreach(var context in _contexts)
+			foreach (var context in _contexts)
 			{
 				context.Dispose();
 			}

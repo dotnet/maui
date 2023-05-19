@@ -21,7 +21,7 @@ namespace TestUtils.Appium.UITests
 
 		public void InitialSetup(IContext uiTestContext)
 		{
-			if(uiTestContext == null)
+			if (uiTestContext == null)
 			{
 				throw new ArgumentNullException(nameof(uiTestContext));
 			}
@@ -31,7 +31,7 @@ namespace TestUtils.Appium.UITests
 			if (_uiTestContext == null || !_uiTestContext.TestConfig.Equals(testConfig))
 			{
 				// Since the configuration doesn't match, we try to dispose of the old driver before creating a new one
-				if(_uiTestContext != null && _uiTestContext.App is IApp2 oldApp2)
+				if (_uiTestContext != null && _uiTestContext.App is IApp2 oldApp2)
 				{
 					oldApp2.Dispose();
 				}

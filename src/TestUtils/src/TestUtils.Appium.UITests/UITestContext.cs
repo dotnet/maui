@@ -19,7 +19,7 @@ namespace TestUtils.Appium.UITests
 
 		public void Dispose()
 		{
-			if(_app is IApp2 app2)
+			if (_app is IApp2 app2)
 			{
 				app2.Dispose();
 			}

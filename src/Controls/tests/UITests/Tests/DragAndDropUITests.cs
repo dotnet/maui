@@ -1,5 +1,5 @@
-﻿using Microsoft.Maui.Appium;
-using Maui.Controls.Sample;
+﻿using Maui.Controls.Sample;
+using Microsoft.Maui.Appium;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement("LabelDragElement");
 			App.DragAndDrop("LabelDragElement", "DragTarget");
 			App.WaitForElement("DragEventsLabel");
-			
+
 			var textAfterDrag = App.Query("DragEventsLabel").First().Text;
 			Assert.True(textAfterDrag.Contains("DragStarting", StringComparison.OrdinalIgnoreCase));
 			Assert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));

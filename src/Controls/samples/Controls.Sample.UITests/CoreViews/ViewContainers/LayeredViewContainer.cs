@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Layouts;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 
 namespace Maui.Controls.Sample
 {
