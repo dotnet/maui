@@ -813,12 +813,12 @@ namespace Microsoft.Maui.Layouts
 
 				if (expandStarRows)
 				{
-					ExpandStarDefinitions(_rows, targetSize.Height, GridMinimumHeight(), _rowSpacing, _rowStarCount);
+					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight(), _rowSpacing, _rowStarCount);
 				}
 
 				if (expandStarColumns)
 				{
-					ExpandStarDefinitions(_columns, targetSize.Width, GridMinimumWidth(), _columnSpacing, _columnStarCount);
+					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth(), _columnSpacing, _columnStarCount);
 				}
 			}
 
