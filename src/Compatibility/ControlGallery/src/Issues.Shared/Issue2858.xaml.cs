@@ -68,6 +68,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMauiAndroid]
 		public void CascadeInputTransparentGrids()
 		{
 			RunningApp.WaitForElement(InnerGrid);

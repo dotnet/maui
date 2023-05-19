@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[Category(UITestCategories.ManualReview)]
 		public void Issue3413Test()

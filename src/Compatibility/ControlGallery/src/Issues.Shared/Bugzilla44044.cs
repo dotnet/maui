@@ -14,6 +14,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 	[Category(UITestCategories.Gestures)]
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 
 	[Preserve(AllMembers = true)]

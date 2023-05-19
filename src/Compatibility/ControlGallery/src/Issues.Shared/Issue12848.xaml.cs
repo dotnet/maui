@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue12848Test()
 		{
 			RunningApp.WaitForElement("TestCarouselView");

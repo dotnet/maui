@@ -14,7 +14,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			var np = new Button { Text = "Try NavigationPage", Command = new Command(() => { PushNavigationPage(DeviceDirection); }) };
 			var mdp = new Button { Text = "Try FlyoutPage", Command = new Command(() => { PushFlyoutPage(DeviceDirection); }) };
-			var crp = new Button { Text = "Try CarouselPage", Command = new Command(() => { PushCarouselPage(DeviceDirection); }) };
 			var tp = new Button { Text = "Try TabbedPage", Command = new Command(() => { PushTabbedPage(DeviceDirection); }) };
 			var cp = new Button { Text = "Try ContentPage", Command = new Command(() => { PushContentPage(DeviceDirection); }) };
 
@@ -24,7 +23,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 					new Label { Text = "Click a button below to swap the MainPage of the app." },
 					np,
 					mdp,
-					crp,
 					tp,
 					cp
 				}
@@ -39,11 +37,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		public static void PushFlyoutPage(FlowDirection direction)
 		{
 			((App)Application.Current).SetMainPage(new FlowDirectionGalleryMDP(direction));
-		}
-
-		public static void PushCarouselPage(FlowDirection direction)
-		{
-			((App)Application.Current).SetMainPage(new FlowDirectionGalleryCarP(direction));
 		}
 
 		public static void PushTabbedPage(FlowDirection direction)
@@ -78,17 +71,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			Flyout = new FlowDirectionGalleryCP(direction) { Title = "Flyout", BackgroundColor = Colors.Red };
 			Detail = new NavigationPage(new FlowDirectionGalleryCP(direction) { Title = "Detail" });
 			IsPresented = true;
-		}
-	}
-
-	internal class FlowDirectionGalleryCarP : CarouselPage
-	{
-		public FlowDirectionGalleryCarP(FlowDirection direction)
-		{
-			FlowDirection = direction;
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "1" });
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "2" });
-			Children.Add(new FlowDirectionGalleryCP(direction) { Title = "3" });
 		}
 	}
 
@@ -208,9 +190,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				{
 					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryMDP":
 						FlowDirectionGalleryLandingPage.PushFlyoutPage(newDirection);
-						break;
-					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryCarP":
-						FlowDirectionGalleryLandingPage.PushCarouselPage(newDirection);
 						break;
 					case "Microsoft.Maui.Controls.ControlGallery.FlowDirectionGalleryNP":
 						FlowDirectionGalleryLandingPage.PushNavigationPage(newDirection);
