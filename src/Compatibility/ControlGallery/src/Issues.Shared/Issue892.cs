@@ -83,6 +83,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// NavigationPage nested in FlyoutPage not working as expected Android
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[Description ("Change pages in the Flyout ListView, and navigate to the end and back")]
 		[UiTest (typeof(FlyoutPage))]

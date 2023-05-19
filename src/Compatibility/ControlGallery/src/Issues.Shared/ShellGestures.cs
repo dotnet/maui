@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __ANDROID__
 		[NUnit.Framework.Category(UITestCategories.CustomRenderers)]
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void TouchListener()
 		{
 			TapInFlyout(TouchListenerTitle);

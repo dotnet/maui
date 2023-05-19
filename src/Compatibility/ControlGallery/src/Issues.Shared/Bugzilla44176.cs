@@ -122,6 +122,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("grid"));

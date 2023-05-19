@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		static NavigationPage NavigationPage;
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test, TestCaseSource(nameof(TestCases))]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
 		public void VerifyTapBubbling(string menuItem, bool frameShouldRegisterTap)

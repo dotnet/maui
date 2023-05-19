@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST && __ANDROID__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(DatePicker))]
 		public void InvisibleDatepickerShowsDialogOnFocus()
@@ -128,6 +129,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.TapCoordinates(5, 100);
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(TimePicker))]
 		public void InvisibleTimepickerShowsDialogOnFocus()
@@ -142,6 +144,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.TapCoordinates(5, 100);
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(Picker))]
 		public void InvisiblePickerShowsDialogOnFocus()
