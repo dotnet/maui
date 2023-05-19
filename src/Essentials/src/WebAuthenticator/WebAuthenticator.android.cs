@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Authentication
 		Uri currentRedirectUri = null;
 		WebAuthenticatorOptions currentOptions = null;
 
+		internal bool AuthenticatingWithCustomTabs { get; private set; } = false;
+
 		public bool OnResumeCallback(Intent intent)
 		{
 			// If we aren't waiting on a task, don't handle the url
@@ -69,8 +71,12 @@ namespace Microsoft.Maui.Authentication
 
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;
+			
+			// Try to start with custom tabs if the system supports it and we resolve it
+			AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
 
-			if (!(await StartCustomTabsActivity(url)))
+			// Fall back to using the system browser if necessary
+			if (!AuthenticatingWithCustomTabs)
 			{
 				// Fall back to opening the system-registered browser if necessary
 				var urlOriginalString = url.OriginalString;
