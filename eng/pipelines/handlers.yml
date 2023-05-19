@@ -176,15 +176,7 @@ stages:
                 displayName: 'Copy Android Files for UITest'
                 inputs:
                   SourceFolder: src/Compatibility/ControlGallery/test/Android.UITests/bin/${{ BuildConfiguration }}/net472/
-                  Contents: |
-                    Newtonsoft.Json.*
-                    nunit.*
-                    NUnit3.*
-                    Plugin.*
-                    Xamarin.*
-                    Microsoft.*
-                    DocoptNet*,
-                    Mono.*,
+                  Contents: '*'
                   TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}'
                   CleanTargetFolder: false
                   flattenFolders: true
@@ -221,13 +213,13 @@ stages:
               #     CleanTargetFolder: false
               #     flattenFolders: false
 
-              - task: CopyFiles@2
-                displayName: 'Copy test-cloud.exe'
-                inputs:
-                  Contents: '**/Xamarin.UITest.*/tools/test-cloud.exe'
-                  TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
-                  OverWrite: true
-                  flattenFolders: true
+              # - task: CopyFiles@2
+              #   displayName: 'Copy test-cloud.exe'
+              #   inputs:
+              #     Contents: '**/Xamarin.UITest.*/tools/test-cloud.exe'
+              #     TargetFolder: '$(build.artifactstagingdirectory)/testcloud'
+              #     OverWrite: true
+              #     flattenFolders: true
                   
               - task: PublishTestResults@2
                 condition: always()
