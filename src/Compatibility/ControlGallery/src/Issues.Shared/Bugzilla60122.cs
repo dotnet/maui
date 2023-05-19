@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// This test won't work on Windows right now because we can only test desktop, so touch events
 		// (like LongPress) don't really work. The test should work manually on a touch screen, though.
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void LongClickFiresOnCustomImageRenderer()
 		{

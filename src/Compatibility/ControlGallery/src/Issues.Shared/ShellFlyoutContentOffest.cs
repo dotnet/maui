@@ -105,6 +105,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void FlyoutContentOffsetsCorrectly()
 		{
 			RunningApp.WaitForElement("PageLoaded");

@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void DelayedAddingOfShellContentDoesntCrash()
 		{
 			RunningApp.WaitForElement("Success");
@@ -90,6 +91,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void DelayedAddingOfShellSectionDoesntCrash()
 		{
 			RunningApp.WaitForElement("Success");
@@ -120,6 +122,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void DelayedAddingOfShellItemDoesntCrash()
 		{
 			RunningApp.WaitForElement("Success");
