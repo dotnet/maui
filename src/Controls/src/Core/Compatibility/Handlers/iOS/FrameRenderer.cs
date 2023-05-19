@@ -51,9 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (e.NewElement != null)
 			{
-				_actualView.CrossPlatformArrange = (e.NewElement as IContentView).CrossPlatformArrange;
-				_actualView.CrossPlatformMeasure = (e.NewElement as IContentView).CrossPlatformMeasure;
-
+				_actualView.View = e.NewElement;
 				SetupLayer();
 				UpdateShadow();
 			}

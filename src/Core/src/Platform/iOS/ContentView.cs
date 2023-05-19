@@ -19,7 +19,16 @@ namespace Microsoft.Maui.Platform
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (CrossPlatformMeasure == null)
+#pragma warning disable CS0618 // Type or member is obsolete
+			var crossPlatformMeasure = CrossPlatformMeasure;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			if (crossPlatformMeasure is null && View is IContentView view)
+			{
+				crossPlatformMeasure = view.CrossPlatformMeasure;
+			}
+
+			if (crossPlatformMeasure is null)
 			{
 				return base.SizeThatFits(size);
 			}
@@ -27,7 +36,7 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = size.Width;
 			var heightConstraint = size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var crossPlatformSize = crossPlatformMeasure(widthConstraint, heightConstraint);
 
 			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
@@ -37,6 +46,26 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+#pragma warning disable CS0618 // Type or member is obsolete
+			var crossPlatformMeasure = CrossPlatformMeasure;
+			var crossPlatformArrange = CrossPlatformArrange;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+			var view = View as IContentView;
+			if (crossPlatformMeasure is null && view is not null)
+			{
+				crossPlatformMeasure = view.CrossPlatformMeasure;
+			}
+			if (crossPlatformArrange is null && view is not null)
+			{
+				crossPlatformArrange = view.CrossPlatformArrange;
+			}
+
+			if (crossPlatformMeasure is null || crossPlatformArrange is null)
+			{
+				return;
+			}
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 			var widthConstraint = bounds.Width;
@@ -49,11 +78,11 @@ namespace Microsoft.Maui.Platform
 
 			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
 			{
-				CrossPlatformMeasure?.Invoke(widthConstraint, heightConstraint);
+				crossPlatformMeasure(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
-			CrossPlatformArrange?.Invoke(bounds);
+			crossPlatformArrange(bounds);
 
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
@@ -70,7 +99,9 @@ namespace Microsoft.Maui.Platform
 			Superview?.SetNeedsLayout();
 		}
 
+		[Obsolete("Use View instead. This member causes memory leaks.")]
 		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
+		[Obsolete("Use View instead. This member causes memory leaks.")]
 		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		internal IBorderStroke? Clip

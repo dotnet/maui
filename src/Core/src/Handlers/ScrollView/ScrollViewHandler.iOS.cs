@@ -179,11 +179,15 @@ namespace Microsoft.Maui.Handlers
 			var contentContainer = new ContentView()
 			{
 				View = scrollView.PresentedContent,
+#pragma warning disable CS0618 // Type or member is obsolete
 				CrossPlatformMeasure = ConstrainToScrollView(scrollView.CrossPlatformMeasure, platformScrollView, scrollView),
+#pragma warning restore CS0618
 				Tag = ContentPanelTag
 			};
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView, scrollView);
+#pragma warning restore CS0618
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);

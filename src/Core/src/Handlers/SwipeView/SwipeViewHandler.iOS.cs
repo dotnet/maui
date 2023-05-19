@@ -10,9 +10,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			return new MauiSwipeView
 			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange,
-				Element = VirtualView
+				View = VirtualView
 			};
 		}
 
@@ -21,9 +19,7 @@ namespace Microsoft.Maui.Handlers
 			base.SetVirtualView(view);
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			PlatformView.Element = VirtualView;
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.View = VirtualView;
 		}
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)

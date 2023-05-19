@@ -13,14 +13,7 @@ namespace Microsoft.Maui.Platform
 			LoadFirstView(page);
 		}
 
-		protected override UIView CreatePlatformView(IElement view)
-		{
-			return new ContentView
-			{
-				CrossPlatformArrange = ((IContentView)view).CrossPlatformArrange,
-				CrossPlatformMeasure = ((IContentView)view).CrossPlatformMeasure
-			};
-		}
+		protected override UIView CreatePlatformView(IElement view) => new ContentView { View = (IContentView)view };
 
 		public override void TraitCollectionDidChange(UITraitCollection? previousTraitCollection)
 		{

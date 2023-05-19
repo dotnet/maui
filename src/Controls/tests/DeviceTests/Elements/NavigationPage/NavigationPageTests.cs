@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				});
 			});
@@ -269,6 +270,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new Label(),
 						new Button(),
+						new ContentView(),
 						new CollectionView(),
 					}
 				};

@@ -2103,7 +2103,6 @@ override Microsoft.Maui.Handlers.StepperHandler.CreatePlatformView() -> UIKit.UI
 override Microsoft.Maui.Handlers.StepperHandler.DisconnectHandler(UIKit.UIStepper! platformView) -> void
 override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.CreatePlatformElement() -> UIKit.UIButton!
 override Microsoft.Maui.Handlers.SwipeItemViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.ContentView!
-override Microsoft.Maui.Handlers.SwipeItemViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.SwipeViewHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiSwipeView!
 override Microsoft.Maui.Handlers.SwipeViewHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.SwitchHandler.ConnectHandler(UIKit.UISwitch! platformView) -> void

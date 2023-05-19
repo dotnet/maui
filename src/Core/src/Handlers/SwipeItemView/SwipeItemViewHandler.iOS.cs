@@ -5,24 +5,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemViewHandler : ViewHandler<ISwipeItemView, ContentView>, ISwipeItemViewHandler
 	{
-		protected override ContentView CreatePlatformView()
-		{
-			return new ContentView
-			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
-			};
-		}
-
-		public override void SetVirtualView(IView view)
-		{
-			base.SetVirtualView(view);
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
-		}
+		protected override ContentView CreatePlatformView() => new ContentView { View = VirtualView };
 
 		void UpdateContent()
 		{

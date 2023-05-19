@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Platform
 		bool _isResettingSwipe;
 		bool _isOpen;
 		OpenSwipeItem _previousOpenSwipeItem;
-		internal ISwipeView? Element { get; set; }
+		internal ISwipeView? Element => View as ISwipeView;
 
 		public MauiSwipeView()
 		{

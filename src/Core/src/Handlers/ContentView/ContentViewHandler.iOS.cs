@@ -10,11 +10,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} cannot be null");
 
-			return new ContentView
-			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
-			};
+			return new ContentView { View = VirtualView };
 		}
 
 		public override void SetVirtualView(IView view)
@@ -24,8 +20,6 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
 			PlatformView.View = view;
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
 		static void UpdateContent(IContentViewHandler handler)
@@ -56,8 +50,6 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(ContentView platformView)
 		{
-			platformView.CrossPlatformMeasure = null;
-			platformView.CrossPlatformArrange = null;
 			platformView.RemoveFromSuperview();
 			base.DisconnectHandler(platformView);
 		}
