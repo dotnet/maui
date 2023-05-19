@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Controls.Handlers

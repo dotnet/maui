@@ -6,7 +6,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class CollectionCarouselViewGallery : ContentPage

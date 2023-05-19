@@ -6,7 +6,7 @@ namespace Microsoft.Maui
 {
 	public abstract class CommandMapper : ICommandMapper
 	{
-		readonly Dictionary<string, Command> _mapper = new();
+		readonly Dictionary<string, Command> _mapper = new(StringComparer.Ordinal);
 
 		CommandMapper? _chained;
 

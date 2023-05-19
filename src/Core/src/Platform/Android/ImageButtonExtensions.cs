@@ -1,4 +1,6 @@
-﻿using Google.Android.Material.ImageView;
+﻿using Android.Graphics.Drawables;
+using Android.Widget;
+using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;
 using Microsoft.Maui.Graphics;
 
@@ -42,25 +44,36 @@ namespace Microsoft.Maui.Platform
 		public static void UpdatePadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			platformButton.SetContentPadding(imageButton);
-
-			// NOTE(jpr): post on handler to get around an Android Framework bug.
-			// see: https://github.com/material-components/material-components-android/issues/2063
 			platformButton.Post(() =>
 			{
 				platformButton.SetContentPadding(imageButton);
 			});
+			platformButton.SetContentPadding(imageButton);
 		}
 
 		internal static void SetContentPadding(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
-			var padding = imageButton.Padding;
+			var imageView = platformButton as ImageView;
 
-			platformButton.SetContentPadding(
-				(int)platformButton.Context.ToPixels(padding.Left),
-				(int)platformButton.Context.ToPixels(padding.Top),
-				(int)platformButton.Context.ToPixels(padding.Right),
-				(int)platformButton.Context.ToPixels(padding.Bottom)
-			);
+			if (imageView is not null)
+			{
+				var bitmapDrawable = imageView.Drawable as BitmapDrawable;
+
+				// Without ImageSource we do not apply Padding, although since there is no content
+				// there are no differences.
+				if (bitmapDrawable is null)
+					return;
+
+				var backgroundBounds = bitmapDrawable.Bounds;
+
+				var padding = imageButton.Padding;
+
+				bitmapDrawable.SetBounds(
+					backgroundBounds.Left + (int)platformButton.Context.ToPixels(padding.Left),
+					backgroundBounds.Top + (int)platformButton.Context.ToPixels(padding.Top),
+					backgroundBounds.Right - (int)platformButton.Context.ToPixels(padding.Right),
+					backgroundBounds.Bottom - (int)platformButton.Context.ToPixels(padding.Bottom));
+			}
 		}
 	}
 }

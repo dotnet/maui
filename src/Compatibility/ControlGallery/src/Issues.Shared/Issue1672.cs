@@ -3,10 +3,11 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1672, "UWP: Button: AccessKey support", PlatformAffected.UWP)]
