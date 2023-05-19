@@ -119,6 +119,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 		public void CollectionViewWithFooterShouldNotCrashOnDisplay()
 		{
 			// If this hasn't already crashed, the test is passing

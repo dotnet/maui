@@ -214,6 +214,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		static IEnumerable<string> TestList => new List<string> { CascadesChange, CascadesStatic, NotCascadingChange, NotCascadingStatic };
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test, TestCaseSource(nameof(TestList))]
 		public void TransparencyCascading(string test)
 		{

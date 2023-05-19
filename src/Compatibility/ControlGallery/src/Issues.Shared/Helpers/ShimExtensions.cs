@@ -36,6 +36,15 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				throw new NotImplementedException($"{list}");
 		}
 
+		public static void Add(this Grid grid, View view, int left, int top)
+		{
+			if (left < 0)
+				throw new ArgumentOutOfRangeException("left");
+			if (top < 0)
+				throw new ArgumentOutOfRangeException("top");
+			grid.Add(view, left, left + 1, top, top + 1);
+		}
+
 		public static double AutoSize => -1;
 		public static void Add(this AbsoluteLayout layout, View view, Rect bounds, AbsoluteLayoutFlags flags = AbsoluteLayoutFlags.None)
 		{

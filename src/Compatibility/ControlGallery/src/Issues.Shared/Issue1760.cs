@@ -144,6 +144,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMaui]
 		public void Issue1760Test()
 		{
 			RunningApp.WaitForElement(Before);

@@ -87,6 +87,8 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			if (app == null)
 				throw new NullReferenceException("App was not initialized.");
 
+			Application.Current ??= new TestApp(app);
+
 			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
 			return new ScreenshotConditionalApp(app);
 		}
@@ -216,10 +218,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 					}
 #endif
 #if __IOS__
-				if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
-				{
-					return;
-				}
+					if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
+					{
+						return;
+					}
 #endif
 
 #if WINDOWS
@@ -452,38 +454,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		protected abstract void Init();
 	}
 
-	internal abstract class TestCarouselPage : CarouselPage
-	{
-#if UITEST
-		public IApp RunningApp => AppSetup.RunningApp;
-
-		protected virtual bool Isolate => false;
-#endif
-
-		protected TestCarouselPage()
-		{
-#if APP
-			Init();
-#endif
-		}
-
-#if UITEST
-		[SetUp]
-		public void Setup()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestSetup(GetType(), Isolate);
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestTearDown(Isolate);
-		}
-#endif
-
-		protected abstract void Init();
-	}
-
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.FlyoutPage)]
 #endif
@@ -593,11 +563,15 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #endif
 	public abstract class TestShell : Shell
 	{
+#if ANDROID
+		protected const string FlyoutIconAutomationId = "Open navigation drawer";
+#else
 		protected const string FlyoutIconAutomationId = "OK";
+#endif
 #if __IOS__ || WINDOWS
 		protected const string BackButtonAutomationId = "Back";
 #else
-		protected const string BackButtonAutomationId = "OK";
+		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
 #if UITEST
@@ -895,6 +869,104 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		protected abstract void Init();
 
 	}
+
+#if UITEST
+	/// <summary>
+	/// All of our tests are nested inside Maui.Controls Types and a few of those types need a 
+	/// dispatcher to be set inside the ctor. 
+	/// So, when the NUnit runner instantiates a `TabbedPage` as the base class for the `TestFixture`
+	/// it'll throw an exception because it can't find a Dispatcher for the BindableObject.
+	/// That dispatcher will never actually be used but this will at least fill in the requirements.
+	/// Nunit doesn't actually used the features of a `TabbedPage` for anything that's just where
+	/// the Xamarin.UITest commands live for running a test.
+	/// </summary>
+	class TestApp : Application
+	{
+		public TestApp(IApp app)
+		{
+			Handler = new TestAppHandler(this, app);
+		}
+
+		class TestAppHandler : IElementHandler
+		{
+			TestApp _testApp;
+			IApp _app;
+			IMauiContext _mauiContext;
+
+			public TestAppHandler(TestApp testApp, IApp app)
+			{
+				_app = app;
+				_testApp = testApp;
+				_mauiContext = new ContextStub();
+			}
+
+			public object PlatformView => _app;
+
+			public IElement VirtualView => _testApp;
+
+			public IMauiContext MauiContext => _mauiContext;
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+			}
+
+			public void UpdateValue(string property)
+			{
+			}
+		}
+
+		class ContextStub : IMauiContext, IServiceProvider
+		{
+			public IDispatcher _dispatcher = new TestDispatcher();
+
+			public IServiceProvider Services => this;
+
+			public IMauiHandlersFactory Handlers => throw new NotImplementedException();
+
+			public object GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IDispatcher))
+					return _dispatcher;
+
+				throw new NotImplementedException();
+			}
+
+			class TestDispatcher : IDispatcher
+			{
+				public bool IsDispatchRequired => false;
+
+				public IDispatcherTimer CreateTimer()
+				{
+					throw new NotImplementedException();
+				}
+
+				public bool Dispatch(Action action)
+				{
+					action.Invoke();
+					return true;
+				}
+
+				public bool DispatchDelayed(TimeSpan delay, Action action)
+				{
+					throw new NotImplementedException();
+				}
+			}
+		}
+	}
+
+#endif
 }
 
 #if UITEST
