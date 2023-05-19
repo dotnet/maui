@@ -2899,7 +2899,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			view0.Received().Measure(Arg.Any<double>(), Arg.Is<Double>(expectedHeight));
 		}
 
-    [Theory, Category(GridStarSizing)]
+		[Theory, Category(GridStarSizing)]
 		[InlineData(0, 0)]
 		[InlineData(16, 0)]
 		[InlineData(0, 16)]
