@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Authentication
 
 			tcsResponse = new TaskCompletionSource<WebAuthenticatorResult>();
 			currentRedirectUri = callbackUrl;
-			
+
 			// Try to start with custom tabs if the system supports it and we resolve it
 			AuthenticatingWithCustomTabs = await StartCustomTabsActivity(url);
 

@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Authentication
 				// No intermediate activity if we returned from a system browser
 				// intent since there's no custom tab instance to clean up
 				WebAuthenticator.Default.OnResume(Intent);
-			} 
+			}
 
 			// finish this activity
 			Finish();
