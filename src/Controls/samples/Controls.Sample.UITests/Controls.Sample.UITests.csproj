@@ -46,4 +46,13 @@
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
+  <ItemGroup>
+    <MauiXaml Update="Elements\DragAndDropEvents.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Elements\DragAndDropBetweenLayouts.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+
 </Project>
