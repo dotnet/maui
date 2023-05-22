@@ -45,7 +45,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
-				((IShellController)_shellSection.FindParentOfType<Shell>()!).RemoveAppearanceObserver(this);
+
+				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
+				shell?.RemoveAppearanceObserver(this);
 			}
 
 			// If we've already connected to the navigation manager
@@ -68,7 +70,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
-				((IShellController)_shellSection.FindParentOfType<Shell>()!).AddAppearanceObserver(this, _shellSection);
+
+				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
+				shell?.AddAppearanceObserver(this, _shellSection);
 			}
 		}
 

@@ -1026,6 +1026,22 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Can Clear ShellContent")]
+		public async Task CanClearShellContent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				shell.Items.Clear();
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+		}
+
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{
