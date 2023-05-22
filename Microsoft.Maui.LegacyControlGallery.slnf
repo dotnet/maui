@@ -2,6 +2,8 @@
   "solution": {
     "path": "Microsoft.Maui-dev.sln",
     "projects": [
+      "src\\BlazorWebView\\samples\\MauiRazorClassLibrarySample\\MauiRazorClassLibrarySample.csproj",
+      "src\\BlazorWebView\\src\\Maui\\Microsoft.AspNetCore.Components.WebView.Maui.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Android\\Compatibility.ControlGallery.Android.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Core\\Compatibility.ControlGallery.Core.csproj",
       "src\\Compatibility\\ControlGallery\\src\\Issues.Shared\\Compatibility.ControlGallery.Issues.Shared.shproj",
@@ -54,6 +56,7 @@
       "src\\Graphics\\tests\\DeviceTests\\Graphics.DeviceTests.csproj",
       "src\\Graphics\\tests\\Graphics.Benchmarks\\Graphics.Benchmarks.csproj",
       "src\\Graphics\\tests\\Graphics.Tests\\Graphics.Tests.csproj",
+      "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
       "src\\TestUtils\\src\\DeviceTests.Runners.SourceGen\\TestUtils.DeviceTests.Runners.SourceGen.csproj",
       "src\\TestUtils\\src\\DeviceTests.Runners\\TestUtils.DeviceTests.Runners.csproj",
       "src\\TestUtils\\src\\DeviceTests\\TestUtils.DeviceTests.csproj",
