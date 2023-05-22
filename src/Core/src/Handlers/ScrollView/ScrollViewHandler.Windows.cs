@@ -73,6 +73,29 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			var virtualView = VirtualView;
+			var platformView = PlatformView;
+
+			if (platformView == null || virtualView == null)
+			{
+				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			var presentedContent = virtualView.PresentedContent;
+			if (presentedContent == null)
+			{
+				return base.GetDesiredSize(widthConstraint, heightConstraint);
+			}
+
+			// We need to make sure a call to Measure is invoked on our PresentedContent
+			// when we re-measure ourself
+			presentedContent.Measure(widthConstraint, heightConstraint);
+
+			return base.GetDesiredSize(widthConstraint, heightConstraint);
+		}
+
 		/*
 			Problem 1: Windows treats Padding differently than what we want for MAUI; Padding creates space
 			_around_ the scrollable area, rather than padding the content inside of it. 
