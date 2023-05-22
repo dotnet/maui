@@ -37,6 +37,29 @@ namespace Microsoft.Maui.DeviceTests
 				await bitmapDrawable1.Bitmap.AssertNotEqualAsync(bitmapDrawable2.Bitmap);
 			});
 		}
+
+		[Fact]
+		public async Task ImageSetFromStreamRenders()
+		{
+			SetupBuilder();
+			var layout = new VerticalStackLayout();
+
+			using var stream = GetType().Assembly.GetManifestResourceStream("red-embedded.png");
+
+			var image = new Image
+			{
+				Source = ImageSource.FromStream(() => stream)
+			};
+
+			layout.Add(image);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+				await image.Wait();
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+			});
+		}
 	}
 
 	// This subclass of memory stream is deliberately set up to trick Glide into using the cached image
