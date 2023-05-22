@@ -17,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests
 				{ View.AnchorXProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },
 				{ View.AnchorYProperty, Tuple.Create (new[] { "lgetLayerTransformString" }, true) },
 				{ View.BackgroundColorProperty, Tuple.Create (new[] { "backgroundColor" }, false) },
-				{ View.IsEnabledProperty, Tuple.Create (new[] { "isEnabled" }, false) },
+				{ View.IsEnabledProperty, Tuple.Create (new[] { "enabled" }, false) },
 				{ View.OpacityProperty, Tuple.Create (new [] { "alpha" }, true) },
 				{ View.RotationProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },
 				{ View.RotationXProperty, Tuple.Create (new[] { "getLayerTransformString" }, true) },

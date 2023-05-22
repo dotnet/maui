@@ -112,8 +112,6 @@ namespace Maui.Controls.Sample
 
 				SelectedItem = null;
 			};
-
-			SetValue(SemanticProperties.DescriptionProperty, "Core Pages");
 		}
 
 		async Task PushPage(Page contentPage)

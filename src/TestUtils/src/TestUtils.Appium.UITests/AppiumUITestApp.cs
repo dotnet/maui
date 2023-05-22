@@ -15,11 +15,13 @@ namespace TestUtils.Appium.UITests
 {
 	public class AppiumUITestApp : IApp2
 	{
-		public bool IsAndroid => _driver != null && _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Android");
-		public bool IsWindows => _driver != null && _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("Windows");
-		public bool IsiOS => _driver != null && _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("iOS");
-		public bool IsMac => _driver != null && _driver.Capabilities.GetCapability(MobileCapabilityType.PlatformName).Equals("mac");
+		public bool IsAndroid => _driver != null && Platform.Equals("Android", StringComparison.OrdinalIgnoreCase);
+		public bool IsWindows => _driver != null && Platform.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+		public bool IsiOS => _driver != null && Platform.Equals("iOS", StringComparison.OrdinalIgnoreCase);
+		public bool IsMac => _driver != null && Platform.Equals("mac", StringComparison.OrdinalIgnoreCase);
 		public string Platform => _driver?.Capabilities.GetCapability(MobileCapabilityType.PlatformName).ToString() ?? "";
+
+		public PointerKind PointerType => IsMac ? PointerKind.Mouse : PointerKind.Touch;
 
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
@@ -182,11 +184,12 @@ namespace TestUtils.Appium.UITests
 
 		private void DoubleTap(IWebElement element)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
 			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.Zero));
+			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			_driver?.PerformActions(new List<ActionSequence> { sequence });
@@ -195,11 +198,12 @@ namespace TestUtils.Appium.UITests
 
 		public void DoubleTapCoordinates(float x, float y)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
 			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.Zero));
+			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 			_driver?.PerformActions(new List<ActionSequence> { sequence });
@@ -222,9 +226,9 @@ namespace TestUtils.Appium.UITests
 
 		public void DragAndDrop(AppiumElement source, AppiumElement destination)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
 			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(source, 0, 0, TimeSpan.Zero));
+			sequence.AddAction(touchDevice.CreatePointerMove(source, 0, 0, TimeSpan.FromMilliseconds(5)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
 			sequence.AddAction(touchDevice.CreatePointerMove(destination, 0, 0, TimeSpan.FromSeconds(1)));
@@ -235,9 +239,9 @@ namespace TestUtils.Appium.UITests
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerKind.Touch);
+			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
 			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.Zero));
+			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(5)));
 			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
 			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromSeconds(1)));

@@ -56,8 +56,7 @@ namespace Maui.Controls.Sample
 				}
 			};
 
-			this.SetAutomationPropertiesName("Gallery");
-			this.SetAutomationPropertiesHelpText("Lists all gallery pages");
+			AutomationId = "Gallery";
 
 			Content = stackLayout;
 		}

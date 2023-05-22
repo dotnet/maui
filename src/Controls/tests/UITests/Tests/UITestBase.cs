@@ -36,13 +36,13 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
+				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-ScreenShot"));
+
 				if (App is IApp2 app2)
 				{
 					var pageSource = app2.ElementTree;
 					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-PageSource.txt"), pageSource);
 				}
-
-				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-ScreenShot"));
 			}
 		}
 
