@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
