@@ -176,7 +176,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (properties.TryGetValue(propArray[i], out var context))
 				{
-					resultArray[i].IsSet = context.Values.LastOrDefault().Key.CompareTo(SetterSpecificity.DefaultValue) == 0;
+					resultArray[i].IsSet = context.Values.LastOrDefault().Key.CompareTo(SetterSpecificity.DefaultValue) != 0;
 					resultArray[i].Value = (T)context.Values.LastOrDefault().Value;
 				}
 				else
@@ -337,23 +337,6 @@ namespace Microsoft.Maui.Controls
 			context.Attributes &= ~BindableContextAttributes.IsDynamicResource;
 		}
 
-		////TODO go away
-		//bool CanBeSetFromStyle(BindableProperty property)
-		//{
-		//	var context = GetContext(property);
-		//	if (context == null)
-		//		return true;
-		//	if ((context.Attributes & BindableContextAttributes.IsSetFromStyle) == BindableContextAttributes.IsSetFromStyle)
-		//		return true;
-		//	if (context.Values.LastOrDefault().Key.CompareTo(SetterSpecificity.DefaultValue) == 0)
-		//		return true;
-		//	//if ((context.Attributes & BindableContextAttributes.IsDefaultValue) == BindableContextAttributes.IsDefaultValue)
-		//	//	return true;
-		//	if ((context.Attributes & BindableContextAttributes.IsDefaultValueCreated) == BindableContextAttributes.IsDefaultValueCreated)
-		//		return true;
-		//	return false;
-		//}
-
 		void IDynamicResourceHandler.SetDynamicResource(BindableProperty property, string key)
 			=> SetDynamicResource(property, key, SetterSpecificity.DynamicResourceSetter);
 
@@ -367,14 +350,6 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(property));
 			if (string.IsNullOrEmpty(key))
 				throw new ArgumentNullException(nameof(key));
-
-			//var context = GetOrCreateContext(property);
-
-			//context.Attributes |= BindableContextAttributes.IsDynamicResource;
-			//if (fromStyle)
-			//	context.Attributes |= BindableContextAttributes.IsSetFromStyle;
-			//else
-			//	context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
 
 			OnSetDynamicResource(property, key, specificity);
 		}
@@ -429,7 +404,6 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValueCore']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		//WHAT DO I BREAK BY MAKING THIS INTERNAL
 		[Obsolete("go away")]
 		internal void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(property, value, attributes, SetValuePrivateFlags.Default, new SetterSpecificity());
