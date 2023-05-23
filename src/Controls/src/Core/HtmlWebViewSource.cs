@@ -5,11 +5,11 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="Type[@FullName='Microsoft.Maui.Controls.HtmlWebViewSource']/Docs/*" />
 	public class HtmlWebViewSource : WebViewSource
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="//Member[@MemberName='HtmlProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Html"/>.</summary>
 		public static readonly BindableProperty HtmlProperty = BindableProperty.Create("Html", typeof(string), typeof(HtmlWebViewSource), default(string),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((HtmlWebViewSource)bindable).OnSourceChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/HtmlWebViewSource.xml" path="//Member[@MemberName='BaseUrlProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BaseUrl"/>.</summary>
 		public static readonly BindableProperty BaseUrlProperty = BindableProperty.Create("BaseUrl", typeof(string), typeof(HtmlWebViewSource), default(string),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((HtmlWebViewSource)bindable).OnSourceChanged());
 

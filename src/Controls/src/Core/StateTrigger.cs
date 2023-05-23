@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsActiveProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/StateTrigger.xml" path="//Member[@MemberName='IsActiveProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsActive"/>.</summary>
 		public static readonly BindableProperty IsActiveProperty =
 			BindableProperty.Create(nameof(IsActive), typeof(bool), typeof(StateTrigger), default(bool),
 				propertyChanged: OnIsActiveChanged);

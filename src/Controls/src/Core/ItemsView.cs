@@ -10,6 +10,7 @@ namespace Microsoft.Maui.Controls
 	public abstract class ItemsView<[DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] TVisual> : View, ITemplatedItemsView<TVisual> where TVisual : BindableObject
 	{
 		/*
+		/// <summary>Bindable property for <see cref="InfiniteScrolling"/>.</summary>
 		public static readonly BindableProperty InfiniteScrollingProperty =
 			BindableProperty.Create<ItemsView, bool> (lv => lv.InfiniteScrolling, false);
 
@@ -19,12 +20,12 @@ namespace Microsoft.Maui.Controls
 			set { SetValue (InfiniteScrollingProperty, value); }
 		}*/
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(nameof(ItemsSource), typeof(IEnumerable), typeof(ItemsView<TVisual>), null,
 									propertyChanged: OnItemsSourceChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='ItemTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemTemplate"/>.</summary>
 		public static readonly BindableProperty ItemTemplateProperty =
 			BindableProperty.Create(nameof(ItemTemplate), typeof(DataTemplate), typeof(ItemsView<TVisual>), null,
 									validateValue: (b, v) => ((ItemsView<TVisual>)b).ValidateItemTemplate((DataTemplate)v));

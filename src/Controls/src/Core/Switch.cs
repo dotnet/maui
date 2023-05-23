@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='SwitchOffVisualState']/Docs/*" />
 		public const string SwitchOffVisualState = "Off";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='IsToggledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsToggled"/>.</summary>
 		public static readonly BindableProperty IsToggledProperty = BindableProperty.Create(nameof(IsToggled), typeof(bool), typeof(Switch), false, propertyChanged: (bindable, oldValue, newValue) =>
 		{
 			((Switch)bindable).Toggled?.Invoke(bindable, new ToggledEventArgs((bool)newValue));
@@ -20,14 +20,14 @@ namespace Microsoft.Maui.Controls
 
 		}, defaultBindingMode: BindingMode.TwoWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='OnColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="OnColor"/>.</summary>
 		public static readonly BindableProperty OnColorProperty = BindableProperty.Create(nameof(OnColor), typeof(Color), typeof(Switch), null,
 			propertyChanged: (bindable, oldValue, newValue) =>
 			{
 				((IView)bindable)?.Handler?.UpdateValue(nameof(ISwitch.TrackColor));
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='ThumbColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ThumbColor"/>.</summary>
 		public static readonly BindableProperty ThumbColorProperty = BindableProperty.Create(nameof(ThumbColor), typeof(Color), typeof(Switch), null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Switch.xml" path="//Member[@MemberName='OnColor']/Docs/*" />

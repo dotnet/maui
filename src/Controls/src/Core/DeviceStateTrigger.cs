@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(DeviceProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/DeviceStateTrigger.xml" path="//Member[@MemberName='DeviceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Device"/>.</summary>
 		public static readonly BindableProperty DeviceProperty =
 			BindableProperty.Create(nameof(Device), typeof(string), typeof(DeviceStateTrigger), string.Empty,
 				propertyChanged: OnDeviceChanged);

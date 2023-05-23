@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.StructuredItemsView']/Docs/*" />
 	public class StructuredItemsView : ItemsView
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='HeaderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Header"/>.</summary>
 		public static readonly BindableProperty HeaderProperty =
 			BindableProperty.Create(nameof(Header), typeof(object), typeof(ItemsView), null);
 
@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(HeaderProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='HeaderTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HeaderTemplate"/>.</summary>
 		public static readonly BindableProperty HeaderTemplateProperty =
 			BindableProperty.Create(nameof(HeaderTemplate), typeof(DataTemplate), typeof(ItemsView), null);
 
@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(HeaderTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='FooterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Footer"/>.</summary>
 		public static readonly BindableProperty FooterProperty =
 			BindableProperty.Create(nameof(Footer), typeof(object), typeof(ItemsView), null);
 
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FooterProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='FooterTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FooterTemplate"/>.</summary>
 		public static readonly BindableProperty FooterTemplateProperty =
 			BindableProperty.Create(nameof(FooterTemplate), typeof(DataTemplate), typeof(ItemsView), null);
 
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(FooterTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='ItemsLayoutProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsLayout"/>.</summary>
 		public static readonly BindableProperty ItemsLayoutProperty = InternalItemsLayoutProperty;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='ItemsLayout']/Docs/*" />
@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls
 			set => InternalItemsLayout = value;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/StructuredItemsView.xml" path="//Member[@MemberName='ItemSizingStrategyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemSizingStrategy"/>.</summary>
 		public static readonly BindableProperty ItemSizingStrategyProperty =
 			BindableProperty.Create(nameof(ItemSizingStrategy), typeof(ItemSizingStrategy), typeof(ItemsView));
 

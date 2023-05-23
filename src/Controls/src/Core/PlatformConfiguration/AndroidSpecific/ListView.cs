@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.ListView']/Docs/*" />
 	public static class ListView
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='IsFastScrollEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsFastScrollEnabled"/>.</summary>
 		public static readonly BindableProperty IsFastScrollEnabledProperty = BindableProperty.Create("IsFastScrollEnabled", typeof(bool), typeof(ListView), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific/ListView.xml" path="//Member[@MemberName='GetIsFastScrollEnabled']/Docs/*" />

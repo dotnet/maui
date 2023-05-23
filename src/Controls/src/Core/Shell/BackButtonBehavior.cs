@@ -6,28 +6,29 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="Type[@FullName='Microsoft.Maui.Controls.BackButtonBehavior']/Docs/*" />
 	public class BackButtonBehavior : BindableObject
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='CommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CommandParameter"/>.</summary>
 		public static readonly BindableProperty CommandParameterProperty =
 			BindableProperty.Create(nameof(CommandParameter), typeof(object), typeof(BackButtonBehavior), null, BindingMode.OneTime,
 				propertyChanged: OnCommandParameterChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='CommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty =
 			BindableProperty.Create(nameof(Command), typeof(ICommand), typeof(BackButtonBehavior), null, BindingMode.OneTime,
 				propertyChanged: OnCommandChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IconOverrideProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IconOverride"/>.</summary>
 		public static readonly BindableProperty IconOverrideProperty =
 			BindableProperty.Create(nameof(IconOverride), typeof(ImageSource), typeof(BackButtonBehavior), null, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty =
 			BindableProperty.Create(nameof(IsEnabled), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneTime);
 
+		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty =
 			BindableProperty.Create(nameof(IsVisible), typeof(bool), typeof(BackButtonBehavior), true, BindingMode.OneTime);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/BackButtonBehavior.xml" path="//Member[@MemberName='TextOverrideProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextOverride"/>.</summary>
 		public static readonly BindableProperty TextOverrideProperty =
 			BindableProperty.Create(nameof(TextOverride), typeof(string), typeof(BackButtonBehavior), null, BindingMode.OneTime);
 

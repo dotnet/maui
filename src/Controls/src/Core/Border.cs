@@ -20,9 +20,11 @@ namespace Microsoft.Maui.Controls
 		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
 			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
 
+		/// <summary>Bindable property for <see cref="Content"/>.</summary>
 		public static readonly BindableProperty ContentProperty = BindableProperty.Create(nameof(Content), typeof(View),
 			typeof(Border), null, propertyChanged: ContentChanged);
 
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		public View? Content
@@ -37,28 +39,36 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(PaddingElement.PaddingProperty, value);
 		}
 
+		/// <summary>Bindable property for <see cref="StrokeShape"/>.</summary>
 		public static readonly BindableProperty StrokeShapeProperty =
 			BindableProperty.Create(nameof(StrokeShape), typeof(IShape), typeof(Border), new Rectangle());
 
+		/// <summary>Bindable property for <see cref="Stroke"/>.</summary>
 		public static readonly BindableProperty StrokeProperty =
 			BindableProperty.Create(nameof(Stroke), typeof(Brush), typeof(Border), null);
 
+		/// <summary>Bindable property for <see cref="StrokeThickness"/>.</summary>
 		public static readonly BindableProperty StrokeThicknessProperty =
 			BindableProperty.Create(nameof(StrokeThickness), typeof(double), typeof(Border), 1.0, propertyChanged: StrokeThicknessChanged);
 
+		/// <summary>Bindable property for <see cref="StrokeDashArray"/>.</summary>
 		public static readonly BindableProperty StrokeDashArrayProperty =
 			BindableProperty.Create(nameof(StrokeDashArray), typeof(DoubleCollection), typeof(Border), null,
 				defaultValueCreator: bindable => new DoubleCollection());
 
+		/// <summary>Bindable property for <see cref="StrokeDashOffset"/>.</summary>
 		public static readonly BindableProperty StrokeDashOffsetProperty =
 			BindableProperty.Create(nameof(StrokeDashOffset), typeof(double), typeof(Border), 0.0);
 
+		/// <summary>Bindable property for <see cref="StrokeLineCap"/>.</summary>
 		public static readonly BindableProperty StrokeLineCapProperty =
 			BindableProperty.Create(nameof(StrokeLineCap), typeof(PenLineCap), typeof(Border), PenLineCap.Flat);
 
+		/// <summary>Bindable property for <see cref="StrokeLineJoin"/>.</summary>
 		public static readonly BindableProperty StrokeLineJoinProperty =
 			BindableProperty.Create(nameof(StrokeLineJoin), typeof(PenLineJoin), typeof(Border), PenLineJoin.Miter);
 
+		/// <summary>Bindable property for <see cref="StrokeMiterLimit"/>.</summary>
 		public static readonly BindableProperty StrokeMiterLimitProperty =
 			BindableProperty.Create(nameof(StrokeMiterLimit), typeof(double), typeof(Border), 10.0);
 

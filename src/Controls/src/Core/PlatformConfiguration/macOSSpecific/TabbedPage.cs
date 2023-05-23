@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific
 	public static class TabbedPage
 	{
 		#region TabsStyle
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='TabsStyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TabsStyle"/>.</summary>
 		public static readonly BindableProperty TabsStyleProperty = BindableProperty.Create("TabsStyle", typeof(TabsStyle), typeof(TabbedPage), TabsStyle.Default);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.macOSSpecific/TabbedPage.xml" path="//Member[@MemberName='GetTabsStyle'][1]/Docs/*" />

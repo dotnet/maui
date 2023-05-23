@@ -13,39 +13,40 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Text))]
 	public partial class Label : View, IFontElement, ITextElement, ITextAlignmentElement, ILineHeightElement, IElementConfiguration<Label>, IDecorableTextElement, IPaddingElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = BindableProperty.Create("VerticalTextAlignment", typeof(TextAlignment), typeof(Label), TextAlignment.Start);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(Label), default(string), propertyChanged: OnTextPropertyChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextTransformProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextDecorationsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextDecorations"/>.</summary>
 		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='FormattedTextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FormattedText"/>.</summary>
 		public static readonly BindableProperty FormattedTextProperty = BindableProperty.Create(nameof(FormattedText), typeof(FormattedString), typeof(Label), default(FormattedString),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -90,14 +91,14 @@ namespace Microsoft.Maui.Controls
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineBreakModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="LineBreakMode"/>.</summary>
 		public static readonly BindableProperty LineBreakModeProperty = BindableProperty.Create(nameof(LineBreakMode), typeof(LineBreakMode), typeof(Label), LineBreakMode.WordWrap,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='LineHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="LineHeight"/>.</summary>
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='MaxLinesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MaxLines"/>.</summary>
 		public static readonly BindableProperty MaxLinesProperty = BindableProperty.Create(nameof(MaxLines), typeof(int), typeof(Label), -1, propertyChanged: (bindable, oldvalue, newvalue) =>
 			{
 				if (bindable != null)
@@ -106,10 +107,10 @@ namespace Microsoft.Maui.Controls
 				}
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Label.xml" path="//Member[@MemberName='TextTypeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextType"/>.</summary>
 		public static readonly BindableProperty TextTypeProperty = BindableProperty.Create(nameof(TextType), typeof(TextType), typeof(Label), TextType.Text,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Label)bindable).InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged));
 

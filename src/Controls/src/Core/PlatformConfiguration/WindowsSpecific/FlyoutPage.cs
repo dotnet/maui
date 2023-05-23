@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	{
 		#region CollapsedStyle
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapseStyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CollapseStyle"/>.</summary>
 		public static readonly BindableProperty CollapseStyleProperty =
 			BindableProperty.CreateAttached("CollapseStyle", typeof(CollapseStyle),
 				typeof(FlyoutPage), CollapseStyle.Full);
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 
 		#region CollapsedPaneWidth
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/FlyoutPage.xml" path="//Member[@MemberName='CollapsedPaneWidthProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>CollapsedPaneWidth</c>.</summary>
 		public static readonly BindableProperty CollapsedPaneWidthProperty =
 			BindableProperty.CreateAttached("CollapsedPaneWidth", typeof(double),
 				typeof(FlyoutPage), 48d, validateValue: (bindable, value) => (double)value >= 0);

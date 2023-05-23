@@ -16,14 +16,14 @@ namespace Microsoft.Maui.Controls
 			_mergedStyle = new MergedStyle(GetType(), this);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Style"/>.</summary>
 		public static readonly BindableProperty StyleProperty = BindableProperty.Create(nameof(Style), typeof(Style), typeof(Span), default(Style),
 			propertyChanged: (bindable, oldvalue, newvalue) => ((Span)bindable)._mergedStyle.Style = (Style)newvalue, defaultBindingMode: BindingMode.OneWay);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextDecorationsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextDecorations"/>.</summary>
 		public static readonly BindableProperty TextDecorationsProperty = DecorableTextElement.TextDecorationsProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextTransformProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='Style']/Docs/*" />
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(StyleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='BackgroundColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty
 			= BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(Span), default(Color), defaultBindingMode: BindingMode.OneWay);
 
@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BackgroundColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextColor']/Docs/*" />
@@ -54,7 +54,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextElement.TextColorProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='CharacterSpacing']/Docs/*" />
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty
 			= BindableProperty.Create(nameof(Text), typeof(string), typeof(Span), "", defaultBindingMode: BindingMode.OneWay);
 
@@ -86,18 +86,19 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(TextProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='LineHeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="LineHeight"/>.</summary>
 		public static readonly BindableProperty LineHeightProperty = LineHeightElement.LineHeightProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Span.xml" path="//Member[@MemberName='FontAttributes']/Docs/*" />

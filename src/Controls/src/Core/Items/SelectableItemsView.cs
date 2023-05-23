@@ -7,18 +7,18 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SelectableItemsView']/Docs/*" />
 	public class SelectableItemsView : StructuredItemsView
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionModeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectionMode"/>.</summary>
 		public static readonly BindableProperty SelectionModeProperty =
 			BindableProperty.Create(nameof(SelectionMode), typeof(SelectionMode), typeof(SelectableItemsView),
 				SelectionMode.None, propertyChanged: SelectionModePropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectedItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
 		public static readonly BindableProperty SelectedItemProperty =
 			BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(SelectableItemsView), default(object),
 				defaultBindingMode: BindingMode.TwoWay,
 				propertyChanged: SelectedItemPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectedItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedItems"/>.</summary>
 		public static readonly BindableProperty SelectedItemsProperty =
 			BindableProperty.Create(nameof(SelectedItems), typeof(IList<object>), typeof(SelectableItemsView), null,
 				defaultBindingMode: BindingMode.OneWay,
@@ -26,11 +26,11 @@ namespace Microsoft.Maui.Controls
 				coerceValue: CoerceSelectedItems,
 				defaultValueCreator: DefaultValueCreator);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionChangedCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectionChangedCommand"/>.</summary>
 		public static readonly BindableProperty SelectionChangedCommandProperty =
 			BindableProperty.Create(nameof(SelectionChangedCommand), typeof(ICommand), typeof(SelectableItemsView));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/SelectableItemsView.xml" path="//Member[@MemberName='SelectionChangedCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectionChangedCommandParameter"/>.</summary>
 		public static readonly BindableProperty SelectionChangedCommandParameterProperty =
 			BindableProperty.Create(nameof(SelectionChangedCommandParameter), typeof(object),
 				typeof(SelectableItemsView));
