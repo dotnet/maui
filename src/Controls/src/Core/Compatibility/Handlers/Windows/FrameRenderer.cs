@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				PackChild();
 				UpdateBorder();
 				UpdateCornerRadius();
-				UpdatePadding();
 			}
 		}
 
@@ -77,15 +76,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateCornerRadius();
 			}
-			else if (e.PropertyName == Frame.PaddingProperty.PropertyName)
-			{
-				UpdatePadding();
-			}
-		}
-
-		void UpdatePadding()
-		{
-			Control.Padding = Element.Padding.ToPlatform();
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
