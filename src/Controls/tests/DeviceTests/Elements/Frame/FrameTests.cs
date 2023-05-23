@@ -263,7 +263,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, layoutFrame.Height, 1.0d);
 		}
 
-# if !ANDROID
+#if !ANDROID
 		[Fact]
 		public async Task FrameResizesItsContents()
 		{
