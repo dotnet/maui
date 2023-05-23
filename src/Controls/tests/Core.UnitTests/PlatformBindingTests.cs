@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(vm.CColor, platformView.SelectedColor.FormsColor);
 		}
 
-		[Fact (Skip = "PlatformBindings aren't used")]
+		[Fact(Skip = "PlatformBindings aren't used")]
 		public void TestConverter2WayWorks()
 		{
 			var platformView = new MockPlatformView();
