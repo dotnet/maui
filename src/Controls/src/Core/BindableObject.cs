@@ -417,10 +417,6 @@ namespace Microsoft.Maui.Controls
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
 
-			//bool checkAccess = (privateAttributes & SetValuePrivateFlags.CheckAccess) != 0;
-			//bool manuallySet = (privateAttributes & SetValuePrivateFlags.ManuallySet) != 0;
-			//bool silent = (privateAttributes & SetValuePrivateFlags.Silent) != 0;
-			//bool fromStyle = (privateAttributes & SetValuePrivateFlags.FromStyle) != 0;
 			bool converted = (privateAttributes & SetValuePrivateFlags.Converted) != 0;
 
 			if (!converted && !property.TryConvert(ref value))
@@ -439,22 +435,6 @@ namespace Microsoft.Maui.Controls
 				value = property.CoerceValue(this, value);
 
 			BindablePropertyContext context = GetOrCreateContext(property);
-			//if (manuallySet)
-			//{
-			//	context.Attributes |= BindableContextAttributes.IsManuallySet;
-			//	context.Attributes &= ~BindableContextAttributes.IsSetFromStyle;
-			//}
-			//else
-			//	context.Attributes &= ~BindableContextAttributes.IsManuallySet;
-
-			//if (fromStyle)
-			//	context.Attributes |= BindableContextAttributes.IsSetFromStyle;
-			// else omitted on purpose
-
-			//if we're updating a dynamic resource from style, set the default backup value
-			//if ((context.Attributes & (BindableContextAttributes.IsDynamicResource | BindableContextAttributes.IsSetFromStyle)) != 0
-			//	&& (attributes & SetValueFlags.ClearDynamicResource) == 0)
-			//	SetBackupStyleValue(property, value);
 
 			bool currentlyApplying = _applying;
 
@@ -524,26 +504,12 @@ namespace Microsoft.Maui.Controls
 
 			context.Values[specificity] = value;
 
-			//if (!sameValue || raiseOnEqual)
-			//{
-			//	context.Value = value;
-			//}
-
-			//context.Attributes &= ~BindableContextAttributes.IsDefaultValue;
 			context.Attributes &= ~BindableContextAttributes.IsDefaultValueCreated;
 
 			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
 				RemoveDynamicResource(property);
 
 			BindingBase binding = context.Binding;
-			//if (binding != null)
-			//{
-			//	if (clearOneWayBindings && binding.GetRealizedMode(property) == BindingMode.OneWay || clearTwoWayBindings && binding.GetRealizedMode(property) == BindingMode.TwoWay)
-			//	{
-			//		RemoveBinding(property, context);
-			//		binding = null;
-			//	}
-			//}
 
 			if (!silent && (!sameValue || raiseOnEqual))
 			{

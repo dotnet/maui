@@ -702,7 +702,7 @@ namespace Microsoft.Maui.Controls
 				var contentItems = ShellSectionController.GetItems();
 				if (contentItems.Count == 0)
 				{
-					ClearValue(CurrentItemProperty);
+					ClearValue(CurrentItemProperty, specificity: SetterSpecificity.FromHandler);
 				}
 				else
 				{
