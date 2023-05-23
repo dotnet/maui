@@ -271,7 +271,7 @@ namespace Microsoft.Maui.DeviceTests
 			var originalLayoutDimensions = 300;
 			var shrunkWindowWidth = originalLayoutDimensions - 100;
 
-			var content = new Label 
+			var content = new Label
 			{
 				LineBreakMode = LineBreakMode.WordWrap,
 				Text = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.DeviceTests
 				Padding = new Thickness(0),
 				Margin = new Thickness(0),
 				VerticalOptions = LayoutOptions.Start,
-				HorizontalOptions = LayoutOptions.Start 
+				HorizontalOptions = LayoutOptions.Start
 			};
 
 			var layout = new StackLayout()
@@ -293,7 +293,7 @@ namespace Microsoft.Maui.DeviceTests
 				Children = { frame }
 			};
 
-			await CreateHandlerAndAddToWindow<IPlatformViewHandler>(layout,  async (handler)  =>
+			await CreateHandlerAndAddToWindow<IPlatformViewHandler>(layout, async (handler) =>
 					{
 						// Place the frame in a spacious container in a large window
 						var size = (layout as IView).Measure(originalLayoutDimensions, originalLayoutDimensions);
