@@ -40,6 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
@@ -982,6 +983,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new Label(),
 						new Button(),
+						new ContentView(),
 						new CollectionView(),
 					}
 				};

@@ -95,14 +95,14 @@ namespace Microsoft.Maui.Controls
 		// WinUI being fixed as part of
 		// https://github.com/dotnet/maui/issues/13552
 #if ANDROID
-		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
+		Size ICrossPlatformLayout.CrossPlatformArrange(Graphics.Rect bounds)
 		{
 			bounds = bounds.Inset(((IBorderElement)this).BorderWidth);
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			var inset = Padding + ((IBorderElement)this).BorderWidth;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
