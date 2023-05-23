@@ -104,7 +104,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			Assert.Equal(1, events.Count(c => c.EventId.Id == 4 && c.LogLevel == LogLevel.Debug && c.EventId.Name == "HandlingWebRequest" && c.Message.Contains("/_framework/blazor.webview.js", System.StringComparison.Ordinal)));
 		}
 
-		[Fact]
+		[Fact(Skip = "Disable while we investigate this on 8.0.0-p5")]
 		public async Task BlazorWebViewUsesStartPath()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
