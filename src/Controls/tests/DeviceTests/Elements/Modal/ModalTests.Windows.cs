@@ -85,5 +85,52 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(modalNavigationRootManager.WindowTitle, mauiWindow.Title);
 				});
 		}
+
+		[Fact]
+		public async Task WindowTitleIsCorrectAfterPushAndPop()
+		{
+			const string OriginalTitle = "Original Title";
+			const string UpdatedTitle = "Updated Title";
+
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage) { Title = OriginalTitle };
+
+			await CreateHandlerAndAddToWindow(window,
+				(Func<IWindowHandler, Task>)(async (handler) =>
+				{
+					var mauiWindow = handler.PlatformView;
+					var currentPage = navPage.CurrentPage;
+					var modalPage = new ContentPage();
+
+					await currentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var currentNavigationRootManager = currentPage
+						.FindMauiContext()
+						.GetNavigationRootManager();
+					var modalNavigationRootManager = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager();
+
+					Assert.Equal(OriginalTitle, mauiWindow.Title);
+					Assert.Equal(OriginalTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(OriginalTitle, modalNavigationRootManager.WindowTitle);
+					
+					window.Title = UpdatedTitle;
+
+					Assert.Equal(UpdatedTitle, mauiWindow.Title);
+					Assert.Equal(UpdatedTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(UpdatedTitle, modalNavigationRootManager.WindowTitle);
+
+					await currentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					Assert.Equal(UpdatedTitle, mauiWindow.Title);
+					Assert.Equal(UpdatedTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(UpdatedTitle, modalNavigationRootManager.WindowTitle);
+				}));
+		}
 	}
 }
