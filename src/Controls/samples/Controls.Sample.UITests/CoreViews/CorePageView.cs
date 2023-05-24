@@ -96,8 +96,7 @@ namespace Maui.Controls.Sample
 				}
 
 				var item = args.SelectedItem;
-				var page = item as GalleryPageFactory;
-				if (page != null)
+				if (item is GalleryPageFactory page)
 				{
 					var realize = page.Realize();
 					if (realize is Shell)
