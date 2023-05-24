@@ -75,24 +75,12 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			var virtualView = VirtualView;
-			var platformView = PlatformView;
-
-			if (platformView == null || virtualView == null)
+			if (VirtualView != null && VirtualView.PresentedContent != null)
 			{
-				return base.GetDesiredSize(widthConstraint, heightConstraint);
+				// We need to make sure a call to Measure is invoked on our PresentedContent
+				// when we re-measure ourself
+				VirtualView.PresentedContent.Measure(widthConstraint, heightConstraint);
 			}
-
-			var presentedContent = virtualView.PresentedContent;
-			if (presentedContent == null)
-			{
-				return base.GetDesiredSize(widthConstraint, heightConstraint);
-			}
-
-			// We need to make sure a call to Measure is invoked on our PresentedContent
-			// when we re-measure ourself
-			presentedContent.Measure(widthConstraint, heightConstraint);
-
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
