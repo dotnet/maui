@@ -147,6 +147,7 @@ stages:
               demands:
                 - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
+                - ImageOverride -equals ${{ BuildPlatform.vmImage }}
             steps:
               - template: common/provision.yml
                 parameters:
