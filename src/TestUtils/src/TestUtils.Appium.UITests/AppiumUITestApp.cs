@@ -131,7 +131,7 @@ namespace TestUtils.Appium.UITests
 				var queryBy = MobileBy.AccessibilityId("Navigate up");
 				_driver?.FindElements(queryBy).First().Click();
 			}
-			else if(IsMac || IsiOS)
+			else if (IsMac || IsiOS)
 			{
 				// Get the first NavigationBar we can find and the first button in it (the back button), index starts at 1
 				var queryBy = MobileBy.IosClassChain("**/XCUIElementTypeNavigationBar/XCUIElementTypeButton[1]");
