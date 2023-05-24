@@ -7,6 +7,15 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ContentView CreatePlatformView() => new ContentView { View = VirtualView };
 
+		public override void SetVirtualView(IView view)
+		{
+			base.SetVirtualView(view);
+			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+
+			PlatformView.View = view;
+		}
+
 		void UpdateContent()
 		{
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
