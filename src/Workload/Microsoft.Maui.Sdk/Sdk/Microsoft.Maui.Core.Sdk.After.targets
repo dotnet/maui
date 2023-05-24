@@ -6,6 +6,15 @@
   </PropertyGroup>
 
   <!--
+    Workaround for https://github.com/NuGet/Home/issues/6461
+    By default, Android and iOS set the Version property, so we need to do the same for Windows.
+    This also has to be done outside of the NuGets as this affects the NuGet restore.
+  -->
+  <PropertyGroup Condition=" '$(TargetPlatformIdentifier)' == 'windows' and '$(OutputType)' == 'WinExe' ">
+    <Version Condition=" $([System.Version]::TryParse ('$(ApplicationDisplayVersion)', $([System.Version]::Parse('1.0')))) ">$(ApplicationDisplayVersion)</Version>
+  </PropertyGroup>
+
+  <!--
     This double check seems excessive, but importing the WinUI.targets when building for windows is not
     sufficient. The WASDK targets assume everything is WinUI and thus just passes along the TFM of the app.
     As a result, if you have a net6.0 class library, the app will call MSBuild on that library - with the Windows TFM!
