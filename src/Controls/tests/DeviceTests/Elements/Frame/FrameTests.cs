@@ -301,7 +301,7 @@ namespace Microsoft.Maui.DeviceTests
 						var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
 						(layout as IView).Arrange(rect);
 						await OnFrameSetToNotEmpty(layout);
-						// await OnFrameSetToNotEmpty(frame);
+						await OnFrameSetToNotEmpty(frame);
 
 						// Measure frame when it was first rendered in a spacious container
 						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
