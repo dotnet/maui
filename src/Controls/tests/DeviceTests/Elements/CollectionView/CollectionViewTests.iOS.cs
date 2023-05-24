@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Convert the local point to an absolute point in the window 
 				var absPoint = nativeLabel.ConvertPointToView(point, null);
-			
+
 				Assert.Equal(margin, absPoint.X);
 			});
 		}
