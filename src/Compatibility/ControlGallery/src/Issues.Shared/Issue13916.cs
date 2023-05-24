@@ -8,13 +8,13 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 13916, "[iOS] iOS Application crashes on Back press when navigated to using GoToAsync with \"//\" or \"///\" route if 2 or more things are removed from the navigation stack",
 		PlatformAffected.iOS)]
 #if UITEST
-	[NUnit.Framework.Category(UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(UITestCategories.Github5000)]
 	[NUnit.Framework.Category(UITestCategories.Shell)]
 #endif
 	public class Issue13916 : TestShell

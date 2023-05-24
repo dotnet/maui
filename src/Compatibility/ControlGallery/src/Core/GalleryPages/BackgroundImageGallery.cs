@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class BackgroundImageGallery
 		: ContentPage
@@ -15,25 +15,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			contentIntabs.Clicked += async (sender, args) =>
 			{
 				await Navigation.PushModalAsync(new TabbedPage
-				{
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var page = new ContentPage();
-						page.SetBinding(BackgroundImageSourceProperty, ".");
-						return page;
-					}),
-
-					ItemsSource = new[] {
-						"oasis.jpg",
-						"crimson.jpg"
-					}
-				});
-			};
-
-			var contentInCarosel = new Button { Text = "Carousel children" };
-			contentInCarosel.Clicked += async (sender, args) =>
-			{
-				await Navigation.PushModalAsync(new CarouselPage
 				{
 					ItemTemplate = new DataTemplate(() =>
 					{
@@ -104,10 +85,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					carousel,
 					tabbed,
 					master,
-					contentIntabs,
-					contentInCarosel
+					contentIntabs
 				}
-
 			};
 		}
 	}
