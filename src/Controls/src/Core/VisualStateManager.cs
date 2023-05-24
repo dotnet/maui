@@ -28,8 +28,6 @@ namespace Microsoft.Maui.Controls
 				defaultValue: null, propertyChanged: VisualStateGroupsPropertyChanged,
 				defaultValueCreator: bindable => new VisualStateGroupList(true) { VisualElement = (VisualElement)bindable });
 
-		static ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext> oldValueContext = new ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext>();
-
 		static void VisualStateGroupsPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is VisualStateGroupList oldVisualStateGroupList && oldVisualStateGroupList.VisualElement is VisualElement oldElement)
@@ -54,14 +52,6 @@ namespace Microsoft.Maui.Controls
 
 			UpdateStateTriggers(visualElement);
 		}
-		//static ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext> oldValueContext = new ConditionalWeakTable<BindableObject, BindableObject.BindablePropertyContext>();
-
-		//static void VisualStateGroupsPropertyChanging(BindableObject bindable, object oldValue, object newValue)
-		//{
-		//	if (oldValueContext.TryGetValue(bindable, out _))
-		//		oldValueContext.Remove(bindable);
-		//	oldValueContext.Add(bindable, bindable.GetContext(VisualStateGroupsProperty));
-		//}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualStateManager.xml" path="//Member[@MemberName='GetVisualStateGroups']/Docs/*" />
 		public static IList<VisualStateGroup> GetVisualStateGroups(VisualElement visualElement)

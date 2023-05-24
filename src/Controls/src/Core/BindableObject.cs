@@ -220,8 +220,6 @@ namespace Microsoft.Maui.Controls
 			if (targetProperty == null)
 				throw new ArgumentNullException(nameof(targetProperty));
 
-			//if (fromStyle && !CanBeSetFromStyle(targetProperty))
-			//	return;
 
 			if (targetProperty.IsReadOnly && binding.Mode == BindingMode.OneWay)
 			{
@@ -640,7 +638,7 @@ namespace Microsoft.Maui.Controls
 		{
 			public BindableContextAttributes Attributes;
 
-			//FIXME should be a list of bindings/specificity
+			//TODO should be a list of bindings/specificity
 			public BindingBase Binding;
 			public SetterSpecificity BindingSpecificity = SetterSpecificity.FromBinding;
 

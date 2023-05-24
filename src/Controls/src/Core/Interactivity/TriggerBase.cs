@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 		//Setters and Condition are used by Trigger, DataTrigger and MultiTrigger
 		internal IList<Setter> Setters { get; }
 
-		//FIXME: add speicificity as ctor argument
+		//FIXME: add specificity as ctor argument
 		internal SetterSpecificity Specificity { get; }
 
 		void IAttachedObject.AttachTo(BindableObject bindable)

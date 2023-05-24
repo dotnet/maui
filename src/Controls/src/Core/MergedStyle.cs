@@ -100,13 +100,13 @@ namespace Microsoft.Maui.Controls
 
 		void Apply(BindableObject bindable)
 		{
-			//FIXME compute specificity
+			//NOTE specificity could be more fine grained (using distance)
 			ImplicitStyle?.Apply(bindable, new SetterSpecificity(100, 0, 0, 0));
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
-					//FIXME compute specificity
+					//NOTE specificity could be more fine grained (using distance)
 					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(200, 0, 1, 0));
-			//FIXME compute specificity
+			//NOTE specificity could be more fine grained (using distance)
 			Style?.Apply(bindable, new SetterSpecificity(200, 0, 0, 0));
 		}
 
