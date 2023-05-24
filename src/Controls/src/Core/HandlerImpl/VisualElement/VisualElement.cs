@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
 
-			ViewHandler.ViewCommandMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
+			ViewHandler.ViewCommandMapper.ReplaceMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)

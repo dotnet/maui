@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 			EntryHandler.Mapper = ControlsEntryMapper;
 
 #if ANDROID
-			EntryHandler.CommandMapper.AppendToMapping(nameof(IEntry.Focus), MapFocus);
+			EntryHandler.CommandMapper.PrependToMapping(nameof(IEntry.Focus), MapFocus);
 #endif
 		}
 	}
