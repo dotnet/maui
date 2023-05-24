@@ -625,12 +625,10 @@ namespace Microsoft.Maui.Controls
 		[Flags]
 		internal enum BindableContextAttributes
 		{
-			//IsManuallySet = 1 << 0,
 			IsBeingSet = 1 << 1,
 			//GO AWAY
 			IsDynamicResource = 1 << 2,
 			IsSetFromStyle = 1 << 3,
-			//IsDefaultValue = 1 << 4,
 			IsDefaultValueCreated = 1 << 5,
 		}
 
