@@ -24,9 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		protected Task CheckFlyoutState(ShellRenderer renderer, bool result) =>
-			throw new NotImplementedException();
-
 		[Fact(DisplayName = "Swiping Away Modal Propagates to Shell")]
 		public async Task SwipingAwayModalPropagatesToShell()
 		{
@@ -204,8 +201,94 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		
 		[Fact(DisplayName = "TitleView renders correctly")]
 		public async Task TitleViewRendersCorrectly()
+		{
+			SetupBuilder();
+
+			var expected = Colors.Red;
+
+			var shellTitleView = new VerticalStackLayout { BackgroundColor = expected };
+			var titleViewContent = new Label { Text = "TitleView" };
+			shellTitleView.Children.Add(titleViewContent);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				Shell.SetTitleView(shell, shellTitleView);
+
+				shell.CurrentItem = new ContentPage();
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				await Task.Delay(100);
+				Assert.NotNull(shell.Handler);
+				var platformShellTitleView = shellTitleView.ToPlatform();
+				Assert.Equal(platformShellTitleView, GetTitleView(handler));
+				Assert.NotEqual(platformShellTitleView.Frame, CGRect.Empty);
+				Assert.Equal(platformShellTitleView.BackgroundColor.ToColor(), expected);
+			});
+		}
+
+		protected async Task OpenFlyout(ShellRenderer shellRenderer, TimeSpan? timeOut = null)
+		{
+			var flyoutView = GetFlyoutPlatformView(shellRenderer);
+			shellRenderer.Shell.FlyoutIsPresented = true;
+
+			await AssertionExtensions.Wait(() =>
+			{
+				return flyoutView.Frame.X == 0;
+			}, timeOut?.Milliseconds ?? 1000);
+
+			return;
+		}
+
+		internal Graphics.Rect GetFrameRelativeToFlyout(ShellRenderer shellRenderer, IView view)
+		{
+			var platformView = (view.Handler as IPlatformViewHandler).PlatformView;
+			return platformView.GetFrameRelativeTo(GetFlyoutPlatformView(shellRenderer));
+		}
+
+		protected Task CheckFlyoutState(ShellRenderer renderer, bool result)
+		{
+			var platformView = GetFlyoutPlatformView(renderer);
+			Assert.Equal(result, platformView.Frame.X == 0);
+			return Task.CompletedTask;
+		}
+
+		protected UIView GetFlyoutPlatformView(ShellRenderer shellRenderer)
+		{
+			var vcs = shellRenderer.ViewController;
+			var flyoutContent = vcs.ChildViewControllers.OfType<ShellFlyoutContentRenderer>().First();
+			return flyoutContent.View;
+		}
+
+		internal Graphics.Rect GetFlyoutFrame(ShellRenderer shellRenderer)
+		{
+			var boundingbox = GetFlyoutPlatformView(shellRenderer).GetBoundingBox();
+
+			return new Graphics.Rect(
+				0,
+				0,
+				boundingbox.Width,
+				boundingbox.Height);
+		}
+
+
+		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		{
+			var platformView = GetFlyoutPlatformView(shellRenderer);
+			var tableView = platformView.FindDescendantView<UITableView>();
+			var bottomOffset = new CGPoint(0, tableView.ContentSize.Height - tableView.Bounds.Height + tableView.ContentInset.Bottom);
+			tableView.SetContentOffset(bottomOffset, false);
+			await Task.Delay(1);
+
+			return;
+		}
+
+		[Fact(DisplayName = "Back Button Text Has Correct Default")]
+		public async Task BackButtonTextHasCorrectDefault()
 		{
 			SetupBuilder();
 

@@ -483,6 +483,18 @@ namespace Microsoft.Maui.Platform
 			return new Rect(nvb.X, nvb.Y, nvb.Width, nvb.Height);
 		}
 
+		internal static Graphics.Rect GetFrameRelativeTo(this UIView view, UIView relativeTo)
+		{
+			var viewWindowLocation = view.GetLocationOnScreen();
+			var relativeToLocation = relativeTo.GetLocationOnScreen();
+
+			return
+				new Graphics.Rect(
+						new Point(viewWindowLocation.X - relativeToLocation.X, viewWindowLocation.Y - relativeToLocation.Y),
+						new Graphics.Size(view.Bounds.Width, view.Bounds.Height)
+					);
+		}
+
 		internal static UIView? GetParent(this UIView? view)
 		{
 			return view?.Superview;
