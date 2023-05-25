@@ -33,6 +33,32 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		static string? _logDirectory = null;
+		public static string GetLogDirectory()
+		{
+			if (_logDirectory == null)
+			{
+				var artifactsStaging = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
+				var envLogDirectory = Environment.GetEnvironmentVariable("LogDirectory");
+				if (envLogDirectory != null)
+				{
+					_logDirectory = envLogDirectory;
+				}
+				else
+				{
+					if (artifactsStaging != null)
+					{
+						_logDirectory = artifactsStaging;
+					}
+					else
+					{
+						_logDirectory = GetTestDirectoryRoot();
+					}
+				}
+			}
+			return $"{_logDirectory}/logs";
+		}
+
 		static string _testOutputDirectory = "";
 		public static string GetTestDirectoryRoot()
 		{
