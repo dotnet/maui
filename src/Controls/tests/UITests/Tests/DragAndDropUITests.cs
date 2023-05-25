@@ -28,7 +28,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void DragEvents()
 		{
-			if(UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
+			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
 				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
 			{
 				Assert.Ignore("Still trying to figure out the mouse operations with catalyst/ios");
