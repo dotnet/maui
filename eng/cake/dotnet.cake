@@ -131,7 +131,7 @@ Task("dotnet-build")
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount:1);
         }
         else
         {
