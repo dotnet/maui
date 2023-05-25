@@ -6,6 +6,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Interactions;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
@@ -171,7 +172,14 @@ namespace TestUtils.Appium.UITests
 			{
 				if (_driver != null && _driver.IsKeyboardShown())
 				{
-					_driver.HideKeyboard();
+					if (IsiOS)
+					{
+						_driver.HideKeyboard("return");
+					}
+					else
+					{
+						_driver.HideKeyboard();
+					}
 				}
 			}
 		}

@@ -17,7 +17,7 @@
                 </Label.GestureRecognizers>
             </Label>
         </StackLayout>
-        <Label x:Name="events" AutomationId="DragEventsLabel">
+        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel">
             <Label.GestureRecognizers>
                 <DropGestureRecognizer></DropGestureRecognizer>
             </Label.GestureRecognizers>
