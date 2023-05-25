@@ -1,5 +1,6 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "../cake/helpers.cake"
+#load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
 
@@ -41,15 +42,15 @@ Setup(context =>
 
 	// only install when an explicit version is specified
 	if (TEST_DEVICE.IndexOf("_") != -1) {
-		var settings = new DotNetCoreToolSettings {
+		var settings = new DotNetSettings {
 			ToolPath = DOTNET_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{TEST_DEVICE}\" " +
-				$"--verbosity=\"Debug\" ")
+				$"--verbosity=\"Debug\" /tl")
 		};
 
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 	}
 });
 
@@ -96,15 +97,16 @@ Task("Build")
 	{
 		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
-		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
-			MSBuildSettings = new DotNetCoreMSBuildSettings {
+			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
 			},
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
 				.Append("/bl:" + binlog),
+				.Append("/tl"),
 			ToolPath = DOTNET_PATH,
 		});
 	}
@@ -159,18 +161,18 @@ Task("Test")
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" ")
+		$"--verbosity=\"Debug\" /tl")
 	};
 
 	bool testsFailed = true;
 	try {
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 		testsFailed = false;
 	} finally {
 		// ios test result files are weirdly named, so fix it up
@@ -223,17 +225,18 @@ Task("uitest")
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Install with xharness: {0}",TEST_APP);
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple install " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" ")
+		$"--verbosity=\"Debug\" /tl ")
+
 	};
 
 	try {
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 	} finally {
 
 		var sims = ListAppleSimulators();
@@ -250,11 +253,12 @@ Task("uitest")
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
 				.Append("/bl:" + binlog),
+				.Append("/tl"),
 			ToolPath = DOTNET_PATH,
 	});
 

@@ -1,9 +1,9 @@
-#addin nuget:?package=Cake.AppleSimulator&version=0.2.0
-#load "../cake/helpers.cake"
+#load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "10.0.19041";
+const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? "");
@@ -12,7 +12,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE
 // optional
 var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"net7.0-windows{defaultVersion}");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
@@ -58,7 +58,7 @@ Task("uitest")
 	if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"net7.0-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
 		TEST_APP = apps.First().FullPath;
@@ -86,12 +86,13 @@ Task("uitest")
 
 	SetDotNetEnvironmentVariables(dd.FullPath);
 
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1"),
+				.Append("/tl"),
 				ToolPath = toolPath,
 	});
 
