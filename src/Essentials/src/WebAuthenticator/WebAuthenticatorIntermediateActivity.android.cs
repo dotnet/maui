@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Authentication
 		{
 			base.OnResume();
 
-			if (!launched)
+			if (actualIntent != null && !launched)
 			{
 				// if this is the first time, start the authentication flow
 				StartActivity(actualIntent);
