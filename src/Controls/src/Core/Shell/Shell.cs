@@ -677,6 +677,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][1]/Docs/*" />
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		[Obsolete]
 		public Task GoToAsync(ShellNavigationState state, IDictionary<string, object> parameters)
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
@@ -685,11 +686,34 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
 #pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		[Obsolete]
 		public Task GoToAsync(ShellNavigationState state, bool animate, IDictionary<string, object> parameters)
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
+
+		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='GoToAsync'][2]/Docs/*" />
+#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		// This will propagate your navigationState to a key/property with the name "navigationState"
+		// NavigationState isn't maintained between navigations and will only propagate to your page during initial navigation
+		public Task GoToAsync(ShellNavigationState state, object navigationState)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		{
+			return GoToAsync(state, new KeyValuePair<string, object>("NavigationState", navigationState));
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		// This can be used to propagate your navigationState to a specific key of your choosing.
+		// NavigationState isn't maintained between navigations and will only propagate to your page during initial navigation
+		public Task GoToAsync(ShellNavigationState state, KeyValuePair<string, object> navigationState)
+#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		{
+			throw new NotImplementedException();
+		}
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public void AddLogicalChild(Element element)
 		{
