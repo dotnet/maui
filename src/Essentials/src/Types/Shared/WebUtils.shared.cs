@@ -49,10 +49,10 @@ namespace Microsoft.Maui.ApplicationModel
 
 						var span = segment.Slice(equalIndex + 1);
 						var chars = new char[span.Length];
-						
+
 						for (int i = 0; i < span.Length; i++)
 							chars[i] = span[i] == '+' ? ' ' : span[i];
-						
+
 						value = new string(chars);
 					}
 					else
