@@ -1,4 +1,7 @@
 bool isCleanSet = HasArgument("clean") || IsTarget("clean");
+string defaultUnitTestWhere = "";
+
+var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", defaultUnitTestWhere);
 
 Task("Clean")
     .WithCriteria(isCleanSet)
@@ -121,3 +124,35 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
+
+void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
+{
+    // try
+    // {
+        if(!String.IsNullOrWhiteSpace(NUNIT_TEST_WHERE))
+        {
+            settings.Where = NUNIT_TEST_WHERE;
+        }
+
+        NUnit3(new [] { unitTestLibrary }, settings);
+    // }
+    // catch
+    // {
+    //    // SetTestResultsEnvironmentVariables();
+    //     throw;
+    // }
+
+    SetTestResultsEnvironmentVariables();
+
+    void SetTestResultsEnvironmentVariables()
+    {
+        var doc = new System.Xml.XmlDocument();
+        doc.Load("TestResult.xml");
+        var root = doc.DocumentElement;
+
+        foreach(System.Xml.XmlAttribute attr in root.Attributes)
+        {
+            SetEnvironmentVariable($"NUNIT_{attr.Name}", attr.Value);
+        }
+    }
+}

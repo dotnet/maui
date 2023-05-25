@@ -96,8 +96,14 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var fullApkPath = IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
+			var envApkPath = Environment.GetEnvironmentVariable("APP_APK");
 
+
+			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
+																: envApkPath;
+
+			//var fullApkPath = "D:\\repos\\dotnet\\maui\\src\\Compatibility\\ControlGallery\\test\\Android.UITests\\bin\\Debug\\net472\\../../../../../src/Android/bin/Debug/net7.0-android/com.microsoft.mauicompatibilitygallery-Signed.apk";
+			System.Diagnostics.Debug.WriteLine($"FullAppPath: {fullApkPath}");
 			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
 
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
