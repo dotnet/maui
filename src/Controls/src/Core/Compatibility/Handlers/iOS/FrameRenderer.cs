@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				SetupLayer();
 				UpdateShadow();
 			}
-		} 
+		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{

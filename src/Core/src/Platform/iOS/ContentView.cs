@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-			
+
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
 
