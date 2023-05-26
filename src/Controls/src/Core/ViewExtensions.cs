@@ -475,7 +475,11 @@ namespace Microsoft.Maui.Controls
 			}
 
 			// otherwise, fall back to "base"
-			baseMethod?.Invoke();
+			if (baseMethod is not null)
+			{
+				baseMethod.Invoke();
+				return;
+			}
 
 			// if there was nothing that handles this, then nothing changed
 			focusRequest.TrySetResult(false);
