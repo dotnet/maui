@@ -41,7 +41,7 @@ Setup(context =>
 
 	// only install when an explicit version is specified
 	if (TEST_DEVICE.IndexOf("_") != -1) {
-		var settings = new DotNetSettings {
+		var settings = new DotNetToolSettings {
 			ToolPath = DOTNET_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
@@ -256,7 +256,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
-				.Append("/bl:" + binlog),
+				.Append("/bl:" + binlog)
 				.Append("/tl"),
 			ToolPath = DOTNET_PATH,
 	});

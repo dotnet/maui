@@ -120,7 +120,7 @@ Task("android-aar")
 
         if (exitCode != 0)
         {
-            if (IsCIBuild() || target == "android-aar")
+            if (IsCIBuild() || IsTarget("android-aar"))
                 throw new Exception("Gradle failed to build maui.aar: " + exitCode);
             else
                 Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
