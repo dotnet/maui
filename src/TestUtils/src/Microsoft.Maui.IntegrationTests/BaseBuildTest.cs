@@ -18,6 +18,8 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		public string LogDirectory => Path.Combine(TestEnvironment.GetLogDirectory(), TestName);
+
 		public string TestDirectory => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), TestName);
 
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");

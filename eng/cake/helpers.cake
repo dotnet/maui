@@ -125,7 +125,7 @@ bool TargetStartsWith(string target) =>
 void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPath = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
+    var binlog = $"{GetLogDirectory()}/{name}-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
     var results = $"{name}-{configuration}.trx";
 
     Information("Run Test binlog: {0}", binlog);
