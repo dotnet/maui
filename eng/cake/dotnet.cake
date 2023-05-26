@@ -636,7 +636,7 @@ void RunMSBuildWithDotNet(
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
 
-       // args.Append("/tl");
+        args.Append("/tl");
 
         return args;
     };
@@ -644,7 +644,6 @@ void RunMSBuildWithDotNet(
     if (localDotnet)
         dotnetBuildSettings.ToolPath = dotnetPath;
 
-    Information("Got here ");   
     DotNetBuild(sln, dotnetBuildSettings);
 }
 
@@ -657,37 +656,24 @@ void RunTestWithLocalDotNet(string csproj)
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    DotNetTest(csproj,
-        new DotNetTestSettings
-        {
-            Configuration = configuration,
-            ToolPath = dotnetPath,
-            NoBuild = true,
-            Loggers = {
-                $"trx;LogFileName={results}"
-            },
-            ResultsDirectory = GetTestResultsDirectory(),
-            ArgumentCustomization = args => {
-                args.Append($"-bl:{binlog}");
-                args.Append("/tl");
-                return args;
-            }
-        });
+    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, null, true);
 }
 
-void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPath = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
-    var results = $"{name}-{configuration}.trx";
+    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
+    var results = $"{name}-{config}.trx";
 
     Information("Run Test binlog: {0}", binlog);
 
     var settings = new DotNetTestSettings
         {
-            Configuration = configuration,
+            Configuration = config,
             NoBuild = noBuild,
-            Loggers = $"trx;LogFileName={results}",
+            Loggers = { 
+                $"trx;LogFileName={results}"  
+            }, 
            	ResultsDirectory = GetTestResultsDirectory(),
             //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
@@ -705,14 +691,13 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
             }
         };
     
-    if(!string.IsNullOrEmpty(dotnetPath))
+    if(!string.IsNullOrEmpty(pathDotnet))
     {
-        settings.ToolPath = dotnetPath;
+        settings.ToolPath = pathDotnet;
     }
 
     DotNetTest(csproj, settings);
 }
-
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
 {
