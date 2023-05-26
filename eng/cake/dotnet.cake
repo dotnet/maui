@@ -684,7 +684,7 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
-                args.Append($"/tl");
+               // args.Append($"/tl");
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)

@@ -161,11 +161,11 @@ Task("Build")
 			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
 			},
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
 				.Append("/bl:" + binlog)
-				.Append("/tl"),
-			ToolPath = DOTNET_PATH,
+				//.Append("/tl")
 		});
 	}
 	else
@@ -260,7 +260,7 @@ Task("Test")
 			$"--instrumentation=\"{TEST_APP_INSTRUMENTATION}\" " +
 			$"--device-arch=\"{DEVICE_ARCH}\" " +
 			$"--output-directory=\"{TEST_RESULTS}\" " +
-			$"--verbosity=\"Debug\" /tl")
+			$"--verbosity=\"Debug\" ")
 	};
 
 	bool testsFailed = true;
@@ -355,7 +355,7 @@ Task("uitest")
 			$"--app=\"{TEST_APP}\" " +
 			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
 			$"--output-directory=\"{TEST_RESULTS}\" " +
-			$"--verbosity=\"Debug\" /tl")
+			$"--verbosity=\"Debug\" ")
 	};
 	DotNetTool("tool", settings);
 
@@ -365,11 +365,12 @@ Task("uitest")
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=ANDROID")
 				.Append("/bl:" + binlog)
-				.Append("/tl"),
-			ToolPath = DOTNET_PATH,
+				//.Append("/tl")
+			
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_android.log");

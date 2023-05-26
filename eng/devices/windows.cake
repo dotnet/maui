@@ -88,12 +88,12 @@ Task("uitest")
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = toolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
-				.Append("/maxcpucount:1"),
-				.Append("/tl"),
-				ToolPath = toolPath,
+				.Append("/maxcpucount:1")
+				//.Append("/tl")	
 	});
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);

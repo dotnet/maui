@@ -46,7 +46,7 @@ Setup(context =>
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{TEST_DEVICE}\" " +
-				$"--verbosity=\"Debug\" /tl")
+				$"--verbosity=\"Debug\" ")
 		};
 
 		DotNetTool("tool", settings);
@@ -102,11 +102,12 @@ Task("Build")
 			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
 			},
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
 				.Append("/bl:" + binlog)
-				.Append("/tl"),
-			ToolPath = DOTNET_PATH,
+				//.Append("/tl")
+			
 		});
 	}
 	else
@@ -166,7 +167,7 @@ Task("Test")
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" /tl")
+		$"--verbosity=\"Debug\" ")
 	};
 
 	bool testsFailed = true;
@@ -230,7 +231,7 @@ Task("uitest")
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--verbosity=\"Debug\" /tl ")
+		$"--verbosity=\"Debug\" ")
 
 	};
 
@@ -254,11 +255,12 @@ Task("uitest")
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
 				.Append("/bl:" + binlog)
-				.Append("/tl"),
-			ToolPath = DOTNET_PATH,
+				//.Append("/tl")
+			
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_ios.log");
