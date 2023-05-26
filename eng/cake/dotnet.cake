@@ -1,3 +1,5 @@
+#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+
 // Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
@@ -685,12 +687,13 @@ void RunTestWithLocalDotNet(string csproj, string configuration, string dotnetPa
         {
             Configuration = configuration,
             NoBuild = noBuild,
-            Logger = $"trx;LogFileName={results}",
+            Loggers = $"trx;LogFileName={results}",
            	ResultsDirectory = GetTestResultsDirectory(),
             //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
             ArgumentCustomization = args => 
             { 
                 args.Append($"-bl:{binlog}");
+                args.Append($"/tl");
                 if(argsExtra != null)
                 {
                     foreach(var prop in argsExtra)
