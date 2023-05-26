@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 				return uiAction;
 			}
 
-			return VirtualView.GetPlatformAccelerator(MauiContext!);
+			return VirtualView.CreateMenuItem(MauiContext!);
 		}
 
 		internal static void Execute(UICommand uICommand)

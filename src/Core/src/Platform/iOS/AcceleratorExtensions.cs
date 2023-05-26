@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class AcceleratorExtensions
 	{
-		internal static UIMenuElement GetPlatformAccelerator(this IMenuFlyoutItem virtualView, IMauiContext mauiContext)
+		internal static UIMenuElement CreateMenuItem(this IMenuFlyoutItem virtualView, IMauiContext mauiContext)
 		{
 			int index = MenuFlyoutItemHandler.menus.Count;
 			UIImage? uiImage = virtualView.Source.GetPlatformMenuImage(mauiContext);
@@ -29,48 +29,45 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var accelerator = virtualView.Accelerator;
+			if (accelerator is null)
+				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
 
-			if (accelerator is not null)
+			var key = accelerator.Key;
+			var modifiers = accelerator.Modifiers;
+
+			UIKeyModifierFlags modifierFlags = 0;
+
+			// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
+			if (modifiers is not null)
 			{
-				var key = accelerator.Key;
-				var modifiers = accelerator.Modifiers;
+				var modifiersCount = modifiers.Count();
 
-				UIKeyModifierFlags modifierFlags = 0;
-
-				// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
-				if (modifiers is not null)
+				if (modifiersCount > 0)
 				{
-					var modifiersCount = modifiers.Count();
-
-					if (modifiersCount > 0)
+					for (int i = 0; i < modifiersCount; i++)
 					{
-						for (int i = 0; i < modifiersCount; i++)
-						{
-							var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
+						var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
 
-							switch (modifierMask)
-							{
-								case "ctrl":
-									modifierFlags |= UIKeyModifierFlags.Control;
-									break;
-								case "cmd":
-									modifierFlags |= UIKeyModifierFlags.Command;
-									break;
-								case "alt":
-									modifierFlags |= UIKeyModifierFlags.Alternate;
-									break;
-								case "shift":
-									modifierFlags |= UIKeyModifierFlags.Shift;
-									break;
-							}
+						switch (modifierMask)
+						{
+							case "ctrl":
+								modifierFlags |= UIKeyModifierFlags.Control;
+								break;
+							case "cmd":
+								modifierFlags |= UIKeyModifierFlags.Command;
+								break;
+							case "alt":
+								modifierFlags |= UIKeyModifierFlags.Alternate;
+								break;
+							case "shift":
+								modifierFlags |= UIKeyModifierFlags.Shift;
+								break;
 						}
 					}
 				}
-
-				return virtualView.CreateMenuItemKeyCommand(index, uiImage, selector, modifierFlags, key);
 			}
 
-			return virtualView.CreateMenuItemCommand(index, uiImage, selector);
+			return virtualView.CreateMenuItemKeyCommand(index, uiImage, selector, modifierFlags, key);
 		}
 
 		static UIMenuElement CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
