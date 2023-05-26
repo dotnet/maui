@@ -164,7 +164,7 @@ Task("Build")
 			},
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
-				.Append("/bl:" + binlog),
+				.Append("/bl:" + binlog)
 				.Append("/tl"),
 			ToolPath = DOTNET_PATH,
 		});
@@ -368,7 +368,7 @@ Task("uitest")
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=ANDROID")
-				.Append("/bl:" + binlog),
+				.Append("/bl:" + binlog)
 				.Append("/tl"),
 			ToolPath = DOTNET_PATH,
 	});
