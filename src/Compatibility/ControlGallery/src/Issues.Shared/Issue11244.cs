@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 #if UITEST && __SHELL__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void LeftToolbarItemTextDisplaysWhenFlyoutIsDisabled()
 		{

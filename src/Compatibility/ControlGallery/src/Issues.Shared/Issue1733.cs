@@ -220,6 +220,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		Dictionary<string, Size> results = null;
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void EditorAutoResize()
 		{

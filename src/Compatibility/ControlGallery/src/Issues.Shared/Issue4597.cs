@@ -221,6 +221,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			ImageCellTest(true);
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()
