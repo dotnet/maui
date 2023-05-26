@@ -1,6 +1,4 @@
 #nullable enable
-using System;
-using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using WRect = global::Windows.Foundation.Rect;

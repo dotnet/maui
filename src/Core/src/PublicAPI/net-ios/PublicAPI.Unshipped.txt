@@ -15,6 +15,9 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, Syste
 Microsoft.Maui.ICrossPlatformLayout
 Microsoft.Maui.ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.ICrossPlatformLayoutBacking
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll

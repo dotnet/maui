@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking
 	{
 		static bool? _respondsToSafeArea;
 

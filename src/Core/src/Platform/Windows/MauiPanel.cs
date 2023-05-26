@@ -6,14 +6,11 @@ using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiPanel : Panel 
+	public abstract class MauiPanel : Panel, ICrossPlatformLayoutBacking
 	{
-		WeakReference<ICrossPlatformLayout>? _crossPlatformLayoutReference;
-		
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
-			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
-			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);
+			get; set;
 		}
 
 		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
