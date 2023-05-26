@@ -14,11 +14,17 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.MauiPanel
+Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.MauiPanel.MauiPanel() -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.MauiPanel.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
+override Microsoft.Maui.Platform.MauiPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
 static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
@@ -52,3 +58,5 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 *REMOVED*Microsoft.Maui.IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*Microsoft.Maui.ILayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 *REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
+*REMOVED*override Microsoft.Maui.Platform.LayoutPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
