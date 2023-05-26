@@ -50,8 +50,8 @@ Task("dotnet")
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
     });
@@ -62,18 +62,21 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
+        //Workaround: https://github.com/dotnet/linker/issues/3012
+        SetEnvironmentVariable("DOTNET_gcServer", "0");
+
+        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
-            MSBuildSettings = new DotNetMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
         });
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}.binlog")
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
@@ -503,7 +506,9 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
+    
+    //Workaround: https://github.com/dotnet/linker/issues/3012
+    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
@@ -598,8 +603,8 @@ void RunMSBuildWithDotNet(
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}.binlog\"" :
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"" :
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
@@ -650,7 +655,7 @@ void RunMSBuildWithDotNet(
 void RunTestWithLocalDotNet(string csproj)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
+    var binlog = $"{GetLogDirectory()}/{name}-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
     var results = $"{name}-{configuration}.trx";
 
     if(localDotnet)
