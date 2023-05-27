@@ -11,7 +11,7 @@
     <MicrosoftExtensionsServicingPackageVersion>8.0.0-preview.6.23280.5</MicrosoftExtensionsServicingPackageVersion>
     <SystemCodeDomPackageVersion>8.0.0-preview.6.23280.5</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.5.309</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.6.310</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>16.4.8424-net8-p5</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.3.8424-net8-p5</MicrosoftmacOSSdkPackageVersion>
