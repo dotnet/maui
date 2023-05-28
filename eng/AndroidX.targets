@@ -38,7 +38,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Palette"
-        Version="1.0.0.17"
+        Version="1.0.0.18"
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
