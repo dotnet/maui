@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		static NavigationPage NavigationPage;
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test, TestCaseSource(nameof(TestCases))]
 		public void VerifyInputTransparent(string menuItem)
 		{

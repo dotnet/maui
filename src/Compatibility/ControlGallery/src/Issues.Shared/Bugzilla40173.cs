@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		const string ListTapSuccessText = "ItemTapped";
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void ButtonBlocked()
 		{

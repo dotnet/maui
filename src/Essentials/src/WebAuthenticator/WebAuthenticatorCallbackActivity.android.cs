@@ -10,11 +10,21 @@ namespace Microsoft.Maui.Authentication
 		{
 			base.OnCreate(savedInstanceState);
 
-			// start the intermediate activity again with flags to close the custom tabs
-			var intent = new Intent(this, typeof(WebAuthenticatorIntermediateActivity));
-			intent.SetData(Intent.Data);
-			intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
-			StartActivity(intent);
+			// Check how we launched the flow initially
+			if (WebAuthenticator.Default.IsAuthenticatingWithCustomTabs())
+			{
+				// start the intermediate activity again with flags to close the custom tabs
+				var intent = new Intent(this, typeof(WebAuthenticatorIntermediateActivity));
+				intent.SetData(Intent.Data);
+				intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop);
+				StartActivity(intent);
+			}
+			else
+			{
+				// No intermediate activity if we returned from a system browser
+				// intent since there's no custom tab instance to clean up
+				WebAuthenticator.Default.OnResume(Intent);
+			}
 
 			// finish this activity
 			Finish();

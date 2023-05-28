@@ -170,7 +170,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 				var newRenderer = _viewCell.View.ToHandler(_viewCell.View.FindMauiContext());
 				_rendererRef = new WeakReference<IPlatformViewHandler>(newRenderer);
-				ContentView.AddSubview(newRenderer.PlatformView);
+				ContentView.ClearSubviews();
+				ContentView.AddSubview(newRenderer.VirtualView.ToPlatform());
 				return (IPlatformViewHandler)newRenderer;
 			}
 
@@ -187,6 +188,14 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 
 				_viewCell = cell;
+
+				if (cell is null)
+				{
+					_rendererRef = null;
+					ContentView.ClearSubviews();
+					return;
+				}
+
 				_viewCell.PropertyChanged += ViewCellPropertyChanged;
 				BeginInvokeOnMainThread(_viewCell.SendAppearing);
 

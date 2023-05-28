@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -1023,6 +1024,30 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 				await shell.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact(DisplayName = "Can Clear ShellContent")]
+		public async Task CanClearShellContent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			var appearanceObserversField = shell.GetType().GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(appearanceObserversField);
+			var appearanceObservers = appearanceObserversField.GetValue(shell) as IList;
+			Assert.NotNull(appearanceObservers);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				int count = appearanceObservers.Count;
+				shell.Items.Clear();
+				shell.CurrentItem = new ShellContent { Content = page };
+				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
 

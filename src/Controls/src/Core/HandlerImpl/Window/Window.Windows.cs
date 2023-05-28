@@ -17,16 +17,11 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 		}
 
-		static void MapWindowTitle(IWindowHandler handler, IWindow window)
+		static void MapTitle(IWindowHandler handler, Window window)
 		{
-			if (window is Window controlsWindow)
-			{
-				handler
-					.PlatformView
-					.UpdateTitle(window, controlsWindow.GetCurrentlyPresentedMauiContext());
-			}
-
-			WindowHandler.MapTitle(handler, window);
+			handler
+				.PlatformView
+				.UpdateTitle(window, window.GetCurrentlyPresentedMauiContext());
 		}
 
 		Rect[] IWindow.TitleBarDragRectangles

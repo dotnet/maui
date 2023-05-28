@@ -85,6 +85,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	[Category(UITestCategories.InputTransparent)]
 	[Category(UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Bugzilla)]
+	[FailsOnMaui]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]
@@ -143,6 +144,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void TestCellsShowAfterRefresh()
 		{

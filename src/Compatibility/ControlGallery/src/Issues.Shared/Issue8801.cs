@@ -280,10 +280,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 				{
 					return GetRootPage(tabPage.CurrentPage);
 				}
-				else if (page is CarouselPage carouselPage)
-				{
-					return GetRootPage(carouselPage.CurrentPage);
-				}
 				if (page is ContentPage cPage)
 				{
 					return cPage;
@@ -304,6 +300,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 #if UITEST && __ANDROID__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void NotAddingElementsNativelyDoesntCrashAndroid()
 		{

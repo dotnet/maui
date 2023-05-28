@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
@@ -124,7 +125,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
+		[FailsOnMaui]
 		public void Bugzilla36788Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Passed"));

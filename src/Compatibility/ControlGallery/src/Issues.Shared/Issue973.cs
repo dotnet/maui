@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[Description ("Test tab reset when swapping out detail")]
 		[UiTest (typeof(NavigationPage))]

@@ -1,4 +1,5 @@
 ﻿using CoreGraphics;
+using CoreHaptics;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -97,14 +98,20 @@ namespace Microsoft.Maui
 				return;
 
 			var centerX = rect.Center.X;
-			var boundsX = (double)platformView.Bounds.X;
+			var destinationWidth = rect.Width;
 
 			var parent = platformView.Superview;
 			if (parent?.EffectiveUserInterfaceLayoutDirection == UIUserInterfaceLayoutDirection.RightToLeft)
 			{
 				// We'll need to adjust the center point to reflect the RTL layout
-				centerX = parent.Bounds.Right - rect.Center.X;
-				boundsX = boundsX - (rect.Center.X - centerX);
+				// Find the center of the parent
+				var parentCenter = parent.Bounds.Right - (parent.Bounds.Width / 2);
+
+				// Figure out how far the center of the destination rect is from the center of the parent
+				var distanceFromParentCenter = parentCenter - centerX;
+
+				// Mirror the center to the other side of the center of the parent
+				centerX = centerX + (distanceFromParentCenter * 2);
 			}
 
 			// We set Center and Bounds rather than Frame because Frame is undefined if the CALayer's transform is 
@@ -113,7 +120,8 @@ namespace Microsoft.Maui
 
 			// The position of Bounds is usually (0,0), but in some cases (e.g., UIScrollView) it's the content offset.
 			// So just leave it whatever value iOS thinks it should be (adjusted for RTL if appropriate)
-			platformView.Bounds = new CGRect(boundsX, platformView.Bounds.Y, rect.Width, rect.Height);
+			var leftEdge = centerX - (destinationWidth / 2);
+			platformView.Bounds = new CGRect(leftEdge, platformView.Bounds.Y, destinationWidth, rect.Height);
 
 			viewHandler.Invoke(nameof(IView.Frame), rect);
 		}
