@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Graphics.Text
 {
 	public static class TextColors
 	{
-		public static Dictionary<string, string> StandardColors = new Dictionary<string, string>
+		public static Dictionary<string, string> StandardColors = new(StringComparer.OrdinalIgnoreCase)
 		{
 			{"BLACK", "#000000"},
 			{"NAVY", "#000080"},
@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Graphics.Text
 			//Remove # if present
 			if (!color.StartsWith("#", StringComparison.Ordinal))
 			{
-				if (!StandardColors.TryGetValue(color.ToUpperInvariant(), out color))
+				if (!StandardColors.TryGetValue(color, out color))
 					return null;
 			}
 
