@@ -15,6 +15,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 #endif
 #if ANDROID
 		Android.Content.Context _androidContext;
+		IFontManager _fontManager;
 #endif
 
 #if WINDOWS
@@ -37,6 +38,9 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			if (serviceType == typeof(IAnimationManager))
 				return _manager ??= _services.GetRequiredService<IAnimationManager>();
 #if ANDROID
+			if (serviceType == typeof(IFontManager))
+				return _fontManager ??= _services.GetRequiredService<IFontManager>();
+
 			if (serviceType == typeof(Android.Content.Context))
 				return MauiProgramDefaults.DefaultContext;
 
