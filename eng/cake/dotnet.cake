@@ -1,4 +1,6 @@
-// Contains .NET 6-related Cake targets
+#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+
+// Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
@@ -46,7 +48,7 @@ Task("dotnet")
                 $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
         }
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
@@ -71,7 +73,7 @@ Task("dotnet-local-workloads")
                 .WithProperty("InstallWorkloadPacks", "false"),
         });
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
@@ -118,7 +120,7 @@ Task("android-aar")
 
         if (exitCode != 0)
         {
-            if (IsCIBuild() || target == "android-aar")
+            if (IsCIBuild() || IsTarget("android-aar"))
                 throw new Exception("Gradle failed to build maui.aar: " + exitCode);
             else
                 Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
@@ -163,18 +165,18 @@ Task("dotnet-samples")
 Task("dotnet-samples-test")
     .Does(() =>
     {
-        var buildSettings = new DotNetCoreBuildSettings
+        var buildSettings = new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
+            MSBuildSettings = new DotNetMSBuildSettings()
                 .SetConfiguration(configuration)
         };
-        DotNetCoreBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
+        DotNetBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
 
-        var testSettings = new DotNetCoreTestSettings
+        var testSettings = new DotNetTestSettings
         {
             Filter = "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
         };
-        DotNetCoreTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
+        DotNetTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
     });
 
 Task("dotnet-test")
@@ -230,7 +232,7 @@ Task("dotnet-pack-maui")
                  $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
-        DotNetCoreTool("pwsh", new DotNetCoreToolSettings
+        DotNetTool("pwsh", new DotNetToolSettings
         {
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
@@ -357,7 +359,7 @@ Task("dotnet-diff")
             // run the diff
             foreach (var nupkg in nupkgs)
             {
-                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                DotNetTool("api-tools", new DotNetToolSettings
                 {
                     DiagnosticOutput = true,
                     ArgumentCustomization = builder => builder
@@ -607,7 +609,7 @@ void RunMSBuildWithDotNet(
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    var msbuildSettings = new DotNetCoreMSBuildSettings()
+    var msbuildSettings = new DotNetMSBuildSettings()
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
@@ -626,7 +628,7 @@ void RunMSBuildWithDotNet(
         }
     }
 
-    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    var dotnetBuildSettings = new DotNetBuildSettings
     {
         MSBuildSettings = msbuildSettings,
     };
@@ -639,13 +641,15 @@ void RunMSBuildWithDotNet(
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
 
+        //args.Append("/tl");
+
         return args;
     };
 
     if (localDotnet)
         dotnetBuildSettings.ToolPath = dotnetPath;
 
-    DotNetCoreBuild(sln, dotnetBuildSettings);
+    DotNetBuild(sln, dotnetBuildSettings);
 }
 
 void RunTestWithLocalDotNet(string csproj)
@@ -657,18 +661,47 @@ void RunTestWithLocalDotNet(string csproj)
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    DotNetCoreTest(csproj,
-        new DotNetCoreTestSettings
+    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, null, true);
+}
+
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
+    var results = $"{name}-{config}.trx";
+
+    Information("Run Test binlog: {0}", binlog);
+
+    var settings = new DotNetTestSettings
         {
-            Configuration = configuration,
-            ToolPath = dotnetPath,
-            NoBuild = true,
-            Loggers = {
-                $"trx;LogFileName={results}"
-            },
-            ResultsDirectory = GetTestResultsDirectory(),
-            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
-        });
+            Configuration = config,
+            NoBuild = noBuild,
+            Loggers = { 
+                $"trx;LogFileName={results}"  
+            }, 
+           	ResultsDirectory = GetTestResultsDirectory(),
+            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+            ArgumentCustomization = args => 
+            { 
+                args.Append($"-bl:{binlog}");
+               // args.Append($"/tl");
+                if(argsExtra != null)
+                {
+                    foreach(var prop in argsExtra)
+                    {
+                        args.Append($"/p:{prop.Key}={prop.Value}");
+                    }
+                }
+                return args;
+            }
+        };
+    
+    if(!string.IsNullOrEmpty(pathDotnet))
+    {
+        settings.ToolPath = pathDotnet;
+    }
+
+    DotNetTest(csproj, settings);
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)

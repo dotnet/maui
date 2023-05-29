@@ -1,9 +1,11 @@
 #addin nuget:?package=Cake.Android.Adb&version=3.2.0
 #addin nuget:?package=Cake.Android.AvdManager&version=2.2.0
 #load "../cake/helpers.cake"
+#load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
 const string defaultVersion = "30";
+const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
@@ -11,7 +13,6 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net8.0-android" : ""));
@@ -154,16 +155,17 @@ Task("Build")
 	{
 		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
-		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
-			MSBuildSettings = new DotNetCoreMSBuildSettings {
+			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
 			},
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:EmbedAssembliesIntoApk=true")
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				//.Append("/tl")
 		});
 	}
 	else
@@ -250,7 +252,7 @@ Task("Test")
 	lines = AdbShell("getprop debug.mono.log", adbSettings);
 	Information("{0}", string.Join("\n", lines));
 
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android test " +
 			$"--app=\"{TEST_APP}\" " +
@@ -263,7 +265,7 @@ Task("Test")
 
 	bool testsFailed = true;
 	try {
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 		testsFailed = false;
 	} finally {
 
@@ -295,7 +297,7 @@ Task("uitest")
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
 		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine("Release/net7.0-android").FullPath;
+		var binDir = binFolder.Combine($"Release/{dotnetVersion}-android").FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
@@ -347,7 +349,7 @@ Task("uitest")
 
 	//install apk on the emulator
 	Information("Install with xharness: {0}",TEST_APP);
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android install " +
 			$"--app=\"{TEST_APP}\" " +
@@ -355,18 +357,20 @@ Task("uitest")
 			$"--output-directory=\"{TEST_RESULTS}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
-	DotNetCoreTool("tool", settings);
+	DotNetTool("tool", settings);
 
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=ANDROID")
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				//.Append("/tl")
+			
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_android.log");
