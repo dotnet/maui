@@ -79,4 +79,20 @@ public partial class FontManagerTests : TestBase
 
 		Assert.False(expected.Equals(actual));
 	}
+
+	[Theory]
+	[InlineData("monospace")]
+	[InlineData("sansserif")]
+	[InlineData("serif")]
+	public void CanLoadSystemFonts(string fontName)
+	{
+		if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+			return;
+
+		var registrar = new FontRegistrar(fontLoader: null);
+		var manager = new FontManager(registrar);
+		var actual = manager.GetTypeface(Font.OfSize(fontName, 12));
+
+		Assert.NotEqual(Typeface.Default, actual);
+	}
 }

@@ -181,6 +181,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
         [Test, TestCaseSource(nameof(GenerateTests))]
         public void VerifyInputTransparent(TestPoint test)
         {

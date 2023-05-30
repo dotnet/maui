@@ -117,7 +117,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(OriginalTitle, mauiWindow.Title);
 					Assert.Equal(OriginalTitle, currentNavigationRootManager.WindowTitle);
 					Assert.Equal(OriginalTitle, modalNavigationRootManager.WindowTitle);
-					
+
 					window.Title = UpdatedTitle;
 
 					Assert.Equal(UpdatedTitle, mauiWindow.Title);

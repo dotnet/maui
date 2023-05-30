@@ -14,7 +14,10 @@ namespace Microsoft.Maui.Authentication
 
 		public async Task<WebAuthenticatorResult> AuthenticateAsync(AppleSignInAuthenticator.Options options)
 		{
-			if (!OperatingSystem.IsIOSVersionAtLeast(13))
+			if (OperatingSystem.IsIOS() && !OperatingSystem.IsIOSVersionAtLeast(13))
+				throw new FeatureNotSupportedException();
+
+			if (OperatingSystem.IsMacCatalyst() && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 				throw new FeatureNotSupportedException();
 
 			var provider = new ASAuthorizationAppleIdProvider();
@@ -60,6 +63,7 @@ namespace Microsoft.Maui.Authentication
 	}
 
 	[System.Runtime.Versioning.SupportedOSPlatform("ios13.0")]
+	[System.Runtime.Versioning.SupportedOSPlatform("maccatalyst13.1")]
 	class AuthManager : NSObject, IASAuthorizationControllerDelegate, IASAuthorizationControllerPresentationContextProviding
 	{
 		public Task<ASAuthorizationAppleIdCredential> GetCredentialsAsync()

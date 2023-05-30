@@ -28,49 +28,32 @@ namespace Microsoft.Maui.Controls.Platform
 			textField.AdjustsFontSizeToFitWidth = entry.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
 
-		public static void UpdateText(this UITextView textView, InputView inputView)
+		public static void UpdateText(this UITextView textView, InputView inputView) =>
+			UpdateText(textView, inputView, textView.IsFirstResponder);
+
+		public static void UpdateText(this UITextField textField, InputView inputView) =>
+			UpdateText(textField, inputView, textField.IsEditing);
+
+		static void UpdateText(this IUITextInput textField, InputView inputView, bool isEditing)
 		{
 			// Setting the text causes the cursor to be reset to the end of the UITextView.
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
-			var oldText = textView.Text ?? string.Empty;
+			var textRange = textField.GetTextRange(textField.BeginningOfDocument, textField.EndOfDocument);
+			var oldText = textField.TextInRange(textRange) ?? string.Empty;
 			var newText = TextTransformUtilites.GetTransformedText(
 				inputView?.Text,
-				textView.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
+				textField.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);
 
 			// Re-calculate the cursor offset position if the text was modified by a Converter.
 			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textView.IsFirstResponder ? textView.GetCursorPosition(cursorOffset) : newText.Length;
+			var cursorPosition = isEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
 
 			if (oldText != newText)
 			{
-				textView.Text = newText;
-
-				textView.SetTextRange(cursorPosition, 0);
-			}
-		}
-
-		public static void UpdateText(this UITextField textField, InputView inputView)
-		{
-			// Setting the text causes the cursor to be reset to the end of the UITextView.
-			// So, let's set back the cursor to the last known position and calculate a new
-			// position if needed when the text was modified by a Converter.
-			var oldText = textField.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(
-				inputView?.Text,
-				textField.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
-				);
-
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textField.IsEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
-
-			if (oldText != newText)
-			{
-				textField.Text = newText;
+				textField.ReplaceText(textRange, newText);
 
 				textField.SetTextRange(cursorPosition, 0);
 			}

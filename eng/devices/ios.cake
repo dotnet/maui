@@ -1,19 +1,19 @@
 #addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "../cake/helpers.cake"
+#load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "16.2";
-
+const string dotnetVersion = "net7.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? "net7.0-ios" : ""));
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-ios" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
@@ -41,7 +41,7 @@ Setup(context =>
 
 	// only install when an explicit version is specified
 	if (TEST_DEVICE.IndexOf("_") != -1) {
-		var settings = new DotNetCoreToolSettings {
+		var settings = new DotNetToolSettings {
 			ToolPath = DOTNET_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
@@ -49,7 +49,7 @@ Setup(context =>
 				$"--verbosity=\"Debug\" ")
 		};
 
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 	}
 });
 
@@ -96,16 +96,18 @@ Task("Build")
 	{
 		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
-		DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
-			MSBuildSettings = new DotNetCoreMSBuildSettings {
+			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
 			},
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				//.Append("/tl")
+			
 		});
 	}
 	else
@@ -159,7 +161,7 @@ Task("Test")
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
@@ -170,7 +172,7 @@ Task("Test")
 
 	bool testsFailed = true;
 	try {
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 		testsFailed = false;
 	} finally {
 		// ios test result files are weirdly named, so fix it up
@@ -223,17 +225,18 @@ Task("uitest")
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Install with xharness: {0}",TEST_APP);
-	var settings = new DotNetCoreToolSettings {
+	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple install " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
 		$"--verbosity=\"Debug\" ")
+
 	};
 
 	try {
-		DotNetCoreTool("tool", settings);
+		DotNetTool("tool", settings);
 	} finally {
 
 		var sims = ListAppleSimulators();
@@ -250,12 +253,14 @@ Task("uitest")
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
+			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				//.Append("/tl")
+			
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_ios.log");

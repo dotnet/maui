@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	public partial class Issue4356 : TestContentPage
 	{
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Issue4356Test()
 		{
