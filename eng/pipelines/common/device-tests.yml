@@ -32,7 +32,7 @@ stages:
             ${{ if ne(project.android, '') }}:
               ${{ each api in parameters.androidApiLevels }}:
                 ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
-                  ${{ replace(coalesce(project.desc, project.name) }}_API_${{ api }}, ' ', '_') }}:
+                  ${{ join('_', [replace(coalesce(project.desc, project.name) }}, ' ', '_'), 'API',  api]) }}:
                     ${{ if ge(api, 24) }}:
                       ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
                     ${{ if lt(api, 24) }}:
