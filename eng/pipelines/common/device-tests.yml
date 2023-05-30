@@ -20,7 +20,7 @@ stages:
     displayName: Android Device Tests
     dependsOn: []
     jobs:
-    - job: android_device_tests_${{ project.name }}_${{ api }}
+    - job: android_device_tests
       workspace:
         clean: all
       displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
