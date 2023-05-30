@@ -23,7 +23,7 @@ stages:
     - job: android_device_tests
       workspace:
         clean: all
-      displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+      displayName: "Android emulator tests"
       pool: ${{ parameters.androidPool }}
       strategy:
         matrix:
