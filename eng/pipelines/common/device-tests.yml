@@ -69,7 +69,7 @@ stages:
             ${{ if ne(project.ios, '') }}:
               ${{ each version in parameters.iosVersions }}:
                 ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V${{ version }}:
+                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
                     ${{ if eq(version, 'latest') }}:
