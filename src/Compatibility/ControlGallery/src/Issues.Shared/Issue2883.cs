@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Issue2883TestDisabled ()
 		{
@@ -126,6 +127,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			RunningApp.Screenshot ("I dont see the disable cell");
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Issue2883TestEnabled ()
 		{

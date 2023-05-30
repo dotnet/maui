@@ -813,12 +813,12 @@ namespace Microsoft.Maui.Layouts
 
 				if (expandStarRows)
 				{
-					ExpandStarDefinitions(_rows, targetSize.Height, GridMinimumHeight(), _rowSpacing, _rowStarCount);
+					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight(), _rowSpacing, _rowStarCount);
 				}
 
 				if (expandStarColumns)
 				{
-					ExpandStarDefinitions(_columns, targetSize.Width, GridMinimumWidth(), _columnSpacing, _columnStarCount);
+					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth(), _columnSpacing, _columnStarCount);
 				}
 			}
 
@@ -966,6 +966,11 @@ namespace Microsoft.Maui.Layouts
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)
 				{
 					measureWidth += _columns[column].Size;
+
+					if (column > cell.Column)
+					{
+						measureWidth += _columnSpacing;
+					}
 				}
 
 				cell.MeasureWidth = measureWidth;
@@ -977,6 +982,11 @@ namespace Microsoft.Maui.Layouts
 				for (int row = cell.Row; row < cell.Row + cell.RowSpan; row++)
 				{
 					measureHeight += _rows[row].Size;
+
+					if (row > cell.Row)
+					{
+						measureHeight += _rowSpacing;
+					}
 				}
 
 				cell.MeasureHeight = measureHeight;

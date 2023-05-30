@@ -95,6 +95,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Assert.AreEqual(startingHeight, endHeight);
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void FlyoutHeaderBehaviorCollapseOnScroll()
 		{

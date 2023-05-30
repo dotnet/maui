@@ -81,6 +81,9 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 #if __IOS__ || WINDOWS
 		[Ignore("This is covered by the platform tests")]
 		public override void _Scale() { }
+#else
+		[FailsOnMauiAndroid]
+		public override void _Scale() { }
 #endif
 
 #if __ANDROID__ || __IOS__

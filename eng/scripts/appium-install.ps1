@@ -1,7 +1,7 @@
 node -v
 npm install -g npm
 node -v
-npm install -g appium@next
+npm install -g appium@2.0.0-beta.61
 appium -v
 $x = appium driver list --installed --json  | ConvertFrom-Json
 if(!$x.windows)

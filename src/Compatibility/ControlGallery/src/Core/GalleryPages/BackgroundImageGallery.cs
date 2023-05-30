@@ -30,25 +30,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				});
 			};
 
-			var contentInCarosel = new Button { Text = "Carousel children" };
-			contentInCarosel.Clicked += async (sender, args) =>
-			{
-				await Navigation.PushModalAsync(new CarouselPage
-				{
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var page = new ContentPage();
-						page.SetBinding(BackgroundImageSourceProperty, ".");
-						return page;
-					}),
-
-					ItemsSource = new[] {
-						"oasis.jpg",
-						"crimson.jpg"
-					}
-				});
-			};
-
 			var navigation = new Button { Text = "NavigationPage" };
 			navigation.Clicked += async (sender, args) =>
 			{
@@ -104,10 +85,8 @@ namespace Microsoft.Maui.Controls.ControlGallery
 					carousel,
 					tabbed,
 					master,
-					contentIntabs,
-					contentInCarosel
+					contentIntabs
 				}
-
 			};
 		}
 	}

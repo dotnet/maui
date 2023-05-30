@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.Navigation)]
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 	public class Bugzilla43519 : TestTabbedPage
 	{

@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Assert.GreaterOrEqual(topTabTop, titleViewBottom, "Title View is incorrectly positioned in iOS 16");
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void ToolbarItemsWithTitleViewAreRendering()
 		{

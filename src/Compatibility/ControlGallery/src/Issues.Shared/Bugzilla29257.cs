@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Ignore("CarouselPage has been removed.")]
 		public void Bugzilla29257Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("Page 1"));

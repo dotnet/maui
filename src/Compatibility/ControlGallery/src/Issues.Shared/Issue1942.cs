@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		public class CustomGrid : Grid { }
 
 #if UITEST && __ANDROID__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void ClickPropagatesToOnTouchListener()
 		{

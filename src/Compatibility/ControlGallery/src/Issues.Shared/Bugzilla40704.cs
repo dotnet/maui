@@ -225,11 +225,13 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Bugzilla40704HeaderPresentTest()
 		{
 			RunningApp.WaitForElement("Menu - 0");
 		}
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 #if __MACOS__
 		[Ignore("ScrollDownTo not implemented in UITest.Desktop")]

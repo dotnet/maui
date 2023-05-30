@@ -111,21 +111,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsG
 					},
 					new Button
 					{
-						Text = "Set CarouselPage as root",
-						Command = new Command(() =>
-						{
-							var pageSafe = new SafeAreaPageiOS(restore,setRoot);
-							var pageNotSafe = new SafeAreaPageiOS(restore,setRoot);
-							pageNotSafe.On<iOS>().SetUseSafeArea(false);
-							pageNotSafe.Title ="Not Using Safe Area";
-							var carouselPage = new CarouselPage();
-							carouselPage.Children.Add(pageSafe);
-							carouselPage.Children.Add(pageNotSafe);
-							setRoot.Execute(carouselPage);
-						})
-					},
-					new Button
-					{
 						Text = "Toggle use safe area",
 						Command = new Command(() => On<iOS>().SetUseSafeArea(!On<iOS>().UsingSafeArea()))
 					},
