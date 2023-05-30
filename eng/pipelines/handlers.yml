@@ -175,7 +175,7 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy Android Files for UITest'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/test/Android.UITests/bin/${{ BuildConfiguration }}/net472/
+                  SourceFolder: src/Compatibility/ControlGallery/test/Android.UITests/bin/${{ BuildConfiguration }}/net462/
                   Contents: '*'
                   TargetFolder: '$(build.artifactstagingdirectory)/android/${{ BuildConfiguration }}'
                   CleanTargetFolder: false
@@ -192,7 +192,7 @@ stages:
               - task: CopyFiles@2
                 displayName: 'Copy iOS Files for UITest'
                 inputs:
-                  SourceFolder: src/Compatibility/ControlGallery/test/iOS.UITests/bin/${{ BuildConfiguration }}/net472/
+                  SourceFolder: src/Compatibility/ControlGallery/test/iOS.UITests/bin/${{ BuildConfiguration }}/net462/
                   Contents: '*'
                   TargetFolder: '$(build.artifactstagingdirectory)/ios/${{ BuildConfiguration }}'
                   flattenFolders: true
