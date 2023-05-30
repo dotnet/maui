@@ -121,6 +121,33 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
+		[Test]
+		[TestCase("maui", "Debug", "2.0", "2")]
+		[TestCase("maui", "Release", "2.0", "2")]
+		[TestCase("maui", "Release", "0.3", "3")]
+		[TestCase("maui-blazor", "Debug", "2.0", "2")]
+		[TestCase("maui-blazor", "Release", "2.0", "2")]
+		[TestCase("maui-blazor", "Release", "0.3", "3")]
+		public void BuildWithDifferentVersionNumber(string id, string config)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+			FileUtilities.ReplaceInFile(projectFile,
+				"<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>",
+				"<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>");
+			FileUtilities.ReplaceInFile(projectFile,
+				"<ApplicationVersion>1</ApplicationVersion>",
+				"<ApplicationVersion>2</ApplicationVersion>");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
 		void EnableTizen(string projectFile)
 		{
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
