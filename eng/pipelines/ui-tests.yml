@@ -94,7 +94,7 @@ resources:
       type: github
       name: xamarin/yaml-templates
       endpoint: xamarin
-      ref: refs/heads/main
+      ref: refs/heads/dev/pjc/comp-dd-condition
 
 stages:
 
