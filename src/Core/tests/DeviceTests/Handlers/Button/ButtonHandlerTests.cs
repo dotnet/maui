@@ -180,8 +180,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		// TODO: only windows button focus tests are working
 #if WINDOWS
+		// TODO: buttons are not focusable on Android without FocusableInTouchMode=true and iOS is having issues
+		//       https://github.com/dotnet/maui/issues/6482
 		[Category(TestCategory.Button)]
 		public class ButtonFocusTests : FocusHandlerTests<ButtonHandler, ButtonStub, VerticalStackLayoutStub>
 		{

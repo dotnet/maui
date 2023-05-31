@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
+using Microsoft.Maui.Graphics.Platform;
 using Photos;
 using UIKit;
 
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.Storage
 
 		internal override Task<Stream> PlatformOpenReadAsync()
 		{
-			data ??= uiImage.AsPNG();
+			data ??= uiImage.NormalizeOrientation().AsPNG();
 
 			return Task.FromResult(data.AsStream());
 		}

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SimpleLayout()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void LayoutIsUpdatedWhenConstraintsChange()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//https://github.com/xamarin/Microsoft.Maui.Controls/issues/2169
 		public void BoundsUpdatedIfConstraintsChangedWhileNotParented()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SimpleExpressionLayout()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SimpleBoundsSizing()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void UnconstrainedSize()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -221,7 +221,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ViewRelativeLayout()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ViewRelativeLayoutWithExpressions()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ViewRelativeToMultipleViews()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -341,7 +341,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ExpressionRelativeToMultipleViews()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -389,7 +389,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ThreePassLayout()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -449,7 +449,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ThreePassLayoutWithExpressions()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};
@@ -509,7 +509,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ThrowsWithUnsolvableConstraints()
 		{
-			var relativeLayout = new RelativeLayout
+			var relativeLayout = new Compatibility.RelativeLayout
 			{
 				IsPlatformEnabled = true
 			};

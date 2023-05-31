@@ -102,6 +102,11 @@ namespace Microsoft.Maui.Authentication
 			return platform;
 		}
 
+#if ANDROID
+		internal static bool IsAuthenticatingWithCustomTabs(this IWebAuthenticator webAuthenticator)
+			=> (webAuthenticator as WebAuthenticatorImplementation)?.AuthenticatingWithCustomTabs ?? false;
+#endif
+
 		/// <summary>
 		/// Begin an authentication flow by navigating to the specified url and waiting for a callback/redirect to the callbackUrl scheme.
 		/// </summary>
