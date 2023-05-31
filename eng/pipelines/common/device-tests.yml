@@ -16,38 +16,42 @@ parameters:
       ios: /optional/path/to/ios.csproj
 
 stages:
-
   - stage: android_device_tests
     displayName: Android Device Tests
     dependsOn: []
     jobs:
-      - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.android, '') }}:
-          - ${{ each api in parameters.androidApiLevels }}:
-            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
-              - job: android_device_tests_${{ project.name }}_${{ api }}
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool: ${{ parameters.androidPool }}
-                variables:
-                  ${{ if ge(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                  ${{ if lt(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                steps:
-                  - template: device-tests-steps.yml
-                    parameters:
-                      platform: android
-                      path: ${{ project.android }}
-                      device: android-emulator-32_${{ api }}
-                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
-                      artifactName: ${{ parameters.artifactName }}
-                      artifactItemPattern: ${{ parameters.artifactItemPattern }}
-                      checkoutDirectory: ${{ parameters.checkoutDirectory }}
-                      useArtifacts: ${{ parameters.useArtifacts }}
+    - job: android_device_tests
+      workspace:
+        clean: all
+      displayName: "Android emulator tests"
+      pool: ${{ parameters.androidPool }}
+      strategy:
+        matrix:
+          # create all the variables used for the matrix
+          ${{ each project in parameters.projects }}:
+            ${{ if ne(project.android, '') }}:
+              ${{ each api in parameters.androidApiLevels }}:
+                ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
+                    ${{ if ge(api, 24) }}:
+                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
+                    ${{ if lt(api, 24) }}:
+                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    PROJECT_PATH: ${{ project.android }}
+                    DEVICE: android-emulator-32_${{ api }}
+      steps:
+        - template: device-tests-steps.yml
+          parameters:
+            platform: android
+            path: $(PROJECT_PATH) 
+            device: $(DEVICE)
+            provisionatorChannel: ${{ parameters.provisionatorChannel }}
+            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+            artifactName: ${{ parameters.artifactName }}
+            artifactItemPattern: ${{ parameters.artifactItemPattern }}
+            checkoutDirectory: ${{ parameters.checkoutDirectory }}
+            useArtifacts: ${{ parameters.useArtifacts }}
 
   - stage: ios_device_tests
     displayName: iOS Device Tests

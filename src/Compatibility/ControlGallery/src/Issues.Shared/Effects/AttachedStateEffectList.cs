@@ -4,7 +4,7 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects
+namespace Microsoft.Maui.Controls.ControlGallery.Effects
 {
 	[Preserve(AllMembers = true)]
 	public class AttachedStateEffectList : ObservableCollection<AttachedStateEffect>
