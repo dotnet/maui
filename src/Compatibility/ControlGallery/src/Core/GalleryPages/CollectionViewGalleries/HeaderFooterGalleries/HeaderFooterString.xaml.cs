@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.HeaderFooterGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class HeaderFooterString : ContentPage

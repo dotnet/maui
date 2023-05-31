@@ -41,7 +41,7 @@ parameters:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
       demands:
-        - macOS.Name -equals Monterey
+        - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
       testName: RunOnAndroid
       artifact: templates-run-android
@@ -66,10 +66,8 @@ jobs:
       name: ${{ BuildPlatform.poolName }}
       vmImage: ${{ BuildPlatform.vmImage }}
       demands:
-        - macOS.Name -equals Monterey
+        - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
-        - Agent.HasDevices -equals False
-        - Agent.IsPaired -equals False
     steps:
 
     - ${{ each step in parameters.prepareSteps }}:

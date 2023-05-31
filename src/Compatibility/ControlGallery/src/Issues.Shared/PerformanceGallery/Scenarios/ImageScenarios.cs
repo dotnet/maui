@@ -3,7 +3,7 @@ using System.Reflection;
 using Microsoft.Maui.Controls.Internals;
 using IOPath = System.IO.Path;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PerformanceGallery.Scenarios
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PerformanceGallery.Scenarios
 {
 	[Preserve(AllMembers = true)]
 	internal class ImageScenario1 : PerformanceScenario
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Perf
 		{
 			//NOTE: copy image to disk in static ctor, so not to interfere with timing
 			tempFile = IOPath.Combine(IOPath.GetTempPath(), $"{nameof(ImageScenario4)}.png");
-			using (var embeddedStream = typeof(ImageScenario4).Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.crimson.jpg"))
+			using (var embeddedStream = typeof(ImageScenario4).Assembly.GetManifestResourceStream("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg"))
 			using (var fileStream = File.Create(tempFile))
 				embeddedStream.CopyTo(fileStream);
 		}

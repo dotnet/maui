@@ -1,7 +1,7 @@
 using System;
 using System.Linq.Expressions;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal enum ViewLayoutType
 	{
