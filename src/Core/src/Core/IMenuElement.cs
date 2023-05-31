@@ -5,7 +5,7 @@
 		/// <summary>
 		/// Represents a shortcut key for a MenuItem.
 		/// </summary>
-		IAccelerator Accelerator { get; }
+		IAccelerator? Accelerator => null;
 
 		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 
