@@ -97,7 +97,18 @@ namespace Microsoft.Maui.Platform
 			_borderPath.UpdateBackground(background);
 		}
 
-		public void UpdateBorderStroke(IBorderStroke borderStroke)
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateBorderStroke instead")]
+		public void UpdateBorderShape(IShape borderShape)
+		{
+			if (borderShape is null || _borderPath is null)
+				return;
+
+			_borderPath.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(borderShape);
+		}
+		
+		internal void UpdateBorderStroke(IBorderStroke borderStroke)
 		{
 			if (borderStroke is null)
 				return;

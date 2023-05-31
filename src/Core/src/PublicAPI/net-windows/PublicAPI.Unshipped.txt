@@ -11,7 +11,7 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
-Microsoft.Maui.Platform.ContentPanel.UpdateBorderStroke(Microsoft.Maui.IBorderStroke! borderStroke) -> void
+Microsoft.Maui.Platform.ContentPanel.UpdateBorderShape(Microsoft.Maui.Graphics.IShape! borderShape) -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
