@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		public SimplifyOnPlatformVisitor(string targetFramework)
 		{
-		
+
 			if (string.IsNullOrEmpty(targetFramework))
 				return;
 
@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				var onNode = GetOnNode(node, Target) ?? GetDefault(node);
 
 				//Property node
-				if (   ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name)
+				if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name)
 					&& parentNode is IElementNode parentEnode)
 				{
 					if (onNode != null)
