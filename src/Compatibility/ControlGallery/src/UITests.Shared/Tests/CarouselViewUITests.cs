@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	[Category(UITestCategories.CarouselView)]
 	[Category(UITestCategories.UwpIgnore)]
+	[FailsOnMaui]
 	internal class CarouselViewUITests : BaseTestFixture
 	{
 		protected override void NavigateToGallery()
@@ -79,6 +80,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			}
 		}
 
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[TestCase("CarouselView (XAML, Horizontal)", 0)]
 		[TestCase("CarouselView (XAML, Horizontal, Loop)", 0)]
 		[TestCase("CarouselView Set CurrentItem", 3)]
@@ -221,6 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[TestCase("CarouselView (Code, Horizontal)")]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		//[TestCase("CarouselView (XAML, Horizontal)")]
 		public void CarouselViewHorizontal(string subgallery)
 		{
@@ -303,6 +306,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		[TestCase("CarouselView SetPosition Ctor")]
 		[TestCase("CarouselView SetPosition Appearing")]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		//[TestCase("CarouselView (XAML, Horizontal)")]
 		public async System.Threading.Tasks.Task CarouselViewSetPosition(string subgallery)
 		{

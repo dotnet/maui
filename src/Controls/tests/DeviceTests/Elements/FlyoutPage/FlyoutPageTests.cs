@@ -65,7 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS && !MACCATALYST
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
@@ -164,7 +163,6 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Null(FindPlatformFlyoutView(detailView));
 			});
 		}
-#endif
 
 		FlyoutPage CreateFlyoutPage(Type type, Page detail, Page flyout)
 		{
@@ -172,6 +170,66 @@ namespace Microsoft.Maui.DeviceTests
 			flyoutPage.Detail = detail;
 			flyoutPage.Flyout = flyout;
 			return flyoutPage;
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task DetailsPageMeasuresCorrectlyInSplitMode(bool isRtl)
+		{
+			SetupBuilder();
+			var flyoutLabel = new Label() { Text = "Content" };
+			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
+			{
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split,
+				Detail = new ContentPage()
+				{
+					Title = "Detail",
+					Content = new Label()
+				},
+				Flyout = new ContentPage()
+				{
+					Title = "Flyout",
+					Content = flyoutLabel
+				},
+				FlowDirection = (isRtl) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
+			});
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			{
+				if (!CanDeviceDoSplitMode(flyoutPage))
+					return;
+
+				await AssertionExtensions.Wait(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+
+				var detailBounds = flyoutPage.Detail.GetBoundingBox();
+				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
+				var windowBounds = flyoutPage.GetBoundingBox();
+
+				Assert.True(detailBounds.Height <= windowBounds.Height, $"Details is measuring too high. Details - {detailBounds} Window - {windowBounds}");
+				Assert.True(flyoutBounds.Height <= windowBounds.Height, $"Flyout is measuring too high Flyout - {flyoutBounds} Window - {windowBounds}");
+				Assert.True(flyoutBounds.Width + detailBounds.Width <= windowBounds.Width,
+					$"Flyout and Details width exceed the width of the window. Details - {detailBounds}  Flyout - {flyoutBounds} Window - {windowBounds}");
+
+				Assert.True(detailBounds.X + detailBounds.Width <= windowBounds.Width,
+					$"Right edge of Details View is off the screen. Details - {detailBounds} Window - {windowBounds}");
+
+				if (isRtl)
+				{
+					Assert.Equal(flyoutBounds.X, detailBounds.Width);
+				}
+				else
+				{
+					Assert.Equal(flyoutBounds.Width, detailBounds.X);
+				}
+
+				Assert.Equal(detailBounds.Width, windowBounds.Width - flyoutBounds.Width);
+			});
+		}
+
+		bool CanDeviceDoSplitMode(FlyoutPage page)
+		{
+			return ((IFlyoutPageController)page).ShouldShowSplitMode;
 		}
 	}
 }

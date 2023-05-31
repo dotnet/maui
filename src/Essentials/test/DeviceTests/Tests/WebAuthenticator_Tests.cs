@@ -59,10 +59,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Theory]
 		[InlineData("xamarinessentials://#access_token=blah&refresh_token=blah2&expires=1", "blah", "blah2", "1")]
 		[InlineData("xamarinessentials://?access_token=blah&refresh_token=blah2&expires=1", "blah", "blah2", "1")]
+		[InlineData("xamarinessentials://?access_token=access+token+with+spaces&refresh_token=refresh%20token%20with%20spaces&expires=1", "access token with spaces", "refresh token with spaces", "1")]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public void ParseQueryString(string url, string accessToken, string refreshToken, string expires)
 		{
-			var r = WebUtils.ParseQueryString(url);
+			var r = WebUtils.ParseQueryString(new Uri(url));
 
 			Assert.Equal(accessToken, r?["access_token"]);
 			Assert.Equal(refreshToken, r?["refresh_token"]);
@@ -76,7 +77,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			public IDictionary<string, string> DecodeResponse(Uri uri)
 			{
 				CallCount++;
-				return WebUtils.ParseQueryString(uri.ToString());
+				return WebUtils.ParseQueryString(uri);
 			}
 		}
 	}

@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              Title="Events"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries.DragAndDropEvents">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries.DragAndDropEvents">
     <ContentPage.Content>
         <StackLayout>
             <StackLayout Orientation="Horizontal">

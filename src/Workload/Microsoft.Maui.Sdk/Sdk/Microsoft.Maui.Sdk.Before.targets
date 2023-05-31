@@ -19,4 +19,13 @@
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
 
+  <!--
+    Workaround for https://github.com/NuGet/Home/issues/6461
+    By default, Android and iOS set the Version property, so we need to do the same for Windows.
+    This also has to be done outside of the NuGets as this affects the NuGet restore.
+  -->
+  <PropertyGroup Condition=" '$([MSBuild]::GetTargetPlatformIdentifier($(TargetFramework)))' == 'windows' and '$(OutputType)' == 'WinExe' ">
+    <Version Condition=" $([System.Version]::TryParse ('$(ApplicationDisplayVersion)', $([System.Version]::Parse('1.0')))) ">$(ApplicationDisplayVersion)</Version>
+  </PropertyGroup>
+
 </Project>

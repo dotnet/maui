@@ -2,7 +2,7 @@
 using NUnit.Framework.Interfaces;
 using NUnit.Framework.Internal;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformTestsGallery
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery
 {
 	[Preserve(AllMembers = true)]
 	public class CategoryFilter : TestFilter

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public static class GH2691
 	{
@@ -12,21 +12,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 	}
 }
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace1
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace1
 {
 	public class CustomButton : Button
 	{
 	}
 }
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace2
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace2
 {
 	public class CustomLabel : Label
 	{
 	}
 }
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.CustomNamespace3
+namespace Microsoft.Maui.Controls.ControlGallery.CustomNamespace3
 {
 	public class CustomStackLayout : StackLayout
 	{
