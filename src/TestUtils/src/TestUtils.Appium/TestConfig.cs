@@ -1,6 +1,3 @@
-﻿using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Enums;
-
 namespace Microsoft.Maui.Appium
 {
 	public class TestConfig
@@ -39,7 +36,6 @@ namespace Microsoft.Maui.Appium
 
 		public string PlatformName { get; private set; } = string.Empty;
 		public string AutomationName { get; private set; } = string.Empty;
-
 		public string? DeviceName { get; set; }
 		public string? PlatformVersion { get; set; }
 		public string AppId { get; set; }
@@ -48,11 +44,8 @@ namespace Microsoft.Maui.Appium
 		public string? Udid { get; set; }
 		public string ReportDirectory { get; set; } = "reports";
 		public string ReportFormat { get; set; } = "xml";
-
 		public string? TestName { get; set; }
-
 		public bool FullReset { get; set; }
-
 		public TestDevice TestDevice { get; private set; }
 
 		public string? AppProjectPath { get; set; }
@@ -61,5 +54,35 @@ namespace Microsoft.Maui.Appium
 
 		public string FrameworkVersion { get; set; }
 
+		public override bool Equals(object? obj)
+		{
+			if (obj is not TestConfig rhsTestConfig)
+			{
+				return false;
+			}
+
+			return
+				PlatformName == rhsTestConfig.PlatformName &&
+				AutomationName == rhsTestConfig.AutomationName &&
+				DeviceName == rhsTestConfig.DeviceName &&
+				PlatformVersion == rhsTestConfig.PlatformVersion &&
+				AppId == rhsTestConfig.AppId &&
+				BundleId == rhsTestConfig.BundleId &&
+				AppPath == rhsTestConfig.AppPath &&
+				Udid == rhsTestConfig.Udid &&
+				ReportDirectory == rhsTestConfig.ReportDirectory &&
+				ReportFormat == rhsTestConfig.ReportFormat &&
+				TestName == rhsTestConfig.TestName &&
+				FullReset == rhsTestConfig.FullReset &&
+				TestDevice == rhsTestConfig.TestDevice &&
+				AppProjectPath == rhsTestConfig.AppProjectPath &&
+				Configuration == rhsTestConfig.Configuration &&
+				FrameworkVersion == rhsTestConfig.FrameworkVersion;
+		}
+
+		public override int GetHashCode()
+		{
+			return base.GetHashCode();
+		}
 	}
 }
