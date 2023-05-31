@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -449,6 +450,23 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory]
 		[ClassData(typeof(PageTypes))]
+		public async Task SwappingRootPageWhileModalPageIsOpenDoesntCrash(Page rootPage, Page newRootPage)
+		{
+			SetupBuilder();
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
+				async (_) =>
+				{
+					var modalPage = new NavigationPage(new ContentPage());
+					await rootPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+					rootPage.Window.Page = newRootPage;
+					await OnLoadedAsync(newRootPage);
+				});
+		}
+
+		[Theory]
+		[ClassData(typeof(PageTypes))]
 		public async Task BasicPushAndPop(Page rootPage, Page modalPage)
 		{
 			SetupBuilder();
@@ -456,7 +474,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (_) =>
 				{
-					var currentPage = (rootPage as IPageContainer<Page>).CurrentPage;
+					var currentPage = rootPage.GetCurrentPage();
+
 					await currentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
 					Assert.Equal(1, currentPage.Navigation.ModalStack.Count);
@@ -465,21 +484,27 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 
-			Assert.Equal(0, (rootPage as IPageContainer<Page>).CurrentPage.Navigation.ModalStack.Count);
+			Assert.Equal(0, rootPage.GetCurrentPage().Navigation.ModalStack.Count);
 		}
 
 		class PageTypes : IEnumerable<object[]>
 		{
 			public IEnumerator<object[]> GetEnumerator()
 			{
-				for (int i = 0; i < 2; i++)
+				for (int i = 0; i < 3; i++)
 				{
 					Func<Page> rootPage;
 
 					if (i == 0)
 						rootPage = () => new NavigationPage(new ContentPage());
-					else
+					else if (i == 1)
 						rootPage = () => new Shell() { CurrentItem = new ContentPage() };
+					else
+						rootPage = () => new FlyoutPage()
+						{
+							Flyout = new ContentPage() { Title = "Flyout" },
+							Detail = new NavigationPage(new ContentPage()) { Title = "Detail" },
+						};
 
 					yield return new object[] {
 						rootPage(), new NavigationPage(new ContentPage())

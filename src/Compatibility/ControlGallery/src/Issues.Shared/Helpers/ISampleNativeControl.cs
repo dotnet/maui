@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Helpers
+namespace Microsoft.Maui.Controls.ControlGallery.Issues.Helpers
 {
 	public interface ISampleNativeControl
 	{
