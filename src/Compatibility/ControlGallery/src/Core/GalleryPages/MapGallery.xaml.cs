@@ -12,7 +12,7 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class MapGallery : ContentPage

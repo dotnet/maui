@@ -19,6 +19,9 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <MauiImage Remove="Resources\Images\red-embedded.png" />
+    <None Remove="Resources\Images\red-embedded.png" />
+    <EmbeddedResource Include="Resources\Images\red-embedded.png" LogicalName="red-embedded.png" />
     <MauiIcon Include="Resources\appicon.svg" ForegroundFile="Resources\appiconfg.svg" Color="#512BD4" />
     <MauiSplashScreen Include="Resources\appiconfg.svg" Color="#512BD4" BaseSize="128,128" />
   </ItemGroup>
