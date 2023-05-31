@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Controls
 		static void MapFocus(IViewHandler handler, IView view, object args)
 		{
 			handler.ShowKeyboardIfFocused(view);
-			SearchBarHandler.CommandMapper.Chained?.Invoke(handler, view, nameof(IView.Focus), args);
 		}
 	}
 }
