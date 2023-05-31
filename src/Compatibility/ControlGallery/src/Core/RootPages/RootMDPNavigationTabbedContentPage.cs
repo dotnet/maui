@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	// FlyoutPage -> NavigationPage -> TabbedPage -> ContentPage
 	public class RootMDPNavigationTabbedContentPage : FlyoutPage

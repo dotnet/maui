@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// Note that this test currently fails on UWP because of https://bugzilla.xamarin.com/show_bug.cgi?id=60478
 #if UITEST
@@ -82,6 +82,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Ignore("CarouselPage has been removed.")]
 		public void Bugzilla29257Test ()
 		{
 			RunningApp.Tap (q => q.Marked ("Page 1"));

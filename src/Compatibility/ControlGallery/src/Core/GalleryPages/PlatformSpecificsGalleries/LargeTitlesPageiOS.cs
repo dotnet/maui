@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class LargeTitlesPageiOS : ContentPage
 	{

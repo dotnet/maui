@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3308, "[WPF] Button does not recalculate width on WPF", PlatformAffected.WPF)]

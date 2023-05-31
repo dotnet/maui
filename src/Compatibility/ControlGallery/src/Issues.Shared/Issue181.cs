@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 181, "Color not initialized for Label", PlatformAffected.Android, NavigationBehavior.PushModalAsync)]
