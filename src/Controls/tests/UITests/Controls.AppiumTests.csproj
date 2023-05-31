@@ -25,7 +25,6 @@
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
