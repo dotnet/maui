@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 				{
 					//TODO: We need to figure a way to map the value back to the real objectiveC property.
 					//the X.IOS camelcase property name won't work
-					var key = new Foundation.NSString(propertyName.ToLower());
+					var key = new Foundation.NSString(propertyName.ToLowerInvariant());
 					var valueKey = view.ValueForKey(key);
 					if (valueKey != null)
 					{

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -24,6 +25,12 @@ namespace Microsoft.Maui.Controls
 		Region(IList<Rect> positions, Thickness inflation) : this(positions)
 		{
 			_inflation = inflation;
+		}
+
+		public static Region FromRectangles(IEnumerable<Rect> rectangles)
+		{
+			var list = rectangles.ToList();
+			return new Region(list);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Region.xml" path="//Member[@MemberName='FromLines']/Docs/*" />

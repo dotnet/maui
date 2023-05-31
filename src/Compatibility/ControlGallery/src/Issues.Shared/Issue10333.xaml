@@ -3,7 +3,7 @@
   xmlns="http://schemas.microsoft.com/dotnet/2021/maui" 
   xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
   xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
-  x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue10333"
+  x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10333"
   Padding="0,50,0,0">
     <cmp:AbsoluteLayout BackgroundColor="Green">
         <Label Text="If page is visible dimmed with a padding, all is OK. If solid black on the bg, not OK" 

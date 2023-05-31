@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var currentInlines = inlines;
-			var elementName = element.Name.ToString().ToUpper();
+			var elementName = element.Name.ToString().ToUpperInvariant();
 			switch (elementName)
 			{
 				case ElementB:

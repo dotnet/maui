@@ -42,7 +42,12 @@ namespace Microsoft.Maui.Platform
 			var widthConstraint = bounds.Width;
 			var heightConstraint = bounds.Height;
 
-			if (!IsMeasureValid(widthConstraint, heightConstraint))
+			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
+			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
+			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// the window); there's no guarantee that SizeThatFits has been called in that case.
+
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
 			{
 				CrossPlatformMeasure?.Invoke(widthConstraint, heightConstraint);
 				CacheMeasureConstraints(widthConstraint, heightConstraint);

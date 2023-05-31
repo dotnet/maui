@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/GroupableItemsView.xml" path="Type[@FullName='Microsoft.Maui.Controls.GroupableItemsView']/Docs/*" />
 	public class GroupableItemsView : SelectableItemsView
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GroupableItemsView.xml" path="//Member[@MemberName='IsGroupedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsGrouped"/>.</summary>
 		public static readonly BindableProperty IsGroupedProperty =
 			BindableProperty.Create(nameof(IsGrouped), typeof(bool), typeof(GroupableItemsView), false);
 
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsGroupedProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GroupableItemsView.xml" path="//Member[@MemberName='GroupHeaderTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="GroupHeaderTemplate"/>.</summary>
 		public static readonly BindableProperty GroupHeaderTemplateProperty =
 			BindableProperty.Create(nameof(GroupHeaderTemplate), typeof(DataTemplate), typeof(GroupableItemsView), default(DataTemplate));
 
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(GroupHeaderTemplateProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GroupableItemsView.xml" path="//Member[@MemberName='GroupFooterTemplateProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="GroupFooterTemplate"/>.</summary>
 		public static readonly BindableProperty GroupFooterTemplateProperty =
 			BindableProperty.Create(nameof(GroupFooterTemplate), typeof(DataTemplate), typeof(GroupableItemsView), default(DataTemplate));
 

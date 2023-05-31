@@ -80,8 +80,6 @@ namespace Microsoft.Maui.DeviceTests
 				ImageSource = new FileImageSourceStub(filename),
 			};
 
-			var order = new List<string>();
-
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler(image);
@@ -90,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
 
@@ -148,7 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
 
@@ -168,17 +166,12 @@ namespace Microsoft.Maui.DeviceTests
 				StrokeThickness = 3
 			};
 
-			var handler = await CreateHandlerAsync(button);
-
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(button, async (handler) =>
 			{
-				await handler.PlatformView.AttachAndRun(async () =>
-				{
-					button.StrokeColor = expectedColor;
-					handler.UpdateValue(nameof(IButton.StrokeColor));
+				button.StrokeColor = expectedColor;
+				handler.UpdateValue(nameof(IButton.StrokeColor));
 
-					await handler.PlatformView.AssertContainsColor(expectedColor);
-				});
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
 
@@ -187,8 +180,9 @@ namespace Microsoft.Maui.DeviceTests
 		{
 		}
 
-		// TODO: only windows button focus tests are working
 #if WINDOWS
+		// TODO: buttons are not focusable on Android without FocusableInTouchMode=true and iOS is having issues
+		//       https://github.com/dotnet/maui/issues/6482
 		[Category(TestCategory.Button)]
 		public class ButtonFocusTests : FocusHandlerTests<ButtonHandler, ButtonStub, VerticalStackLayoutStub>
 		{

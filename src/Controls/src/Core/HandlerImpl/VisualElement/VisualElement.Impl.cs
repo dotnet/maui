@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls
 
 		IShadow IView.Shadow => Shadow;
 
+		/// <summary>Bindable property for <see cref="Shadow"/>.</summary>
 		public static readonly BindableProperty ShadowProperty =
  			BindableProperty.Create(nameof(Shadow), typeof(Shadow), typeof(VisualElement), defaultValue: null,
 				propertyChanging: (bindable, oldvalue, newvalue) =>
@@ -79,6 +80,7 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShadowProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="ZIndex"/>.</summary>
 		public static readonly BindableProperty ZIndexProperty =
 			BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(VisualElement), default(int),
 				propertyChanged: ZIndexPropertyChanged);

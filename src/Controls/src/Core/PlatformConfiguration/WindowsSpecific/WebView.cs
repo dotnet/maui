@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.WebView']/Docs/*" />
 	public static class WebView
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='IsJavaScriptAlertEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsJavaScriptAlertEnabled"/>.</summary>
 		public static readonly BindableProperty IsJavaScriptAlertEnabledProperty = BindableProperty.Create("IsJavaScriptAlertEnabled", typeof(bool), typeof(WebView), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific/WebView.xml" path="//Member[@MemberName='GetIsJavaScriptAlertEnabled']/Docs/*" />
@@ -35,8 +35,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific
 			return config;
 		}
 
-
-
+		/// <summary>Bindable property for attached property <c>ExecutionMode</c>.</summary>
 		public static readonly BindableProperty ExecutionModeProperty = BindableProperty.Create("ExecutionMode", typeof(WebViewExecutionMode), typeof(WebView), WebViewExecutionMode.SameThread);
 
 		public static WebViewExecutionMode GetExecutionMode(BindableObject element)

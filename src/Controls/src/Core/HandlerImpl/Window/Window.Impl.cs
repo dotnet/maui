@@ -15,43 +15,53 @@ namespace Microsoft.Maui.Controls
 	[ContentProperty(nameof(Page))]
 	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
 			nameof(Title), typeof(string), typeof(Window), default(string?));
 
+		/// <summary>Bindable property for <see cref="Page"/>.</summary>
 		public static readonly BindableProperty PageProperty = BindableProperty.Create(
 			nameof(Page), typeof(Page), typeof(Window), default(Page?),
 			propertyChanging: OnPageChanging,
 			propertyChanged: (b, o, n) => ((Window)b).OnPageChanged(o as Page, n as Page));
 
+		/// <summary>Bindable property for <see cref="FlowDirection"/>.</summary>
 		public static readonly BindableProperty FlowDirectionProperty =
 			BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(Window), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
+		/// <summary>Bindable property for <see cref="X"/>.</summary>
 		public static readonly BindableProperty XProperty = BindableProperty.Create(
 			nameof(X), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Y"/>.</summary>
 		public static readonly BindableProperty YProperty = BindableProperty.Create(
 			nameof(Y), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = BindableProperty.Create(
 			nameof(Width), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = BindableProperty.Create(
 			nameof(Height), typeof(double), typeof(Window), Primitives.Dimension.Unset);
 
+		/// <summary>Bindable property for <see cref="MaximumWidth"/>.</summary>
 		public static readonly BindableProperty MaximumWidthProperty = BindableProperty.Create(
 			nameof(MaximumWidth), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
 
+		/// <summary>Bindable property for <see cref="MaximumHeight"/>.</summary>
 		public static readonly BindableProperty MaximumHeightProperty = BindableProperty.Create(
 			nameof(MaximumHeight), typeof(double), typeof(Window), Primitives.Dimension.Maximum);
 
+		/// <summary>Bindable property for <see cref="MinimumWidth"/>.</summary>
 		public static readonly BindableProperty MinimumWidthProperty = BindableProperty.Create(
 			nameof(MinimumWidth), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
+		/// <summary>Bindable property for <see cref="MinimumHeight"/>.</summary>
 		public static readonly BindableProperty MinimumHeightProperty = BindableProperty.Create(
 			nameof(MinimumHeight), typeof(double), typeof(Window), Primitives.Dimension.Minimum);
 
 		HashSet<IWindowOverlay> _overlays = new HashSet<IWindowOverlay>();
-		ReadOnlyCollection<Element>? _logicalChildren;
 		List<IVisualTreeElement> _visualChildren;
 		Toolbar? _toolbar;
 		MenuBarTracker _menuBarTracker;
@@ -84,7 +94,6 @@ namespace Microsoft.Maui.Controls
 			AlertManager = new AlertManager(this);
 			ModalNavigationManager = new ModalNavigationManager(this);
 			Navigation = new NavigationImpl(this);
-			InternalChildren.CollectionChanged += OnCollectionChanged;
 #pragma warning disable CA1416 // TODO: VisualDiagnosticsOverlay is supported on android 23.0 and above
 			VisualDiagnosticsOverlay = new VisualDiagnosticsOverlay(this);
 #pragma warning restore CA1416
@@ -285,11 +294,6 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
-		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
-
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
-
 		internal AlertManager AlertManager { get; }
 
 		internal ModalNavigationManager ModalNavigationManager { get; }
@@ -379,36 +383,6 @@ namespace Microsoft.Maui.Controls
 
 		Application? Application => Parent as Application;
 
-		void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.OldItems != null)
-			{
-				for (var i = 0; i < e.OldItems.Count; i++)
-				{
-					var item = (Element?)e.OldItems[i];
-
-					if (item != null)
-						_visualChildren.Remove(item);
-
-					OnChildRemoved(item, e.OldStartingIndex + i);
-				}
-			}
-
-			if (e.NewItems != null)
-			{
-				foreach (Element item in e.NewItems)
-				{
-					_visualChildren.Add(item);
-					OnChildAdded(item);
-
-					if (Parent != null && item is Page)
-					{
-						SendWindowAppearing();
-					}
-				}
-			}
-		}
-
 		internal void FinishedAddingWindowToApplication(Application application)
 		{
 			if (Parent != null)
@@ -439,6 +413,11 @@ namespace Microsoft.Maui.Controls
 			Application?.NotifyOfWindowModalEvent(args);
 
 			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal bool OnModalPopping(Page modalPage)
@@ -456,6 +435,11 @@ namespace Microsoft.Maui.Controls
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 			VisualDiagnostics.OnChildAdded(this, modalPage);
+
+#if WINDOWS
+			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
+#endif
 		}
 
 		internal void OnModalPushing(Page modalPage)
@@ -591,25 +575,10 @@ namespace Microsoft.Maui.Controls
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
 			_visualChildren;
 
-
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
-			if (bindable is not Window window)
-				return;
-
 			if (oldValue is Page oldPage)
 				oldPage.SendDisappearing();
-
-			if (newValue is IToolbarElement toolbarElement &&
-				toolbarElement.Toolbar is Toolbar tb &&
-				newValue is not Shell)
-			{
-				window.Toolbar = tb;
-			}
-			else
-			{
-				window.Toolbar = null;
-			}
 		}
 
 		void OnPageChanged(Page? oldPage, Page? newPage)
@@ -617,7 +586,8 @@ namespace Microsoft.Maui.Controls
 			if (oldPage != null)
 			{
 				_menuBarTracker.Target = null;
-				InternalChildren.Remove(oldPage);
+				_visualChildren.Remove(oldPage);
+				RemoveLogicalChildInternal(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -627,13 +597,16 @@ namespace Microsoft.Maui.Controls
 
 			if (newPage != null)
 			{
-				InternalChildren.Add(newPage);
+				_visualChildren.Add(newPage);
+				AddLogicalChildInternal(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
-			}
 
-			if (newPage != null)
-			{
+				if (Parent != null)
+				{
+					SendWindowAppearing();
+				}
+
 				newPage.HandlerChanged += OnPageHandlerChanged;
 				newPage.HandlerChanging += OnPageHandlerChanging;
 

@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.SwipeView)]
@@ -223,7 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void FilterItems(string filter)
 		{
-			var filteredItems = _source.Where(monkey => monkey.Name.ToLower().Contains(filter.ToLower())).ToList();
+			var filteredItems = _source.Where(monkey => monkey.Name.ToLowerInvariant().Contains(filter.ToLowerInvariant())).ToList();
 			foreach (var monkey in _source)
 			{
 				if (!filteredItems.Contains(monkey))

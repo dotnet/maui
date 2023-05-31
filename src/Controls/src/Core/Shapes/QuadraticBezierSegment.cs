@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			Point2 = point2;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='Point1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point1"/>.</summary>
 		public static readonly BindableProperty Point1Property =
 			BindableProperty.Create(nameof(Point1), typeof(Point), typeof(QuadraticBezierSegment), new Point(0, 0));
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/QuadraticBezierSegment.xml" path="//Member[@MemberName='Point2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Point2"/>.</summary>
 		public static readonly BindableProperty Point2Property =
 			BindableProperty.Create(nameof(Point2), typeof(Point), typeof(QuadraticBezierSegment), new Point(0, 0));
 

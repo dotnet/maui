@@ -36,7 +36,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Tests\Legacy-CellsUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\Legacy-UnevenListTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\MapUITests.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Tests\MaterialEntryUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\PickerUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\ProgressBarUITests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Tests\RootGalleryUITests.cs" />

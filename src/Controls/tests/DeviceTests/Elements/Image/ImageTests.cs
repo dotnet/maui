@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 				await image.Wait();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red);
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}
 	}

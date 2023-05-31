@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
 				{
-					string? type = context.Resources.GetResourceTypeName(background.ResourceId)?.ToLower();
+					string? type = context.Resources.GetResourceTypeName(background.ResourceId)?.ToLowerInvariant();
 
 					if (type != null)
 					{

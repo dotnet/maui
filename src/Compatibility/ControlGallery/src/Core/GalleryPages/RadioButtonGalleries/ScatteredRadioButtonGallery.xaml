@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries.ScatteredRadioButtonGallery">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries.ScatteredRadioButtonGallery">
     <ContentPage.Content>
         <StackLayout>
             <Label Text="RadioButtons don't have to be in the same container to be grouped." />
