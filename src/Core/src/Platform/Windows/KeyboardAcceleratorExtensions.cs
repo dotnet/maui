@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
-			var keyboardAccelerators = menuFlyoutItem.Accelerator.ToPlatform();
+			var keyboardAccelerators = menuFlyoutItem.Accelerator?.ToPlatform();
 
 			if (keyboardAccelerators is null)
 				return;
