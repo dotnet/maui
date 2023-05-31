@@ -23,8 +23,6 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\tests\CustomAttributes\Controls.CustomAttributes.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\..\Compatibility\Core\src\Compatibility.csproj" />
-    <ProjectReference Include="..\..\..\..\Compatibility\Core\tests\WinUI\Compatibility.Windows.UnitTests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -101,6 +99,11 @@
     <Content Include="xamarinstore.jpg" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="Compatibility\**\*.cs" />
+    <Compile Remove="Compatibility\**\*.cs" />
+  </ItemGroup>
+  
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
 </Project>

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class MacOSTestGallery : ContentPage
 	{
@@ -222,43 +222,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			mdp.Detail = detail;
 
 			return mdp;
-		}
-
-		internal static CarouselPage MacDemoCarouselPage()
-		{
-
-			var carouselPage = new CarouselPage { BackgroundColor = Colors.Yellow };
-
-			var btnGo = new Button { Text = "Goto To Page 1 " };
-			var btnGo1 = new Button { Text = "Goto To Page 3 " };
-			var stck = new StackLayout();
-			stck.Children.Add(btnGo);
-			stck.Children.Add(btnGo1);
-			var page = new ContentPage { Title = "Page1", BackgroundColor = Colors.Red, Content = new Label { Text = "Page 1 label", TextColor = Colors.White, VerticalTextAlignment = TextAlignment.Start, HorizontalTextAlignment = TextAlignment.Center } };
-			var page2 = new ContentPage { Title = "Page2", BackgroundColor = Colors.Blue, Content = stck };
-			var page3 = new ContentPage { Title = "Page3", BackgroundColor = Colors.Green, Content = new Label { Text = "Page 3 label" } };
-
-			carouselPage.Children.Add(page);
-			carouselPage.Children.Add(page2);
-			carouselPage.Children.Add(page3);
-
-			carouselPage.CurrentPage = page2;
-
-			btnGo.Clicked += (sender, e) =>
-			{
-				carouselPage.CurrentPage = page;
-			};
-
-			btnGo1.Clicked += (sender, e) =>
-			{
-				carouselPage.CurrentPage = page3;
-			};
-
-			carouselPage.CurrentPageChanged += (sender, e) =>
-			{
-				System.Diagnostics.Debug.WriteLine(carouselPage.CurrentPage.Title);
-			};
-			return carouselPage;
 		}
 
 		static int _pageID;

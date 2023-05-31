@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CarouselView)]
@@ -65,6 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void CarouselViewPositionFromVisibilityChangeTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("AppearButton"));

@@ -388,18 +388,12 @@ namespace Microsoft.Maui.Graphics
 
 				if (_borderPaint != null)
 				{
-					_borderPaint.StrokeWidth = _strokeThickness;
-					_borderPaint.StrokeJoin = _strokeLineJoin;
-					_borderPaint.StrokeCap = _strokeLineCap;
-					_borderPaint.StrokeMiter = _strokeMiterLimit * 2;
-
-					if (_borderPathEffect != null)
-						_borderPaint.SetPathEffect(_borderPathEffect);
+					PlatformInterop.SetPaintValues(_borderPaint, _strokeThickness, _strokeLineJoin, _strokeLineCap, _strokeMiterLimit * 2, _borderPathEffect);
 
 					if (_borderColor != null)
-#pragma warning disable CA1416 // https://github.com/xamarin/xamarin-android/issues/6962
+					{
 						_borderPaint.Color = _borderColor.Value;
-#pragma warning restore CA1416
+					}
 					else
 					{
 						if (_stroke != null)
@@ -427,18 +421,10 @@ namespace Microsoft.Maui.Graphics
 					}
 				}
 
-				if (canvas == null)
+				if (canvas == null || _clipPath == null)
 					return;
 
-				var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
-
-				if (_clipPath != null && Paint != null)
-					canvas.DrawPath(_clipPath, Paint);
-
-				if (_clipPath != null && _borderPaint != null)
-					canvas.DrawPath(_clipPath, _borderPaint);
-
-				canvas.RestoreToCount(saveCount);
+				PlatformInterop.DrawMauiDrawablePath(this, canvas, _width, _height, _clipPath, _borderPaint);
 			}
 			else
 			{
@@ -512,22 +498,10 @@ namespace Microsoft.Maui.Graphics
 
 		void SetDefaultBackgroundColor()
 		{
-			using (var background = new TypedValue())
+			var color = PlatformInterop.GetWindowBackgroundColor(_context);
+			if (color != -1)
 			{
-				if (_context == null || _context.Theme == null || _context.Resources == null)
-					return;
-
-				if (_context.Theme.ResolveAttribute(global::Android.Resource.Attribute.WindowBackground, background, true))
-				{
-					var resource = _context.Resources.GetResourceTypeName(background.ResourceId);
-					var type = resource?.ToLowerInvariant();
-
-					if (type == "color")
-					{
-						var color = new AColor(ContextCompat.GetColor(_context, background.ResourceId));
-						_backgroundColor = color;
-					}
-				}
+				_backgroundColor = new AColor(color);
 			}
 		}
 

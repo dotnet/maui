@@ -10,7 +10,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Linq;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				cell.FontSize = 20;
 				cell.FontAttributes = FontAttributes.Bold;
 				cell.BackgroundColor = Colors.LightBlue;
-				grid.Children.Add(cell, 0, 0);
+				grid.Add(cell, 0, 0);
 
 				for (int i = 0; i < columns; i++)
 				{
@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					cell.Text = "Col:" + i;
 					cell.FontAttributes = FontAttributes.Bold;
 					cell.BackgroundColor = Colors.Beige;
-					grid.Children.Add(cell, i + 1, 0);
+					grid.Add(cell, i + 1, 0);
 				}
 				return grid;
 			});
