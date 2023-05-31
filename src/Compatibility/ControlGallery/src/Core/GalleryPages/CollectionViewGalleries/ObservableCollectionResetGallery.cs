@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries
 {
 	internal class ObservableCollectionResetGallery : ContentPage
 	{

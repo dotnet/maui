@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2831, "[IOS] label not rendering in BOLD when using a STYLE",

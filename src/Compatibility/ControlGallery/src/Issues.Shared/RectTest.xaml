@@ -2,8 +2,8 @@
 <local:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.RectTest"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.RectTest"
     Title="Rect Test">
     <local:TestContentPage.Resources>
         <ResourceDictionary>
