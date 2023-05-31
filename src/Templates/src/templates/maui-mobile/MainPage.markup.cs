@@ -41,7 +41,6 @@ public class MainPage : ContentPage
 						.SemanticHint("Counts the number of times you click"),
 				}
 			}
-			//.Spacing?
 			.Paddings(30, 0, 30, 0)
 			.CenterVertical()
 		};
