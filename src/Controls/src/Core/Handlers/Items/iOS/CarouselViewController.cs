@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (Carousel?.Loop == true && _carouselViewLoopManager != null)
 			{
-				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId());
+				var cellAndCorrectedIndex = _carouselViewLoopManager.GetCellAndCorrectIndex(collectionView, indexPath, DetermineCellReuseId(indexPath));
 				cell = cellAndCorrectedIndex.cell;
 				var correctedIndexPath = NSIndexPath.FromRowSection(cellAndCorrectedIndex.correctedIndex, 0);
 
@@ -135,12 +135,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override UICollectionViewDelegateFlowLayout CreateDelegator() => new CarouselViewDelegator(ItemsViewLayout, this);
 
+		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
 		protected override string DetermineCellReuseId()
 		{
 			if (Carousel.ItemTemplate != null)
 				return CarouselTemplatedCell.ReuseId;
 
 			return base.DetermineCellReuseId();
+		}
+
+		protected override string DetermineCellReuseId(NSIndexPath indexPath)
+		{
+			var itemIndex = GetIndexFromIndexPath(indexPath);
+			return base.DetermineCellReuseId(NSIndexPath.FromItemSection(itemIndex, 0));
 		}
 
 		protected override void RegisterViewTypes()

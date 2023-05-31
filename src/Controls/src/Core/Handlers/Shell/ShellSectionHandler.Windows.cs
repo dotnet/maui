@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				};
 
 		StackNavigationManager? _navigationManager;
+		WeakReference? _lastShell;
 
 		public ShellSectionHandler() : base(Mapper, CommandMapper)
 		{
@@ -45,7 +46,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested -= OnNavigationRequested;
-				((IShellController)_shellSection.FindParentOfType<Shell>()!).RemoveAppearanceObserver(this);
+
+				if (_lastShell?.Target is IShellController shell)
+				{
+					shell.RemoveAppearanceObserver(this);
+				}
+				_lastShell = null;
 			}
 
 			// If we've already connected to the navigation manager
@@ -68,7 +74,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellSection != null)
 			{
 				((IShellSectionController)_shellSection).NavigationRequested += OnNavigationRequested;
-				((IShellController)_shellSection.FindParentOfType<Shell>()!).AddAppearanceObserver(this, _shellSection);
+
+				var shell = _shellSection.FindParentOfType<Shell>() as IShellController;
+				if (shell != null)
+				{
+					_lastShell = new WeakReference(shell);
+					shell.AddAppearanceObserver(this, _shellSection);
+				}
 			}
 		}
 

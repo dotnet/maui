@@ -11,7 +11,7 @@ using NUnit.Framework;
 using CategoryAttribute = NUnit.Framework.CategoryAttribute;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9329, "Xamarin.Forms SwipeView IsEnabled not working", PlatformAffected.All)]
 	public class Issue9329 : TestContentPage

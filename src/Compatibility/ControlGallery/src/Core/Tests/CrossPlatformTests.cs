@@ -2,7 +2,7 @@
 using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.Tests
 {
 	[TestFixture]
 	public class CrossPlatformTests : CrossPlatformTestFixture

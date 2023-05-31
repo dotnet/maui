@@ -1,0 +1,150 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - loc
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - src/Templates/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+  - name: AgentPoolAccessToken
+    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
+
+parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
+  - name: BuildEverything
+    type: boolean
+    default: false
+
+  - name: androidPool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+
+  - name: iosPool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+  
+  - name: windowsPool
+    type: object
+    default:
+      name: $(windowsTestsVmPool)
+      vmImage: $(windowsTestsVmImage)
+
+  - name: macosPool
+    type: object
+    default:
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
+
+
+resources:
+  repositories:
+    - repository: yaml-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
+
+stages:
+
+  - template: common/ui-tests.yml
+    parameters:
+      androidPool: ${{ parameters.androidPool }}
+      iosPool: ${{ parameters.iosPool }}
+      windowsPool: ${{ parameters.windowsPool }}
+      macosPool: ${{ parameters.macosPool }}
+      agentPoolAccessToken: $(AgentPoolAccessToken)
+      ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
+        androidApiLevels: [ 30 ]
+        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
+        iosVersions: [ 'latest' ]
+        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
+        androidApiLevels: [ 30 ]
+        # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
+        iosVersions: [ 'latest' ]
+        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      projects:
+        # - name: essentials
+        #   desc: Essentials
+        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+        #   android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        #   ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+        # - name: graphics
+        #   desc: Graphics
+        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+        #   android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+        #   ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+        # - name: core
+        #   desc: Core
+        #   androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+        #   android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+        #   iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+        #   ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+        - name: controls
+          desc: Controls
+          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          android: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          app: $(System.DefaultWorkingDirectory)/src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj
+          iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+          ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+        # - name: blazorwebview
+        #   desc: BlazorWebView
+        #   androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+        #   android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+        #   iosVersionsExclude: [ '12.4'] # Ignore iOS 12.4 while we can't make it work on CI
+        #   ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+

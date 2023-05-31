@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.XamStore
+namespace Microsoft.Maui.Controls.ControlGallery.XamStore
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class FlyoutHeader : ContentView
