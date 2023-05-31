@@ -76,7 +76,7 @@ Task("uitest")
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
 				.Append("-t:Run")
-				.Append("/tl")
+				//.Append("/tl")
 	});
 
 	Information("Build UITests project {0}",PROJECT.FullPath);
@@ -87,7 +87,7 @@ Task("uitest")
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
 				.Append("/bl:" + binlog)
-				.Append("/tl")
+				//.Append("/tl")
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
