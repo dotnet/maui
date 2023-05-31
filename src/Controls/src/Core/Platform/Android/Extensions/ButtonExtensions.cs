@@ -41,11 +41,15 @@ namespace Microsoft.Maui.Controls.Platform
 				// ourselves for our custom implemented IconGravityBottom
 				materialButton.IconPadding = (int)context.ToPixels(contentLayout.Spacing);
 
+				// For IconGravityTextEnd and IconGravityTextStart, setting the Icon twice
+				// is needed to work around the Android behavior that caused
+				// https://github.com/dotnet/maui/issues/11755
 				switch (contentLayout.Position)
 				{
 					case ButtonContentLayout.ImagePosition.Top:
-						materialButton.Icon = icon;
+						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTop;
+						materialButton.Icon = icon;
 						break;
 					case ButtonContentLayout.ImagePosition.Bottom:
 						materialButton.Icon = null;
@@ -53,12 +57,14 @@ namespace Microsoft.Maui.Controls.Platform
 						materialButton.IconGravity = MauiMaterialButton.IconGravityBottom;
 						break;
 					case ButtonContentLayout.ImagePosition.Left:
-						materialButton.Icon = icon;
+						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTextStart;
+						materialButton.Icon = icon;
 						break;
 					case ButtonContentLayout.ImagePosition.Right:
-						materialButton.Icon = icon;
+						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTextEnd;
+						materialButton.Icon = icon;
 						break;
 				}
 			}

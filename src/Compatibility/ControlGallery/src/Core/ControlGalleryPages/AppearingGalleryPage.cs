@@ -4,14 +4,13 @@ using System.Diagnostics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class AppearingGalleryPage : ContentPage
 	{
 		const string NavPageTitle = "NavAppearingPage";
 		const string FlyoutPageTitle = "FlyoutPageAppearingPage";
 		const string TabbedPageTitle = "TabbedAppearingPage";
-		const string CarouselPageTitle = "CarouselAppearingPage";
 
 		public AppearingGalleryPage()
 		{
@@ -39,15 +38,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					new Button { Text = TabbedPageTitle, Command = new Command (() => {
 						var page = new TabbedPage {
 							Title = TabbedPageTitle,
-							Children = { initalPage, initalPage2 }
-						};
-						SetMainPage (page);
-					})
-					},
-					new Button { Text =  CarouselPageTitle, Command = new Command (() => {
-
-						var page = new CarouselPage {
-							Title = CarouselPageTitle,
 							Children = { initalPage, initalPage2 }
 						};
 						SetMainPage (page);
@@ -111,9 +101,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							{
 								switch (Parent)
 								{
-									case CarouselPage cp:
-										cp.Children.Add( new AppearingPage(added_carouselpage_id++));
-										break;
 									case TabbedPage tp:
 										tp.Children.Add( new AppearingPage(added_tabpage_id++));
 										break;

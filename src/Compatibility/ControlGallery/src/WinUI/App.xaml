@@ -1,5 +1,5 @@
 ﻿<maui:MauiWinUIApplication
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.App"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.WinUI.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:maui="using:Microsoft.Maui"

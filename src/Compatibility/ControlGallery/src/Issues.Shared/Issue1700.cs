@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Threading.Tasks;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]

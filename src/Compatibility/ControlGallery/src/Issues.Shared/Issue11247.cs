@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shell)]
@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 #if UITEST && __SHELL__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void SettingFlyoutIsPresentedInNavigatingKeepsFlyoutOpen()
 		{

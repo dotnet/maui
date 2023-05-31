@@ -2,7 +2,7 @@ using System;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class FrameCoreGalleryPage : CoreGalleryPage<Frame>
 	{
