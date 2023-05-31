@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.Logging;
+﻿#if isCsharpMarkupProject
+using CommunityToolkit.Maui.Markup;
+#endif
+using Microsoft.Extensions.Logging;
 
 namespace MauiApp._1;
 
@@ -9,6 +12,9 @@ public static class MauiProgram
 		var builder = MauiApp.CreateBuilder();
 		builder
 			.UseMauiApp<App>()
+#if isCsharpMarkupProject
+			.UseMauiCommunityToolkitMarkup()
+#endif
 			.ConfigureFonts(fonts =>
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

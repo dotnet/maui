@@ -40,7 +40,25 @@
       {
         "source": "./",
         "target": "./",
-        "copyOnly": [ "**/*.svg", "**/*.ttf" ]
+        "copyOnly": [ "**/*.svg", "**/*.ttf" ],
+        "modifiers": [
+          {
+            "condition": "isXamlProject",
+            "exclude": [
+              "**/*.markup.cs"
+            ]
+          },
+          {
+            "condition": "isCsharpMarkupProject",
+            "exclude": [
+              "**/*.xaml",
+              "**/*.xaml.cs"
+            ],
+            "rename": {
+              "**/*.markup.cs": "**/*.cs"
+            }
+          }
+        ]
       }
     ],
     "preferNameDirectory": true,
@@ -113,6 +131,35 @@
           "fallbackVariableName": "defaultAppId"
         },
         "replaces": "com.companyname.mauiapp"
+      },
+      "ProjectType": {
+        "type": "parameter",
+        "datatype": "choice",
+        "choices": [
+          { 
+            "choice": "xaml",
+            "description": "The default new .NET MAUI project with XAML files",
+            "displayName": "XAML"
+          },
+          {
+            "choice": "markup",
+            "description": "The new .NET MAUI project with C# Markup files",
+            "displayName": "C# Markup"
+          }
+        ],
+        "defaultValue": "XAML",
+        "displayName": "Project Type",
+        "description": "Select how you would like to model your UI."
+      },
+      "isXamlProject": 
+      {
+        "type": "computed",
+        "value": "ProjectType == 'xaml'"
+      },
+      "isCsharpMarkupProject": 
+      {
+        "type": "computed",
+        "value": "ProjectType == 'markup'"
       }
     },
     "defaultName": "MauiApp1"

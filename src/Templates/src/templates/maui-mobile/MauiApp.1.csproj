@@ -58,6 +58,9 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
+#if isCsharpMarkupProject
+		<PackageReference Include="CommunityToolkit.Maui.Markup" Version="3.2.0" />
+#endif
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
 	</ItemGroup>
 

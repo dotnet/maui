@@ -3,9 +3,14 @@
     "symbolInfo": {
       "Framework": {
         "longName": "framework"
+      },
+      "ProjectType": {
+        "longName": "project-type",
+        "shortName": "t"
       }
     },
     "usageExamples": [
-      "--framework DOTNET_TFM_VALUE"
+      "--framework DOTNET_TFM_VALUE",
+      "-t|--project-type markup|xaml"
     ]
   }
