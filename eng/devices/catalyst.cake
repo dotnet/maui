@@ -1,3 +1,4 @@
+#load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
@@ -10,7 +11,6 @@ FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
