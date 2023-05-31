@@ -53,12 +53,14 @@
             "exclude": [
               "**/*.xaml",
               "**/*.xaml.cs"
-            ],
-            "rename": {
-              "**/*.markup.cs": "**/*.cs"
-            }
+            ]
           }
-        ]
+        ] 
+      },
+      {
+        "rename": {
+          "**/*.markup.cs": "**/*.cs"
+        }
       }
     ],
     "preferNameDirectory": true,
