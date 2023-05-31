@@ -1,6 +1,6 @@
 using System.Windows.Input;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class TabbedPageWindows : TabbedPage
 	{

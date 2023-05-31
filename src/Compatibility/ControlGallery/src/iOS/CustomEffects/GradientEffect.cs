@@ -3,14 +3,14 @@ using System.ComponentModel;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
 
 [assembly: ExportEffect(typeof(GradientEffect), Issue6334.EffectName)]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class GradientEffect : PlatformEffect
 	{

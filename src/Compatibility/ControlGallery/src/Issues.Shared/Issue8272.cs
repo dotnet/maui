@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8272, "[Bug] TextDecorations don't work", PlatformAffected.iOS)]
@@ -66,11 +66,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				VerticalOptions = LayoutOptions.Center
 			};
 
-			grid.Children.Add(underlineLabel, 0, 0);
-			grid.Children.Add(underlineSwitch, 1, 0);
-			grid.Children.Add(characterSpacingLabel, 0, 1);
-			grid.Children.Add(characterSpacingSlider, 1, 1);
-			grid.Children.Add(scrollView, 0, 2);
+			grid.Add(underlineLabel, 0, 0);
+			grid.Add(underlineSwitch, 1, 0);
+			grid.Add(characterSpacingLabel, 0, 1);
+			grid.Add(characterSpacingSlider, 1, 1);
+			grid.Add(scrollView, 0, 2);
 			Grid.SetColumnSpan(scrollView, 4);
 
 			layout.Children.Add(instructions);

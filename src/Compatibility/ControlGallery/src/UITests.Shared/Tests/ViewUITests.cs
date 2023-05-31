@@ -1,5 +1,5 @@
 ﻿
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework;
 
