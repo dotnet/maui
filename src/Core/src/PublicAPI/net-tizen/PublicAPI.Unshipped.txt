@@ -42,4 +42,4 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 Microsoft.Maui.IAccelerator
 Microsoft.Maui.IAccelerator.Key.get -> string!
 Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string!>!
-Microsoft.Maui.IMenuElement.Accelerator.get -> Microsoft.Maui.IAccelerator!
+Microsoft.Maui.IMenuElement.Accelerator.get -> Microsoft.Maui.IAccelerator?
