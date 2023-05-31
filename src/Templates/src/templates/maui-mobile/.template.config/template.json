@@ -45,7 +45,9 @@
           {
             "condition": "isXamlProject",
             "exclude": [
-              "**/*.markup.cs"
+              "**/*.markup.cs",
+              "**/AppColors.cs",
+              "**/AppStyles.cs"
             ]
           },
           {
@@ -55,7 +57,9 @@
               "**/*.xaml.cs"
             ],
             "rename": {
-              "**/*.markup.cs": "**/*.cs"
+              "App.markup.cs": "App.cs",
+              "AppShell.markup.cs": "AppShell.cs",
+              "MainPage.markup.cs": "MainPage.cs"
             }
           }
         ]
