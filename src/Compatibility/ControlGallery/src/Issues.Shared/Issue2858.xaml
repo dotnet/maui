@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <controls:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-			 xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery;assembly=Microsoft.Maui.Controls.ControlGallery"
+			 xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery;assembly=Microsoft.Maui.Controls.Compatibility.ControlGallery"
              xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue2858">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue2858">
     <ContentPage.Content>
 		<Grid>
 			

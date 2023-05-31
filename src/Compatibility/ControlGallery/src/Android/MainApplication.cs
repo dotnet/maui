@@ -6,7 +6,7 @@ using Android.Runtime;
 using Microsoft.Maui.Hosting;
 using Plugin.CurrentActivity;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	//You can specify additional application information in this attribute
 	[Application]

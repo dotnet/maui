@@ -68,8 +68,13 @@
                     Aspect="AspectFit" 
                     Source="cog.png"
                     BorderColor="Red"
-                    BorderWidth="4"
+                    BorderWidth="{Binding Source={x:Reference BorderWidthSlider}, Path=Value}"
                     BackgroundColor="Green"/>
+                <Slider 
+                    x:Name="BorderWidthSlider" 
+                    Minimum="0"
+                    Maximum="20"
+                    Value ="4" />
                 <Label
                     Text="CornerRadius = 0"
                     Style="{StaticResource Headline}"/>
@@ -124,6 +129,32 @@
                         </VisualStateGroup>
                     </VisualStateManager.VisualStateGroups>
                 </ImageButton>
+                <Label       
+                    Text="Padding"
+                    Style="{StaticResource Headline}"/>
+                <ImageButton 
+                    HorizontalOptions="Center" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    Background="Green"
+                    BorderColor="Red"
+                    BorderWidth="10"
+                    Source="cog.png"
+                    Padding="0" />
+                <ImageButton 
+                    HorizontalOptions="Center" 
+                    Clicked="OnImageButtonClicked"
+                    Aspect="AspectFit" 
+                    Background="Green"
+                    BorderColor="Red"
+                    BorderWidth="10"
+                    Source="cog.png"
+                    Padding="{Binding Source={x:Reference PaddingSlider}, Path=Value}" />
+                <Slider 
+                    x:Name="PaddingSlider"
+                    Minimum="0"
+                    Maximum="60"
+                    Value =" 10"/>
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

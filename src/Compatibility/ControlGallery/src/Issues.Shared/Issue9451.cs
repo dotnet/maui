@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9451,
 		"[Bug] RelativeLayout Constraint can not go back to zero", PlatformAffected.All)]
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		protected override void Init()
 		{
-			var relativeLayout = new RelativeLayout() { WidthRequest = 400, HeightRequest = 400 };
+			var relativeLayout = new Compatibility.RelativeLayout() { WidthRequest = 400, HeightRequest = 400 };
 			StackLayout = new StackLayout() { BackgroundColor = Colors.Red };
 
 			TriggerButton = new Button() { Text = "Set View Width To Zero" };
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		private void Button_Clicked(object sender, EventArgs e)
 		{
-			RelativeLayout.SetWidthConstraint(StackLayout, Compatibility.Constraint.Constant(0.0));
+			Compatibility.RelativeLayout.SetWidthConstraint(StackLayout, Compatibility.Constraint.Constant(0.0));
 		}
 	}
 }
