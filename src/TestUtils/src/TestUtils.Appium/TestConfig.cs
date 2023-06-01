@@ -1,4 +1,4 @@
-namespace Microsoft.Maui.Appium
+﻿namespace Microsoft.Maui.Appium
 {
 	public class TestConfig
 	{
