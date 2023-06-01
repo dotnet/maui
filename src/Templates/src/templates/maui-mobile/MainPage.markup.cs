@@ -1,4 +1,6 @@
-﻿namespace MauiApp._1;
+﻿using CommunityToolkit.Maui.Markup;
+
+namespace MauiApp._1;
 
 public class MainPage : ContentPage
 {
