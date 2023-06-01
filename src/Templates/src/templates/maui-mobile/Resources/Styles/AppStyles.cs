@@ -1,3 +1,6 @@
+using CommunityToolkit.Maui.Markup;
+using Microsoft.Maui.Controls.Shapes;
+
 namespace MauiApp._1.Resources.Styles;
 
 // TODO VisualStateManager for: Button, CheckBox, DatePicker, Editor, Entry, ImageButton, Label, Picker, ProgressBar, RadioButton, SearchBar, SearchHandler, Slider, Switch, TimePicker
