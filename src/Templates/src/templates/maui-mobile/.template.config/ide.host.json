@@ -19,6 +19,11 @@
       "id": "Framework",
       "persistenceScope": "shared",
       "persistenceScopeName": "maui"
+    },
+    {
+      "id": "ProjectType",
+      "persistenceScope": "shared",
+      "persistenceScopeName": "maui"
     }
   ]
 }
