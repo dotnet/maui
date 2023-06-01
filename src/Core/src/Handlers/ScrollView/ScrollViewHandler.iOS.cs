@@ -17,6 +17,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentPanelTag = 0x845fed;
 
+		readonly ScrollEventProxy _eventProxy = new();
+
 		public override bool NeedsContainer
 		{
 			get
@@ -40,27 +42,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.Scrolled += Scrolled;
-			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			_eventProxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			platformView.Scrolled -= Scrolled;
-			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
-		}
-
-		void ScrollAnimationEnded(object? sender, EventArgs e)
-		{
-			VirtualView.ScrollFinished();
-		}
-
-		void Scrolled(object? sender, EventArgs e)
-		{
-			VirtualView.HorizontalOffset = PlatformView.ContentOffset.X;
-			VirtualView.VerticalOffset = PlatformView.ContentOffset.Y;
+			_eventProxy.Disconnect(platformView);
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -197,14 +186,6 @@ namespace Microsoft.Maui.Handlers
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
-		}
-
-		static Func<double, double, Size> ConstrainToScrollView(Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
-		{
-			return (widthConstraint, heightConstraint) =>
-			{
-				return MeasureScrollViewContent(widthConstraint, heightConstraint, internalMeasure, platformScrollView, scrollView);
-			};
 		}
 
 		static Size MeasureScrollViewContent(double widthConstraint, double heightConstraint, Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
@@ -384,6 +365,59 @@ namespace Microsoft.Maui.Handlers
 			SetContentSizeForOrientation(platformScrollView, viewportWidth, viewportHeight, scrollView.Orientation, contentSize);
 
 			return contentSize;
+		}
+
+		class ScrollEventProxy
+		{
+			WeakReference<IScrollView>? _virtualView;
+
+			IScrollView? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IScrollView virtualView, UIScrollView platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.Scrolled += Scrolled;
+				platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			}
+
+			public void Disconnect(UIScrollView platformView)
+			{
+				_virtualView = null;
+
+				platformView.Scrolled -= Scrolled;
+				platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IButton virtualView)
+				{
+					virtualView.Released();
+					virtualView.Clicked();
+				}
+			}
+
+			void ScrollAnimationEnded(object? sender, EventArgs e)
+			{
+				VirtualView?.ScrollFinished();
+			}
+
+			void Scrolled(object? sender, EventArgs e)
+			{
+				if (VirtualView == null)
+				{
+					return;
+				}
+
+				if (sender is not UIScrollView platformView)
+				{
+					return;
+				}
+
+				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
+				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
+			}
 		}
 	}
 }
