@@ -7,7 +7,7 @@ public class AppShell : Shell
 		ShellContent mainPage = new()
 		{
 			Title = "Home",
-			ContentTemplate = new DataTemplate(typeof(MainPageMarkup)),
+			ContentTemplate = new DataTemplate(typeof(MainPage)),
 			Route = "MainPage",
 		};
 
