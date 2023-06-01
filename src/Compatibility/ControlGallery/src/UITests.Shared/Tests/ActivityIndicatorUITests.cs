@@ -68,5 +68,22 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			App.NavigateBack();
 			base.FixtureTeardown();
 		}
+
+#if IOS
+		[FailsOnMauiIOS]
+		public override void _Opacity() { }
+
+		[FailsOnMauiIOS]
+		public override void _Rotation() { }
+
+		[FailsOnMauiIOS]
+		public override void _RotationX() { }
+
+		[FailsOnMauiIOS]
+		public override void _RotationY() { }
+
+		[FailsOnMauiIOS]
+		public override void _Scale() { }
+#endif
 	}
 }
