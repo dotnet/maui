@@ -19,12 +19,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\samples\Controls.Sample.UITests\Test.cs" Link="Test.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
   </ItemGroup>
@@ -34,7 +37,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
-    <PackageReference Include="Xamarin.UITest" Version="4.1.3" />
+    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
   </ItemGroup>
 
 </Project>

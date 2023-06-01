@@ -69,7 +69,7 @@ parameters:
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
-      
+
 resources:
   repositories:
     - repository: yaml-templates

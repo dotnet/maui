@@ -13,13 +13,17 @@ namespace TestUtils.Appium.UITests
 			if (queryPlatform == QueryPlatform.Android)
 				realId = $"{appId}:id/{marked}";
 
-
 			return new AppiumQuery("*", realId, $"* '{realId}'", appId, queryPlatform);
 		}
 
-		public static AppiumQuery FromQuery(Func<AppQuery, AppQuery> query, string appId, string platform)
+		public static AppiumQuery FromQuery(Func<AppQuery, AppQuery>? query, string appId, string platform)
 		{
 			var raw = GetRawQuery(query);
+			return FromRaw(raw, appId, platform);
+		}
+
+		public static AppiumQuery FromRaw(string raw, string appId, string platform)
+		{
 			QueryPlatform queryPlatform = GetQueryPlatform(platform);
 			return FromRaw(raw, appId, queryPlatform);
 		}
@@ -32,6 +36,9 @@ namespace TestUtils.Appium.UITests
 
 			var controlType = match.Groups[1].Captures[0].Value;
 			var marked = match.Groups[3].Captures[0].Value;
+
+			if (platform == QueryPlatform.Android)
+				marked = $"{appId}:id/{marked}";
 
 			// Just ignoring everything else for now (parent, index statements, etc)
 			var result = new AppiumQuery(controlType, marked, raw, appId, platform);

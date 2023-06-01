@@ -114,6 +114,8 @@ stages:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }}
                 pool: ${{ parameters.macosPool }}
+                variables:
+                  REQUIRED_XCODE: 14.2.0
                 steps:
                   - template: ui-tests-steps.yml
                     parameters:
