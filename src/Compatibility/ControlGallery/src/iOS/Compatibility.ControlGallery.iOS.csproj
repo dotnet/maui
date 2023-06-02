@@ -10,7 +10,6 @@
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>
     <NoWarn>0612</NoWarn>
-    <BuildIpa>true</BuildIpa>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -20,7 +19,8 @@
 
   <PropertyGroup Condition="'$(OS)' != 'Windows_NT' ">
     <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
-    <ArchiveOnBuild>true</ArchiveOnBuild>
+    <BuildIpa>true</BuildIpa>
+    <CreatePackage>true</CreatePackage>
   </PropertyGroup>
 
   <ItemGroup>
