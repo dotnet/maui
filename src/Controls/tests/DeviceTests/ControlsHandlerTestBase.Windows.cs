@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
@@ -9,6 +11,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation.Collections;
 using Xunit;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WAppBarButton = Microsoft.UI.Xaml.Controls.AppBarButton;
@@ -128,16 +131,31 @@ namespace Microsoft.Maui.DeviceTests
 			IElementHandler handler,
 			params ToolbarItem[] toolbarItems)
 		{
+			var primaryToolbarItems = toolbarItems.Where(x => x.Order != ToolbarItemOrder.Secondary).ToArray();
+			var secondaryToolbarItems = toolbarItems.Where(x => x.Order == ToolbarItemOrder.Secondary).ToArray();
+
 			var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
 			MauiToolbar windowHeader = (MauiToolbar)navView.Header;
-			Assert.NotNull(windowHeader?.CommandBar?.PrimaryCommands);
 
-			Assert.Equal(toolbarItems.Length, windowHeader.CommandBar.PrimaryCommands.Count);
-			for (var i = 0; i < toolbarItems.Length; i++)
+			ValidateCommandBarCommands(windowHeader?.CommandBar?.PrimaryCommands, primaryToolbarItems);
+			ValidateCommandBarCommands(windowHeader?.CommandBar?.SecondaryCommands, secondaryToolbarItems);
+
+			void ValidateCommandBarCommands(IObservableVector<ICommandBarElement> commands, ToolbarItem[] orderToolbarItems)
 			{
-				ToolbarItem toolbarItem = toolbarItems[i];
-				var primaryCommand = ((WAppBarButton)windowHeader.CommandBar.PrimaryCommands[i]);
-				Assert.Equal(toolbarItem, primaryCommand.DataContext);
+				if (orderToolbarItems.Length == 0)
+				{
+					Assert.True(commands is null || commands.Count == 0);
+					return;
+				}
+
+				Assert.NotNull(commands);
+				Assert.Equal(orderToolbarItems.Length, commands.Count);
+				for (var i = 0; i < toolbarItems.Length; i++)
+				{
+					ToolbarItem toolbarItem = orderToolbarItems[i];
+					var command = ((WAppBarButton)commands[i]);
+					Assert.Equal(toolbarItem, command.DataContext);
+				}
 			}
 
 			return true;

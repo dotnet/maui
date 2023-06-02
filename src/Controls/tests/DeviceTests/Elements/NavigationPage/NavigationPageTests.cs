@@ -116,43 +116,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Toolbar Items Map Correctly")]
-		public async Task ToolbarItemsMapCorrectly()
-		{
-			SetupBuilder();
-			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
-			var navPage = new NavigationPage(new ContentPage()
-			{
-				ToolbarItems =
-				{
-					toolbarItem
-				}
-			});
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
-			{
-				ToolbarItemsMatch(handler, toolbarItem);
-				return Task.CompletedTask;
-			});
-		}
-
-		[Fact(DisplayName = "Toolbar Title")]
-		public async Task ToolbarTitle()
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()
-			{
-				Title = "Page Title"
-			});
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
-			{
-				string title = GetToolbarTitle(handler);
-				Assert.Equal("Page Title", title);
-				return Task.CompletedTask;
-			});
-		}
-
 		[Fact(DisplayName = "Insert Page Before Root Page and then PopToRoot")]
 		public async Task InsertPageBeforeRootPageAndThenPopToRoot()
 		{
