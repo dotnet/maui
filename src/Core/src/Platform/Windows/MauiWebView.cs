@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Reflection.Metadata;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
@@ -9,6 +10,15 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WebView2, IWebViewDelegate
 	{
+		readonly WeakReference<WebViewHandler>? _handler;
+
+		internal MauiWebView(WebViewHandler handler)
+			: this()
+		{
+			ArgumentNullException.ThrowIfNull(handler, nameof(handler));
+			_handler = new WeakReference<WebViewHandler>(handler);
+		}
+
 		public MauiWebView()
 		{
 			NavigationStarting += (sender, args) =>
@@ -122,7 +132,8 @@ namespace Microsoft.Maui.Platform
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
-			// TODO: Sync Cookies
+			if (_handler?.TryGetTarget(out var handler) ?? false)
+				await handler.SyncPlatformCookies(uri.AbsoluteUri);
 
 			try
 			{
