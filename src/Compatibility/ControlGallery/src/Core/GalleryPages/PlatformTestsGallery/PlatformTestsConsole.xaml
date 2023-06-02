@@ -7,7 +7,7 @@
              Title="Platform Test Console"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="true"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery.PlatformTestsConsole">
     <ContentPage.Content>
         <StackLayout Margin="2">
             <Grid MinimumHeightRequest="100">

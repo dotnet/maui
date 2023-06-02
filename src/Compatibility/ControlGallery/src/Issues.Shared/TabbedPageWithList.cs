@@ -7,7 +7,7 @@ using Xamarin.UITest;
 #endif
 
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	public class TabbedPageWithListName
@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "TabbedPage with list", PlatformAffected.All)]
+#if UITEST
+	[Category(Compatibility.UITests.UITestCategories.TabbedPage)]
+#endif
 	public class TabbedPageWithList : TestTabbedPage
 	{
 		protected override void Init()

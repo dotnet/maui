@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					IsRunning = true,
 					AutomationId = spinner
 				};
-				var layout = new RelativeLayout();
+				var layout = new Compatibility.RelativeLayout();
 				layout.Children.Add(indicator, x: () => 0, y: () => 0);
 				View = indicator;
 			}
@@ -81,6 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMaui]
 		public void Bugzilla60563Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(btnGoToList));

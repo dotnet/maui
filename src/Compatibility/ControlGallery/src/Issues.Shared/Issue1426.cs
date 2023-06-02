@@ -8,10 +8,11 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1426, "SetHasNavigationBar screen height wrong", PlatformAffected.iOS)]
@@ -33,7 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				grd.RowDefinitions.Add(new RowDefinition());
 
 				var boxView = new BoxView { BackgroundColor = Colors.Blue };
-				grd.Children.Add(boxView, 0, 0);
+				grd.Add(boxView, 0, 0);
 				var btn = new Button()
 				{
 					BackgroundColor = Colors.Pink,
@@ -54,10 +55,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					})
 				};
 
-				grd.Children.Add(btn, 0, 1);
+				grd.Add(btn, 0, 1);
 				var image = new Image() { Source = "coffee.png", AutomationId = "CoffeeImageId", BackgroundColor = Colors.Yellow };
 				image.VerticalOptions = LayoutOptions.End;
-				grd.Children.Add(image, 0, 2);
+				grd.Add(image, 0, 2);
 				Content = grd;
 
 			}
