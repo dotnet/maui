@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform
 				shouldAddTouchEvent = true;
 			}
 
-			if (shouldAddTouchEvent)
+			if (!shouldAddTouchEvent)
 			{
 				platformView.Touch -= OnPlatformViewTouched;
 			}
