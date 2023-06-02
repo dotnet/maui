@@ -101,5 +101,15 @@ namespace Maui.Controls.Sample.Pages
 		{
 			MauiWebView.On<Microsoft.Maui.Controls.PlatformConfiguration.Android>().EnableZoomControls(true);
 		}
+
+		void OnLoadHttpBinClicked(object sender, EventArgs e)
+		{
+			// on httpbin.org find the section where you can load the cookies for the website.
+			// The cookie that is set below should show up for this to succeed.
+			MauiWebView.Cookies = new System.Net.CookieContainer();
+			MauiWebView.Cookies.Add(new System.Net.Cookie("MauiCookie", "Hmmm Cookies!", "/", "httpbin.org"));
+
+			MauiWebView.Source = new UrlWebViewSource { Url = "https://httpbin.org/#/Cookies/get_cookies" };
+		}
 	}
 }

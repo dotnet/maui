@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		bool HasCookiesToLoad(string url)
+		internal bool HasCookiesToLoad(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Handlers
 			await SyncPlatformCookiesAsync(url);
 		}
 
-		async Task SyncPlatformCookiesAsync(string url)
+		internal async Task SyncPlatformCookiesAsync(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
