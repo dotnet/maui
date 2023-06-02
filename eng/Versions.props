@@ -54,7 +54,7 @@
     <_MicrosoftWebWebView2Version>1.0.1774.30</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
-    <_XamarinAndroidGlideVersion>4.15.1</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidGlideVersion>4.15.1.1</_XamarinAndroidGlideVersion>
     <_XamarinAndroidXSecurityVersion>1.1.0-alpha05</_XamarinAndroidXSecurityVersion>
     <_XamarinGoogleCryptoTinkAndroidVersion>1.9.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
