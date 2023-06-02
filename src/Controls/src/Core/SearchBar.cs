@@ -41,9 +41,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
-		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
-		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(SearchBar), true, BindingMode.Default);
-
 		/// <summary>Bindable property for <see cref="CursorPosition"/>.</summary>
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
 
@@ -107,12 +104,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
-		}
-
-		public bool IsTextPredictionEnabled
-		{
-			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
-			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
 		public int CursorPosition

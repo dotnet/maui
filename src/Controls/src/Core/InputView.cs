@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsSpellCheckEnabled"/>.</summary>
 		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create(nameof(IsSpellCheckEnabled), typeof(bool), typeof(InputView), true);
 
+		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), true);
+
 		/// <summary>Bindable property for <see cref="MaxLength"/>.</summary>
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
 
@@ -72,6 +75,16 @@ namespace Microsoft.Maui.Controls
 			get => (bool)GetValue(IsSpellCheckEnabledProperty);
 			set => SetValue(IsSpellCheckEnabledProperty, value);
 		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*" />
+		/// JDTODO: Make sure this is right ^^ 
+#pragma warning disable RS0016
+		public bool IsTextPredictionEnabled
+		{
+			get => (bool)GetValue(IsTextPredictionEnabledProperty);
+			set => SetValue(IsTextPredictionEnabledProperty, value);
+		}
+#pragma warning restore RS0016
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
 		public bool IsReadOnly

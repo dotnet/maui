@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
-				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
+				textBox.IsSpellCheckEnabled = textInput.IsSpellCheckEnabled;
 			}
 
 			var inputScope = new InputScope();

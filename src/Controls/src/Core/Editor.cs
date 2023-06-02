@@ -35,9 +35,6 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
-		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
-		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Editor), true, BindingMode.Default);
-
 		/// <summary>Bindable property for <see cref="CursorPosition"/>.</summary>
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Editor), 0, validateValue: (b, v) => (int)v >= 0);
 
@@ -68,13 +65,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (FontAttributes)GetValue(FontAttributesProperty); }
 			set { SetValue(FontAttributesProperty, value); }
-		}
-
-		/// <include file="../../docs/Microsoft.Maui.Controls/Editor.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*" />
-		public bool IsTextPredictionEnabled
-		{
-			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
-			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
 		public int CursorPosition

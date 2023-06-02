@@ -80,11 +80,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
 		/// <summary>
-		/// Backing store for the <see cref="IsTextPredictionEnabled"/> property.
-		/// </summary>
-		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(Entry), true, BindingMode.OneTime);
-
-		/// <summary>
 		/// Backing store for the <see cref="CursorPosition"/> property.
 		/// </summary>
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(Entry), 0, validateValue: (b, v) => (int)v >= 0);
@@ -177,15 +172,6 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (bool)GetValue(FontAutoScalingEnabledProperty);
 			set => SetValue(FontAutoScalingEnabledProperty, value);
-		}
-
-		/// <summary>
-		/// Determines whether text prediction and automatic text correction is enabled. Default value is <see langword="true"/>.
-		/// </summary>
-		public bool IsTextPredictionEnabled
-		{
-			get { return (bool)GetValue(IsTextPredictionEnabledProperty); }
-			set { SetValue(IsTextPredictionEnabledProperty, value); }
 		}
 
 		/// <summary>
