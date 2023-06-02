@@ -166,5 +166,8 @@ namespace Microsoft.Maui.DeviceTests
 			var toolbar = GetPlatformToolbar(handler);
 			return toolbar.TitleView;
 		}
+
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
 	}
 }

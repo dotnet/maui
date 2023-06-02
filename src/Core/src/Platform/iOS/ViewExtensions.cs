@@ -257,6 +257,25 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static T? FindDescendantView<T>(this UIView view, Func<T, bool> predicate) where T : UIView
+		{
+			var queue = new Queue<UIView>();
+			queue.Enqueue(view);
+
+			while (queue.Count > 0)
+			{
+				var descendantView = queue.Dequeue();
+
+				if (descendantView is T result && predicate.Invoke(result))
+					return result;
+
+				for (var i = 0; i < descendantView.Subviews?.Length; i++)
+					queue.Enqueue(descendantView.Subviews[i]);
+			}
+
+			return null;
+		}
+
 		public static void UpdateBackgroundLayerFrame(this UIView view)
 		{
 			if (view == null || view.Frame.IsEmpty)
