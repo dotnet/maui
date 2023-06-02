@@ -263,6 +263,45 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, layoutFrame.Height, 1.0d);
 		}
 
+		[Fact]
+		public async Task FrameIncludesPadding()
+		{
+			SetupBuilder();
+
+			double contentSize = 50;
+			var content = new Label { Text = "Hey", WidthRequest = contentSize, HeightRequest = contentSize };
+			var padding = 10;
+
+			var frame = new Frame()
+			{
+				Content = content,
+				BorderColor = Colors.Black,
+				CornerRadius = 10,
+				Padding = new Thickness(padding),
+				Margin = new Thickness(0),
+				VerticalOptions = LayoutOptions.Start,
+				HorizontalOptions = LayoutOptions.Start
+			};
+
+			var layout = new StackLayout()
+			{
+				Children =
+				{
+					frame
+				}
+			};
+
+			var layoutFrame = await LayoutFrame(layout, frame, 500, 500);
+
+			// The expected content size should add padding to every direction
+			var expected = contentSize + (padding * 2) + (FrameBorderThickness * 2);
+
+			// We're checking the Frame size within a tolerance of 1; between screen density of test devices and rounding issues,
+			// it's not going to be exactly `expected`, but it should be close.
+			Assert.Equal(expected, layoutFrame.Width, 1.0d);
+			Assert.Equal(expected, layoutFrame.Height, 1.0d);
+		}
+
 #if !ANDROID
 		[Fact]
 		public async Task FrameResizesItsContents()
