@@ -1,8 +1,49 @@
-$appiumVersion = '2.0.0-beta.64'
-$windowsDriverVersion = 2.7.2
-$androidDriverVersion = 2.25.1
-$iOSDriverVersion = 4.30.2
-$macDriverVersion = 1.6.1
+<#
+.SYNOPSIS
+
+Install dependencies for Appium UITests
+
+.DESCRIPTION
+
+This will install or update npm, appium and the following drivers: appium-windows-driver, uiautomator2, xcuitest and mac2
+
+.PARAMETER appiumVersion
+
+The Appium version to install
+
+.PARAMETER windowsDriverVersion
+
+The windows driver version to update or install
+
+.PARAMETER androidDriverVersion
+
+The uiautomator2 driver version to update or install
+
+.PARAMETER iOSDriverVersion
+
+The xcuitest driver version to update or install
+
+.PARAMETER macDriverVersion
+
+The mac2 driver version to update or install
+
+
+.EXAMPLE
+
+PS> .\appium-install.ps1 '2.0.0-beta.61' 2.7.2 2.25.1 4.30.2 1.6.1
+
+This would install or update Appium version 2.0.0-beta.61, the windows driver 2.7.2, the uiautomator2 driver with 2.25.1, the xcuitest driver with 4.30.2 and mac2 driver with 1.6.1
+#>
+
+
+param
+(
+    [string] $appiumVersion = '2.0.0-beta.64',
+    [string] $windowsDriverVersion = '2.7.2',
+    [string] $androidDriverVersion = '2.25.1',
+    [string] $iOSDriverVersion = '4.30.2',
+    [string] $macDriverVersion = '1.6.1'
+)
 
 node -v
 npm install -g npm
