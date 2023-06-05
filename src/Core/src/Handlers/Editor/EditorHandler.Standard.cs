@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapCharacterSpacing(IViewHandler handler, IEditor editor) { }
 		public static void MapMaxLength(IViewHandler handler, IEditor editor) { }
 		public static void MapIsTextPredictionEnabled(IEditorHandler handler, IEditor editor) { }
+		public static void MapIsSpellCheckEnabled(IEditorHandler handler, IEditor editor) { }
 		public static void MapFont(IViewHandler handler, IEditor editor) { }
 		public static void MapIsReadOnly(IViewHandler handler, IEditor editor) { }
 		public static void MapTextColor(IEditorHandler handler, IEditor editor) { }
