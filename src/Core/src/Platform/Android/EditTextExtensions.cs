@@ -68,7 +68,6 @@ namespace Microsoft.Maui.Platform
 			editText.SetInputType(entry);
 		}
 
-		// JDTODO: Do I need to do the same for an IEditor instead of IEntry? Probably...
 		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEntry entry)
 		{
 			editText.SetInputType(entry);
@@ -81,6 +80,14 @@ namespace Microsoft.Maui.Platform
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
 			else
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+		}
+
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
+		{
+			if (editor.IsSpellCheckEnabled)
+				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+			else
+				editText.InputType |= InputTypes.TextFlagAutoCorrect;
 		}
 
 		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>
