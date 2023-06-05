@@ -1,7 +1,5 @@
 ﻿using System;
 using Foundation;
-using HealthKit;
-using Intents;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
