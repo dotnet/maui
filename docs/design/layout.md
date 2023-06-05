@@ -10,7 +10,7 @@ This document is a work in progress.
 
 Layout alignment controls how a View positions itself in a container. The possible options are `Fill`, `Start`, `Center`, and `End`. `Fill` is the default for all of the Views in the Controls SDK. 
 
-LayoutAlignment in Core is mostly handled by the `ComputeFrame()` extension method. When a View is being arranged in a Rect, it calls `ComputeFrame()` to determine what its Frame should be. Frames are always in relation to the container. 
+`LayoutAlignment` in Core is mostly handled by the `ComputeFrame()` extension method. When a View is being arranged in a Rect, it calls `ComputeFrame()` to determine what its Frame should be. Frames are always in relation to the container. 
 
 For ease of migration, Controls still uses the `LayoutOptions` structure, which also includes the (deprecated) "AndExpand" flags. The Core layout system ignores the "AndExpand" flags and  translates the Fill/Start/Center/End values from `LayoutOptions` to the `LayoutAlignment` enumeration. 
 
