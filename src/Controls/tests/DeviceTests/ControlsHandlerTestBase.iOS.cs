@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -110,14 +111,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
 		{
+			if (handler is IWindowHandler wh)
+			{
+				handler = wh.VirtualView.Content.Handler;
+			}
+
 			if (handler is ShellRenderer renderer)
 			{
 				if (renderer.ChildViewControllers[0] is ShellItemRenderer sir)
 				{
-					if (sir.ChildViewControllers[0] is ShellSectionRenderer ssr)
-					{
-						return ssr.ChildViewControllers;
-					}
+					return sir.SelectedViewController.ChildViewControllers;
 				}
 			}
 
