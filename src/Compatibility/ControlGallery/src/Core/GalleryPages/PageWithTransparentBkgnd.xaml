@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PageWithTransparentBkgnd"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.PageWithTransparentBkgnd"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
              ios:Page.UseSafeArea="true"
              BackgroundColor="#700000FF">

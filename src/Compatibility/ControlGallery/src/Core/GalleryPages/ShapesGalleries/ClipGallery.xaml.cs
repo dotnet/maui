@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.ShapesGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries
 {
 	public partial class ClipGallery : ContentPage
 	{

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries
 {
 	public partial class TimePage : ContentPage
 	{

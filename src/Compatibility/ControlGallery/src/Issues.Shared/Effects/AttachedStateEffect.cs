@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects
+namespace Microsoft.Maui.Controls.ControlGallery.Effects
 {
 
 	[Preserve(AllMembers = true)]
