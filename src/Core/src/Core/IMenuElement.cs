@@ -5,7 +5,11 @@
 		/// <summary>
 		/// Represents a shortcut key for a MenuItem.
 		/// </summary>
+#if NETSTANDARD2_1_OR_GREATER
 		IAccelerator? Accelerator => null;
+#else
+		IAccelerator? Accelerator { get; }
+#endif
 
 		/// <summary>
 		/// Gets a value indicating whether this View is enabled in the user interface. 
