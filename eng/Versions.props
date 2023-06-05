@@ -85,6 +85,6 @@
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>8.0.0-preview.5</DotNetTizenManifestVersionBand>
+    <DotNetTizenManifestVersionBand>8.0.100-preview.5</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
