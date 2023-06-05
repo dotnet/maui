@@ -1,5 +1,7 @@
 ﻿using System;
 using Foundation;
+using HealthKit;
+using Intents;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -140,6 +142,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler?.QueryEditor);
+		}
+
+		public static void MapIsSpellCheckEnabled(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, handler?.QueryEditor);
 		}
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
