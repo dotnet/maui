@@ -462,6 +462,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					ShellItemNavigationView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
 					ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
+					ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(a.EffectiveTabBarUnselectedColor?.AsPaint());
 				}
 			}
 		}

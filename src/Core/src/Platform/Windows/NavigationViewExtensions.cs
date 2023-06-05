@@ -30,6 +30,44 @@ namespace Microsoft.Maui.Platform
 			{
 				if (brush is null)
 				{
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelected");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
+
+					navigationView.TopNavArea.Resources.Remove("NavigationViewSelectionIndicatorForeground");
+				}
+				else
+				{
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelected"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPressed"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+
+					// Use the TabBarForegroundColor to update the Indicator Brush
+					navigationView.TopNavArea.Resources["NavigationViewSelectionIndicatorForeground"] = brush;
+				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.Foreground = brush;
+				}
+			}
+		}
+		
+		public static void UpdateTopNavigationViewItemUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea != null)
+			{
+				if (brush is null)
+				{
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForeground");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPointerOver");
 					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundPressed");
