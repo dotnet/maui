@@ -5,6 +5,8 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -109,14 +111,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
 		{
+			if (handler is IWindowHandler wh)
+			{
+				handler = wh.VirtualView.Content.Handler;
+			}
+
 			if (handler is ShellRenderer renderer)
 			{
 				if (renderer.ChildViewControllers[0] is ShellItemRenderer sir)
 				{
-					if (sir.ChildViewControllers[0] is ShellSectionRenderer ssr)
-					{
-						return ssr.ChildViewControllers;
-					}
+					return sir.SelectedViewController.ChildViewControllers;
 				}
 			}
 
@@ -139,6 +143,48 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var vcs = GetActiveChildViewControllers(handler);
 			return vcs[vcs.Length - 1];
+		}
+
+		protected UINavigationBar GetPlatformToolbar(IElementHandler handler)
+		{
+			var visibleController = GetVisibleViewController(handler);
+			if (visibleController is UINavigationController nc)
+				return nc.NavigationBar;
+
+			var navController = visibleController.NavigationController;
+			return navController?.NavigationBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var titleContainer = GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			if (!OperatingSystem.IsIOSVersionAtLeast(16))
+			{
+				titleContainer = titleContainer ?? GetPlatformToolbar(handler).FindDescendantView<UIView>(result =>
+				{
+					return result.Class.Name?.Contains("TitleViewContainer", StringComparison.OrdinalIgnoreCase) == true;
+				});
+			}
+
+			_ = titleContainer ?? throw new Exception("Unable to Locate TitleView Container");
+
+			return new Size(titleContainer.Frame.Width, titleContainer.Frame.Height);
+		}
+
+		protected string GetToolbarTitle(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return AssertionExtensions.GetToolbarTitle(toolbar);
+		}
+
+		protected string GetBackButtonText(IElementHandler handler)
+		{
+			var toolbar = GetPlatformToolbar(handler);
+			return AssertionExtensions.GetBackButtonText(toolbar);
 		}
 	}
 }

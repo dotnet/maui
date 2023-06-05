@@ -5,12 +5,14 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Graphics.Drawable;
+using AndroidX.AppCompat.View.Menu;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using Google.Android.Material.AppBar;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -90,6 +92,22 @@ namespace Microsoft.Maui.DeviceTests
 				ToolbarItem toolbarItem = toolbarItems[i];
 				var primaryCommand = menu.GetItem(i);
 				Assert.Equal(toolbarItem.Text, $"{primaryCommand.TitleFormatted}");
+
+				if (primaryCommand is MenuItemImpl menuItemImpl)
+				{
+					if (toolbarItem.Order != ToolbarItemOrder.Secondary)
+					{
+						Assert.True(menuItemImpl.RequiresActionButton(), "Secondary Menu Item `SetShowAsAction` not set correctly");
+					}
+					else
+					{
+						Assert.False(menuItemImpl.RequiresActionButton(), "Primary Menu Item `SetShowAsAction` not set correctly");
+					}
+				}
+				else
+				{
+					throw new Exception($"MenuItem type is not MenuItemImpl. Please rework test to work with {primaryCommand}");
+				}
 			}
 
 			return true;
@@ -117,10 +135,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var shell = handler.VirtualView as Shell;
 				var currentPage = shell.CurrentPage;
-				var pagePlatformView = currentPage.Handler.PlatformView as AView;
-				var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
-				var toolbar = parentContainer.GetFirstChildOfType<MaterialToolbar>();
-				return toolbar;
+
+				if (currentPage?.Handler?.PlatformView is AView pagePlatformView)
+				{
+					var parentContainer = pagePlatformView.GetParentOfType<CoordinatorLayout>();
+					var toolbar = parentContainer?.GetFirstChildOfType<MaterialToolbar>();
+					return toolbar;
+				}
+
+				return null;
 			}
 			else
 			{
@@ -128,18 +151,36 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		protected string GetToolbarTitle(IElementHandler handler) =>
+			GetPlatformToolbar(handler).Title;
+
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
+			if (navManager?.RootView is null)
+				return null;
+
 			var appbarLayout =
-				navManager?.RootView?.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+				navManager.RootView.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+
+			if (appbarLayout is null &&
+				navManager.RootView is ContainerView cv &&
+				cv.CurrentView is Shell shell)
+			{
+				if (shell.Handler is Controls.Platform.Compatibility.IShellContext sr)
+				{
+					var layout = sr.CurrentDrawerLayout;
+					var content = layout?.GetFirstChildOfType<Controls.Platform.Compatibility.CustomFrameLayout>();
+					appbarLayout = content?.GetFirstChildOfType<AppBarLayout>();
+				}
+			}
 
 			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
 
 			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
 				MaterialToolbar;
 
-			if (toolBar == null)
+			if (toolBar is null)
 			{
 				appbarLayout =
 					(navManager?.RootView as AViewGroup)?.GetFirstChildOfType<AppBarLayout>();
@@ -148,6 +189,13 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return toolBar;
+		}
+
+		protected Size GetTitleViewExpectedSize(IElementHandler handler)
+		{
+			var context = handler.MauiContext.Context;
+			var toolbar = GetPlatformToolbar(handler.MauiContext).GetFirstChildOfType<Microsoft.Maui.Controls.Toolbar.Container>();
+			return new Size(context.FromPixels(toolbar.MeasuredWidth), context.FromPixels(toolbar.MeasuredHeight));
 		}
 
 		public bool IsNavigationBarVisible(IElementHandler handler) =>
