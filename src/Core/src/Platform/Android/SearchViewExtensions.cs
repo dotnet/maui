@@ -131,6 +131,19 @@ namespace Microsoft.Maui.Platform
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
+		{
+			editText ??= searchView.GetFirstChildOfType<EditText>();
+
+			if (editText == null)
+				return;
+
+			if (searchBar.IsTextPredictionEnabled)
+				editText.InputType &= ~InputTypes.TextFlagAutoComplete;
+			else
+				editText.InputType |= InputTypes.TextFlagAutoComplete;
+		}
+
 		public static void UpdateIsEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
