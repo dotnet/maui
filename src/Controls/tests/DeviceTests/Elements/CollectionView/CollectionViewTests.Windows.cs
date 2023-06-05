@@ -3,6 +3,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
+using WSetter = Microsoft.UI.Xaml.Setter;
+using System.Linq;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
