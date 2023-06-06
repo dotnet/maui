@@ -1188,5 +1188,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.ClearValue(Label.StyleProperty);
 			Assert.Equal("implicit", label.Text);
 		}
+
+		[Fact]
+		public void UnapplyingBasedOn()
+		{
+			var basedOn = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "basedOn" }, } };
+			var style = new Style(typeof(Label)) { BasedOn = basedOn };
+
+			var label = new Label { Style = style };
+			Assert.Equal("basedOn", label.Text);
+
+			style.BasedOn = null;
+			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
+
+		}
 	}
 }
