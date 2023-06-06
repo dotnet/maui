@@ -343,9 +343,9 @@ Task("cg-uitest")
 				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 	});
+	
 	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
 	Information("Run UITests lib {0}", testLibDllPath);
-	
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
 		OutputFile = $"{TEST_RESULTS}/TestResults.xml",

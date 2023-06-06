@@ -15,6 +15,8 @@ parameters:
       winui: /optional/path/to/winui.csproj
       mac: /optional/path/to/mac.csproj
       app: /optional/path/to/app.csproj
+      compatibilityApp: /optional/path/to/app.csproj
+      compatibilityAndroid: /optional/path/to/android.csproj
 
 stages:
 
@@ -124,5 +126,36 @@ stages:
                       device: mac
                       path: ${{ project.mac }}
                       app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+- stage: android_compatibility_ui_tests
+    displayName: Android UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                pool: ${{ parameters.androidPool }}
+                variables:
+                  ${{ if ge(api, 24) }}:
+                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
+                  ${{ if lt(api, 24) }}:
+                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                steps:
+                  - template: ui-tests-compatibility-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.compatibilityAndroid }}
+                      app: ${{ project.compatibilityApp }}
+                      device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
