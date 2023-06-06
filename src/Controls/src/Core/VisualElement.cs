@@ -873,7 +873,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler ChildrenReordered;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Focus']/Docs/*" />
-		public bool Focus() =>
+		public virtual bool Focus() =>
 			this.RequestFocus();
 
 		public event EventHandler<FocusEventArgs> Focused;
@@ -959,7 +959,7 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler SizeChanged;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Unfocus']/Docs/*" />
-		public void Unfocus()
+		public virtual void Unfocus()
 		{
 			if (!IsFocused)
 				return;
