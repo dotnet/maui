@@ -28,6 +28,8 @@ steps:
     inputs:
       targetType: 'inline'
       script: |
+        automationmodetool
+        automationmodetool enable-automationmode-without-authentication
         defaults write -g NSAutomaticCapitalizationEnabled -bool false
         defaults write -g NSAutomaticTextCompletionEnabled -bool false
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
