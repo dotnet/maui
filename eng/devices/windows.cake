@@ -1,3 +1,4 @@
+#load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
@@ -10,7 +11,6 @@ FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
