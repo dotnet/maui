@@ -1,6 +1,6 @@
 <Project>
 
-  <ItemGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+  <ItemGroup>
     <ProjectCapability Include="Maui" />
     <ProjectCapability Include="MauiAssets" />
     <ProjectCapability Include="MauiBlazor" />
