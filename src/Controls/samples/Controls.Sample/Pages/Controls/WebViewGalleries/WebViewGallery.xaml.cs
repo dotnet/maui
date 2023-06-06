@@ -7,11 +7,11 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Storage;
 
-namespace Maui.Controls.Sample.Pages
+namespace Maui.Controls.Sample.Pages.WebViewGalleries
 {
-	public partial class WebViewPage
+	public partial class WebViewGallery
 	{
-		public WebViewPage()
+		public WebViewGallery()
 		{
 			InitializeComponent();
 		}
