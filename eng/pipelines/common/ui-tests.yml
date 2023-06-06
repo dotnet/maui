@@ -130,7 +130,7 @@ stages:
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
   - stage: android_compatibility_ui_tests
-    displayName: Android UITests
+    displayName: Android Compatibility UITests
     dependsOn: []
     jobs:
       - ${{ each project in parameters.projects }}:
