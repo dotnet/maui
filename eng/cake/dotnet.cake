@@ -165,14 +165,9 @@ Task("dotnet-samples")
 Task("dotnet-legacy-controlgallery")
     .Does(() =>
     {
-
         var properties = new Dictionary<string, string>();
-
         RunMSBuildWithDotNet("./Microsoft.Maui.LegacyControlGallery.slnf", properties, binlogPrefix: "controlgallery-");
     });
-
-
-Microsoft.Maui.LegacyControlGallery.slnf
 
 Task("dotnet-samples-test")
     .Does(() =>
