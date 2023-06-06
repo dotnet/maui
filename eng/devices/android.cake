@@ -330,7 +330,7 @@ Task("cg-uitest")
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
 	var nunitSettings = new NUnit3Settings { };
 		
-	var IOS_TEST_LIBRARY = $"D:/repos/dotnet/maui/src/Compatibility/ControlGallery/test/Android.UITests/bin/{CONFIGURATION}/{TEST_FRAMEWORK}/Microsoft.Maui.Controls.Android.UITests.dll";
+	var IOS_TEST_LIBRARY = $"/Users/ruimarinho/dotnet/maui/src/Compatibility/ControlGallery/test/Android.UITests/bin/{CONFIGURATION}/net472/Microsoft.Maui.Controls.Android.UITests.dll";
 	Information("Run UITests lib {0}", IOS_TEST_LIBRARY);
 	RunTestsNunit(IOS_TEST_LIBRARY, nunitSettings);
 });
@@ -406,5 +406,5 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 			$"--output-directory=\"{testResultsDirectory}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
-	DotNetCoreTool("tool", settings);
+	DotNetTool("tool", settings);
 }
