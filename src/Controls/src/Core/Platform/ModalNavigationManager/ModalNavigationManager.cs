@@ -393,7 +393,9 @@ namespace Microsoft.Maui.Controls.Platform
 				bool result =
 					_window?.Page?.Handler is not null &&
 					_window.IsActivated
+#if ANDROID
 					&& _window.Page.IsLoadedOnPlatform()
+#endif
 					&& CurrentPlatformPage?.Handler is not null
 					&& CurrentPlatformPage.IsLoadedOnPlatform();
 
