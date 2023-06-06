@@ -129,7 +129,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-- stage: android_compatibility_ui_tests
+  - stage: android_compatibility_ui_tests
     displayName: Android UITests
     dependsOn: []
     jobs:
