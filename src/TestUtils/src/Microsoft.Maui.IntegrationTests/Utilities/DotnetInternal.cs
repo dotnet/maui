@@ -37,9 +37,14 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework)
+		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
-			var output = RunForOutput("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", out int exitCode, timeoutInSeconds: 300);
+			var args = $"{shortName} -o \"{outputDirectory}\"";
+
+			if (!string.IsNullOrEmpty(framework))
+				args += $" -f {framework}";
+
+			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);
 			return exitCode == 0;
 		}
