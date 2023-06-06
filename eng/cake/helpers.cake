@@ -1,7 +1,4 @@
 bool isCleanSet = HasArgument("clean") || IsTarget("clean");
-string defaultUnitTestWhere = "";
-
-var NUNIT_TEST_WHERE = Argument("NUNIT_TEST_WHERE", defaultUnitTestWhere);
 
 Task("Clean")
     .WithCriteria(isCleanSet)
@@ -127,20 +124,15 @@ bool TargetStartsWith(string target) =>
 
 void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
 {
-    // try
-    // {
-        if(!String.IsNullOrWhiteSpace(NUNIT_TEST_WHERE))
-        {
-            settings.Where = NUNIT_TEST_WHERE;
-        }
-
+    try
+    {
         NUnit3(new [] { unitTestLibrary }, settings);
-    // }
-    // catch
-    // {
-    //    // SetTestResultsEnvironmentVariables();
-    //     throw;
-    // }
+    }
+    catch
+    {
+        SetTestResultsEnvironmentVariables();
+        throw;
+    }
 
     SetTestResultsEnvironmentVariables();
 

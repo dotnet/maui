@@ -26,6 +26,7 @@ var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TES
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
+string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? $"");
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
@@ -327,12 +328,35 @@ Task("cg-uitest")
 
 	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
 
+	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
-	var nunitSettings = new NUnit3Settings { };
-		
-	var IOS_TEST_LIBRARY = $"/Users/ruimarinho/dotnet/maui/src/Compatibility/ControlGallery/test/Android.UITests/bin/{CONFIGURATION}/net472/Microsoft.Maui.Controls.Android.UITests.dll";
-	Information("Run UITests lib {0}", IOS_TEST_LIBRARY);
-	RunTestsNunit(IOS_TEST_LIBRARY, nunitSettings);
+
+	// build the test library
+	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
+	Information("BinDir: {0}", binDir);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android.binlog";
+	Information("Build UITests project {0}", PROJECT.FullPath);
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
+	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
+	Information("Run UITests lib {0}", testLibDllPath);
+	
+	var nunitSettings = new NUnit3Settings { 
+		Configuration = CONFIGURATION,
+		OutputFile = $"{TEST_RESULTS}/TestResults.xml",
+	};
+
+	if(!string.IsNullOrEmpty(TEST_WHERE))
+	{
+		Information("Add Where filter to NUnit {0}", TEST_WHERE);
+		nunitSettings.Where = TEST_WHERE;
+	}
+	RunTestsNunit(testLibDllPath, nunitSettings);
 });
 
 RunTarget(TARGET);
