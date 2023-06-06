@@ -159,3 +159,4 @@ stages:
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      where: "cat==Lifecycle"

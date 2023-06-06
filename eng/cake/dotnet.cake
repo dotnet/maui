@@ -162,6 +162,18 @@ Task("dotnet-samples")
         RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
     });
 
+Task("dotnet-legacy-controlgallery")
+    .Does(() =>
+    {
+
+        var properties = new Dictionary<string, string>();
+
+        RunMSBuildWithDotNet("./Microsoft.Maui.LegacyControlGallery.slnf", properties, binlogPrefix: "controlgallery-");
+    });
+
+
+Microsoft.Maui.LegacyControlGallery.slnf
+
 Task("dotnet-samples-test")
     .Does(() =>
     {
