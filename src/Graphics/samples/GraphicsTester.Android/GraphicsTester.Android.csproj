@@ -6,7 +6,7 @@
     <RootNamespace>GraphicsTester.Android</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>10.0</LangVersion>
-    <SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion>23.0</SupportedOSPlatformVersion>
     <ApplicationId>com.microsoft.maui.graphicstester</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
     <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
