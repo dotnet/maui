@@ -2,7 +2,7 @@
 <TabbedPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries.GradientTabsGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries.GradientTabsGallery"
     BarBackground="{StaticResource HorizontalLinearGradient}">
     <TabbedPage.Resources>
         <ResourceDictionary>

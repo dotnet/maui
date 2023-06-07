@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		void ForceRelayout()
 		{
-			ScrollStackLayout.ForceLayout();
+			(ScrollStackLayout as IView).InvalidateArrange();
 			_scrollView.ForceLayout();
 		}
 	}

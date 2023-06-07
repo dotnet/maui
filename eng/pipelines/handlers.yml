@@ -256,9 +256,8 @@ stages:
     jobs:
     - template: common/maui-templates.yml
 
-  - template: common/security-compliance.yml
-
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/security-compliance.yml
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class ColorSource : BindableObject

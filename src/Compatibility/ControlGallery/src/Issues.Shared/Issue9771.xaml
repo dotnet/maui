@@ -4,9 +4,9 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues"
-             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9771">
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue9771">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
