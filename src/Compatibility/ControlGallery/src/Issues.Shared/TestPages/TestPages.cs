@@ -102,7 +102,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
 																: envApkPath;
 
-			//var fullApkPath = "D:\\repos\\dotnet\\maui\\src\\Compatibility\\ControlGallery\\test\\Android.UITests\\bin\\Debug\\net472\\../../../../../src/Android/bin/Debug/net7.0-android/com.microsoft.mauicompatibilitygallery-Signed.apk";
 			System.Diagnostics.Debug.WriteLine($"FullAppPath: {fullApkPath}");
 			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
 
