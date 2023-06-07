@@ -48,8 +48,9 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: NUnit
-      testResultsFiles: '$(TestResultsDirectory)/TestResults.xml'
+      testResultsFiles: '**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
+      failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
     condition: always()

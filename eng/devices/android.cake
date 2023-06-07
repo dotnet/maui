@@ -348,7 +348,7 @@ Task("cg-uitest")
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/TestResults.xml",
+		OutputFile = $"{TEST_RESULTS}/run_uitests_output.log",
 	};
 
 	if(!string.IsNullOrEmpty(TEST_WHERE))
