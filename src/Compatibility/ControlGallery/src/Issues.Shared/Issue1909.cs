@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1909Test()
 		{
 			RunningApp.WaitForElement("TestReady");

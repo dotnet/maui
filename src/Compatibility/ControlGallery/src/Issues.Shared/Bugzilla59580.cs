@@ -44,6 +44,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void RaisingCommandCanExecuteChangedCausesCrashOnAndroid()
 		{
 			RunningApp.WaitForElement(c => c.Marked("Cell"));
