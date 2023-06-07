@@ -240,7 +240,7 @@ Task("cg-uitest")
 	
 	CleanDirectories(TEST_RESULTS);
 
-	InstallIpa(TEST_APP, "", TEST_DEVICE, TEST_RESULTS, iosVersion);
+	InstallIpa(TEST_APP, "com.microsoft.mauicompatibilitygallery", TEST_DEVICE, TEST_RESULTS, iosVersion);
 
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
@@ -262,8 +262,11 @@ Task("cg-uitest")
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/TestResults.xml",
+		OutputFile = $"{TEST_RESULTS}/run_uitests_output.log",
+		Work = TEST_RESULTS
 	};
+
+	Information("Outputfile {0}", nunitSettings.OutputFile);
 
 	if(!string.IsNullOrEmpty(TEST_WHERE))
 	{
@@ -285,10 +288,13 @@ void SetupAppPackageNameAndResult()
 			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
+		if(apps.Count == 0)
+			throw new Exception("No app was found in the bin directory.");
+		
 		TEST_APP = apps.First().FullPath;
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
-		TEST_RESULTS = TEST_APP + "-results";
+		TEST_RESULTS =  GetTestResultsDirectory().FullPath;
 	}
 
 	Information("Test Device: {0}", TEST_DEVICE);
@@ -306,7 +312,6 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		$"--targets=\"{testDevice}\" " +
 		$"--output-directory=\"{testResultsDirectory}\" " +
 		$"--verbosity=\"Debug\" ")
-
 	};
 
 	try {

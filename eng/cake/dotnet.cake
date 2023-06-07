@@ -166,6 +166,7 @@ Task("dotnet-legacy-controlgallery")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
+        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-");
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-");
     });
 
