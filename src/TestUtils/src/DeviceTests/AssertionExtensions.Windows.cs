@@ -44,16 +44,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			if (view is AutoSuggestBox searchView)
-			{
-				var queryEditor = searchView.GetFirstDescendant<TextBox>();
-
-				if (queryEditor is null)
-					throw new Exception("Unable to locate TextBox on AutoSuggestBox");
-
-				view = queryEditor;
-			}
-
 			TaskCompletionSource focusSource = new TaskCompletionSource();
 			view.GotFocus += OnFocused;
 
@@ -87,8 +77,6 @@ namespace Microsoft.Maui.DeviceTests
 				view.LostFocus -= OnUnFocused;
 			}
 
-			await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
-
 			void OnUnFocused(object? sender, RoutedEventArgs e)
 			{
 				view.LostFocus -= OnUnFocused;
@@ -119,6 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
 			$"{message} This is what it looked like: <img>{await bitmap.ToBase64StringAsync()}</img> and <img>{await other.ToBase64StringAsync()}</img>";
+
+		public static async Task<string> CreateScreenshotError(this CanvasBitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
 
 		public static async Task<string> ToBase64StringAsync(this CanvasBitmap bitmap)
 		{
@@ -453,6 +444,15 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return true;
 			}
+		}
+
+		public static async Task ThrowScreenshot(this FrameworkElement view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			if (ex is null)
+				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error."));
+			else
+				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
 		}
 
 		public static TextTrimming ToPlatform(this LineBreakMode mode) =>

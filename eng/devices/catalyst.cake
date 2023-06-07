@@ -1,18 +1,18 @@
-#addin nuget:?package=Cake.AppleSimulator&version=0.2.0
 #load "../cake/helpers.cake"
+#load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "14.4";
+const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? "net7.0-maccatalyst");
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
@@ -71,24 +71,26 @@ Task("uitest")
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Run App project {0}",TEST_APP_PROJECT.FullPath);
-	DotNetCoreBuild(TEST_APP_PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(TEST_APP_PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
 				.Append("-t:Run")
+				//.Append("/tl")
 	});
 
 	Information("Build UITests project {0}",PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-mac.binlog";
-	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
 				.Append("/bl:" + binlog)
+				//.Append("/tl")
 	});
 
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
