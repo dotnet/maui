@@ -33,7 +33,7 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-legacy-controlgallery --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
+  - pwsh: ./build.ps1 --target=dotnet-legacy-controlgallery --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic
     displayName: 'Build the Legacy ControlGallery'
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
