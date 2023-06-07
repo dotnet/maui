@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Windows.Input;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -26,6 +27,13 @@ namespace Maui.Controls.Sample.Pages
 		{
 			_clickTotal += 1;
 			InfoLabel.Text = $"{_clickTotal} ImageButton click{(_clickTotal == 1 ? "" : "s")}";
+		}
+
+		void OnChangeBorderColorClicked(object sender, EventArgs e)
+		{
+			var random = new Random();
+
+			BorderColorImageButton.BorderColor = Color.FromRgb(random.Next(0, 255), random.Next(0, 255), random.Next(0, 255));
 		}
 
 		void OnResizeImageButtonClicked(object sender, EventArgs e)

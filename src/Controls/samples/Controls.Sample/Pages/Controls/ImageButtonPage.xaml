@@ -57,10 +57,13 @@
                     Text="BorderColor"
                     Style="{StaticResource Headline}"/>
                 <ImageButton
+                    x:Name="BorderColorImageButton"
                     Aspect="AspectFit" 
                     Source="cog.png"
                     BorderColor="Red"
-                    BackgroundColor="Green"/>
+                    BorderWidth="3"
+                    BackgroundColor="Green"
+                    Clicked="OnChangeBorderColorClicked"/>
                 <Label
                     Text="BorderWidth"
                     Style="{StaticResource Headline}"/>
