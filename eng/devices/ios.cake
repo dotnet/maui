@@ -243,7 +243,7 @@ Task("cg-uitest")
 	InstallIpa(TEST_APP, "", TEST_DEVICE, TEST_RESULTS, iosVersion);
 
 	//set env var for the app path for Xamarin.UITest setup
-	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
+	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
 
 	// build the test library
 	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
@@ -258,7 +258,7 @@ Task("cg-uitest")
 			ToolPath = DOTNET_PATH,
 	});
 	
-	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
+	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.iOS.UITests.dll";
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
