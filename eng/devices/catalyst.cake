@@ -1,3 +1,4 @@
+#load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 
 string TARGET = Argument("target", "Test");
@@ -10,7 +11,6 @@ FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var localDotnet = GetBuildVariable("workloads", "local") == "local";
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
@@ -76,7 +76,7 @@ Task("uitest")
 			ArgumentCustomization = args => args
 				.Append($"-f {TARGET_FRAMEWORK}")
 				.Append("-t:Run")
-				.Append("/tl")
+				//.Append("/tl")
 	});
 
 	Information("Build UITests project {0}",PROJECT.FullPath);
@@ -87,10 +87,10 @@ Task("uitest")
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=MACUITEST")
 				.Append("/bl:" + binlog)
-				.Append("/tl")
+				//.Append("/tl")
 	});
 
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
