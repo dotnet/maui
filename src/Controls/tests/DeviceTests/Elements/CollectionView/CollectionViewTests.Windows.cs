@@ -95,7 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var minHeight = control.ItemContainerStyle.Setters
 				.OfType<WSetter>()
-				.FirstOrDefault(X => X.Property == FrameworkElement.MinHeightProperty).Value;
+				.FirstOrDefault(X => X.Property == UI.Xaml.FrameworkElement.MinHeightProperty).Value;
 
 			Assert.Equal(0d, minHeight);
 		}
