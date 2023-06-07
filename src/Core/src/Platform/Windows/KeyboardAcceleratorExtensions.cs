@@ -3,7 +3,6 @@ using Microsoft.UI.Xaml.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Windows.Security.Cryptography.Certificates;
 using Windows.System;
 
 namespace Microsoft.Maui.Platform
@@ -77,12 +76,37 @@ namespace Microsoft.Maui.Platform
 
 		internal static VirtualKey ToVirtualKey(this string key)
 		{
-			if (Enum.TryParse<VirtualKey>(key, true, out var virtualKey))
+			if (int.TryParse(key, out int numberKey))
+			{
+				if (numberKey >= 0 && numberKey <= 9)
+				{
+					key = $"Number{key}";
+				}
+			}
+
+			if (Enum.TryParse<VirtualKey>(key.ToVirtualKeyString(), true, out var virtualKey))
 				return virtualKey;
 
 			return VirtualKey.None;
 		}
-		
+
+		internal static string ToVirtualKeyString(this string key)
+		{
+			// VirtualKey is an enum. Each option can be accessed with the constant name or with an integer.
+			// A common possible mistake using accelerators is to directly use digits like 3 to create an accelerator
+			// like Ctrl+3, but we can access enum values using integers, which would give a different result
+			// than desired. Here we try to avoid it.
+			if (int.TryParse(key, out int numberKey))
+			{
+				if (numberKey >= 0 && numberKey <= 9)
+				{
+					key = $"Number{key}";
+				}
+			}
+
+			return key;
+		}
+
 		internal static KeyboardAccelerator CreateSingleKeyAccelerator(string modifierMask, string key)
 		{
 			var keyboardAccelerator = new KeyboardAccelerator();

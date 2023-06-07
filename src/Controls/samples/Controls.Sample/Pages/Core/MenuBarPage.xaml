@@ -23,7 +23,7 @@
             </MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="Custom Menu">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" Accelerator="ctrl+1"></MenuFlyoutItem>
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" Accelerator="ctrl+5" />
             <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
                 <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" Accelerator="Shift+M"></MenuFlyoutItem>
                 <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2" Accelerator="ALT+C"></MenuFlyoutItem>
