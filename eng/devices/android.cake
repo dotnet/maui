@@ -349,6 +349,7 @@ Task("cg-uitest")
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
 		OutputFile = $"{TEST_RESULTS}/run_uitests_output.log",
+		Work = TEST_RESULTS
 	};
 
 	if(!string.IsNullOrEmpty(TEST_WHERE))

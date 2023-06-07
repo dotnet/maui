@@ -50,6 +50,7 @@ steps:
       testResultsFormat: NUnit
       testResultsFiles: '**/TestResults.xml'
       testRunTitle: '$(System.PhaseName)'
+      searchFolder: '$(TestResultsDirectory)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
