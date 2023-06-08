@@ -82,11 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
 		}
 
-		[Theory
-#if WINDOWS
-			(Skip = "REVIEW FOR .NET8")
-#endif
-		]
+		[Theory]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
 		{
@@ -168,7 +164,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
-			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };
+			var layoutOptions = new LayoutOptions[] {
+
+#if !WINDOWS
+				LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End,
+#endif
+
+				LayoutOptions.Fill };
 
 			foreach (var option in layoutOptions)
 			{
