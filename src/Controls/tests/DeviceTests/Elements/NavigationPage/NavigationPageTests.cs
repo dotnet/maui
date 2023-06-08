@@ -255,7 +255,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "NavigationPage Does Not Leak"
 #if WINDOWS
-			,Skip = "REVIEW FOR .NET8"
+			,Skip = "Failing"
 #endif
 			)]
 		public async Task DoesNotLeak()
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Can Reuse Pages",
 #if WINDOWS
-			Skip = "REVIEW FOR .NET8"
+			Skip = "Failing"
 #endif
 			)]
 		public async Task CanReusePages()

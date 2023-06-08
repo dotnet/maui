@@ -962,7 +962,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact(DisplayName = "Pages Do Not Leak",
 #if WINDOWS
-			Skip = "REVIEW FOR .NET8"
+			Skip = "Failing"
 #endif
 			)]
 		public async Task PagesDoNotLeak()

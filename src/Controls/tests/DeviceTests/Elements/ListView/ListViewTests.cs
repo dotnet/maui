@@ -156,7 +156,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Fact
 #if WINDOWS
-			(Skip = "REVIEW FOR .NET8")
+			(Skip = "Failing")
 #endif
 			]
 		public async Task NullTemplateDoesntCrash()
