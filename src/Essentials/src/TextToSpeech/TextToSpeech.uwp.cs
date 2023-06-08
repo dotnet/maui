@@ -82,6 +82,9 @@ namespace Microsoft.Maui.Media
 			if (options?.Pitch.HasValue ?? false)
 				pitch = ProsodyPitch(options.Pitch);
 
+			if (options?.Rate.HasValue ?? false)
+				rate = (options.Rate.Value / 0.01f).ToString(CultureInfo.InvariantCulture) + "%";
+
 			// SSML generation
 			var ssml = new StringBuilder();
 			ssml.AppendLine($"<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='{locale}'>");
@@ -109,5 +112,6 @@ namespace Microsoft.Maui.Media
 
 			return "default";
 		}
+
 	}
 }

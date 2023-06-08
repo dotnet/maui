@@ -40,6 +40,10 @@ namespace Microsoft.Maui.Media
 
 				if (options.Volume.HasValue)
 					speechUtterance.Volume = options.Volume.Value;
+
+				// range is from 0 to 1.0
+				if (options.Rate.HasValue)
+					speechUtterance.Rate = options.Rate.Value / 3.0f;
 			}
 
 			return speechUtterance;

@@ -146,7 +146,10 @@ namespace Microsoft.Maui.Media
 			else
 				tts.SetPitch(TextToSpeechImplementation.PitchDefault);
 
-			tts.SetSpeechRate(1.0f);
+			if (options?.Rate.HasValue ?? false)
+				tts.SetSpeechRate(options.Rate.Value);
+			else
+				tts.SetSpeechRate(TextToSpeechImplementation.RateDefault);
 
 			var parts = TextToSpeech.SplitSpeak(text, max);
 

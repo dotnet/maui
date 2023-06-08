@@ -148,6 +148,10 @@ namespace Microsoft.Maui.Media
 		internal const float VolumeDefault = 0.5f;
 		internal const float VolumeMin = 0.0f;
 
+		internal const float RateMax = 3.0f;
+		internal const float RateDefault = 1.0f;
+		internal const float RateMin = 0.2f;
+
 		SemaphoreSlim? semaphore;
 
 		public Task<IEnumerable<Locale>> GetLocalesAsync() =>
@@ -167,7 +171,13 @@ namespace Microsoft.Maui.Media
 			if (options?.Pitch.HasValue ?? false)
 			{
 				if (options.Pitch.Value < PitchMin || options.Pitch.Value > PitchMax)
-					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMin}");
+					throw new ArgumentOutOfRangeException($"Pitch must be >= {PitchMin} and <= {PitchMax}");
+			}
+
+			if (options?.Rate.HasValue ?? false)
+			{
+				if (options.Rate.Value < RateMin || options.Rate.Value > RateMax)
+					throw new ArgumentOutOfRangeException($"Rate must be >= {RateMin} and <= {RateMax}");
 			}
 
 			if (semaphore == null)
@@ -245,5 +255,11 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <remarks>This value should be between <c>0f</c> and <c>1.0f</c>.</remarks>
 		public float? Volume { get; set; }
+
+		/// <summary>
+		/// The rate to use when speaking.
+		/// </summary>
+		/// <remarks>This value should be between <c>1.0f</c> and <c>3.0f</c>.</remarks>
+		public float? Rate { get; set; }
 	}
 }

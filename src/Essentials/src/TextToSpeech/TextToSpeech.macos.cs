@@ -30,6 +30,10 @@ namespace Microsoft.Maui.Media
 					if (options.Volume.HasValue)
 						ss.Volume = NormalizeVolume(options.Volume);
 
+					// rate is in words per minute 180 being approx normal.
+					if (options.Rate.HasValue)
+						ss.Rate = Math.Round(180 * options.Rate);
+
 					if (options.Locale != null)
 						ss.Voice = options.Locale.Id;
 				}
