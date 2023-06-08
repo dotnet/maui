@@ -295,9 +295,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
-		[Fact(DisplayName = "Can Reuse Pages",
+		[Fact(DisplayName = "Can Reuse Pages"
 #if WINDOWS
-			Skip = "Failing"
+			,Skip = "Failing"
 #endif
 			)]
 		public async Task CanReusePages()
