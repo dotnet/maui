@@ -11,7 +11,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property",
 #if WINDOWS
-			Skip = "REVIEW FOR .NET8"
+			Skip = "Failing"
 #endif
 			)]
 		[InlineData("#FF0000")]

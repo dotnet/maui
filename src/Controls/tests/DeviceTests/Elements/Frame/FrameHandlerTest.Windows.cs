@@ -18,11 +18,5 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			return Task.CompletedTask;
 		}
-
-		[Fact(DisplayName = "ContainerView Adds And Removes", Skip = "REVIEW FOR .NET8")]
-		public override Task ContainerViewAddsAndRemoves()
-		{
-			return Task.CompletedTask;
-		}
 	}
 }
