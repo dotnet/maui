@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(Skip = "REVIEW FOR .NET8")]		
+		[Fact(Skip = "FIX FOR .NET8")]
 		public async Task ValidateItemContainerDefaultHeight()
 		{
 			SetupBuilder();
@@ -101,11 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0d, minHeight);
 		}
 
-		[Fact
-#if WINDOWS
-			(Skip = "REVIEW FOR .NET8")
-#endif
-		]
+		[Fact(Skip = "FIX FOR .NET8")]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
 			SetupBuilder();
