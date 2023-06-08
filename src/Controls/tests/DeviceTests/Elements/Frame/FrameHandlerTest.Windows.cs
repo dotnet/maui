@@ -7,13 +7,13 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class FrameHandlerTest
 	{
-		[Fact(DisplayName = "Clip Initializes ContainerView Correctly", Skip = "REVIEW FOR .NET8")]
+		[Fact(DisplayName = "Clip Initializes ContainerView Correctly", Skip = "Failing")]
 		public override Task ContainerViewInitializesCorrectly()
 		{
 			return Task.CompletedTask;
 		}
 
-		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again", Skip = "REVIEW FOR .NET8")]
+		[Fact(DisplayName = "ContainerView Remains If Shadow Mapper Runs Again", Skip = "Failing")]
 		public override Task ContainerViewRemainsIfShadowMapperRunsAgain()
 		{
 			return Task.CompletedTask;
