@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
-#if NETCOREAPP2_1_OR_GREATER
+#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
 			var keyboardAccelerators = menuFlyoutItem.Accelerator?.ToPlatform();
 #else
 			var keyboardAccelerators = menuFlyoutItem.Accelerator.ToPlatform();
