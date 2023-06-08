@@ -154,7 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 		// a limit where it'll eventually be too many windows.
 		// So, for now we're limiting this to 10 parallel windows which seems 
 		// to work fine.
-		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
+		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(3);
 
 		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext mauiContext)
 		{

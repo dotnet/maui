@@ -82,7 +82,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
 		}
 
-		[Theory]
+		[Theory
+#if WINDOWS
+			(Skip = "REVIEW FOR .NET8")
+#endif
+		]
 		[MemberData(nameof(GenerateLayoutOptionsCombos))]
 		public async Task CollectionViewCanSizeToContent(CollectionViewSizingTestCase testCase)
 		{

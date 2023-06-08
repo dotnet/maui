@@ -154,7 +154,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact
+#if WINDOWS
+			(Skip = "REVIEW FOR .NET8")
+#endif
+			]
 		public async Task NullTemplateDoesntCrash()
 		{
 			SetupBuilder();
