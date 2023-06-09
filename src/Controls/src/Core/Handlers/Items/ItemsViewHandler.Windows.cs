@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
+			FindScrollViewer(ListViewBase);
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
@@ -313,6 +314,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 			}
+
+			FindScrollViewer(ListViewBase);
 		}
 
 		void FindScrollViewer(ListViewBase listView)
