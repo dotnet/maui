@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using UIKit;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls;
 
@@ -15,9 +16,4 @@ public partial class Page
 			page.On<iOS>().SetSafeAreaInsets(insets);
 		}
 	}
-}
-
-public static class UIEdgeInsetsExtension
-{
-	public static Thickness ToThickness(this UIEdgeInsets insets) => new(insets.Left, insets.Top, insets.Right, insets.Bottom);
 }

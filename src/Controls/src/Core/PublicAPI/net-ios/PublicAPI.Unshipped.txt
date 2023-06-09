@@ -8,7 +8,6 @@ Microsoft.Maui.Controls.Platform.ShapesExtensions
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
-Microsoft.Maui.Controls.UIEdgeInsetsExtension
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillLayoutSubviews() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
@@ -27,7 +26,6 @@ static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
-static Microsoft.Maui.Controls.UIEdgeInsetsExtension.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
@@ -97,3 +95,5 @@ Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! 
 *REMOVED*override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.WillRotate(UIKit.UIInterfaceOrientation toInterfaceOrientation, double duration) -> void
 ~virtual Microsoft.Maui.Controls.Handlers.Items.ItemsViewController<TItemsView>.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.Controls.Platform.UIEdgeInsetsExtension
+static Microsoft.Maui.Controls.Platform.UIEdgeInsetsExtension.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
