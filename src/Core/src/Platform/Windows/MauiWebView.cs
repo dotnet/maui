@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakReference<WebViewHandler> _handler;
 
+		[Obsolete("Constructor is no longer used, please use an overloaded version.")]
+#pragma warning disable CS8618
+		public MauiWebView() { }
+#pragma warning restore CS8618
+
 		public MauiWebView(WebViewHandler handler)
 		{
 			ArgumentNullException.ThrowIfNull(handler, nameof(handler));
