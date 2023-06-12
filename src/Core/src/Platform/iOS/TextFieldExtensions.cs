@@ -52,7 +52,6 @@ namespace Microsoft.Maui.Platform
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
-		// JDTODO: Shouldn't this also take into account custom Keyboards? The remainder of this class does not take into account custom keyboards though ...
 		public static void UpdateIsSpellCheckEnabled(this UITextField textField, IEntry entry)
 		{
 			if (entry.IsSpellCheckEnabled)
@@ -121,7 +120,10 @@ namespace Microsoft.Maui.Platform
 			textField.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				textField.UpdateIsTextPredictionEnabled(entry);
+				textField.UpdateIsSpellCheckEnabled(entry);
+			}
 
 			textField.ReloadInputViews();
 		}

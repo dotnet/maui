@@ -299,16 +299,19 @@ namespace Microsoft.Maui.Platform
 
 			if (keyboard is not CustomKeyboard)
 			{
-				// TextFlagNoSuggestions should not be confused with TextFlagAutocomplete
-				// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
-				if (!editText.InputType.HasFlag(InputTypes.TextFlagNoSuggestions) && !textInput.IsTextPredictionEnabled)
+				// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
+				if (!textInput.IsSpellCheckEnabled)
 					editText.InputType |= InputTypes.TextFlagNoSuggestions;
+				else
+					editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
 
-				// JDTODO: What if we want to unset this property? A bitwise OR does not suffice here
-				// Maybe we can do something like:
-				// if !(editText.InputType.HasFlag(TextFlagAutoCorrect) == textInput.IsSpellCheckEnabled) => perform an XOR with the flag
-				if (!editText.InputType.HasFlag(InputTypes.TextFlagAutoCorrect) && textInput.IsSpellCheckEnabled)
+				// TextFlagAutoCorrect will correct "Whats" -> "What's"
+				// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
+				// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
+				if (textInput.IsTextPredictionEnabled)
 					editText.InputType |= InputTypes.TextFlagAutoCorrect;
+				else
+					editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
 			}
 
 			if (keyboard == Keyboard.Numeric)

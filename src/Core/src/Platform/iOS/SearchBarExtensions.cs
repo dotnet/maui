@@ -161,7 +161,10 @@ namespace Microsoft.Maui.Platform
 			uiSearchBar.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				uiSearchBar.UpdateIsTextPredictionEnabled(searchBar);
+				uiSearchBar.UpdateIsSpellCheckEnabled(searchBar);
+			}
 
 			uiSearchBar.ReloadInputViews();
 		}
