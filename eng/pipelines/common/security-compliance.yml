@@ -1,50 +1,23 @@
-stages:
-  - stage: security_compliance
-    displayName: Security and Compliance checks
-    dependsOn: []
-    jobs:
-    - job: run_policheck_security_compliance
-      displayName: 'Policheck And Credentials Compliance'
-      pool: $(HostedWinVS2019)
-      timeoutInMinutes: 60
-      cancelTimeoutInMinutes: 5
-      steps:
-      - checkout: self
-
-      - template: security/policheck/v1.yml@yaml-templates
-
-      - template: security/xa-static-analysis/v2.yml@yaml-templates
-        parameters:
-          credScanSuppressionsFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
-        displayName: Run AntiMalware (Defender) Scan
-        condition: succeededOrFailed()
-        inputs:
-          FileDirPath: $(System.DefaultWorkingDirectory)
-          EnableServices: true
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
-        displayName: Create Security Analysis Report
-        condition: succeededOrFailed()
-        inputs:
-          AllTools: false
-          CredScan: true
-          AntiMalware: true
-          PoliCheck: true
-
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
-        displayName: Publish Security Analysis Logs
-        condition: succeededOrFailed()
-        inputs:
-          ArtifactName: CodeAnalysisLogs
-        
-      - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
-        displayName: Fail Job if Security Issues are Detected
-        condition: succeededOrFailed()
-        inputs:
-          AllTools: false
-          CredScan: true
-          AntiMalware: true
-          PoliCheck: true
-        
+- template: security/full/v0.yml@templates
+    parameters:
+      complianceEnabled: eq(variables.ComplianceEnabled, true)
+      scanArtifacts: ['Symbols']
+      antiMalwareEnabled: true
+      binSkimEnabled: true
+      credScanEnabled: true
+      credScanSuppressionFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
+      enableCodeInspector: true
+      policheckSrcScanFolder: '$(System.DefaultWorkingDirectory)'
+      policheckChsScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hans'
+      policheckChtScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hant'
+      policheckCsyScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\cs'
+      policheckDeuScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\de'
+      policheckEsnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\es'
+      policheckFraScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\fr'
+      policheckItaScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\it'
+      policheckJpnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ja'
+      policheckKorScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ko'
+      policheckPlkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pl'
+      policheckPtbScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pt-BR'
+      policheckRusScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ru'
+      policheckTrkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\tr'
