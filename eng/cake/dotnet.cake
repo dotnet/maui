@@ -163,11 +163,21 @@ Task("dotnet-samples")
     });
 
 Task("dotnet-legacy-controlgallery")
+    .IsDependentOn("dotnet-legacy-controlgallery-android")
+    .IsDependentOn("dotnet-legacy-controlgallery-ios");
+
+Task("dotnet-legacy-controlgallery-ios")
     .Does(() =>
     {
         var properties = new Dictionary<string, string>();
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-");
-        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-");
+        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
+    });
+
+Task("dotnet-legacy-controlgallery-android")
+    .Does(() =>
+    {
+        var properties = new Dictionary<string, string>();
+        RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
     });
 
 Task("dotnet-samples-test")
