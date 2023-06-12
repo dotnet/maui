@@ -1,6 +1,8 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.Platform.CollectionViewExtensions
 Microsoft.Maui.Controls.Platform.ShapesExtensions
 Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.~StructuredItemsViewHandler() -> void

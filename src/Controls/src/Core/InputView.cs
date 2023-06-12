@@ -76,15 +76,13 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsSpellCheckEnabledProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*" />
-		/// JDTODO: Make sure this is right ^^ 
-#pragma warning disable RS0016
+		/// include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*"
+		/// JDTODO: Make sure this is right ^^ ... why are these docs not in-line? Will they get auto-generated? 
 		public bool IsTextPredictionEnabled
 		{
 			get => (bool)GetValue(IsTextPredictionEnabledProperty);
 			set => SetValue(IsTextPredictionEnabledProperty, value);
 		}
-#pragma warning restore RS0016
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
 		public bool IsReadOnly
