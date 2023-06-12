@@ -1,4 +1,4 @@
-bool isCleanSet = (HasArgument("clean") && Argument<string>("clean", "true") != "false") || IsTarget("clean");
+bool isCleanSet = HasArgument("clean") || IsTarget("clean");
 
 Task("Clean")
     .WithCriteria(isCleanSet)
