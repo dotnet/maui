@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary> Gets or sets a value that controls whether text prediction and automatic text correction are enabled.</summary>
 		/// <value> <see langword="true" /> if text prediction is enabled. Otherwise <see langword="false" />.</value>
+		/// <remarks> On Windows, text prediction only affects touch keyboards </remarks>
 		public bool IsTextPredictionEnabled
 		{
 			get => (bool)GetValue(IsTextPredictionEnabledProperty);
