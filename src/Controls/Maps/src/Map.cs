@@ -231,8 +231,7 @@ namespace Microsoft.Maui.Controls.Maps
 			e.Apply(
 				insert: (item, _, __) => CreatePin(item),
 				removeAt: (item, _) => RemovePin(item),
-				reset: () => _pins.Clear());
-			Handler?.UpdateValue(nameof(IMap.Pins));
+				reset: _pins.Clear);
 		}
 
 		void CreatePinItems()
