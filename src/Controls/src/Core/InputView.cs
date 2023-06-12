@@ -76,8 +76,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(IsSpellCheckEnabledProperty, value);
 		}
 
-		/// include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsTextPredictionEnabled']/Docs/*"
-		/// JDTODO: Make sure this is right ^^ ... why are these docs not in-line? Will they get auto-generated? 
+		/// <summary> Gets or sets a value that controls whether text prediction and automatic text correction are enabled.</summary>
+		/// <value> <see langword="true" /> if text prediction is enabled. Otherwise <see langword="false" />.</value>
 		public bool IsTextPredictionEnabled
 		{
 			get => (bool)GetValue(IsTextPredictionEnabledProperty);
