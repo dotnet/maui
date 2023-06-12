@@ -3,4 +3,24 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <StackLayout Margin="15,0">
+        <Entry />
+        <Entry />
+        <Editor />
+        <Editor />
+
+        <!--<Entry Text="lorem ipsum" />
+        <Entry Text="lorem ipsum" />
+        <Editor Text="lorem ipsum" />
+        <Editor Text="lorem ipsum" />-->
+
+        <!--<Label x:Name="recipeNameLabel" Text="Recipe Name" />
+        <Entry Text="{Binding RecipeName}" />
+        <Label x:Name="ingredientsLabel" Text="Ingredients" />
+        <Editor  Text="{Binding Ingredients}"  />
+        <Label x:Name="recipeLabel" Text="Recipe" />
+        <Editor Text="{Binding RecipeBody}"  />-->
+    </StackLayout>
+
 </ContentPage>

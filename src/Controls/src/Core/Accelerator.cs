@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -22,13 +21,14 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Modifiers']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEnumerable<string> Modifiers { get; set; }
+		public IReadOnlyList<string> Modifiers { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
+		[Obsolete("Use Key instead.")]
 		public IEnumerable<string> Keys { get; set; }
 
-		string IAccelerator.Key => (Keys is not null) ? Keys.First() : string.Empty;
+		public string Key { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)
@@ -67,12 +67,17 @@ namespace Microsoft.Maui.Controls
 
 			if (text != Separator.ToString())
 			{
-				var keys = text.Split(new char[] { Separator }, StringSplitOptions.RemoveEmptyEntries);
-				accelarat.Keys = keys;
+#if NETSTANDARD2_0
+				text = text.Replace(Separator.ToString(), "");
+#else
+				text = text.Replace(Separator.ToString(), "", StringComparison.Ordinal);
+#endif
+				var key = text;
+				accelarat.Key = key;
 			}
 			else
 			{
-				accelarat.Keys = new[] { text };
+				accelarat.Key = text;
 			}
 			return accelarat;
 		}

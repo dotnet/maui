@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Specifies the virtual key used to modify another keypress. 
 		/// </summary>
-		public IEnumerable<string> Modifiers { get; }
+		public IReadOnlyList<string> Modifiers { get; }
 
 		/// <summary>
 		/// Specifies the values for the virtual key.

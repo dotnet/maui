@@ -1,14 +1,16 @@
-﻿namespace Microsoft.Maui
+﻿using System.Collections.Generic;
+
+namespace Microsoft.Maui
 {
 	public interface IMenuElement : IElement, IImageSourcePart, IText
 	{
 		/// <summary>
 		/// Represents a shortcut key for a MenuItem.
 		/// </summary>
-#if NETCOREAPP || NETSTANDARD2_1_OR_GREATER
-		IAccelerator? Accelerator => null;
+#if NETSTANDARD2_0
+		IReadOnlyList<IAccelerator>? Accelerators { get; }
 #else
-		IAccelerator? Accelerator { get; }
+		IReadOnlyList<IAccelerator>? Accelerators => null;
 #endif
 
 		/// <summary>

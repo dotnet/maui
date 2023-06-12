@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Platform
 					"}");
 			}
 
-			var accelerator = virtualView.Accelerator;
+			var accelerator = virtualView.Accelerators?[0];
 			if (accelerator is null)
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
 
