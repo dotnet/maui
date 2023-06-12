@@ -18,7 +18,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries
 				{
 					Children =
 					{
-						descriptionLabel,
+						descriptionLabel,   
+						GalleryBuilder.NavButton("Default Spacing", () =>
+							new DefaultItemSpacing (), Navigation),
 						GalleryBuilder.NavButton("Vertical List Spacing", () =>
 							new SpacingGallery (LinearItemsLayout.Vertical), Navigation),
 						GalleryBuilder.NavButton("Horizontal List Spacing", () =>

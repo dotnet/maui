@@ -13,13 +13,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (layout is null)
 				return null;
 
-			var h = layout?.ItemSpacing ?? 0;
-			var v = layout?.ItemSpacing ?? 0;
-			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
-
 			var style = new WStyle(typeof(GridViewItem));
 
-			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
+			if (layout?.Orientation == ItemsLayoutOrientation.Vertical)
+			{
+				style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
+
+				var h = layout?.ItemSpacing ?? 0;
+				var v = layout?.ItemSpacing ?? 0;
+				var margin = WinUIHelpers.CreateThickness(h, v, h, v);
+				style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
+			}
+			else
+				style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
+
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
@@ -31,13 +38,18 @@ namespace Microsoft.Maui.Controls.Platform
 			if (layout is null)
 				return null;
 
+			var style = new WStyle(typeof(GridViewItem));
+
+			if (layout?.Orientation == ItemsLayoutOrientation.Vertical)
+				style.Setters.Add(new WSetter(FrameworkElement.MinHeightProperty, 0));
+			else
+				style.Setters.Add(new WSetter(FrameworkElement.MinWidthProperty, 0));
+
 			var h = layout?.HorizontalItemSpacing ?? 0;
 			var v = layout?.VerticalItemSpacing ?? 0;
 			var margin = WinUIHelpers.CreateThickness(h, v, h, v);
-
-			var style = new WStyle(typeof(GridViewItem));
-
 			style.Setters.Add(new WSetter(FrameworkElement.MarginProperty, margin));
+
 			style.Setters.Add(new WSetter(Control.PaddingProperty, WinUIHelpers.CreateThickness(0)));
 			style.Setters.Add(new WSetter(Control.HorizontalContentAlignmentProperty, HorizontalAlignment.Stretch));
 
