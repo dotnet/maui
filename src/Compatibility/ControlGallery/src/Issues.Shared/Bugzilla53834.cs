@@ -86,6 +86,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if (UITEST && __IOS__)
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla53834Test()
 		{
 			RunningApp.WaitForElement("TestReady");
