@@ -1,13 +1,14 @@
-- template: security/full/v0.yml@templates
-  parameters:
-    stageDependsOn: 'build_net'
-    complianceEnabled: eq(variables.ComplianceEnabled, true)
-    scanArtifacts: ['Symbols']
-    antiMalwareEnabled: true
-    binSkimEnabled: true
-    credScanEnabled: true
-    credScanSuppressionFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
-    enableCodeInspector: true
+stages:
+  - template: security/full/v0.yml@templates
+    parameters:
+      stageDependsOn: 'build_net'
+      complianceEnabled: eq(variables.ComplianceEnabled, true)
+      scanArtifacts: ['Symbols']
+      antiMalwareEnabled: true
+      binSkimEnabled: true
+      credScanEnabled: true
+      credScanSuppressionFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
+      enableCodeInspector: true
     # policheckSrcScanFolder: '$(System.DefaultWorkingDirectory)'
     # policheckChsScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hans'
     # policheckChtScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hant'
