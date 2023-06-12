@@ -1,5 +1,5 @@
 stages:
-  - template: security/full/v0.yml@templates
+  - template: security/full/v0.yml@yaml-templates
     parameters:
       stageDependsOn: 'build_net'
       complianceEnabled: eq(variables.ComplianceEnabled, true)
