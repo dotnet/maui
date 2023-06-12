@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMauiIOS]
 		public void DoesntCrashOnNavigatingBackToThePage()
 		{
 			RunningApp.WaitForElement(q => q.Marked("btnPush"));

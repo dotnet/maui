@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 	{
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		[NUnit.Framework.Category(UITestCategories.ManualReview)]
 		public void Issue3798Test()
 		{

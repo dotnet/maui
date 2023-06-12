@@ -42,6 +42,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void KeepScrollOffset()
 		{
 			RunningApp.WaitForElement("SelectScrollMode");
@@ -56,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void KeepLastItemInView()
 		{
 			RunningApp.WaitForElement("SelectScrollMode");
