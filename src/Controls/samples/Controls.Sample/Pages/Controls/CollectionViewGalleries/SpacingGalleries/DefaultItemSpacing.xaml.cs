@@ -19,7 +19,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries
 		{
 			for (var i = 0; i < 10; i++)
 			{
-				Items.Add("CollectionView shouldn't have spacing between items");
+				Items.Add($"Item {i + 1}");
 			}
 		}
 	}

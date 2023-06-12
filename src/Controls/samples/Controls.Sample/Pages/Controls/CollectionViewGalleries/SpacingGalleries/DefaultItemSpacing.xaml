@@ -4,8 +4,13 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.CollectionViewGalleries.SpacingGalleries.DefaultItemSpacing"
     Title="Default ItemSpacing">
-    <Grid>
+    <Grid
+        RowDefinitions="Auto, *"
+        Padding="12">
+        <Label 
+            Text="By default, there is no space between each item in a CollectionView."/>
         <CollectionView 
+            Grid.Row="1"
             ItemsLayout="VerticalList"
             ItemsSource="{Binding Items}"
             BackgroundColor="Red">
