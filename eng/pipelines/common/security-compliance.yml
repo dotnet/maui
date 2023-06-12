@@ -1,5 +1,6 @@
 - template: security/full/v0.yml@templates
   parameters:
+    stageDependsOn: 'build_net'
     complianceEnabled: eq(variables.ComplianceEnabled, true)
     scanArtifacts: ['Symbols']
     antiMalwareEnabled: true
@@ -7,17 +8,17 @@
     credScanEnabled: true
     credScanSuppressionFile: $(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json
     enableCodeInspector: true
-    policheckSrcScanFolder: '$(System.DefaultWorkingDirectory)'
-    policheckChsScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hans'
-    policheckChtScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hant'
-    policheckCsyScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\cs'
-    policheckDeuScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\de'
-    policheckEsnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\es'
-    policheckFraScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\fr'
-    policheckItaScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\it'
-    policheckJpnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ja'
-    policheckKorScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ko'
-    policheckPlkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pl'
-    policheckPtbScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pt-BR'
-    policheckRusScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ru'
-    policheckTrkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\tr'
+    # policheckSrcScanFolder: '$(System.DefaultWorkingDirectory)'
+    # policheckChsScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hans'
+    # policheckChtScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\zh-Hant'
+    # policheckCsyScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\cs'
+    # policheckDeuScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\de'
+    # policheckEsnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\es'
+    # policheckFraScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\fr'
+    # policheckItaScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\it'
+    # policheckJpnScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ja'
+    # policheckKorScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ko'
+    # policheckPlkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pl'
+    # policheckPtbScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\pt-BR'
+    # policheckRusScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\ru'
+    # policheckTrkScanFolder: '$(System.DefaultWorkingDirectory)\Localize\loc\tr'
