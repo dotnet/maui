@@ -44,6 +44,12 @@
                     FontSize="24"
                     FontAttributes="Italic"/>
                 <Label
+                    Text="CharacterSpacing"
+                    Style="{StaticResource Headline}"/>
+                <SearchBar
+                    CharacterSpacing="8"
+                    Placeholder="Placeholder"/>
+                <Label
                     Text="SearchCommand"
                     Style="{StaticResource Headline}"/>
                 <SearchBar
