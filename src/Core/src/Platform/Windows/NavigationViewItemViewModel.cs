@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using Microsoft.UI.Xaml.Controls;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WIconElement = Microsoft.UI.Xaml.Controls.IconElement;
 
@@ -79,10 +80,11 @@ namespace Microsoft.Maui.Platform
 		public event PropertyChangedEventHandler? PropertyChanged;
 
 		object? _content;
-		WBrush? _foreground;
 		bool _isSelected;
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
+		WBrush? _selectedForeground;
+		WBrush? _unselectedForeground;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
 
@@ -100,8 +102,7 @@ namespace Microsoft.Maui.Platform
 
 		public WBrush? Foreground
 		{
-			get { return _foreground; }
-			set { this.SetProperty(ref _foreground, value, OnPropertyChanged); }
+			get => IsSelected ? SelectedForeground : UnselectedForeground;
 		}
 
 		public WBrush? Background
@@ -137,6 +138,36 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		public WBrush? SelectedForeground
+		{
+			get => _selectedForeground;
+			set
+			{
+				_selectedForeground = value;
+				UpdateForeground();
+			}
+		}
+
+		public WBrush? UnselectedForeground
+		{
+			get => _unselectedForeground;
+			set
+			{
+				_unselectedForeground = value;
+				UpdateForeground();
+			}
+		}
+
+		void UpdateForeground()
+		{
+			OnPropertyChanged(nameof(Foreground));
+
+			if (Icon is WIconElement bi)
+			{
+				bi.Foreground = Foreground;
+			}
+		}
+
 		public bool IsSelected
 		{
 			get => _isSelected;
@@ -144,6 +175,7 @@ namespace Microsoft.Maui.Platform
 			{
 				_isSelected = value;
 				OnPropertyChanged(nameof(Background));
+				UpdateForeground();
 			}
 		}
 

@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		MauiNavigationView? _mauiNavigationView;
+		IShellAppearanceElement? _shellAppearanceElement;
 		MauiNavigationView ShellItemNavigationView => _mauiNavigationView!;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
@@ -442,29 +443,31 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (appearance is IShellAppearanceElement a)
 			{
+				_shellAppearanceElement = a;
 				// This means the template hasn't been applied yet
-				if (ShellItemNavigationView.TopNavArea == null)
+				if (ShellItemNavigationView.TopNavArea is null)
 				{
 					ShellItemNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
-
-					void OnApplyTemplateFinished(object? sender, EventArgs e)
-					{
-						ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
-						ApplyAppearance();
-					}
-				}
-				else
-				{
-					ApplyAppearance();
 				}
 
-				void ApplyAppearance()
-				{
-					ShellItemNavigationView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
-					ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
-					ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(a.EffectiveTabBarUnselectedColor?.AsPaint());
-				}
+				ApplyAppearance();
 			}
+		}
+
+		void ApplyAppearance()
+		{
+			if (_shellAppearanceElement is null)
+				return;
+
+			ShellItemNavigationView.UpdateTopNavAreaBackground(_shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint());
+			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(_shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint());
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(_shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint());
+		}
+
+		void OnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			ApplyAppearance();
 		}
 	}
 }

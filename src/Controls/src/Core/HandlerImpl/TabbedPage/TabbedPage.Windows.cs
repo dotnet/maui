@@ -316,7 +316,8 @@ namespace Microsoft.Maui.Controls
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 						vm.Content = page.Title;
 						vm.Data = page;
-						vm.Foreground = view.BarTextColor?.AsPaint()?.ToPlatform();
+						vm.SelectedForeground = view.BarTextColor?.AsPaint()?.ToPlatform();
+						vm.UnselectedForeground = view.BarTextColor?.AsPaint()?.ToPlatform();
 						vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
 						vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
 					});
