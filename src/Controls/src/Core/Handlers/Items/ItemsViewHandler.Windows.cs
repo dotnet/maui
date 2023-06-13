@@ -378,6 +378,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
+			if (_scrollViewer == scrollViewer)
+			{
+				return;
+			}
+
+			if (_scrollViewer != null)
+			{
+				_scrollViewer.ViewChanged -= ScrollViewChanged;
+			}
+
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanged += ScrollViewChanged;
 		}
