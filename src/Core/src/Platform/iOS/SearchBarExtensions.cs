@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 				? new NSAttributedString(placeholder)
 				: new NSAttributedString(str: placeholder, foregroundColor: foregroundColor.ToPlatform());
 
-			textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
+			textField.AttributedPlaceholder = textField.AttributedPlaceholder.WithCharacterSpacing(searchBar.CharacterSpacing);
 		}
 
 		public static void UpdateFont(this UISearchBar uiSearchBar, ITextStyle textStyle, IFontManager fontManager)
