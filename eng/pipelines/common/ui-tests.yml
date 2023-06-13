@@ -3,6 +3,8 @@ parameters:
   iosPool: { }
   windowsPool: { }
   macosPool: { }
+  androidCompatibilityPool: { }
+  iosCompatibilityPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
@@ -144,7 +146,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool: ${{ parameters.androidPool }}
+                pool: ${{ parameters.androidCompatibilityPool }}
                 variables:
                   ${{ if ge(api, 24) }}:
                     ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
@@ -158,6 +160,7 @@ stages:
                       version: ${{ api }}
                       path: ${{ project.compatibilityAndroid }}
                       app: ${{ project.compatibilityApp }}
+                      targetSample: "dotnet-legacy-controlgallery-android"
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
@@ -175,7 +178,7 @@ stages:
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                pool: ${{ parameters.iosPool }}
+                pool: ${{ parameters.iosCompatibilityPool }}
                 variables:
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:
@@ -188,6 +191,7 @@ stages:
                         version: ${{ version }}
                       path: ${{ project.compatibilityiOS }}
                       app: ${{ project.compatibilityiOSApp }}
+                      targetSample: "dotnet-legacy-controlgallery-ios"
                       ${{ if eq(version, 'latest') }}:
                         device: ios-simulator-64
                       ${{ if ne(version, 'latest') }}:
