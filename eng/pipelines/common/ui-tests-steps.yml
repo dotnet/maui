@@ -75,6 +75,7 @@ steps:
       testResultsFormat: VSTest
       testResultsFiles: '$(TestResultsDirectory)/*.trx'
       testRunTitle: '$(System.PhaseName)'
+      failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
     condition: always()
