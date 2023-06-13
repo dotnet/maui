@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		static ColorStateList _defaultListDark;
 
 		bool _disposed;
-		ColorStateList _colorStateList;
+		ColorStateList _itemTextColor;
+		ColorStateList _itemIconTint;
 
 		public ShellBottomNavViewAppearanceTracker(IShellContext shellContext, ShellItem shellItem)
 		{
@@ -48,14 +49,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement controller = appearance;
 			var backgroundColor = controller.EffectiveTabBarBackgroundColor;
-			var foregroundColor = controller.EffectiveTabBarForegroundColor; // currently unused
+			var foregroundColor = controller.EffectiveTabBarForegroundColor;
 			var disabledColor = controller.EffectiveTabBarDisabledColor;
 			var unselectedColor = controller.EffectiveTabBarUnselectedColor;
 			var titleColor = controller.EffectiveTabBarTitleColor;
 
-			_colorStateList = MakeColorStateList(titleColor, disabledColor, unselectedColor);
-			bottomView.ItemTextColor = _colorStateList;
-			bottomView.ItemIconTintList = _colorStateList;
+			_itemTextColor = MakeColorStateList(titleColor, disabledColor, titleColor ?? unselectedColor);
+			_itemIconTint = MakeColorStateList(foregroundColor, disabledColor, unselectedColor);
+
+			bottomView.ItemTextColor = _itemTextColor;
+			bottomView.ItemIconTintList = _itemIconTint;
 
 			SetBackgroundColor(bottomView, backgroundColor);
 		}
@@ -162,11 +165,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (disposing)
 			{
-				_colorStateList?.Dispose();
+				_itemTextColor?.Dispose();
+				_itemIconTint?.Dispose();
 
+				_itemIconTint = null;
 				_shellItem = null;
 				_shellContext = null;
-				_colorStateList = null;
+				_itemTextColor = null;
 			}
 		}
 

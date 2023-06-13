@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 			TabBarForegroundColor ?? ForegroundColor;
 
 		Color IShellAppearanceElement.EffectiveTabBarTitleColor =>
-			TabBarTitleColor ?? TitleColor;
+			TabBarTitleColor ?? TitleColor ?? TabBarForegroundColor ?? ForegroundColor;
 
 		Color IShellAppearanceElement.EffectiveTabBarUnselectedColor =>
 			TabBarUnselectedColor ?? UnselectedColor;
