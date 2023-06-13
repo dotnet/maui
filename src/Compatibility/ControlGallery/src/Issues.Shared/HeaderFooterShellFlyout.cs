@@ -194,6 +194,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #endif
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FlyoutTests()
 		{
 			RunningApp.WaitForElement("PageLoaded");

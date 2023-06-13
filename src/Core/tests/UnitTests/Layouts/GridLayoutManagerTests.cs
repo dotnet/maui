@@ -2948,5 +2948,117 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// and the height of the view to be the height of the Grid minus all padding
 			AssertArranged(view0, new Rect(0, top, 200, 200 - top - bottom));
 		}
+
+		[Fact]
+		public void StarRowExpansionWorksWithDifferingScalars()
+		{
+			var grid = CreateGridLayout(rows: "*, 4.5*, *, 4.5*");
+			
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(100, 20));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 20));
+			var view3 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1, view2, view3);
+
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+			SetLocation(grid, view3, row: 3);
+
+			// Measure the Grid with no constraints			
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Our expected height, unconstrained, where all the views get their desired height:
+			double expectedHeight = 20 + 100 + 20 + 100;
+			Assert.Equal(expectedHeight, measure.Height);
+
+			// Now we'll arrange it at a larger height (as if we were filling up the height of a layout)
+			double arrangeHeight = measure.Height + 100; 
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width, arrangeHeight));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var view0Dest = GetArrangedRect(view0);
+			var view1Dest = GetArrangedRect(view1);
+			var view2Dest = GetArrangedRect(view2);
+			var view3Dest = GetArrangedRect(view3);
+
+			// We have four rows: 1*, 4.5*, 1*, 4.5*
+			double starCount = 1 + 4.5 + 1 + 4.5;
+
+			// We expect the odd rows to get 1* each
+			double expectedOddRowHeight = arrangeHeight / starCount;
+
+			// And the event rows to get 4.5* each
+			double expectedEvenRowHeight = expectedOddRowHeight * 4.5;
+
+			// Verify that the views were arranged at those sizes (within tolerance)
+			Assert.Equal(expectedOddRowHeight, view0Dest.Height, 1.0);
+			Assert.Equal(expectedEvenRowHeight, view1Dest.Height, 1.0);
+			Assert.Equal(expectedOddRowHeight, view2Dest.Height, 1.0);
+			Assert.Equal(expectedEvenRowHeight, view3Dest.Height, 1.0);
+		}
+
+		[Fact]
+		public void StarColumnExpansionWorksWithDifferingScalars()
+		{
+			var grid = CreateGridLayout(columns: "*, 4.5*, *, 4.5*");
+
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(20, 100));
+			var view3 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1, view2, view3);
+
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+			SetLocation(grid, view3, col: 3);
+
+			// Measure the Grid with no constraints
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Our expected width, unconstrained, where all the views get their desired width:
+			double expectedWidth = 20 + 100 + 20 + 100;
+			Assert.Equal(expectedWidth, measure.Width);
+
+			// Now we'll arrange it at a larger width (as if we were filling up the width of a layout)
+			double arrangeWidth = measure.Width + 100;
+			manager.ArrangeChildren(new Rect(0, 0, arrangeWidth, measure.Height));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var view0Dest = GetArrangedRect(view0);
+			var view1Dest = GetArrangedRect(view1);
+			var view2Dest = GetArrangedRect(view2);
+			var view3Dest = GetArrangedRect(view3);
+
+			// We have four columns: 1*, 4.5*, 1*, 4.5*
+			double starCount = 1 + 4.5 + 1 + 4.5;
+
+			// We expect the odd columns to get 1* each
+			double expectedOddRowWidth = arrangeWidth / starCount;
+
+			// And the event columns to get 4.5* each
+			double expectedEvenRowWidth = expectedOddRowWidth * 4.5;
+
+			// Verify that the views were arranged at those sizes (within tolerance)
+			Assert.Equal(expectedOddRowWidth, view0Dest.Width, 1.0);
+			Assert.Equal(expectedEvenRowWidth, view1Dest.Width, 1.0);
+			Assert.Equal(expectedOddRowWidth, view2Dest.Width, 1.0);
+			Assert.Equal(expectedEvenRowWidth, view3Dest.Width, 1.0);
+		}
+
+		static Rect GetArrangedRect(IView view) 
+		{
+			var args = view.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			return (Rect)args[0];
+		}
 	}
 }
