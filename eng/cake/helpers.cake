@@ -130,16 +130,24 @@ void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
     }
     catch
     {
-        SetTestResultsEnvironmentVariables();
+        SetTestResultsEnvironmentVariables(settings.Work?.ToString());
         throw;
     }
 
-    SetTestResultsEnvironmentVariables();
+    SetTestResultsEnvironmentVariables(settings.Work?.ToString());
 
-    void SetTestResultsEnvironmentVariables()
+    void SetTestResultsEnvironmentVariables(string? path)
     {
         var doc = new System.Xml.XmlDocument();
-        doc.Load("TestResult.xml");
+        if(string.IsNullOrEmpty(path))
+        {
+            doc.Load("TestResult.xml");
+        }
+        else
+        {
+            doc.Load($"{path}/TestResult.xml");
+        }
+                
         var root = doc.DocumentElement;
 
         foreach(System.Xml.XmlAttribute attr in root.Attributes)
