@@ -157,6 +157,7 @@ stages:
                   - template: ui-tests-compatibility-steps.yml
                     parameters:
                       platform: android
+                      provisionPlatform: windows
                       version: ${{ api }}
                       path: ${{ project.compatibilityAndroid }}
                       app: ${{ project.compatibilityApp }}
@@ -185,6 +186,7 @@ stages:
                   - template: ui-tests-compatibility-steps.yml
                     parameters:
                       platform: ios
+                      provisionPlatform: macos
                       ${{ if eq(version, 'latest') }}:
                         version: 16.2
                       ${{ if ne(version, 'latest') }}:

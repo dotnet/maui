@@ -8,17 +8,18 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
-  where : ""
+  where : "cat==Issues"
   targetSample: "dotnet-legacy-controlgallery"
+  provisionPlatform: "windows"
 
 steps:
 
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.platform, 'windows') }}:
+      ${{ if eq(parameters.provisionPlatform, 'windows') }}:
         platform: windows
         skipProvisioning: true
-      ${{ if ne(parameters.platform, 'windows') }}:
+      ${{ if ne(parameters.provisionPlatform, 'windows') }}:
         platform: macos
         skipProvisioning: false
       skipXcode: false
