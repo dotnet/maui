@@ -2,15 +2,15 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.Maui.Handlers;
-using Xunit;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Controls.Shapes;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {

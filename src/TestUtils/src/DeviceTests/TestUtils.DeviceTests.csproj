@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests</RootNamespace>
@@ -21,6 +21,6 @@
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-  <Import Project="$(_MauiBuildTasksLocation)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
 </Project>

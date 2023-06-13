@@ -1,10 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Controls</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls</AssemblyName>
+    <PackageId>Microsoft.Maui.Controls.Core</PackageId>
     <Nullable>enable</Nullable>
-    <IsPackable>false</IsPackable>
+    <IsPackable>true</IsPackable>
     <IsTrimmable>false</IsTrimmable>
     <_MauiDesignDllBuild Condition=" '$(OS)' != 'Unix' ">True</_MauiDesignDllBuild>
     <GitInfoReportImportance>high</GitInfoReportImportance>
@@ -13,7 +15,7 @@
     <NoWarn Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen' or $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">$(NoWarn);CA1420</NoWarn>
   </PropertyGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
     <Compile Remove="Internals\Legacy\**" />
@@ -23,6 +25,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(_MauiDesignDllBuild)' == 'True' and '$(TargetFramework)' == '$(_MauiDotNetTfm)'">
+    <ProjectReference Include="..\..\..\Controls\src\Core.Design\Controls.Core.Design.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,11 +46,11 @@
   <PropertyGroup Condition=" '$(_MauiDesignDllBuild)' == 'True'">
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);
-      _MauiPackXamlDesignAssemblies
+      _MauiPackDesignAssemblies
     </TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
-  <Target Name="_MauiPackXamlDesignAssemblies">
+  <Target Name="_MauiPackDesignAssemblies">
     <ItemGroup>
       <BuildOutputInPackage Include="..\Core.Design\bin\$(Configuration)\net472\Microsoft.Maui.Controls.DesignTools.dll">
         <TargetPath>Design\Microsoft.Maui.Controls.DesignTools.dll</TargetPath>
@@ -54,6 +60,8 @@
       </BuildOutputInPackage>
     </ItemGroup>
   </Target>
+
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 

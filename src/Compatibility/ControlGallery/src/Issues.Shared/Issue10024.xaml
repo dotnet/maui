@@ -5,8 +5,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
              mc:Ignorable="d"
-             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"  
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue10024">
+             xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"  
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10024">
     <cmp:AbsoluteLayout VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand">
         <cmp:AbsoluteLayout.GestureRecognizers>
             <TapGestureRecognizer Tapped="TapGestureRecognizer_Tapped" />

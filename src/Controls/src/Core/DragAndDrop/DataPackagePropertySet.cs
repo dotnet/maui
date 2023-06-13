@@ -1,4 +1,5 @@
 #nullable disable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DataPackagePropertySet.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public DataPackagePropertySet()
 		{
-			_propertyBag = new Dictionary<string, object>();
+			_propertyBag = new(StringComparer.Ordinal);
 		}
 
 		public object this[string key]

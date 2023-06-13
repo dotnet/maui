@@ -23,9 +23,9 @@
     <ProjectReference Include="..\Graphics\Graphics.csproj" />
   </ItemGroup>
 
-  <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
+  <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
-  <Import Project="..\..\..\Workload\Shared\LibraryPacks.targets" />
+  <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />
 

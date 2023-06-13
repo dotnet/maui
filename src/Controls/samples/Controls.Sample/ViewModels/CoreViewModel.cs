@@ -45,9 +45,6 @@ namespace Maui.Controls.Sample.ViewModels
 			new SectionModel(typeof(FocusPage), "Focus Management",
 				"Focus and onfocus views, detect when a view gains focus and more."),
 
-			new SectionModel(typeof(FocusPage), "Focus Management",
-				"Focus and onfocus views, detect when a view gains focus and more."),
-
 			new SectionModel(typeof(GesturesPage), "Gestures",
 				"Use tap, pinch, pan, swipe, drag and drop, and pointer gestures on View instances."),
 
@@ -74,6 +71,9 @@ namespace Maui.Controls.Sample.ViewModels
 
 			new SectionModel(typeof(TransformationsPage), "Transformations",
 				"Apply scale transformations, rotation, etc. to a View."),
+
+			new SectionModel(typeof(WindowTitleBar), "Window Title Bar",
+				"Window Title Bar."),
 		};
 	}
 }

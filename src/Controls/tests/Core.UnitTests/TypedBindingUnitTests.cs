@@ -4,7 +4,9 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
 using Xunit;
 using Xunit.Sdk;
@@ -1376,7 +1378,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				remove { PropertyChanged -= value; }
 			}
 
-			public string Foo { get; set; }
+			string _foo;
+
+			public string Foo
+			{
+				get => _foo;
+				set
+				{
+					if (_foo != value)
+					{
+						_foo = value;
+						OnPropertyChanged(nameof(Foo));
+					}
+				}
+			}
 
 			public int InvocationListSize()
 			{
@@ -1392,9 +1407,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void BindingUnsubscribesForDeadTarget()
+		public async Task BindingUnsubscribesForDeadTarget()
 		{
 			var viewmodel = new TestViewModel();
+			WeakReference bindingRef = null, buttonRef = null;
 
 			int i = 0;
 			Action create = null;
@@ -1407,30 +1423,37 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 
 				var button = new Button();
-				button.SetBinding(Button.TextProperty, new TypedBinding<TestViewModel, string>(vm => (vm.Foo, true), (vm, s) => vm.Foo = s, new[] {
+				var binding = new TypedBinding<TestViewModel, string>(vm => (vm.Foo, true), (vm, s) => vm.Foo = s, new[] {
 					new Tuple<Func<TestViewModel, object>, string>(vm=>vm,"Foo")
-				}));
+				});
+				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewmodel;
+				bindingRef = new WeakReference(binding);
+				buttonRef = new WeakReference(button);
 			};
 
 			create();
+			Assert.Equal(viewmodel.Foo = "Bar", ((Button)buttonRef.Target).Text);
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			GC.Collect();
 
 			viewmodel.OnPropertyChanged("Foo");
 
 			Assert.Equal(0, viewmodel.InvocationListSize());
+
+			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
 		}
 
 		[Fact]
-		public void BindingDoesNotStayAliveForDeadTarget()
+		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
-			WeakReference bindingRef = null;
+			WeakReference bindingRef = null, buttonRef = null, proxyRef = null;
 
 			int i = 0;
 			Action create = null;
@@ -1450,18 +1473,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				button.BindingContext = viewModel;
 
 				bindingRef = new WeakReference(binding);
-				binding = null;
+				buttonRef = new WeakReference(button);
+
+				// Access private members:
+				// WeakPropertyChangedProxy proxy = binding._handlers[0].Listener;
+				var flags = BindingFlags.NonPublic | BindingFlags.Instance;
+				var handlers = binding.GetType().GetField("_handlers", flags).GetValue(binding) as object[];
+				Assert.NotNull(handlers);
+				var handler = handlers[0];
+				var proxy = handler.GetType().GetProperty("Listener").GetValue(handler);
+				Assert.NotNull(proxy);
+				proxyRef = new WeakReference(proxy);
 			};
 
 			create();
+			Assert.Equal(viewModel.Foo = "Bar", ((Button)buttonRef.Target).Text);
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
-			GC.Collect();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+			Assert.False(buttonRef.IsAlive, "Button should not be alive!");
+
+			// WeakPropertyChangedProxy won't go away until the second GC, PropertyChangedProxy unsubscribes in its finalizer
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+			Assert.False(proxyRef.IsAlive, "WeakPropertyChangedProxy should not be alive!");
 		}
 
 		[Fact]

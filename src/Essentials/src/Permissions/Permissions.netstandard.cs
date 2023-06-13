@@ -37,6 +37,10 @@ namespace Microsoft.Maui.ApplicationModel
 		{
 		}
 
+		public partial class Bluetooth : BasePlatformPermission
+		{
+		}
+
 		public partial class CalendarRead : BasePlatformPermission
 		{
 		}

@@ -57,7 +57,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				PackChild();
 				UpdateBorder();
 				UpdateCornerRadius();
-				UpdatePadding();
 			}
 		}
 
@@ -77,37 +76,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			{
 				UpdateCornerRadius();
 			}
-			else if (e.PropertyName == Frame.PaddingProperty.PropertyName)
-			{
-				UpdatePadding();
-			}
-		}
-
-		void UpdatePadding()
-		{
-			Control.Padding = Element.Padding.ToPlatform();
 		}
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			// We need this so the `Border` control will arrange and have a size
 			Control?.Arrange(new WRect(0, 0, finalSize.Width, finalSize.Height));
-
-			if (Element is IContentView cv)
-			{
-				finalSize = cv.CrossPlatformArrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
-			}
-
 			return new global::Windows.Foundation.Size(Math.Max(0, finalSize.Width), Math.Max(0, finalSize.Height));
 		}
 
 		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
 		{
-			if (Element is IContentView cv)
-			{
-				var measureContent = cv.CrossPlatformMeasure(availableSize.Width, availableSize.Height).ToPlatform();
-				return measureContent;
-			}
+			Control?.Measure(availableSize);
+
+			if (Control?.DesiredSize is not null)
+				return Control.DesiredSize;
 
 			return MinimumSize().ToPlatform();
 		}
@@ -135,17 +118,30 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void PackChild()
 		{
 			if (Element.Content == null)
+			{
+				Control.Child = null;
 				return;
+			}
 
-			Control.Child = Element.Content.ToPlatform(MauiContext);
+			var view = new ContentPanel
+			{
+				CrossPlatformMeasure = ((IContentView)Element).CrossPlatformMeasure,
+				CrossPlatformArrange = ((IContentView)Element).CrossPlatformArrange
+			};
+
+			view.Content = Element.Content.ToPlatform(MauiContext);
+			Control.Child = view;
 		}
 
 		void UpdateBorder()
 		{
 			if (Element.BorderColor.IsNotDefault())
 			{
+				var borderWidth = Element is IBorderElement be ? be.BorderWidth : 1;
+				borderWidth = Math.Max(1, borderWidth);
+
 				Control.BorderBrush = Element.BorderColor.ToPlatform();
-				Control.BorderThickness = WinUIHelpers.CreateThickness(1);
+				Control.BorderThickness = WinUIHelpers.CreateThickness(borderWidth);
 			}
 			else
 			{

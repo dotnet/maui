@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls
 		{
 			{ typeof(Uri), new UriTypeConverter() },
 			{ typeof(Easing), new Maui.Converters.EasingTypeConverter() },
+			{ typeof(Maui.Graphics.Color), new ColorTypeConverter() },
 		};
 
 		static readonly Dictionary<Type, IValueConverter> KnownIValueConverters = new Dictionary<Type, IValueConverter>
@@ -75,9 +76,9 @@ namespace Microsoft.Maui.Controls
 		{
 			if (propertyName == null)
 				throw new ArgumentNullException(nameof(propertyName));
-			if (ReferenceEquals(returnType, null))
+			if (returnType is null)
 				throw new ArgumentNullException(nameof(returnType));
-			if (ReferenceEquals(declaringType, null))
+			if (declaringType is null)
 				throw new ArgumentNullException(nameof(declaringType));
 
 			// don't use Enum.IsDefined as its redonkulously expensive for what it does

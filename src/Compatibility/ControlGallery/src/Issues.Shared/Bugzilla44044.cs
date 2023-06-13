@@ -9,11 +9,12 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 
 	[Preserve(AllMembers = true)]

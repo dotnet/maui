@@ -38,8 +38,8 @@ namespace Microsoft.Maui
 		// apply to LayoutViewGroup.OnMeasure
 		internal static Size MeasureVirtualView(
 			this IPlatformViewHandler viewHandler,
-			int platformWidthConstraint,
-			int platformHeightConstraint,
+			int widthMeasureSpec,
+			int heightMeasureSpec,
 			Func<double, double, Size>? measureFunc = null)
 		{
 			var context = viewHandler.MauiContext?.Context;
@@ -51,11 +51,11 @@ namespace Microsoft.Maui
 				return Size.Zero;
 			}
 
-			var deviceIndependentWidth = platformWidthConstraint.ToDouble(context);
-			var deviceIndependentHeight = platformHeightConstraint.ToDouble(context);
+			var deviceIndependentWidth = widthMeasureSpec.ToDouble(context);
+			var deviceIndependentHeight = heightMeasureSpec.ToDouble(context);
 
-			var widthMode = MeasureSpec.GetMode(platformWidthConstraint);
-			var heightMode = MeasureSpec.GetMode(platformHeightConstraint);
+			var widthMode = MeasureSpec.GetMode(widthMeasureSpec);
+			var heightMode = MeasureSpec.GetMode(heightMeasureSpec);
 
 			measureFunc ??= virtualView.Measure;
 			var measure = measureFunc(deviceIndependentWidth, deviceIndependentHeight);
@@ -143,9 +143,7 @@ namespace Microsoft.Maui
 			}
 
 			var platformView = handler.ToPlatform();
-			var context = platformView?.Context;
-
-			if (platformView == null || context == null)
+			if (platformView == null)
 			{
 				return;
 			}
@@ -160,7 +158,7 @@ namespace Microsoft.Maui
 			// in order to properly handle any TextAlignment properties and some internal bookkeeping
 			if (virtualView.NeedsExactMeasure())
 			{
-				platformView.Measure(context.MakeMeasureSpecExact(frame.Width), context.MakeMeasureSpecExact(frame.Height));
+				platformView.Measure(platformView.MakeMeasureSpecExact(frame.Width), platformView.MakeMeasureSpecExact(frame.Height));
 			}
 		}
 
@@ -185,10 +183,10 @@ namespace Microsoft.Maui
 			return true;
 		}
 
-		internal static int MakeMeasureSpecExact(this Context context, double size)
+		internal static int MakeMeasureSpecExact(this PlatformView view, double size)
 		{
 			// Convert to a native size to create the spec for measuring
-			var deviceSize = (int)context!.ToPixels(size);
+			var deviceSize = (int)view.ToPixels(size);
 			return MeasureSpecMode.Exactly.MakeMeasureSpec(deviceSize);
 		}
 	}

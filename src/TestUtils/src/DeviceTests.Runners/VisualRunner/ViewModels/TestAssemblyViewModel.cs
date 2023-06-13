@@ -3,18 +3,20 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 {
 	public class TestAssemblyViewModel : ViewModelBase
 	{
 		readonly ObservableCollection<TestCaseViewModel> _allTests;
-		readonly FilteredCollectionView<TestCaseViewModel, (string, TestState)> _filteredTests;
+		readonly FilteredCollectionView<TestCaseViewModel, FilterArgs> _filteredTests;
 		readonly ITestNavigation _navigation;
 		readonly ITestRunner _runner;
 		readonly List<TestCaseViewModel> _results;
@@ -70,10 +72,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 				}
 			};
 
-			_filteredTests = new FilteredCollectionView<TestCaseViewModel, (string, TestState)>(
+			_filteredTests = new FilteredCollectionView<TestCaseViewModel, FilterArgs>(
 				_allTests,
 				IsTestFilterMatch,
-				(SearchQuery, ResultFilter),
+				new FilterArgs(SearchQuery, ResultFilter),
 				new TestComparer());
 
 			_filteredTests.ItemChanged += (sender, args) => UpdateCaption();
@@ -177,18 +179,19 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 
 			Task.Delay(500, token)
 				.ContinueWith(
-					x => { _filteredTests.FilterArgument = (SearchQuery, ResultFilter); },
+					x => { _filteredTests.FilterArgument = new FilterArgs(SearchQuery, ResultFilter); },
 					token,
 					TaskContinuationOptions.None,
 					TaskScheduler.FromCurrentSynchronizationContext());
 		}
 
-		static bool IsTestFilterMatch(TestCaseViewModel test, (string SearchQuery, TestState ResultFilter) query)
+		static bool IsTestFilterMatch(TestCaseViewModel test, FilterArgs query)
 		{
 			if (test == null)
 				throw new ArgumentNullException(nameof(test));
 
-			var (pattern, state) = query;
+			var state = query.State;
+			var pattern = query.Query;
 
 			TestState? requiredTestState = state switch
 			{
@@ -332,6 +335,33 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner
 		{
 			public int Compare(TestCaseViewModel? x, TestCaseViewModel? y) =>
 				string.Compare(x?.DisplayName, y?.DisplayName, StringComparison.OrdinalIgnoreCase);
+		}
+	}
+
+	struct FilterArgs
+	{
+		public string Query { get; set; }
+		public TestState State { get; set; }
+
+		public FilterArgs(string query, TestState state)
+		{
+			Query = query;
+			State = state;
+		}
+
+		public override bool Equals([NotNullWhen(true)] object? obj)
+		{
+			if (obj is FilterArgs args)
+			{
+				return args.State == State && args.Query == Query;
+			}
+
+			return base.Equals(obj);
+		}
+
+		public override int GetHashCode()
+		{
+			return Query.GetHashCode(StringComparison.InvariantCulture) ^ State.GetHashCode();
 		}
 	}
 }

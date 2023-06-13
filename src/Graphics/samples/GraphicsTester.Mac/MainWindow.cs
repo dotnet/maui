@@ -1,8 +1,8 @@
 
 using System;
-using Foundation;
 using AppKit;
 using CoreGraphics;
+using Foundation;
 
 namespace GraphicsTester.Mac
 {

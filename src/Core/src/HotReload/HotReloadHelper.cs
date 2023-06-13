@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.Internal;
 
 namespace Microsoft.Maui.HotReload
 {
@@ -89,9 +88,9 @@ namespace Microsoft.Maui.HotReload
 		}
 
 		static internal readonly WeakList<IHotReloadableView> ActiveViews = new WeakList<IHotReloadableView>();
-		static Dictionary<string, Type> replacedViews = new Dictionary<string, Type>();
+		static Dictionary<string, Type> replacedViews = new(StringComparer.Ordinal);
 		static Dictionary<IHotReloadableView, object[]> currentViews = new Dictionary<IHotReloadableView, object[]>();
-		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new Dictionary<string, List<KeyValuePair<Type, Type>>>();
+		static Dictionary<string, List<KeyValuePair<Type, Type>>> replacedHandlers = new(StringComparer.Ordinal);
 		public static void RegisterReplacedView(string oldViewType, Type newViewType)
 		{
 			if (!IsEnabled)
@@ -155,7 +154,7 @@ namespace Microsoft.Maui.HotReload
 
 		public static void TriggerReload()
 		{
-			List<IHotReloadableView?>? roots = null;
+			List<IHotReloadableView>? roots = null;
 			while (roots == null)
 			{
 				try

@@ -40,7 +40,6 @@ parameters:
         bootsAndroid: $(Android.Msi)
         bootsiOS: $(iOS.Msi)
         artifact: nuget
-        libraryPacksArtifact: library-packs
 
 resources:
   repositories:
@@ -72,10 +71,8 @@ stages:
             vmImage: ${{ PackPlatform.vmImage }}
             ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
-                - macOS.Name -equals Monterey
+                - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
           steps:
             - template: common/pack.yml
               parameters:
@@ -83,7 +80,6 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
-                libraryPacksArtifact:  ${{ PackPlatform.libraryPacksArtifact }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/sign.yml                                     # Sign only using the private server

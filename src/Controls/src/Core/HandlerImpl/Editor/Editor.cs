@@ -17,6 +17,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// Adjust the mappings to preserve Controls.Editor legacy behaviors
 			EditorHandler.Mapper = ControlsEditorMapper;
+
+#if ANDROID
+			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), MapFocus);
+#endif
 		}
 	}
 }

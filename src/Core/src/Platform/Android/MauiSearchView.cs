@@ -18,6 +18,7 @@ namespace Microsoft.Maui.Platform
 		void Initialize()
 		{
 			SetIconifiedByDefault(false);
+			MaxWidth = int.MaxValue;
 
 			_queryEditor = this.GetFirstChildOfType<EditText>();
 

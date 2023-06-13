@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2172, "Height of Entry with data binding incorrect on UWP when Entry in ScrollView in Grid", PlatformAffected.UWP)]

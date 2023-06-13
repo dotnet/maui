@@ -45,9 +45,10 @@ namespace Microsoft.Maui.Controls.Xaml
 			IList<XmlType> typeArguments = null;
 			if (isGeneric)
 			{
+				var openBracket = type.IndexOf("(", StringComparison.Ordinal);
 				typeArguments = ParseExpression(
-					type.Substring(type.IndexOf("(", StringComparison.Ordinal) + 1, type.LastIndexOf(")", StringComparison.Ordinal) - type.IndexOf("(", StringComparison.Ordinal) - 1), resolver, lineinfo);
-				type = type.Substring(0, type.IndexOf("(", StringComparison.Ordinal));
+					type.Substring(openBracket + 1, type.LastIndexOf(")", StringComparison.Ordinal) - openBracket - 1), resolver, lineinfo);
+				type = type.Substring(0, openBracket);
 			}
 
 			var split = type.Split(':');

@@ -11,25 +11,25 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.DropGestureRecognizer']/Docs/*" />
 	public class DropGestureRecognizer : GestureRecognizer
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='AllowDropProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AllowDrop"/>.</summary>
 		public static readonly BindableProperty AllowDropProperty = BindableProperty.Create(nameof(AllowDrop), typeof(bool), typeof(DropGestureRecognizer), true);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragOverCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragOverCommand"/>.</summary>
 		public static readonly BindableProperty DragOverCommandProperty = BindableProperty.Create(nameof(DragOverCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragOverCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragOverCommandParameter"/>.</summary>
 		public static readonly BindableProperty DragOverCommandParameterProperty = BindableProperty.Create(nameof(DragOverCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragLeaveCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragLeaveCommand"/>.</summary>
 		public static readonly BindableProperty DragLeaveCommandProperty = BindableProperty.Create(nameof(DragLeaveCommand), typeof(ICommand), typeof(DropGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DragLeaveCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DragLeaveCommandParameter"/>.</summary>
 		public static readonly BindableProperty DragLeaveCommandParameterProperty = BindableProperty.Create(nameof(DragLeaveCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DropCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DropCommand"/>.</summary>
 		public static readonly BindableProperty DropCommandProperty = BindableProperty.Create(nameof(DropCommand), typeof(ICommand), typeof(DragGestureRecognizer), null);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='DropCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="DropCommandParameter"/>.</summary>
 		public static readonly BindableProperty DropCommandParameterProperty = BindableProperty.Create(nameof(DropCommandParameter), typeof(object), typeof(DropGestureRecognizer), null);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DropGestureRecognizer.xml" path="//Member[@MemberName='.ctor']/Docs/*" />

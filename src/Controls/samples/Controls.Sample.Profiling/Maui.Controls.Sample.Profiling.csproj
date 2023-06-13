@@ -11,6 +11,8 @@
     <ApplicationVersion>1</ApplicationVersion>
     <IsPackable>false</IsPackable>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -24,8 +26,7 @@
     <AndroidEnvironment Condition="'$(IsEmulator)' != 'true'" Include="Platforms\Android\environment.device.txt" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
-    <ProjectReference Include="..\..\..\Compatibility\Core\src\Compatibility.csproj" />
+  <ItemGroup Condition=" '$(UseMaui)' != 'true' ">    
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\src\Core\Controls.Core.csproj" />

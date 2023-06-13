@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	//TODO: Write a new test for this issue
 	[Preserve(AllMembers = true)]

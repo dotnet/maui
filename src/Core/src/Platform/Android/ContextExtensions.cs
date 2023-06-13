@@ -419,5 +419,36 @@ namespace Microsoft.Maui.Platform
 			return Rect.FromLTRB(0, 0,
 				deviceIndependentRight - deviceIndependentLeft, deviceIndependentBottom - deviceIndependentTop);
 		}
+
+		internal static bool IsDestroyed(this Context? context)
+		{
+			if (context == null)
+				return true;
+
+			if (context.GetActivity() is FragmentActivity fa)
+			{
+				if (fa.IsDisposed())
+					return true;
+
+				var stateCheck = AndroidX.Lifecycle.Lifecycle.State.Destroyed;
+
+				if (stateCheck != null &&
+					fa.Lifecycle.CurrentState == stateCheck)
+				{
+					return true;
+				}
+
+				if (fa.IsDestroyed)
+					return true;
+			}
+
+			return context.IsDisposed();
+		}
+
+		internal static bool IsPlatformContextDestroyed(this IElementHandler? handler)
+		{
+			var context = handler?.MauiContext?.Context;
+			return context.IsDestroyed();
+		}
 	}
 }

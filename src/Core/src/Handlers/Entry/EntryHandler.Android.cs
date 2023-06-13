@@ -1,14 +1,9 @@
 ﻿using System;
-using Android.Content.Res;
 using Android.Graphics.Drawables;
-using Android.Runtime;
 using Android.Text;
 using Android.Views;
-using Android.Views.InputMethods;
-using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
-using Microsoft.Maui.Platform;
 using static Android.Views.View;
 using static Android.Widget.TextView;
 
@@ -56,6 +51,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(AppCompatEditText platformView)
 		{
 			_clearButtonDrawable = null;
+
 			platformView.TextChanged -= OnTextChanged;
 			platformView.FocusChange -= OnFocusedChange;
 			platformView.Touch -= OnTouch;
@@ -128,6 +124,12 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView?.UpdateClearButtonVisibility(entry, platformHandler.GetClearButtonDrawable);
 		}
 
+		static void MapFocus(IEntryHandler handler, IEntry entry, object? args)
+		{
+			if (args is FocusRequest request)
+				handler.PlatformView.Focus(request);
+		}
+
 		void OnTextChanged(object? sender, TextChangedEventArgs e)
 		{
 			if (VirtualView == null)
@@ -135,7 +137,13 @@ namespace Microsoft.Maui.Handlers
 				return;
 			}
 
+			// Let the mapping know that the update is coming from changes to the platform control
+			DataFlowDirection = DataFlowDirection.FromPlatform;
 			VirtualView.UpdateText(e);
+
+			// Reset to the default direction
+			DataFlowDirection = DataFlowDirection.ToPlatform;
+
 			MapClearButtonVisibility(this, VirtualView);
 		}
 
@@ -193,14 +201,15 @@ namespace Microsoft.Maui.Handlers
 
 			var drawable = GetClearButtonDrawable();
 
-			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
-			{
-				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
-			}
+			if (VirtualView?.TextColor is not null)
+				drawable?.SetColorFilter(VirtualView.TextColor.ToPlatform(), FilterMode.SrcIn);
 			else
-			{
+				drawable?.ClearColorFilter();
+
+			if (PlatformView.LayoutDirection == LayoutDirection.Rtl)
+				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(drawable, null, null, null);
+			else
 				PlatformView.SetCompoundDrawablesWithIntrinsicBounds(null, null, drawable, null);
-			}
 
 			_clearButtonVisible = true;
 		}

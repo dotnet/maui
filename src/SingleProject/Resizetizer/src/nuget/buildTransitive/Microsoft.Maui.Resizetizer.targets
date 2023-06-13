@@ -1,0 +1,13 @@
+<Project>
+
+  <PropertyGroup>
+    <UsingMicrosoftMauiResizetizerSdk>true</UsingMicrosoftMauiResizetizerSdk>
+  </PropertyGroup>
+
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Resizetizer.Before.targets" />
+
+  <PropertyGroup>
+    <AfterMicrosoftNETSdkTargets>$(AfterMicrosoftNETSdkTargets);$(MSBuildThisFileDirectory)Microsoft.Maui.Resizetizer.After.targets</AfterMicrosoftNETSdkTargets>
+  </PropertyGroup>
+
+</Project>

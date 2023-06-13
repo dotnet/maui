@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return result;
 		}
 
-
+		public Task NavigatingTask => Handler?.NavigatingTask ?? Task.CompletedTask;
 	}
 
 	public class TestNavigationHandler : ViewHandler<NavigationPage, object>
@@ -54,8 +54,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		public NavigationRequest CurrentNavigationRequest { get; private set; }
 
+		TaskCompletionSource _navigationSource;
 
-		public void CompleteCurrentNavigation()
+		public Task NavigatingTask => (_navigationSource?.Task ?? Task.CompletedTask);
+
+		public async void CompleteCurrentNavigation()
 		{
 			if (CurrentNavigationRequest == null)
 				throw new InvalidOperationException("No Active Navigation in the works");
@@ -63,15 +66,24 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var newStack = CurrentNavigationRequest.NavigationStack.ToList();
 			CurrentNavigationRequest = null;
 
+			var source = _navigationSource;
+			_navigationSource = null;
+
 			if ((this as IElementHandler).VirtualView is IStackNavigation sn)
 				sn.NavigationFinished(newStack);
+
+
+			await Task.Delay(1);
+			source.SetResult();
 		}
 
 		async void RequestNavigation(NavigationRequest navigationRequest)
 		{
-			if (CurrentNavigationRequest != null)
+			if (CurrentNavigationRequest != null || _navigationSource != null)
 				throw new InvalidOperationException("Already Processing Navigation");
 
+
+			_navigationSource = new TaskCompletionSource();
 			CurrentNavigationRequest = navigationRequest;
 
 			await Task.Delay(10);

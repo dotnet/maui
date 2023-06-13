@@ -6,10 +6,13 @@ namespace Microsoft.Maui.Controls
 {
 	public class SemanticProperties
 	{
+		/// <summary>Bindable property for attached property <c>Description</c>.</summary>
 		public static readonly BindableProperty DescriptionProperty = BindableProperty.CreateAttached("Description", typeof(string), typeof(SemanticProperties), default(string));
 
+		/// <summary>Bindable property for attached property <c>Hint</c>.</summary>
 		public static readonly BindableProperty HintProperty = BindableProperty.CreateAttached("Hint", typeof(string), typeof(SemanticProperties), default(string));
 
+		/// <summary>Bindable property for attached property <c>HeadingLevel</c>.</summary>
 		public static readonly BindableProperty HeadingLevelProperty = BindableProperty.CreateAttached("HeadingLevel", typeof(SemanticHeadingLevel), typeof(SemanticProperties), SemanticHeadingLevel.None);
 
 		public static string GetDescription(BindableObject bindable)
@@ -47,9 +50,11 @@ namespace Microsoft.Maui.Controls
 			SemanticProperties.DescriptionProperty,
 			SemanticProperties.HintProperty,
 			SemanticProperties.HeadingLevelProperty,
+#pragma warning disable CS0618 // Type or member is obsolete
 			AutomationProperties.NameProperty,
 			AutomationProperties.LabeledByProperty,
 			AutomationProperties.HelpTextProperty,
+#pragma warning restore CS0618 // Type or member is obsolete
 			AutomationProperties.IsInAccessibleTreeProperty,
 		};
 

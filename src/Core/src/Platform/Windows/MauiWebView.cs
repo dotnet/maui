@@ -9,24 +9,22 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWebView : WebView2, IWebViewDelegate
 	{
+		readonly WeakReference<WebViewHandler> _handler;
+
+		[Obsolete("Constructor is no longer used, please use an overloaded version.")]
+#pragma warning disable CS8618
 		public MauiWebView()
 		{
-			NavigationStarting += (sender, args) =>
-			{
-				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
-				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
-				{
-					CoreWebView2.SetVirtualHostNameToFolderMapping(
-						LocalHostName,
-						ApplicationPath,
-						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-				}
-				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
-				else
-				{
-					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
-				}
-			};
+			SetupPlatformEvents();
+		}
+#pragma warning restore CS8618
+
+		public MauiWebView(WebViewHandler handler)
+		{
+			ArgumentNullException.ThrowIfNull(handler, nameof(handler));
+			_handler = new WeakReference<WebViewHandler>(handler);
+
+			SetupPlatformEvents();
 		}
 
 		WebView2? _internalWebView;
@@ -99,11 +97,16 @@ namespace Microsoft.Maui.Platform
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
 				// Free up memory after we're done with _internalWebView
-				_internalWebView = null;
+				if (_internalWebView.IsValid())
+				{
+					_internalWebView.Close();
+					_internalWebView = null;
+				}
 			};
 
 			// Kick off the initial navigation
-			_internalWebView.NavigateToString(html);
+			if (_internalWebView.IsValid())
+				_internalWebView.NavigateToString(html);
 		}
 
 		public async void LoadUrl(string? url)
@@ -122,7 +125,8 @@ namespace Microsoft.Maui.Platform
 				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
-			// TODO: Sync Cookies
+			if (_handler?.TryGetTarget(out var handler) ?? false)
+				await handler.SyncPlatformCookies(uri.AbsoluteUri);
 
 			try
 			{
@@ -132,6 +136,26 @@ namespace Microsoft.Maui.Platform
 			{
 				Debug.WriteLine(nameof(MauiWebView), $"Failed to load: {uri} {exc}");
 			}
+		}
+
+		void SetupPlatformEvents()
+		{
+			NavigationStarting += (sender, args) =>
+			{
+				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
+				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				{
+					CoreWebView2.SetVirtualHostNameToFolderMapping(
+						LocalHostName,
+						ApplicationPath,
+						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+				}
+				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
+				else
+				{
+					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
+				}
+			};
 		}
 	}
 }

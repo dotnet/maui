@@ -873,7 +873,7 @@ namespace Microsoft.Maui.Controls.Platform
 			//We can't handle ManipulationMode.Scale and System , so we don't support pinch/pan on a scrollview 
 			if (Element is ScrollView)
 			{
-				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GestureManager>();
+				var logger = Application.Current?.FindMauiContext()?.CreateLogger<GesturePlatformManager>();
 
 				if (hasPinchGesture)
 					logger?.LogWarning("PinchGestureRecognizer is not supported on a ScrollView in Windows Platforms");

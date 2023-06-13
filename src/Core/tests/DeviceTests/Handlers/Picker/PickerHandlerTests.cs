@@ -9,6 +9,23 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Picker)]
 	public partial class PickerHandlerTests : CoreHandlerTestBase<PickerHandler, PickerStub>
 	{
+		[Theory(DisplayName = "Background Initializes Correctly")]
+		[InlineData(0xFFFF0000)]
+		[InlineData(0xFF00FF00)]
+		[InlineData(0xFF0000FF)]
+		public async Task BackgroundInitializesCorrectly(uint color)
+		{
+			var expected = Color.FromUint(color);
+
+			var picker = new PickerStub()
+			{
+				Title = "Title",
+				Background = new SolidPaintStub(expected),
+			};
+
+			await ValidateHasColor(picker, expected);
+		}
+
 		[Theory(DisplayName = "Updating Font Does Not Affect HorizontalTextAlignment")]
 		[InlineData(10, 20)]
 		[InlineData(20, 10)]

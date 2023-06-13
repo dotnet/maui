@@ -1,9 +1,13 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using ObjCRuntime;
 using UIKit;
 using Xunit;
@@ -86,6 +90,543 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
 			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
+		[Fact]
+		public async Task NextMovesToNextEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry2.IsFocused);
+			}, entry1, entry2);
+		}
+
+		[Fact]
+		public async Task NextMovesPastNotEnabledEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Text = "Entry 1",
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var entry3 = new EntryStub
+			{
+				Text = "Entry 2",
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry3.IsFocused);
+			}, entry1, entry2, entry3);
+		}
+
+		[Fact]
+		public async Task NextMovesToEditor()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var editor = new EditorStub
+			{
+				Text = "Editor"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
+				Assert.True(editor.IsFocused);
+			}, entry, editor);
+		}
+
+		[Fact]
+		public async Task NextMovesPastNotEnabledEditor()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var editor1 = new EditorStub
+			{
+				Text = "Editor1",
+				IsEnabled = false
+			};
+
+			var editor2 = new EditorStub
+			{
+				Text = "Editor2"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
+				Assert.True(editor2.IsFocused);
+			}, entry, editor1, editor2);
+		}
+
+		[Fact]
+		public async Task NextMovesToSearchBar()
+		{
+			var entry = new EntryStub
+			{
+				Text = "Entry",
+				ReturnType = ReturnType.Next
+			};
+
+			var searchBar = new SearchBarStub
+			{
+				Text = "Search Bar"
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry.ToPlatform(), customSuperView: entry.ToPlatform().Superview);
+				var uISearchBar = searchBar.Handler.PlatformView as UISearchBar;
+				Assert.True(uISearchBar.GetSearchTextField().IsFirstResponder);
+			}, entry, searchBar);
+		}
+
+		[Fact]
+		public async Task NextMovesRightToLeftEntry()
+		{
+			var hsl = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			hsl.Add(entry1);
+			hsl.Add(entry2);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry1.ToPlatform(), customSuperView: hsl.ToPlatform().Superview);
+				var entry1Rect = entry1.ToPlatform().ConvertRectToView(entry1.ToPlatform().Bounds, hsl.ToPlatform());
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl.ToPlatform());
+				Assert.True(entry1Rect.Right > entry2Rect.Right);
+				Assert.True(entry2.IsFocused);
+			}, hsl);
+		}
+
+		[Fact]
+		public async Task NextMovesRightToLeftMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right < entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesLtrToRtlMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				Width = 25
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right < entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesRtlToLtrMultilineEntry()
+		{
+			var hsl1 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.RightToLeft
+			};
+
+			var hsl2 = new HorizontalStackLayoutStub
+			{
+				FlowDirection = FlowDirection.LeftToRight
+			};
+
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry4 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			hsl1.Add(entry1);
+			hsl1.Add(entry2);
+			hsl2.Add(entry3);
+			hsl2.Add(entry4);
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: hsl1.ToPlatform().Superview);
+				var entry2Rect = entry2.ToPlatform().ConvertRectToView(entry2.ToPlatform().Bounds, hsl1.ToPlatform());
+				var entry3Rect = entry3.ToPlatform().ConvertRectToView(entry3.ToPlatform().Bounds, hsl2.ToPlatform());
+				Assert.True(entry2Rect.Right > entry3Rect.Right);
+				Assert.True(entry3.IsFocused);
+			}, hsl1, hsl2);
+		}
+
+		[Fact]
+		public async Task NextMovesBackToTop()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry2.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry1.IsFocused);
+			}, entry1, entry2);
+		}
+
+		[Fact]
+		public async Task NextMovesBackToTopIgnoringNotEnabled()
+		{
+			var entry1 = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var editor = new EntryStub
+			{
+				ReturnType = ReturnType.Next,
+				IsEnabled = false
+			};
+
+			var entry2 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			var entry3 = new EntryStub
+			{
+				ReturnType = ReturnType.Next
+			};
+
+			await NextMovesHelper(() =>
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(entry3.ToPlatform(), customSuperView: entry1.ToPlatform().Superview);
+				Assert.True(entry2.IsFocused);
+			}, entry1, editor, entry2, entry3);
+		}
+
+		async Task NextMovesHelper(Action action = null, params StubBase[] views)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<HorizontalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+					handler.AddHandler<EditorStub, EditorHandler>();
+					handler.AddHandler<SearchBarStub, SearchBarHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			foreach (var view in views)
+			{
+				layout.Add(view);
+			}
+
+			layout.Width = 300;
+			layout.Height = 150;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				await contentViewHandler.PlatformView.AttachAndRun(() =>
+				{
+					action?.Invoke();
+				});
+			});
+		}
+
+		[Fact]
+		public async Task ScrollEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Height = 600
+			};
+
+			var entry2 = new EntryStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToText(entry2), entry1, entry2);
+		}
+
+		[Fact]
+		public async Task ScrollEditor()
+		{
+			var entry = new EntryStub
+			{
+				Height = 600
+			};
+
+			var editor = new EditorStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToText(editor), entry, editor);
+		}
+
+		[Fact]
+		public async Task ScrollNextEntry()
+		{
+			var entry1 = new EntryStub
+			{
+				Height = 600,
+				ReturnType = ReturnType.Next
+			};
+
+			var entry2 = new EntryStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToNext(entry1, entry2), entry1, entry2);
+		}
+
+		[Fact]
+		public async Task ScrollNextEditor()
+		{
+			var entry = new EntryStub
+			{
+				Height = 600,
+				ReturnType = ReturnType.Next
+			};
+
+			var editor = new EditorStub
+			{
+				Height = 200
+			};
+
+			await ScrollHelper(async () => await ScrollToNext(entry, editor), entry, editor);
+		}
+
+		async Task ScrollHelper(Func<Task> func, params StubBase[] views)
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayoutStub, LayoutHandler>();
+					handler.AddHandler<EntryStub, EntryHandler>();
+					handler.AddHandler<EditorStub, EditorHandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayoutStub();
+
+			foreach (var view in views)
+			{
+				layout.Add(view);
+			}
+
+			layout.Width = 300;
+			layout.Height = 800;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var contentViewHandler = CreateHandler<LayoutHandler>(layout);
+				var contentPlatformView = contentViewHandler.PlatformView;
+
+				await contentPlatformView.AttachAndRun(async () => await func.Invoke());
+			});
+		}
+
+		async Task ScrollToText(StubBase selectedStub)
+		{
+			var uiTextField = selectedStub.ToPlatform();
+			Assert.True(uiTextField.BecomeFirstResponder());
+
+			var isKeyboardShowing = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, 1000);
+
+			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
+			if (isKeyboardShowing)
+			{
+				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
+
+				if (cursorRect is CGRect rect)
+					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				else
+					Assert.Fail("CursorRect should not be null");
+
+				uiTextField.ResignFirstResponder();
+				await uiTextField.WaitForKeyboardToHide();
+			}
+		}
+
+		async Task ScrollToNext(StubBase originalStub, StubBase nextStub)
+		{
+			var originalUIText = originalStub.ToPlatform();
+			var nextUIText = nextStub.ToPlatform();
+
+			KeyboardAutoManager.GoToNextResponderOrResign(originalUIText, customSuperView: originalUIText.Superview);
+
+			Assert.True(nextUIText.BecomeFirstResponder());
+
+			var isKeyboardShowing = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, 1000);
+
+			// on an iOS simulator that has softKeyboard toggled off, we will not see the keyboard
+			if (isKeyboardShowing)
+			{
+				var cursorRect = KeyboardAutoManagerScroll.FindCursorPosition();
+				var keyboardHeight = KeyboardAutoManagerScroll.FindKeyboardHeight();
+
+				if (cursorRect is CGRect rect)
+					Assert.True(rect.Y < keyboardHeight, "cursor position");
+				else
+					Assert.Fail("CursorRect should not be null");
+
+				nextUIText.ResignFirstResponder();
+				await nextUIText.WaitForKeyboardToHide();
+			}
 		}
 
 		double GetNativeCharacterSpacing(EntryHandler entryHandler)

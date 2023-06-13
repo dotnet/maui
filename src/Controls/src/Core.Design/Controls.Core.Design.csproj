@@ -20,14 +20,14 @@
 		<Compile Include="KeyboardDesignTypeConverter.cs" />
 		<Compile Include="EasingDesignTypeConverter.cs" />
 		<Compile Include="FlowDirectionDesignTypeConverter.cs" />
-	  <Compile Include="GridLengthCollectionDesignTypeConverter.cs" />
-	  <Compile Include="GridLengthDesignTypeConverter.cs" />
+		<Compile Include="GridLengthCollectionDesignTypeConverter.cs" />
+		<Compile Include="GridLengthDesignTypeConverter.cs" />
 		<Compile Include="KnownValuesDesignTypeConverter.cs" />
 		<Compile Include="LayoutOptionsDesignTypeConverter.cs" />
 		<Compile Include="LinearItemsLayoutDesignTypeConverter.cs" />
 		<Compile Include="FontSizeDesignTypeConverter.cs" />
 		<Compile Include="FlexEnumDesignTypeConverters.cs" />
-		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.4.33103.184" />
+		<PackageReference Include="Microsoft.VisualStudio.DesignTools.Extensibility" Version="17.5.33428.366" />
 	</ItemGroup>
 	<!-- The IDE will look for a top level assembly resource called 'Microsoft.Maui.toolbox.xml' to -->
 	<!-- load the toolbox metadata from.                                                           -->

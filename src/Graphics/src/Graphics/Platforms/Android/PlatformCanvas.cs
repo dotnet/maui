@@ -539,9 +539,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public override void SubtractFromClip(float x, float y, float width, float height)
 		{
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618, CA1416, CA1422 // clipRect(Region.Op) method deprecated in API 26 https://developer.android.com/reference/android/graphics/Canvas#clipRect(float,%20float,%20float,%20float,%20android.graphics.Region.Op)
 			_canvas.ClipRect(x, y, x + width, y + height, Region.Op.Difference);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore CS0618, CA1416, CA1422 // clipRect(Region.Op) method deprecated
 		}
 
 		protected override void PlatformDrawPath(PathF aPath)
@@ -735,7 +735,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		protected override void PlatformConcatenateTransform(Matrix3x2 transform)
 		{
+#pragma warning disable CS0618 // getMatrix() method deprecated in API 16 https://developer.android.com/reference/android/graphics/Canvas#getMatrix()
 			var matrix = new Matrix(_canvas.Matrix);
+#pragma warning restore CS0618 // getMatrix() method deprecated
 			matrix.PostConcat(transform.AsMatrix());
 			_canvas.Matrix = matrix;
 		}

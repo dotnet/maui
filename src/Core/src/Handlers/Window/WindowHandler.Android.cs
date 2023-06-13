@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WindowHandler : ElementHandler<IWindow, Activity>
 	{
+		NavigationRootManager? _rootManager;
+
 		protected override void ConnectHandler(Activity platformView)
 		{
 			base.ConnectHandler(platformView);
@@ -15,7 +17,8 @@ namespace Microsoft.Maui.Handlers
 			UpdateVirtualViewFrame(platformView);
 		}
 
-		public static void MapTitle(IWindowHandler handler, IWindow window) { }
+		public static void MapTitle(IWindowHandler handler, IWindow window) =>
+			handler.PlatformView.UpdateTitle(window);
 
 		public static void MapContent(IWindowHandler handler, IWindow window)
 		{
@@ -49,7 +52,6 @@ namespace Microsoft.Maui.Handlers
 				request.SetResult(handler.PlatformView.GetDisplayDensity());
 		}
 
-		NavigationRootManager? _rootManager;
 		private protected override void OnConnectHandler(object platformView)
 		{
 			base.OnConnectHandler(platformView);
@@ -61,14 +63,24 @@ namespace Microsoft.Maui.Handlers
 		private protected override void OnDisconnectHandler(object platformView)
 		{
 			base.OnDisconnectHandler(platformView);
+
+			DisconnectHandler(_rootManager);
+
 			if (_rootManager != null)
-				_rootManager.RootViewChanged += OnRootViewChanged;
+				_rootManager.RootViewChanged -= OnRootViewChanged;
 		}
 
 		void OnRootViewChanged(object? sender, EventArgs e)
 		{
 			if (VirtualView.VisualDiagnosticsOverlay != null && _rootManager?.RootView is ViewGroup)
 				VirtualView.VisualDiagnosticsOverlay.Initialize();
+		}
+
+		// This is here to try and ensure symmetry with disconnect code between test handler
+		// and the real handler
+		internal static void DisconnectHandler(NavigationRootManager? navigationRootManager)
+		{
+			navigationRootManager?.Disconnect();
 		}
 
 		internal static View? CreateRootViewFromContent(IWindowHandler handler, IWindow window)

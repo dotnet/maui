@@ -118,11 +118,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 
 			if (Element.BorderColor == null)
+			{
 				_actualView.Layer.BorderColor = UIColor.Clear.CGColor;
+				_actualView.Layer.BorderWidth = 0;
+			}
 			else
 			{
+				var borderWidth = (int)(Element is IBorderElement be ? be.BorderWidth : 1);
+				borderWidth = Math.Max(1, borderWidth);
+
 				_actualView.Layer.BorderColor = Element.BorderColor.ToCGColor();
-				_actualView.Layer.BorderWidth = 1;
+				_actualView.Layer.BorderWidth = borderWidth;
 			}
 
 			Layer.RasterizationScale = UIScreen.MainScreen.Scale;
@@ -153,8 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			var result = _actualView.SizeThatFits(size);
-			return result;
+			return _actualView.SizeThatFits(size);
 		}
 
 		public override void Draw(CGRect rect)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	public class MemoryLeakGallery : FlyoutPage
@@ -97,7 +97,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 							MakeButton(nameof(WebView), () => new WebView { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
 							MakeButton(nameof(ProgressBar), () => new ProgressBar { BackgroundColor = Colors.Azure, Progress = 0.5 }),
 							MakeButton(nameof(Picker), () => new Picker { BackgroundColor = Colors.Azure, HeightRequest = 50 }),
-							MakeButton(nameof(OpenGLView), () => new OpenGLView ()),
 							MakeButton(nameof(SearchBar), () => new SearchBar ()),
 							MakeButton(nameof(Slider), () => new Slider ()),
 							MakeButton(nameof(Stepper), () => new Stepper ()),

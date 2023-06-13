@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)-android</TargetFramework>
     <SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
@@ -13,8 +13,7 @@
     <RunAOTCompilation>false</RunAOTCompilation>
     <!-- Physical device is recommended -->
     <RuntimeIdentifier>android-arm64</RuntimeIdentifier>
-    <!-- HACK: to workaround System.IO.FileNotFoundException: /System.Private.CoreLib.dll -->
-    <EmbedAssembliesIntoApk>false</EmbedAssembliesIntoApk>
+    <DisableTransitiveFrameworkReferenceDownloads>False</DisableTransitiveFrameworkReferenceDownloads>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
   </PropertyGroup>
   <ItemGroup>
@@ -28,8 +27,8 @@
     <Using Include="BenchmarkDotNet.Loggers" />
     <Using Include="BenchmarkDotNet.Order" />
     <Using Include="BenchmarkDotNet.Running" />
-    <PackageReference Include="BenchmarkDotNet" Version="0.13.2" />
-    <PackageReference Include="Xamarin.Android.Glide" Version="4.13.2.2" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.13.5.2136" />
+    <PackageReference Include="Xamarin.Android.Glide" Version="4.15.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />

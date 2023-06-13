@@ -33,10 +33,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			get { return internalChildren; }
 		}
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal
-		{
-			get { return new ReadOnlyCollection<Element>(internalChildren); }
-		}
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> internalChildren;
 
 		readonly ObservableCollection<Element> internalChildren = new ObservableCollection<Element>();
 	}

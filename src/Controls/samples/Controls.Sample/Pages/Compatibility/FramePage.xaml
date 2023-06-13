@@ -90,6 +90,52 @@
                         Aspect="AspectFill"
                         Source="cover1.jpg" />
                 </Frame>
+                <Label
+                    Text="Content"
+                    Style="{StaticResource Headline}"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button 
+                        Grid.Row="0" 
+                        Grid.Column="0" 
+                        x:Name="AddContentButton" 
+                        Text="Add Content" 
+                        Clicked="OnAddContentButtonClicked"
+                        Margin="10" />
+                    <Button 
+                        Grid.Row="0" 
+                        Grid.Column="1" 
+                        x:Name="ReplaceContentButton" 
+                        Text="Replace Content" 
+                        Clicked="OnReplaceContentButtonClicked"
+                        Margin="10" />
+                    <Button 
+                        Grid.Row="0" 
+                        Grid.Column="2" 
+                        x:Name="RemoveContentButton" 
+                        Text="Remove Content" 
+                        Clicked="OnRemoveContentButtonClicked"
+                        Margin="10" />
+                    <Frame 
+                        Grid.Row="1" 
+                        Grid.Column="0" 
+                        Grid.ColumnSpan="3" 
+                        x:Name="ContentFrame" 
+                        Padding="0"
+                        BorderColor="Black" 
+                        Margin="10">
+                        <!-- Empty on purpose -->
+                    </Frame>
+                </Grid>
+                
             </VerticalStackLayout>
         </ScrollView>
     </views:BasePage.Content>

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Resizetizer
 		const string PackageNamePlaceholder = "maui-package-name-placeholder";
 		const string PackageVersionPlaceholder = "0.0.0.0";
 
-		const string ErrorInvalidApplicationId = "ApplicationId '{0}' was not a valid GUID. Windows apps use a GUID for an application ID instead of the reverse domain used by Android and/or iOS apps. Either set the <ApplicationIdGuid> property to a valid GUID or use a condition on <ApplicationId> for Windows apps.";
 		const string ErrorVersionNumberCombination = "ApplicationDisplayVersion '{0}' was not a valid 3 part semver version number and/or ApplicationVersion '{1}' was not a valid integer.";
 
 		static readonly XNamespace xmlnsUap = "http://schemas.microsoft.com/appx/manifest/uap/windows10";
@@ -93,12 +92,6 @@ namespace Microsoft.Maui.Resizetizer
 					var attr = identity.Attribute(xname);
 					if (attr == null || string.IsNullOrEmpty(attr.Value) || attr.Value == PackageNamePlaceholder)
 					{
-						if (!Guid.TryParse(ApplicationId, out _))
-						{
-							Log.LogError(ErrorInvalidApplicationId, ApplicationId);
-							return;
-						}
-
 						identity.SetAttributeValue(xname, ApplicationId);
 					}
 				}

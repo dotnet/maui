@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 342, "NRE when Image is not assigned source", PlatformAffected.WinPhone)]
@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Uninitialized image"), "Cannot see label");
@@ -80,6 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			RunningApp.WaitForElement("TestReady");

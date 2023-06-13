@@ -2,7 +2,7 @@ using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class ApplicationAndroid : ContentPage
 	{
@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 			var button2 = GetButton(WindowSoftInputModeAdjust.Resize);
 			var buttons = new StackLayout { Orientation = StackOrientation.Horizontal, Children = { button1, button2 }, VerticalOptions = LayoutOptions.Start };
 			var entry = new Entry { Text = "1", VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.StartAndExpand };
-			var layout = new RelativeLayout
+			var layout = new Compatibility.RelativeLayout
 			{
 				VerticalOptions = LayoutOptions.StartAndExpand,
 				HorizontalOptions = LayoutOptions.Center,

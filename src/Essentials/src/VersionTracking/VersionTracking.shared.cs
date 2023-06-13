@@ -238,7 +238,7 @@ namespace Microsoft.Maui.ApplicationModel
 			IsFirstLaunchEver = !preferences.ContainsKey(versionsKey, sharedName) || !preferences.ContainsKey(buildsKey, sharedName);
 			if (IsFirstLaunchEver)
 			{
-				versionTrail = new Dictionary<string, List<string>>
+				versionTrail = new(StringComparer.Ordinal)
 				{
 					{ versionsKey, new List<string>() },
 					{ buildsKey, new List<string>() }
@@ -246,7 +246,7 @@ namespace Microsoft.Maui.ApplicationModel
 			}
 			else
 			{
-				versionTrail = new Dictionary<string, List<string>>
+				versionTrail = new(StringComparer.Ordinal)
 				{
 					{ versionsKey, ReadHistory(versionsKey).ToList() },
 					{ buildsKey, ReadHistory(buildsKey).ToList() }

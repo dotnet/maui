@@ -36,7 +36,6 @@ using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.iOS.Platf
 #elif TIZEN
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using Microsoft.Maui.Graphics.Skia;
-using OpenGLViewRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
 using StreamImagesourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.StreamImageSourceHandler;
 using ImageLoaderSourceHandler = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.UriImageSourceHandler;
 using DefaultRenderer = Microsoft.Maui.Controls.Compatibility.Platform.Tizen.DefaultRenderer;
@@ -77,11 +76,6 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 
 #if !WINDOWS
 #if !(MACCATALYST || MACOS)
-#pragma warning disable CS0618 // Type or member is obsolete
-#pragma warning disable CS0612 // Type or member is obsolete
-					handlers.TryAddCompatibilityRenderer(typeof(OpenGLView), typeof(OpenGLViewRenderer));
-#pragma warning restore CS0612 // Type or member is obsolete
-#pragma warning restore CS0618 // Type or member is obsolete
 #endif
 #else
 #pragma warning disable CS0618 // Type or member is obsolete

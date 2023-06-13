@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
 using Microsoft.Maui.Maps;
@@ -325,8 +326,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Fact(Skip = "https://github.com/dotnet/maui/issues/1524")]
-		public void ElementIsGarbageCollectedAfterItsRemoved()
+		[Fact]
+		public async Task ElementIsGarbageCollectedAfterItsRemoved()
 		{
 			var map = new Map()
 			{
@@ -351,6 +352,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			pageRoot.Children.Remove(map);
 			map = null;
 
+			await Task.Yield();
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
 
