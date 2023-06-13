@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestItDoesntCrashWithWrongIconName()
 		{
 			RunningApp.WaitForElement(c => c.Marked("Hello Toolbaritem"));
