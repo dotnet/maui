@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -461,7 +462,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			ShellItemNavigationView.UpdateTopNavAreaBackground(_shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint());
 			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(_shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint());
-			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(_shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint());
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(_shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint());
+			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(_shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint());
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)

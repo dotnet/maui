@@ -84,6 +84,7 @@ namespace Microsoft.Maui.Platform
 		WBrush? _selectedBackground;
 		WBrush? _unselectedBackground;
 		WBrush? _selectedForeground;
+		WBrush? _titleColor;
 		WBrush? _unselectedForeground;
 		ObservableCollection<NavigationViewItemViewModel>? _menuItemsSource;
 		WIconElement? _icon;
@@ -135,6 +136,16 @@ namespace Microsoft.Maui.Platform
 			{
 				_unselectedBackground = value;
 				OnPropertyChanged(nameof(Background));
+			}
+		}
+
+		public WBrush? TitleColor
+		{
+			get => _titleColor;
+			set
+			{
+				_titleColor = value;
+				OnPropertyChanged(nameof(TitleColor));
 			}
 		}
 
