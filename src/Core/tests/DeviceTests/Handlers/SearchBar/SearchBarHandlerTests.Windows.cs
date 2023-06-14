@@ -119,6 +119,20 @@ namespace Microsoft.Maui.DeviceTests
 			return false;
 		}
 
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
+
+			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
+
+			if (textBox is not null)
+			{
+				return textBox.IsSpellCheckEnabled;
+			}
+
+			return false;
+		}
+
 		Color GetNativeCancelButtonColor(SearchBarHandler searchBarHandler)
 		{
 			var platformSearchBar = GetNativeSearchBar(searchBarHandler);

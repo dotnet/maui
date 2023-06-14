@@ -127,6 +127,9 @@ namespace Microsoft.Maui.DeviceTests
 			!GetNativeEditor(editorHandler).Focusable;
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagAutoCorrect);
+
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
 			!GetNativeEditor(editorHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
 		double GetNativeCharacterSpacing(EditorHandler editorHandler)

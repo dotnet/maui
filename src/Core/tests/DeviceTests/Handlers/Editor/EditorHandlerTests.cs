@@ -238,6 +238,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
 		}
 
+		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
+		public async Task IsTextPredictionEnabledInitializesCorrectly()
+		{
+			var editor = new EditorStub()
+			{
+				IsTextPredictionEnabled = true
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, editor.IsTextPredictionEnabled);
+		}
+
+		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		{
+			var editor = new EditorStub
+			{
+				IsSpellCheckEnabled = true
+			};
+
+			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled = true, GetNativeIsSpellCheckEnabled, editor.IsSpellCheckEnabled = true);
+		}
+
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
 		[InlineData(true, true)]
 		[InlineData(true, false)]
@@ -254,6 +276,46 @@ namespace Microsoft.Maui.DeviceTests
 				setValue,
 				unsetValue);
 		}
+
+		[Theory(DisplayName = "IsSpellCheckEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var editor = new EditorStub();
+
+			await ValidatePropertyUpdatesValue(
+				editor,
+				nameof(IEditor.IsTextPredictionEnabled),
+				GetNativeIsSpellCheckEnabled,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled differs from IsSpellCheckEnabled")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task TextPredictionDiffersFromSpellChecking(bool textPredictionValue, bool spellCheckValue)
+		{
+			// Test to prevent: https://github.com/dotnet/maui/issues/8558
+			var areValuesEqual = textPredictionValue == spellCheckValue;
+
+			var editor = new EditorStub()
+			{
+				IsTextPredictionEnabled = textPredictionValue,
+				IsSpellCheckEnabled = spellCheckValue
+			};
+
+			var nativeTextPrediction = await GetValueAsync(editor, GetNativeIsTextPredictionEnabled);
+			var nativeSpellChecking = await GetValueAsync(editor, GetNativeIsSpellCheckEnabled);
+
+			Assert.Equal(areValuesEqual, (nativeTextPrediction == nativeSpellChecking));
+		}
+
 
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]

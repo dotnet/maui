@@ -64,6 +64,84 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
+		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
+		public async Task IsTextPredictionEnabledInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub
+			{
+				IsTextPredictionEnabled = true
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, searchBar.IsTextPredictionEnabled);
+		}
+
+		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		{
+			var searchBar = new SearchBarStub
+			{
+				IsSpellCheckEnabled = true
+			};
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled = true, GetNativeIsSpellCheckEnabled, searchBar.IsSpellCheckEnabled = true );
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var searchBar = new SearchBarStub();
+
+			await ValidatePropertyUpdatesValue(
+				searchBar,
+				nameof(ISearchBar.IsTextPredictionEnabled),
+				GetNativeIsTextPredictionEnabled,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsSpellCheckEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var searchBar = new SearchBarStub();
+
+			await ValidatePropertyUpdatesValue(
+				searchBar,
+				nameof(ISearchBar.IsTextPredictionEnabled),
+				GetNativeIsSpellCheckEnabled,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled differs from IsSpellCheckEnabled")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task TextPredictionDiffersFromSpellChecking(bool textPredictionValue, bool spellCheckValue)
+		{
+			// Test to prevent: https://github.com/dotnet/maui/issues/8558
+			var areValuesEqual = textPredictionValue == spellCheckValue;
+
+			var searchBar = new SearchBarStub()
+			{
+				IsTextPredictionEnabled = textPredictionValue,
+				IsSpellCheckEnabled = spellCheckValue
+			};
+			
+			var nativeTextPrediction = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);
+			var nativeSpellChecking = await GetValueAsync(searchBar, GetNativeIsSpellCheckEnabled);
+
+			Assert.Equal(areValuesEqual, (nativeTextPrediction == nativeSpellChecking));
+		}
+
 		[Fact(DisplayName = "TextColor Initializes Correctly")]
 		public async Task TextColorInitializesCorrectly()
 		{

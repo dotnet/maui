@@ -73,21 +73,20 @@ namespace Microsoft.Maui.Platform
 			editText.SetInputType(entry);
 		}
 
-		// JDTODO: Why is this different to the IEntryCode?
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
 			if (editor.IsTextPredictionEnabled)
-				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+				editText.InputType |= InputTypes.TextFlagAutoCorrect;
 			else
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
 		{
-			if (editor.IsSpellCheckEnabled)
-				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+			if (!editor.IsSpellCheckEnabled)
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 			else
-				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
 		}
 
 		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>

@@ -142,6 +142,28 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
+		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
+		public async Task IsTextPredictionEnabledInitializesCorrectly()
+		{
+			var entry = new EntryStub
+			{
+				IsTextPredictionEnabled = true
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, entry.IsTextPredictionEnabled);
+		}
+
+		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		{
+			var entry = new EntryStub
+			{
+				IsSpellCheckEnabled = true
+			};
+
+			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled = true, GetNativeIsSpellCheckEnabled, entry.IsSpellCheckEnabled = true);
+		}
+
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
 		[InlineData(true, true)]
 		[InlineData(true, false)]
@@ -157,6 +179,45 @@ namespace Microsoft.Maui.DeviceTests
 				GetNativeIsTextPredictionEnabled,
 				setValue,
 				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsSpellCheckEnabled Updates Correctly")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
+		{
+			var entry = new EntryStub();
+
+			await ValidatePropertyUpdatesValue(
+				entry,
+				nameof(IEntry.IsTextPredictionEnabled),
+				GetNativeIsSpellCheckEnabled,
+				setValue,
+				unsetValue);
+		}
+
+		[Theory(DisplayName = "IsTextPredictionEnabled differs from IsSpellCheckEnabled")]
+		[InlineData(true, true)]
+		[InlineData(true, false)]
+		[InlineData(false, true)]
+		[InlineData(false, false)]
+		public async Task TextPredictionDiffersFromSpellChecking(bool textPredictionValue, bool spellCheckValue)
+		{
+			// Test to prevent: https://github.com/dotnet/maui/issues/8558
+			var areValuesEqual = textPredictionValue == spellCheckValue;
+
+			var entry = new EntryStub()
+			{
+				IsTextPredictionEnabled = textPredictionValue,
+				IsSpellCheckEnabled = spellCheckValue
+			};
+
+			var nativeTextPrediction = await GetValueAsync(entry, GetNativeIsTextPredictionEnabled);
+			var nativeSpellChecking = await GetValueAsync(entry, GetNativeIsSpellCheckEnabled);
+
+			Assert.Equal(areValuesEqual, (nativeTextPrediction == nativeSpellChecking));
 		}
 
 		[Theory(DisplayName = "IsReadOnly Updates Correctly")]

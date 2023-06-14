@@ -332,5 +332,31 @@ namespace Microsoft.Maui.DeviceTests
 
 			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
 		}
+
+		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.TextFlagAutoCorrect);
+		}
+
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().First();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
 	}
 }
