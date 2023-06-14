@@ -74,7 +74,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[UiTest(typeof(Grid))]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue34007TestFirstElementHasLowestZOrder()
 		{
 			var buttonLocations = RunningApp.WaitForElement(q => q.Marked("Button 0"));

@@ -48,7 +48,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void PushButton()
 		{
 			RunningApp.Tap(q => q.Marked("Modal Push Pop Test"));

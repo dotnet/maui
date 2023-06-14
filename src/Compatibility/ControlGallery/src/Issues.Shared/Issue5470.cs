@@ -58,7 +58,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue5470Test() 
 		{
 			Thread.Sleep(500); // give it time to crash

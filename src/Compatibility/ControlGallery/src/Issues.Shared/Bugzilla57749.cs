@@ -41,7 +41,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public async Task Bugzilla57749Test()
 		{
 			await Task.Delay(500);

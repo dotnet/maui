@@ -91,7 +91,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[UiTest (typeof(ViewCell))]
 		[UiTest (typeof(ListView))]
 		[UiTest (typeof(ListView), "SelectedItem")]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue935TestsMultipleOnTappedViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("I have been selected:"));

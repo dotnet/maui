@@ -129,7 +129,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla57515Test()
 		{
 			RunningApp.WaitForElement(ZoomContainer);

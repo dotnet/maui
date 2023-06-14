@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		protected override bool Isolate => true;
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1614Test()
 		{
 			RunningApp.SetOrientationPortrait();

@@ -101,7 +101,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue5555Test()
 		{
 			RunningApp.Tap(q => q.Marked("Push page"));

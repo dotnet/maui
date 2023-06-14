@@ -97,7 +97,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("Webview query is not implemented yet on UITEst desktop")]
 #endif
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla26993Test()
 		{
 			RunningApp.Screenshot("I am at BZ26993");

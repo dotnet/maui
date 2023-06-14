@@ -6,7 +6,6 @@ namespace Maui.Controls.Sample
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DragAndDropEvents : ContentView
 	{
-		bool _emittedDragOver = false;
 		public DragAndDropEvents()
 		{
 			InitializeComponent();
@@ -19,7 +18,6 @@ namespace Maui.Controls.Sample
 
 		void DragStarting(object sender, DragStartingEventArgs e)
 		{
-			_emittedDragOver = false;
 			AddEvent(nameof(DragStarting));
 		}
 
@@ -35,11 +33,7 @@ namespace Maui.Controls.Sample
 
 		void DragOver(object sender, DragEventArgs e)
 		{
-			if (!_emittedDragOver) // This can generate a lot of noise, only add it once
-			{
-				AddEvent(nameof(DragOver));
-				_emittedDragOver = true;
-			}
+			AddEvent(nameof(DragOver));
 		}
 
 		void Drop(object sender, DropEventArgs e)

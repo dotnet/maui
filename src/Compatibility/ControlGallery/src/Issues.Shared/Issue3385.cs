@@ -35,7 +35,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3385Test()
 		{
 			RunningApp.WaitForElement("entry");

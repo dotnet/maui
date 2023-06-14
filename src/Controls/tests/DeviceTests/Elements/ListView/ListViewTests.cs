@@ -154,11 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact
-#if WINDOWS
-			(Skip = "Failing")
-#endif
-			]
+		[Fact]
 		public async Task NullTemplateDoesntCrash()
 		{
 			SetupBuilder();

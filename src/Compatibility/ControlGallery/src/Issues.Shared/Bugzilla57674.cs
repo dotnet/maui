@@ -46,7 +46,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla57674Test()
 		{
 			RunningApp.Screenshot("Initial Status");

@@ -115,8 +115,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
         [Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
-		public void Issue12374Test()
+        public void Issue12374Test()
         {
             RunningApp.WaitForElement("TestReady");
             RunningApp.Tap("RemoveItems");

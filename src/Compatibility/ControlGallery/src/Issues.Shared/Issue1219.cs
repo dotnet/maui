@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		protected override void Init() { }
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ViewCellInTableViewDoesNotCrash()
 		{
 			// If we can see this element, then we didn't crash.

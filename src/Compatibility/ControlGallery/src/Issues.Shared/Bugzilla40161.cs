@@ -128,7 +128,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1Test()
 		{
 			RunningApp.Screenshot("I am at Issue 40161");

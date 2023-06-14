@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SliderBinding()
 		{
 			RunningApp.WaitForElement(_success.ToString());

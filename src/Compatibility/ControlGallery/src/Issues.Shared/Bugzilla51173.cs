@@ -79,7 +79,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test(Description = "Load a valid image")]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla51173_ValidImage()
 		{
 			RunningApp.WaitForElement(q => q.Marked(ValidImage));

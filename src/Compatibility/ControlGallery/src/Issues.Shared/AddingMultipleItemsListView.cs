@@ -132,7 +132,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests2AddOneElementToList()
 		{
 			RunningApp.Tap(q => q.Marked("Add One"));

@@ -9,11 +9,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.CheckBox)]
 	public partial class CheckBoxTests : ControlsHandlerTestBase
 	{
-		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property")]
 		[InlineData("#FF0000")]
 		[InlineData("#00FF00")]
 		[InlineData("#0000FF")]

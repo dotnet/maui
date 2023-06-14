@@ -23,9 +23,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			PushAsync(new LandingPage32206());
 		}
 
-#if UITEST && IOS
+#if UITEST && __IOS__
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla32206Test()
 		{
 			for (var n = 0; n < 10; n++)

@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Issue(IssueTracker.Github, 2411, "ScrollToPositon.End crashing in TabbedPage", PlatformAffected.Android)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2411ScrollToPositionWrongOnUneven()
 		{
 			RunningApp.Tap(q => q.Marked("Crash in ScrollToPosition.End"));

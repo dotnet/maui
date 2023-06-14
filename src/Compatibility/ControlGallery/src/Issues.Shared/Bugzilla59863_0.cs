@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TapsCountShouldMatch()
 		{
 			// Gonna add this test because we'd want to know if it _did_ start failing
@@ -84,7 +83,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DoubleTapWithOnlySingleTapRecognizerShouldRegisterTwoTaps()
 		{
 			RunningApp.WaitForElement(SingleTapBoxId);

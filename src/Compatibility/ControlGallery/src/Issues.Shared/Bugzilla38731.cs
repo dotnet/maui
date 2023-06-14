@@ -118,7 +118,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla38731Test ()
 		{
 			RunningApp.Tap(q => q.Marked("btn1"));

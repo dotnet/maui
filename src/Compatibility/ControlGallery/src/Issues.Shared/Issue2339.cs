@@ -87,7 +87,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if WINDOWS
 		[Ignore("Focus Behavior is different on UWP")]
 #endif
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			RunningApp.WaitForElement("btnFocusThenUnFocus");

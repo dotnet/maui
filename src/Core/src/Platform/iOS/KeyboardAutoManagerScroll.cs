@@ -58,30 +58,15 @@ public static class KeyboardAutoManagerScroll
 	public static void Disconnect()
 	{
 		if (WillShowToken is not null)
-		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
-			WillShowToken = null;
-		}
 		if (WillHideToken is not null)
-		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillHideToken);
-			WillHideToken = null;
-		}
 		if (DidHideToken is not null)
-		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(DidHideToken);
-			DidHideToken = null;
-		}
 		if (TextFieldToken is not null)
-		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextFieldToken);
-			TextFieldToken = null;
-		}
 		if (TextViewToken is not null)
-		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(TextViewToken);
-			TextViewToken = null;
-		}
 
 		IsKeyboardAutoScrollHandling = false;
 	}

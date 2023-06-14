@@ -69,7 +69,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue9306SwipeViewCloseSwiping()
 		{
 			RunningApp.WaitForElement(x => x.Marked(SwipeViewId));

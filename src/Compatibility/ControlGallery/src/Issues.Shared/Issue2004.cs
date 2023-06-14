@@ -298,7 +298,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void NoCrashFromDisposedBitmapWhenSwitchingPages()
 		{
 			RunningApp.WaitForElement("Success", timeout: TimeSpan.FromSeconds(20));

@@ -65,7 +65,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CollectionViewShouldSourceShouldResetWhileInvisible()
 		{
 			RunningApp.WaitForElement(Success);

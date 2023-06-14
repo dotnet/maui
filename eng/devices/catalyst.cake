@@ -90,7 +90,7 @@ Task("uitest")
 				//.Append("/tl")
 	});
 
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_mac.log");
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_ARG}/appium_mac.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);

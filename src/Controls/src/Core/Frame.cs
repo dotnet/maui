@@ -55,7 +55,13 @@ namespace Microsoft.Maui.Controls
 
 		int IBorderElement.CornerRadius => (int)CornerRadius;
 
+		// TODO fix iOS/WinUI to work the same as Android
+#if ANDROID
 		double IBorderElement.BorderWidth => 1;
+#else
+		// not currently used by frame
+		double IBorderElement.BorderWidth => -1d;
+#endif
 
 		int IBorderElement.CornerRadiusDefaultValue => (int)CornerRadiusProperty.DefaultValue;
 
@@ -86,23 +92,23 @@ namespace Microsoft.Maui.Controls
 		// TODO fix iOS/WinUI to work the same as Android
 		// once this has been fixed on iOS/WinUI we should centralize 
 		// this code and Border into LayoutExtensions
+		// WinUI being fixed as part of
+		// https://github.com/dotnet/maui/issues/13552
+#if ANDROID
 		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
 		{
-#if !WINDOWS
-			bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
-#endif
+			bounds = bounds.Inset(((IBorderElement)this).BorderWidth);
 			this.ArrangeContent(bounds);
 			return bounds.Size;
 		}
 
 		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			var inset = Padding;
-#if !WINDOWS
-			inset += ((IBorderElement)this).BorderWidth; // Windows' implementation would cause an incorrect double-counting of the inset
-#endif
+			var inset = Padding + ((IBorderElement)this).BorderWidth;
 			return this.MeasureContent(inset, widthConstraint, heightConstraint);
 		}
+#endif
+
 	}
 
 	internal static class FrameExtensions
