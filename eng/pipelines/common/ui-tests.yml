@@ -158,6 +158,7 @@ stages:
                     parameters:
                       platform: android
                       provisionPlatform: macos
+                      configuration: Debug
                       version: ${{ api }}
                       path: ${{ project.compatibilityAndroid }}
                       app: ${{ project.compatibilityApp }}
@@ -187,6 +188,7 @@ stages:
                     parameters:
                       platform: ios
                       provisionPlatform: macos
+                      configuration: Debug
                       ${{ if eq(version, 'latest') }}:
                         version: 16.2
                       ${{ if ne(version, 'latest') }}:
