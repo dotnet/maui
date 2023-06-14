@@ -157,7 +157,7 @@ stages:
                   - template: ui-tests-compatibility-steps.yml
                     parameters:
                       platform: android
-                      provisionPlatform: windows
+                      provisionPlatform: macos
                       version: ${{ api }}
                       path: ${{ project.compatibilityAndroid }}
                       app: ${{ project.compatibilityApp }}
