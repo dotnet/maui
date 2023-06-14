@@ -382,14 +382,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			foreach (UITabBarItem item in TabBar.Items)
 			{
 				item.SetTitleTextAttributes(attributes, UIControlState.Normal);
+				item.SetTitleTextAttributes(attributes, UIControlState.Selected);
 			}
+
+			//UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = tabBarTextColor }, UIControlState.Selected);
 
 			// set TintColor for selected icon
 			// setting the unselected icon tint is not supported by iOS
 			if (OperatingSystem.IsIOSVersionAtLeast(15) || OperatingSystem.IsTvOSVersionAtLeast(15))
 				UpdateiOS15TabBarAppearance();
-			else
-				TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
+			//else
+			//	TabBar.TintColor = isDefaultColor ? _defaultBarTextColor : barTextColor.ToPlatform();
 		}
 
 		void UpdateBarTranslucent()
@@ -430,6 +433,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var count = Tabbed.InternalChildren.Count;
 			var index = (int)SelectedIndex;
 			((TabbedPage)Element).CurrentPage = index >= 0 && index < count ? Tabbed.GetPageByIndex(index) : null;
+			UpdateBarTextColor();
+			this.Invoke(() =>
+			{
+				UpdateBarTextColor();
+			}, 10);
 		}
 
 		async void SetTabBarItem(IPlatformViewHandler renderer)
@@ -471,6 +479,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				else
 					TabBar.UnselectedItemTintColor = UITabBar.Appearance.TintColor;
 			}
+
+			UpdateBarTextColor();
 		}
 
 		/// <summary>
@@ -508,7 +518,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
 				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null,
-				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null);
+				null);
 		}
 
 		#region IPlatformViewHandler
