@@ -200,8 +200,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void DisconnectRecyclerView()
 		{
 			if (_flyoutContentView.IsAlive() &&
-				_flyoutContentView is RecyclerViewContainer rvc &&
-				rvc.GetAdapter() is ShellFlyoutRecyclerAdapter sfra)
+				_flyoutContentView is ShellRecyclerView srv &&
+				srv.GetAdapter() is ShellFlyoutRecyclerAdapter sfra)
 			{
 				sfra.Disconnect();
 			}
@@ -219,29 +219,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			DisconnectRecyclerView();
 
+			var context = ShellContext.AndroidContext;
 			var content = ((IShellController)ShellContext.Shell).FlyoutContent;
 			if (content == null)
 			{
-				var lp = new CoordinatorLayout.LayoutParams(CoordinatorLayout.LayoutParams.MatchParent, CoordinatorLayout.LayoutParams.MatchParent);
-				lp.Behavior = new AppBarLayout.ScrollingViewBehavior();
-				var context = ShellContext.AndroidContext;
-				var recyclerView = new RecyclerViewContainer(context)
-				{
-					LayoutParameters = lp
-				};
-
-				recyclerView.SetAdapter(new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected));
-
+				var adapter = new ShellFlyoutRecyclerAdapter(ShellContext, OnElementSelected);
+				var recyclerView = new ShellRecyclerView(context, adapter);
 				return recyclerView;
 			}
 
-			_contentView = new ShellViewRenderer(ShellContext.AndroidContext, content, MauiContext);
-
-			_contentView.PlatformView.LayoutParameters = new CoordinatorLayout.LayoutParams(LP.MatchParent, LP.MatchParent)
-			{
-				Behavior = new AppBarLayout.ScrollingViewBehavior()
-			};
-
+			_contentView = new ShellViewRenderer(context, content, MauiContext);
+			ShellRecyclerView.SetLayoutParameters(_contentView.PlatformView, scrollingEnabled: true);
 			return _contentView.PlatformView;
 		}
 
@@ -470,9 +458,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateVerticalScrollMode()
 		{
-			if (_flyoutContentView is RecyclerView rv && rv.GetLayoutManager() is ScrollLayoutManager lm)
+			if (_flyoutContentView is ShellRecyclerView rv)
 			{
-				lm.ScrollVertically = _shellContext.Shell.FlyoutVerticalScrollMode;
+				ShellRecyclerView.SetLayoutParameters(rv, _shellContext.Shell.FlyoutVerticalScrollMode != ScrollMode.Disabled);
 			}
 		}
 
@@ -793,68 +781,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					PlatformView.SetMinimumHeight(minHeight);
 				}
-			}
-		}
-	}
-
-	class RecyclerViewContainer : RecyclerView
-	{
-		bool _disposed;
-		ScrollLayoutManager _layoutManager;
-
-		public RecyclerViewContainer(Context context) : base(context)
-		{
-			SetClipToPadding(false);
-			SetLayoutManager(_layoutManager = new ScrollLayoutManager(context, (int)Orientation.Vertical, false));
-			SetLayoutManager(new LinearLayoutManager(context, (int)Orientation.Vertical, false));
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			if (_disposed)
-				return;
-
-			_disposed = true;
-			if (disposing)
-			{
-				SetLayoutManager(null);
-				var adapter = this.GetAdapter();
-				SetAdapter(null);
-				adapter?.Dispose();
-				_layoutManager?.Dispose();
-				_layoutManager = null;
-			}
-
-			base.Dispose(disposing);
-		}
-	}
-
-	internal class ScrollLayoutManager : LinearLayoutManager
-	{
-		public ScrollMode ScrollVertically { get; set; } = ScrollMode.Auto;
-
-		public ScrollLayoutManager(Context context, int orientation, bool reverseLayout) : base(context, orientation, reverseLayout)
-		{
-		}
-
-		int GetVisibleChildCount()
-		{
-			var firstVisibleIndex = FindFirstCompletelyVisibleItemPosition();
-			var lastVisibleIndex = FindLastCompletelyVisibleItemPosition();
-			return lastVisibleIndex - firstVisibleIndex + 1;
-		}
-
-		public override bool CanScrollVertically()
-		{
-			switch (ScrollVertically)
-			{
-				case ScrollMode.Disabled:
-					return false;
-				case ScrollMode.Enabled:
-					return true;
-				default:
-				case ScrollMode.Auto:
-					return ChildCount > GetVisibleChildCount();
 			}
 		}
 	}
