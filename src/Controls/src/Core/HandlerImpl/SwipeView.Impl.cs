@@ -243,6 +243,25 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeView.RequestOpen(SwipeViewOpenRequest swipeOpenRequest)
 		{
+			switch (swipeOpenRequest.OpenSwipeItem)
+			{
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				default:
+					_swipeDirection = null;
+					break;
+			}
+
 			Handler?.Invoke(nameof(ISwipeView.RequestOpen), swipeOpenRequest);
 		}
 

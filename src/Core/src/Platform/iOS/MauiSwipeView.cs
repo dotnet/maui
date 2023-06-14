@@ -1102,10 +1102,8 @@ namespace Microsoft.Maui.Platform
 			if (Element == null)
 				return;
 
-			Element.IsOpen = true;
+			Element.IsOpen = isOpen;
 		}
-
-
 
 		internal void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
@@ -1137,8 +1135,10 @@ namespace Microsoft.Maui.Platform
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (swipeItems == null || swipeItems.Where(s => GetIsVisible(s)).Count() == 0)
+			if (swipeItems is null || !swipeItems.Any(GetIsVisible))
 				return;
+
+			UpdateIsOpen(true);
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);

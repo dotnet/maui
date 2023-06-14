@@ -3,7 +3,6 @@ using Android.Views;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -66,6 +65,49 @@ namespace Microsoft.Maui.DeviceTests
 
 				await AssertionExtensions.Wait(() => swipeItem.Width > 0);
 				Assert.NotEqual(0, swipeItem.Width);
+			});
+		}
+		
+		[Fact(DisplayName = "SwipeView LogicalChildren Works Correctly")]
+		public async Task SwipeViewLogicalChildren()
+		{
+			SetupBuilder();
+
+			var content = new Grid
+			{
+				HeightRequest = 60,
+				Background = new SolidPaint(Colors.White)
+			};
+
+			var swipeItem = new SwipeItem
+			{
+				BackgroundColor = Colors.Red,
+			};
+
+			var swipeItems = new SwipeItems
+			{
+				swipeItem
+			};
+
+			var swipeView = new SwipeView()
+			{
+				LeftItems = swipeItems,
+				Content = content
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var swipeViewHandler = CreateHandler<SwipeViewHandler>(swipeView);
+				await swipeViewHandler.PlatformView.AttachAndRun(() =>
+				{	
+					Assert.NotEqual(0, swipeViewHandler.PlatformView.ChildCount);
+
+					swipeView.Open(OpenSwipeItem.LeftItems, false);
+#pragma warning disable CS0618 // Type or member is obsolete
+					var logicalChildrenCount = swipeView.LogicalChildren.Count;
+#pragma warning restore CS0618 // Type or member is obsolete
+					Assert.Equal(1, logicalChildrenCount);
+				});
 			});
 		}
 	}

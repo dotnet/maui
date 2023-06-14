@@ -1387,6 +1387,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var animated = e.Animated;
 
+			UpdateIsOpen(false);
 			ResetSwipe(animated);
 		}
 
