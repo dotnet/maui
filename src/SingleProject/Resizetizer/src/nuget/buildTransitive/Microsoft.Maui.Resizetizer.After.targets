@@ -148,7 +148,7 @@
         <ResizetizerPlatformType>android</ResizetizerPlatformType>
 
         <ResizetizeCollectItemsBeforeTargets>
-            $(ResizetizeCollectItemsAfterTargets);
+            $(ResizetizeCollectItemsBeforeTargets);
             _ComputeAndroidResourcePaths;
         </ResizetizeCollectItemsBeforeTargets>
 
