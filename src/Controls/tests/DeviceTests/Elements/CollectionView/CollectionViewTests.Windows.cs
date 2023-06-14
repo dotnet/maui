@@ -101,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0d, minHeight);
 		}
 
-		[Fact(Skip = "FIX FOR .NET8")]
+		[Fact(DisplayName = "CollectionView SendRemainingItemsThresholdReached")]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
 			SetupBuilder();
@@ -120,6 +120,11 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView
 			};
 
+			bool didGetScrollEvent = false;
+			collectionView.Scrolled += (s, e) =>
+			{
+				didGetScrollEvent = true;
+			};
 			collectionView.RemainingItemsThreshold = 1;
 			collectionView.RemainingItemsThresholdReached += (s, e) =>
 			{
@@ -135,6 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 				collectionView.ScrollTo(19, -1, position: ScrollToPosition.End, false);
 				await Task.Delay(200);
 				Assert.True(data.Count == 30);
+				Assert.True(didGetScrollEvent);
 			});
 		}
 	}

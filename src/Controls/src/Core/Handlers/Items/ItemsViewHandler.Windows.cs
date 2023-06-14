@@ -54,12 +54,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			base.ConnectHandler(platformView);
+			FindScrollViewer(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
 		{
 			VirtualView.ScrollToRequested -= ScrollToRequested;
+
+			if (_scrollViewer != null)
+			{
+				_scrollViewer.ViewChanged -= ScrollViewChanged;
+			}
+
 			base.DisconnectHandler(platformView);
 		}
 
