@@ -108,8 +108,6 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				foreach (Setter setter in Setters)
-					setter.UnApply(bindable);
 				foreach (TriggerAction action in ExitActions)
 					action.DoInvoke(bindable);
 			}
