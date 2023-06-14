@@ -2,6 +2,8 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 
+#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
+
 string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "16.2";
