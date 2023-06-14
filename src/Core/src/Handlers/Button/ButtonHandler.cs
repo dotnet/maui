@@ -12,11 +12,11 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : IButtonHandler
+	public partial class ButtonHandler : IButtonHandler, IImageSourcePartSetter
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => (VirtualView as IImageButton), OnSetImageSource);
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
 		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{
