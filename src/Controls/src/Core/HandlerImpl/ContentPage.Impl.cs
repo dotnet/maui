@@ -46,6 +46,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		protected override void OnApplyTemplate()
+		{
+			base.OnApplyTemplate();
+			Handler?.UpdateValue(nameof(Content));
+		}
+
 		#region HotReload
 
 		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
