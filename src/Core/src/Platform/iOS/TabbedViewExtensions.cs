@@ -19,7 +19,8 @@ namespace Microsoft.Maui.Platform
 			Color? selectedTabColor,
 			Color? unselectedTabColor,
 			Color? barBackgroundColor,
-			Color? barTextColor)
+			Color? selectedBarTextColor,
+			Color? unSelectedBarTextColor)
 		{
 			if (_tabBarAppearance == null)
 			{
@@ -36,14 +37,8 @@ namespace Microsoft.Maui.Platform
 
 			// Set BarTextColor
 
-			var effectiveBarTextColor = (barTextColor == null) ? defaultBarTextColor : barTextColor.ToPlatform();
-			if (effectiveBarTextColor != null)
-			{
-				_tabBarAppearance.StackedLayoutAppearance.Normal.TitleTextAttributes = new UIStringAttributes
-				{
-					ForegroundColor = effectiveBarTextColor
-				};
-			}
+			var effectiveSelectedBarTextColor = (selectedBarTextColor == null) ? defaultBarTextColor : selectedBarTextColor.ToPlatform();
+			var effectiveUnselectedBarTextColor = (unSelectedBarTextColor == null) ? defaultBarTextColor : unSelectedBarTextColor.ToPlatform();
 
 			// Update colors for all variations of the appearance to also make it work for iPads, etc. which use different layouts for the tabbar
 			// Also, set ParagraphStyle explicitly. This seems to be an iOS bug. If we don't do this, tab titles will be truncat...
@@ -52,7 +47,7 @@ namespace Microsoft.Maui.Platform
 			if (selectedTabColor is not null)
 			{
 				var foregroundColor = selectedTabColor.ToPlatform();
-				var titleColor = effectiveBarTextColor ?? foregroundColor;
+				var titleColor = effectiveSelectedBarTextColor ?? foregroundColor;
 
 				_tabBarAppearance.StackedLayoutAppearance.Selected.TitleTextAttributes = new UIStringAttributes { ForegroundColor = titleColor, ParagraphStyle = NSParagraphStyle.Default };
 				_tabBarAppearance.StackedLayoutAppearance.Selected.IconColor = foregroundColor;
@@ -66,7 +61,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				var foregroundColor = UITabBar.Appearance.TintColor;
-				var titleColor = effectiveBarTextColor ?? foregroundColor;
+				var titleColor = effectiveSelectedBarTextColor ?? foregroundColor;
 				_tabBarAppearance.StackedLayoutAppearance.Selected.TitleTextAttributes = new UIStringAttributes { ForegroundColor = titleColor, ParagraphStyle = NSParagraphStyle.Default };
 				_tabBarAppearance.StackedLayoutAppearance.Selected.IconColor = foregroundColor;
 
@@ -81,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			if (unselectedTabColor is not null)
 			{
 				var foregroundColor = unselectedTabColor.ToPlatform();
-				var titleColor = effectiveBarTextColor ?? foregroundColor;
+				var titleColor = effectiveUnselectedBarTextColor ?? foregroundColor;
 				_tabBarAppearance.StackedLayoutAppearance.Normal.TitleTextAttributes = new UIStringAttributes { ForegroundColor = titleColor, ParagraphStyle = NSParagraphStyle.Default };
 				_tabBarAppearance.StackedLayoutAppearance.Normal.IconColor = foregroundColor;
 
@@ -94,7 +89,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				var foreground = UITabBar.Appearance.TintColor;
-				var titleColor = effectiveBarTextColor ?? foreground;
+				var titleColor = effectiveUnselectedBarTextColor ?? foreground;
 				_tabBarAppearance.StackedLayoutAppearance.Normal.TitleTextAttributes = new UIStringAttributes { ForegroundColor = titleColor, ParagraphStyle = NSParagraphStyle.Default };
 				_tabBarAppearance.StackedLayoutAppearance.Normal.IconColor = foreground;
 

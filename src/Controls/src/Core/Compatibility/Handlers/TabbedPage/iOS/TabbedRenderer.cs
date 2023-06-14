@@ -507,6 +507,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				Tabbed.IsSet(TabbedPage.SelectedTabColorProperty) ? Tabbed.SelectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.UnselectedTabColorProperty) ? Tabbed.UnselectedTabColor : null,
 				Tabbed.IsSet(TabbedPage.BarBackgroundColorProperty) ? Tabbed.BarBackgroundColor : null,
+				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null,
 				Tabbed.IsSet(TabbedPage.BarTextColorProperty) ? Tabbed.BarTextColor : null);
 		}
 

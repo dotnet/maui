@@ -71,40 +71,47 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 
+			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
+			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
+			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
+			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
+
 			controller.TabBar
 				.UpdateiOS15TabBarAppearance(
 					ref _tabBarAppearance,
 					null,
 					null,
-					appearanceElement.EffectiveTabBarForegroundColor,
-					appearanceElement.EffectiveTabBarUnselectedColor,
-					appearanceElement.EffectiveTabBarBackgroundColor,
-					appearanceElement.EffectiveTabBarTitleColor);
+					foregroundColor ?? titleColor,
+					unselectedColor,
+					backgroundColor,
+					titleColor ?? foregroundColor,
+					unselectedColor);
 		}
 
 		void UpdateTabBarAppearance(UITabBarController controller, ShellAppearance appearance)
 		{
 			IShellAppearanceElement appearanceElement = appearance;
 			var backgroundColor = appearanceElement.EffectiveTabBarBackgroundColor;
-			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
 			var foregroundColor = appearanceElement.EffectiveTabBarForegroundColor;
-			var titleColor = appearanceElement.EffectiveTabBarTitleColor ?? foregroundColor;
+			var unselectedColor = appearanceElement.EffectiveTabBarUnselectedColor;
+			var titleColor = appearanceElement.EffectiveTabBarTitleColor;
 
 			var tabBar = controller.TabBar;
 
 			if (backgroundColor is not null && backgroundColor.IsNotDefault())
 				tabBar.BarTintColor = backgroundColor.ToPlatform();
 
-			if (foregroundColor.IsDefault != null && foregroundColor.IsNotDefault())
-				tabBar.TintColor = foregroundColor.ToPlatform();
-
 			if (unselectedColor.IsDefault != null && unselectedColor.IsNotDefault())
-				tabBar.UnselectedItemTintColor = unselectedColor.ToPlatform();
-
-			if (titleColor.IsDefault != null && titleColor.IsNotDefault())
 			{
-				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = titleColor.ToPlatform() }, UIControlState.Normal);
-				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = titleColor.ToPlatform() }, UIControlState.Selected);
+				tabBar.UnselectedItemTintColor = unselectedColor.ToPlatform();
+				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = unselectedColor.ToPlatform() }, UIControlState.Normal);
+			}
+
+			if (titleColor.IsDefault != null && titleColor.IsNotDefault() ||
+				foregroundColor.IsDefault != null && foregroundColor.IsNotDefault())
+			{
+				tabBar.TintColor = (foregroundColor ?? titleColor).ToPlatform();
+				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = (titleColor ?? foregroundColor).ToPlatform() }, UIControlState.Selected);
 			}
 		}
 	}
