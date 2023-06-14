@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla38112_SwitchIsStillOnScreen ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Click"));
@@ -96,6 +97,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla38112_SwitchIsStillDisabled ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Click"));
