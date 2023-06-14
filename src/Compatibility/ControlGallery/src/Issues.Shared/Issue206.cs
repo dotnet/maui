@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category("ManualReview")]
 		[UiTest(typeof(ViewCell))]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue206TestsTextInTextCellResizes()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Click 9"));

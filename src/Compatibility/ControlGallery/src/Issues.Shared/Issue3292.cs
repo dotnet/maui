@@ -80,6 +80,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3292Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Hello World Changed"));
