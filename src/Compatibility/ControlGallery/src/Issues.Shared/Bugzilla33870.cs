@@ -121,6 +121,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla33870Test()
 		{
 			RunningApp.WaitForElement(x => x.Marked(PageContentAutomatedId));

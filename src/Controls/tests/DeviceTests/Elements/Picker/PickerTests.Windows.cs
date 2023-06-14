@@ -31,7 +31,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 
-			Assert.Equal(UI.Xaml.HorizontalAlignment.Right, GetPlatformHorizontalOptions(handler.PlatformView));
+			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.HorizontalAlignment.Right, GetPlatformHorizontalOptions(handler.PlatformView)));
+			
 		}
 
 		[Fact(DisplayName = "VerticalOptions Initializes Correctly")]
@@ -52,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 
-			Assert.Equal(UI.Xaml.VerticalAlignment.Bottom, GetPlatformVerticalOptions(handler.PlatformView));
+			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.VerticalAlignment.Bottom, GetPlatformVerticalOptions(handler.PlatformView)));
 		}
 
 		protected Task<string> GetPlatformControlText(ComboBox platformView)

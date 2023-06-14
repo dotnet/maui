@@ -9,6 +9,7 @@ namespace Maui.Controls.Sample
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class DragAndDropBetweenLayouts : ContentView
 	{
+		bool _emittedDragOver = false;
 		public ObservableCollection<Brush> AllColors { get; }
 		public ObservableCollection<Brush> RainbowColors { get; }
 		public DragAndDropBetweenLayouts()
@@ -23,7 +24,7 @@ namespace Maui.Controls.Sample
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
-			// e.Cancel = true;
+			_emittedDragOver = false;
 			var label = (sender as Element).Parent as Label;
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
@@ -64,7 +65,11 @@ namespace Maui.Controls.Sample
 
 			sl.Background = SolidColorBrush.LightPink;
 
-			AddEvent(nameof(OnDragOver));
+			if (!_emittedDragOver) // This can generate a lot of noise, only add it once
+			{
+				AddEvent(nameof(OnDragOver));
+				_emittedDragOver = true;
+			}
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)

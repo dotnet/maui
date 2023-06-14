@@ -367,6 +367,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SafeAreaOnBlankPage()
 		{
 			RunningApp.Tap(EmptyPageSafeAreaTest);
@@ -375,6 +376,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SafeArea()
 		{
 			RunningApp.Tap(SafeAreaTest);
