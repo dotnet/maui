@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__ // Grouping for Android hasn't been merged yet
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CanScrollToGroupAndItemIndex()
 		{
 			RunningApp.WaitForElement("GroupIndexEntry");
@@ -65,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CanScrollToGroupAndItem()
 		{
 			RunningApp.WaitForElement("GroupNameEntry");

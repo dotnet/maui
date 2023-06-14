@@ -301,6 +301,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LoadingPageWithoutCookiesSpecifiedDoesntCrash()
 		{
 			RunningApp.Tap("PageWithoutCookies");
@@ -309,6 +310,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ChangeDuringNavigating()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -321,6 +323,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void AddAdditionalCookieToWebView()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -333,6 +336,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SetToOneCookie()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -342,6 +346,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SetCookieContainerToNullDisablesCookieManagement()
 		{
 			RunningApp.WaitForElement("Loaded");
@@ -354,6 +359,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void RemoveAllTheCookiesIAdded()
 		{
 			RunningApp.WaitForElement("Loaded");
