@@ -16,10 +16,10 @@ steps:
 
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.provisionPlatform, 'windows') }}:
+      ${{ if eq(parameters.platform, 'windows') }}:
         platform: windows
         skipProvisioning: true
-      ${{ if ne(parameters.provisionPlatform, 'windows') }}:
+      ${{ if ne(parameters.platform, 'windows') }}:
         platform: macos
         skipProvisioning: false
       skipXcode: false
