@@ -116,11 +116,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		/// <summary>
-		/// Sets the color of the Unselected NavigationViewItem Icon
-		/// </summary>
-		/// <param name="navigationView"></param>
-		/// <param name="paint"></param>
 		public static void UpdateTopNavigationViewItemUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();

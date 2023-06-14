@@ -466,9 +466,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
 
 			ShellItemNavigationView.UpdateTopNavAreaBackground(backgroundColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
 			ShellItemNavigationView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(titleColor ?? unselectedColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(unselectedColor);
 			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
 		}
 

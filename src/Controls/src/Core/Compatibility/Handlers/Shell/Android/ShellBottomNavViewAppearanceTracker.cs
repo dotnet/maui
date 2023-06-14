@@ -57,12 +57,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			_itemTextColor = MakeColorStateList(
 				titleColor ?? foregroundColor, 
 				disabledColor, 
-				titleColor ?? unselectedColor ?? foregroundColor);
+				unselectedColor);
 
 			_itemIconTint = MakeColorStateList(
 				foregroundColor ?? titleColor, 
 				disabledColor, 
-				unselectedColor ?? foregroundColor);
+				unselectedColor);
 
 			bottomView.ItemTextColor = _itemTextColor;
 			bottomView.ItemIconTintList = _itemIconTint;
