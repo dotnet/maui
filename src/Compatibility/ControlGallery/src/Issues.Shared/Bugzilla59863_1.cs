@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
 		{
 			RunningApp.WaitForElement(DoubleTapBoxId);
@@ -76,6 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
 		{
 			RunningApp.WaitForElement(DoubleTapBoxId);

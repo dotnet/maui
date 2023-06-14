@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla52533Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(LabelId));

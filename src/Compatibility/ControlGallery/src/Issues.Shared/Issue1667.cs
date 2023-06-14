@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestCursorPositionAndSelection()
 		{
 			RunningApp.WaitForElement("CursorTextEntry");

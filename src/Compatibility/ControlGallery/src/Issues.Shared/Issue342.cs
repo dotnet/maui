@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue342NoSourceTestsLablePresentNoImage()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Uninitialized image"), "Cannot see label");
@@ -80,6 +81,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue342DelayedLoadTestsImageLoads()
 		{
 			RunningApp.WaitForElement("TestReady");

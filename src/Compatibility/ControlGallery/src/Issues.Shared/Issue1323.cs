@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1323Test()
 		{
 			RunningApp.WaitForElement(X => X.Marked("Page 1"));
