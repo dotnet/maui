@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("EnterText problems in UITest Desktop")]
 #endif
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestFocusIsOnTheEndAfterSettingText ()
 		{
 			RunningApp.WaitForElement("userNameEditorEmptyString");

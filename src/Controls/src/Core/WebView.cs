@@ -116,12 +116,19 @@ namespace Microsoft.Maui.Controls
 			if (script == null)
 				return null;
 
-			//make all the platforms mimic Android's implementation, which is by far the most complete.
+			// Make all the platforms mimic Android's implementation, which is by far the most complete.
 			if (DeviceInfo.Platform != DevicePlatform.Android)
 			{
 				script = EscapeJsString(script);
-				script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
-			}
+
+				if (DeviceInfo.Platform != DevicePlatform.WinUI)
+				{
+					// Use JSON.stringify() method to converts a JavaScript value to a JSON string
+					script = "try{JSON.stringify(eval('" + script + "'))}catch(e){'null'};";
+				}
+				else
+					script = "try{eval('" + script + "')}catch(e){'null'};";
+			}   
 
 			string result;
 

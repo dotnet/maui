@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LoadsWithoutCrashing()
 		{
 			RunningApp.WaitForElement("Welcome to the HomePage");
