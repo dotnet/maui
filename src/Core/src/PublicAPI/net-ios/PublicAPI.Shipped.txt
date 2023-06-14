@@ -2048,7 +2048,6 @@ override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft
 override Microsoft.Maui.Handlers.ImageButtonHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> UIKit.UIButton!
 override Microsoft.Maui.Handlers.ImageButtonHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
-override Microsoft.Maui.Handlers.ImageHandler.ConnectHandler(UIKit.UIImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.CreatePlatformView() -> UIKit.UIImageView!
 override Microsoft.Maui.Handlers.ImageHandler.DisconnectHandler(UIKit.UIImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.NeedsContainer.get -> bool
