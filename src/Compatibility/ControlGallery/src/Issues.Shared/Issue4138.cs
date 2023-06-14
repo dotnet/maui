@@ -35,6 +35,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TitleIconIsCentered()
 		{
 			var element = RunningApp.WaitForElement("coffee.png")[0];

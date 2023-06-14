@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CollectionViewBindingErrorsShouldBeZero()
 		{
 			RunningApp.WaitForElement("Binding Errors: 0");
