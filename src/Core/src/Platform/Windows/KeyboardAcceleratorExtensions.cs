@@ -11,13 +11,34 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
-			var keyboardAccelerators = menuFlyoutItem.Accelerators?[0].ToPlatform();
+			var keyboardAccelerators = menuFlyoutItem.Accelerators?.ToPlatform();
 
 			if (keyboardAccelerators is null)
 				return;
 
 			foreach (var keyboardAccelerator in keyboardAccelerators)
 				platformView.KeyboardAccelerators.Add(keyboardAccelerator);
+		}
+
+		public static IList<KeyboardAccelerator>? ToPlatform(this IReadOnlyList<IAccelerator> accelerators)
+		{
+			if (accelerators is null)
+				return null;
+
+			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
+
+			foreach (var accelerator in accelerators)
+			{
+				var keyboardAccelerators = accelerator.ToPlatform();
+
+				if (keyboardAccelerators is not null)
+				{
+					foreach (var keyboardAccelerator in keyboardAccelerators)
+						result.Add(keyboardAccelerator);
+				}
+			}
+
+			return result;
 		}
 
 		// Single key (A, Delete, F2, Spacebar, Esc, Multimedia Key) accelerators and multi-key
@@ -29,13 +50,13 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
-			
+
 			var key = accelerator.Key;
 			var modifiers = accelerator.Modifiers;
 
 			if (modifiers is not null)
 			{
-				var modifiersCount = modifiers.Count();
+				var modifiersCount = modifiers.Count;
 				bool hasModifierMask = modifiersCount > 0;
 
 				if (hasModifierMask)
