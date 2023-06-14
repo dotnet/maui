@@ -151,10 +151,17 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				iOSVersion = _iosVersion;
 			}*/
 
+
+			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
+
+
+			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
+																: enviOSPath;
+
 			// Running on the simulator
 			var app = ConfigureApp.iOS
 							.PreferIdeSettings()
-							.AppBundle(AppPaths.iOSPath)
+							.AppBundle(enviOSPath)
 							.Debug()
 							.StartApp();
 
