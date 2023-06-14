@@ -82,7 +82,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DoubleTapWithMixedRecognizersShouldRegisterDoubleTap()
 		{
 			RunningApp.WaitForElement(MixedTapBoxId);
@@ -92,7 +91,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SingleTapWithMixedRecognizersShouldRegisterSingleTap()
 		{
 			RunningApp.WaitForElement(MixedTapBoxId);

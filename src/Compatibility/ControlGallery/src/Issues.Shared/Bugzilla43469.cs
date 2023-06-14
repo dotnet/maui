@@ -53,7 +53,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public async Task Bugzilla43469Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(kButtonText));

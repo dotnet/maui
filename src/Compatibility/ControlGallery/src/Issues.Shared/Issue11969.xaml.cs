@@ -65,7 +65,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST && __IOS__
 		[Test]
 		[Category(UITestCategories.SwipeView)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeDisableChildButtonTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Failed));

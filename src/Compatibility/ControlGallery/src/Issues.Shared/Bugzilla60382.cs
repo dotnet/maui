@@ -39,7 +39,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("ListView"));

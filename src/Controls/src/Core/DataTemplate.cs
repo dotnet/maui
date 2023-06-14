@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/DataTemplate.xml" path="Type[@FullName='Microsoft.Maui.Controls.DataTemplate']/Docs/*" />
 	public class DataTemplate : ElementTemplate, IDataTemplateController
 	{
-		static int idCounter = 100;
+		static int idCounter = 1;
 
 		int _id;
 		string _idString;

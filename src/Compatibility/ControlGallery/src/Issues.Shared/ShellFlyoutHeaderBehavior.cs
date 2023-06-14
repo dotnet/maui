@@ -109,7 +109,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FlyoutHeaderBehaviorScroll()
 		{
 			RunningApp.Tap(nameof(FlyoutHeaderBehavior.Scroll));

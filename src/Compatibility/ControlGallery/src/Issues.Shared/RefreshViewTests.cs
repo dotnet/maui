@@ -132,7 +132,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void IsRefreshingAndCommandTest()
 		{
 			RunningApp.Tap(q => q.Button("Toggle Refresh"));
@@ -144,7 +143,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void IsRefreshingAndCommandTest_SwipeDown()
 		{
 			RunningApp.WaitForElement(q => q.Marked("IsRefreshing: False"));
@@ -158,7 +156,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void RefreshDisablesWithCommand()
 		{
 			RunningApp.WaitForElement("IsRefreshing: False");

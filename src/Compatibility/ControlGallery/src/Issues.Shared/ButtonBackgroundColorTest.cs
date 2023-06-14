@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonBackgroundColorAutomatedTest()
 		{
 			// With the original bug in place, we'll crash before we get this far

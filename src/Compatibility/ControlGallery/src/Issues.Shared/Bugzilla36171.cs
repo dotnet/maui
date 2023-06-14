@@ -84,7 +84,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("Missing UITest for focus")]
 #endif
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EntryTextDoesNotDisplayNonnumericInput ()
 		{
 			RunningApp.WaitForElement ("Start Entry");
@@ -108,7 +107,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("Missing UITest for focus")]
 #endif
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EditorTextDoesNotDisplayNonnumericInput ()
 		{
 			RunningApp.WaitForElement ("Start Editor");

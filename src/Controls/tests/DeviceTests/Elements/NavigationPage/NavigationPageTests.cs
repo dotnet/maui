@@ -253,11 +253,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage Does Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "NavigationPage Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -295,11 +291,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
-		[Fact(DisplayName = "Can Reuse Pages"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "Can Reuse Pages")]
 		public async Task CanReusePages()
 		{
 			SetupBuilder();

@@ -42,7 +42,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DoesNotCrash()
 		{
 			RunningApp.WaitForElement(q => q.Text("Success"));

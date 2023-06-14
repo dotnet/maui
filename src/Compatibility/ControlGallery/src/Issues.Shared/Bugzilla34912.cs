@@ -103,7 +103,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla34912Test()
 		{
 			RunningApp.Tap(q => q.Marked("Allen"));

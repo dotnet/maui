@@ -48,7 +48,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 		{
 			RunningApp.Screenshot("Screen opens, items are shown");
@@ -64,7 +63,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			RunningApp.Screenshot("Screen opens, items are shown");

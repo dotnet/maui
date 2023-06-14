@@ -960,11 +960,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact(DisplayName = "Pages Do Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{
 			SetupBuilder();

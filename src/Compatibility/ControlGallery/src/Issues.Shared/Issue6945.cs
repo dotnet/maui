@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void WrongTranslationBehaviorWhenChangingHeightRequestAndSettingAnchor()
 		{
 			var rect = RunningApp.WaitForElement(BoxViewId)[0].Rect;

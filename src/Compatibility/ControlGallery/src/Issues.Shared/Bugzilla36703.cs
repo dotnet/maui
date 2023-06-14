@@ -64,7 +64,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void _36703Test()
 		{
 			RunningApp.WaitForElement(TestImage);

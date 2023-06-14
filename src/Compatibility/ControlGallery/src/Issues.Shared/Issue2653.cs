@@ -155,7 +155,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// https://github.com/xamarin/Xamarin.Forms/issues/2989
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ZIndexWhenInsertingChildren()
 		{
 			RunningApp.WaitForElement(x => x.Marked(ButtonText));

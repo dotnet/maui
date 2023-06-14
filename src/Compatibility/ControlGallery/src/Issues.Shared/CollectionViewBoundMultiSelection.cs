@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ItemsFromViewModelShouldBeSelected()
 		{
 			// Initially Items 1 and 2 should be selected (from the view model)

@@ -145,7 +145,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && (__ANDROID__ || __IOS__)
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue10563OpenSwipeViewTest ()
 		{
 			RunningApp.WaitForElement(OpenLeftId);

@@ -60,7 +60,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public async Task ControlCanBeFocusedByUnfocusedEvent()
 		{
 			RunningApp.WaitForElement(TheEntry);

@@ -181,7 +181,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && !__ANDROID__
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EnsureListViewEmptiesOut()
 		{
 			RunningApp.Tap("Click Until Success");

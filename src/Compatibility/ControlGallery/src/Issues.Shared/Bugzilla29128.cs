@@ -30,7 +30,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla29128Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("SliderId"));

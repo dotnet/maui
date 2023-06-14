@@ -283,7 +283,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void BackButtonSetToTextStillNavigatesBack()
 		{
 			RunningApp.Tap(PushPageId);
@@ -294,7 +293,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void BackButtonSetToTextStillOpensFlyout()
 		{
 			RunningApp.Tap(ToggleTextId);
@@ -317,7 +315,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 #else
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 		{
 			RunningApp.WaitForElement("ToggleFlyoutBehavior");

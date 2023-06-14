@@ -51,7 +51,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla51825Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Bugzilla51825SearchBar"));
