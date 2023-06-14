@@ -460,10 +460,16 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellAppearanceElement is null)
 				return;
 
-			ShellItemNavigationView.UpdateTopNavAreaBackground(_shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint());
-			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(_shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint());
-			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(_shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint());
-			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(_shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint());
+			var backgroundColor = _shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint();
+			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
+			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
+			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
+
+			ShellItemNavigationView.UpdateTopNavAreaBackground(backgroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(titleColor ?? unselectedColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
