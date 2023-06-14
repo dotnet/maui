@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 			return handler
 				.SourceLoader
 				.UpdateImageSourceAsync()
-				.ContinueWith((action) => handler.PlatformView.UpdateIsAnimationPlaying(image));
+				.ContinueWith((action) => handler.UpdateValue(nameof(IImage.IsAnimationPlaying)));
 		}
 
 		void OnSetImageSource(Drawable? obj) =>
