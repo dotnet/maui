@@ -17,9 +17,9 @@ parameters:
       winui: /optional/path/to/winui.csproj
       mac: /optional/path/to/mac.csproj
       app: /optional/path/to/app.csproj
-      compatibilityApp: /optional/path/to/app.csproj
-      compatibilityAndroid: /optional/path/to/android.csproj
-      compatibilityiOS: /optional/path/to/ios.csproj
+      compatibilityAndroidApp: /optional/path/to/app.csproj
+      compatibilityAndroidTestProject: /optional/path/to/android.csproj
+      compatibilityiOSTestProject: /optional/path/to/ios.csproj
       compatibilityiOSApp: /optional/path/to/app.csproj
 
 stages:
@@ -142,7 +142,7 @@ stages:
           - ${{ each api in parameters.androidApiLevels }}:
             - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
               - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
-                timeoutInMinutes: 120 # how long to run the job before automatically cancelling
+                timeoutInMinutes: 240
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
@@ -160,8 +160,8 @@ stages:
                       provisionPlatform: macos
                       configuration: Debug
                       version: ${{ api }}
-                      path: ${{ project.compatibilityAndroid }}
-                      app: ${{ project.compatibilityApp }}
+                      path: ${{ project.compatibilityAndroidTestProject }}
+                      app: ${{ project.compatibilityAndroidApp }}
                       targetSample: "dotnet-legacy-controlgallery-android"
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
@@ -176,6 +176,7 @@ stages:
           - ${{ each version in parameters.iosVersions }}:
             - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
               - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                timeoutInMinutes: 240
                 workspace:
                   clean: all
                 displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
@@ -192,7 +193,7 @@ stages:
                         version: 16.2
                       ${{ if ne(version, 'latest') }}:
                         version: ${{ version }}
-                      path: ${{ project.compatibilityiOS }}
+                      path: ${{ project.compatibilityiOSTestProject }}
                       app: ${{ project.compatibilityiOSApp }}
                       targetSample: "dotnet-legacy-controlgallery-ios"
                       ${{ if eq(version, 'latest') }}:
