@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Issue(IssueTracker.Github, 2411, "ScrollToPosition.End crashing in TabbedPage", PlatformAffected.Android)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 #if __MACOS__
         [Ignore("ScrollTo not implemented on MacOS")]
 #endif
