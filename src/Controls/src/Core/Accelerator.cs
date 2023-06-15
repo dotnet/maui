@@ -33,10 +33,9 @@ namespace Microsoft.Maui.Controls
 		public IEnumerable<string> Keys 
 		{
 			get => Key is null ? null : new[] { Key };
-			set => Key = Keys?.FirstOrDefault();
 		}
 
-		public string Key { get; set; }
+		public string Key { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)
@@ -71,7 +70,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			if (text != Separator)
+			if (!string.Equals(text, Separator, StringComparison.Ordinal))
 			{
 #if NETSTANDARD2_0
 				text = text.Replace(Separator, "");
