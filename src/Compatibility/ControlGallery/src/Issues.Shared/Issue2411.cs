@@ -34,6 +34,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 #if __ANDROID__
         [Ignore("Appearing event is tied to virtualization in TabbedPage for Material")]
 #endif
