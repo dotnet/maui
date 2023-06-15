@@ -50,7 +50,7 @@ steps:
     condition: always()
     inputs:
       testResultsFormat: NUnit
-      testResultsFiles: 'TestResult.xml'
+      testResultsFiles: '**/TestResult*.xml'
       testRunTitle: '$(System.PhaseName)'
       searchFolder: '$(TestResultsDirectory)'
       failTaskOnFailedTests: true
