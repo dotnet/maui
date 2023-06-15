@@ -153,7 +153,7 @@ Task("Build")
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android--{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 
 	if (USE_DOTNET)
 	{
@@ -304,7 +304,7 @@ Task("uitest")
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
@@ -335,7 +335,7 @@ Task("cg-uitest")
 	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
 	Information("BinDir: {0}", binDir);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android.binlog";
+	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
@@ -348,8 +348,8 @@ Task("cg-uitest")
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/run_uitests_output.log",
-		Work = TEST_RESULTS
+		OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
+		Work = $"{TEST_RESULTS}/android/"
 	};
 
 	if(!string.IsNullOrEmpty(TEST_WHERE))

@@ -242,7 +242,7 @@ Task("cg-uitest")
 	
 	CleanDirectories(TEST_RESULTS);
 
-	InstallIpa(TEST_APP, "com.microsoft.mauicompatibilitygallery", TEST_DEVICE, TEST_RESULTS, iosVersion);
+	InstallIpa(TEST_APP, "com.microsoft.mauicompatibilitygallery", TEST_DEVICE, $"{TEST_RESULTS}/ios", iosVersion);
 
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
@@ -264,8 +264,8 @@ Task("cg-uitest")
 	Information("Run UITests lib {0}", testLibDllPath);
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
-		OutputFile = $"{TEST_RESULTS}/run_uitests_output.log",
-		Work = TEST_RESULTS
+		OutputFile = $"{TEST_RESULTS}/ios/run_uitests_output.log",
+		Work = $"{TEST_RESULTS}/ios"
 	};
 
 	Information("Outputfile {0}", nunitSettings.OutputFile);
