@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1769Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(GoToPageTwoButtonText));
