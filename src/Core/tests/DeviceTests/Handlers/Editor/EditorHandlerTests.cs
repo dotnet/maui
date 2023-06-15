@@ -257,7 +257,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsSpellCheckEnabled = true
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled = true, GetNativeIsSpellCheckEnabled, editor.IsSpellCheckEnabled = true);
+			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, editor.IsSpellCheckEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -288,7 +288,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyUpdatesValue(
 				editor,
-				nameof(IEditor.IsTextPredictionEnabled),
+				nameof(IEditor.IsSpellCheckEnabled),
 				GetNativeIsSpellCheckEnabled,
 				setValue,
 				unsetValue);
@@ -390,7 +390,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
+#if ANDROID
+		// Android text and Chat keyboards are the same
+		[InlineData(nameof(Keyboard.Chat), true)]
+#else
 		[InlineData(nameof(Keyboard.Chat), false)]
+#endif
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
@@ -421,7 +426,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
+#if ANDROID
+		// Android text and Chat keyboards are the same
+		[InlineData(nameof(Keyboard.Text), true)]
+#else
 		[InlineData(nameof(Keyboard.Text), false)]
+#endif
 		[InlineData(nameof(Keyboard.Url), false)]
 		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
 		{

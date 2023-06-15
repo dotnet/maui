@@ -177,7 +177,7 @@ namespace Microsoft.Maui.DeviceTests
 			var textView = GetNativeEditor(editorHandler);
 			var inputTypes = textView.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		bool GetNativeIsEmailKeyboard(EditorHandler editorHandler)
@@ -209,7 +209,7 @@ namespace Microsoft.Maui.DeviceTests
 			var textView = GetNativeEditor(editorHandler);
 			var inputTypes = textView.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		int GetNativeCursorPosition(EditorHandler editorHandler)

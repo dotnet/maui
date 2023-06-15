@@ -278,7 +278,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var inputTypes = editText.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
@@ -330,7 +330,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var inputTypes = editText.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)

@@ -83,7 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 				IsSpellCheckEnabled = true
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled = true, GetNativeIsSpellCheckEnabled, searchBar.IsSpellCheckEnabled = true );
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, searchBar.IsSpellCheckEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -112,9 +112,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var searchBar = new SearchBarStub();
 
+			// TODO: JD - Figure out why this is not working on Windows
+			// There seems to be a problem with the propInfo.SetValue(view, expectedSetValue) inside of ValidatePropertyUpdateValue
+			// Could this be because we're using a stub that doesn't have children?
 			await ValidatePropertyUpdatesValue(
 				searchBar,
-				nameof(ISearchBar.IsTextPredictionEnabled),
+				nameof(ISearchBar.IsSpellCheckEnabled),
 				GetNativeIsSpellCheckEnabled,
 				setValue,
 				unsetValue);
@@ -238,6 +241,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// TODO: JD - re-enable these tests for windows. Seems they were disabled because there is no implementation of "GetNativeXKeyboard" in the test .Windows test file
 #if !WINDOWS
 		[Theory]
 		[InlineData(true)]
@@ -252,7 +256,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.IsReadOnly, GetNativeIsReadOnly, searchBar.IsReadOnly);
 		}
-
 		[Theory(DisplayName = "Validates Numeric Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), false)]
 		[InlineData(nameof(Keyboard.Default), false)]
@@ -326,7 +329,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
+#if ANDROID
+		// Android text and Chat keyboards are the same
+		[InlineData(nameof(Keyboard.Chat), true)]
+#else
 		[InlineData(nameof(Keyboard.Chat), false)]
+#endif
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
@@ -357,7 +365,12 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
+#if ANDROID
+		// Android text and Chat keyboards are the same
+		[InlineData(nameof(Keyboard.Text), true)]
+#else
 		[InlineData(nameof(Keyboard.Text), false)]
+#endif
 		[InlineData(nameof(Keyboard.Url), false)]
 		public async Task ValidateChatKeyboard(string keyboardName, bool expected)
 		{

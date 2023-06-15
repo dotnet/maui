@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
 
 		public static void MapIsSpellCheckEnabled(IEditorHandler handler, IEditor editor) =>
-			handler.PlatformView?.UpdateIsTextPredictionEnabled(editor);
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(editor);
 
 		public static void MapFont(IEditorHandler handler, IEditor editor) =>
 			handler.PlatformView?.UpdateFont(editor, handler.GetRequiredService<IFontManager>());

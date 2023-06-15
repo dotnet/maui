@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 
 			if (self == Keyboard.Default)
 				result = InputTypes.ClassText | InputTypes.TextVariationNormal;
-			else if (self == Keyboard.Chat)
+			else if (self == Keyboard.Chat || self == Keyboard.Text)
 				result = InputTypes.ClassText | InputTypes.TextFlagCapSentences | InputTypes.TextFlagAutoComplete;
 			else if (self == Keyboard.Email)
 				result = InputTypes.ClassText | InputTypes.TextVariationEmailAddress;
@@ -19,8 +19,6 @@ namespace Microsoft.Maui.Platform
 				result = InputTypes.ClassNumber | InputTypes.NumberFlagDecimal | InputTypes.NumberFlagSigned;
 			else if (self == Keyboard.Telephone)
 				result = InputTypes.ClassPhone;
-			else if (self == Keyboard.Text)
-				result = InputTypes.ClassText | InputTypes.TextFlagCapSentences | InputTypes.TextFlagAutoComplete;
 			else if (self == Keyboard.Url)
 				result = InputTypes.ClassText | InputTypes.TextVariationUri;
 			else if (self is CustomKeyboard custom)
@@ -41,7 +39,7 @@ namespace Microsoft.Maui.Platform
 					result |= InputTypes.TextFlagNoSuggestions;
 
 				if (suggestionsEnabled)
-					result |= InputTypes.TextFlagAutoComplete;
+					result |= InputTypes.TextFlagAutoCorrect;
 
 				// All existed before these settings. This ensures these changes are backwards compatible
 				// without this check TextFlagCapCharacters would win

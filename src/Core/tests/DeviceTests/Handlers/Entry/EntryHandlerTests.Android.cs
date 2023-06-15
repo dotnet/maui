@@ -283,7 +283,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = GetNativeEntry(entryHandler);
 			var inputTypes = editText.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		bool GetNativeIsEmailKeyboard(EntryHandler entryHandler)
@@ -315,7 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 			var editText = GetNativeEntry(entryHandler);
 			var inputTypes = editText.InputType;
 
-			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+			return inputTypes.HasFlag(InputTypes.ClassText) && inputTypes.HasFlag(InputTypes.TextFlagCapSentences) && inputTypes.HasFlag(InputTypes.TextFlagAutoComplete);
 		}
 
 		Android.Views.TextAlignment GetNativeHorizontalTextAlignment(EntryHandler entryHandler) =>

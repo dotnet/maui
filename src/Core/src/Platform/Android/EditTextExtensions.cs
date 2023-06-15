@@ -65,25 +65,41 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
+			editText.UpdateIsTextPredictionEnabled(entry as ITextInput);
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
+			editText.UpdateIsSpellCheckEnabled(entry as ITextInput);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
-			if (editor.IsTextPredictionEnabled)
+			editText.UpdateIsTextPredictionEnabled(editor as ITextInput);
+		}
+
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
+		{
+			editText.UpdateIsSpellCheckEnabled(editor as ITextInput);
+		}
+
+		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
+		{
+			var keyboard = textInput.Keyboard;
+
+			// TextFlagAutoCorrect will correct "Whats" -> "What's"
+			// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
+			// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
+			if (textInput.IsTextPredictionEnabled)
 				editText.InputType |= InputTypes.TextFlagAutoCorrect;
 			else
 				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
 		}
 
-		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
+		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
-			if (!editor.IsSpellCheckEnabled)
+			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
+			if (!textInput.IsSpellCheckEnabled)
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
 			else
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
@@ -298,19 +314,8 @@ namespace Microsoft.Maui.Platform
 
 			if (keyboard is not CustomKeyboard)
 			{
-				// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
-				if (!textInput.IsSpellCheckEnabled)
-					editText.InputType |= InputTypes.TextFlagNoSuggestions;
-				else
-					editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
-
-				// TextFlagAutoCorrect will correct "Whats" -> "What's"
-				// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
-				// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
-				if (textInput.IsTextPredictionEnabled)
-					editText.InputType |= InputTypes.TextFlagAutoCorrect;
-				else
-					editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+				editText.UpdateIsTextPredictionEnabled(textInput);
+				editText.UpdateIsSpellCheckEnabled(textInput);
 			}
 
 			if (keyboard == Keyboard.Numeric)

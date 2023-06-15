@@ -85,7 +85,10 @@ namespace Microsoft.Maui.Platform
 			textView.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				textView.UpdateIsTextPredictionEnabled(editor);
+				textView.UpdateIsSpellCheckEnabled(editor);
+			}
 
 			textView.ReloadInputViews();
 		}

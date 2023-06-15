@@ -3062,8 +3062,6 @@
 ~static Microsoft.Maui.Controls.Routing.UnRegisterRoute(string route) -> void
 ~static Microsoft.Maui.Controls.ScrollView.ControlsScrollViewMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IScrollView, Microsoft.Maui.Handlers.ScrollViewHandler>
 ~static Microsoft.Maui.Controls.SearchBar.ControlsSearchBarMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.ISearchBar, Microsoft.Maui.Handlers.SearchBarHandler>
-~static Microsoft.Maui.Controls.SearchBar.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
-~static Microsoft.Maui.Controls.SearchBar.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.ISearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchBar.MapText(Microsoft.Maui.Handlers.SearchBarHandler handler, Microsoft.Maui.Controls.SearchBar searchBar) -> void
 ~static Microsoft.Maui.Controls.SearchHandler.SelectedItemProperty -> Microsoft.Maui.Controls.BindableProperty
