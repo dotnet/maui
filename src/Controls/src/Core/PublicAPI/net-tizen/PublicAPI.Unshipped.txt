@@ -77,4 +77,3 @@ Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
-static Microsoft.Maui.Controls.Page.ControlsPageMapper -> Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IContentView!, Microsoft.Maui.Handlers.IPageHandler!>!
