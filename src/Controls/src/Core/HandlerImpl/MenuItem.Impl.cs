@@ -7,7 +7,8 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
 	public partial class MenuItem : IMenuElement
 	{
-		IReadOnlyList<IAccelerator> IMenuElement.Accelerators => new[] { GetAccelerator(this) };
+		IReadOnlyList<IAccelerator> IMenuElement.Accelerators =>
+			GetAccelerator(this) is Accelerator acc ? new[] { acc } : null;
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -9,37 +10,44 @@ namespace Microsoft.Maui.Controls
 	[System.ComponentModel.TypeConverter(typeof(AcceleratorTypeConverter))]
 	public class Accelerator : IAccelerator
 	{
-		const char Separator = '+';
+		const string Separator = "+";
 		string _text;
 
-		internal Accelerator(string text)
+		internal Accelerator(string text, List<string> modifiers, string key)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
 			_text = text;
+			Key = key;
+			Modifiers = modifiers;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Modifiers']/Docs/*" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IReadOnlyList<string> Modifiers { get; set; }
+		public IEnumerable<string> Modifiers { get; }
+
+		IReadOnlyList<string> IAccelerator.Modifiers => Modifiers?.ToList();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Use Key instead.")]
-		public IEnumerable<string> Keys { get; set; }
+		public IEnumerable<string> Keys 
+		{
+			get => Key is null ? null : new[] { Key };
+			set => Key = Keys?.FirstOrDefault();
+		}
 
 		public string Key { get; set; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)
 		{
-			var accelarat = new Accelerator(text);
+			var modifiers = new List<string>();
+			var key = "";
 
-			var acceleratorParts = text.Split(Separator);
+			var acceleratorParts = text.Split(new[] { Separator }, StringSplitOptions.None);
 
 			if (acceleratorParts.Length > 1)
 			{
-				var modifiers = new List<string>();
 				for (int i = 0; i < acceleratorParts.Length; i++)
 				{
 					var modifierMask = acceleratorParts[i];
@@ -61,25 +69,20 @@ namespace Microsoft.Maui.Controls
 							break;
 					}
 				}
-				accelarat.Modifiers = modifiers;
-
 			}
 
-			if (text != Separator.ToString())
+			if (text != Separator)
 			{
 #if NETSTANDARD2_0
-				text = text.Replace(Separator.ToString(), "");
+				text = text.Replace(Separator, "");
 #else
-				text = text.Replace(Separator.ToString(), "", StringComparison.Ordinal);
+				text = text.Replace(Separator, "", StringComparison.Ordinal);
 #endif
-				var key = text;
-				accelarat.Key = key;
 			}
-			else
-			{
-				accelarat.Key = text;
-			}
-			return accelarat;
+
+			key = text;
+
+			return new Accelerator(text, modifiers, key);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='ToString']/Docs/*" />

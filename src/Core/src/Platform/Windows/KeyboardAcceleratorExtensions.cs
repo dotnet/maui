@@ -54,21 +54,16 @@ namespace Microsoft.Maui.Platform
 			var key = accelerator.Key;
 			var modifiers = accelerator.Modifiers;
 
+			var keyboardAccelerator = new KeyboardAccelerator();
+			keyboardAccelerator.Key = key.ToVirtualKey();
 			if (modifiers is not null)
 			{
-				var modifiersCount = modifiers.Count;
-				bool hasModifierMask = modifiersCount > 0;
-
-				if (hasModifierMask)
+				foreach (var mod in modifiers)
 				{
-					if (modifiersCount == 1)
-						result.Add(CreateSingleKeyAccelerator(modifiers.ElementAt(0), key));
-					else
-						result.Add(CreateMultiKeyAccelerator(modifiers, key));
+					keyboardAccelerator.Modifiers |= mod.ToVirtualKeyModifiers();
 				}
 			}
-			else
-				result.Add(CreateSingleKeyAccelerator(string.Empty, key));
+			result.Add(keyboardAccelerator);
 
 			return result;
 		}
@@ -121,33 +116,6 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return key;
-		}
-
-		internal static KeyboardAccelerator CreateSingleKeyAccelerator(string modifierMask, string key)
-		{
-			var keyboardAccelerator = new KeyboardAccelerator();
-
-			if (!string.IsNullOrEmpty(modifierMask))
-				keyboardAccelerator.Modifiers = modifierMask.ToVirtualKeyModifiers();
-
-			keyboardAccelerator.Key = key.ToVirtualKey();
-
-			return keyboardAccelerator;
-		}
-
-		internal static KeyboardAccelerator CreateMultiKeyAccelerator(IEnumerable<string> modifiers, string key)
-		{
-			var keyboardAccelerator = new KeyboardAccelerator();
-
-			for (int i = 0; i < modifiers.Count(); i++)
-			{
-				var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
-				keyboardAccelerator.Modifiers |= modifierMask.ToVirtualKeyModifiers();
-			}
-				
-			keyboardAccelerator.Key = key.ToVirtualKey();
-
-			return keyboardAccelerator;
 		}
 	}
 }

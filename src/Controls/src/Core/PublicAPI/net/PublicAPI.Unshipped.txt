@@ -1,8 +1,7 @@
 #nullable enable
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 ~Microsoft.Maui.Controls.Accelerator.Key.set -> void
-~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string>
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
