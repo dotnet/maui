@@ -10,8 +10,10 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using Xunit;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -72,15 +74,80 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
+
+		[Theory(DisplayName = "Shell TabBar Title Color Initializes Correctly")]
+		[InlineData("#FFFF0000")]
+		[InlineData("#FF00FF00")]
+
+		public async Task ShellTabBarTitleColorInitializesCorrectly(string colorHex)
+		{
+			SetupBuilder();
+
+			var expectedColor = Color.FromArgb(colorHex);
+			var selectedContent = new ShellContent()
+			{
+				Route = "Tab1",
+				Title = "Tab1",
+				Content = new ContentPage()
+			};
+
+			var unselectedContent = new ShellContent()
+			{
+				Route = "Tab2",
+				Title = "Tab2",
+				Content = new ContentPage()
+			};
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				Shell.SetTabBarTitleColor(shell, expectedColor);
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						selectedContent,
+						unselectedContent,
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+				var navView = shellItemHandler.PlatformView as MauiNavigationView;
+
+				var items = navView.TopNavArea.GetChildren<WNavigationViewItem>();
+				var selected = items.FirstOrDefault(x => x.IsSelected);
+				var unselected = items.FirstOrDefault(x => !x.IsSelected);
+
+				await AssertionExtensions.AssertContainsColor(selected, expectedColor, handler.MauiContext);
+				await AssertionExtensions.AssertDoesNotContainColor(unselected, expectedColor, handler.MauiContext);
+			});
+		}
+
 		[Theory(DisplayName = "Shell TabBar Foreground Initializes Correctly")]
-		[InlineData("#FF0000")]
-		[InlineData("#00FF00")]
+		[InlineData("#FFFF0000")]
+		[InlineData("#FF00FF00")]
 
 		public async Task ShellTabBarForegroundInitializesCorrectly(string colorHex)
 		{
 			SetupBuilder();
 
 			var expectedColor = Color.FromArgb(colorHex);
+			var selectedContent = new ShellContent()
+			{
+				Route = "Tab1",
+				Title = "Tab1",
+				Content = new ContentPage()
+			};
+
+			var unselectedContent = new ShellContent()
+			{
+				Route = "Tab2",
+				Title = "Tab2",
+				Content = new ContentPage()
+			};
 
 			var shell = await CreateShellAsync((shell) =>
 			{
@@ -91,41 +158,24 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Items =
 					{
-						new ShellContent()
-						{
-							Route = "Tab1",
-							Title= "Tab1",
-							Content = new ContentPage()
-						},
-						new ShellContent()
-						{
-							Route = "Tab2",
-							Title= "Tab2",
-							Content = new ContentPage()
-						},
+						selectedContent,
+						unselectedContent,
 					}
 				});
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				var rootNavView = handler.PlatformView;
-				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
-				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+				var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
-				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
-				Assert.NotNull(shellItemView);
+				var items = navView.TopNavArea.GetChildren<WNavigationViewItem>();
+				var selected = items.FirstOrDefault(x => x.IsSelected);
+				var unselected = items.FirstOrDefault(x => !x.IsSelected);
 
-				return Task.CompletedTask;
+				await AssertionExtensions.AssertContainsColor(selected, expectedColor, handler.MauiContext);
+				await AssertionExtensions.AssertDoesNotContainColor(unselected, expectedColor, handler.MauiContext);
 			});
-
-			await AssertionExtensions.Wait(() =>
-			{
-				var platformView = shell.Handler.PlatformView as FrameworkElement;
-				return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
-			});
-
-			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
 		[Theory(DisplayName = "Shell TabBar UnselectedColor Initializes Correctly")]
@@ -136,55 +186,47 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var expectedColor = Color.FromArgb(colorHex);
+			var selectedContent = new ShellContent()
+			{
+				Route = "Tab1",
+				Title = "Tab1",
+				Content = new ContentPage()
+			};
+
+			var unselectedContent = new ShellContent()
+			{
+				Route = "Tab2",
+				Title = "Tab2",
+				Content = new ContentPage()
+			};
 
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.FlyoutBehavior = FlyoutBehavior.Disabled;
-				Shell.SetTabBarForegroundColor(shell, Colors.Black);
 				Shell.SetTabBarUnselectedColor(shell, expectedColor);
 
 				shell.Items.Add(new TabBar()
 				{
 					Items =
 					{
-						new ShellContent()
-						{
-							Route = "Tab1",
-							Title= "Tab1",
-							Content = new ContentPage()
-						},
-						new ShellContent()
-						{
-							Route = "Tab2",
-							Title= "Tab2",
-							Content = new ContentPage()
-						},
+						selectedContent,
+						unselectedContent,
 					}
 				});
 			});
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
-				{
-					var rootNavView = handler.PlatformView;
-					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
-					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+				var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
-					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
-					Assert.NotNull(shellItemView);
+				var items = navView.TopNavArea.GetChildren<WNavigationViewItem>();
+				var selected = items.FirstOrDefault(x => x.IsSelected);
+				var unselected = items.FirstOrDefault(x => !x.IsSelected);
 
-					return Task.CompletedTask;
-				});
-
-				await AssertionExtensions.Wait(() =>
-				{
-					var platformView = shell.Handler.PlatformView as FrameworkElement;
-					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
-				});
+				await AssertionExtensions.AssertContainsColor(unselected, expectedColor, handler.MauiContext);
+				await AssertionExtensions.AssertDoesNotContainColor(selected, expectedColor, handler.MauiContext);
 			});
-
-			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
