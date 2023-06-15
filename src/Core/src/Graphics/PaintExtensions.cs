@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Graphics
 				return solidPaint == null || solidPaint.Color == null;
 
 			if (paint is GradientPaint gradientPaint)
-				return gradientPaint == null || gradientPaint.GradientStops.Length == 0;
+				return gradientPaint == null || gradientPaint.GradientStops.Length == 0 || gradientPaint.StartColor == null || gradientPaint.EndColor == null;
 
 			if (paint is ImagePaint imagePaint)
 				return imagePaint == null || imagePaint.Image == null;
