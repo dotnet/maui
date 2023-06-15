@@ -271,7 +271,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void MapBarBackground(ITabbedViewHandler handler, TabbedPage view)
 		{
-			// view._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
+			view._navigationView?.UpdateTopNavAreaBackground(view.BarBackground ?? view.BarBackgroundColor?.AsPaint());
 		}
 
 		internal static void MapBarBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
