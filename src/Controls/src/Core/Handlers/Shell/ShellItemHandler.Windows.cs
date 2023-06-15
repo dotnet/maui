@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WApp = Microsoft.UI.Xaml.Application;
@@ -27,6 +28,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		MauiNavigationView? _mauiNavigationView;
+		IShellAppearanceElement? _shellAppearanceElement;
 		MauiNavigationView ShellItemNavigationView => _mauiNavigationView!;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
@@ -442,28 +444,38 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (appearance is IShellAppearanceElement a)
 			{
+				_shellAppearanceElement = a;
 				// This means the template hasn't been applied yet
-				if (ShellItemNavigationView.TopNavArea == null)
+				if (ShellItemNavigationView.TopNavArea is null)
 				{
 					ShellItemNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
-
-					void OnApplyTemplateFinished(object? sender, EventArgs e)
-					{
-						ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
-						ApplyAppearance();
-					}
-				}
-				else
-				{
-					ApplyAppearance();
 				}
 
-				void ApplyAppearance()
-				{
-					ShellItemNavigationView.UpdateTopNavAreaBackground(a.EffectiveTabBarBackgroundColor?.AsPaint());
-					ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(a.EffectiveTabBarForegroundColor?.AsPaint());
-				}
+				ApplyAppearance();
 			}
+		}
+
+		void ApplyAppearance()
+		{
+			if (_shellAppearanceElement is null)
+				return;
+
+			var backgroundColor = _shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint();
+			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
+			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
+			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
+
+			ShellItemNavigationView.UpdateTopNavAreaBackground(backgroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(unselectedColor);
+			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
+		}
+
+		void OnApplyTemplateFinished(object? sender, EventArgs e)
+		{
+			ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			ApplyAppearance();
 		}
 	}
 }

@@ -72,6 +72,121 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
+		[Theory(DisplayName = "Shell TabBar Foreground Initializes Correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+
+		public async Task ShellTabBarForegroundInitializesCorrectly(string colorHex)
+		{
+			SetupBuilder();
+
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Disabled;
+				Shell.SetTabBarForegroundColor(shell, expectedColor);
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Tab1",
+							Title= "Tab1",
+							Content = new ContentPage()
+						},
+						new ShellContent()
+						{
+							Route = "Tab2",
+							Title= "Tab2",
+							Content = new ContentPage()
+						},
+					}
+				});
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				var rootNavView = handler.PlatformView;
+				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+
+				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+				Assert.NotNull(shellItemView);
+
+				return Task.CompletedTask;
+			});
+
+			await AssertionExtensions.Wait(() =>
+			{
+				var platformView = shell.Handler.PlatformView as FrameworkElement;
+				return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
+			});
+
+			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+		}
+
+		[Theory(DisplayName = "Shell TabBar UnselectedColor Initializes Correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#0000FF")]
+		public async Task ShellTabBarUnselectedColorInitializesCorrectly(string colorHex)
+		{
+			SetupBuilder();
+
+			var expectedColor = Color.FromArgb(colorHex);
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Disabled;
+				Shell.SetTabBarForegroundColor(shell, Colors.Black);
+				Shell.SetTabBarUnselectedColor(shell, expectedColor);
+
+				shell.Items.Add(new TabBar()
+				{
+					Items =
+					{
+						new ShellContent()
+						{
+							Route = "Tab1",
+							Title= "Tab1",
+							Content = new ContentPage()
+						},
+						new ShellContent()
+						{
+							Route = "Tab2",
+							Title= "Tab2",
+							Content = new ContentPage()
+						},
+					}
+				});
+			});
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+				{
+					var rootNavView = handler.PlatformView;
+					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+
+					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+					Assert.NotNull(shellItemView);
+
+					return Task.CompletedTask;
+				});
+
+				await AssertionExtensions.Wait(() =>
+				{
+					var platformView = shell.Handler.PlatformView as FrameworkElement;
+					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
+				});
+			});
+
+			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+		}
+
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{
