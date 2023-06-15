@@ -199,6 +199,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), false);
