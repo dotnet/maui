@@ -27,9 +27,8 @@ namespace Microsoft.Maui.Controls.Handlers
 		ObservableCollection<NavigationViewItemViewModel> _mainLevelTabs;
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
-		MauiNavigationView? _mauiNavigationView;
 		IShellAppearanceElement? _shellAppearanceElement;
-		MauiNavigationView ShellItemNavigationView => _mauiNavigationView!;
+		MauiNavigationView ShellItemNavigationView => (PlatformView as MauiNavigationView)!;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -38,30 +37,13 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override FrameworkElement CreatePlatformElement()
 		{
-			var platformView = new MauiNavigationView()
-			{
-				PaneDisplayMode = NavigationViewPaneDisplayMode.Top,
-				IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed,
-				IsSettingsVisible = false,
-				IsPaneToggleButtonVisible = false,
-				MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"],
-				MenuItemsSource = _mainLevelTabs
-			};
-
-			_mauiNavigationView = platformView;
-			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
-			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
-			platformView.SetApplicationResource("NavigationViewContentMargin", null);
-			platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
-
-			_mauiNavigationView.Loaded += OnNavigationViewLoaded;
-			return platformView;
+			return new MauiNavigationView();
 		}
 
 		void OnNavigationViewLoaded(object sender, RoutedEventArgs e)
 		{
-			if (_mauiNavigationView != null)
-				_mauiNavigationView.Loaded -= OnNavigationViewLoaded;
+			if (PlatformView is not null)
+				PlatformView.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
 			MapMenuItems();
@@ -69,6 +51,23 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override void ConnectHandler(FrameworkElement platformView)
 		{
+			ShellItemNavigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+			ShellItemNavigationView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+			ShellItemNavigationView.IsSettingsVisible = false;
+			ShellItemNavigationView.IsPaneToggleButtonVisible = false;
+			ShellItemNavigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+			ShellItemNavigationView.MenuItemsSource = _mainLevelTabs;
+
+			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
+			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
+			platformView.SetApplicationResource("NavigationViewContentMargin", null);
+			platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
+
+			if (platformView.IsLoaded)
+				OnNavigationViewLoaded(ShellItemNavigationView, new RoutedEventArgs());
+			else
+				platformView.Loaded += OnNavigationViewLoaded;
+
 			base.ConnectHandler(platformView);
 			ShellItemNavigationView.SelectionChanged += OnNavigationTabChanged;
 		}
@@ -76,10 +75,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
 			base.DisconnectHandler(platformView);
-			ShellItemNavigationView.SelectionChanged -= OnNavigationTabChanged;
 
-			if (_mauiNavigationView != null)
-				_mauiNavigationView.Loaded -= OnNavigationViewLoaded;
+			ShellItemNavigationView.SelectionChanged -= OnNavigationTabChanged;
+			platformView.Loaded -= OnNavigationViewLoaded;
 
 			if (_currentShellSection != null)
 				_currentShellSection.PropertyChanged -= OnCurrentShellSectionPropertyChanged;
@@ -451,11 +449,11 @@ namespace Microsoft.Maui.Controls.Handlers
 					ShellItemNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 				}
 
-				ApplyAppearance();
+				UpdateAppearance(_shellAppearanceElement);
 			}
 		}
 
-		void ApplyAppearance()
+		protected virtual void UpdateAppearance(IShellAppearanceElement appearance)
 		{
 			if (_shellAppearanceElement is null)
 				return;
@@ -475,7 +473,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
 			ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
-			ApplyAppearance();
+
+			if (_shellAppearanceElement is not null)
+				UpdateAppearance(_shellAppearanceElement);
 		}
 	}
 }

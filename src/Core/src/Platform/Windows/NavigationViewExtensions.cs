@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
 
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void UpdateTopNavigationViewItemSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		public static void UpdateTopNavigationViewItemSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
 
