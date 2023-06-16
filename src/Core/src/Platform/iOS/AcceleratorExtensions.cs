@@ -38,31 +38,26 @@ namespace Microsoft.Maui.Platform
 			UIKeyModifierFlags modifierFlags = 0;
 
 			// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
-			if (modifiers is not null)
+			if (modifiers is not null && modifiers.Count > 0)
 			{
-				var modifiersCount = modifiers.Count();
-
-				if (modifiersCount > 0)
+				foreach (var modifier in modifiers)
 				{
-					for (int i = 0; i < modifiersCount; i++)
-					{
-						var modifierMask = modifiers.ElementAt(i).ToLowerInvariant();
+					var modifierMask = modifier.ToLowerInvariant();
 
-						switch (modifierMask)
-						{
-							case "ctrl":
-								modifierFlags |= UIKeyModifierFlags.Control;
-								break;
-							case "cmd":
-								modifierFlags |= UIKeyModifierFlags.Command;
-								break;
-							case "alt":
-								modifierFlags |= UIKeyModifierFlags.Alternate;
-								break;
-							case "shift":
-								modifierFlags |= UIKeyModifierFlags.Shift;
-								break;
-						}
+					switch (modifierMask)
+					{
+						case "ctrl":
+							modifierFlags |= UIKeyModifierFlags.Control;
+							break;
+						case "cmd":
+							modifierFlags |= UIKeyModifierFlags.Command;
+							break;
+						case "alt":
+							modifierFlags |= UIKeyModifierFlags.Alternate;
+							break;
+						case "shift":
+							modifierFlags |= UIKeyModifierFlags.Shift;
+							break;
 					}
 				}
 			}
