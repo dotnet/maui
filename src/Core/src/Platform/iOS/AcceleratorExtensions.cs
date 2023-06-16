@@ -67,26 +67,28 @@ namespace Microsoft.Maui.Platform
 
 		static UIMenuElement CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
 		{
-			var keyCommand = UIKeyCommand.Create(
-										title: virtualView.Text,
-										uiImage,
-										selector,
-										key,
-										modifierFlags,
-										new NSString($"{index}"));
+			var keyCommand = UIKeyCommand.Create(	
+				title: virtualView.Text,
+				uiImage,
+				selector,
+				key,
+				modifierFlags,
+				new NSString(index.ToString()));
+
 			keyCommand.WantsPriorityOverSystemBehavior = true;
 
 			MenuFlyoutItemHandler.menus[index] = virtualView;
+
 			return keyCommand;
 		}
 
 		static UIMenuElement CreateMenuItemCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector)
 		{
-			var command = UICommand.Create(
-									title: virtualView.Text,
-									uiImage,
-									selector,
-									new NSString($"{index}"));
+			var command = UICommand.Create(				
+				title: virtualView.Text,
+				uiImage,
+				selector,
+				new NSString(index.ToString()));
 
 			MenuFlyoutItemHandler.menus[index] = virtualView;
 			return command;
