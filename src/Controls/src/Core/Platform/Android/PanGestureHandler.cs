@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using Microsoft.Maui.Devices;
 using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -102,8 +101,13 @@ namespace Microsoft.Maui.Controls.Platform
 			if (view is null)
 				return false;
 
+			var platformView = view.Handler?.PlatformView as AView;
+
+			if (platformView is null)
+				return false;
+
 			var bounds = view.Bounds;
-			var density = DeviceDisplay.MainDisplayInfo.Density;
+			var density = platformView.Context.GetDisplayDensity();
 
 			var platformBounds = new Graphics.Rect(
 				bounds.X * density,
