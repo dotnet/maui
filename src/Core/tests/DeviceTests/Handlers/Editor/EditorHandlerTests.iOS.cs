@@ -267,7 +267,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 
 		int GetNativeCursorPosition(EditorHandler editorHandler)

@@ -702,7 +702,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeEntry.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEntry.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				nativeEntry.SpellCheckingType == UITextSpellCheckingType.No;
+				nativeEntry.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>

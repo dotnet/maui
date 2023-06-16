@@ -390,7 +390,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(DisplayName = "Validates Text Keyboard")]
-#if ANDROID
+#if ANDROID || IOS || MACCATALYST
 		// Android text and Chat keyboards are the same
 		[InlineData(nameof(Keyboard.Chat), true)]
 #else
@@ -406,6 +406,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Keyboard.Default), true)]
 		// Plain is the same as the Default keyboard on Windows
 		[InlineData(nameof(Keyboard.Plain), true)]
+#elif IOS || MACCATALYST
+		// On ios the text and default keyboards are the same
+		[InlineData(nameof(Keyboard.Default), true)]
+		[InlineData(nameof(Keyboard.Plain), false)]
 #else
 		[InlineData(nameof(Keyboard.Default), false)]
 		[InlineData(nameof(Keyboard.Plain), false)]
@@ -421,13 +425,18 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory(DisplayName = "Validates Chat Keyboard")]
 		[InlineData(nameof(Keyboard.Chat), true)]
+#if IOS || MACCATALYST
+		// On iOS the default and chat keyboard are the same
+		[InlineData(nameof(Keyboard.Default), true)]
+#else
 		[InlineData(nameof(Keyboard.Default), false)]
+#endif
 		[InlineData(nameof(Keyboard.Email), false)]
 		[InlineData(nameof(Keyboard.Numeric), false)]
 		[InlineData(nameof(Keyboard.Plain), false)]
 		[InlineData(nameof(Keyboard.Telephone), false)]
-#if ANDROID
-		// Android text and Chat keyboards are the same
+#if ANDROID || IOS || MACCATALYST
+		// Android & iOS text and Chat keyboards are the same
 		[InlineData(nameof(Keyboard.Text), true)]
 #else
 		[InlineData(nameof(Keyboard.Text), false)]

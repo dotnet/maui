@@ -288,7 +288,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				textField.SpellCheckingType == UITextSpellCheckingType.No;
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
 		{
