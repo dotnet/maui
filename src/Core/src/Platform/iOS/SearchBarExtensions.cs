@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Platform
 			if (textField == null)
 				return;
 
-			if (searchBar.IsTextPredictionEnabled)
+			if (searchBar.IsSpellCheckEnabled)
 				textField.SpellCheckingType = UITextSpellCheckingType.Yes;
 			else
 				textField.SpellCheckingType = UITextSpellCheckingType.No;
