@@ -455,12 +455,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPointerExited(object sender, PointerRoutedEventArgs e)
 		{
+			PanComplete(true);
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
 				_fingers.Remove(id);
 			SwipeComplete(true);
 			PinchComplete(true);
-			PanComplete(true);
 		}
 
 		void OnPointerPressed(object sender, PointerRoutedEventArgs e)
