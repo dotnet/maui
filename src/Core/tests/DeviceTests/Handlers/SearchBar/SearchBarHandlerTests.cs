@@ -64,26 +64,40 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
-		public async Task IsTextPredictionEnabledInitializesCorrectly()
+		[Theory(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
 		{
-			var searchBar = new SearchBarStub
+			var searchBar = new SearchBarStub() 
 			{
-				IsTextPredictionEnabled = true
+				IsTextPredictionEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, searchBar.IsTextPredictionEnabled);
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded);
+			});
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
 		}
 
-		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
-		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		[Theory(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledInitializesCorrectly(bool isEnabled)
 		{
-			var searchBar = new SearchBarStub
+			var searchBar = new SearchBarStub()
 			{
-				IsSpellCheckEnabled = true
+				IsSpellCheckEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, searchBar.IsSpellCheckEnabled);
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded);
+			});
+
+			await ValidatePropertyInitValue(searchBar, () => searchBar.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -93,7 +107,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var searchBar = new SearchBarStub();
+			var searchBar = new SearchBarStub()
+			{
+				IsTextPredictionEnabled = setValue
+			};
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded);
+			});
 
 			await ValidatePropertyUpdatesValue(
 				searchBar,
@@ -110,11 +132,16 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var searchBar = new SearchBarStub();
+			var searchBar = new SearchBarStub()
+			{
+				IsSpellCheckEnabled = setValue
+			};
 
-			// TODO: JD - Figure out why this is not working on Windows
-			// There seems to be a problem with the propInfo.SetValue(view, expectedSetValue) inside of ValidatePropertyUpdateValue
-			// Could this be because we're using a stub that doesn't have children?
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded);
+			});
+
 			await ValidatePropertyUpdatesValue(
 				searchBar,
 				nameof(ISearchBar.IsSpellCheckEnabled),
@@ -138,7 +165,12 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = textPredictionValue,
 				IsSpellCheckEnabled = spellCheckValue
 			};
-			
+
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
+			{
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.IsLoaded);
+			});
+
 			var nativeTextPrediction = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);
 			var nativeSpellChecking = await GetValueAsync(searchBar, GetNativeIsSpellCheckEnabled);
 

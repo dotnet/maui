@@ -119,6 +119,7 @@ namespace Microsoft.Maui.Handlers
 				PlatformView?.UpdateMaxLength(VirtualView);
 				PlatformView?.UpdateIsReadOnly(VirtualView);
 				PlatformView?.UpdateIsTextPredictionEnabled(VirtualView);
+				PlatformView?.UpdateIsSpellCheckEnabled(VirtualView);
 				PlatformView?.UpdateCancelButtonColor(VirtualView);
 				PlatformView?.UpdateKeyboard(VirtualView);
 			}

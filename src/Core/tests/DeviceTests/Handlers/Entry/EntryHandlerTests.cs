@@ -71,19 +71,6 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Placeholder, GetNativePlaceholder, "Placeholder");
 		}
 
-		[Theory(DisplayName = "Is Text Prediction Enabled")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
-		{
-			var entry = new EntryStub()
-			{
-				IsTextPredictionEnabled = isEnabled
-			};
-
-			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
-		}
-
 		[Theory(DisplayName = "IsPassword Updates Correctly")]
 		[InlineData(true, true)]
 		[InlineData(true, false)]
@@ -142,26 +129,40 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
-		public async Task IsTextPredictionEnabledInitializesCorrectly()
+		[Theory(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
 		{
-			var entry = new EntryStub
+			var entry = new EntryStub()
 			{
-				IsTextPredictionEnabled = true
+				IsTextPredictionEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, entry.IsTextPredictionEnabled);
+			await AttachAndRun(entry, async (entryHandler) =>
+			{
+				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded);
+			});
+
+			await ValidatePropertyInitValue(entry, () => entry.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
 		}
 
-		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
-		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		[Theory(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledInitializesCorrectly(bool isEnabled)
 		{
-			var entry = new EntryStub
+			var entry = new EntryStub()
 			{
-				IsSpellCheckEnabled = true
+				IsSpellCheckEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, entry.IsSpellCheckEnabled);
+			await AttachAndRun(entry, async (entryHandler) =>
+			{
+				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded);
+			});
+
+			await ValidatePropertyInitValue(entry, () => entry.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -171,7 +172,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var entry = new EntryStub();
+			var entry = new EntryStub()
+			{
+				IsTextPredictionEnabled = setValue
+			};
+
+			await AttachAndRun(entry, async (entryHandler) =>
+			{
+				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded);
+			});
 
 			await ValidatePropertyUpdatesValue(
 				entry,
@@ -188,7 +197,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var entry = new EntryStub();
+			var entry = new EntryStub()
+			{
+				IsSpellCheckEnabled = setValue
+			};
+
+			await AttachAndRun(entry, async (entryHandler) =>
+			{
+				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded);
+			});
 
 			await ValidatePropertyUpdatesValue(
 				entry,
@@ -213,6 +230,11 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = textPredictionValue,
 				IsSpellCheckEnabled = spellCheckValue
 			};
+
+			await AttachAndRun(entry, async (entryHandler) =>
+			{
+				await AssertionExtensions.Wait(() => entryHandler.PlatformView.IsLoaded);
+			});
 
 			var nativeTextPrediction = await GetValueAsync(entry, GetNativeIsTextPredictionEnabled);
 			var nativeSpellChecking = await GetValueAsync(entry, GetNativeIsSpellCheckEnabled);

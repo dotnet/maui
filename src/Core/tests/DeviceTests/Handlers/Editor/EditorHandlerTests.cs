@@ -220,44 +220,40 @@ namespace Microsoft.Maui.DeviceTests
 			//Assert.Equal(expectedText, editor.Text);
 		}
 
-		[Theory(DisplayName = "Is Text Prediction Enabled")]
+		[Theory(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
+		public async Task IsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
 		{
 			var editor = new EditorStub()
 			{
 				IsTextPredictionEnabled = isEnabled
 			};
 
-			var nativeIsTextPredictionEnabled = await GetValueAsync(editor, handler =>
+			await AttachAndRun(editor, async (editorHandler) =>
 			{
-				return GetNativeIsTextPredictionEnabled(handler);
+				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded);
 			});
 
-			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
+			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, isEnabled);
 		}
 
-		[Fact(DisplayName = "IsTextPredictionEnabled Initializes Correctly")]
-		public async Task IsTextPredictionEnabledInitializesCorrectly()
-		{
-			var editor = new EditorStub()
-			{
-				IsTextPredictionEnabled = true
-			};
-
-			await ValidatePropertyInitValue(editor, () => editor.IsTextPredictionEnabled, GetNativeIsTextPredictionEnabled, editor.IsTextPredictionEnabled);
-		}
-
-		[Fact(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
-		public async Task IsSpellCheckEnabledInitializesCorrectly()
+		[Theory(DisplayName = "IsSpellCheckEnabled Initializes Correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task IsSpellCheckEnabledInitializesCorrectly(bool isEnabled)
 		{
 			var editor = new EditorStub
 			{
-				IsSpellCheckEnabled = true
+				IsSpellCheckEnabled = isEnabled
 			};
 
-			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, editor.IsSpellCheckEnabled);
+			await AttachAndRun(editor, async (editorHandler) =>
+			{
+				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded);
+			});
+
+			await ValidatePropertyInitValue(editor, () => editor.IsSpellCheckEnabled, GetNativeIsSpellCheckEnabled, isEnabled);
 		}
 
 		[Theory(DisplayName = "IsTextPredictionEnabled Updates Correctly")]
@@ -267,7 +263,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsTextPredictionEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var editor = new EditorStub();
+			var editor = new EditorStub()
+			{
+				IsTextPredictionEnabled = setValue
+			};
+
+			await AttachAndRun(editor, async (editorHandler) =>
+			{
+				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded);
+			});
 
 			await ValidatePropertyUpdatesValue(
 				editor,
@@ -284,7 +288,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false)]
 		public async Task IsSpellCheckEnabledUpdatesCorrectly(bool setValue, bool unsetValue)
 		{
-			var editor = new EditorStub();
+			var editor = new EditorStub()
+			{
+				IsSpellCheckEnabled = setValue
+			};
+
+			await AttachAndRun(editor, async (editorHandler) =>
+			{
+				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded);
+			});
 
 			await ValidatePropertyUpdatesValue(
 				editor,
@@ -309,6 +321,11 @@ namespace Microsoft.Maui.DeviceTests
 				IsTextPredictionEnabled = textPredictionValue,
 				IsSpellCheckEnabled = spellCheckValue
 			};
+
+			await AttachAndRun(editor, async (editorHandler) =>
+			{
+				await AssertionExtensions.Wait(() => editorHandler.PlatformView.IsLoaded);
+			});
 
 			var nativeTextPrediction = await GetValueAsync(editor, GetNativeIsTextPredictionEnabled);
 			var nativeSpellChecking = await GetValueAsync(editor, GetNativeIsSpellCheckEnabled);
