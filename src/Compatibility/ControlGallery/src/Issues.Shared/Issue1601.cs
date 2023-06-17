@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1601Test()
 		{
 			RunningApp.Screenshot("Start G1601");

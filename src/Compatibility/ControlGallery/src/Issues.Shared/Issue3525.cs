@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SpanRegionClicking()
 		{
 			var label = RunningApp.WaitForElement(kLabelTestAutomationId);

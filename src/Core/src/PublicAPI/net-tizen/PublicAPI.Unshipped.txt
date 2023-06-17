@@ -12,6 +12,9 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, Syste
 Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
+Microsoft.Maui.Handlers.IImageSourcePartSetter
+Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(Microsoft.Maui.Platform.MauiImageSource? obj) -> void
+Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
