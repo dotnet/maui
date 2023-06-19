@@ -22,6 +22,7 @@ Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Ma
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
+override Microsoft.Maui.Handlers.MenuFlyoutHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.MenuFlyout! platformView) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -42,6 +43,9 @@ static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handl
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this Microsoft.Maui.IAccelerator! accelerator) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IAccelerator!>! accelerators) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.UpdateAccelerator(this Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase! platformView, Microsoft.Maui.IMenuFlyoutItem! menuFlyoutItem) -> void
+static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemSelectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
+static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemTextSelectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
+static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemUnselectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
