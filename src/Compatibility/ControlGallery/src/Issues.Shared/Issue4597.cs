@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), true);
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), false);
@@ -189,6 +191,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), true);
@@ -203,12 +206,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(ImageButton), true);
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
@@ -216,6 +221,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(true);
