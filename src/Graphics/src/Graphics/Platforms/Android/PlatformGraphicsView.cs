@@ -8,7 +8,6 @@ namespace Microsoft.Maui.Graphics.Platform
 {
 	public class PlatformGraphicsView : View
 	{
-		private int _width, _height;
 		private readonly PlatformCanvas _canvas;
 		private readonly ScalingCanvas _scalingCanvas;
 		private IDrawable _drawable;
@@ -56,7 +55,7 @@ namespace Microsoft.Maui.Graphics.Platform
 			if (_drawable == null)
 				return;
 
-			var dirtyRect = new RectF(0, 0, _width, _height);
+			var dirtyRect = new RectF(0, 0, Width, Height);
 
 			_canvas.Canvas = androidCanvas;
 			if (_backgroundColor != null)
@@ -73,13 +72,6 @@ namespace Microsoft.Maui.Graphics.Platform
 			dirtyRect.Width /= _scale;
 			_drawable.Draw(_scalingCanvas, dirtyRect);
 			_canvas.Canvas = null;
-		}
-
-		protected override void OnSizeChanged(int width, int height, int oldWidth, int oldHeight)
-		{
-			base.OnSizeChanged(width, height, oldWidth, oldHeight);
-			_width = width;
-			_height = height;
 		}
 	}
 }
