@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 			var targetObject = target;
 
 			if (!string.IsNullOrEmpty(TargetName) && target is Element element)
-				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new XamlParseException($"Can not resole '{TargetName}' as Setter Target for '{target}'.");
+				targetObject = element.FindByName(TargetName) as BindableObject ?? throw new XamlParseException($"Cannot resolve '{TargetName}' as Setter Target for '{target}'.");
 
 			if (Property == null)
 				return;
