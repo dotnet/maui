@@ -19,6 +19,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// Adjust the mappings to preserve Controls.SearchBar legacy behaviors
 			SearchBarHandler.Mapper = ControlsSearchBarMapper;
+
+#if ANDROID
+			SearchBarHandler.CommandMapper.PrependToMapping(nameof(ISearchBar.Focus), MapFocus);
+#endif
 		}
 	}
 }

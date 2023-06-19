@@ -28,7 +28,11 @@
             <Button
                 Clicked="OnCloseWindowClicked"
                 Text="Close this Window" />
-
+            <Label 
+                Text="Dialogs:" />
+            <Button
+                Clicked="OnOpenDialogClicked"
+                Text="Open Dialog" />
             <Label Text="Control Size:" />
             <Button
                 Clicked="OnSetMinSize"

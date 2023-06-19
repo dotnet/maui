@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Devices.Sensors
+﻿#nullable enable
+
+namespace Microsoft.Maui.Devices.Sensors
 {
 	static class GeolocationAccuracyExtensionMethods
 	{

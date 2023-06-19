@@ -1,4 +1,6 @@
 ﻿#nullable disable
+using Microsoft.Maui.Controls.Platform;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Editor
@@ -17,6 +19,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEditorHandler handler, Editor editor)
 		{
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, editor);
+		}
+
+		static void MapFocus(IViewHandler handler, IView view, object args)
+		{
+			handler.ShowKeyboardIfFocused(view);
 		}
 	}
 }

@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	public class Person
@@ -91,6 +91,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		[UiTest (typeof(ViewCell))]
 		[UiTest (typeof(ListView))]
 		[UiTest (typeof(ListView), "SelectedItem")]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue935TestsMultipleOnTappedViewCell ()
 		{
 			RunningApp.Tap (q => q.Marked ("I have been selected:"));

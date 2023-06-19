@@ -15,7 +15,7 @@ namespace Microsoft.Maui
 {
 	public abstract class PropertyMapper : IPropertyMapper
 	{
-		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new();
+		protected readonly Dictionary<string, Action<IElementHandler, IElement>> _mapper = new(StringComparer.Ordinal);
 
 		IPropertyMapper[]? _chained;
 

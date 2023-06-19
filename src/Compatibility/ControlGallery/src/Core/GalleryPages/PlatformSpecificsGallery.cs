@@ -1,8 +1,8 @@
-﻿using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries;
+﻿using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries;
 using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class PlatformSpecificsGallery : ContentPage
 	{

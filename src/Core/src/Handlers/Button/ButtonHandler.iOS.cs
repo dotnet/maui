@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Handlers
 			return button;
 		}
 
+		readonly ButtonEventProxy _proxy = new ButtonEventProxy();
+
 		protected override void ConnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside += OnButtonTouchUpInside;
-			platformView.TouchUpOutside += OnButtonTouchUpOutside;
-			platformView.TouchDown += OnButtonTouchDown;
+			_proxy.Connect(VirtualView, platformView);
 
 			var obs = NSNotificationCenter.DefaultCenter.AddObserver(nameof(UIView.DidUpdateFocus), platformView, null, notf =>
 			{
@@ -42,9 +42,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIButton platformView)
 		{
-			platformView.TouchUpInside -= OnButtonTouchUpInside;
-			platformView.TouchUpOutside -= OnButtonTouchUpOutside;
-			platformView.TouchDown -= OnButtonTouchDown;
+			_proxy.Disconnect(platformView);
 
 			if (_observer != null && _observer.TryGetTarget(out NSObject? target))
 			{
@@ -149,7 +147,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
-		void OnSetImageSource(UIImage? image)
+		void IImageSourcePartSetter.SetImageSource(UIImage? image)
 		{
 			if (image != null)
 			{
@@ -166,11 +164,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
-			if (image.Source == null)
-			{
-				return Task.CompletedTask;
-			}
-
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
@@ -184,20 +177,48 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void OnButtonTouchUpInside(object? sender, EventArgs e)
+		class ButtonEventProxy
 		{
-			VirtualView?.Released();
-			VirtualView?.Clicked();
-		}
+			WeakReference<IButton>? _virtualView;
 
-		void OnButtonTouchUpOutside(object? sender, EventArgs e)
-		{
-			VirtualView?.Released();
-		}
+			IButton? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
-		void OnButtonTouchDown(object? sender, EventArgs e)
-		{
-			VirtualView?.Pressed();
+			public void Connect(IButton virtualView, UIButton platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.TouchUpInside += OnButtonTouchUpInside;
+				platformView.TouchUpOutside += OnButtonTouchUpOutside;
+				platformView.TouchDown += OnButtonTouchDown;
+			}
+
+			public void Disconnect(UIButton platformView)
+			{
+				_virtualView = null;
+
+				platformView.TouchUpInside -= OnButtonTouchUpInside;
+				platformView.TouchUpOutside -= OnButtonTouchUpOutside;
+				platformView.TouchDown -= OnButtonTouchDown;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IButton virtualView)
+				{
+					virtualView.Released();
+					virtualView.Clicked();
+				}
+			}
+
+			void OnButtonTouchUpOutside(object? sender, EventArgs e)
+			{
+				VirtualView?.Released();
+			}
+
+			void OnButtonTouchDown(object? sender, EventArgs e)
+			{
+				VirtualView?.Pressed();
+			}
 		}
 	}
 }

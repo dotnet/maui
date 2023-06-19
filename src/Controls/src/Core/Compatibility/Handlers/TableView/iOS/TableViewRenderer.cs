@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 	public class TableViewRenderer : ViewRenderer<TableView, UITableView>
 	{
 		const int DefaultRowHeight = 44;
-		KeyboardInsetTracker _insetTracker;
 		UIView _originalBackgroundView;
 		RectangleF _previousFrame;
 
@@ -28,23 +27,16 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void LayoutSubviews()
 		{
-			_insetTracker?.OnLayoutSubviews();
 			base.LayoutSubviews();
 
 			if (_previousFrame != Frame)
-			{
 				_previousFrame = Frame;
-				_insetTracker?.UpdateInsets();
-			}
 		}
 
 		protected override void Dispose(bool disposing)
 		{
-			if (disposing && _insetTracker != null)
+			if (disposing)
 			{
-				_insetTracker.Dispose();
-				_insetTracker = null;
-
 				var viewsToLookAt = new Stack<UIView>(Subviews);
 				while (viewsToLookAt.Count > 0)
 				{
@@ -82,23 +74,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (Control == null || Control.Style != style)
 				{
 					if (Control != null)
-					{
-						_insetTracker.Dispose();
 						Control.Dispose();
-					}
 
 					var tv = CreateNativeControl();
 					_originalBackgroundView = tv.BackgroundView;
 
 					SetNativeControl(tv);
 					tv.CellLayoutMarginsFollowReadableWidth = false;
-
-					_insetTracker = new KeyboardInsetTracker(tv, () => Control.Window, insets => Control.ContentInset = Control.ScrollIndicatorInsets = insets, point =>
-					{
-						var offset = Control.ContentOffset;
-						offset.Y += point.Y;
-						Control.SetContentOffset(offset, true);
-					}, this);
 				}
 
 				SetSource();

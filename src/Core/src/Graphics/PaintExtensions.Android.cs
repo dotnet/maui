@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Graphics
 {
 	public static partial class PaintExtensions
 	{
-		public static Drawable? ToDrawable(this Paint paint, Context? context)
+		public static Drawable? ToDrawable(this Paint? paint, Context? context)
 		{
 			if (paint is SolidPaint solidPaint)
 				return solidPaint.CreateDrawable(context);

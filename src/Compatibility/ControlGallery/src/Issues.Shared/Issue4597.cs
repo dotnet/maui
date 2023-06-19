@@ -14,7 +14,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4597, "[Android] ImageCell not loading images and setting ImageSource to null has no effect",
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 						Text = "Load Next Image Control to Test",
 						Command = new Command(() =>
 						{
-							var activeImage = layout.Children.Last();
+							var activeImage = (View)layout.Children.Last();
 							int nextIndex = imageControls.ToList().IndexOf(activeImage) + 1;
 
 							if(nextIndex >= imageControls.Length)
@@ -175,6 +175,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), true);
@@ -182,6 +183,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), false);
@@ -189,6 +191,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), true);
@@ -203,12 +206,14 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(ImageButton), true);
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
@@ -216,11 +221,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(true);
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()

@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;
 using Microsoft.Maui.Graphics;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	internal static class WindowsPlatformSpecificsGalleryHelpers
 	{

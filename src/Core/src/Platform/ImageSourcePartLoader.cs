@@ -23,27 +23,21 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{
+#if IOS || ANDROID || WINDOWS || TIZEN
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
-		IImageSourceServiceProvider ImageSourceServiceProvider =>
-			_imageSourceServiceProvider ??= Handler.GetRequiredService<IImageSourceServiceProvider>();
+#endif
 
-		readonly Func<IImageSourcePart?> _imageSourcePart;
-		Action<PlatformImage?>? SetImage { get; }
-		PlatformView? PlatformView => Handler.PlatformView as PlatformView;
+		readonly WeakReference<IImageSourcePartSetter> _handler;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
-		IElementHandler Handler { get; }
-
-		public ImageSourcePartLoader(
-			IElementHandler handler,
-			Func<IImageSourcePart?> imageSourcePart,
-			Action<PlatformImage?> setImage)
+		[Obsolete("Use ImageSourcePartLoader(IImageSourcePartSetter handler) instead.")]
+		public ImageSourcePartLoader(IElementHandler handler, Func<IImageSourcePart?> imageSourcePart, Action<PlatformImage?> setImage)
+			: this((IImageSourcePartSetter)handler)
 		{
-			Handler = handler;
-			_imageSourcePart = imageSourcePart;
-			SetImage = setImage;
 		}
+
+		public ImageSourcePartLoader(IImageSourcePartSetter handler) => _handler = new(handler);
 
 		public void Reset()
 		{
@@ -52,27 +46,30 @@ namespace Microsoft.Maui.Platform
 
 		public async Task UpdateImageSourceAsync()
 		{
-			if (PlatformView != null)
+			if (!_handler.TryGetTarget(out var handler) || handler.PlatformView is not PlatformView platformView)
 			{
-				var token = this.SourceManager.BeginLoad();
-				var imageSource = _imageSourcePart();
+				return;
+			}
 
-				if (imageSource != null)
-				{
-#if __IOS__ || __ANDROID__ || WINDOWS || TIZEN
-					var result = await imageSource.UpdateSourceAsync(PlatformView, ImageSourceServiceProvider, SetImage!, token)
-						.ConfigureAwait(false);
+			var token = this.SourceManager.BeginLoad();
+			var imageSource = handler.VirtualView as IImageSourcePart;
 
-					SourceManager.CompleteLoad(result);
+			if (imageSource?.Source is not null)
+			{
+#if IOS || ANDROID || WINDOWS || TIZEN
+				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, handler.SetImageSource, token)
+					.ConfigureAwait(false);
+
+				SourceManager.CompleteLoad(result);
 #else
-					await Task.CompletedTask;
+				await Task.CompletedTask;
 #endif
-				}
-				else
-				{
-					SetImage?.Invoke(null);
-					SourceManager.CompleteLoad(null);
-				}
+			}
+			else
+			{
+				handler.SetImageSource(null);
 			}
 		}
 	}

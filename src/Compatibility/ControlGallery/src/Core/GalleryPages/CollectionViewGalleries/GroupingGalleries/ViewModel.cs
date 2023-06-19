@@ -2,7 +2,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries
 {
 	[Preserve(AllMembers = true)]
 	class Team : List<Member>

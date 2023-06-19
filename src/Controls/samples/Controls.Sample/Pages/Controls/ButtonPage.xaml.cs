@@ -21,6 +21,18 @@ namespace Maui.Controls.Sample.Pages
 			Debug.WriteLine("Clicked");
 		}
 
+		void Button_Clicked(System.Object sender, System.EventArgs e)
+		{
+			if (ImageSourceButton.ImageSource is null)
+			{
+				ImageSourceButton.ImageSource = "settings.png";
+			}
+			else
+			{
+				ImageSourceButton.ImageSource = null;
+			}
+		}
+
 		void OnPositionChange(object sender, System.EventArgs e)
 		{
 			var newPosition = ((int)positionChange.ContentLayout.Position) + 1;
@@ -49,7 +61,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnLineBreakModeButtonClicked(object sender, System.EventArgs e)
 		{
-			LineBreakModeButton.LineBreakMode = SelectLineBreakMode();
+			LineBreakModeButton.LineBreakMode = ImageLineBreakModeButton.LineBreakMode = SelectLineBreakMode();
 		}
 
 		LineBreakMode SelectLineBreakMode()
@@ -84,6 +96,23 @@ namespace Maui.Controls.Sample.Pages
 
 	public class ButtonPageViewModel : BindableObject
 	{
+		bool _changeButtonColor;
+
+		public string ButtonBackground => "#fc87ad";
+
+		public bool ChangeButtonColor
+		{
+			get => _changeButtonColor;
+			set
+			{
+				if (_changeButtonColor != value)
+				{
+					_changeButtonColor = value;
+					OnPropertyChanged();
+				}
+			}
+		}
+
 		public ICommand ButtonCommand => new Command(OnExecuteImageButtonCommand);
 
 		void OnExecuteImageButtonCommand()

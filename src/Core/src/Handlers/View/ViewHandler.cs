@@ -58,6 +58,10 @@ namespace Microsoft.Maui.Handlers
 #if WINDOWS || MACCATALYST
 				[nameof(IContextFlyoutElement.ContextFlyout)] = MapContextFlyout,
 #endif
+
+#if ANDROID
+				["_InitializeBatchedProperties"] = MapInitializeBatchedProperties
+#endif
 			};
 
 		public static CommandMapper<IView, IViewHandler> ViewCommandMapper = new()
@@ -130,17 +134,14 @@ namespace Microsoft.Maui.Handlers
 			OnCreatePlatformView();
 
 #if ANDROID
-		// This sets up AndroidBatchPropertyMapper
-		public override void SetVirtualView(IElement element)
-		{
-			base.SetVirtualView(element);
 
-			if (element is IView view)
-			{
-				((PlatformView?)PlatformView)?.Initialize(view);
-			}
+		static void MapInitializeBatchedProperties(IViewHandler handler, IView view)
+		{
+			if (handler.PlatformView is PlatformView pv)
+				pv.Initialize(view);
 		}
 #endif
+
 
 #if !(NETSTANDARD || !PLATFORM)
 		private protected abstract void OnConnectHandler(PlatformView platformView);
@@ -276,16 +277,6 @@ namespace Microsoft.Maui.Handlers
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
 				handler.HasContainer = view.NeedsContainer();
-
-			UpdateInputTransparentOnContainerView(handler, view);
-		}
-
-		static void UpdateInputTransparentOnContainerView(IViewHandler handler, IView view)
-		{
-#if ANDROID
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.InputTransparent = view.InputTransparent;
-#endif
 		}
 
 		public static void MapBorderView(IViewHandler handler, IView view)
@@ -312,22 +303,19 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapFocus(IViewHandler handler, IView view, object? args)
 		{
-			if (args is FocusRequest request)
-			{
-				if (handler.PlatformView == null)
-				{
-					return;
-				}
+			if (args is not FocusRequest request)
+				return;
 
-				((PlatformView?)handler.PlatformView)?.Focus(request);
-			}
+			((PlatformView?)handler.PlatformView)?.Focus(request);
 		}
 
 		public static void MapInputTransparent(IViewHandler handler, IView view)
 		{
 #if ANDROID
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-			UpdateInputTransparentOnContainerView(handler, view);
+
+			if (handler.ContainerView is WrapperView wrapper)
+				wrapper.InputTransparent = view.InputTransparent;
 #else
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
 #endif

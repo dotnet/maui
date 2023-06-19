@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Platform
 
 		UILabel InitPlaceholderLabel()
 		{
-			var placeholderLabel = new UILabel
+			var placeholderLabel = new MauiLabel
 			{
 				BackgroundColor = UIColor.Clear,
 				TextColor = ColorExtensions.PlaceholderColor,
@@ -129,23 +129,8 @@ namespace Microsoft.Maui.Platform
 			var edgeInsets = TextContainerInset;
 			var lineFragmentPadding = TextContainer.LineFragmentPadding;
 
-			var vConstraints = NSLayoutConstraint.FromVisualFormat(
-				"V:|-" + edgeInsets.Top + "-[PlaceholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
-			);
-
-			var hConstraints = NSLayoutConstraint.FromVisualFormat(
-				"H:|-" + lineFragmentPadding + "-[PlaceholderLabel]-" + lineFragmentPadding + "-|",
-				0, new NSDictionary(),
-				NSDictionary.FromObjectsAndKeys(
-					new NSObject[] { placeholderLabel }, new NSObject[] { new NSString("PlaceholderLabel") })
-			);
-
-			placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-
-			AddConstraints(hConstraints);
-			AddConstraints(vConstraints);
+			placeholderLabel.TextInsets = new UIEdgeInsets(edgeInsets.Top, edgeInsets.Left + lineFragmentPadding,
+				edgeInsets.Bottom, edgeInsets.Right + lineFragmentPadding);
 
 			return placeholderLabel;
 		}
@@ -165,7 +150,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var fittingSize = new CGSize(Bounds.Width, NFloat.MaxValue);
 			var sizeThatFits = SizeThatFits(fittingSize);
-			var availableSpace = (Bounds.Height - sizeThatFits.Height * ZoomScale);
+			var availableSpace = Bounds.Height - sizeThatFits.Height * ZoomScale;
+			if (availableSpace <= 0)
+				return;
 			ContentOffset = VerticalTextAlignment switch
 			{
 				Maui.TextAlignment.Center => new CGPoint(0, -Math.Max(1, availableSpace / 2)),

@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.SearchBar']/Docs/*" />
 	public static class SearchBar
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='SearchBarStyleProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>SearchBarStyle</c>.</summary>
 		public static readonly BindableProperty SearchBarStyleProperty = BindableProperty.Create("SearchBarStyle", typeof(UISearchBarStyle), typeof(SearchBar), UISearchBarStyle.Default);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/SearchBar.xml" path="//Member[@MemberName='GetSearchBarStyle'][1]/Docs/*" />

@@ -61,32 +61,32 @@ namespace FormsGallery
                 }
             };
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Grid",
                     FontSize = Device.GetNamedSize (NamedSize.Large, typeof(Label)),
                     HorizontalOptions = LayoutOptions.Center
                 }, 0, 3, 0, 1);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Autosized cell",
                     TextColor = Color.White,
                     BackgroundColor = Color.Blue
                 }, 0, 1);
     
-            grid.Children.Add(new BoxView
+            grid.Add(new BoxView
                 {
                     Color = Color.Silver,
                     HeightRequest = 0
                 }, 1, 1);
     
-            grid.Children.Add(new BoxView
+            grid.Add(new BoxView
                 {
                     Color = Color.Teal
                 }, 0, 2);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Leftover space",
                     TextColor = Color.Purple,
@@ -95,7 +95,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center,
                 }, 1, 2);
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Span two rows (or more if you want)",
                     TextColor = Color.Yellow,
@@ -104,7 +104,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center
                 }, 2, 3, 1, 3);
     
-            grid.Children.Add(new Label
+            grid.AddWithSpan(new Label
                 {
                     Text = "Span 2 columns",
                     TextColor = Color.Blue,
@@ -113,7 +113,7 @@ namespace FormsGallery
                     VerticalTextAlignment = TextAlignment.Center
                 }, 0, 2, 3, 4);
     
-            grid.Children.Add(new Label
+            grid.Add(new Label
                 {
                     Text = "Fixed 100x100",
                     TextColor = Color.Aqua,
@@ -301,11 +301,8 @@ namespace FormsGallery
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Provides the interface for the bound property that gets or sets the distance between columns in the Grid.</summary>
-        <value>The space between columns in this <see cref="T:Microsoft.Maui.Controls.Grid" /> layout. The default is 6.</value>
-        <remarks>
-          <para>The <see cref="P:Microsoft.Maui.Controls.Grid.ColumnSpacing" /> property does not control spacing on the left and right edges of the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout. Application developers can control the spacing around the outside of the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout by setting the <see cref="P:Microsoft.Maui.Controls.Page.Padding" /> property of the visual element to which it belongs.</para>
-        </remarks>
+        <summary>Gets or sets the amount of space between columns in the Grid. This is a bindable property.</summary>
+        <value>The space between columns in this <see cref="T:Microsoft.Maui.Controls.Grid" /> layout. The default is 0.</value>
       </Docs>
     </Member>
     <Member MemberName="ColumnSpacingProperty">
@@ -868,11 +865,8 @@ namespace FormsGallery
         <ReturnType>System.Double</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets the amount of space left between rows in the Grid. This is a bindable property.</summary>
-        <value>The space between rows</value>
-        <remarks>
-          <para>The <see cref="P:Microsoft.Maui.Controls.Grid.RowSpacing" /> property does not control spacing on the top and bottom edges of the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout. Application developers can control the spacing around the outside of the <see cref="T:Microsoft.Maui.Controls.Grid" /> layout by setting the <see cref="P:Microsoft.Maui.Controls.Page.Padding" /> property of the visual element to which it belongs.</para>
-        </remarks>
+        <summary>Gets or sets the amount of space between rows in the Grid. This is a bindable property.</summary>
+        <value>The space between rows in this <see cref="T:Microsoft.Maui.Controls.Grid" /> layout. The default is 0.</value>
       </Docs>
     </Member>
     <Member MemberName="RowSpacingProperty">

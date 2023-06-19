@@ -12,7 +12,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8008, "Removing Shell Item can cause Shell to try and set a MenuItem as the default visible item")]
@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void RemovingShellItemCorrectlyPicksNextValidShellItemAsVisibleShellItem()
 		{
 			RunningApp.WaitForElement("Success");

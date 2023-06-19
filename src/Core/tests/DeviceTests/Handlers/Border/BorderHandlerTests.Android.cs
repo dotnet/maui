@@ -29,8 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidateHasColor(border, expected);
 		}
 
-		[Theory(DisplayName = "Background Updates Correctly",
-			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948")]
+		[Theory(DisplayName = "Background Updates Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
 		[InlineData(0xFF0000FF)]
@@ -42,14 +41,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Content = new LabelStub { Text = "Background", TextColor = Colors.White },
 				Shape = new RoundRectangleShapeStub { CornerRadius = new CornerRadius(12) },
-				Background = new LinearGradientPaintStub(Colors.Red, Colors.Blue),
+				Background = new SolidPaintStub(Color.FromUint(0xFF888888)),
 				Stroke = null,
 				StrokeThickness = 2,
 				Height = 100,
 				Width = 300
 			};
 
-			await ValidateHasColor(border, expected);
+			await ValidateHasColor(border, expected, () => border.Background = new SolidPaintStub(expected), nameof(border.Background));
 		}
 
 		ContentViewGroup GetNativeBorder(BorderHandler borderHandler) =>

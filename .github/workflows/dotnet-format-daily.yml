@@ -35,7 +35,9 @@ jobs:
             Automated PR to fix formatting errors
           committer: GitHub <noreply@github.com>
           author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
-          labels: t/housekeeping ♻︎
+          labels: |
+            t/housekeeping ♻︎
+            area/infrastructure 🏗️
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
           branch: housekeeping/fix-codeformatting

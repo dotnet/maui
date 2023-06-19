@@ -1,4 +1,6 @@
-// Contains .NET 6-related Cake targets
+#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+
+// Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
@@ -9,6 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 
 string TestTFM = Argument("testtfm", "");
+var useNuget = Argument("usenuget", true);
 if (TestTFM == "default")
     TestTFM = "";
 
@@ -45,10 +48,10 @@ Task("dotnet")
                 $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
         }
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
     });
@@ -59,18 +62,21 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
-        {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
-                .SetConfiguration(configuration)
-                .WithProperty("InstallWorkloadPacks", "false"),
-        });
+        //Workaround: https://github.com/dotnet/linker/issues/3012
+        SetEnvironmentVariable("DOTNET_gcServer", "0");
 
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
+                .SetConfiguration(configuration)
+                .WithProperty("InstallWorkloadPacks", "false"),
+        });
+
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
+        {
+            MSBuildSettings = new DotNetCoreMSBuildSettings()
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
@@ -95,19 +101,45 @@ Task("dotnet-buildtasks")
         throw exception;
     });
 
+Task("android-aar")
+    .Does(() =>
+    {
+        var root = "./src/Core/AndroidNative/";
+
+        var gradlew = root + "gradlew";
+        if (IsRunningOnWindows())
+            gradlew += ".bat";
+
+        var exitCode = StartProcess(
+            MakeAbsolute((FilePath)gradlew),
+            new ProcessSettings
+            {
+                Arguments = $"createAar --rerun-tasks",
+                WorkingDirectory = root
+            });
+
+        if (exitCode != 0)
+        {
+            if (IsCIBuild() || IsTarget("android-aar"))
+                throw new Exception("Gradle failed to build maui.aar: " + exitCode);
+            else
+                Information("This task failing locally will not break local MAUI development. Gradle failed to build maui.aar: {0}", exitCode);
+        }
+    });
+
 Task("dotnet-build")
     .IsDependentOn("dotnet")
+    .IsDependentOn("android-aar")
     .Description("Build the solutions")
     .Does(() =>
     {
         RunMSBuildWithDotNet("./Microsoft.Maui.BuildTasks.slnf");
         if (IsRunningOnWindows())
         {
-            RunMSBuildWithDotNet("./Microsoft.Maui.sln", maxCpuCount: 1);
+            RunMSBuildWithDotNet("./Microsoft.Maui.sln");
         }
         else
         {
-            // NOTE: intentionally omit maxCpuCount, to avoid an issue with the 7.0.100 .NET SDK
             RunMSBuildWithDotNet("./Microsoft.Maui-mac.slnf");
         }
     });
@@ -115,121 +147,36 @@ Task("dotnet-build")
 Task("dotnet-samples")
     .Does(() =>
     {
-        var tempDir = PrepareSeparateBuildContext("samplesTest", false);
+        var tempDir = PrepareSeparateBuildContext("samplesTest");
 
-        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", new Dictionary<string, string> {
-            ["UseWorkload"] = "true",
-            // ["GenerateAppxPackageOnBuild"] = "true",
-            ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
-        }, maxCpuCount: 1, binlogPrefix: "sample-");
+        var properties = new Dictionary<string, string>();
+
+        if(useNuget)
+        {
+            properties = new Dictionary<string, string> {
+                ["UseWorkload"] = "true",
+                // ["GenerateAppxPackageOnBuild"] = "true",
+                ["RestoreConfigFile"] = tempDir.CombineWithFilePath("NuGet.config").FullPath,
+            };
+        }
+        RunMSBuildWithDotNet("./Microsoft.Maui.Samples.slnf", properties, binlogPrefix: "sample-");
     });
 
-Task("dotnet-templates")
+Task("dotnet-samples-test")
     .Does(() =>
     {
-        if (localDotnet)
-            SetDotNetEnvironmentVariables();
-
-        var dn = localDotnet ? dotnetPath : "dotnet";
-
-        var tempDir = PrepareSeparateBuildContext("templatesTest", true);
-
-        // See: https://github.com/dotnet/project-system/blob/main/docs/design-time-builds.md
-        var designTime = new Dictionary<string, string> {
-            { "DesignTimeBuild", "true" },
-            { "BuildingInsideVisualStudio", "true" },
-            { "SkipCompilerExecution", "true" },
-            // NOTE: this overrides a default setting that supports VS Mac
-            // See: https://github.com/xamarin/xamarin-android/blob/94c2a3d86a2e0e74863b57e3c5c61dbd29daa9ea/src/Xamarin.Android.Build.Tasks/Xamarin.Android.Common.props.in#L19
-            { "AndroidUseManagedDesignTimeResourceGenerator", "true" },
-        };
-
-        var properties = new Dictionary<string, string> {
-            // Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-            { "RestoreNoCache", "true" },
-            // { "GenerateAppxPackageOnBuild", "true" },
-            { "RestorePackagesPath", tempDir.Combine("packages").FullPath },
-            { "RestoreConfigFile", tempDir.CombineWithFilePath("NuGet.config").FullPath },
-
-            // Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-            { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
-            //Try not restore dependecies of 6.0.10
-            { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
-        };
-
-        var templates = new Dictionary<string, Action<DirectoryPath>> {
-            { "maui:maui", null },
-            { "mauiblazor:maui-blazor", null },
-            { "mauilib:mauilib", null },
-            { "mauicorelib:mauilib", dir => {
-                CleanDirectories(dir.Combine("Platforms").FullPath);
-                ReplaceTextInFiles($"{dir}/*.csproj", "UseMaui", "UseMauiCore");
-                ReplaceTextInFiles($"{dir}/*.csproj", "SingleProject", "EnablePreviewMsixTooling");
-            } },
-            { "mauiunpackaged:maui", dir => {
-                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
-            } },
-            { "mauiblazorunpackaged:maui-blazor", dir => {
-                ReplaceTextInFiles($"{dir}/*.csproj", "<UseMaui>true</UseMaui>", "<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
-            } },
-        };
-
-        var alsoPack = new [] {
-            "mauilib"
-        };
-
-        foreach (var template in templates)
+        var buildSettings = new DotNetBuildSettings
         {
-            foreach (var forceDotNetBuild in new [] { true, false })
-            {
-                // macOS does not support msbuild
-                if (!IsRunningOnWindows() && !forceDotNetBuild)
-                    continue;
+            MSBuildSettings = new DotNetMSBuildSettings()
+                .SetConfiguration(configuration)
+        };
+        DotNetBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
 
-                var type = forceDotNetBuild ? "DotNet" : "MSBuild";
-                var projectName = template.Key.Split(":")[0];
-                var templateName = template.Key.Split(":")[1];
-
-                var framework = string.IsNullOrWhiteSpace(TestTFM) ? "" : $"--framework {TestTFM}";
-
-                projectName = $"{tempDir}/{projectName}_{type}";
-                projectName += string.IsNullOrWhiteSpace(TestTFM) ? "" : $"_{TestTFM.Replace('.', '_')}";
-
-                // Create
-                StartProcess(dn, $"new {templateName} -o \"{projectName}\" {framework}");
-
-                // Modify
-                if (template.Value != null)
-                    template.Value(projectName);
-
-                // Enable Tizen
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "<!-- <TargetFrameworks>",
-                    "<TargetFrameworks>");
-                ReplaceTextInFiles($"{projectName}/*.csproj",
-                    "</TargetFrameworks> -->",
-                    "</TargetFrameworks>");
-
-                // Build
-                RunMSBuildWithDotNet(projectName, properties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, binlogPrefix: "template-");
-
-                // Pack
-                if (alsoPack.Contains(templateName)) {
-                    var packProperties = new Dictionary<string, string>(properties);
-                    packProperties["PackageVersion"] = FileReadText("GitInfo.txt").Trim();
-                    RunMSBuildWithDotNet(projectName, packProperties, warningsAsError: true, forceDotNetBuild: forceDotNetBuild, target: "Pack", binlogPrefix: "template-");
-                }
-            }
-        }
-
-        try
+        var testSettings = new DotNetTestSettings
         {
-            CleanDirectories(tempDir.FullPath);
-        }
-        catch
-        {
-            Information("Unable to clean up templates directory.");
-        }
+            Filter = "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
+        };
+        DotNetTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
     });
 
 Task("dotnet-test")
@@ -246,6 +193,7 @@ Task("dotnet-test")
             "**/Essentials.UnitTests.csproj",
             "**/Resizetizer.UnitTests.csproj",
             "**/Graphics.Tests.csproj",
+            "**/Compatibility.Core.UnitTests.csproj",
         };
 
         var success = true;
@@ -270,6 +218,7 @@ Task("dotnet-test")
     });
 
 Task("dotnet-pack-maui")
+    .IsDependentOn("android-aar")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
@@ -283,7 +232,7 @@ Task("dotnet-pack-maui")
                  $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
-        DotNetCoreTool("pwsh", new DotNetCoreToolSettings
+        DotNetTool("pwsh", new DotNetToolSettings
         {
             DiagnosticOutput = true,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
@@ -410,7 +359,7 @@ Task("dotnet-diff")
             // run the diff
             foreach (var nupkg in nupkgs)
             {
-                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                DotNetTool("api-tools", new DotNetToolSettings
                 {
                     DiagnosticOutput = true,
                     ArgumentCustomization = builder => builder
@@ -477,7 +426,7 @@ Task("dotnet-diff")
 
 // Tasks for Local Development
 Task("VS")
-    .Description("Provisions .NET 6, and launches an instance of Visual Studio using it.")
+    .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
     .IsDependentOn("Clean")
     .IsDependentOn("dotnet")
     .IsDependentOn("dotnet-buildtasks")
@@ -490,7 +439,9 @@ Task("VS")
             Error("!!!!BUILD TASKS FAILED: !!!!!");
         }
 
-        StartVisualStudioForDotNet6();
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioForDotNet();
     }); 
 
 // Keeping this for users that are already using this.
@@ -555,7 +506,9 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
+    
+    //Workaround: https://github.com/dotnet/linker/issues/3012
+    SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);
@@ -568,7 +521,24 @@ void SetDotNetEnvironmentVariables()
         SetEnvironmentVariable("MSBuildDebugEngine", "1");
 }
 
-void StartVisualStudioForDotNet6()
+void UseLocalNuGetCacheFolder(bool reset = false)
+{
+    var temp = Context.Environment.GetSpecialPath(SpecialPath.LocalTemp);
+    var packages = temp.Combine("Microsoft.Maui.Cache/NuGet/packages");
+
+    EnsureDirectoryExists(packages);
+
+    CleanDirectories(packages.FullPath + "/microsoft.maui.*");
+    CleanDirectories(packages.FullPath + "/microsoft.aspnetcore.*");
+
+    if (reset)
+        CleanDirectories(packages.FullPath);
+
+    SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
+    SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioForDotNet()
 {
     string sln = Argument<string>("sln", null);
 
@@ -581,11 +551,11 @@ void StartVisualStudioForDotNet6()
     {
         if (IsRunningOnWindows())
         {
-            sln = "./Microsoft.Maui.sln";
+            sln = "./Microsoft.Maui-windows.slnf";
         }
         else
         {
-            sln = "_omnisharp.sln";
+            sln = "./Microsoft.Maui-mac.slnf";
         }
     }
 
@@ -633,13 +603,13 @@ void RunMSBuildWithDotNet(
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}.binlog\"" :
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"" :
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    var msbuildSettings = new DotNetCoreMSBuildSettings()
+    var msbuildSettings = new DotNetMSBuildSettings()
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
@@ -658,7 +628,7 @@ void RunMSBuildWithDotNet(
         }
     }
 
-    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    var dotnetBuildSettings = new DotNetBuildSettings
     {
         MSBuildSettings = msbuildSettings,
     };
@@ -671,39 +641,70 @@ void RunMSBuildWithDotNet(
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
 
+        //args.Append("/tl");
+
         return args;
     };
 
     if (localDotnet)
         dotnetBuildSettings.ToolPath = dotnetPath;
 
-    DotNetCoreBuild(sln, dotnetBuildSettings);
+    DotNetBuild(sln, dotnetBuildSettings);
 }
 
 void RunTestWithLocalDotNet(string csproj)
 {
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}.binlog";
+    var binlog = $"{GetLogDirectory()}/{name}-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
     var results = $"{name}-{configuration}.trx";
 
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    DotNetCoreTest(csproj,
-        new DotNetCoreTestSettings
-        {
-            Configuration = configuration,
-            ToolPath = dotnetPath,
-            NoBuild = true,
-            Loggers = {
-                $"trx;LogFileName={results}"
-            },
-            ResultsDirectory = GetTestResultsDirectory(),
-            ArgumentCustomization = args => args.Append($"-bl:{binlog}")
-        });
+    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, null, true);
 }
 
-DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectoryProps = false)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
+{
+    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
+    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
+    var results = $"{name}-{config}.trx";
+
+    Information("Run Test binlog: {0}", binlog);
+
+    var settings = new DotNetTestSettings
+        {
+            Configuration = config,
+            NoBuild = noBuild,
+            Loggers = { 
+                $"trx;LogFileName={results}"  
+            }, 
+           	ResultsDirectory = GetTestResultsDirectory(),
+            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
+            ArgumentCustomization = args => 
+            { 
+                args.Append($"-bl:{binlog}");
+               // args.Append($"/tl");
+                if(argsExtra != null)
+                {
+                    foreach(var prop in argsExtra)
+                    {
+                        args.Append($"/p:{prop.Key}={prop.Value}");
+                    }
+                }
+                return args;
+            }
+        };
+    
+    if(!string.IsNullOrEmpty(pathDotnet))
+    {
+        settings.ToolPath = pathDotnet;
+    }
+
+    DotNetTest(csproj, settings);
+}
+
+DirectoryPath PrepareSeparateBuildContext(string dirName, string props = null, string targets = null)
 {
     var dir = GetTempDirectory().Combine(dirName);
     EnsureDirectoryExists(dir);
@@ -727,9 +728,15 @@ DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectory
         $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
         $"<add key=\"nuget-only\" value=\"{nugetOnly.FullPath}\" />");
 
-    // Create empty Directory.Build.props/targets
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
-    FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    // Create empty or copy test Directory.Build.props/targets
+    if (string.IsNullOrEmpty(props))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.props"), "<Project/>");
+    else
+        CopyFile(props, dir.CombineWithFilePath("Directory.Build.props"));
+    if (string.IsNullOrEmpty(targets))
+        FileWriteText(dir.CombineWithFilePath("Directory.Build.targets"), "<Project/>");
+    else
+        CopyFile(targets, dir.CombineWithFilePath("Directory.Build.targets"));
 
     return MakeAbsolute(dir);
 }

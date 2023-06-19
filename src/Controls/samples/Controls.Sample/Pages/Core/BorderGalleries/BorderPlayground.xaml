@@ -17,7 +17,7 @@
     <Grid
         Padding="12">
         <Grid.RowDefinitions>
-            <RowDefinition Height="80" />
+            <RowDefinition Height="200" />
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
        
@@ -28,6 +28,19 @@
         <ScrollView
             Grid.Row="1">
             <StackLayout>
+                <Label
+                    Text="Border Content"
+                    Style="{StaticResource Headline}"/>
+                <Picker
+                    x:Name="BorderContentPicker"
+                    SelectedIndexChanged="OnBorderContentSelectedIndexChanged">
+                    <Picker.ItemsSource>
+                        <x:Array Type="{x:Type x:String}">
+                            <x:String>Label</x:String>
+                            <x:String>Image</x:String>
+                        </x:Array>
+                    </Picker.ItemsSource>
+                </Picker>
                 <Label
                     Text="Border Shape"
                     Style="{StaticResource Headline}"/>
@@ -167,7 +180,7 @@
                     <Slider
                         x:Name="TopRightCornerSlider" 
                         Maximum="60" 
-                        Minimum="6" 
+                        Minimum="0" 
                         ValueChanged="OnCornerRadiusChanged" />
                     <Label 
                         Text="{Binding Source={x:Reference BottomLeftCornerSlider}, Path=Value, StringFormat='{}Bottom Left Corner Radius: {0}'}"
@@ -175,7 +188,7 @@
                     <Slider 
                         x:Name="BottomLeftCornerSlider" 
                         Maximum="60" 
-                        Minimum="6" 
+                        Minimum="0" 
                         ValueChanged="OnCornerRadiusChanged" />
                     <Label 
                         Text="{Binding Source={x:Reference BottomRightCornerSlider}, Path=Value, StringFormat='{}Bottom Right Corner Radius: {0}'}"

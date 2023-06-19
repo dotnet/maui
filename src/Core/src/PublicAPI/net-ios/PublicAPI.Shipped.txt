@@ -2048,7 +2048,6 @@ override Microsoft.Maui.Handlers.GraphicsViewHandler.DisconnectHandler(Microsoft
 override Microsoft.Maui.Handlers.ImageButtonHandler.ConnectHandler(UIKit.UIButton! platformView) -> void
 override Microsoft.Maui.Handlers.ImageButtonHandler.CreatePlatformView() -> UIKit.UIButton!
 override Microsoft.Maui.Handlers.ImageButtonHandler.DisconnectHandler(UIKit.UIButton! platformView) -> void
-override Microsoft.Maui.Handlers.ImageHandler.ConnectHandler(UIKit.UIImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.CreatePlatformView() -> UIKit.UIImageView!
 override Microsoft.Maui.Handlers.ImageHandler.DisconnectHandler(UIKit.UIImageView! platformView) -> void
 override Microsoft.Maui.Handlers.ImageHandler.NeedsContainer.get -> bool
@@ -2831,7 +2830,6 @@ static Microsoft.Maui.Platform.SearchBarExtensions.UpdateFont(this UIKit.UISearc
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateFont(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ITextStyle! textStyle, Microsoft.Maui.IFontManager! fontManager) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsReadOnly(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateMaxLength(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdatePlaceholder(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateText(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void

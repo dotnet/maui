@@ -1,8 +1,8 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Compatibility;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
+using Microsoft.Maui.Controls.ControlGallery.iOS;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -10,7 +10,7 @@ using ObjCRuntime;
 using UIKit;
 
 [assembly: ExportEffect(typeof(SearchbarEffect), "SearchbarEffect")]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS
+namespace Microsoft.Maui.Controls.ControlGallery.iOS
 {
 	public class SearchbarEffect : PlatformEffect
 	{

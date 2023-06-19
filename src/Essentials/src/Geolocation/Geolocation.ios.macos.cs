@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading;
@@ -10,14 +11,14 @@ namespace Microsoft.Maui.Devices.Sensors
 {
 	partial class GeolocationImplementation : IGeolocation
 	{
-		CLLocationManager listeningManager;
+		CLLocationManager? listeningManager;
 
 		/// <summary>
 		/// Indicates if currently listening to location updates while the app is in foreground.
 		/// </summary>
 		public bool IsListeningForeground { get => listeningManager != null; }
 
-		public async Task<Location> GetLastKnownLocationAsync()
+		public async Task<Location?> GetLastKnownLocationAsync()
 		{
 			if (!CLLocationManager.LocationServicesEnabled)
 				throw new FeatureNotEnabledException("Location services are not enabled on device.");
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			return location?.ToLocation(reducedAccuracy);
 		}
 
-		public async Task<Location> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
+		public async Task<Location?> GetLocationAsync(GeolocationRequest request, CancellationToken cancellationToken)
 		{
 			ArgumentNullException.ThrowIfNull(request);
 
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Devices.Sensors
 			// so just use the main loop
 			var manager = MainThread.InvokeOnMainThread(() => new CLLocationManager());
 
-			var tcs = new TaskCompletionSource<CLLocation>(manager);
+			var tcs = new TaskCompletionSource<CLLocation?>(manager);
 
 			var listener = new SingleLocationListener();
 			listener.LocationHandler += HandleLocation;
@@ -155,7 +156,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			void HandleLocation(CLLocation clLocation)
 			{
-				OnLocationChanged(clLocation?.ToLocation(reducedAccuracy));
+				OnLocationChanged(clLocation.ToLocation(reducedAccuracy));
 			}
 
 			void HandleError(GeolocationError error)
@@ -172,7 +173,8 @@ namespace Microsoft.Maui.Devices.Sensors
 		/// </summary>
 		public void StopListeningForeground()
 		{
-			if (!IsListeningForeground)
+			if (!IsListeningForeground ||
+				listeningManager is null)
 				return;
 
 			listeningManager.StopUpdatingLocation();
@@ -183,7 +185,7 @@ namespace Microsoft.Maui.Devices.Sensors
 				listener.ErrorHandler = null;
 			}
 
-			listeningManager.Delegate = null;
+			listeningManager.WeakDelegate = null;
 
 			listeningManager = null;
 		}
@@ -193,7 +195,7 @@ namespace Microsoft.Maui.Devices.Sensors
 	{
 		bool wasRaised = false;
 
-		internal Action<CLLocation> LocationHandler { get; set; }
+		internal Action<CLLocation>? LocationHandler { get; set; }
 
 		/// <inheritdoc/>
 		public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)
@@ -217,9 +219,9 @@ namespace Microsoft.Maui.Devices.Sensors
 
 	class ContinuousLocationListener : CLLocationManagerDelegate
 	{
-		internal Action<CLLocation> LocationHandler { get; set; }
+		internal Action<CLLocation>? LocationHandler { get; set; }
 
-		internal Action<GeolocationError> ErrorHandler { get; set; }
+		internal Action<GeolocationError>? ErrorHandler { get; set; }
 
 		/// <inheritdoc/>
 		public override void LocationsUpdated(CLLocationManager manager, CLLocation[] locations)

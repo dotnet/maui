@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
+using System.Xml;
 using System.Xml.Linq;
-using Microsoft.UI.Xaml;
+using System.Xml.Resolvers;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Documents;
 
@@ -111,7 +113,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var element = XElement.Parse(modifiedText);
+				var element = ParseXhtml(modifiedText);
 				LabelHtmlHelper.ParseText(element, platformControl.Inlines, label);
 			}
 			catch (Exception)
@@ -124,6 +126,34 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateTextPlainText(this TextBlock platformControl, IText label)
 		{
 			platformControl.Text = label.Text;
+		}
+
+		static XElement? ParseXhtml(string? html)
+		{
+			if (string.IsNullOrEmpty(html))
+				return null;
+
+			XmlNameTable nt = new NameTable();
+			XmlNamespaceManager nsmgr = new XmlNamespaceManager(nt);
+			var xmlParserContext = new XmlParserContext(null, nsmgr, null, XmlSpace.None);
+			XmlParserContext context = xmlParserContext;
+			context.DocTypeName = "html";
+			context.PublicId = "-//W3C//DTD XHTML 1.0 Strict//EN";
+			context.SystemId = "xhtml1-strict.dtd";
+			XmlParserContext xhtmlContext = context;
+
+			StringReader stringReader = new StringReader(html);
+
+			XmlReaderSettings settings = new XmlReaderSettings
+			{
+				DtdProcessing = DtdProcessing.Parse,
+				ValidationType = ValidationType.DTD,
+				XmlResolver = new XmlPreloadedResolver(XmlKnownDtds.All)
+			};
+
+			XmlReader reader = XmlReader.Create(stringReader, settings, xhtmlContext);
+
+			return XElement.Load(reader);
 		}
 	}
 }

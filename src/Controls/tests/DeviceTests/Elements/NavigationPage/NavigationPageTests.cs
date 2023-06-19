@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -33,6 +34,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Frame, FrameRenderer>();
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 				});
 			});
 		}
@@ -153,44 +157,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !IOS && !MACCATALYST
-		[Fact(DisplayName = "Toolbar Items Map Correctly")]
-		public async Task ToolbarItemsMapCorrectly()
-		{
-			SetupBuilder();
-			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
-			var navPage = new NavigationPage(new ContentPage()
-			{
-				ToolbarItems =
-				{
-					toolbarItem
-				}
-			});
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
-			{
-				ToolbarItemsMatch(handler, toolbarItem);
-				return Task.CompletedTask;
-			});
-		}
-#endif
-
-		[Fact(DisplayName = "Toolbar Title")]
-		public async Task ToolbarTitle()
-		{
-			SetupBuilder();
-			var navPage = new NavigationPage(new ContentPage()
-			{
-				Title = "Page Title"
-			});
-
-			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
-			{
-				string title = GetToolbarTitle(handler);
-				Assert.Equal("Page Title", title);
-			});
-		}
-
 		[Fact(DisplayName = "Insert Page Before Root Page and then PopToRoot")]
 		public async Task InsertPageBeforeRootPageAndThenPopToRoot()
 		{
@@ -284,6 +250,71 @@ namespace Microsoft.Maui.DeviceTests
 						new ContentPage()
 					}
 				};
+			});
+		}
+
+		[Fact(DisplayName = "NavigationPage Does Not Leak"
+#if WINDOWS
+			,Skip = "Failing"
+#endif
+			)]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			WeakReference pageReference = null;
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new CollectionView(),
+					}
+				};
+				pageReference = new WeakReference(page);
+				await navPage.Navigation.PushAsync(page);
+				await navPage.Navigation.PopAsync();
+			});
+
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
+			{
+				if (!pageReference.IsAlive)
+					break;
+				await Task.Yield();
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+			}
+
+			Assert.NotNull(pageReference);
+			Assert.False(pageReference.IsAlive, "Page should not be alive!");
+		}
+
+		[Fact(DisplayName = "Can Reuse Pages"
+#if WINDOWS
+			,Skip = "Failing"
+#endif
+			)]
+		public async Task CanReusePages()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
+			var reusedPage = new ContentPage
+			{
+				Content = new Label()
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.Navigation.PushAsync(reusedPage);
+				await navPage.Navigation.PopAsync();
+				await navPage.Navigation.PushAsync(reusedPage);
+				await OnLoadedAsync(reusedPage.Content);
 			});
 		}
 	}

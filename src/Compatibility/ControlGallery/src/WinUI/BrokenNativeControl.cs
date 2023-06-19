@@ -7,7 +7,7 @@ using Windows.Graphics.Display;
 using Windows.UI;
 using Windows.UI.ViewManagement;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI
 {
 	internal class BrokenNativeControl : Panel
 	{

@@ -1,9 +1,14 @@
 {
   "tools": {
-    "dotnet": "6.0.100"
+    "dotnet": "7.0.203"
   },
   "msbuild-sdks": {
     "MSBuild.Sdk.Extras": "3.0.44",
     "Microsoft.Build.NoTargets": "3.3.0"
+  },
+  "sdk": {
+    "version": "7.0.200",
+    "allowPrerelease": true,
+    "rollForward": "latestMinor"
   }
 }

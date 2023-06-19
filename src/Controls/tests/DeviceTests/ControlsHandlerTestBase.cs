@@ -1,24 +1,15 @@
 using System;
 using System.Linq;
-using System.Reflection;
-using System.Reflection.Metadata;
-using System.Reflection.PortableExecutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
-using Microsoft.Maui.Controls.Hosting;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
@@ -26,6 +17,13 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 
 namespace Microsoft.Maui.DeviceTests
 {
+	// Uncomment these sections if you hit issues with parallel executions
+	//[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+	//public class NonParallelCollectionDefinitionClass
+	//{
+	//}
+
+	//[Collection("Non-Parallel Collection")]
 	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
@@ -41,26 +39,8 @@ namespace Microsoft.Maui.DeviceTests
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
-		protected void SetupShellHandlers(IMauiHandlersCollection handlers)
-		{
-			handlers.TryAddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-			handlers.TryAddHandler<Layout, LayoutHandler>();
-			handlers.TryAddHandler<Image, ImageHandler>();
-			handlers.TryAddHandler<Label, LabelHandler>();
-			handlers.TryAddHandler<Page, PageHandler>();
-			handlers.TryAddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-			handlers.TryAddHandler(typeof(MenuBar), typeof(MenuBarHandler));
-			handlers.TryAddHandler(typeof(MenuBarItem), typeof(MenuBarItemHandler));
-			handlers.TryAddHandler(typeof(MenuFlyoutItem), typeof(MenuFlyoutItemHandler));
-			handlers.TryAddHandler(typeof(MenuFlyoutSubItem), typeof(MenuFlyoutSubItemHandler));
-			handlers.TryAddHandler<ScrollView, ScrollViewHandler>();
-
-#if WINDOWS
-			handlers.TryAddHandler(typeof(ShellItem), typeof(ShellItemHandler));
-			handlers.TryAddHandler(typeof(ShellSection), typeof(ShellSectionHandler));
-			handlers.TryAddHandler(typeof(ShellContent), typeof(ShellContentHandler));
-#endif
-		}
+		protected void SetupShellHandlers(IMauiHandlersCollection handlers) =>
+			handlers.SetupShellHandlers();
 
 		protected THandler CreateHandler<THandler>(IElement view)
 			where THandler : IElementHandler, new()
@@ -71,6 +51,16 @@ namespace Microsoft.Maui.DeviceTests
 		protected async Task<THandler> CreateHandlerAsync<THandler>(IElement view)
 			where THandler : IElementHandler, new() =>
 			await InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view));
+
+		protected IElementHandler CreateHandler(IElement view)
+		{
+			var handler = view.ToHandler(MauiContext);
+			InitializeViewHandler(view, handler, MauiContext);
+			return handler;
+		}
+
+		protected async Task<IElementHandler> CreateHandlerAsync(IElement view) =>
+			await InvokeOnMainThreadAsync(() => CreateHandler(view));
 
 		protected Task<TValue> GetValueAsync<TValue, THandler>(IElement view, Func<THandler, TValue> func)
 			 where THandler : IElementHandler, new()
@@ -99,6 +89,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		IWindow CreateWindowForContent(IElement view)
+		{
+			IWindow window;
+
+			if (view is IWindow w)
+				window = w;
+			else if (view is Page page)
+				window = new Controls.Window(page);
+			else
+				window = new Controls.Window(new ContentPage() { Content = (View)view });
+
+			return window;
+		}
+
+		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
+		{
+			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			{
+				action();
+				return Task.CompletedTask;
+			});
+		}
+
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
 			where THandler : class, IElementHandler
 		{
@@ -110,29 +123,18 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
-		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null)
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action, IMauiContext mauiContext = null, TimeSpan? timeOut = null)
 			where THandler : class, IElementHandler
 		{
 			mauiContext ??= MauiContext;
 
+			timeOut ??= TimeSpan.FromSeconds(15);
+
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				IWindow window = null;
+				IWindow window = CreateWindowForContent(view);
 
 				var application = mauiContext.Services.GetService<IApplication>();
-
-				if (view is IWindow w)
-				{
-					window = w;
-				}
-				else if (view is Page page)
-				{
-					window = new Controls.Window(page);
-				}
-				else
-				{
-					window = new Controls.Window(new ContentPage() { Content = (View)view });
-				}
 
 				if (application is ApplicationStub appStub)
 				{
@@ -150,10 +152,16 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						IView content = window.Content;
 
+						if (content is FlyoutPage fp)
+							content = fp.Detail;
+
+						if (window is Window w && w.Navigation.ModalStack.Count > 0)
+							content = w.Navigation.ModalStack.Last();
+
 						if (content is IPageContainer<Page> pc)
 						{
 							content = pc.CurrentPage;
-							if (content == null)
+							if (content is null)
 							{
 								// This is mainly a timing issue with Shell.
 								// Basically the `CurrentPage` on Shell isn't initialized until it's
@@ -170,21 +178,49 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 
-						window.Activated();
+#if !WINDOWS
+						if (window is Window controlsWindow)
+						{
+							if (!controlsWindow.IsActivated)
+								window.Activated();
+						}
+						else
+						{
+							controlsWindow = null;
+							window.Activated();
+						}
+#endif
+
 #if WINDOWS
 						await Task.Delay(10);
 #endif
+
+						THandler handler;
+
 						if (typeof(THandler).IsAssignableFrom(window.Handler.GetType()))
-							await action((THandler)window.Handler);
+							handler = (THandler)window.Handler;
 						else if (typeof(THandler).IsAssignableFrom(window.Content.Handler.GetType()))
-							await action((THandler)window.Content.Handler);
+							handler = (THandler)window.Content.Handler;
 						else if (window.Content is ContentPage cp && typeof(THandler).IsAssignableFrom(cp.Content.Handler.GetType()))
-							await action((THandler)cp.Content.Handler);
+							handler = (THandler)cp.Content.Handler;
+						else if (typeof(THandler).IsAssignableFrom(typeof(WindowHandler)))
+							throw new Exception($"Use IWindowHandler instead of WindowHandler for CreateHandlerAndAddToWindow");
 						else
 							throw new Exception($"I can't work with {typeof(THandler)}");
 
-						window.Deactivated();
-						window.Destroying();
+						await action(handler).WaitAsync(timeOut.Value);
+
+
+#if !WINDOWS
+						bool isActivated = controlsWindow?.IsActivated ?? false;
+						bool isDestroyed = controlsWindow?.IsDestroyed ?? false;
+
+						if (isActivated)
+							window.Deactivated();
+
+						if (!isDestroyed)
+							window.Destroying();
+#endif
 
 					}, mauiContext);
 				}
@@ -279,63 +315,83 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		protected void OnLoaded(VisualElement frameworkElement, Action action)
+		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
-			if (frameworkElement.IsLoaded)
+			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
+			var source = new TaskCompletionSource();
+			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
-				action();
-				return;
+				source.TrySetResult();
+			}
+			else
+			{
+				EventHandler loaded = null;
+
+				loaded = (_, __) =>
+				{
+					if (loaded is not null)
+						frameworkElement.Loaded -= loaded;
+
+					source.TrySetResult();
+				};
+
+				frameworkElement.Loaded += loaded;
 			}
 
-			EventHandler loaded = null;
-
-			loaded = (_, __) =>
-			{
-				if (loaded != null)
-					frameworkElement.Loaded -= loaded;
-
-				action();
-			};
-
-			frameworkElement.Loaded += loaded;
-		}
-
-
-		protected void OnUnloaded(VisualElement frameworkElement, Action action)
-		{
-			if (!frameworkElement.IsLoaded)
-			{
-				action();
-				return;
-			}
-
-			EventHandler unloaded = null;
-
-			unloaded = (_, __) =>
-			{
-				if (unloaded != null)
-					frameworkElement.Unloaded -= unloaded;
-
-				action();
-			};
-
-			frameworkElement.Unloaded += unloaded;
+			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
 		}
 
 		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnUnloaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			var source = new TaskCompletionSource();
+			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
+			{
+				source.TrySetResult();
+			}
+			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
+			// This will happen before the the control has been unloaded at the platform level.
+			// This is most likely a bug.
+			else if (frameworkElement.IsLoadedOnPlatform())
+			{
+				frameworkElement.OnUnloaded(() => source.TrySetResult());
+			}
+			else
+			{
+				EventHandler unloaded = null;
+
+				unloaded = (_, __) =>
+				{
+					if (unloaded is not null)
+						frameworkElement.Unloaded -= unloaded;
+
+					source.TrySetResult();
+				};
+
+				frameworkElement.Unloaded += unloaded;
+			}
+
+			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
 		}
 
-		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		// Modal Page's appear to currently not fire loaded/unloaded
+		async Task HandleLoadedUnloadedIssue(Task task, TimeSpan timeOut, Func<bool> isConditionValid)
 		{
-			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
-			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			OnLoaded(frameworkElement, () => taskCompletionSource.SetResult(true));
-			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
+			try
+			{
+				await task.WaitAsync(timeOut);
+			}
+			catch (TimeoutException)
+			{
+				if (isConditionValid())
+				{
+					return;
+				}
+				else
+				{
+					throw;
+				}
+			}
 		}
 
 		protected async Task OnNavigatedToAsync(Page page, TimeSpan? timeOut = null)
@@ -414,7 +470,7 @@ namespace Microsoft.Maui.DeviceTests
 						.Window
 						.GetVisualTreeDescendants()
 						.OfType<IToolbarElement>()
-						.SingleOrDefault(x => x.Toolbar != null)
+						.SingleOrDefault(x => x.Toolbar is not null)
 						?.Toolbar;
 		}
 

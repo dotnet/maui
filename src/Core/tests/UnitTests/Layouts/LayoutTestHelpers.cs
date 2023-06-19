@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
+using NSubstitute.Core;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public static void SubstituteChildren(ILayout layout, IList<IView> children)
 		{
 			layout[Arg.Any<int>()].Returns(args => children[(int)args[0]]);
-			layout.GetEnumerator().Returns(children.GetEnumerator());
+			layout.GetEnumerator().Returns((ci) => children.GetEnumerator());
 			layout.Count.Returns(children.Count);
 		}
 
@@ -49,6 +51,84 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public static void AssertArranged(IView view, Rect expected)
 		{
 			view.Received().Arrange(Arg.Is(expected));
+		}
+
+		// Create a test view which works like a text block
+		// So the height is dependent on the width being measured
+		public static IView CreateWidthDominatedView(double unconstrainedWidth, double unconstrainedHeight,
+			params Tuple<double, double>[] sizes)
+		{
+			var view = CreateTestView();
+
+			Func<CallInfo, Size> fakeMeasure = (ci) =>
+			{
+				var widthConstraint = (double)ci.Args()[0];
+				var heightConstraint = (double)ci.Args()[1];
+
+				double width = 0;
+				double height = 0;
+
+				if (double.IsPositiveInfinity(widthConstraint))
+				{
+					width = unconstrainedWidth;
+					height = unconstrainedHeight;
+				}
+
+				for (int n = 0; n < sizes.Length; n++)
+				{
+					if (widthConstraint <= sizes[n].Item1)
+					{
+						width = widthConstraint;
+						height = sizes[n].Item2;
+						break;
+					}
+				}
+
+				return new Size(width, height);
+			};
+
+			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(fakeMeasure);
+
+			return view;
+		}
+
+		// Create a test view where the width is dependent on the height
+		// (e.g., like an image with a fixed aspect ratio)
+		public static IView CreateHeightDominatedView(double unconstrainedWidth, double unconstrainedHeight,
+			params Tuple<double, double>[] sizes)
+		{
+			var view = CreateTestView();
+
+			Func<CallInfo, Size> fakeMeasure = (ci) =>
+			{
+				var widthConstraint = (double)ci.Args()[0];
+				var heightConstraint = (double)ci.Args()[1];
+
+				double width = 0;
+				double height = 0;
+
+				if (double.IsPositiveInfinity(heightConstraint))
+				{
+					width = unconstrainedWidth;
+					height = unconstrainedHeight;
+				}
+
+				for (int n = 0; n < sizes.Length; n++)
+				{
+					if (heightConstraint <= sizes[n].Item2)
+					{
+						width = sizes[n].Item1;
+						height = heightConstraint;
+						break;
+					}
+				}
+
+				return new Size(width, height);
+			};
+
+			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(fakeMeasure);
+
+			return view;
 		}
 	}
 }

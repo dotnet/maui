@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -87,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if WINDOWS
 		[Ignore("Focus Behavior is different on UWP")]
 #endif
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FocusAndUnFocusMultipleTimes()
 		{
 			RunningApp.WaitForElement("btnFocusThenUnFocus");

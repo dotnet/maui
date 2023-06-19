@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -30,9 +31,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
+		Func<UICollectionViewCell> _getPrototype;
+		CGSize _previousContentSize = CGSize.Empty;
+
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
+		List<string> _cellReuseIds = new List<string>();
 
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
@@ -88,7 +93,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override UICollectionViewCell GetCell(UICollectionView collectionView, NSIndexPath indexPath)
 		{
-			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(), indexPath) as UICollectionViewCell;
+			var cell = collectionView.DequeueReusableCell(DetermineCellReuseId(indexPath), indexPath) as UICollectionViewCell;
 
 			switch (cell)
 			{
@@ -174,7 +179,59 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			ConstrainToItemsView();
 			base.ViewWillLayoutSubviews();
+			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
+		}
+
+		void InvalidateMeasureIfContentSizeChanged()
+		{
+			var contentSize = CollectionView.CollectionViewLayout.CollectionViewContentSize;
+
+			bool widthChanged = _previousContentSize.Width != contentSize.Width;
+			bool heightChanged = _previousContentSize.Height != contentSize.Height;
+
+			if (_initialized && (widthChanged || heightChanged))
+			{
+				var screenFrame = CollectionView.Window.Frame;
+				var screenWidth = screenFrame.Width;
+				var screenHeight = screenFrame.Height;
+				bool invalidate = false;
+
+				// If both the previous content size and the current content size are larger
+				// than the screen size, then we know that we're already maxed out and the 
+				// CollectionView items are scrollable. There's no reason to force an invalidation
+				// of the CollectionView to expand/contract it.
+
+				// If either size is smaller than that, we need to invalidate to ensure that the 
+				// CollectionView is re-measured and set to the correct size.
+
+				if (widthChanged && (contentSize.Width < screenWidth || _previousContentSize.Width < screenWidth))
+				{
+					invalidate = true;
+				}
+
+				if (heightChanged && (contentSize.Height < screenHeight || _previousContentSize.Height < screenHeight))
+				{
+					invalidate = true;
+				}
+
+				if (invalidate)
+				{
+					(ItemsView as IView).InvalidateMeasure();
+				}
+			}
+
+			_previousContentSize = contentSize;
+		}
+
+		internal Size? GetSize()
+		{
+			if (_emptyViewDisplayed)
+			{
+				return _emptyUIView.Frame.Size.ToSize();
+			}
+
+			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
 		void ConstrainToItemsView()
@@ -200,7 +257,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			_initialized = true;
 
-			ItemsViewLayout.GetPrototype = GetPrototype;
+			_getPrototype ??= GetPrototype;
+			ItemsViewLayout.GetPrototype = _getPrototype;
 
 			Delegator = CreateDelegator();
 			CollectionView.Delegate = Delegator;
@@ -227,8 +285,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ItemsViewLayout?.ClearCellSizeCache();
 			ItemsSource?.Dispose();
 			ItemsSource = CreateItemsViewSource();
+
 			CollectionView.ReloadData();
 			CollectionView.CollectionViewLayout.InvalidateLayout();
+
+			(ItemsView as IView)?.InvalidateMeasure();
 		}
 
 		public virtual void UpdateFlowDirection()
@@ -242,6 +303,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Layout.InvalidateLayout();
 		}
+
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
@@ -337,6 +399,34 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		protected virtual string DetermineCellReuseId(NSIndexPath indexPath)
+		{
+			if (ItemsView.ItemTemplate != null)
+			{
+				var item = ItemsSource[indexPath];
+
+				var dataTemplate = ItemsView.ItemTemplate.SelectDataTemplate(item, ItemsView);
+
+				var cellOrientation = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? "v" : "h";
+				var cellType = ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Vertical ? typeof(VerticalCell) : typeof(HorizontalCell);
+
+				var reuseId = $"_maui_{cellOrientation}_{dataTemplate.Id}";
+
+				if (!_cellReuseIds.Contains(reuseId))
+				{
+					CollectionView.RegisterClassForCell(cellType, new NSString(reuseId));
+					_cellReuseIds.Add(reuseId);
+				}
+
+				return reuseId;
+			}
+
+			return ItemsViewLayout.ScrollDirection == UICollectionViewScrollDirection.Horizontal
+				? HorizontalDefaultCell.ReuseId
+				: VerticalDefaultCell.ReuseId;
+		}
+
+		[Obsolete("Use DetermineCellReuseId(NSIndexPath indexPath) instead.")]
 		protected virtual string DetermineCellReuseId()
 		{
 			if (ItemsView.ItemTemplate != null)
