@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Handlers
 				.ContinueWith((action) => handler.UpdateValue(nameof(IImage.IsAnimationPlaying)));
 		}
 
-		void OnSetImageSource(Drawable? obj) =>
+		void IImageSourcePartSetter.SetImageSource(Drawable? obj) =>
 			PlatformView.SetImageDrawable(obj);
 
 		public override void PlatformArrange(Graphics.Rect frame)
