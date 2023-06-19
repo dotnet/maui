@@ -105,7 +105,6 @@ namespace Microsoft.Maui.Controls
 			bpcontext.Values.Remove(specificity);
 			if (changed)
 			{
-				//var newValue = bpcontext.Values.LastOrDefault().Value;
 				OnPropertyChanged(property.PropertyName);
 				property.PropertyChanged?.Invoke(this, original, newValue);
 			}
