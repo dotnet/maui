@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla45743Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("ActionSheet Title"));
