@@ -99,7 +99,7 @@
     get to a point where we don't have to support these earlier versions, we can replace this style with just the 
     template. (See also FormsGridView.cs) -->
     <Style TargetType="local:FormsGridView">
-        <Setter Property="Padding" Value="0,0,0,10" />
+        <Setter Property="Padding" Value="0,0,0,0" />
         <Setter Property="IsTabStop" Value="False" />
         <Setter Property="TabNavigation" Value="Once" />
         <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
