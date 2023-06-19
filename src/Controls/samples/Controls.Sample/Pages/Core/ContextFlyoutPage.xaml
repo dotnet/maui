@@ -30,9 +30,11 @@
                 <FlyoutBase.ContextFlyout>
                     <MenuFlyout>
                         <MenuFlyoutItem Text="Add top-level menu items" Clicked="OnAddMenuClicked"></MenuFlyoutItem>
-                        <MenuFlyoutSubItem Text="Sub menu items go in here">
+                        <MenuFlyoutSubItem Text="Sub menu items go in here" x:Name="subMenu">
                             <MenuFlyoutItem Text="Add sub menu items below here" Clicked="OnAddSubMenuClicked"></MenuFlyoutItem>
                             <MenuFlyoutSeparator />
+                            <MenuFlyoutSeparator />
+                            <MenuFlyoutItem Text="Remove sub menu item above here" Clicked="OnRemoveSubMenuClicked" x:Name="removeSubMenuItems" IsEnabled="False"></MenuFlyoutItem>
                         </MenuFlyoutSubItem>
                     </MenuFlyout>
                 </FlyoutBase.ContextFlyout>

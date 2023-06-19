@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		void OnSetImageSource(Drawable? obj)
+		void IImageSourcePartSetter.SetImageSource(Drawable? obj)
 		{
 			PlatformView.SetImageDrawable(obj);
 		}
