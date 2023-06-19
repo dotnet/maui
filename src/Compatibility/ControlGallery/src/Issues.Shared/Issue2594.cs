@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2594, "StackLayout produces overlapping layouts on some phones with specific screen sizes", PlatformAffected.Android | PlatformAffected.iOS | PlatformAffected.WinPhone)]

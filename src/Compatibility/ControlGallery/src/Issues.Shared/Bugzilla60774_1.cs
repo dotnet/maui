@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// Manual test to verify that ScrollOrientation.Both scrolls at the correct speed horizontally
 #if UITEST

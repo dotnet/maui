@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries
 {
 	public partial class VisualGradientViewsGallery : ContentPage
 	{

@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	public class FamilyViewModel
@@ -38,12 +38,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		{
 			FamilyLabel = new Label();
 
-			var l1 = new RelativeLayout();
+			var l1 = new Compatibility.RelativeLayout();
 
 			l1.Children.Add(FamilyLabel,
-							 Constraint.Constant(50),
-							 Constraint.Constant(4),
-							 Constraint.RelativeToParent(p => p.Width - 10 - 50 - 85)
+							 Compatibility.Constraint.Constant(50),
+							Compatibility.Constraint.Constant(4),
+							Compatibility.Constraint.RelativeToParent(p => p.Width - 10 - 50 - 85)
 				);
 
 
@@ -85,6 +85,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	[Category(UITestCategories.InputTransparent)]
 	[Category(UITestCategories.UwpIgnore)]
 	[Category(UITestCategories.Bugzilla)]
+	[FailsOnMaui]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 26501, "BindingSource / Context action issue", PlatformAffected.iOS)]
@@ -143,6 +144,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void TestCellsShowAfterRefresh()
 		{

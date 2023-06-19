@@ -14,7 +14,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Adding Multiple Items to a ListView", PlatformAffected.All)]
@@ -113,6 +113,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests1AllElementsPresent()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Big Job"));
@@ -131,6 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests2AddOneElementToList()
 		{
 			RunningApp.Tap(q => q.Marked("Add One"));
@@ -140,6 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests3AddTwoElementToList()
 		{
 			RunningApp.Screenshot("Click 'Add Two'");

@@ -337,8 +337,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateVerticalScrollBarVisibility()
 		{
+			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default 
+				if (_defaultVerticalScrollVisibility == null)
+					_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			}
+
 			if (_defaultVerticalScrollVisibility == null)
-				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			{
+				// If the default has never been recorded, then this has never been set to anything but the 
+				// default value; there's nothing to do.
+				return;
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{

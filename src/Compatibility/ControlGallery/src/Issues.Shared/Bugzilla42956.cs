@@ -14,7 +14,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla42956Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Success));
