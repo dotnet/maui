@@ -59,6 +59,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue6705Test()
 		{
 			for (var i = 1; i < 6; i++)

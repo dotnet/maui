@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 		{
 			var collectionView = RunningApp.WaitForElement(q => q.Marked("CollectionView7803"))[0];

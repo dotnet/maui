@@ -88,6 +88,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ShellSwipeToDismiss()
 		{
 			var pushButton = RunningApp.WaitForElement(ButtonId);
