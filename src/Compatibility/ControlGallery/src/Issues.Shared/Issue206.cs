@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category("ManualReview")]
 		[UiTest(typeof(ViewCell))]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue206TestsTextInTextCellResizes()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Click 9"));

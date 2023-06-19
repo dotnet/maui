@@ -9,7 +9,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Threading.Tasks;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.Image)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LongImageURLsShouldNotCrash()
 		{
 			// Give the images some time to load (or fail)

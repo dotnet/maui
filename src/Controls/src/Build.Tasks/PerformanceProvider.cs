@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			public bool IsDetail;
 		}
 
-		readonly Dictionary<string, Statistic> _Statistics = new Dictionary<string, Statistic>();
+		readonly Dictionary<string, Statistic> _Statistics = new(StringComparer.Ordinal);
 
 		public Dictionary<string, Statistic> Statistics
 		{

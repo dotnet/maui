@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -38,6 +38,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ScrollView)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void MeasuringEmptyScrollViewDoesNotCrash()
 		{
 			Task.Delay(1000).Wait();

@@ -9,7 +9,7 @@ using Xamarin.UITest.Queries;
 using System.Linq;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	using IApp = Xamarin.UITest.IApp;
 	public static class UITestHelper

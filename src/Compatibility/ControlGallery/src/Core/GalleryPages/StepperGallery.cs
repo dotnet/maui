@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class StepperGallery : ContentPage
 	{

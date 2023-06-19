@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8161, "On WPF ToolbarItem.IsEnabled = false does nothing", PlatformAffected.WPF, navigationBehavior: NavigationBehavior.SetApplicationRoot)]

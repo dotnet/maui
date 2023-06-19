@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <local:TestContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
 				 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
- 				 xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
+ 				 xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
                  xmlns:cmp="clr-namespace:Microsoft.Maui.Controls.Compatibility;assembly=Microsoft.Maui.Controls"
-				 x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Bugzilla26032">
+				 x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Bugzilla26032">
     <cmp:RelativeLayout>
         <ListView x:Name="List1"
 				  cmp:RelativeLayout.XConstraint="{cmp:ConstraintExpression Type=Constant, Constant=0}"

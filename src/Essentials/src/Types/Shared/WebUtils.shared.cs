@@ -1,45 +1,73 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Maui.ApplicationModel
 {
 	static class WebUtils
 	{
-		internal static IDictionary<string, string> ParseQueryString(string url)
+		// The following method is a port of the logic found in https://source.dot.net/#Microsoft.AspNetCore.WebUtilities/src/Shared/QueryStringEnumerable.cs
+		// but refactored such that it:
+		//
+		// 1. avoids the IEnumerable overhead that isn't needed (the ASP.NET logic was clearly designed that way to offer a public API whereas we don't need that)
+		// 2. avoids the use of unsafe code
+		internal static IDictionary<string, string> ParseQueryString(Uri uri)
 		{
-			var d = new Dictionary<string, string>();
+			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
-			if (string.IsNullOrWhiteSpace(url) || (url.IndexOf("?", StringComparison.Ordinal) == -1 && url.IndexOf("#", StringComparison.Ordinal) == -1))
-				return d;
+			if (uri == null || string.IsNullOrEmpty(uri.Query))
+				return parameters;
 
-			var qsStartIndex = url.IndexOf("?", StringComparison.Ordinal);
-			if (qsStartIndex < 0)
-				qsStartIndex = url.IndexOf("#", StringComparison.Ordinal);
+			// Note: Uri.Query starts with a '?'
+			var query = uri.Query.AsSpan(1);
 
-			if (url.Length - 1 < qsStartIndex + 1)
-				return d;
-
-			var qs = url.Substring(qsStartIndex + 1);
-
-			var kvps = qs.Split('&');
-
-			if (kvps == null || !kvps.Any())
-				return d;
-
-			foreach (var kvp in kvps)
+			while (!query.IsEmpty)
 			{
-				var pair = kvp.Split(new char[] { '=' }, 2);
+				int delimeterIndex = query.IndexOf('&');
+				ReadOnlySpan<char> segment;
 
-				if (pair == null || pair.Length != 2)
-					continue;
+				if (delimeterIndex >= 0)
+				{
+					segment = query.Slice(0, delimeterIndex);
+					query = query.Slice(delimeterIndex + 1);
+				}
+				else
+				{
+					segment = query;
+					query = default;
+				}
 
-				d[pair[0]] = pair[1];
+				// If it's nonempty, emit it
+				if (!segment.IsEmpty)
+				{
+					var equalIndex = segment.IndexOf('=');
+					string name, value;
+
+					if (equalIndex >= 0)
+					{
+						name = segment.Slice(0, equalIndex).ToString();
+
+						var span = segment.Slice(equalIndex + 1);
+						var chars = new char[span.Length];
+
+						for (int i = 0; i < span.Length; i++)
+							chars[i] = span[i] == '+' ? ' ' : span[i];
+
+						value = new string(chars);
+					}
+					else
+					{
+						name = segment.ToString();
+						value = string.Empty;
+					}
+
+					name = Uri.UnescapeDataString(name);
+
+					parameters[name] = Uri.UnescapeDataString(value);
+				}
 			}
 
-			return d;
+			return parameters;
 		}
 
 		internal static Uri EscapeUri(Uri uri)

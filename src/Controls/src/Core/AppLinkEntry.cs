@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/AppLinkEntry.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public AppLinkEntry()
 		{
-			keyValues = new Dictionary<string, string>();
+			keyValues = new(StringComparer.Ordinal);
 		}
 
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>

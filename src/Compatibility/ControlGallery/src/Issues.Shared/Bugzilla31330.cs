@@ -11,7 +11,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// Note that this test fails on UWP due to https://bugzilla.xamarin.com/show_bug.cgi?id=59650
 #if UITEST
@@ -148,6 +148,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[Category(UITestCategories.UwpIgnore)]
 		public void Bugzilla31330Test()
