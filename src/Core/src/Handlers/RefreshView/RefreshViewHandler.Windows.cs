@@ -114,21 +114,18 @@ namespace Microsoft.Maui.Handlers
 		{
 			CompleteRefresh();
 			_refreshCompletionDeferral = args.GetDeferral();
-
-			if (VirtualView != null)
-				VirtualView.IsRefreshing = true;
 		}
 
 		void OnManipulationDelta(object sender, UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
 		{
-			if (e.PointerDeviceType is UI.Input.PointerDeviceType.Touch)
-				return; // Already managed by the RefreshContainer control itself
-
 			const double minimumCumulativeY = 20;
 			double cumulativeY = e.Cumulative.Translation.Y;
 
 			if (cumulativeY > minimumCumulativeY && VirtualView is not null && !VirtualView.IsRefreshing)
+			{
 				VirtualView.IsRefreshing = true;
+				VirtualView.Command?.Execute(VirtualView.CommandParameter);
+			}
 		}
 
 		void CompleteRefresh()
