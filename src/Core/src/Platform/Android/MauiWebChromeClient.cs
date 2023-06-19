@@ -6,6 +6,7 @@ using Android.Content;
 using Android.Views;
 using Android.Webkit;
 using Android.Widget;
+using AndroidX.Core.View;
 using Microsoft.Extensions.Logging;
 using Object = Java.Lang.Object;
 
@@ -18,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		View _customView;
 		ICustomViewCallback _videoViewCallback;
 		int _defaultSystemUiVisibility;
+		bool _isSystemBarVisible;
 
 		public MauiWebChromeClient(IWebViewHandler handler)
 		{
@@ -104,7 +106,12 @@ namespace Microsoft.Maui.Platform
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				context.Window.SetDecorFitsSystemWindows(false);
-				context.Window.InsetsController?.Hide(WindowInsets.Type.SystemBars());
+
+				var windowInsets = context.Window.DecorView.RootWindowInsets;
+				_isSystemBarVisible = windowInsets.IsVisible(WindowInsetsCompat.Type.NavigationBars()) || windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars());
+
+				if (_isSystemBarVisible)
+					context.Window.InsetsController?.Hide(WindowInsets.Type.SystemBars());
 			}
 			else
 			{
@@ -132,12 +139,13 @@ namespace Microsoft.Maui.Platform
 			if (context.Window.DecorView is FrameLayout layout)
 				layout.RemoveView(_customView);
 
-
 			// Show again the SystemBars and Status bar
 			if (OperatingSystem.IsAndroidVersionAtLeast(30))
 			{
 				context.Window.SetDecorFitsSystemWindows(true);
-				context.Window.InsetsController?.Show(WindowInsets.Type.SystemBars());
+
+				if (_isSystemBarVisible)
+					context.Window.InsetsController?.Show(WindowInsets.Type.SystemBars());
 			}
 			else
 				context.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)_defaultSystemUiVisibility;
