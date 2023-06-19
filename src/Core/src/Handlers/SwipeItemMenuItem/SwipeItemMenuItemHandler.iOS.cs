@@ -97,7 +97,7 @@ namespace Microsoft.Maui.Handlers
 				swipeItemMenuItemHandler.UpdateValue(nameof(ISwipeItemMenuItem.Source));
 		}
 
-		void OnSetImageSource(UIImage? image)
+		void IImageSourcePartSetter.SetImageSource(UIImage? image)
 		{
 			if (PlatformView == null || PlatformView.Frame == CGRect.Empty)
 				return;
