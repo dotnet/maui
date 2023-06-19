@@ -130,9 +130,10 @@
                 <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
-                <Button 
+                <Button
+                    x:Name="ImageSourceButton"
                     ContentLayout="Top" TextColor="White" Background="Black" 
-                    ImageSource="settings.png" />
+                    ImageSource="settings.png" Clicked="Button_Clicked" />
                 <Label
                     Text="Image Source with Positioning"
                     Style="{StaticResource Headline}"/>
