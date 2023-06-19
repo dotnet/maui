@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Windows.Input;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui
 {
@@ -21,5 +22,15 @@ namespace Microsoft.Maui
 		/// The scrollable content to refresh.
 		/// </summary>
 		IView Content { get; }
+
+		/// <summary>
+		/// Gets the command to be executed when the refresh is triggered.
+		/// </summary>
+		ICommand Command { get; }
+
+		/// <summary>
+		/// Gets the parameter to be passed to the command when it is executed.
+		/// </summary>
+		object CommandParameter { get; }
 	}
 }
