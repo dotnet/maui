@@ -17,6 +17,7 @@ Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Ma
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
+override Microsoft.Maui.Handlers.MenuFlyoutHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.MenuFlyout! platformView) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
