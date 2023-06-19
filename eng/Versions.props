@@ -7,9 +7,9 @@
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>8.0.0-preview.6.23279.6</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
-    <MicrosoftExtensionsPackageVersion>8.0.0-preview.6.23317.1</MicrosoftExtensionsPackageVersion>
-    <MicrosoftExtensionsServicingPackageVersion>8.0.0-preview.6.23317.1</MicrosoftExtensionsServicingPackageVersion>
-    <SystemCodeDomPackageVersion>8.0.0-preview.6.23317.1</SystemCodeDomPackageVersion>
+    <MicrosoftExtensionsPackageVersion>8.0.0-preview.6.23317.4</MicrosoftExtensionsPackageVersion>
+    <MicrosoftExtensionsServicingPackageVersion>8.0.0-preview.6.23317.4</MicrosoftExtensionsServicingPackageVersion>
+    <SystemCodeDomPackageVersion>8.0.0-preview.6.23317.4</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.6.323</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
