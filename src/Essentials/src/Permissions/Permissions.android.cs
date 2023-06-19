@@ -447,7 +447,6 @@ namespace Microsoft.Maui.ApplicationModel
 				{
 					var permissions = new List<(string, bool)>
 					{
-						(Manifest.Permission.ReceiveSms, true)
 					};
 
 					if (IsDeclaredInManifest(Manifest.Permission.SendSms))

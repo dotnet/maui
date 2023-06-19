@@ -3,6 +3,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -62,8 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.True(clicked);
 
-			await InvokeOnMainThreadAsync(() =>
-			path.ToPlatform(MauiContext).AttachAndRun(() =>
+			await AttachAndRun(path, (handler) =>
 			{
 				var platformView = (W2DGraphicsView)path.ToPlatform(MauiContext);
 				Assert.NotNull(platformView);
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 				var shapeData = ((Path)shapeDrawable.ShapeView.Shape).Data;
 
 				Assert.Equal(pathGeometry2, shapeData);
-			}));
+			});
 		}
 
 		Task PerformClick(IButton button)

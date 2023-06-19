@@ -14,11 +14,12 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2411, "ListView.ScrollTo not working in TabbedPage", PlatformAffected.Android)]
@@ -82,6 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		[Test]
 		[Issue(IssueTracker.Github, 2411, "ScrollToPositon.End crashing in TabbedPage", PlatformAffected.Android)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2411ScrollToPositionWrongOnUneven()
 		{
 			RunningApp.Tap(q => q.Marked("Crash in ScrollToPosition.End"));

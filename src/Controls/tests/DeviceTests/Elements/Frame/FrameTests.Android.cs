@@ -67,6 +67,49 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Null(frame.Content);
 		}
 
+		[Fact]
+		public async Task FrameContentAccountsForBorderThickness()
+		{
+			SetupBuilder();
+
+			double contentSize = 50;
+			var innerFrame = new Frame()
+			{
+				BorderColor = Colors.Black,
+				BackgroundColor = Colors.Blue,
+				CornerRadius = 0,
+				Padding = new Thickness(0),
+				Margin = new Thickness(0)
+			};
+
+			var outerFrame = new Frame()
+			{
+				Content = innerFrame,
+				BorderColor = Colors.Black,
+				CornerRadius = 0,
+				Padding = new Thickness(0),
+				Margin = new Thickness(0),
+				WidthRequest = contentSize,
+				HeightRequest = contentSize
+			};
+
+			var layout = new StackLayout()
+			{
+				Background = Colors.Purple,
+				Children =
+				{
+					outerFrame
+				}
+			};
+
+			// This tests that the border drawn fills the entire space it's expected to
+			// There shouldn't be any white between the two frames
+			await LayoutFrame(layout, outerFrame, 100, 100, () =>
+			{
+				return AssertionExtensions.AssertDoesNotContainColor(layout.ToPlatform(), Colors.White.ToPlatform(), MauiContext);
+			});
+		}
+
 		Task PerformClick(IButton button)
 		{
 			return InvokeOnMainThreadAsync(() =>

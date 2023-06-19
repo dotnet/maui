@@ -1,6 +1,9 @@
 #nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
+Microsoft.Maui.Controls.Platform.CollectionViewExtensions
+Microsoft.Maui.Controls.Platform.ShapesExtensions
+Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.~StructuredItemsViewHandler() -> void
 override Microsoft.Maui.Controls.Handlers.BoxViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
@@ -18,8 +21,12 @@ static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls
 static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.Picker.MapHorizontalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
 static Microsoft.Maui.Controls.Picker.MapVerticalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
+static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.GridItemsLayout? layout) -> Microsoft.UI.Xaml.Style?
+static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.LinearItemsLayout? layout) -> Microsoft.UI.Xaml.Style?
+static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.ToPlatform(this Microsoft.Maui.Controls.ItemsLayout! layout) -> Microsoft.UI.Xaml.Controls.Orientation
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateHorizontalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateVerticalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
+static Microsoft.Maui.Controls.Platform.ShapesExtensions.UpdatePath(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void
 static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
@@ -44,9 +51,11 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
+~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
+~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void

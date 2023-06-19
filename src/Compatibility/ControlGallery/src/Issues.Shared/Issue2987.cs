@@ -6,7 +6,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2987, "When setting the minimum and maximum date for a date picker, only allow valid dates to be seen/selected from the DatePicker dialog", PlatformAffected.Android)]

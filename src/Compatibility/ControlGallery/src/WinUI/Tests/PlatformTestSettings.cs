@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Tests;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests;
+using Microsoft.Maui.Controls.ControlGallery.Tests;
+using Microsoft.Maui.Controls.ControlGallery.WinUI.Tests;
 using NUnit;
 
 [assembly: Dependency(typeof(PlatformTestSettings))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.WinUI.Tests
+namespace Microsoft.Maui.Controls.ControlGallery.WinUI.Tests
 {
 	public class PlatformTestSettings : IPlatformTestSettings
 	{

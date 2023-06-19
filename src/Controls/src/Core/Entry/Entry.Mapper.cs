@@ -22,6 +22,10 @@ namespace Microsoft.Maui.Controls
 		{
 			// Adjust the mappings to preserve Controls.Entry legacy behaviors
 			EntryHandler.Mapper = ControlsEntryMapper;
+
+#if ANDROID
+			EntryHandler.CommandMapper.PrependToMapping(nameof(IEntry.Focus), MapFocus);
+#endif
 		}
 	}
 }

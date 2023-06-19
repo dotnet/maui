@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS0612 // Type or member is obsolete
 
 		IAppIndexingProvider? _appIndexProvider;
-		ReadOnlyCollection<Element>? _logicalChildren;
 		bool _isStarted;
 
 		static readonly SemaphoreSlim SaveSemaphore = new SemaphoreSlim(1, 1);
@@ -111,16 +110,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCollection<Element>(InternalChildren);
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='NavigationProxy']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public NavigationProxy? NavigationProxy { get; private set; }
 
 		internal IResourceDictionary SystemResources => _systemResources.Value;
-
-		ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="//Member[@MemberName='SetAppIndexingProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -333,7 +327,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			var innerKeys = new HashSet<string>();
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
 			foreach (KeyValuePair<string, object> c in Resources)
 				innerKeys.Add(c.Key);
@@ -354,7 +348,9 @@ namespace Microsoft.Maui.Controls
 
 		internal void SendResume()
 		{
+			if (Current is null)
 			Current = this;
+
 			OnResume();
 		}
 

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Controls.Platform;
 
 namespace Microsoft.Maui.Controls
 {
@@ -29,6 +30,11 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(IEntryHandler handler, Entry entry)
 		{
 			Platform.EditTextExtensions.UpdateText(handler.PlatformView, entry);
+		}
+
+		static void MapFocus(IViewHandler handler, IView view, object args)
+		{
+			handler.ShowKeyboardIfFocused(view);
 		}
 	}
 }

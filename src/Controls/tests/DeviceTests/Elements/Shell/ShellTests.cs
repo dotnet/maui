@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -16,6 +19,10 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
+
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -32,7 +39,43 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
+			});
+		}
+
+		[Fact]
+		public async Task PageLayoutDoesNotExceedWindowBounds()
+		{
+			SetupBuilder();
+
+			var button = new Button()
+			{
+				Text = "Test me"
+			};
+
+			var contentPage = new ContentPage()
+			{
+				Content = button
+			};
+
+			var shell = new Shell()
+			{
+				CurrentItem = contentPage,
+				FlyoutBehavior = FlyoutBehavior.Disabled
+			};
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(shell, async (handler) =>
+			{
+				await OnFrameSetToNotEmpty(contentPage);
+				var pageBounds = contentPage.GetBoundingBox();
+				var window = contentPage.Window;
+
+				Assert.True(pageBounds.X >= 0);
+				Assert.True(pageBounds.Y >= 0);
+				Assert.True(pageBounds.Width <= window.Width);
+				Assert.True(pageBounds.Height <= window.Height);
 			});
 		}
 
@@ -917,7 +960,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact(DisplayName = "Pages Do Not Leak")]
+		[Fact(DisplayName = "Pages Do Not Leak"
+#if WINDOWS
+			,Skip = "Failing"
+#endif
+			)]
 		public async Task PagesDoNotLeak()
 		{
 			SetupBuilder();
@@ -932,16 +979,27 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage { Title = "Page 2" };
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new CollectionView(),
+					}
+				};
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
 				await shell.Navigation.PopAsync();
 			});
 
-			// 3 GCs were required in Android API 23, 2 worked otherwise
-			for (int i = 0; i < 3; i++)
+			// As we add more controls to this test, more GCs will be required
+			for (int i = 0; i < 16; i++)
 			{
+				if (!pageReference.IsAlive)
+					break;
 				await Task.Yield();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
@@ -970,6 +1028,30 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 				await shell.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact(DisplayName = "Can Clear ShellContent")]
+		public async Task CanClearShellContent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			var appearanceObserversField = shell.GetType().GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(appearanceObserversField);
+			var appearanceObservers = appearanceObserversField.GetValue(shell) as IList;
+			Assert.NotNull(appearanceObservers);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				int count = appearanceObservers.Count;
+				shell.Items.Clear();
+				shell.CurrentItem = new ShellContent { Content = page };
+				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
 

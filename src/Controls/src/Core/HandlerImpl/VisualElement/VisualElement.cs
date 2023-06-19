@@ -27,6 +27,8 @@ namespace Microsoft.Maui.Controls
 		internal static void RemapForControls()
 		{
 			ViewHandler.ViewMapper = ControlsVisualElementMapper;
+
+			ViewHandler.ViewCommandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
 		public static void MapBackgroundColor(IViewHandler handler, IView view)
@@ -62,6 +64,14 @@ namespace Microsoft.Maui.Controls
 			{
 				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
 			}
+		}
+
+		static void MapFocus(IViewHandler handler, VisualElement view, object args, Action<IElementHandler, IElement, object> baseMethod)
+		{
+			if (args is not FocusRequest fr)
+				return;
+
+			view.MapFocus(fr, baseMethod is null ? null : () => baseMethod?.Invoke(handler, view, args));
 		}
 	}
 }

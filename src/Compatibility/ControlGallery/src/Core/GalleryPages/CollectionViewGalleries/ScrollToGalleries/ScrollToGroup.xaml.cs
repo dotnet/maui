@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.GroupingGalleries;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.ScrollToGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.ScrollToGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class ScrollToGroup : ContentPage

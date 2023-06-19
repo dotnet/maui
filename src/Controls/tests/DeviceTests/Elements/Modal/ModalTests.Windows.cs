@@ -31,9 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 
 
 					if (useColor)
-						backgroundColorContentPage.BackgroundColor = Colors.Purple;
+						backgroundColorContentPage.BackgroundColor = Colors.Purple.WithAlpha(0.5f);
 					else
-						backgroundColorContentPage.Background = SolidColorBrush.Purple;
+						backgroundColorContentPage.Background = new SolidColorBrush(Colors.Purple.WithAlpha(0.5f));
 
 					await navPage.CurrentPage.Navigation.PushModalAsync(backgroundColorContentPage);
 					await OnLoadedAsync(backgroundColorContentPage);
@@ -60,8 +60,9 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage) { Title = "Original Title" };
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
 				async (handler) =>
 				{
 					var rootView = handler.PlatformView.Content;
@@ -70,20 +71,66 @@ namespace Microsoft.Maui.DeviceTests
 					await navPage.CurrentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
 
-					var customTitleBar = modalPage
+					var modalNavigationRootManager = modalPage
 						.FindMauiContext()
-						.GetNavigationRootManager()
-						.AppTitleBarContentControl;
+						.GetNavigationRootManager();
 
 
 					var mauiWindow = (MauiWinUIWindow)handler.PlatformView;
-					Assert.Equal(mauiWindow.MauiCustomTitleBar, customTitleBar);
-					(handler.VirtualView as Window).Title = "Update Title";
+					Assert.Equal("Original Title", mauiWindow.Title);
+					Assert.Equal(modalNavigationRootManager.WindowTitle, mauiWindow.Title);
 
-					var customTitle = mauiWindow.MauiCustomTitleBar.GetDescendantByName<UI.Xaml.Controls.TextBlock>("AppTitle");
-
-					Assert.Equal("Update Title", customTitle.Text);
+					window.Title = "Update Title";
+					Assert.Equal("Update Title", mauiWindow.Title);
+					Assert.Equal(modalNavigationRootManager.WindowTitle, mauiWindow.Title);
 				});
+		}
+
+		[Fact]
+		public async Task WindowTitleIsCorrectAfterPushAndPop()
+		{
+			const string OriginalTitle = "Original Title";
+			const string UpdatedTitle = "Updated Title";
+
+			SetupBuilder();
+
+			var navPage = new NavigationPage(new ContentPage());
+			var window = new Window(navPage) { Title = OriginalTitle };
+
+			await CreateHandlerAndAddToWindow(window,
+				(Func<IWindowHandler, Task>)(async (handler) =>
+				{
+					var mauiWindow = handler.PlatformView;
+					var currentPage = navPage.CurrentPage;
+					var modalPage = new ContentPage();
+
+					await currentPage.Navigation.PushModalAsync(modalPage);
+					await OnLoadedAsync(modalPage);
+
+					var currentNavigationRootManager = currentPage
+						.FindMauiContext()
+						.GetNavigationRootManager();
+					var modalNavigationRootManager = modalPage
+						.FindMauiContext()
+						.GetNavigationRootManager();
+
+					Assert.Equal(OriginalTitle, mauiWindow.Title);
+					Assert.Equal(OriginalTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(OriginalTitle, modalNavigationRootManager.WindowTitle);
+
+					window.Title = UpdatedTitle;
+
+					Assert.Equal(UpdatedTitle, mauiWindow.Title);
+					Assert.Equal(UpdatedTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(UpdatedTitle, modalNavigationRootManager.WindowTitle);
+
+					await currentPage.Navigation.PopModalAsync();
+					await OnUnloadedAsync(modalPage);
+
+					Assert.Equal(UpdatedTitle, mauiWindow.Title);
+					Assert.Equal(UpdatedTitle, currentNavigationRootManager.WindowTitle);
+					Assert.Equal(UpdatedTitle, modalNavigationRootManager.WindowTitle);
+				}));
 		}
 	}
 }

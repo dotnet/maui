@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -8,14 +9,14 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
-		bool _measureValid;
+
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
 		// apply to ViewHandlerExtensions.MeasureVirtualView
 		public override CGSize SizeThatFits(CGSize size)
 		{
-			if (CrossPlatformMeasure == null)
+			if (View is not ILayout layout)
 			{
 				return base.SizeThatFits(size);
 			}
@@ -23,8 +24,9 @@ namespace Microsoft.Maui.Platform
 			var width = size.Width;
 			var height = size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(width, height);
-			_measureValid = true;
+			var crossPlatformSize = layout.CrossPlatformMeasure(width, height);
+
+			CacheMeasureConstraints(width, height);
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -36,40 +38,50 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
-			if (!_measureValid)
+			if (View is not ILayout layout)
 			{
-				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
-				_measureValid = true;
+				return;
 			}
 
-			CrossPlatformArrange?.Invoke(bounds);
+			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
+
+			var widthConstraint = bounds.Width;
+			var heightConstraint = bounds.Height;
+
+			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
+			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
+			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// the window); there's no guarantee that SizeThatFits has been called in that case.
+
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
+			{
+				layout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+				CacheMeasureConstraints(widthConstraint, heightConstraint);
+			}
+
+			layout.CrossPlatformArrange(bounds);
 		}
 
 		public override void SetNeedsLayout()
 		{
-			_measureValid = false;
+			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
 		}
 
 		public override void SubviewAdded(UIView uiview)
 		{
-			_measureValid = false;
+			InvalidateConstraintsCache();
 			base.SubviewAdded(uiview);
 			Superview?.SetNeedsLayout();
 		}
 
 		public override void WillRemoveSubview(UIView uiview)
 		{
-			_measureValid = false;
+			InvalidateConstraintsCache();
 			base.WillRemoveSubview(uiview);
 			Superview?.SetNeedsLayout();
 		}
-
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		public override UIView HitTest(CGPoint point, UIEvent? uievent)
 		{
@@ -86,6 +98,8 @@ namespace Microsoft.Maui.Platform
 
 			return result;
 		}
+
+		internal bool UserInteractionEnabledOverride => _userInteractionEnabled;
 
 		public override bool UserInteractionEnabled
 		{

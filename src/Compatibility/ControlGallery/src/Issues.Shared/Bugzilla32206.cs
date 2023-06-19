@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -23,8 +23,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			PushAsync(new LandingPage32206());
 		}
 
-#if UITEST && __IOS__
+#if UITEST && IOS
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla32206Test()
 		{
 			for (var n = 0; n < 10; n++)

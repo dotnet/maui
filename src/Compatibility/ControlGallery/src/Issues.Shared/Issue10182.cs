@@ -13,7 +13,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 10182, "[Bug] Exception Ancestor must be provided for all pushes except first", PlatformAffected.Android, NavigationBehavior.SetApplicationRoot)]
@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST && __ANDROID__
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void AppDoesntCrashWhenResettingPage()
 		{

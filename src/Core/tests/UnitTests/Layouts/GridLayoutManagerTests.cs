@@ -104,7 +104,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
 			}
 
-			if (gridLength.ToLower() == "auto")
+			if (gridLength.ToLowerInvariant() == "auto")
 			{
 				return GridLength.Auto;
 			}
@@ -1107,8 +1107,8 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Row height is auto, so it gets the height of the view
 			// Columns are 3*,100,* 
-			// So we expect the center column to be 100, leaving 500 for the stars
-			// 3/4 of that goes to the first column, so 375; the remaining 125 is the last column
+			// So we expect the center column to be 100, leaving 200 for the stars
+			// 3/4 of that goes to the first column, so 150; the remaining 50 is the last column
 			var expectedStarWidth = (screenWidth - 100) / 4;
 			var expectedHeight = viewSize.Height;
 
@@ -1934,7 +1934,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(10, measuredSize.Width);
 		}
 
-		[Fact("ArrangeChildren should arranged within measured size")]
+		[Fact("ArrangeChildren should arrange within measured size")]
 		[Category(GridStarSizing)]
 		public void ArrangeChildrenShouldArrangeWithinMeasuredSize()
 		{
@@ -2433,7 +2433,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			// This test accounts for the situation where a Grid has Rows marked as "*", is measured
 			// without height constraint, is vertically set to Fill, and is arranged at the measured height.
-			// Basically, a situation where the Grid is inside a vertically-oriented ScrollView or StackLayout, 
+			// Basically, a situation where the Grid is inside a vertically-oriented StackLayout, 
 			// and the concept of vertical "Fill" doesn't mean anything. In that situation, the rows should 
 			// retain their automatic sizing, rather than being evenly distributed as usual.
 
@@ -2452,7 +2452,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Measure the Grid with no height constraint, then arrange it using the resulting size
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
-			// Since we're arranging it at that same height, there's reason for it to expand the items
+			// Since we're arranging it at that same height, there's no reason for it to expand the items
 			// so we expect them to be arranged at the same heights
 			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
 
@@ -2461,6 +2461,138 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
 			AssertArranged(view1, new Rect(0, 20, 20, 40));
 			AssertArranged(view2, new Rect(0, 60, 20, 60));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(1000)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void ViewsInUnconstrainedStarRowsDoNotOverlapWhenArrangeHeightChanges(double heightDelta)
+		{
+			// Basically checking for https://github.com/dotnet/maui/issues/14694 here
+
+			// This test accounts for the situation where a Grid has Rows marked as "*", is measured
+			// without height constraint, is vertically set to Fill, and is arranged at a different height
+			// than the measured height. This can happen for a couple of reasons - either because of 
+			// adjustments made on the native side to handle rounding/conversion issues (e.g., Android
+			// density conversions), or because of ScrollView's "Fill the viewport" behavior.
+
+			var grid = CreateGridLayout(rows: "*, *, *");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, 40));
+			var view2 = CreateTestView(new Size(20, 60));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+
+			// Measure the Grid with no height constraint
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 height
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(200, double.PositiveInfinity);
+			Assert.Equal(120, measure.Height);
+
+			// Now arrange it at a _different_ height
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width, measure.Height + heightDelta));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest = (Rect)v0ArrangeArgs[0];
+
+			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest = (Rect)v1ArrangeArgs[0];
+
+			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest = (Rect)v2ArrangeArgs[0];
+
+			// Ensure that the destination rect for each view is large enough
+			// for that view (that the grid isn't somehow shrinking their destination area)
+			Assert.True(view0Dest.Height >= 20);
+			Assert.True(view1Dest.Height >= 40);
+			Assert.True(view2Dest.Height >= 60);
+
+			// Ensure that the destination rects for the views don't overlap
+			Assert.False(view0Dest.IntersectsWith(view1Dest));
+			Assert.False(view1Dest.IntersectsWith(view2Dest));
+			Assert.False(view0Dest.IntersectsWith(view2Dest));
+
+			// And ensure that the destination rects are actually tall enough to fill up the arranged height.
+			// They might be taller (e.g., if a window is resized to be too small for the content), but they should
+			// _not_ be _less_ than the target arrangement height.
+			var destinationHeight = view0Dest.Height + view1Dest.Height + view2Dest.Height;
+			Assert.True(destinationHeight >= measure.Height + heightDelta);
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(1000)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void ViewsInUnconstrainedStarColumnsDoNotOverlapWhenArrangeWidthChanges(double widthDelta)
+		{
+			// Basically checking for https://github.com/dotnet/maui/issues/14694 here
+
+			// This test accounts for the situation where a Grid has Columns marked as "*", is measured
+			// without width constraint, is horizontally set to Fill, and is arranged at a different width
+			// than the measured width. This can happen for a couple of reasons - either because of 
+			// adjustments made on the native side to handle rounding/conversion issues (e.g., Android
+			// density conversions), or because of ScrollView's "Fill the viewport" behavior.
+
+			var grid = CreateGridLayout(columns: "*, *, *");
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(40, 20));
+			var view2 = CreateTestView(new Size(60, 20));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+
+			// Measure the Grid with no width constraint
+			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, 200);
+			Assert.Equal(120, measure.Width);
+
+			// Now arrange it at a _different_ width
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + widthDelta, measure.Height));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest = (Rect)v0ArrangeArgs[0];
+
+			var v1ArrangeArgs = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest = (Rect)v1ArrangeArgs[0];
+
+			var v2ArrangeArgs = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest = (Rect)v2ArrangeArgs[0];
+
+			// Ensure that the destination rect for each view is large enough
+			// for that view (that the grid isn't somehow shrinking their destination area)
+			Assert.True(view0Dest.Width >= 20);
+			Assert.True(view1Dest.Width >= 40);
+			Assert.True(view2Dest.Width >= 60);
+
+			// Ensure that the destination rects for the views don't overlap
+			Assert.False(view0Dest.IntersectsWith(view1Dest));
+			Assert.False(view1Dest.IntersectsWith(view2Dest));
+			Assert.False(view0Dest.IntersectsWith(view2Dest));
 		}
 
 		[Fact, Category(GridStarSizing)]
@@ -2487,15 +2619,446 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// Measure the Grid with no width constraint, then arrange it using the resulting size
 			// Unconstrained, we expect the views to total 20 + 40 + 60 = 120 width
-			// Since we're arranging it at that same width, there's reason for it to expand the items
+			// Since we're arranging it at that same width, there's no reason for it to expand the items
 			// so we expect them to be arranged at the same widths
 			var measure = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
 
 			Assert.Equal(120, measure.Width);
 
 			AssertArranged(view0, new Rect(0, 0, 20, 20));
-			AssertArranged(view1, new Rect(20, 00, 40, 20));
+			AssertArranged(view1, new Rect(20, 0, 40, 20));
 			AssertArranged(view2, new Rect(60, 0, 60, 20));
+		}
+
+		// These next two tests validate cases where the Grid structure necessitates multiple 
+		// measure passes (because a Star value intersects with multiple Auto values)
+		// and the items being measured may have a different Auto height/width on the second pass.
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating the situation from https://github.com/dotnet/maui/issues/14296
+		[InlineData(40, 30)] // Simulating something like an Image where the height shrinks as the width constraint gets tighter
+		public void AutoRowIsDominatedByTallestView(double unconstrainedHeight, double constrainedHeight)
+		{
+			var grid = CreateGridLayout(rows: "Auto", columns: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how wide its measurement constraints are
+			var view1 = CreateWidthDominatedView(100, unconstrainedHeight, new Tuple<double, double>(200, constrainedHeight));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 0, col: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: 200);
+
+			// We expect the Grid to grow to accommodate the full height of view1 at this width
+			Assert.Equal(constrainedHeight, measure.Height);
+		}
+
+		[Theory, Category(GridAutoSizing)]
+		[InlineData(10, 30)] // Replicating https://github.com/dotnet/maui/issues/14296 but for columns
+		[InlineData(50, 30)] // Simulating something like an Image where the width shrinks as the height constraint gets tighter
+		public void AutoColumnIsDominatedByWidestView(double unconstrainedWidth, double constrainedWidth)
+		{
+			var grid = CreateGridLayout(columns: "Auto", rows: "Auto, *");
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			// The view changes size depending on how high its measurement constraints are
+			var view1 = CreateHeightDominatedView(unconstrainedWidth, 100, new Tuple<double, double>(constrainedWidth, 100));
+
+			SubstituteChildren(grid, view0, view1);
+
+			SetLocation(grid, view0, row: 0, col: 0);
+			SetLocation(grid, view1, row: 1, col: 0);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: 100);
+
+			// We expect the Grid to group to accommodate the full width of view1 at this height
+			Assert.Equal(constrainedWidth, measure.Width);
+		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarColumnSpanMeasureIsSumOfAutoAndStar(double determinantViewWidth, double widthConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, *", rows: "Auto, Auto");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(determinantViewWidth, 20));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: 2);
+			SetLocation(grid, view1, row: 1, col: 0, colSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: widthConstraint, heightConstraint: 100);
+
+			// view1 should make column 0 at least `determinantViewWidth` units wide
+			// So view0 should be getting measured at _at least_ that value; if the widthConstraint is larger
+			// than that, the * should bump the measure value up to match the widthConstraint
+			var expectedMeasureWidth = Math.Max(determinantViewWidth, widthConstraint);
+
+			view0.Received().Measure(Arg.Is<double>(expectedMeasureWidth), Arg.Any<double>());
+		}
+
+		[Theory]
+		[InlineData(20, 100)]
+		[InlineData(200, 100)]
+		public void AutoStarRowSpanMeasureIsSumOfAutoAndStar(double determinantViewHeight, double heightConstraint)
+		{
+			var grid = CreateGridLayout(columns: "Auto, Auto", rows: "Auto, *");
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(20, determinantViewHeight));
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: 2);
+			SetLocation(grid, view1, row: 0, col: 1, rowSpan: 1);
+
+			var measure = MeasureAndArrange(grid, widthConstraint: 100, heightConstraint: heightConstraint);
+
+			// view1 should make row 0 at least `determinantViewHeight` units tall
+			// So view0 should be getting measured at _at least_ that value; if the heightConstraint is larger
+			// than that, the * should bump the measure value up to match the heightConstraint
+			var expectedMeasureHeight = Math.Max(determinantViewHeight, heightConstraint);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<double>(expectedMeasureHeight));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0.1)]
+		[InlineData(1)]
+		[InlineData(10)]
+		[InlineData(60)]
+		[InlineData(1000)]
+		[InlineData(-0.1)]
+		[InlineData(-10)]
+		[InlineData(-60)]
+		public void MultipleArrangeCallsProduceConsistentResults(double delta)
+		{
+			var grid = CreateGridLayout(rows: "*, *, *", columns: "*, *, *");
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 20));
+			var view1 = CreateTestView(new Size(40, 20));
+			var view2 = CreateTestView(new Size(60, 20));
+
+			SubstituteChildren(grid, view0, view1, view2);
+
+			SetLocation(grid, view0, col: 0, row: 0);
+			SetLocation(grid, view1, col: 1, row: 1);
+			SetLocation(grid, view2, col: 2, row: 2);
+
+			// Measure the Grid with no constraints, then arrange it using the resulting size
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Now arrange it at a _different_ size
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs1 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest1 = (Rect)v0ArrangeArgs1[0];
+
+			var v1ArrangeArgs1 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest1 = (Rect)v1ArrangeArgs1[0];
+
+			var v2ArrangeArgs1 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest1 = (Rect)v2ArrangeArgs1[0];
+
+			view0.ClearReceivedCalls();
+			view1.ClearReceivedCalls();
+			view2.ClearReceivedCalls();
+
+			// Now arrange it at the same size again
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width + delta, measure.Height + delta));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var v0ArrangeArgs2 = view0.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view0Dest2 = (Rect)v0ArrangeArgs2[0];
+
+			var v1ArrangeArgs2 = view1.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view1Dest2 = (Rect)v1ArrangeArgs2[0];
+
+			var v2ArrangeArgs2 = view2.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			var view2Dest2 = (Rect)v2ArrangeArgs2[0];
+
+			// Ensure that Arrange was called with the same destination rect for each view both times
+			Assert.Equal(view0Dest1, view0Dest2);
+			Assert.Equal(view1Dest1, view1Dest2);
+			Assert.Equal(view2Dest1, view2Dest2);
+		}
+
+		/*
+		 * These next two test cover the specific situation from https://github.com/dotnet/maui/issues/14818
+		 * Where the control in the * row/column is one that doesn't play nice with measurement. The control
+		 * is determined to return a measure size larger than the constraints it's given. We have to ensure 
+		 * that the sizes of the containing * row/column don't expand beyond their natural confines even if 
+		 * the containing control asks for it. (The control itself may still be larger than the row/column 
+		 * size, and when laid out it may exceed the boundaries of the row/column. But the row/column itself
+		 * must still adhere to the constraints given by the column definitions and grid size constraints.)
+		 */
+
+		[Theory]
+		[InlineData("100, *, 100")]
+		[InlineData("Auto, *, Auto")]
+		[InlineData("Auto, *, 100")]
+		[InlineData("100, *, Auto")]
+		public void StarRowsHandleGreedyMeasures(string rowDefinitions)
+		{
+			var grid = CreateGridLayout(rows: rowDefinitions);
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			// view0 is going to be a view that returns 500 high no matter what
+			var view0 = CreateTestView(new Size(100, 500));
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 0, row: 1);
+			SetLocation(grid, view1, col: 0, row: 2);
+
+			// Measure the grid with a height constraint
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(100, 500);
+
+			manager.ArrangeChildren(new Rect(0, 0, 100, 500));
+
+			// At a height constraint of 500 we expect the star row to be 300 high
+			// So view1 should be arranged at a Y value of 100 + 300 = 400 
+			AssertArranged(view1, new Rect(0, 400, 100, 100));
+		}
+
+		[Theory]
+		[InlineData("100, *, 100")]
+		[InlineData("Auto, *, Auto")]
+		[InlineData("Auto, *, 100")]
+		[InlineData("100, *, Auto")]
+		public void StarColumnsHandleGreedyMeasures(string columnDefinitions)
+		{
+			var grid = CreateGridLayout(columns: columnDefinitions);
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+			grid.HorizontalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			// view0 is going to be a view that returns 500 wide no matter what
+			var view0 = CreateTestView(new Size(500, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 1, row: 0);
+			SetLocation(grid, view1, col: 2, row: 0);
+
+			// Measure the grid with a width constraint
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(500, 100);
+
+			manager.ArrangeChildren(new Rect(0, 0, 500, 100));
+
+			// At a width constraint of 500, we expect the star column to be 300 wide
+			// So view1 should be arranged at an X value of 100 + 300 = 400 
+			AssertArranged(view1, new Rect(400, 0, 100, 100));
+		}
+
+		[Theory]
+		[InlineData("100", 1, 10, 100)]
+		[InlineData("100, 100", 2, 0, 100 + 0 + 100)]
+		[InlineData("100, 100", 2, 10, 100 + 10 + 100)]
+		[InlineData("100, 100, 50", 3, 20, 100 + 20 + 100 + 20 + 50)]
+		public void SpannedColumnMeasureIncludesSpacing(string columnDefinitions, int columnSpan, double spacing, double expectedWidth)
+		{
+			var grid = CreateGridLayout(columns: columnDefinitions);
+			grid.ColumnSpacing.Returns(spacing);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 0, col: 0, colSpan: columnSpan);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			view0.Received().Measure(Arg.Is<double>(expectedWidth), Arg.Any<Double>());
+		}
+
+		[Theory]
+		[InlineData("100", 1, 10, 100)]
+		[InlineData("100, 100", 2, 0, 100 + 0 + 100)]
+		[InlineData("100, 100", 2, 10, 100 + 10 + 100)]
+		[InlineData("100, 100, 50", 3, 20, 100 + 20 + 100 + 20 + 50)]
+		public void SpannedRowMeasureIncludesSpacing(string rowDefinitions, int rowSpan, double spacing, double expectedHeight)
+		{
+			var grid = CreateGridLayout(rows: rowDefinitions);
+			grid.RowSpacing.Returns(spacing);
+
+			var view0 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, row: 0, col: 0, rowSpan: rowSpan);
+
+			MeasureAndArrange(grid, double.PositiveInfinity, double.PositiveInfinity);
+
+			view0.Received().Measure(Arg.Any<double>(), Arg.Is<Double>(expectedHeight));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0, 0)]
+		[InlineData(16, 0)]
+		[InlineData(0, 16)]
+		[InlineData(16, 16)]
+		[InlineData(-16, 16)]
+		[InlineData(-16, -16)]
+		[InlineData(16, -16)]
+		public void StarColumnsAccountForPadding(double left, double right)
+		{
+			var grid = CreateGridLayout(columns: "*,48", rows: "200");
+			grid.Width.Returns(200);
+			grid.Padding.Returns(new Thickness(left, 0, right, 0));
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, row: 0, colSpan: 2);
+
+			MeasureAndArrange(grid, 900, 900);
+
+			// We expect the left edge of the view to be inset by the left padding,
+			// and the width of the view to be the width of the Grid minus all padding
+			AssertArranged(view0, new Rect(left, 0, 200 - left - right, 200));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(0, 0)]
+		[InlineData(16, 0)]
+		[InlineData(0, 16)]
+		[InlineData(16, 16)]
+		[InlineData(-16, 16)]
+		[InlineData(-16, -16)]
+		[InlineData(16, -16)]
+		public void StarRowsAccountForPadding(double top, double bottom)
+		{
+			var grid = CreateGridLayout(rows: "*,48", columns: "200");
+			grid.Height.Returns(200);
+			grid.Padding.Returns(new Thickness(0, top, 0, bottom));
+
+			var view0 = CreateTestView(new Size(20, 20));
+			SubstituteChildren(grid, view0);
+			SetLocation(grid, view0, col: 0, row: 0, rowSpan: 2);
+
+			MeasureAndArrange(grid, 900, 900);
+
+			// We expect the top edge of the view to be inset by the top padding,
+			// and the height of the view to be the height of the Grid minus all padding
+			AssertArranged(view0, new Rect(0, top, 200, 200 - top - bottom));
+		}
+
+		[Fact]
+		public void StarRowExpansionWorksWithDifferingScalars()
+		{
+			var grid = CreateGridLayout(rows: "*, 4.5*, *, 4.5*");
+			
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(100, 20));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(100, 20));
+			var view3 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1, view2, view3);
+
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+			SetLocation(grid, view2, row: 2);
+			SetLocation(grid, view3, row: 3);
+
+			// Measure the Grid with no constraints			
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Our expected height, unconstrained, where all the views get their desired height:
+			double expectedHeight = 20 + 100 + 20 + 100;
+			Assert.Equal(expectedHeight, measure.Height);
+
+			// Now we'll arrange it at a larger height (as if we were filling up the height of a layout)
+			double arrangeHeight = measure.Height + 100; 
+			manager.ArrangeChildren(new Rect(0, 0, measure.Width, arrangeHeight));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var view0Dest = GetArrangedRect(view0);
+			var view1Dest = GetArrangedRect(view1);
+			var view2Dest = GetArrangedRect(view2);
+			var view3Dest = GetArrangedRect(view3);
+
+			// We have four rows: 1*, 4.5*, 1*, 4.5*
+			double starCount = 1 + 4.5 + 1 + 4.5;
+
+			// We expect the odd rows to get 1* each
+			double expectedOddRowHeight = arrangeHeight / starCount;
+
+			// And the event rows to get 4.5* each
+			double expectedEvenRowHeight = expectedOddRowHeight * 4.5;
+
+			// Verify that the views were arranged at those sizes (within tolerance)
+			Assert.Equal(expectedOddRowHeight, view0Dest.Height, 1.0);
+			Assert.Equal(expectedEvenRowHeight, view1Dest.Height, 1.0);
+			Assert.Equal(expectedOddRowHeight, view2Dest.Height, 1.0);
+			Assert.Equal(expectedEvenRowHeight, view3Dest.Height, 1.0);
+		}
+
+		[Fact]
+		public void StarColumnExpansionWorksWithDifferingScalars()
+		{
+			var grid = CreateGridLayout(columns: "*, 4.5*, *, 4.5*");
+
+			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
+
+			var view0 = CreateTestView(new Size(20, 100));
+			var view1 = CreateTestView(new Size(100, 100));
+			var view2 = CreateTestView(new Size(20, 100));
+			var view3 = CreateTestView(new Size(100, 100));
+
+			SubstituteChildren(grid, view0, view1, view2, view3);
+
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+			SetLocation(grid, view2, col: 2);
+			SetLocation(grid, view3, col: 3);
+
+			// Measure the Grid with no constraints
+			var manager = new GridLayoutManager(grid);
+			var measure = manager.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+			// Our expected width, unconstrained, where all the views get their desired width:
+			double expectedWidth = 20 + 100 + 20 + 100;
+			Assert.Equal(expectedWidth, measure.Width);
+
+			// Now we'll arrange it at a larger width (as if we were filling up the width of a layout)
+			double arrangeWidth = measure.Width + 100;
+			manager.ArrangeChildren(new Rect(0, 0, arrangeWidth, measure.Height));
+
+			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
+			var view0Dest = GetArrangedRect(view0);
+			var view1Dest = GetArrangedRect(view1);
+			var view2Dest = GetArrangedRect(view2);
+			var view3Dest = GetArrangedRect(view3);
+
+			// We have four columns: 1*, 4.5*, 1*, 4.5*
+			double starCount = 1 + 4.5 + 1 + 4.5;
+
+			// We expect the odd columns to get 1* each
+			double expectedOddRowWidth = arrangeWidth / starCount;
+
+			// And the event columns to get 4.5* each
+			double expectedEvenRowWidth = expectedOddRowWidth * 4.5;
+
+			// Verify that the views were arranged at those sizes (within tolerance)
+			Assert.Equal(expectedOddRowWidth, view0Dest.Width, 1.0);
+			Assert.Equal(expectedEvenRowWidth, view1Dest.Width, 1.0);
+			Assert.Equal(expectedOddRowWidth, view2Dest.Width, 1.0);
+			Assert.Equal(expectedEvenRowWidth, view3Dest.Width, 1.0);
+		}
+
+		static Rect GetArrangedRect(IView view) 
+		{
+			var args = view.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
+			return (Rect)args[0];
 		}
 	}
 }

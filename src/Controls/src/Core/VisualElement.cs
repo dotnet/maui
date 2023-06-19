@@ -20,70 +20,70 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="InputTransparent"/>.</summary>
 		public static readonly BindableProperty InputTransparentProperty = BindableProperty.Create("InputTransparent", typeof(bool), typeof(VisualElement), default(bool));
 
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create("IsEnabled", typeof(bool),
 			typeof(VisualElement), true, propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		static readonly BindablePropertyKey XPropertyKey = BindableProperty.CreateReadOnly("X", typeof(double), typeof(VisualElement), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='XProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="X"/>.</summary>
 		public static readonly BindableProperty XProperty = XPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey YPropertyKey = BindableProperty.CreateReadOnly("Y", typeof(double), typeof(VisualElement), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='YProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Y"/>.</summary>
 		public static readonly BindableProperty YProperty = YPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='AnchorXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AnchorX"/>.</summary>
 		public static readonly BindableProperty AnchorXProperty = BindableProperty.Create("AnchorX", typeof(double), typeof(VisualElement), .5d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='AnchorYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="AnchorY"/>.</summary>
 		public static readonly BindableProperty AnchorYProperty = BindableProperty.Create("AnchorY", typeof(double), typeof(VisualElement), .5d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='TranslationXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TranslationX"/>.</summary>
 		public static readonly BindableProperty TranslationXProperty = BindableProperty.Create("TranslationX", typeof(double), typeof(VisualElement), 0d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='TranslationYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TranslationY"/>.</summary>
 		public static readonly BindableProperty TranslationYProperty = BindableProperty.Create("TranslationY", typeof(double), typeof(VisualElement), 0d);
 
 		static readonly BindablePropertyKey WidthPropertyKey = BindableProperty.CreateReadOnly("Width", typeof(double), typeof(VisualElement), -1d,
 			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='WidthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Width"/>.</summary>
 		public static readonly BindableProperty WidthProperty = WidthPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey HeightPropertyKey = BindableProperty.CreateReadOnly("Height", typeof(double), typeof(VisualElement), -1d,
 			coerceValue: (bindable, value) => double.IsNaN((double)value) ? 0d : value);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='HeightProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Height"/>.</summary>
 		public static readonly BindableProperty HeightProperty = HeightPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='RotationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Rotation"/>.</summary>
 		public static readonly BindableProperty RotationProperty = BindableProperty.Create("Rotation", typeof(double), typeof(VisualElement), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='RotationXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RotationX"/>.</summary>
 		public static readonly BindableProperty RotationXProperty = BindableProperty.Create("RotationX", typeof(double), typeof(VisualElement), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='RotationYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RotationY"/>.</summary>
 		public static readonly BindableProperty RotationYProperty = BindableProperty.Create("RotationY", typeof(double), typeof(VisualElement), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ScaleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Scale"/>.</summary>
 		public static readonly BindableProperty ScaleProperty = BindableProperty.Create(nameof(Scale), typeof(double), typeof(VisualElement), 1d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ScaleXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScaleX"/>.</summary>
 		public static readonly BindableProperty ScaleXProperty = BindableProperty.Create(nameof(ScaleX), typeof(double), typeof(VisualElement), 1d);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ScaleYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ScaleY"/>.</summary>
 		public static readonly BindableProperty ScaleYProperty = BindableProperty.Create(nameof(ScaleY), typeof(double), typeof(VisualElement), 1d);
 
 		internal static readonly BindableProperty TransformProperty = BindableProperty.Create("Transform", typeof(string), typeof(VisualElement), null, propertyChanged: OnTransformChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='ClipProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Clip"/>.</summary>
 		public static readonly BindableProperty ClipProperty = BindableProperty.Create(nameof(Clip), typeof(Geometry), typeof(VisualElement), null,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -156,7 +156,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='VisualProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Visual"/>.</summary>
 		public static readonly BindableProperty VisualProperty =
 			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Maui.Controls.VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
@@ -252,17 +252,17 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create("TransformOrigin", typeof(Point), typeof(VisualElement), new Point(.5d, .5d),
 									propertyChanged: (b, o, n) => { (((VisualElement)b).AnchorX, ((VisualElement)b).AnchorY) = (Point)n; });
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsVisibleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsVisible"/>.</summary>
 		public static readonly BindableProperty IsVisibleProperty = BindableProperty.Create("IsVisible", typeof(bool), typeof(VisualElement), true,
 			propertyChanged: (bindable, oldvalue, newvalue) => ((VisualElement)bindable).OnIsVisibleChanged((bool)oldvalue, (bool)newvalue));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='OpacityProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Opacity"/>.</summary>
 		public static readonly BindableProperty OpacityProperty = BindableProperty.Create("Opacity", typeof(double), typeof(VisualElement), 1d, coerceValue: (bindable, value) => ((double)value).Clamp(0, 1));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BackgroundColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BackgroundColor"/>.</summary>
 		public static readonly BindableProperty BackgroundColorProperty = BindableProperty.Create(nameof(BackgroundColor), typeof(Color), typeof(VisualElement), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BackgroundProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Background"/>.</summary>
 		public static readonly BindableProperty BackgroundProperty = BindableProperty.Create(nameof(Background), typeof(Brush), typeof(VisualElement), Brush.Default,
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls
 				return collection;
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='BehaviorsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Behaviors"/>.</summary>
 		public static readonly BindableProperty BehaviorsProperty = BehaviorsPropertyKey.BindableProperty;
 
 		internal static readonly BindablePropertyKey TriggersPropertyKey = BindableProperty.CreateReadOnly("Triggers", typeof(IList<TriggerBase>), typeof(VisualElement), default(IList<TriggerBase>),
@@ -379,24 +379,27 @@ namespace Microsoft.Maui.Controls
 				return collection;
 			});
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='TriggersProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Triggers"/>.</summary>
 		public static readonly BindableProperty TriggersProperty = TriggersPropertyKey.BindableProperty;
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='WidthRequestProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="WidthRequest"/>.</summary>
+
 		public static readonly BindableProperty WidthRequestProperty = BindableProperty.Create(nameof(WidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='HeightRequestProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HeightRequest"/>.</summary>
 		public static readonly BindableProperty HeightRequestProperty = BindableProperty.Create(nameof(HeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumWidthRequestProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MinimumWidthRequest"/>.</summary>
 		public static readonly BindableProperty MinimumWidthRequestProperty = BindableProperty.Create(nameof(MinimumWidthRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumHeightRequestProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="MinimumHeightRequest"/>.</summary>
 		public static readonly BindableProperty MinimumHeightRequestProperty = BindableProperty.Create(nameof(MinimumHeightRequest), typeof(double), typeof(VisualElement), -1d, propertyChanged: OnRequestChanged);
 
+		/// <summary>Bindable property for <see cref="MaximumWidthRequest"/>.</summary>
 		public static readonly BindableProperty MaximumWidthRequestProperty = BindableProperty.Create(nameof(MaximumWidthRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
+		/// <summary>Bindable property for <see cref="MaximumHeightRequest"/>.</summary>
 		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocusedPropertyKey']/Docs/*" />
@@ -404,10 +407,10 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocusedProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		public static readonly BindableProperty IsFocusedProperty = IsFocusedPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='FlowDirectionProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FlowDirection"/>.</summary>
 		public static readonly BindableProperty FlowDirectionProperty = BindableProperty.Create(nameof(FlowDirection), typeof(FlowDirection), typeof(VisualElement), FlowDirection.MatchParent, propertyChanging: FlowDirectionChanging, propertyChanged: FlowDirectionChanged);
 
 		IFlowDirectionController FlowController => this;
@@ -446,6 +449,7 @@ namespace Microsoft.Maui.Controls
 		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
 			nameof(Window), typeof(Window), typeof(VisualElement), null, propertyChanged: OnWindowChanged);
 
+		/// <summary>Bindable property for <see cref="Window"/>.</summary>
 		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
 
 		public Window Window => (Window)GetValue(WindowProperty);
@@ -869,31 +873,8 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler ChildrenReordered;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Focus']/Docs/*" />
-		public bool Focus()
-		{
-			if (IsFocused)
-			{
-#if ANDROID
-				// TODO: Refactor using mappers for .NET 8
-				if (this is ITextInput && Handler is IPlatformViewHandler platformViewHandler)
-					KeyboardManager.ShowKeyboard(platformViewHandler.PlatformView);
-#endif
-				return true;
-			}
-
-			if (FocusChangeRequested == null)
-			{
-				FocusRequest focusRequest = new FocusRequest(false);
-
-				Handler?.Invoke(nameof(IView.Focus), focusRequest);
-
-				return focusRequest.IsFocused;
-			}
-
-			var arg = new FocusRequestArgs { Focus = true };
-			FocusChangeRequested(this, arg);
-			return arg.Result;
-		}
+		public bool Focus() =>
+			this.RequestFocus();
 
 		public event EventHandler<FocusEventArgs> Focused;
 
@@ -1055,8 +1036,12 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void ComputeConstraintForView(View view) => view.ComputedConstraint = LayoutConstraint.None;
 
+		// TODO: Obsolete in favor of MapFocus https://github.com/dotnet/maui/issues/14299
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
+		internal void InvokeFocusChangeRequested(FocusRequestArgs args) =>
+			FocusChangeRequested?.Invoke(this, args);
+		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InvalidateMeasureNonVirtual']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1154,7 +1139,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			var innerKeys = new HashSet<string>();
+			var innerKeys = new HashSet<string>(StringComparer.Ordinal);
 			var changedResources = new List<KeyValuePair<string, object>>();
 			foreach (KeyValuePair<string, object> c in Resources)
 				innerKeys.Add(c.Key);

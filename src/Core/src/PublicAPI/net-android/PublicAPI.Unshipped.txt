@@ -1,7 +1,19 @@
 #nullable enable
+abstract Microsoft.Maui.PlatformContentViewGroup.GetClipPath(int p0, int p1) -> Android.Graphics.Path?
+abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! p0, int p1, int p2) -> void
+Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
+Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
+Microsoft.Maui.ICommandMapper
+Microsoft.Maui.ICommandMapper.GetCommand(string! key) -> System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?
+Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
+Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
+Microsoft.Maui.Handlers.IImageSourcePartSetter
+Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(Android.Graphics.Drawables.Drawable? obj) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationPause
 Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationResume
@@ -16,7 +28,21 @@ Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityResumed(Andr
 Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivitySaveInstanceState(Android.App.Activity! activity, Android.OS.Bundle! outState) -> void
 Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStarted(Android.App.Activity! activity) -> void
 Microsoft.Maui.MauiApplication.ActivityLifecycleCallbacks.OnActivityStopped(Android.App.Activity! activity) -> void
+Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
+Microsoft.Maui.Platform.ShapeExtensions
+Microsoft.Maui.PlatformContentViewGroup
+Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
+Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle) -> void
+Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs, int defStyle, int defStyleRes) -> void
+Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.PlatformContentViewGroup.SetHasClip(bool hasClip) -> void
+Microsoft.Maui.PlatformContentViewGroup.ViewGroupDispatchDraw(Android.Graphics.Canvas? canvas) -> void
+Microsoft.Maui.PlatformWrapperView.SetHasShadow(bool hasShadow) -> void
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
+Microsoft.Maui.PlatformWrapperView
+Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(Android.Content.Context? context) -> void
+Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
@@ -24,13 +50,29 @@ override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Ma
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
+override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformContentViewGroup.ThresholdType.get -> System.Type!
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
+override Microsoft.Maui.PlatformWrapperView.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
+override Microsoft.Maui.PlatformWrapperView.ThresholdClass.get -> nint
+override Microsoft.Maui.PlatformWrapperView.ThresholdType.get -> System.Type!
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!, object?>?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
+static Microsoft.Maui.CommandMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
 static Microsoft.Maui.FontSize.operator !=(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
 static Microsoft.Maui.FontSize.operator ==(Microsoft.Maui.FontSize left, Microsoft.Maui.FontSize right) -> bool
+static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint? paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
+static Microsoft.Maui.Handlers.SearchBarHandler.MapFocus(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar, object? args) -> void
 static Microsoft.Maui.Handlers.StepperHandler.MapIsEnabled(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
@@ -45,12 +87,20 @@ static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplic
 static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationResume(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationResume! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationStart(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStart! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
 static Microsoft.Maui.LifecycleEvents.AndroidLifecycleBuilderExtensions.OnApplicationStop(this Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder! lifecycle, Microsoft.Maui.LifecycleEvents.AndroidLifecycle.OnApplicationStop! del) -> Microsoft.Maui.LifecycleEvents.IAndroidLifecycleBuilder!
+static Microsoft.Maui.Platform.ShapeExtensions.ToPlatform(this Microsoft.Maui.Graphics.IShape! shape, Microsoft.Maui.Graphics.Rect bounds, float strokeThickness, bool innerPath = false) -> Android.Graphics.Path!
 static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void
+static Microsoft.Maui.PropertyMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ModifyMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView, System.Action<Microsoft.Maui.IElementHandler!, Microsoft.Maui.IElement!>?>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
+static Microsoft.Maui.Resource.Drawable.abc_edit_text_material -> int
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
+~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
+~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path

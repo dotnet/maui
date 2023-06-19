@@ -9,6 +9,19 @@ namespace Microsoft.Maui.Handlers
 			return new MenuFlyout();
 		}
 
+		protected override void DisconnectHandler(MenuFlyout platformView)
+		{
+			if (VirtualView is not null)
+			{
+				foreach (var item in VirtualView)
+				{
+					item.Handler?.DisconnectHandler();
+				}
+			}
+
+			base.DisconnectHandler(platformView);
+		}
+
 		public override void SetVirtualView(IElement view)
 		{
 			base.SetVirtualView(view);

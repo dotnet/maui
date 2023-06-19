@@ -42,7 +42,6 @@
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value) -> object
 ~override Microsoft.Maui.Converters.ThicknessTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext context, System.Globalization.CultureInfo culture, object value, System.Type destinationType) -> object
 ~override Microsoft.Maui.Platform.MauiWebChromeClient.OnShowFileChooser(Android.Webkit.WebView webView, Android.Webkit.IValueCallback filePathCallback, Android.Webkit.WebChromeClient.FileChooserParams fileChooserParams) -> bool
-~override Microsoft.Maui.Platform.WrapperView.DispatchDraw(Android.Graphics.Canvas canvas) -> void
 ~override Microsoft.Maui.Platform.WrapperView.DispatchTouchEvent(Android.Views.MotionEvent e) -> bool
 ~static Microsoft.Maui.Platform.ActivityResultCallbackRegistry.InvokeCallback(int requestCode, Android.App.Result resultCode, Android.Content.Intent data) -> void
 ~virtual Microsoft.Maui.Platform.MauiWebChromeClient.ParseResult(Android.App.Result resultCode, Android.Content.Intent data) -> Java.Lang.Object
@@ -2209,7 +2208,6 @@ override Microsoft.Maui.Layouts.VerticalStackLayoutManager.Measure(double widthC
 override Microsoft.Maui.MauiAppCompatActivity.OnActivityResult(int requestCode, Android.App.Result resultCode, Android.Content.Intent? data) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnBackPressed() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnCreate(Android.OS.Bundle? savedInstanceState) -> void
-override Microsoft.Maui.MauiAppCompatActivity.OnDestroy() -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnNewIntent(Android.Content.Intent? intent) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnPostCreate(Android.OS.Bundle? savedInstanceState) -> void
 override Microsoft.Maui.MauiAppCompatActivity.OnPostResume() -> void
@@ -2233,7 +2231,6 @@ override Microsoft.Maui.Platform.AccessibilityDelegateCompatWrapper.SendAccessib
 override Microsoft.Maui.Platform.BorderDrawable.Dispose(bool disposing) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnBoundsChange(Android.Graphics.Rect! bounds) -> void
 override Microsoft.Maui.Platform.BorderDrawable.OnDraw(Android.Graphics.Drawables.Shapes.Shape? shape, Android.Graphics.Canvas? canvas, Android.Graphics.Paint? paint) -> void
-override Microsoft.Maui.Platform.ContentViewGroup.DispatchDraw(Android.Graphics.Canvas? canvas) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
 override Microsoft.Maui.Platform.ContentViewGroup.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.LayoutViewGroup.OnLayout(bool changed, int l, int t, int r, int b) -> void
@@ -2270,7 +2267,6 @@ override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnLayout(bool changed
 override Microsoft.Maui.Platform.PlatformTouchGraphicsView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.WrapperView.OnDetachedFromWindow() -> void
 override Microsoft.Maui.Platform.WrapperView.OnLayout(bool changed, int left, int top, int right, int bottom) -> void
-override Microsoft.Maui.Platform.WrapperView.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Platform.WrapperView.RequestLayout() -> void
 override Microsoft.Maui.RectangleGridAdorner.Draw(Microsoft.Maui.Graphics.ICanvas! canvas, Microsoft.Maui.Graphics.RectF dirtyRect) -> void
 override Microsoft.Maui.Semantics.ToString() -> string!
@@ -2337,7 +2333,6 @@ static Microsoft.Maui.Graphics.PaintExtensions.CreateDrawable(this Microsoft.Mau
 static Microsoft.Maui.Graphics.PaintExtensions.CreateDrawable(this Microsoft.Maui.Graphics.SolidPaint! solidPaint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.Graphics.PaintExtensions.IsNullOrEmpty(this Microsoft.Maui.Graphics.Paint? paint) -> bool
 static Microsoft.Maui.Graphics.PaintExtensions.ToColor(this Microsoft.Maui.Graphics.Paint? paint) -> Microsoft.Maui.Graphics.Color?
-static Microsoft.Maui.Graphics.PaintExtensions.ToDrawable(this Microsoft.Maui.Graphics.Paint! paint, Android.Content.Context? context) -> Android.Graphics.Drawables.Drawable?
 static Microsoft.Maui.GridLength.implicit operator Microsoft.Maui.GridLength(double absoluteValue) -> Microsoft.Maui.GridLength
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.CommandMapper -> Microsoft.Maui.CommandMapper<Microsoft.Maui.IActivityIndicator!, Microsoft.Maui.Handlers.IActivityIndicatorHandler!>!
 static Microsoft.Maui.Handlers.ActivityIndicatorHandler.MapColor(Microsoft.Maui.Handlers.IActivityIndicatorHandler! handler, Microsoft.Maui.IActivityIndicator! activityIndicator) -> void

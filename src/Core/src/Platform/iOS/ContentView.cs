@@ -11,7 +11,11 @@ namespace Microsoft.Maui.Platform
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
 		internal event EventHandler? LayoutSubviewsChanged;
-		bool _measureValid;
+
+		public ContentView()
+		{
+			Layer.CornerCurve = CACornerCurve.Continuous;
+		}
 
 		public override CGSize SizeThatFits(CGSize size)
 		{
@@ -20,11 +24,12 @@ namespace Microsoft.Maui.Platform
 				return base.SizeThatFits(size);
 			}
 
-			var width = size.Width;
-			var height = size.Height;
+			var widthConstraint = size.Width;
+			var heightConstraint = size.Height;
 
-			var crossPlatformSize = CrossPlatformMeasure(width, height);
-			_measureValid = true;
+			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			CacheMeasureConstraints(widthConstraint, heightConstraint);
 
 			return crossPlatformSize.ToCGSize();
 		}
@@ -34,11 +39,18 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
+			var widthConstraint = bounds.Width;
+			var heightConstraint = bounds.Height;
 
-			if (!_measureValid)
+			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
+			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
+			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
+			// the window); there's no guarantee that SizeThatFits has been called in that case.
+
+			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
 			{
-				CrossPlatformMeasure?.Invoke(bounds.Width, bounds.Height);
-				_measureValid = true;
+				CrossPlatformMeasure?.Invoke(widthConstraint, heightConstraint);
+				CacheMeasureConstraints(widthConstraint, heightConstraint);
 			}
 
 			CrossPlatformArrange?.Invoke(bounds);
@@ -53,7 +65,7 @@ namespace Microsoft.Maui.Platform
 
 		public override void SetNeedsLayout()
 		{
-			_measureValid = false;
+			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
 		}
@@ -81,7 +93,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		CAShapeLayer? ChildMaskLayer
+		internal CAShapeLayer? ChildMaskLayer
 		{
 			get => _childMaskLayer;
 			set
@@ -105,7 +117,7 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
-			if (child.Layer == null || child.Layer.Sublayers == null)
+			if (child.Layer is null)
 				return null;
 
 			return child.Layer;
@@ -116,21 +128,37 @@ namespace Microsoft.Maui.Platform
 			if (Subviews.Length == 0)
 				return;
 
-			var mask = ChildMaskLayer;
+			var maskLayer = ChildMaskLayer;
 
-			if (mask == null && Clip == null)
+			if (maskLayer is null && Clip is null)
 				return;
 
-			mask ??= ChildMaskLayer = new CAShapeLayer();
+			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
 
 			var frame = Frame;
 
-			var bounds = new RectF(0, 0, (float)frame.Width, (float)frame.Height);
+			if (frame == CGRect.Empty)
+				return;
+
+			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
+
+			// In the MauiCALayer class, the Stroke is inner and we are clipping the outer, for that reason,
+			// we use the double to get the correct value. Here, again, we use the double to get the correct clip shape size values.
+			var strokeWidth = 2 * strokeThickness;
+
+			var bounds = new RectF(0, 0, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
 
 			IShape? clipShape = Clip?.Shape;
-			var path = clipShape?.PathForBounds(bounds);
+			PathF? path;
+
+			if (clipShape is IRoundRectangle roundRectangle)
+				path = roundRectangle.InnerPathForBounds(bounds, strokeThickness);
+			else
+				path = clipShape?.PathForBounds(bounds);
+
 			var nativePath = path?.AsCGPath();
-			mask.Path = nativePath;
+
+			maskLayer.Path = nativePath;
 		}
 	}
 }
