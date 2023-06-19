@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			foreach (var swipeItem in swipeItems)
-				AddLogicalChild((Element)swipeItem);
+				AddLogicalChildInternal((Element)swipeItem);
 		}
 
 		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
@@ -172,35 +172,6 @@ namespace Microsoft.Maui.Controls
 			}
 
 			return swipeItems;
-		}
-
-		internal void AddLogicalChild(Element element)
-			=> AddLogicalChildInternal(element);
-
-		internal new void ClearLogicalChildren()
-		{
-			// Reverse for-loop, so children can be removed while iterating
-			for (int i = _swipeItems.Count - 1; i >= 0; i--)
-			{
-				RemoveLogicalChildByIndex(i);
-			}
-		}
-
-		void RemoveLogicalChildByIndex(int index)
-		{
-			if (_swipeItems.Count < index)
-			{
-				return;
-			}
-
-			var element = _swipeItems[index] as Element;
-
-			if (element is null)
-			{
-				return;
-			}
-
-			RemoveLogicalChildInternal(element);
 		}
 
 		void OnParentScrolled(object? sender, ScrolledEventArgs e)
