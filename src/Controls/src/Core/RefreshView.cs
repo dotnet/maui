@@ -37,7 +37,6 @@ namespace Microsoft.Maui.Controls
 
 			var refreshView = (RefreshView)bindable;
 			refreshView.Refreshing?.Invoke(bindable, EventArgs.Empty);
-			refreshView.Command?.Execute(refreshView.CommandParameter);
 		}
 
 		static object OnIsRefreshingPropertyCoerced(BindableObject bindable, object value)
