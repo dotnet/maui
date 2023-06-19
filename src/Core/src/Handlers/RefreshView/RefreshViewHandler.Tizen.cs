@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 		void OnRefreshing(object? sender, EventArgs e)
 		{
 			VirtualView.IsRefreshing = true;
+			VirtualView.Command?.Execute(VirtualView.CommandParameter);
 		}
 
 		protected override void DisconnectHandler(MauiRefreshLayout platformView)
