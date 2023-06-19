@@ -46,6 +46,7 @@ namespace Microsoft.Maui.Handlers
 		void OnRefresh(object? sender, EventArgs e)
 		{
 			VirtualView.IsRefreshing = true;
+			VirtualView.Command?.Execute(VirtualView.CommandParameter);
 		}
 
 		static void UpdateIsRefreshing(IRefreshViewHandler handler)
