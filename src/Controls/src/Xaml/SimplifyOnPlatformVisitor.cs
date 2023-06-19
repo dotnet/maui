@@ -13,29 +13,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (string.IsNullOrEmpty(targetFramework))
 				return;
 
-#if NETSTANDARD2_0
-			if (targetFramework.Contains("-android"))
-#else
-			if (targetFramework.Contains("-android", StringComparison.Ordinal))
-#endif
+			if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
 				Target = nameof(OnPlatformExtension.Android);
-#if NETSTANDARD2_0
-			if (targetFramework.Contains("-ios"))
-#else
-			if (targetFramework.Contains("-ios", StringComparison.Ordinal))
-#endif
+			if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
 				Target = nameof(OnPlatformExtension.iOS);
-#if NETSTANDARD2_0
-			if (targetFramework.Contains("-macos"))
-#else
-			if (targetFramework.Contains("-macos", StringComparison.Ordinal))
-#endif
+			if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
 				Target = nameof(OnPlatformExtension.macOS);
-#if NETSTANDARD2_0
-			if (targetFramework.Contains("-maccatalyst"))
-#else
-			if (targetFramework.Contains("-maccatalyst", StringComparison.Ordinal))
-#endif
+			if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
 				Target = nameof(OnPlatformExtension.MacCatalyst);
 		}
 

@@ -34,8 +34,8 @@ namespace Microsoft.Maui.Controls.SourceGen
 		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
 #if DEBUG
-			if (!System.Diagnostics.Debugger.IsAttached)
-				System.Diagnostics.Debugger.Launch();
+			//if (!System.Diagnostics.Debugger.IsAttached)
+			//	System.Diagnostics.Debugger.Launch();
 #endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
@@ -478,13 +478,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			string? target = null;
 			targetFramework = targetFramework.Trim();
-			if (targetFramework.Contains("-android"))
+			if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
 				target = "Android";
-			if (targetFramework.Contains("-ios"))
+			if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
 				target = "iOS";
-			if (targetFramework.Contains("-macos"))
+			if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
 				target = "macOS";
-			if (targetFramework.Contains("-maccatalyst"))
+			if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
 				target = "MacCatalyst";
 			if (target == null)
 				return;
