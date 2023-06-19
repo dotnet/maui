@@ -37,6 +37,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2499Test()
 		{
 			RunningApp.WaitForElement("picker");
