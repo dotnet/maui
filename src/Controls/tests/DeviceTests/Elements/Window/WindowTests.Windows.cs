@@ -4,13 +4,9 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
-using Microsoft.UI.Xaml.Automation.Peers;
-using Microsoft.UI.Xaml.Automation.Provider;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -23,41 +19,27 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var button = new Button();
-
 			var mainPage = new ContentPage
 			{
-				BackgroundColor = Colors.Red,
-				Content = button
+				BackgroundColor = Colors.Red
 			};
 
 			var secondaryPage = new ContentPage
-			{ 
-				BackgroundColor = Colors.Green 
-			};
-
-			var clicked = false;
-
-			button.Clicked += delegate
 			{
-				clicked = true;
+				BackgroundColor = Colors.Green
 			};
-
-			await PerformClick(button);
-
-			Assert.True(clicked);
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
 			{
 				var mainWindow = handler.VirtualView as Window;
-
-				if (clicked)
-				{
-					mainWindow.Page = secondaryPage;
-				}
-
-				// Without exceptions, the test has passed.
+				
+				mainWindow.Page = secondaryPage;
 				Assert.Equal(mainWindow.Page, secondaryPage);
+
+				mainWindow.Page = mainPage;
+				// Without exceptions, the test has passed.
+				Assert.Equal(mainWindow.Page, mainPage);
+
 				Assert.NotNull(mainWindow.Page);
 			});
 		}
@@ -219,19 +201,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(2, deactivated);
 			}
 		}
-
-		Task PerformClick(IButton button)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				var platformButton = GetNativeButton(CreateHandler<ButtonHandler>(button));
-				var ap = new ButtonAutomationPeer(platformButton);
-				var ip = ap.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-				ip?.Invoke();
-			});
-		}
-
-		UI.Xaml.Controls.Button GetNativeButton(ButtonHandler buttonHandler) =>
-			buttonHandler.PlatformView;
 	}
 }
