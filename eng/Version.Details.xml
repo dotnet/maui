@@ -8,6 +8,18 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha></Sha>
     </Dependency>
+    <Dependency Name="System.Text.Json" Version="8.0.0-preview.6.23279.6" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha></Sha>
+    </Dependency>
+    <Dependency Name="System.Text.Encodings.Web" Version="8.0.0-preview.6.23279.6" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha></Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0-preview.6.23279.6" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha></Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-preview.6.323">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
       <Sha>cefa30b74ab1bf71aabd56cfbe50f36810010ce6</Sha>
