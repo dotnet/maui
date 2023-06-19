@@ -75,6 +75,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
 		/// <summary>
+		/// Backing store for the <see cref="InputView.IsTextPredictionEnabled"/> property.
+		/// </summary>
+		public static new readonly BindableProperty IsTextPredictionEnabledProperty = InputView.IsTextPredictionEnabledProperty;
+
+		/// <summary>
 		/// Backing store for the <see cref="ReturnType"/> property.
 		/// </summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
