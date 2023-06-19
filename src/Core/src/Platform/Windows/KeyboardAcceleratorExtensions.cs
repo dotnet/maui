@@ -32,10 +32,7 @@ namespace Microsoft.Maui.Platform
 				var keyboardAccelerators = accelerator.ToPlatform();
 
 				if (keyboardAccelerators is not null)
-				{
-					foreach (var keyboardAccelerator in keyboardAccelerators)
-						result.Add(keyboardAccelerator);
-				}
+					result.AddRange(keyboardAccelerators);
 			}
 
 			return result;
