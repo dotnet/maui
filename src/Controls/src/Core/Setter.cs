@@ -13,9 +13,6 @@ namespace Microsoft.Maui.Controls
 	[ProvideCompiled("Microsoft.Maui.Controls.XamlC.SetterValueProvider")]
 	public sealed class Setter : IValueProvider
 	{
-		//GO AWAY
-		readonly ConditionalWeakTable<BindableObject, object> _originalValues = new ConditionalWeakTable<BindableObject, object>();
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/Setter.xml" path="//Member[@MemberName='TargetName']/Docs/*" />
 		public string TargetName { get; set; }
 
