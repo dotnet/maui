@@ -37,9 +37,14 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework)
+		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
-			var output = RunForOutput("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", out int exitCode, timeoutInSeconds: 300);
+			var args = $"{shortName} -o \"{outputDirectory}\"";
+
+			if (!string.IsNullOrEmpty(framework))
+				args += $" -f {framework}";
+
+			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
 			TestContext.WriteLine(output);
 			return exitCode == 0;
 		}
@@ -57,7 +62,8 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-
+			//Workaround: https://github.com/dotnet/linker/issues/3012
+			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}
 

@@ -172,6 +172,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void CollectionViewShouldSourceShouldUpdateWhileInvisible()
 		{
 			RunningApp.WaitForElement(Success);
