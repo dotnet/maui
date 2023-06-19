@@ -5,7 +5,7 @@
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-preview.6.23276.3</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-preview.5.23272.14</MicrosoftNETCoreAppRefPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>8.0.0-preview.6.23279.6</MicrosoftNETCoreAppRefPackageVersion>
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>8.0.0-preview.6.23317.1</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>8.0.0-preview.6.23317.1</MicrosoftExtensionsServicingPackageVersion>
