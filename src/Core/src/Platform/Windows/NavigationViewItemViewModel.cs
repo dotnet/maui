@@ -191,7 +191,14 @@ namespace Microsoft.Maui.Platform
 
 			if (Icon is WIconElement bi)
 			{
-				bi.Foreground = Foreground;
+				if (Foreground is null)
+				{
+					bi.ClearValue(WIconElement.ForegroundProperty);
+				}
+				else
+				{
+					bi.Foreground = Foreground;
+				}
 			}
 		}
 
