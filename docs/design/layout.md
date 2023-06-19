@@ -371,6 +371,14 @@ It is also important to remember that measureSpec size values should always be i
 
 # Legacy Notes
 
+## OnSizeAllocated
+
+The `VisualElement.OnSizeAllocated(double width, double height)` method is still available for overriding to support controls being ported from Xamarin.Forms to MAUI.Controls. In Forms, this method was typically used to react to size changes; occasionally it was a way to ensure that a control was part of the control hierarchy and ready to show up on screen. 
+
+This method does not exist at all in MAUI.Core; in MAUI.Controls, it's available for backward compatibility and is called when the `Frame` (also aliased as `Bounds` for backward compatibility) is updated during the `Arrange` portion of the layout process. Specifically, it's called when the `Frame` is set; for a typical VisualElement this is during the `ArrangeOverride()` method, right before the native platform's arrange method is called. 
+
+When creating a custom component for MAUI.Controls, the suggested customization point is an override of the `ArrangeOverride(Rect bounds)` method, rather than `OnSizeAllocated()`. This provides more flexibility. 
+
 ## Xamarin.Forms -> MAUI.Controls Layout Differences
 
 ### StackLayout

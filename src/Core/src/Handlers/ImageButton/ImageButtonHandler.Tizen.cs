@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Clicked();
 		}
 
-		void OnSetImageSource(MauiImageSource? img)
+		void IImageSourcePartSetter.SetImageSource(MauiImageSource? img)
 		{
 			if (img == null)
 				return;
