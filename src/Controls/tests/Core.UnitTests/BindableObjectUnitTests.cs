@@ -727,8 +727,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal("DefaultValue", bindable.GetValue(bindableProperty));
 		}
-		[Fact]
 
+		[Fact]
 		public void TestBindingOneWayOnReadOnly()
 		{
 			var bindablePropertyKey = BindableProperty.CreateReadOnly(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue", BindingMode.OneWayToSource);
