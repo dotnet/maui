@@ -495,13 +495,18 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual Window CreateWindow(IActivationState? activationState)
 		{
+			var windowCreator = activationState?.Context.Services.GetService<IWindowCreator>();
+			var window = windowCreator?.CreateWindow(this, activationState);
+			if (window is not null)
+				return window;
+
 			if (Windows.Count > 1)
 				throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
 
 			if (Windows.Count > 0)
 				return Windows[0];
 
-			if (_singleWindowMainPage != null)
+			if (_singleWindowMainPage is not null)
 				return new Window(_singleWindowMainPage);
 
 			throw new NotImplementedException($"Either set {nameof(MainPage)} or override {nameof(Application.CreateWindow)}.");
