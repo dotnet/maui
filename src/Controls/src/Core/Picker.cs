@@ -13,50 +13,51 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="Type[@FullName='Microsoft.Maui.Controls.Picker']/Docs/*" />
 	public partial class Picker : View, IFontElement, ITextElement, ITextAlignmentElement, IElementConfiguration<Picker>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty =
 			BindableProperty.Create(nameof(Title), typeof(string), typeof(Picker), default(string));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='TitleColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TitleColor"/>.</summary>
 		public static readonly BindableProperty TitleColorProperty =
 			BindableProperty.Create(nameof(TitleColor), typeof(Color), typeof(Picker), default(Color));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedIndexProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedIndex"/>.</summary>
 		public static readonly BindableProperty SelectedIndexProperty =
 			BindableProperty.Create(nameof(SelectedIndex), typeof(int), typeof(Picker), -1, BindingMode.TwoWay,
 									propertyChanged: OnSelectedIndexChanged, coerceValue: CoerceSelectedIndex);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='ItemsSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ItemsSource"/>.</summary>
 		public static readonly BindableProperty ItemsSourceProperty =
 			BindableProperty.Create(nameof(ItemsSource), typeof(IList), typeof(Picker), default(IList),
 									propertyChanged: OnItemsSourceChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='SelectedItemProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SelectedItem"/>.</summary>
 		public static readonly BindableProperty SelectedItemProperty =
 			BindableProperty.Create(nameof(SelectedItem), typeof(object), typeof(Picker), null, BindingMode.TwoWay,
 									propertyChanged: OnSelectedItemChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Picker.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		readonly Lazy<PlatformConfigurationRegistry<Picker>> _platformConfigurationRegistry;

@@ -6,9 +6,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="Type[@FullName='Microsoft.Maui.Controls.TableSectionBase']/Docs/*" />
 	public abstract class TableSectionBase : BindableObject
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(TableSectionBase), null);
-		/// <include file="../../docs/Microsoft.Maui.Controls/TableSectionBase.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = BindableProperty.Create(nameof(TextColor), typeof(Color), typeof(TableSectionBase), null);
 
 		/// <summary>

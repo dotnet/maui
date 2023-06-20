@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls
 		public override bool IsEmpty =>
 			ImageSource?.IsEmpty ?? true;
 
+		/// <summary>Bindable property for <see cref="ImageSource"/>.</summary>
 		public static readonly BindableProperty ImageSourceProperty = BindableProperty.Create(
 			nameof(ImageSource), typeof(ImageSource), typeof(ImageBrush), default(ImageSource));
 

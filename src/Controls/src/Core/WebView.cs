@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="Type[@FullName='Microsoft.Maui.Controls.WebView']/Docs/*" />
 	public partial class WebView : View, IWebViewController, IElementConfiguration<WebView>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='SourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Source"/>.</summary>
 		public static readonly BindableProperty SourceProperty = BindableProperty.Create("Source", typeof(WebViewSource), typeof(WebView), default(WebViewSource),
 			propertyChanging: (bindable, oldvalue, newvalue) =>
 			{
@@ -32,15 +32,15 @@ namespace Microsoft.Maui.Controls
 
 		static readonly BindablePropertyKey CanGoBackPropertyKey = BindableProperty.CreateReadOnly("CanGoBack", typeof(bool), typeof(WebView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoBackProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CanGoBack"/>.</summary>
 		public static readonly BindableProperty CanGoBackProperty = CanGoBackPropertyKey.BindableProperty;
 
 		static readonly BindablePropertyKey CanGoForwardPropertyKey = BindableProperty.CreateReadOnly("CanGoForward", typeof(bool), typeof(WebView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CanGoForwardProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CanGoForward"/>.</summary>
 		public static readonly BindableProperty CanGoForwardProperty = CanGoForwardPropertyKey.BindableProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/WebView.xml" path="//Member[@MemberName='CookiesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Cookies"/>.</summary>
 		public static readonly BindableProperty CookiesProperty = BindableProperty.Create(nameof(Cookies), typeof(CookieContainer), typeof(WebView), null);
 
 		readonly Lazy<PlatformConfigurationRegistry<WebView>> _platformConfigurationRegistry;

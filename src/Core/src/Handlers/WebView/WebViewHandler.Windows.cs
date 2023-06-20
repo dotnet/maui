@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.Web.WebView2.Core;
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Handlers
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 		Window? _window;
 
-		protected override WebView2 CreatePlatformView() => new MauiWebView();
+		protected override WebView2 CreatePlatformView() => new MauiWebView(this);
 
 		internal WebNavigationEvent CurrentNavigationEvent
 		{
@@ -73,7 +74,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(WebView2 platformView)
 		{
-			DisconnectHandler(platformView);
+			Disconnect(platformView);
 			base.DisconnectHandler(platformView);
 		}
 
@@ -171,11 +172,11 @@ namespace Microsoft.Maui.Handlers
 				SendNavigated(uri, CurrentNavigationEvent, WebNavigationResult.Failure);
 		}
 
-		void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
+		async void SendNavigated(string url, WebNavigationEvent evnt, WebNavigationResult result)
 		{
 			if (VirtualView is not null)
 			{
-				SyncPlatformCookiesToVirtualView(url);
+				await SyncPlatformCookiesToVirtualView(url);
 
 				VirtualView.Navigated(evnt, url, result);
 				PlatformView?.UpdateCanGoBackForward(VirtualView);
@@ -184,7 +185,7 @@ namespace Microsoft.Maui.Handlers
 			CurrentNavigationEvent = WebNavigationEvent.NewPage;
 		}
 
-		void SyncPlatformCookiesToVirtualView(string url)
+		async Task SyncPlatformCookiesToVirtualView(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
 
@@ -197,10 +198,9 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			var cookies = myCookieJar.GetCookies(uri);
-			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
+			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
 
-			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			var platformCookies = filter.CookieManager.GetCookies(uri);
+			var platformCookies = await PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(uri.AbsoluteUri);
 
 			foreach (Cookie cookie in cookies)
 			{
@@ -213,10 +213,10 @@ namespace Microsoft.Maui.Handlers
 					cookie.Value = httpCookie.Value;
 			}
 
-			SyncPlatformCookies(url);
+			await SyncPlatformCookies(url);
 		}
 
-		void SyncPlatformCookies(string url)
+		internal async Task SyncPlatformCookies(string url)
 		{
 			var uri = CreateUriForCookies(url);
 
@@ -228,35 +228,30 @@ namespace Microsoft.Maui.Handlers
 			if (myCookieJar is null)
 				return;
 
-			InitialCookiePreloadIfNecessary(url);
+			await InitialCookiePreloadIfNecessary(url);
 			var cookies = myCookieJar.GetCookies(uri);
 
 			if (cookies is null)
 				return;
 
-			var retrieveCurrentWebCookies = GetCookiesFromPlatformStore(url);
-
-			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
+			var retrieveCurrentWebCookies = await GetCookiesFromPlatformStore(url);
 
 			foreach (Cookie cookie in cookies)
 			{
-				HttpCookie httpCookie = new HttpCookie(cookie.Name, cookie.Domain, cookie.Path)
-				{
-					Value = cookie.Value
-				};
-				filter.CookieManager.SetCookie(httpCookie, false);
+				var createdCookie = PlatformView.CoreWebView2.CookieManager.CreateCookie(cookie.Name, cookie.Value, cookie.Domain, cookie.Path);
+				PlatformView.CoreWebView2.CookieManager.AddOrUpdateCookie(createdCookie);
 			}
 
-			foreach (HttpCookie cookie in retrieveCurrentWebCookies)
+			foreach (CoreWebView2Cookie cookie in retrieveCurrentWebCookies)
 			{
 				if (cookies[cookie.Name] is not null)
 					continue;
 
-				filter.CookieManager.DeleteCookie(cookie);
+				PlatformView.CoreWebView2.CookieManager.DeleteCookie(cookie);
 			}
 		}
 
-		void InitialCookiePreloadIfNecessary(string url)
+		async Task InitialCookiePreloadIfNecessary(string url)
 		{
 			var myCookieJar = VirtualView.Cookies;
 
@@ -272,22 +267,27 @@ namespace Microsoft.Maui.Handlers
 
 			if (cookies is not null)
 			{
-				var existingCookies = GetCookiesFromPlatformStore(url);
-				foreach (HttpCookie cookie in existingCookies)
+				var existingCookies = await GetCookiesFromPlatformStore(url);
+
+				if (existingCookies.Count == 0)
+					return;
+
+				foreach (CoreWebView2Cookie cookie in existingCookies)
 				{
-					if (cookies[cookie.Name] is null)
-						myCookieJar.SetCookies(uri, cookie.ToString());
+					myCookieJar.SetCookies(uri,
+							new Cookie(cookie.Name, cookie.Value, cookie.Path, cookie.Domain)
+							{
+								Expires = DateTimeOffset.FromUnixTimeMilliseconds((long)cookie.Expires).DateTime,
+								HttpOnly = cookie.IsHttpOnly,
+								Secure = cookie.IsSecure,
+							}.ToString());
 				}
 			}
 		}
 
-		HttpCookieCollection GetCookiesFromPlatformStore(string url)
+		Task<IReadOnlyList<CoreWebView2Cookie>> GetCookiesFromPlatformStore(string url)
 		{
-			var uri = CreateUriForCookies(url);
-			var filter = new global::Windows.Web.Http.Filters.HttpBaseProtocolFilter();
-			var platformCookies = filter.CookieManager.GetCookies(uri);
-
-			return platformCookies;
+			return PlatformView.CoreWebView2.CookieManager.GetCookiesAsync(url).AsTask();
 		}
 
 		Uri? CreateUriForCookies(string url)

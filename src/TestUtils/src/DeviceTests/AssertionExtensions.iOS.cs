@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
@@ -565,6 +566,63 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return platformView;
+		}
+
+		static UIView GetBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return item ?? throw new Exception("Unable to locate back button view");
+		}
+
+		public static void TapBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.GetBackButton();
+
+			var recognizer = item?.GestureRecognizers?.OfType<UITapGestureRecognizer>()?.FirstOrDefault();
+			if (recognizer is null && item is UIControl control)
+			{
+				control.SendActionForControlEvents(UIControlEvent.TouchUpInside);
+			}
+			else
+			{
+				_ = recognizer ?? throw new Exception("Unable to figure out how to tap back button");
+				recognizer.State = UIGestureRecognizerState.Ended;
+			}
+		}
+
+		public static string? GetToolbarTitle(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarTitleControl", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			//Pre iOS 15
+			item = item ?? uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UINavigationBarContentView", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			_ = item ?? throw new Exception("Unable to locate TitleBar Control");
+
+			var titleLabel = item.FindDescendantView<UILabel>();
+
+			_ = item ?? throw new Exception("Unable to locate UILabel Inside UINavigationBar");
+			return titleLabel?.Text;
+		}
+
+		public static string? GetBackButtonText(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.GetBackButton();
+
+			var titleLabel = item.FindDescendantView<UILabel>();
+
+			_ = item ?? throw new Exception("Unable to locate BackButton UILabel Inside UINavigationBar");
+			return titleLabel?.Text;
 		}
 	}
 }

@@ -38,7 +38,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public static void SubstituteChildren(ILayout layout, IList<IView> children)
 		{
 			layout[Arg.Any<int>()].Returns(args => children[(int)args[0]]);
-			layout.GetEnumerator().Returns(children.GetEnumerator());
+			layout.GetEnumerator().Returns((ci) => children.GetEnumerator());
 			layout.Count.Returns(children.Count);
 		}
 

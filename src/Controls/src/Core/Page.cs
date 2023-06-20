@@ -29,19 +29,19 @@ namespace Microsoft.Maui.Controls
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BackgroundImageSource"/>.</summary>
 		public static readonly BindableProperty BackgroundImageSourceProperty = BindableProperty.Create(nameof(BackgroundImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IsBusyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsBusy"/>.</summary>
 		public static readonly BindableProperty IsBusyProperty = BindableProperty.Create("IsBusy", typeof(bool), typeof(Page), false, propertyChanged: (bo, o, n) => ((Page)bo).OnPageBusyChanged());
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='TitleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create("Title", typeof(string), typeof(Page), null);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IconImageSourceProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(Page), default(ImageSource));
 
 		readonly Lazy<PlatformConfigurationRegistry<Page>> _platformConfigurationRegistry;

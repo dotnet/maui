@@ -25,17 +25,17 @@ namespace Microsoft.Maui.Controls.Shapes
 			CenterY = centerY;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='AngleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Angle"/>.</summary>
 		public static readonly BindableProperty AngleProperty =
 			BindableProperty.Create(nameof(Angle), typeof(double), typeof(RotateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='CenterXProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterX"/>.</summary>
 		public static readonly BindableProperty CenterXProperty =
 			BindableProperty.Create(nameof(CenterX), typeof(double), typeof(RotateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/RotateTransform.xml" path="//Member[@MemberName='CenterYProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CenterY"/>.</summary>
 		public static readonly BindableProperty CenterYProperty =
 			BindableProperty.Create(nameof(CenterY), typeof(double), typeof(RotateTransform), 0.0,
 				propertyChanged: OnTransformPropertyChanged);

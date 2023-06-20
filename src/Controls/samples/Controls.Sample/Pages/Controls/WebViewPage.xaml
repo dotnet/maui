@@ -109,6 +109,12 @@
 					x:Name="EvalResultLabel"
                     Text="..."
                     Style="{StaticResource Headline}"/>
+                <Label
+                    Text="Cookies"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    Text="Load httpbin.org with Cookies"
+                    Clicked="OnLoadHttpBinClicked" />
                 <StackLayout
                     IsVisible="{OnPlatform Android=True, Default=False}">
                     <Label

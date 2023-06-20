@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static AutoId CurrentId { get; } = new();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/PanGestureRecognizer.xml" path="//Member[@MemberName='TouchPointsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TouchPoints"/>.</summary>
 		public static readonly BindableProperty TouchPointsProperty = BindableProperty.Create("TouchPoints", typeof(int), typeof(PanGestureRecognizer), 1);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/PanGestureRecognizer.xml" path="//Member[@MemberName='TouchPoints']/Docs/*" />

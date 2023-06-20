@@ -19,11 +19,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			EndPoint = endPoint;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='StartPointProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="StartPoint"/>.</summary>
 		public static readonly BindableProperty StartPointProperty =
 			BindableProperty.Create(nameof(StartPoint), typeof(Point), typeof(LineGeometry), new Point());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/LineGeometry.xml" path="//Member[@MemberName='EndPointProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="EndPoint"/>.</summary>
 		public static readonly BindableProperty EndPointProperty =
 			BindableProperty.Create(nameof(EndPoint), typeof(Point), typeof(LineGeometry), new Point());
 

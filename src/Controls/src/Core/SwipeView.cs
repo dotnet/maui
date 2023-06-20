@@ -16,26 +16,26 @@ namespace Microsoft.Maui.Controls
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='ThresholdProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
 		public static readonly BindableProperty ThresholdProperty =
 			BindableProperty.Create(nameof(Threshold), typeof(double), typeof(SwipeView), default(double));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='LeftItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="LeftItems"/>.</summary>
 		public static readonly BindableProperty LeftItemsProperty =
 			BindableProperty.Create(nameof(LeftItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='RightItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="RightItems"/>.</summary>
 		public static readonly BindableProperty RightItemsProperty =
 			BindableProperty.Create(nameof(RightItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='TopItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TopItems"/>.</summary>
 		public static readonly BindableProperty TopItemsProperty =
 			BindableProperty.Create(nameof(TopItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='BottomItemsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="BottomItems"/>.</summary>
 		public static readonly BindableProperty BottomItemsProperty =
 			BindableProperty.Create(nameof(BottomItems), typeof(SwipeItems), typeof(SwipeView), null, BindingMode.OneWay, null, defaultValueCreator: SwipeItemsDefaultValueCreator,
 				propertyChanged: OnSwipeItemsChanged);

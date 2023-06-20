@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	public static class FlyoutPage
 	{
 		#region ApplyShadow
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='ApplyShadowProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>ApplyShadow</c>.</summary>
 		public static readonly BindableProperty ApplyShadowProperty = BindableProperty.Create("ApplyShadow", typeof(bool), typeof(FlyoutPage), false);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/FlyoutPage.xml" path="//Member[@MemberName='GetApplyShadow'][1]/Docs/*" />

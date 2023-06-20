@@ -13,10 +13,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>33.0.69</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.4.7058</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>13.3.7058</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.4.7058</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.4.7058</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.4.7069</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>13.3.7069</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>16.4.7069</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.4.7069</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.105</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -25,7 +25,7 @@
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.2.221209.1</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
-    <MicrosoftGraphicsWin2DPackageVersion>1.0.4</MicrosoftGraphicsWin2DPackageVersion>
+    <MicrosoftGraphicsWin2DPackageVersion>1.0.5.1</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
     <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.0</MicrosoftAspNetCoreAuthorizationPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>7.0.0</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>

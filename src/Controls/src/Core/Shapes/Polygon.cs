@@ -13,11 +13,11 @@ namespace Microsoft.Maui.Controls.Shapes
 			Points = points;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='PointsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Points"/>.</summary>
 		public static readonly BindableProperty PointsProperty =
 			BindableProperty.Create(nameof(Points), typeof(PointCollection), typeof(Polygon), null, defaultValueCreator: bindable => new PointCollection());
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='FillRuleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FillRule"/>.</summary>
 		public static readonly BindableProperty FillRuleProperty =
 			BindableProperty.Create(nameof(FillRule), typeof(FillRule), typeof(Polygon), FillRule.EvenOdd);
 

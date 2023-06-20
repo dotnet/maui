@@ -71,7 +71,6 @@ namespace Microsoft.Maui.Networking
 				Debug.WriteLine("Connectivity receiver already unregistered. Disposing of it.");
 			}
 
-			conectivityReceiver.Dispose();
 			conectivityReceiver = null;
 		}
 
@@ -100,7 +99,6 @@ namespace Microsoft.Maui.Networking
 
 			manager.UnregisterNetworkCallback(networkCallback);
 
-			networkCallback?.Dispose();
 			networkCallback = null;
 		}
 

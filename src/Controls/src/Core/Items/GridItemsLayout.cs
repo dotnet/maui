@@ -3,7 +3,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="Type[@FullName='Microsoft.Maui.Controls.GridItemsLayout']/Docs/*" />
 	public class GridItemsLayout : ItemsLayout
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='SpanProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Span"/>.</summary>
 		public static readonly BindableProperty SpanProperty =
 			BindableProperty.Create(nameof(Span), typeof(int), typeof(GridItemsLayout), 1,
 				validateValue: (bindable, value) => (int)value >= 1);
@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 			Span = span;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='VerticalItemSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalItemSpacing"/>.</summary>
 		public static readonly BindableProperty VerticalItemSpacingProperty =
 			BindableProperty.Create(nameof(VerticalItemSpacing), typeof(double), typeof(GridItemsLayout), default(double),
 				validateValue: (bindable, value) => (double)value >= 0);
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(VerticalItemSpacingProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/GridItemsLayout.xml" path="//Member[@MemberName='HorizontalItemSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalItemSpacing"/>.</summary>
 		public static readonly BindableProperty HorizontalItemSpacingProperty =
 			BindableProperty.Create(nameof(HorizontalItemSpacing), typeof(double), typeof(GridItemsLayout), default(double),
 				validateValue: (bindable, value) => (double)value >= 0);

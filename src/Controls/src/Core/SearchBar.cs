@@ -9,16 +9,16 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="Type[@FullName='Microsoft.Maui.Controls.SearchBar']/Docs/*" />
 	public partial class SearchBar : InputView, IFontElement, ITextAlignmentElement, ISearchBarController, IElementConfiguration<SearchBar>
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommandProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SearchCommand"/>.</summary>
 		public static readonly BindableProperty SearchCommandProperty = BindableProperty.Create("SearchCommand", typeof(ICommand), typeof(SearchBar), null, propertyChanged: OnCommandChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='SearchCommandParameterProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SearchCommandParameter"/>.</summary>
 		public static readonly BindableProperty SearchCommandParameterProperty = BindableProperty.Create("SearchCommandParameter", typeof(object), typeof(SearchBar), null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
 		public new static readonly BindableProperty TextProperty = InputView.TextProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='CancelButtonColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CancelButtonColor"/>.</summary>
 		public static readonly BindableProperty CancelButtonColorProperty = BindableProperty.Create("CancelButtonColor", typeof(Color), typeof(SearchBar), default(Color));
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
@@ -27,27 +27,31 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
 		public new static readonly BindableProperty PlaceholderColorProperty = InputView.PlaceholderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontFamilyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontSizeProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontSize"/>.</summary>
 		public static readonly BindableProperty FontSizeProperty = FontElement.FontSizeProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='FontAttributesProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="FontAttributes"/>.</summary>
 		public static readonly BindableProperty FontAttributesProperty = FontElement.FontAttributesProperty;
 
+		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(SearchBar), true, BindingMode.Default);
 
+		/// <summary>Bindable property for <see cref="CursorPosition"/>.</summary>
 		public static readonly BindableProperty CursorPositionProperty = BindableProperty.Create(nameof(CursorPosition), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
 
+		/// <summary>Bindable property for <see cref="SelectionLength"/>.</summary>
 		public static readonly BindableProperty SelectionLengthProperty = BindableProperty.Create(nameof(SelectionLength), typeof(int), typeof(SearchBar), 0, validateValue: (b, v) => (int)v >= 0);
 
+		/// <summary>Bindable property for <see cref="FontAutoScalingEnabled"/>.</summary>
 		public static readonly BindableProperty FontAutoScalingEnabledProperty = FontElement.FontAutoScalingEnabledProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='HorizontalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="HorizontalTextAlignment"/>.</summary>
 		public static readonly BindableProperty HorizontalTextAlignmentProperty = TextAlignmentElement.HorizontalTextAlignmentProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='VerticalTextAlignmentProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="VerticalTextAlignment"/>.</summary>
 		public static readonly BindableProperty VerticalTextAlignmentProperty = TextAlignmentElement.VerticalTextAlignmentProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SearchBar.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
