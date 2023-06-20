@@ -465,16 +465,14 @@ bool RunPackTarget()
         return true;
 
     // Does the user want to run a pack as part of a different target?
-    if (HasArgument("pack"))
+    if (HasArgument("pack") && Argument<string>("pack", "true") != "false")
         return true;
         
     // If the request is to open a different sln then let's see if pack has ever run
     // if it hasn't then lets pack maui so the sln will open
     if (Argument<string>("sln", null) != null)
     {
-        var mauiPacks = MakeAbsolute(Directory("./bin/dotnet/packs/Microsoft.Maui.Sdk")).ToString();
-        if (!DirectoryExists(mauiPacks))
-            return true;
+        return Argument<string>("pack", "true") == "true";
     }
 
     return false;
