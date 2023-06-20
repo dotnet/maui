@@ -14,7 +14,11 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
+<<<<<<< HEAD
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IView, IToolbarElement
+=======
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IView, ITitledElement, IToolbarElement
+>>>>>>> origin/main
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
@@ -698,30 +702,5 @@ namespace Microsoft.Maui.Controls
 
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
-	}
-
-	public sealed class NavigatingFromEventArgs : EventArgs
-	{
-
-	}
-
-	public sealed class NavigatedToEventArgs : EventArgs
-	{
-		internal NavigatedToEventArgs(Page previousPage)
-		{
-			PreviousPage = previousPage;
-		}
-
-		internal Page PreviousPage { get; }
-	}
-
-	public sealed class NavigatedFromEventArgs : EventArgs
-	{
-		internal NavigatedFromEventArgs(Page destinationPage)
-		{
-			DestinationPage = destinationPage;
-		}
-
-		internal Page DestinationPage { get; }
 	}
 }

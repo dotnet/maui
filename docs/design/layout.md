@@ -353,7 +353,7 @@ It is also legal to call `Arrange()` multiple times at different sizes/locations
 
 Each platform generally handles its own optimization of measurement operations; the platform code is much better at making such decisions than the cross-platform layout code ever could be. The goal of the cross-platform code should be to get out of the way and allow the platform to do its own optimization. For example, if the cross-platform code calls `Measure()` on an Android view twice in a row with the same `measureSpec` values, the native Android code will simply return the cached value unless it determines that there's a good underlying reason for the native view to be remeasured. Attempting to make that decision (or cache the measurement value) at the cross-platform level defeats the native decision making (which has far superior local knowledge). 
 
-# Platform Stuff
+# Platform Notes
 
 ## Measurement on Android
 
@@ -369,4 +369,91 @@ So even though a `measureSpec` is an integer, you cannot simply add or subtract 
 
 It is also important to remember that measureSpec size values should always be in native pixels. This means that when constructing a measureSpec from cross-platform sizes, you need to convert the sizes using `Context.ToPixels()`. 
 
+# Legacy Notes
 
+## OnSizeAllocated
+
+The `VisualElement.OnSizeAllocated(double width, double height)` method is still available for overriding to support controls being ported from Xamarin.Forms to MAUI.Controls. In Forms, this method was typically used to react to size changes; occasionally it was a way to ensure that a control was part of the control hierarchy and ready to show up on screen. 
+
+This method does not exist at all in MAUI.Core; in MAUI.Controls, it's available for backward compatibility and is called when the `Frame` (also aliased as `Bounds` for backward compatibility) is updated during the `Arrange` portion of the layout process. Specifically, it's called when the `Frame` is set; for a typical VisualElement this is during the `ArrangeOverride()` method, right before the native platform's arrange method is called. 
+
+When creating a custom component for MAUI.Controls, the suggested customization point is an override of the `ArrangeOverride(Rect bounds)` method, rather than `OnSizeAllocated()`. This provides more flexibility. 
+
+## Xamarin.Forms -> MAUI.Controls Layout Differences
+
+### StackLayout
+ 
+There are a few differences between the stack layouts in MAUI (StackLayout, VerticalStackLayout, and HorizontalStackLayout) and the StackLayout in Xamarin.Forms. The first is that the MAUI stack layouts are _very_ simple; they stack their child views in a single direction until all of them have been stacked. They will keep going until the last child has been stacked, even if that takes them beyond the available space in the stacking direction. MAUI stack layouts simply arrange controls in a particular direction; they do not subdivide a space. 
+
+This is in contrast to the Xamarin.Forms StackLayout, which changes its behavior based on circumstances and the presence of any "AndExpand" layout options (e.g., `FillAndExpand` or `CenterAndExpand`). Sometimes the Forms StackLayout subdivides the space, expanding to (or stopping at) the edge of its container; in other cases, it expands beyond its container. All of these special cases impact layout performance and make the behavior of the StackLayout more difficult to reason about. 
+
+This brings us to the second main difference: the MAUI VerticalStackLayout and HorizontalStackLayout do not recognize the "AndExpand" layout options. If they see a child with layout options that include "AndExpand", they simply treat it as if the "AndExpand" weren't there - e.g., `FillAndExpand` becomes `Fill`. 
+
+For simplicity of migration from Forms to MAUI, the MAUI.Controls StackLayout _does_ honor "AndExpand", at least for the time being. All of the "AndExpand" options have been marked `Obsolete`. If you want to avoid the warning about the obsolete properties, you should convert your layouts which use "AndExpand" options to the appropriate layout type. The suggested process is as follows:
+
+1. If your layout is anything other than a StackLayout, remove all uses of "AndExpand". Just as in Xamarin.Forms, the "AndExpand" options have no effect on any layout other than StackLayout. If your layout wasn't a StackLayout, "AndExpand" was never doing anything. 
+
+2. Remove any "AndExpand" properties which are orthogonal to the stacking direction. For example, if you have a StackLayout with an Orientation of `Vertical`, and it has a child with a `HorizontalAligment="CenterAndExpand"` - that "AndExpand" does nothing. You can just remove it. 
+
+3. If you have any remaining "AndExpand" properties on a StackLayout, you should convert that StackLayout to a Grid; the Grid is designed to subdivide a space, and will provide the layout that "AndExpand" provided in Xamarin.Forms. For example,
+
+```
+<StackLayout>
+	<Label Text="howdy"/>
+	<Image VerticalOptions="FillAndExpand" src="dotnetbot.png"/>
+</StackLayout>
+```
+
+can be converted to 
+
+```
+<Grid RowDefinitions="Auto, *">
+	<Label Text="howdy"/>
+	<Image Grid.Row="1" src="dotnetbot.png"/>
+</StackLayout>
+```
+ 
+Anything that was marked "AndExpand" should go in its own row or column with a size of "*".
+
+### ScrollView Changes
+
+The other main difference is that the Xamarin.Forms ScrollView does not behave consistently when stacking. It has some arbitary limits on minimum size which depend partially on its content, and it will compress to allow other items to fit on the screen inside a StackLayout in ways that are inconsistent and sometimes surprising. 
+
+MAUI, on the other hand, simply allows the ScrollView to expand its viewport to the size of its content unless otherwise constrained. This means that inside of a VerticalStackLayout, which can expand infinitely, a ScrollView will simply set the height of its viewport to the height of the contnet; it will not scroll. This can be a little surprising for Forms users. Remember, StackLayouts simply continue in their stacking direction until they run out of content; they do not subdivide their container along that axis. If you want to limit your content to a constrained space in a direction, you should use another control, like a Grid.
+
+So instead of this:
+
+```
+<StackLayout> 
+	<ScrollView>...</ScrollView>
+</StackLayout>
+```
+
+you probably want this:
+
+```
+<Grid>
+	<ScrollView>...</ScrollView>
+</Grid>
+```
+
+This also applies when putting the ScrollView in a Grid row/column marked as `Auto`. In Forms, this situation would treat the ScrollView's size as `Auto` right up until the Grid would no longer fit on a screen - then it would limit the size of the ScrollView to the available space (effectively changing the `Auto` value to `*`). This special treatment is confusing and more costly to compute, so in MAUI the ScrollView simply follows the same rules as everything else - be as big as you want to be. 
+
+### Grid
+
+The biggest change in Grid behavior between Xamarin.Forms and MAUI.Controls is that Grids don't automagically add missing rows/columns for you anymore. For example, in Forms you could do this:
+
+```
+<Grid>
+	<Label Text="Hello"/>
+	<Label Grid.Row="1" Text="World"/>
+</Grid>
+```
+
+And even though you didn't declare that there were two rows in the Grid, Forms would guess that's what you wanted and add the second row for you. MAUI.Controls doesn't do that; you have to explicitly say you want `RowDefinitions="Auto,Auto"`. This was changed for performance reasons. 
+
+However, MAUI.Controls _does_ still assume the zeroth row/column for you. That is, if you don't declare any `RowDefinitions` or `ColumnDefinitions`, then the default is `RowDefinitions="*"` and `ColumnDefinitions="*"`
+
+### General Changes
+
+MAUI.Controls generally honors explicit size requests. If you ask for a control to be 200 points wide, then MAUI will oblige you and make that control 200 points wide, even if the container is only 100 points wide. 

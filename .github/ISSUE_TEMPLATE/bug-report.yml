@@ -54,6 +54,7 @@ body:
         - 8.0.0-preview.2.7871
         - 8.0.0-preview.3.8149
         - 8.0.0-preview.4.8333
+        - 8.0.0-preview.5.8529
         - Unknown/Other
     validations:
       required: true
@@ -74,6 +75,7 @@ body:
         - 8.0.0-preview.2.7871
         - 8.0.0-preview.3.8149
         - 8.0.0-preview.4.8333
+        - 8.0.0-preview.5.8529
         - Unknown/Other
     validations:
       required: true

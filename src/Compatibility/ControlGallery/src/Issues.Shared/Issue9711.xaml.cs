@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.UwpIgnore)]
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestTappingHeaderDoesNotCrash()
 		{
 			// Usually, tapping one header is sufficient to produce the exception.

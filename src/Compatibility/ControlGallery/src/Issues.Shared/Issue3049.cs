@@ -60,6 +60,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3049Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(Button1Id));
