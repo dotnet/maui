@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Platform
 			IsAnimated = animated;
 
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
-			IterateBackStack(NavController.Graph, d => fragmentNavDestinations.Add(d));
+			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
 
 			// Current BackStack has less entries then incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
 			var iterateNewStack = NavController.Graph.Iterator();
 			int startId = -1;
 
-			IterateBackStack(NavController.Graph, nvd =>
+			navController.IterateBackStack(nvd =>
 			{
 				if (startId == -1)
 					startId = nvd.Id;
@@ -230,25 +230,6 @@ namespace Microsoft.Maui.Platform
 			navigationView?.NavigationFinished(NavigationStack);
 		}
 
-		void IterateBackStack(NavGraph navGraph, Action<FragmentNavigator.Destination> action)
-		{
-			var iterator = NavController.Graph.Iterator();
-			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
-
-			while (iterator.HasNext)
-			{
-				if (iterator.Next() is FragmentNavigator.Destination nvd)
-				{
-					try
-					{
-						if (NavController.GetBackStackEntry(nvd.Id).Destination is FragmentNavigator.Destination found)
-							action.Invoke(found);
-					}
-					catch (IllegalArgumentException) { }
-				}
-			}
-		}
-
 		// This occurs when the navigation page is first being renderer so we sync up the
 		// Navigation Stack on the INavigationView to our platform stack
 		List<int> Initialize(IReadOnlyList<IView> pages)
@@ -270,7 +251,7 @@ namespace Microsoft.Maui.Platform
 
 			int PlatformNavigationStackCount = 0;
 
-			IterateBackStack(NavController.Graph, _ => PlatformNavigationStackCount++);
+			navController.IterateBackStack(_ => PlatformNavigationStackCount++);
 
 			// set this to one because when the graph is first attached to the controller
 			// it will add the graph and the first destination
