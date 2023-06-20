@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
-	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => GetVisiblePage() as Page;
@@ -1579,6 +1579,28 @@ namespace Microsoft.Maui.Controls
 		{
 			// Page by default tries to layout all logical children
 			// we don't want this behavior with shell
+		}
+
+		IView IFlyoutView.Flyout => this.FlyoutContentView;
+		IView IFlyoutView.Detail => null;
+
+		bool IFlyoutView.IsPresented { get => FlyoutIsPresented; set => FlyoutIsPresented = value; }
+
+		bool IFlyoutView.IsGestureEnabled => false;
+
+		FlyoutBehavior IFlyoutView.FlyoutBehavior
+		{
+			get
+			{
+				return GetEffectiveFlyoutBehavior();
+			}
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
 		}
 
 		#region Shell Flyout Content
