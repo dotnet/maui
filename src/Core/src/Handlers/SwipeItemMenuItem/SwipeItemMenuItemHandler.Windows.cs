@@ -110,25 +110,27 @@ namespace Microsoft.Maui.Handlers
 			if (button is null)
 				return;
 
-			if (button.Content is not StackPanel container)
+			if (button.Content is not DefaultMauiButtonContent container)
+			{
+				// If the content is the default for Maui.Core, then
+				// The user has set a custom Content or the content isn't a mix of text/images
 				return;
+			}
+			
+			container.LayoutImageTop(0);
 
 			var image = button.GetContent<Image>();
 
 			if (image is null)
 				return;
 
-			container.Orientation = Orientation.Vertical;
-
 			var iconSize = GetIconSize();
+			image.Stretch = Stretch.Uniform;
 			image.MaxHeight = image.MaxWidth = iconSize;
 		}
 
 		double GetIconSize()
 		{
-			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source is null)
-				return 0;
-
 			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
 			if (mauiSwipeView is null || MauiContext is null)
