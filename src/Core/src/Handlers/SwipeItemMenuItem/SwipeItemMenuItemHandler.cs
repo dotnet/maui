@@ -14,10 +14,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
-#if !WINDOWS
-		, IImageSourcePartSetter
-#endif
+	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler, IImageSourcePartSetter
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =
 			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ElementMapper)

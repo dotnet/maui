@@ -2,6 +2,7 @@
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.PlatformView.get -> Microsoft.UI.Xaml.Controls.Button!
 Microsoft.Maui.Handlers.ISwipeItemViewHandler.PlatformView.get -> Microsoft.Maui.Platform.ContentPanel!
 Microsoft.Maui.Handlers.ISwipeViewHandler.PlatformView.get -> Microsoft.Maui.Platform.MauiSwipeView!
+Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 Microsoft.Maui.Platform.MauiSwipeView
 Microsoft.Maui.Platform.MauiSwipeView.Dispose() -> void
 Microsoft.Maui.Platform.MauiSwipeView.MauiSwipeView() -> void

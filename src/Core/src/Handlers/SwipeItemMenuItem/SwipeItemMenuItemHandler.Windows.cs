@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Handlers
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
 
-		internal ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this, () => VirtualView, OnSetImageSource);
+		public ImageSourcePartLoader ImageSourceLoader =>
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
 		protected override Button CreatePlatformElement()
 		{
@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.Click -= OnSwipeItemInvoked;
 		}
 
-		void OnSetImageSource(ImageSource? platformImageSource)
+		void IImageSourcePartSetter.SetImageSource(ImageSource? platformImageSource)
 		{
 			PlatformView.UpdateImageSource(platformImageSource);
 		}
