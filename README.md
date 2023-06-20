@@ -11,7 +11,7 @@
 * [.NET MAUI Samples](https://github.com/dotnet/maui-samples)
 * [Development Guide](./.github/DEVELOPMENT.md)
 
-## Source Build TL;DR. ##
+## Source Build TL;DR
 
 Checkout the MAUI repository and run the following:
 
