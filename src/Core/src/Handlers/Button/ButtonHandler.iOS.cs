@@ -146,11 +146,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
-			if (image.Source == null)
-			{
-				return Task.CompletedTask;
-			}
-
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
