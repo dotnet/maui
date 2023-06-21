@@ -51,6 +51,44 @@ namespace Microsoft.Maui.DeviceTests
 
 #if !IOS && !MACCATALYST
 
+		[Fact(DisplayName = "Swapping Navigation Toggles BackButton Correctly")]
+		public async Task SwappingNavigationTogglesBackButtonCorrectly()
+		{
+			SetupBuilder();
+			var navPage = new NavigationPage(new ContentPage());
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
+			{
+				await navPage.PushAsync(new ContentPage());
+				var navigation = navPage.Navigation;
+				var stackNavigationView = navPage as IStackNavigationView;
+				List<Page> _currentNavStack = navigation.NavigationStack.ToList();
+
+				var singlePage = new ContentPage();
+				stackNavigationView.RequestNavigation(
+						new NavigationRequest(
+							new List<ContentPage>
+							{
+								singlePage
+							}, false));
+
+				await OnLoadedAsync(singlePage);
+				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
+
+				// Wait for back button to hide
+				Assert.True(await AssertionExtensions.Wait(() => !IsBackButtonVisible(handler)));
+
+				stackNavigationView.RequestNavigation(
+					   new NavigationRequest(_currentNavStack, true));
+
+				await OnLoadedAsync(_currentNavStack.Last());
+				await (navPage.CurrentNavigationTask ?? Task.CompletedTask);
+
+				// Wait for back button to reveal itself
+				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
+			}, timeOut: TimeSpan.FromMinutes(2));
+		}
+
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
