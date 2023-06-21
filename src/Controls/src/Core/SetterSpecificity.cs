@@ -38,6 +38,11 @@ namespace Microsoft.Maui.Controls
 		//300: !important (not implemented)
 		public int Style { get; }
 
+		public const int StyleImplicit = 100;
+		public const int StyleRD = 200;
+		public const int StyleLocal = 200;
+		public const int StyleVSM = 300;
+
 		//CSS Specificity, see https://developer.mozilla.org/en-US/docs/Web/CSS/Specificity
 		public int Id { get; }
 		public int Class { get; }

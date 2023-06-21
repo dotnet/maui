@@ -101,13 +101,13 @@ namespace Microsoft.Maui.Controls
 		void Apply(BindableObject bindable)
 		{
 			//NOTE specificity could be more fine grained (using distance)
-			ImplicitStyle?.Apply(bindable, new SetterSpecificity(100, 0, 0, 0));
+			ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					//NOTE specificity could be more fine grained (using distance)
-					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(200, 0, 1, 0));
+					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
 			//NOTE specificity could be more fine grained (using distance)
-			Style?.Apply(bindable, new SetterSpecificity(200, 0, 0, 0));
+			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 
 		public Type TargetType { get; }
@@ -200,15 +200,15 @@ namespace Microsoft.Maui.Controls
 
 			//FIXME compute specificity
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.Apply(Target, new SetterSpecificity(100, 0, 0, 0));
+				ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 
 			if (shouldReApplyClassStyle && ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
 					//FIXME compute specificity
-					((IStyle)classStyle)?.Apply(Target, new SetterSpecificity(200, 0, 1, 0));
+					((IStyle)classStyle)?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
 			if (shouldReApplyStyle)
 				//FIXME compute specificity
-				Style?.Apply(Target, new SetterSpecificity(200, 0, 0, 0));
+				Style?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 	}
 }

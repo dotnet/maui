@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(label.GetDefaultFontSize(), label.FontSize);
 
-			label.SetValue(Label.FontSizeProperty, 1.0, new SetterSpecificity(100, 0, 0, 0));
+			label.SetValue(Label.FontSizeProperty, 1.0, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			Assert.Equal(1.0, label.FontSize);
 		}
 
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.SetValue(Label.FontSizeProperty, 2.0);
 			Assert.Equal(2.0, label.FontSize);
 
-			label.SetValue(Label.FontSizeProperty, 1.0, new SetterSpecificity(100, 0, 0, 0));
+			label.SetValue(Label.FontSizeProperty, 1.0, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			Assert.Equal(2.0, label.FontSize);
 		}
 
