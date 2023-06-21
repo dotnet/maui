@@ -19,28 +19,29 @@ iOS and MacCatalyst will require current stable Xcode. You can get this [here](h
 
 If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
 
-### Opening the Repository
+### Building the Build Tasks
+Before opening the solution in Visual Studio you **MUST** build the build tasks:
 
 ```dotnetcli
 dotnet tool restore
-dotnet cake --target=VS --workloads=global
+dotnet cake --target=dotnet-buildtasks
 ```
-
-*NOTE*: Intellisense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having intellisense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
 #### MacOS
 
 All of the above cake commands should work fine on `MacOS`.
 
-#### Solutions
+#### Open the Solution
 - Microsoft.Maui.sln
   - Kitchen sink solution. This includes all of the `Compatibility` projects and all of the platforms that we compile for. It is very unlikely you will need to use this solution for development. 
 - Microsoft.Maui-dev.sln
   - `Microsoft.Maui.sln` but without the `Compatibility` projects. Because we can't detect solution filters inside `MSBuild` we had to create a separate `sln` without the `Compatibility` projects. 
-- Microsoft.Maui-mac.slnf
-  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out
 - Microsoft.Maui-windows.slnf
   - `Microsoft.Maui-dev.sln` with all of the targets you can't build on `Windows` removed (GTK/Catalyst).
+- Microsoft.Maui-mac.slnf
+  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out
+
+*NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
 ## What branch should I use?
 - main
