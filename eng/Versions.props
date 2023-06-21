@@ -65,7 +65,7 @@
        - Feed URI in the nuget.config
        - Native assets build and sha
     -->
-    <_SkiaSharpVersion>2.88.2</_SkiaSharpVersion>
+    <_SkiaSharpVersion>2.88.4-preview.76</_SkiaSharpVersion>
     <_HarfBuzzSharpVersion>2.8.2.2</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.193b587552cb0ed39372a049d7e6c692db98c267.483</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
