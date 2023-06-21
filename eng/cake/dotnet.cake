@@ -58,7 +58,7 @@ Task("dotnet-local-workloads")
         if (!localDotnet) 
             return;
         
-          //Workaround: https://github.com/dotnet/linker/issues/3012
+        //Workaround: https://github.com/dotnet/linker/issues/3012
         SetEnvironmentVariable("DOTNET_gcServer", "0");
 
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
