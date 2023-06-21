@@ -18,7 +18,7 @@ jobs:
           ref: ${{ github.head_ref }}
 
       - name: Run dotnet format
-        run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src BlazorWebView/src/SharedSource/BlazorWebViewDeveloperTools.cs BlazorWebView/src/SharedSource/BlazorWebViewServiceCollectionExtensions.cs Graphics/src/Graphics.Win2D/W2DCanvas.cs Graphics/src/Graphics.Win2D/W2DExtensions.cs
+        run: dotnet format .\Microsoft.Maui.sln --exclude Templates/src BlazorWebView/src/SharedSource/BlazorWebViewDeveloperTools.cs BlazorWebView/src/SharedSource/BlazorWebViewServiceCollectionExtensions.cs Graphics/src/Graphics.Win2D/W2DCanvas.cs Graphics/src/Graphics.Win2D/W2DExtensions.cs
     
       - name: Commit files
         if: steps.format.outputs.has-changes == 'true'
@@ -28,7 +28,7 @@ jobs:
           git commit -a -m 'Automated dotnet-format update'
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         with:
           title: '[housekeeping] Automated PR to fix formatting errors'
           body: |
