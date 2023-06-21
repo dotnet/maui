@@ -44,6 +44,7 @@
 		public const string View = "View";
 		public const string VisualElement = "VisualElement";
 		public const string VisualElementTree = "VisualElementTree";
+		public const string WebView = "WebView";
 		public const string Window = "Window";
 	}
 }

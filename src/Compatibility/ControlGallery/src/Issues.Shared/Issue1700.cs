@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.Image)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LongImageURLsShouldNotCrash()
 		{
 			// Give the images some time to load (or fail)

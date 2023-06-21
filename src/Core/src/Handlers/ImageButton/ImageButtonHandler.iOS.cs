@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		void OnSetImageSource(UIImage? obj)
+		void IImageSourcePartSetter.SetImageSource(UIImage? obj)
 		{
 			PlatformView.SetImage(obj?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
 			PlatformView.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;

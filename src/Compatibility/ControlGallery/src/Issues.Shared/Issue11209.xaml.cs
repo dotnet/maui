@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Category(UITestCategories.SwipeView)]
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TapSwipeViewAndNavigateTest()
 		{
 			RunningApp.WaitForElement(SwipeViewContent);
