@@ -467,6 +467,7 @@ namespace Microsoft.Maui.Controls
 				SyncToNavigationStack(newStack);
 				CurrentPage = (Page)newStack[newStack.Count - 1];
 				RootPage = (Page)newStack[0];
+				FindMyToolbar()?.Handler?.UpdateValue(nameof(IToolbar.BackButtonVisible));
 			}
 
 			var completionSource = _currentNavigationCompletionSource;
