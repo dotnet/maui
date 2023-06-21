@@ -1,0 +1,50 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.BorderResizeContent"
+    Title="Border resize Content">
+    <ContentPage.Resources>
+
+        <Style x:Key="BorderStyle" TargetType="Border">
+            <Style.Setters>
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <Ellipse />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="WidthRequest" Value="100" />
+                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="BackgroundColor" Value="LightBlue" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="ButtonIconStyle" TargetType="Label">
+            <Style.Setters>
+                <Setter Property="FontSize" Value="64" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                <Setter Property="HorizontalOptions" Value="Center" />
+                <Setter Property="VerticalOptions" Value="Center" />
+            </Style.Setters>
+        </Style>
+
+    </ContentPage.Resources>
+    <VerticalStackLayout
+        Spacing="10"
+        VerticalOptions="Center">
+        <Border
+            Style="{StaticResource BorderStyle}">
+            <Label
+                Style="{StaticResource ButtonIconStyle}"
+                FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                Text="+"
+                TextColor="#0088ee"/>
+        </Border>
+        <Slider
+            x:Name="FontSizeSlider"
+            Minimum="20"
+            Maximum="200"
+            Value="40"/>
+    </VerticalStackLayout>
+</ContentPage>

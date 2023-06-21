@@ -125,8 +125,11 @@ namespace Microsoft.Maui.Platform
 
 		void SetClip()
 		{
-			if (Subviews.Length == 0)
+			if (!RequireClip())
+			{
+				ResetClip();
 				return;
+			}
 
 			var maskLayer = ChildMaskLayer;
 
@@ -156,9 +159,45 @@ namespace Microsoft.Maui.Platform
 			else
 				path = clipShape?.PathForBounds(bounds);
 
-			var nativePath = path?.AsCGPath();
+			var platformClipPath = path?.AsCGPath();
 
-			maskLayer.Path = nativePath;
+			maskLayer.Path = platformClipPath;
+		}
+
+		void ResetClip()
+		{
+			if (ChildMaskLayer is null || ChildMaskLayer.Path is null)
+				return;
+
+			ChildMaskLayer = null;
+		}
+
+		bool RequireClip(CGPath? platformClipPath = null)
+		{
+			if (Clip is null || Subviews.Length == 0)
+				return false;
+
+			var child = Subviews[0];
+			var childBounds = child.Bounds;
+
+			if (Frame == CGRect.Empty || childBounds == CGRect.Empty)
+				return false;
+
+			// TODO: Complete and test it with all the scenarios.
+			if (platformClipPath is not null)
+			{
+				var clipPathBoundingBox = platformClipPath.BoundingBox;
+
+				if (childBounds.Height >= clipPathBoundingBox.Height || childBounds.Width >= clipPathBoundingBox.Width)
+					return true;
+			}
+			else
+			{
+				if (childBounds.Height >= Frame.Height || childBounds.Width >= Frame.Width)
+					return true;
+			}
+
+			return false;
 		}
 	}
 }
