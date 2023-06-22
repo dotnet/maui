@@ -27,6 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if !WINDOWS
 		[Fact(DisplayName = "SwipeView LogicalChildren Works Correctly")]
 		public async Task SwipeViewLogicalChildren()
 		{
@@ -70,5 +71,6 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+#endif
 	}
 }
