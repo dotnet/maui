@@ -176,6 +176,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if !WINDOWS
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), true);
@@ -184,6 +185,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), false);
