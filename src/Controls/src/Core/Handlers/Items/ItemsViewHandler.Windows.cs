@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
+			FindScrollViewer(ListViewBase);
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
@@ -313,6 +314,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 			}
+
+			FindScrollViewer(ListViewBase);
 		}
 
 		void FindScrollViewer(ListViewBase listView)
@@ -337,8 +340,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateVerticalScrollBarVisibility()
 		{
+			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default 
+				if (_defaultVerticalScrollVisibility == null)
+					_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			}
+
 			if (_defaultVerticalScrollVisibility == null)
-				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			{
+				// If the default has never been recorded, then this has never been set to anything but the 
+				// default value; there's nothing to do.
+				return;
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -375,6 +389,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
+			if (_scrollViewer == scrollViewer)
+			{
+				return;
+			}
+
+			if (_scrollViewer != null)
+			{
+				_scrollViewer.ViewChanged -= ScrollViewChanged;
+			}
+
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanged += ScrollViewChanged;
 		}

@@ -28,12 +28,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void DragEvents()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
-			{
-				Assert.Ignore("Still trying to figure out the mouse operations with catalyst/ios");
-			}
-
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEvents");
 			App.Tap("GoButton");
@@ -51,12 +45,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void DragAndDropBetweenLayouts()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
-			{
-				Assert.Ignore("Still trying to figure out the mouse operations with catalyst/ios");
-			}
-
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
