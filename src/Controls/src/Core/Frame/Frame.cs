@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 		// TODO fix iOS/WinUI to work the same as Android
 		// once this has been fixed on iOS/WinUI we should centralize 
 		// this code and Border into LayoutExtensions
-		Size IContentView.CrossPlatformArrange(Graphics.Rect bounds)
+		Size ICrossPlatformLayout.CrossPlatformArrange(Graphics.Rect bounds)
 		{
 #if !WINDOWS
 			bounds = bounds.Inset(((IBorderElement)this).BorderWidth); // Windows' implementation would cause an incorrect double-counting of the inset
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.Controls
 			return bounds.Size;
 		}
 
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			var inset = Padding;
 #if !WINDOWS
