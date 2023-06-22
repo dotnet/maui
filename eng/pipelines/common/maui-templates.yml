@@ -76,7 +76,6 @@ jobs:
 
     - template: provision.yml
       parameters:
-        platform: ${{ BuildPlatform.name }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
 
     - task: DownloadBuildArtifacts@0
@@ -135,7 +134,6 @@ jobs:
 
     - template: provision.yml
       parameters:
-        platform: macos
         skipXcode: ${{ eq(RunPlatform.testName, 'RunOnAndroid') }}
         checkoutDirectory: ${{ parameters.checkoutDirectory }}
 

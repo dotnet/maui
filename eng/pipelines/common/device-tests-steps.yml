@@ -13,7 +13,6 @@ parameters:
 steps:
   - template: provision.yml
     parameters:
-      platform: macos
       skipXcode: ${{ eq(parameters.platform, 'android') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
