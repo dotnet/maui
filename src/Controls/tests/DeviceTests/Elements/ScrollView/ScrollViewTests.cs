@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -74,6 +75,57 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var expectedSize = new Size(expectedWidth, expectedHeight);
 				await AssertContentSize(() => scroll.ContentSize, expectedSize);
+			});
+		}
+
+		[Fact(DisplayName = "ScrollView Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			WeakReference viewReference = null;
+			WeakReference handlerReference = null;
+			WeakReference platformReference = null;
+
+			{
+				var view = new Microsoft.Maui.Controls.ScrollView();
+				var page = new ContentPage { Content = view };
+				await CreateHandlerAndAddToWindow(page, () =>
+				{
+					viewReference = new(view);
+					handlerReference = new(view.Handler);
+					platformReference = new(view.Handler.PlatformView);
+					page.Content = null;
+				});
+			}
+
+			Assert.NotNull(viewReference);
+			Assert.NotNull(platformReference);
+			Assert.NotNull(handlerReference);
+
+			// Android requires an actual 2-second day
+			// iOS requires multiple GCs
+			await AssertionExtensions.Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+				return !viewReference.IsAlive && !handlerReference.IsAlive && !platformReference.IsAlive;
+			}, timeout: 3000);
+
+			Assert.False(viewReference.IsAlive, "View should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
+		}
+
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<IScrollView, ScrollViewHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+				});
 			});
 		}
 
