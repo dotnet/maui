@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.UI.Xaml.Controls;
 using NativeAutomationProperties = Microsoft.UI.Xaml.Automation.AutomationProperties;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
@@ -72,7 +70,40 @@ namespace Microsoft.Maui.Controls
 					commandBar.SecondaryCommands.Add(button);
 				}
 			}
+
+			SetDefaultLabelPosition(commandBar, toolbarItems);
 		}
+
+		private static void SetDefaultLabelPosition(CommandBar commandBar, List<ToolbarItem> toolbarItems)
+		{
+			int itemsWithTextCount = 0;
+			int itemsWithIconCount = 0;
+
+			foreach (ToolbarItem item in toolbarItems)
+			{
+				if (!string.IsNullOrEmpty(item.Text))
+				{
+					itemsWithTextCount++;
+				}
+				if (item.IconImageSource != null)
+				{
+					itemsWithIconCount++;
+				}
+			}
+
+			bool allItemsHaveIcons = toolbarItems.Count == itemsWithIconCount;
+
+			// All items have icons, none have text
+			if (allItemsHaveIcons && itemsWithTextCount == 0)
+			{
+				commandBar.DefaultLabelPosition = CommandBarDefaultLabelPosition.Collapsed;
+			}
+			else
+			{
+				commandBar.DefaultLabelPosition = CommandBarDefaultLabelPosition.Right;
+			}
+		}
+
 		public static void MapBarTextColor(ToolbarHandler arg1, Toolbar arg2) =>
 			MapBarTextColor((IToolbarHandler)arg1, arg2);
 
