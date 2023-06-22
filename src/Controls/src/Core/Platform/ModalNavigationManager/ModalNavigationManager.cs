@@ -213,22 +213,19 @@ namespace Microsoft.Maui.Controls.Platform
 				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
 			}
 
+			modal.SendDisappearing();
+
 			// With shell we want to make sure to only fire the appearing event
 			// on the final page that will be visible after the pop has completed
 			if (_window.Page is Shell shell)
 			{
-				if (ModalStack.Count > 0)
-					ModalStack[ModalStack.Count - 1].SendDisappearing();
-
 				if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 				{
-					if (ModalStack.Count > 1)
-						ModalStack[ModalStack.Count - 2].SendAppearing();
+					CurrentPage?.SendAppearing();
 				}
 			}
 			else
 			{
-				modal.SendDisappearing();
 				CurrentPage?.SendAppearing();
 			}
 
@@ -271,12 +268,8 @@ namespace Microsoft.Maui.Controls.Platform
 				// on the final page that will be visible after the pop has completed
 				if (!shell.CurrentItem.CurrentItem.IsPushingModalStack)
 				{
-					if (ModalStack.Count > 0)
-					{
-						ModalStack[ModalStack.Count - 1].SendDisappearing();
-					}
-
-					modal.SendAppearing();
+					previousPage?.SendDisappearing();
+					CurrentPage?.SendAppearing();
 				}
 			}
 			else
