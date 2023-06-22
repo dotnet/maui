@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: net7.0
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
