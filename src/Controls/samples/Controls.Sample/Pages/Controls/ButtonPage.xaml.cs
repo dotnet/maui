@@ -21,6 +21,18 @@ namespace Maui.Controls.Sample.Pages
 			Debug.WriteLine("Clicked");
 		}
 
+		void Button_Clicked(System.Object sender, System.EventArgs e)
+		{
+			if (ImageSourceButton.ImageSource is null)
+			{
+				ImageSourceButton.ImageSource = "settings.png";
+			}
+			else
+			{
+				ImageSourceButton.ImageSource = null;
+			}
+		}
+
 		void OnPositionChange(object sender, System.EventArgs e)
 		{
 			var newPosition = ((int)positionChange.ContentLayout.Position) + 1;
