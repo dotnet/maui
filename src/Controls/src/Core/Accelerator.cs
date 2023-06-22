@@ -22,7 +22,9 @@ namespace Microsoft.Maui.Controls
 			Modifiers = modifiers;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Modifiers']/Docs/*" />
+		/// <summary>
+		/// Gets the modifiers for the accelerator.
+		/// </summary>
 		public IEnumerable<string> Modifiers { get; }
 
 		IReadOnlyList<string> IAccelerator.Modifiers => Modifiers?.ToList();
@@ -35,6 +37,9 @@ namespace Microsoft.Maui.Controls
 			get => Key is null ? null : new[] { Key };
 		}
 
+		/// <summary>
+		/// Gets the key for the accelerator.
+		/// </summary>
 		public string Key { get; }
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />

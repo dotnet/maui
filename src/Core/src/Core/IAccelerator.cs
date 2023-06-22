@@ -2,6 +2,9 @@
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Represents a shortcut key for a <see cref="T:Microsoft.Maui.Controls.MenuItem" />.
+	/// </summary>
 	public interface IAccelerator
 	{
 		/// <summary>
