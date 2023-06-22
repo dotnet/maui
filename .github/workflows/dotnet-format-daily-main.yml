@@ -46,3 +46,4 @@ jobs:
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
           branch: housekeeping/fix-codeformatting
+          base: main
