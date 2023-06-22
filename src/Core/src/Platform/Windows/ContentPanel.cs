@@ -100,14 +100,9 @@ namespace Microsoft.Maui.Platform
 		[Obsolete("Use Microsoft.Maui.Platform.UpdateBorderStroke instead")]
 		public void UpdateBorderShape(IShape borderShape)
 		{
-			if (borderShape is null || _borderPath is null)
-				return;
-
-			_borderPath.UpdateBorderShape(borderShape, ActualWidth, ActualHeight);
-			UpdateContent();
-			UpdateClip(borderShape);
+			UpdateBorder(borderShape);
 		}
-		
+
 		internal void UpdateBorderStroke(IBorderStroke borderStroke)
 		{
 			if (borderStroke is null)
@@ -115,14 +110,22 @@ namespace Microsoft.Maui.Platform
 
 			_borderStroke = borderStroke;
 
-			if (_borderPath == null)
+			if (_borderStroke is null)
 				return;
 
-			_borderPath.UpdateBorderShape(_borderStroke.Shape, ActualWidth, ActualHeight);
-			UpdateContent();
-			UpdateClip(_borderStroke.Shape);
+			UpdateBorder(_borderStroke.Shape);
 		}
-		
+
+		void UpdateBorder(IShape? strokeShape)
+		{
+			if (strokeShape is null || _borderPath is null)
+				return;
+
+			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
+			UpdateContent();
+			UpdateClip(strokeShape);
+		}
+
 		void AddContent(FrameworkElement? content)
 		{
 			if (content == null)
