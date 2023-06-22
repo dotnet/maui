@@ -1551,6 +1551,7 @@ Microsoft.Maui.Platform.ColorExtensions
 Microsoft.Maui.Platform.ContentPanel
 Microsoft.Maui.Platform.ContentPanel.ContentPanel() -> void
 Microsoft.Maui.Platform.ContentPanel.UpdateBackground(Microsoft.Maui.Graphics.Paint? background) -> void
+Microsoft.Maui.Platform.ContentPanel.UpdateBorderShape(Microsoft.Maui.Graphics.IShape! borderShape) -> void
 Microsoft.Maui.Platform.ControlExtensions
 Microsoft.Maui.Platform.DatePickerExtensions
 Microsoft.Maui.Platform.ElementExtensions
