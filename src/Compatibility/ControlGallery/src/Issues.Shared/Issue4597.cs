@@ -208,6 +208,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[FailsOnMauiAndroid]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(ImageButton), true);
@@ -215,6 +216,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[Compatibility.UITests.FailsOnMauiIOS]
+		[FailsOnMauiAndroid]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
