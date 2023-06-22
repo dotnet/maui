@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Wait for back button to reveal itself
 				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
-			}, timeOut: TimeSpan.FromMinutes(2));
+			});
 		}
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]

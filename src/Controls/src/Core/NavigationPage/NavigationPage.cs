@@ -575,7 +575,23 @@ namespace Microsoft.Maui.Controls
 				else
 				{
 					// Is the root the window or is this part of a modal stack
-					var rootPage = this.FindParentWith(x => (x is IWindow te || Window.Navigation.ModalStack.Contains(x)), true);
+					Element rootPage;
+
+					var parentPages = this.GetParentPages();
+					parentPages.Insert(0, this);
+
+					// Is my top parent page the root page on the window?
+					// If so then we set the toolbar on the window
+					if (Window.Page == parentPages[parentPages.Count - 1])
+					{
+						rootPage = Window;
+					}
+					else
+					{
+						// This means the page is a modal page so we set the toolbar on the top level page
+						// of the modal
+						rootPage = parentPages[parentPages.Count - 1];
+					}
 
 					if (rootPage is Window w)
 					{
