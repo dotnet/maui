@@ -136,9 +136,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
 			{
-				var lastItem = items[0];
+				var firstItem = items[0];
 				// Keeps the first item in the list displayed when new items are added.
-				ListViewBase.ScrollIntoView(lastItem);
+				ListViewBase.ScrollIntoView(firstItem);
 			}
 
 			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
