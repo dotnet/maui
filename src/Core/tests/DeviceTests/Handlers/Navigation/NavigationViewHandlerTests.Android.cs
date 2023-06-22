@@ -6,6 +6,9 @@ using Android.Views;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
+using AndroidX.Navigation.Fragment;
+using AndroidX.Navigation;
+using Java.Lang;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
 using Xunit;
@@ -15,8 +18,14 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class NavigationViewHandlerTests
 	{
-		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler) =>
-			navigationViewHandler.StackNavigationManager.NavHost.NavController.BackQueue.Size() - 1;
+		int GetNativeNavigationStackCount(NavigationViewHandler navigationViewHandler)
+		{
+			int i = 0;
+			var navController = navigationViewHandler.StackNavigationManager.NavHost.NavController;
+			navController.IterateBackStack(_ => i++);
+
+			return i;
+		}
 
 		Task CreateNavigationViewHandlerAsync(IStackNavigationView navigationView, Func<NavigationViewHandler, Task> action)
 		{

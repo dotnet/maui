@@ -129,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
-		void OnSetImageSource(UIImage? image)
+		void IImageSourcePartSetter.SetImageSource(UIImage? image)
 		{
 			if (image != null)
 			{
@@ -146,11 +146,6 @@ namespace Microsoft.Maui.Handlers
 
 		public static Task MapImageSourceAsync(IButtonHandler handler, IImage image)
 		{
-			if (image.Source == null)
-			{
-				return Task.CompletedTask;
-			}
-
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 

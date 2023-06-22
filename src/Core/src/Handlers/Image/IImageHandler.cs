@@ -17,5 +17,9 @@ namespace Microsoft.Maui.Handlers
 		new IImage VirtualView { get; }
 		ImageSourcePartLoader SourceLoader { get; }
 		new PlatformView PlatformView { get; }
+
+#if IOS || MACCATALYST
+		void OnWindowChanged() { }
+#endif
 	}
 }

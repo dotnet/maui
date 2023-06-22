@@ -10,8 +10,10 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using Xunit;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -297,10 +299,12 @@ namespace Microsoft.Maui.DeviceTests
 			var content1 = new ShellContent();
 			content1.Title = "Hello";
 			content1.Route = $"...";
+			content1.Content = new ContentPage();
 
 			var content2 = new ShellContent();
 			content2.Title = "World";
 			content2.Route = $"...";
+			content2.Content = new ContentPage();
 
 			var shell = await CreateShellAsync((shell) =>
 			{
