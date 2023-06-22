@@ -14,13 +14,10 @@ steps:
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows') }}:
-        platform: windows
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
-        platform: macos
         skipProvisioning: false
       skipXcode: false
-        
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: PowerShell@2
