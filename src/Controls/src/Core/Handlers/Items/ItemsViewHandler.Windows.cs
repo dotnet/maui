@@ -116,6 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 			else
 			{
+				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
 				PlatformView.Items.VectorChanged += OnItemsVectorChanged;
 			}
 		}
