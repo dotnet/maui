@@ -7,6 +7,7 @@ using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation.UI;
 using Java.Interop;
+using Java.Lang;
 using AToolbar = AndroidX.AppCompat.Widget.Toolbar;
 using AView = Android.Views.View;
 
@@ -140,17 +141,8 @@ namespace Microsoft.Maui.Platform
 
 			IsAnimated = animated;
 
-			var iterator = NavController.BackQueue.Iterator();
 			var fragmentNavDestinations = new List<FragmentNavigator.Destination>();
-
-			while (iterator.HasNext)
-			{
-				if (iterator.Next() is NavBackStackEntry nbse &&
-					nbse.Destination is FragmentNavigator.Destination nvd)
-				{
-					fragmentNavDestinations.Add(nvd);
-				}
-			}
+			navController.IterateBackStack(d => fragmentNavDestinations.Add(d));
 
 			// Current BackStack has less entries then incoming new page stack
 			// This will add Back Stack Entries until the back stack and the new stack 
@@ -183,19 +175,16 @@ namespace Microsoft.Maui.Platform
 			// We only keep destinations around that are on the backstack
 			// This iterates over the new backstack and removes any destinations
 			// that are no longer apart of the back stack
-			var iterateNewStack = NavController.BackQueue.Iterator();
-			int startId = -1;
-			while (iterateNewStack.HasNext)
-			{
-				if (iterateNewStack.Next() is NavBackStackEntry nbse &&
-					nbse.Destination is FragmentNavigator.Destination nvd)
-				{
-					fragmentNavDestinations.Remove(nvd);
 
-					if (startId == -1)
-						startId = nvd.Id;
-				}
-			}
+			var iterateNewStack = NavController.Graph.Iterator();
+			int startId = -1;
+
+			navController.IterateBackStack(nvd =>
+			{
+				if (startId == -1)
+					startId = nvd.Id;
+				fragmentNavDestinations.Remove(nvd);
+			});
 
 			foreach (var activeDestinations in fragmentNavDestinations)
 			{
@@ -247,14 +236,6 @@ namespace Microsoft.Maui.Platform
 		{
 			var navController = NavController;
 
-			// We are subtracting one because the navgraph itself is the first item on the stack
-			int PlatformNavigationStackCount = navController.BackQueue.Size() - 1;
-
-			// set this to one because when the graph is first attached to the controller
-			// it will add the graph and the first destination
-			if (PlatformNavigationStackCount < 0)
-				PlatformNavigationStackCount = 1;
-
 			List<int> destinations = new List<int>();
 
 			NavDestination navDestination;
@@ -267,6 +248,15 @@ namespace Microsoft.Maui.Platform
 
 			NavGraph.StartDestination = destinations[0];
 			navController.SetGraph(NavGraph, null);
+
+			int PlatformNavigationStackCount = 0;
+
+			navController.IterateBackStack(_ => PlatformNavigationStackCount++);
+
+			// set this to one because when the graph is first attached to the controller
+			// it will add the graph and the first destination
+			if (PlatformNavigationStackCount < 0)
+				PlatformNavigationStackCount = 1;
 
 			for (var i = PlatformNavigationStackCount; i < pages.Count; i++)
 			{
