@@ -1,8 +1,11 @@
 #nullable disable
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Polygon']/Docs/*" />
-	public sealed partial class Polygon : Shape
+	public sealed partial class Polygon : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Polygon.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Polygon() : base()
@@ -35,6 +38,33 @@ namespace Microsoft.Maui.Controls.Shapes
 			set { SetValue(FillRuleProperty, value); }
 			get { return (FillRule)GetValue(FillRuleProperty); }
 
+		}
+
+		// TODO this should move to a remapped mapper
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == PointsProperty.PropertyName ||
+				propertyName == FillRuleProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IShapeView.Shape));
+		}
+
+		public override PathF GetPath()
+		{
+			var path = new PathF();
+
+			if (Points?.Count > 0)
+			{
+				path.MoveTo((float)Points[0].X, (float)Points[0].Y);
+
+				for (int index = 1; index < Points.Count; index++)
+					path.LineTo((float)Points[index].X, (float)Points[index].Y);
+
+				path.Close();
+			}
+
+			return path;
 		}
 	}
 }
