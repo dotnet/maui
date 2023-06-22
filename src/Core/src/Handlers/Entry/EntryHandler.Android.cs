@@ -226,7 +226,31 @@ namespace Microsoft.Maui.Handlers
 				var currentInputImeFlag = returnType.Value.ToPlatform();
 
 				if (actionId.IsCompletedAction(e, currentInputImeFlag))
+				{
+					View? nextFocus = null;
+
+					if (currentInputImeFlag == ImeAction.Next)
+					{
+						nextFocus = PlatformView.FocusSearch(FocusSearchDirection.Forward);
+					}
+
+					if (nextFocus != null)
+					{
+						nextFocus.RequestFocus();
+
+						if (!nextFocus.OnCheckIsTextEditor())
+						{
+							PlatformView.HideKeyboard();
+						}
+					}
+					else
+					{
+						PlatformView.ClearFocus();
+						PlatformView.HideKeyboard();
+					}
+
 					VirtualView?.Completed();
+				}
 			}
 		}
 
