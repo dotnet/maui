@@ -102,6 +102,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.NotNull(platformReference);
 			Assert.NotNull(handlerReference);
 
+#if ANDROID
+			// Android requires a delay here
+			await Task.Delay(2000);
+#endif
+
 			// Multiple GCs are sometimes required on iOS
 			for (int i = 0; i < 3; i++)
 			{
