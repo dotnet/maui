@@ -134,7 +134,7 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  ${{ if eq(parameters.runCompatibilityTests, true) }}:  
+  - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
     - stage: android_compatibility_ui_tests
       displayName: Android Compatibility UITests
       dependsOn: []
