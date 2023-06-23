@@ -9,6 +9,7 @@ parameters:
   iosVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  runCompatibilityTests: false
   projects:
     - name: name
       desc: Human Description
@@ -133,72 +134,74 @@ stages:
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  - stage: android_compatibility_ui_tests
-    displayName: Android Compatibility UITests
-    dependsOn: []
-    jobs:
-      - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.android, '') }}:
-          - ${{ each api in parameters.androidApiLevels }}:
-            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
-              - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
-                timeoutInMinutes: 240
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
-                pool: ${{ parameters.androidCompatibilityPool }}
-                variables:
-                  ${{ if ge(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                  ${{ if lt(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                steps:
-                  - template: ui-tests-compatibility-steps.yml
-                    parameters:
-                      platform: android
-                      provisionPlatform: macos
-                      configuration: Debug
-                      version: ${{ api }}
-                      path: ${{ project.compatibilityAndroidTestProject }}
-                      app: ${{ project.compatibilityAndroidApp }}
-                      targetSample: "dotnet-legacy-controlgallery-android"
-                      device: android-emulator-32_${{ api }}
-                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  ${{ if eq(parameters.runCompatibilityTests, true) }}:  
+    - stage: android_compatibility_ui_tests
+      displayName: Android Compatibility UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.android, '') }}:
+            - ${{ each api in parameters.androidApiLevels }}:
+              - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+                - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                  pool: ${{ parameters.androidCompatibilityPool }}
+                  variables:
+                    ${{ if ge(api, 24) }}:
+                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
+                    ${{ if lt(api, 24) }}:
+                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-compatibility-steps.yml
+                      parameters:
+                        platform: android
+                        provisionPlatform: macos
+                        configuration: Debug
+                        version: ${{ api }}
+                        path: ${{ project.compatibilityAndroidTestProject }}
+                        app: ${{ project.compatibilityAndroidApp }}
+                        targetSample: "dotnet-legacy-controlgallery-android"
+                        device: android-emulator-32_${{ api }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
-  - stage: ios_compatibility_ui_tests
-    displayName: iOS Compatibility UITests
-    dependsOn: []
-    jobs:
-      - ${{ each project in parameters.projects }}:
-        - ${{ if ne(project.ios, '') }}:
-          - ${{ each version in parameters.iosVersions }}:
-            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
-              - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
-                timeoutInMinutes: 240
-                workspace:
-                  clean: all
-                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
-                pool: ${{ parameters.iosCompatibilityPool }}
-                variables:
-                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
-                steps:
-                  - template: ui-tests-compatibility-steps.yml
-                    parameters:
-                      platform: ios
-                      provisionPlatform: macos
-                      configuration: Debug
-                      ${{ if eq(version, 'latest') }}:
-                        version: 16.2
-                      ${{ if ne(version, 'latest') }}:
-                        version: ${{ version }}
-                      path: ${{ project.compatibilityiOSTestProject }}
-                      app: ${{ project.compatibilityiOSApp }}
-                      targetSample: "dotnet-legacy-controlgallery-ios"
-                      ${{ if eq(version, 'latest') }}:
-                        device: ios-simulator-64
-                      ${{ if ne(version, 'latest') }}:
-                        device: ios-simulator-64_${{ version }}
-                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+    - stage: ios_compatibility_ui_tests
+      displayName: iOS Compatibility UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.ios, '') }}:
+            - ${{ each version in parameters.iosVersions }}:
+              - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+                - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                  pool: ${{ parameters.iosCompatibilityPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-compatibility-steps.yml
+                      parameters:
+                        platform: ios
+                        provisionPlatform: macos
+                        configuration: Debug
+                        ${{ if eq(version, 'latest') }}:
+                          version: 16.2
+                        ${{ if ne(version, 'latest') }}:
+                          version: ${{ version }}
+                        path: ${{ project.compatibilityiOSTestProject }}
+                        app: ${{ project.compatibilityiOSApp }}
+                        targetSample: "dotnet-legacy-controlgallery-ios"
+                        ${{ if eq(version, 'latest') }}:
+                          device: ios-simulator-64
+                        ${{ if ne(version, 'latest') }}:
+                          device: ios-simulator-64_${{ version }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
