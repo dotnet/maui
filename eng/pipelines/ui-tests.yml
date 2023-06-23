@@ -139,6 +139,8 @@ stages:
         # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
         iosVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
+        runCompatibilityTests: true
       projects:
         - name: controls
           desc: Controls
@@ -149,8 +151,6 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
-          ${{ if or(parameters.CompatibilityTests, ne(variables['Build.Reason'], 'PullRequest')) }}:
-            runCompatibilityTests: true
           compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
           compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
           compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
