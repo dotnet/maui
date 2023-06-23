@@ -240,28 +240,82 @@ namespace TestUtils.Appium.UITests
 
 		public void DragAndDrop(AppiumElement source, AppiumElement destination)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
-			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(source, 0, 0, TimeSpan.FromMilliseconds(5)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
-			sequence.AddAction(touchDevice.CreatePointerMove(destination, 0, 0, TimeSpan.FromSeconds(1)));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_driver?.PerformActions(new List<ActionSequence> { sequence });
-			Thread.Sleep(1000); // Give time for app to re-act to the drop
+			if (IsiOS)
+			{
+				var sourceCenterX = source.Location.X + (source.Size.Width / 2);
+				var sourceCenterY = source.Location.Y + (source.Size.Height / 2);
+				var destCenterX = destination.Location.X + (destination.Size.Width / 2);
+				var destCenterY = destination.Location.Y + (destination.Size.Height / 2);
+				DragCoordinates(sourceCenterX, sourceCenterY, destCenterX, destCenterY);
+			}
+			else if (IsMac)
+			{
+				// Mac will work with 'Actions' but if you add a 'Pause' action it will deadlock
+				_driver?.ExecuteScript("macos: clickAndDragAndHold", new Dictionary<string, object>
+				{
+					{ "holdDuration", .1 }, // Length of time to hold before releasing
+					{ "duration", 1 }, // Length of time to hold after click before start dragging
+					{ "velocity", 2500 }, // How fast to drag
+					{ "sourceElementId", source.Id },
+					{ "destinationElementId", destination.Id },
+				});
+			}
+			else
+			{
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				ActionSequence sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(source, 0, 0, TimeSpan.FromMilliseconds(5)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
+				sequence.AddAction(touchDevice.CreatePointerMove(destination, 0, 0, TimeSpan.FromSeconds(1)));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_driver?.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			Thread.Sleep(500);
 		}
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
-			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(5)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromSeconds(1)));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_driver?.PerformActions(new List<ActionSequence> { sequence });
-			Thread.Sleep(1000);
+			if (IsiOS)
+			{
+				// iOS doesn't seem to work with the action API, so we are using script calls
+				_driver?.ExecuteScript("mobile: dragFromToForDuration", new Dictionary<string, object>
+				{
+					{ "duration", 1 }, // Length of time to hold after click before start dragging
+					// from/to are absolute screen coordinates unless 'element' is specified then everything will be relative
+					{ "fromX", fromX},
+					{ "fromY", fromY },
+					{ "toX", toX },
+					{ "toY", toY }
+				});
+			}
+			else if (IsMac)
+			{
+				_driver?.ExecuteScript("macos: clickAndDragAndHold", new Dictionary<string, object>
+				{
+					{ "holdDuration", .1 }, // Length of time to hold before releasing
+					{ "duration", 1 }, // Length of time to hold after click before start dragging
+					{ "velocity", 2500 }, // How fast to drag
+					{ "fromX", fromX},
+					{ "fromY", fromY },
+					{ "endX", toX },
+					{ "endY", toY }
+				});
+			}
+			else
+			{
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				ActionSequence sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(5)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromSeconds(1)));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_driver?.PerformActions(new List<ActionSequence> { sequence });
+			}
+
+			Thread.Sleep(500);
 		}
 
 		public void EnterText(string text)

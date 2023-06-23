@@ -51,6 +51,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[UiTest(typeof(Editor))]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue5367TestMaxLengthCrashesApp()
 		{
 			RunningApp.WaitForElement(MaxLengthEditor);

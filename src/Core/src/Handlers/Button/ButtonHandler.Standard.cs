@@ -16,6 +16,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPadding(IButtonHandler handler, IButton button) { }
 		public static void MapImageSource(IButtonHandler handler, IImage image) { }
 
-		void OnSetImageSource(object? obj) { }
+		void IImageSourcePartSetter.SetImageSource(object? obj) { }
 	}
 }

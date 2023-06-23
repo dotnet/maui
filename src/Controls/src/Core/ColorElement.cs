@@ -1,5 +1,4 @@
-#nullable disable
-using Microsoft.Maui.Graphics;
+﻿using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
