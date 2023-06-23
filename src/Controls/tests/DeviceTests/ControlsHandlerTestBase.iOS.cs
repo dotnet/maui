@@ -95,12 +95,8 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected bool IsBackButtonVisible(IElementHandler handler)
 		{
-			var vcs = GetActiveChildViewControllers(handler);
-
-			if (vcs.Length <= 1)
-				return false;
-
-			return !vcs[vcs.Length - 1].NavigationItem.HidesBackButton;
+			var toolbar = GetPlatformToolbar(handler);
+			return toolbar?.HasBackButton() ?? false;
 		}
 
 		protected bool IsNavigationBarVisible(IElementHandler handler)
@@ -123,48 +119,44 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
 		{
-			if (handler is IWindowHandler wh)
-			{
-				handler = wh.VirtualView.Content.Handler;
-			}
+			var navControllerResponder = (handler.PlatformView as UIView).FindResponder<UINavigationController>();
 
-			if (handler is ShellRenderer renderer)
-			{
-				if (renderer.ChildViewControllers[0] is ShellItemRenderer sir)
-				{
-					return sir.SelectedViewController.ChildViewControllers;
-				}
-			}
+			if (navControllerResponder?.ChildViewControllers is not null)
+				return navControllerResponder.ChildViewControllers;
 
-			var containerVC = (handler as IPlatformViewHandler).ViewController;
-			var view = handler.VirtualView.Parent;
+			var contentResponder = (handler.PlatformView as UIView).FindResponder<ContainerViewController>();
 
-			while (containerVC is null && view is not null)
-			{
-				containerVC = (view?.Handler as IPlatformViewHandler).ViewController;
-				view = view?.Parent;
-			}
+			if (contentResponder?.NavigationController is not null)
+				return contentResponder.NavigationController.ChildViewControllers;
 
-			if (containerVC is null)
-				return new UIViewController[0];
-
-			return new[] { containerVC };
+			return new UIViewController[0];
 		}
 
 		UIViewController GetVisibleViewController(IElementHandler handler)
 		{
 			var vcs = GetActiveChildViewControllers(handler);
+			if (vcs.Length == 0)
+				return null;
+
 			return vcs[vcs.Length - 1];
 		}
 
 		protected UINavigationBar GetPlatformToolbar(IElementHandler handler)
 		{
 			var visibleController = GetVisibleViewController(handler);
+
+			if (visibleController is null)
+				return null;
+
 			if (visibleController is UINavigationController nc)
 				return nc.NavigationBar;
 
 			var navController = visibleController.NavigationController;
-			return navController?.NavigationBar;
+
+			if (navController?.NavigationBar is UINavigationBar bar)
+				return bar;
+
+			return null;
 		}
 
 		protected Size GetTitleViewExpectedSize(IElementHandler handler)
