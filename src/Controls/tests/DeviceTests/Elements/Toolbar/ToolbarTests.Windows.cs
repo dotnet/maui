@@ -52,13 +52,15 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 			var item1 = new ToolbarItem() { IconImageSource = "red.png" };
 			var item2 = new ToolbarItem() { Text = "Toolbar Item 2" };
+			var item3 = new ToolbarItem() { Text = "Toolbar Item 2", IconImageSource = "red.png" };
 
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				ToolbarItems =
 				{
 					item1,
-					item2
+					item2,
+					item3
 				}
 			});
 
