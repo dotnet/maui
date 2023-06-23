@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla35733Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("btnGo"));

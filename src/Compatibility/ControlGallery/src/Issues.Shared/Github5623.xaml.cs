@@ -116,6 +116,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void CollectionViewInfiniteScroll()
 		{
 			RunningApp.WaitForElement("CollectionView5623");
