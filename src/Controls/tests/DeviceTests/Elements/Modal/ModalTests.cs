@@ -199,7 +199,7 @@ namespace Microsoft.Maui.DeviceTests
 					await modalPage.Navigation.PopModalAsync();
 
 					Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(windowPage.Handler)));
-					Assert.True(IsBackButtonVisible(windowPage.Handler));
+					Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(windowPage.Handler)));
 				});
 		}
 
