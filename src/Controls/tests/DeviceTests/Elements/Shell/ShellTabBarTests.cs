@@ -11,6 +11,8 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#elif WINDOWS
+using Microsoft.Maui.Controls.Handlers;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
