@@ -12,7 +12,20 @@ Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
+Microsoft.Maui.Handlers.IImageSourcePartSetter
+Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(Android.Graphics.Drawables.Drawable? obj) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
+Microsoft.Maui.ICrossPlatformLayout
+Microsoft.Maui.ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.ICrossPlatformLayoutBacking
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.ShapeExtensions
 Microsoft.Maui.PlatformContentViewGroup
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
@@ -84,3 +97,7 @@ override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.Vie
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
+*REMOVED*Microsoft.Maui.IContentView.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.ILayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size

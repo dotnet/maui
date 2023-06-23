@@ -111,6 +111,7 @@ namespace Microsoft.Maui.DeviceTests
 			var collectionView = new CollectionView
 			{
 				ItemsLayout = itemsLayout,
+				Background = Colors.Red,
 				ItemTemplate = new DataTemplate(() => new Label() { HeightRequest = templateHeight, WidthRequest = templateWidth }),
 			};
 
@@ -142,6 +143,13 @@ namespace Microsoft.Maui.DeviceTests
 					await WaitForUIUpdate(frame, collectionView);
 					frame = collectionView.Frame;
 
+#if WINDOWS
+					// On Windows, the ListView pops in and changes the frame, then actually
+					// loads in the data, which updates it again. So we need to wait for the second
+					// update before checking the size
+					await WaitForUIUpdate(frame, collectionView);
+					frame = collectionView.Frame;
+#endif
 					double expectedWidth = layoutOptions == LayoutOptions.Fill
 						? containerWidth
 						: Math.Min(itemsCount * templateWidth, containerWidth);
@@ -164,13 +172,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
-			var layoutOptions = new LayoutOptions[] {
-
-#if !WINDOWS
-				LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End,
-#endif
-
-				LayoutOptions.Fill };
+			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };
 
 			foreach (var option in layoutOptions)
 			{

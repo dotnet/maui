@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public async Task Issue1583_1_WebviewTest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("label"), "Could not find label", TimeSpan.FromSeconds(10), null, null);
