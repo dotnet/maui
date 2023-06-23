@@ -136,7 +136,7 @@ jobs:
           VM_IMAGE: ${{ RunPlatform.vmImage }}
           OS_VERSION: Ventura
           OS_ARCH: x64
-          POOL_NAME: ${{ RunPlatform.name}}
+          POOL_NAME: ${{ RunPlatform.name }}
 
   pool: 
     name: $(POOL_NAME)
