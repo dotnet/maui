@@ -18,8 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-#if ANDROID || WINDOWS
-
+#if IOS || MACCATALYST || WINDOWS || ANDROID
 		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title")]
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
@@ -38,7 +37,6 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidateTabBarItemColor(shell.CurrentSection, foregroundColor, true);
 				await ValidateTabBarItemColor(shell.Items[0].Items[1], titleColor, false);
 				await ValidateTabBarItemColor(shell.Items[0].Items[1], foregroundColor, false);
-
 			});
 		}
 
