@@ -11,12 +11,13 @@ namespace Microsoft.Maui.Controls
 	public class Accelerator : IAccelerator
 	{
 		const string Separator = "+";
-		string _text;
+		readonly string _text;
 
 		internal Accelerator(string text, List<string> modifiers, string key)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
+
 			_text = text;
 			Key = key;
 			Modifiers = modifiers;
@@ -45,8 +46,12 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
 		public static Accelerator FromString(string text)
 		{
+			if (string.IsNullOrEmpty(text))
+				throw new ArgumentNullException(nameof(text));
+
+			var str = text;
 			var modifiers = new List<string>();
-			var key = "";
+			var key = string.Empty;
 
 			var acceleratorParts = text.Split(new[] { Separator }, StringSplitOptions.None);
 
@@ -66,9 +71,9 @@ namespace Microsoft.Maui.Controls
 						case "win":
 							modifiers.Add(modiferMaskLower);
 #if NETSTANDARD2_0
-							text = text.Replace(modifierMask, "");
+							text = text.Replace(modifierMask, string.Empty);
 #else
-							text = text.Replace(modifierMask, "", StringComparison.Ordinal);
+							text = text.Replace(modifierMask, string.Empty, StringComparison.Ordinal);
 #endif
 							break;
 					}
@@ -78,15 +83,15 @@ namespace Microsoft.Maui.Controls
 			if (!string.Equals(text, Separator, StringComparison.Ordinal))
 			{
 #if NETSTANDARD2_0
-				text = text.Replace(Separator, "");
+				text = text.Replace(Separator, string.Empty);
 #else
-				text = text.Replace(Separator, "", StringComparison.Ordinal);
+				text = text.Replace(Separator, string.Empty, StringComparison.Ordinal);
 #endif
 			}
 
 			key = text;
 
-			return new Accelerator(text, modifiers, key);
+			return new Accelerator(str, modifiers, key);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='ToString']/Docs/*" />

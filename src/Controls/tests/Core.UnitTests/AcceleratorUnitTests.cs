@@ -6,7 +6,6 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-
 	public class AcceleratorUnitTests : BaseTestFixture
 	{
 
@@ -22,19 +21,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Throws<ArgumentNullException>(() => Accelerator.FromString(null));
 		}
 
-		[Fact]
-		public void AcceleratorFromString()
+		[Theory]
+		[InlineData("ctrl+A")]
+		[InlineData("cmd+A")]
+		[InlineData("ctrl+1")]
+		[InlineData("cmd+1")]
+		[InlineData("ctrl+alt+A")]
+		[InlineData("cmd+alt+A")]
+		public void AcceleratorFromString(string shourtCutKeyBinding)
 		{
-			string shourtCutKeyBinding = "ctrl+A";
 			var accelerator = Accelerator.FromString(shourtCutKeyBinding);
 
 			Assert.Equal(shourtCutKeyBinding, accelerator.ToString());
 		}
 
-		[Fact]
-		public void AcceleratorFromOnlyLetter()
+		[Theory]
+		[InlineData("A")]
+		[InlineData("B")]
+		[InlineData("1")]
+		[InlineData("2")]
+		public void AcceleratorFromOnlyLetter(string shourtCutKeyBinding)
 		{
-			string shourtCutKeyBinding = "A";
 			var accelerator = Accelerator.FromString(shourtCutKeyBinding);
 
 			Assert.Single(accelerator.Keys);
@@ -45,15 +52,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void AcceleratorFromLetterAndModifier(TestShortcut shourtcut)
 		{
 			string modifier = shourtcut.Modifier;
-			string key = shourtcut.Key;
-			var accelerator = Accelerator.FromString(shourtcut.ToString());
+			Assert.NotNull(modifier);
 
+			string key = shourtcut.Key;
+			Assert.NotNull(key);
+
+			var accelerator = Accelerator.FromString(shourtcut.ToString());
 			Assert.Single(accelerator.Keys);
 			Assert.Single(accelerator.Modifiers);
 			Assert.Equal(accelerator.Keys.ElementAt(0), shourtcut.Key);
 			Assert.Equal(accelerator.Modifiers.ElementAt(0), shourtcut.Modifier);
 		}
-
 
 		[Fact]
 		public void AcceleratorFromLetterAnd2Modifier()
