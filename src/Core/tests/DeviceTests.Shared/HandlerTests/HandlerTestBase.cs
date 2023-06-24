@@ -161,21 +161,26 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color);
+				await plaformView.AssertContainsColor(color
+#if WINDOWS
+					, handler.MauiContext!
+#endif
+					);
 			});
 #else
 			throw new NotImplementedException();
 #endif
 		}
 
-		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y) 
+		protected Task AssertColorAtPoint(IView view, Color color, Type handlerType, int x, int y)
 		{
 #if !TIZEN
 			return InvokeOnMainThreadAsync(async () =>
 			{
-				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				var handler = CreateHandler(view, handlerType);
+				var plaformView = handler.ToPlatform();
 #if WINDOWS
-				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y);
+				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y, handler.MauiContext);
 #else
 				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y);
 #endif

@@ -169,17 +169,25 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				_ = CreateHandler<LabelHandler>(initialLabel);
+				var handler = CreateHandler<LabelHandler>(initialLabel);
 				var initialHandler = CreateHandler<LayoutHandler>(initialLayout);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						handler.MauiContext
+#endif
+				);
 
 				_ = CreateHandler<LabelHandler>(updatingLabel);
 				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
-				var updatingBitmap = await updatingHandler.PlatformView.AttachAndRun(() =>
+				var updatingBitmap = await AttachAndRun(updatingLayout, (handler) =>
 				{
 					updatingLabel.HorizontalOptions = layoutOptions;
 
-					return updatingHandler.PlatformView.ToBitmap();
+					return updatingHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						handler.MauiContext
+#endif
+					);
 				});
 
 				await initialBitmap.AssertEqualAsync(updatingBitmap);
@@ -233,7 +241,11 @@ namespace Microsoft.Maui.DeviceTests
 				// If this can be attached to the hierarchy and make it through a layout 
 				// without crashing, then we're good.
 				
-				await root.ToPlatform(MauiContext).AttachAndRun(() => { });
+				await root.ToPlatform(MauiContext).AttachAndRun(() => { }
+#if WINDOWS
+						, root.Handler.MauiContext
+#endif
+				);
 			});
 		}
 	}
