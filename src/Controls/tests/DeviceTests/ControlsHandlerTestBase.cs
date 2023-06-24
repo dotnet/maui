@@ -17,13 +17,15 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if WINDOWS
 	// Uncomment these sections if you hit issues with parallel executions
-	//[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
-	//public class NonParallelCollectionDefinitionClass
-	//{
-	//}
+	[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+	public class NonParallelCollectionDefinitionClass
+	{
+	}
 
-	//[Collection("Non-Parallel Collection")]
+	[Collection("Non-Parallel Collection")]
+#endif
 	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
