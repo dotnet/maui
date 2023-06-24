@@ -119,6 +119,14 @@ namespace Microsoft.Maui.DeviceTests
 
 		UIViewController[] GetActiveChildViewControllers(IElementHandler handler)
 		{
+			if (handler.VirtualView is IWindow window)
+			{
+				handler = window.Content.Handler;
+			}
+
+			if (handler.VirtualView is Page page)
+				handler = page.GetCurrentPage().Handler;
+
 			var navControllerResponder = (handler.PlatformView as UIView).FindResponder<UINavigationController>();
 
 			if (navControllerResponder?.ChildViewControllers is not null)

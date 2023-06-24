@@ -301,6 +301,12 @@ namespace Microsoft.Maui.DeviceTests
 			)]
 		public async Task DoesNotLeak()
 		{
+
+#if ANDROID
+			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
+				return;
+#endif
+
 			SetupBuilder();
 			WeakReference pageReference = null;
 			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
