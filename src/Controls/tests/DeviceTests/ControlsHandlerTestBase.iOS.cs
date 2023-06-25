@@ -108,7 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected object GetTitleView(IElementHandler handler)
 		{
 			var activeVC = GetVisibleViewController(handler);
-			if (activeVC.NavigationItem.TitleView is
+			if (activeVC?.NavigationItem?.TitleView is
 				ShellPageRendererTracker.TitleViewContainer tvc)
 			{
 				return tvc.Subviews[0];
@@ -125,7 +125,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			if (handler.VirtualView is Page page)
-				handler = page.GetCurrentPage().Handler;
+				handler = page.GetCurrentPage()?.Handler;
+
+			if (handler is null)
+				return new UIViewController[0];
 
 			var navControllerResponder = (handler.PlatformView as UIView).FindResponder<UINavigationController>();
 
