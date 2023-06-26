@@ -23,7 +23,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 					{
 						descriptionLabel,
 						GalleryBuilder.NavButton("Scroll Modes Testing", () =>
-							new ScrollModeTestGallery(), Navigation)
+							new ScrollModeTestGallery(), Navigation),
+						GalleryBuilder.NavButton("ItemsUpdatingScrollMode Gallery", () =>
+							new ItemsUpdatingScrollModeGallery(), Navigation)
 					}
 				}
 			};

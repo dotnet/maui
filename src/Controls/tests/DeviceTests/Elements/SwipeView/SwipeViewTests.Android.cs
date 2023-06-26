@@ -68,5 +68,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEqual(0, swipeItem.Width);
 			});
 		}
+
+		MauiSwipeView GetPlatformControl(SwipeViewHandler handler) =>
+			handler.PlatformView;
+
+		Task<bool> HasChildren(SwipeViewHandler handler)
+		{
+			return InvokeOnMainThreadAsync(()
+				=> GetPlatformControl(handler).ChildCount != 0);
+		}
 	}
 }
