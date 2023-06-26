@@ -17,6 +17,11 @@ namespace Microsoft.Maui.Resizetizer
 		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 			: base(filename, baseSize, backgroundColor, tintColor, logger)
 		{
+			using (SKTextBlob blob = SKTextBlob.CreatePositioned("System.String", (SKFont)null, (ReadOnlySpan<SKPoint>)new SKPoint[0]))
+			{
+				blob.Dispose();
+			}
+
 			var sw = new Stopwatch();
 			sw.Start();
 
