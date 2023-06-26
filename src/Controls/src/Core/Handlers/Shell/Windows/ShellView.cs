@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				if (navItems.TryGetWithData(newItem, out NavigationViewItemViewModel vm1))
 					SelectedItem = vm1;
-				else if (newItem.CurrentItem != null)
+				else if (newItem.CurrentItem is not null)
 				{
 					if (navItems.TryGetWithData(newItem.CurrentItem, out NavigationViewItemViewModel vm2))
 						SelectedItem = vm2;

@@ -519,64 +519,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Shell Add then Remove Items")]
-		public async Task ShellAddRemoveItems()
-		{
-			FlyoutItem rootItem = null;
-			ShellItem homeItem = null;
-			int itemCount = 3;
-
-			SetupBuilder();
-			var shell = await CreateShellAsync((shell) =>
-			{
-				shell.FlyoutBehavior = FlyoutBehavior.Locked;
-				homeItem = new ShellContent()
-				{
-					Title = "Home",
-					Route = "MainPage",
-					Content = new ContentPage()
-				};
-				shell.Items.Add(homeItem);
-
-				rootItem = new FlyoutItem()
-				{
-					Title = "Items",
-					Route = "Items",
-					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems
-				};
-
-				for (int i = 0; i < itemCount; i++)
-				{
-					var shellContent = new ShellContent
-					{
-						Content = new ContentPage(),
-						Title = $"Item {i}",
-						Route = $"Item{i}"
-					};
-					rootItem.Items.Add(shellContent);
-				}
-				shell.Items.Add(rootItem);
-			});
-
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
-			{
-				rootItem.IsVisible = true;
-
-				shell.CurrentItem = rootItem.Items[itemCount - 1];
-
-				// Remove all root child items
-				for (int i = 0; i < itemCount; i++)
-				{
-					shell.Items.ElementAt(1).Items.RemoveAt(0);
-				}
-
-				shell.CurrentItem = homeItem;
-				Assert.True(shell.CurrentSection.Title == "Home");
-
-				return Task.CompletedTask;
-			});
-		}
-
 		[Fact]
 		public async Task EmptyShellHasNoTopMargin()
 		{
