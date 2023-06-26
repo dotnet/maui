@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using System.Diagnostics;
 using SkiaSharp;
 using Svg.Skia;
