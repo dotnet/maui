@@ -16,6 +16,22 @@ namespace Microsoft.Maui.UnitTests
 		}
 
 		[Fact]
+		public void TestLinearGradientPaintStartColor()
+		{
+			LinearGradientPaint linearGradientPaint = new LinearGradientPaint();
+
+			Assert.NotNull(linearGradientPaint.StartColor);
+		}
+
+		[Fact]
+		public void TestLinearGradientPaintEndColor()
+		{
+			LinearGradientPaint linearGradientPaint = new LinearGradientPaint();
+
+			Assert.NotNull(linearGradientPaint.EndColor);
+		}
+
+		[Fact]
 		public void TestNullOrEmptyLinearGradientPaint()
 		{
 			LinearGradientPaint nullLinearGradientPaint = null;
