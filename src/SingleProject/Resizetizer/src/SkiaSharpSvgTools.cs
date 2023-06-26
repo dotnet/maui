@@ -18,21 +18,6 @@ namespace Microsoft.Maui.Resizetizer
 		public SkiaSharpSvgTools(string filename, SKSize? baseSize, SKColor? backgroundColor, SKColor? tintColor, ILogger logger)
 			: base(filename, baseSize, backgroundColor, tintColor, logger)
 		{
-			{
-				Type objType = typeof(SKTextBlob);
-				MethodInfo[] info = objType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
-	
-				Logger?.Log("Methods of current type is as Follow: ");
-				for (int i = 0; i < info.Length; i++)
-					Logger?.Log($"  info[{i}] {info[i]}");
-			}
-
-			using (SKFont font = new SKFont(SKTypeface.Default))
-			using (SKTextBlob blob = SKTextBlob.CreatePositioned("System.String", font, (ReadOnlySpan<SKPoint>)new SKPoint[] { new SKPoint(10, 10) }))
-			{
-				blob.Dispose();
-			}
-
 			var sw = new Stopwatch();
 			sw.Start();
 
