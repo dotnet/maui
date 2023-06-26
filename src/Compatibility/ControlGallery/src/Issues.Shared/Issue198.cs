@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[UiTest(typeof(TabbedPage))]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue198TestsNREWithPopModal()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Page One"));

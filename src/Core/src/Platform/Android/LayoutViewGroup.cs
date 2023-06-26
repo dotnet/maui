@@ -11,7 +11,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup
+	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
@@ -46,6 +46,21 @@ namespace Microsoft.Maui.Platform
 		}
 
 		public bool ClipsToBounds { get; set; }
+
+		public ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get; set;
+		}
+
+		Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Graphics.Size.Zero;
+		}
+
+		Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
+		{
+			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
+		}
 
 		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
 		// If you make changes here please review if those changes should also
@@ -116,8 +131,5 @@ namespace Microsoft.Maui.Platform
 
 			return base.OnTouchEvent(e);
 		}
-
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rectangle, Size>? CrossPlatformArrange { get; set; }
 	}
 }

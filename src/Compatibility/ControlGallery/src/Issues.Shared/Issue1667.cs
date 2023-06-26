@@ -117,6 +117,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if __IOS__
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestCursorColorOniOS()
 		{
 			RunningApp.WaitForElement("CursorTextEntry");
