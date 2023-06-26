@@ -82,6 +82,16 @@
                     </Button.Background>
                 </Button>
                 <Label
+                    Text="Changing SolidColorBrush to LinearGradientBrush"
+                    Style="{StaticResource Headline}"/>
+                <Button 
+                    x:Name="ChangeBrushButton"
+                    Text="Background"
+                    CornerRadius="12"
+                    BorderColor="Yellow"
+                    BorderWidth="4"
+                    Clicked="OnChangeBrushButtonClicked"/>
+                <Label
                     Text="TextColor"
                     Style="{StaticResource Headline}"/>
                 <Button
@@ -130,9 +140,10 @@
                 <Label
                     Text="Image Source"
                     Style="{StaticResource Headline}"/>
-                <Button 
+                <Button
+                    x:Name="ImageSourceButton"
                     ContentLayout="Top" TextColor="White" Background="Black" 
-                    ImageSource="settings.png" />
+                    ImageSource="settings.png" Clicked="Button_Clicked" />
                 <Label
                     Text="Image Source with Positioning"
                     Style="{StaticResource Headline}"/>

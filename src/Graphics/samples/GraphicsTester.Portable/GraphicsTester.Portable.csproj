@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;$(_MauiDotNetTfm)</TargetFrameworks>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.23.0" />
+    <PackageReference Include="Markdig" Version="0.31.0" />
   </ItemGroup>
 
   <ItemGroup>

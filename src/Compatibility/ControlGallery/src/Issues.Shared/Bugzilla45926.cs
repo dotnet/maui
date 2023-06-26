@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue45926Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("New Page"));

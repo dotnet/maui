@@ -12,6 +12,8 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
+using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 
 
 namespace Microsoft.Maui.DeviceTests

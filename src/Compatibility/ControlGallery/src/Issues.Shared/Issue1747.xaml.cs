@@ -77,6 +77,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue1747Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked(ToggleButtonAutomationId));

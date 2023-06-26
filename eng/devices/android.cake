@@ -3,6 +3,8 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
 
+#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
+
 string TARGET = Argument("target", "Test");
 const string defaultVersion = "30";
 const string dotnetVersion = "net8.0";
@@ -24,10 +26,12 @@ var TEST_APP_PACKAGE_NAME = Argument("package", EnvironmentVariable("ANDROID_TES
 var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("ANDROID_TEST_APP_INSTRUMENTATION") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
+string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? $"");
 var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string CONFIGURATION = Argument("configuration", "Debug");
+string TEST_FRAMEWORK = "net472";
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";
@@ -149,7 +153,7 @@ Task("Build")
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android--{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 
 	if (USE_DOTNET)
 	{
@@ -291,13 +295,82 @@ Task("Test")
 Task("uitest")
 	.Does(() =>
 {
-	if (string.IsNullOrEmpty(TEST_APP)) {
+	SetupAppPackageNameAndResult();
+	
+	CleanDirectories(TEST_RESULTS);
+
+	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
+
+	//we need to build tests first to pass ExtraDefineConstants
+	Information("Build UITests project {0}", PROJECT.FullPath);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+	DotNetCoreBuild(PROJECT.FullPath, new DotNetCoreBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/p:ExtraDefineConstants=ANDROID")
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
+	
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
+
+	Information("Run UITests project {0}", PROJECT.FullPath);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true);
+});
+
+Task("cg-uitest")
+	.Does(() =>
+{
+	SetupAppPackageNameAndResult();
+	
+	CleanDirectories(TEST_RESULTS);
+
+	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
+
+	//set env var for the app path for Xamarin.UITest setup
+	SetEnvironmentVariable("APP_APK", $"{TEST_APP}");
+
+	// build the test library
+	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
+	Information("BinDir: {0}", binDir);
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{binDir}/{name}-{CONFIGURATION}-android-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+	Information("Build UITests project {0}", PROJECT.FullPath);
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			Configuration = CONFIGURATION,
+			ArgumentCustomization = args => args
+				.Append("/bl:" + binlog),
+			ToolPath = DOTNET_PATH,
+	});
+	
+	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.Android.UITests.dll";
+	Information("Run UITests lib {0}", testLibDllPath);
+	var nunitSettings = new NUnit3Settings { 
+		Configuration = CONFIGURATION,
+		OutputFile = $"{TEST_RESULTS}/android/run_uitests_output-{DateTime.UtcNow.ToFileTimeUtc()}.log",
+		Work = $"{TEST_RESULTS}/android/"
+	};
+
+	if(!string.IsNullOrEmpty(TEST_WHERE))
+	{
+		Information("Add Where filter to NUnit {0}", TEST_WHERE);
+		nunitSettings.Where = TEST_WHERE;
+	}
+	RunTestsNunit(testLibDllPath, nunitSettings);
+});
+
+RunTarget(TARGET);
+
+void SetupAppPackageNameAndResult()
+{
+   if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
 		Information("Test app bin folder {0}", binFolder);
-		var binDir = binFolder.Combine($"Release/{dotnetVersion}-android").FullPath;
+		var binDir = binFolder.Combine($"{CONFIGURATION}/{TARGET_FRAMEWORK}").FullPath;
 		var apps = GetFiles(binDir + "/*-Signed.apk");
 		if (apps.Any()) {
 			TEST_APP = apps.FirstOrDefault().FullPath;
@@ -323,9 +396,10 @@ Task("uitest")
 	Information("Test App Instrumentation: {0}", TEST_APP_INSTRUMENTATION);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 	Information("Test project: {0}", PROJECT);
+}
 
-	CleanDirectories(TEST_RESULTS);
-
+void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory)
+{
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
 
@@ -348,35 +422,14 @@ Task("uitest")
 	Information("{0}", string.Join("\n", lines));
 
 	//install apk on the emulator
-	Information("Install with xharness: {0}",TEST_APP);
+	Information("Install with xharness: {0}", testApp);
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args=>args.Append("run xharness android install " +
-			$"--app=\"{TEST_APP}\" " +
-			$"--package-name=\"{TEST_APP_PACKAGE_NAME}\" " +
-			$"--output-directory=\"{TEST_RESULTS}\" " +
+			$"--app=\"{testApp}\" " +
+			$"--package-name=\"{testAppPackageName}\" " +
+			$"--output-directory=\"{testResultsDirectory}\" " +
 			$"--verbosity=\"Debug\" ")
 	};
 	DotNetTool("tool", settings);
-
-	//we need to build tests first to pass ExtraDefineConstants
-	Information("Build UITests project {0}", PROJECT.FullPath);
-	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
-	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-android.binlog";
-	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
-			Configuration = CONFIGURATION,
-			ToolPath = DOTNET_PATH,
-			ArgumentCustomization = args => args
-				.Append("/p:ExtraDefineConstants=ANDROID")
-				.Append("/bl:" + binlog)
-				//.Append("/tl")
-			
-	});
-
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
-
-	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
-});
-
-RunTarget(TARGET);
+}
