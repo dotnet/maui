@@ -3,6 +3,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -83,11 +84,8 @@ namespace Microsoft.Maui.Platform
 
 		void SetClip()
 		{
-			if (!RequireClip())
-			{
-				ResetClip();
+			if (Clip is null || Subviews.Length == 0 || Frame == CGRect.Empty)
 				return;
-			}
 
 			var maskLayer = ChildMaskLayer;
 
@@ -109,6 +107,22 @@ namespace Microsoft.Maui.Platform
 
 			var bounds = new RectF(0, 0, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
 
+			var platformClipPath = GetClipPath(bounds, strokeThickness);
+
+			if (!RequireClip(platformClipPath))
+			{
+				ResetClip();
+				return;
+			}
+
+			maskLayer.Path = platformClipPath;
+		}
+
+		void ResetClip()
+			=> ChildMaskLayer = null;
+
+		CGPath? GetClipPath(RectF bounds, float strokeThickness)
+		{
 			IShape? clipShape = Clip?.Shape;
 			PathF? path;
 
@@ -119,20 +133,12 @@ namespace Microsoft.Maui.Platform
 
 			var platformClipPath = path?.AsCGPath();
 
-			maskLayer.Path = platformClipPath;
+			return platformClipPath;
 		}
 
-		void ResetClip()
+		bool RequireClip(CGPath? platformClipPath)
 		{
-			if (ChildMaskLayer is null || ChildMaskLayer.Path is null)
-				return;
-
-			ChildMaskLayer = null;
-		}
-
-		bool RequireClip(CGPath? platformClipPath = null)
-		{
-			if (Clip is null || Subviews.Length == 0)
+			if (Clip is null || Subviews.Length == 0 || platformClipPath is null)
 				return false;
 
 			var child = Subviews[0];
@@ -141,19 +147,10 @@ namespace Microsoft.Maui.Platform
 			if (Frame == CGRect.Empty || childBounds == CGRect.Empty)
 				return false;
 
-			// TODO: Complete and test it with all the scenarios.
-			if (platformClipPath is not null)
-			{
-				var clipPathBoundingBox = platformClipPath.BoundingBox;
+			var clipPathBoundingBox = platformClipPath.BoundingBox;
 
-				if (childBounds.Height >= clipPathBoundingBox.Height || childBounds.Width >= clipPathBoundingBox.Width)
-					return true;
-			}
-			else
-			{
-				if (childBounds.Height >= Frame.Height || childBounds.Width >= Frame.Width)
-					return true;
-			}
+			if (childBounds.Height >= clipPathBoundingBox.Height || childBounds.Width >= clipPathBoundingBox.Width)
+				return true;
 
 			return false;
 		}

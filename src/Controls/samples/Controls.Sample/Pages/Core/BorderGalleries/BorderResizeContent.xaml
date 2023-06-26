@@ -21,6 +21,7 @@
 
         <Style x:Key="ButtonIconStyle" TargetType="Label">
             <Style.Setters>
+                <Setter Property="BackgroundColor" Value="#99FF0000" />
                 <Setter Property="FontSize" Value="64" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
@@ -34,13 +35,23 @@
         Spacing="10"
         VerticalOptions="Center">
         <Border
+            x:Name="BorderView"
             Style="{StaticResource BorderStyle}">
             <Label
                 Style="{StaticResource ButtonIconStyle}"
                 FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
-                Text="+"
+                Text="{Binding Text, Source={x:Reference TextEntry}}"
                 TextColor="#0088ee"/>
         </Border>
+        <Label
+            Text="Content Text"
+            Style="{StaticResource Headline}"/>
+        <Entry
+            x:Name="TextEntry"
+            Text="+"/>
+        <Label
+            Text="Content Text FontSize"
+            Style="{StaticResource Headline}"/>
         <Slider
             x:Name="FontSizeSlider"
             Minimum="20"

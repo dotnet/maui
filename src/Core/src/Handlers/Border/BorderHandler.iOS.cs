@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using Microsoft.Maui.Platform;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -54,7 +53,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
+				var content = view.ToPlatform(handler.MauiContext);
+				handler.PlatformView.AddSubview(content);
+				handler.PlatformView.BringSubviewToFront(content);
 				handler.PlatformView.ChildMaskLayer = null;
 			}
 		}
