@@ -16,10 +16,18 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, Syste
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.Handlers.IImageSourcePartSetter
 Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(UIKit.UIImage? obj) -> void
+Microsoft.Maui.ICrossPlatformLayout
+Microsoft.Maui.ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+Microsoft.Maui.ICrossPlatformLayoutBacking
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
+Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
+Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void
 Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double heightConstraint) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
@@ -41,6 +49,9 @@ override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics
 override Microsoft.Maui.Platform.MauiView.SafeAreaInsetsDidChange() -> void
 override Microsoft.Maui.Platform.MauiTextView.Font.get -> UIKit.UIFont?
 override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
+override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
+override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
+override Microsoft.Maui.Platform.MauiView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int
 static Microsoft.Maui.CommandMapperExtensions.AppendToMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>! commandMapper, string! key, System.Action<TViewHandler, TVirtualView, object?>! method) -> void
@@ -79,3 +90,14 @@ static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, M
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
+*REMOVED*Microsoft.Maui.IContentView.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.ILayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
+*REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+*REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Platform.ContentView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.LayoutSubviews() -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
+*REMOVED*override Microsoft.Maui.Platform.LayoutView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+*REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void

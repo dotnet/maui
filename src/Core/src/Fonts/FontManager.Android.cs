@@ -143,6 +143,11 @@ namespace Microsoft.Maui
 				case "serif":
 					return Typeface.Serif;
 				default:
+					if (fontfamily.StartsWith("sansserif-", StringComparison.OrdinalIgnoreCase) ||
+						fontfamily.StartsWith("sans-serif-", StringComparison.OrdinalIgnoreCase))
+					{
+						return Typeface.Create(fontfamily, TypefaceStyle.Normal);
+					}
 					return null;
 			}
 		}
