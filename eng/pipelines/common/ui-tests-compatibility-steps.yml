@@ -8,38 +8,23 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
+  where : "cat==Issues"
+  targetSample: "dotnet-legacy-controlgallery"
+  provisionPlatform: "windows"
 
 steps:
 
   - template: provision.yml
     parameters:
       ${{ if eq(parameters.platform, 'windows') }}:
+        platform: windows
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
+        platform: macos
         skipProvisioning: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-
-  - task: PowerShell@2
-    condition: ne('${{ parameters.platform }}' , 'windows')
-    inputs:
-      targetType: 'inline'
-      script: |
-        defaults write -g NSAutomaticCapitalizationEnabled -bool false
-        defaults write -g NSAutomaticTextCompletionEnabled -bool false
-        defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-    displayName: "Modify defaults"
-    continueOnError: true
-
-  - task: NodeTool@0
-    inputs:
-      versionSpec: "18.13.0"
-    displayName: "Install node"
-
-  - pwsh: ./eng/scripts/appium-install.ps1
-    displayName: "Install Appium"
-    continueOnError: true
-
+ 
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
@@ -53,20 +38,21 @@ steps:
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
-    displayName: 'Build the samples'
+  - pwsh: ./build.ps1 --target=${{ parameters.targetSample }} --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic
+    displayName: 'Build the Legacy ControlGallery'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
     displayName: $(Agent.JobName)
-    retryCountOnTaskFailure: 2
+    # retryCountOnTaskFailure: 2
   
   - task: PublishTestResults@2
     displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
-      testResultsFormat: VSTest
-      testResultsFiles: '$(TestResultsDirectory)/*.trx'
+      testResultsFormat: NUnit
+      testResultsFiles: '**/TestResult*.xml'
       testRunTitle: '$(System.PhaseName)'
+      searchFolder: '$(TestResultsDirectory)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
