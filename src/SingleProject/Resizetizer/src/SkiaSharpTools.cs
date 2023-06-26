@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Resizetizer
 			// Because we are doing dangerous things - like using a net462 assembly in a netstandard2.0 assembly
 			// we need to make sure the correct dependencies are loaded. We use net462 because this has special
 			// native library loading logic for the .NET Framework (Visual Studio). 
-			var span = (ReadOnlySpan<SKPoint>)new SKPoint[1];
+			var span = (Span<SKPoint>)new SKPoint[1];
 			span[0] = new SKPoint();
 		}
 
