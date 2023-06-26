@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if __ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Bugzilla52419Test()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Push new page"));
