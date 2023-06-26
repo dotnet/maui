@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore	
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
 			=> new CastingList<Element, ISwipeItem>(_swipeItems);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
