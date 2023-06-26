@@ -24,6 +24,12 @@ namespace Microsoft.Maui.Platform
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
+			if (Subviews.Length != 0)
+			{
+				if (Subviews[0] is LayoutView content)
+					content.Frame = bounds;
+			}
+
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
 
@@ -105,7 +111,7 @@ namespace Microsoft.Maui.Platform
 			// we use the double to get the correct value. Here, again, we use the double to get the correct clip shape size values.
 			var strokeWidth = 2 * strokeThickness;
 
-			var bounds = new RectF(0, 0, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
+			var bounds = new RectF(strokeWidth / 2, strokeWidth / 2, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
 
 			var platformClipPath = GetClipPath(bounds, strokeThickness);
 

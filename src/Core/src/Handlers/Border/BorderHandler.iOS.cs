@@ -53,7 +53,13 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
+				var child = view.ToPlatform(handler.MauiContext);
+				var containerView = new LayoutView
+				{
+					CrossPlatformLayout = handler.VirtualView
+				};
+				containerView.AddSubview(child);
+				handler.PlatformView.AddSubview(containerView);
 				handler.PlatformView.ChildMaskLayer = null;
 			}
 		}
