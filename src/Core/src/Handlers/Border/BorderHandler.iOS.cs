@@ -53,9 +53,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
-				var content = view.ToPlatform(handler.MauiContext);
-				handler.PlatformView.AddSubview(content);
-				handler.PlatformView.BringSubviewToFront(content);
+				handler.PlatformView.AddSubview(view.ToPlatform(handler.MauiContext));
 				handler.PlatformView.ChildMaskLayer = null;
 			}
 		}
