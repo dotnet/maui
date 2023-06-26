@@ -16,6 +16,8 @@
                 <Setter Property="WidthRequest" Value="100" />
                 <Setter Property="HeightRequest" Value="100" />
                 <Setter Property="BackgroundColor" Value="LightBlue" />
+                <Setter Property="StrokeThickness" Value="2" />
+                <Setter Property="Stroke" Value="DarkBlue" />
             </Style.Setters>
         </Style>
 
