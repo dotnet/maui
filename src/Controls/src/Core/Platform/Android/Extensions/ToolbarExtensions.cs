@@ -155,7 +155,7 @@ namespace Microsoft.Maui.Controls.Platform
 				nativeToolbar.NavigationIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 			}
 
-			if(navIconColor != null && nativeToolbar.OverflowIcon != null)
+			if (navIconColor != null && nativeToolbar.OverflowIcon != null)
 			{
 				nativeToolbar.OverflowIcon.SetColorFilter(navIconColor, FilterMode.SrcAtop);
 			}

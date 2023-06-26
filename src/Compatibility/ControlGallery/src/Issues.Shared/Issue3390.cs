@@ -53,6 +53,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3390Test()
 		{
 			RunningApp.Tap("Click me");
