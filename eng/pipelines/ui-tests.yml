@@ -87,6 +87,24 @@ parameters:
       name: $(macosTestsVmPool)
       vmImage: $(macosTestsVmImage)
 
+  - name: androidCompatibilityPool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+
+  - name: iosCompatibilityPool
+    type: object
+    default:
+      name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+
 
 resources:
   repositories:
@@ -104,6 +122,8 @@ stages:
       iosPool: ${{ parameters.iosPool }}
       windowsPool: ${{ parameters.windowsPool }}
       macosPool: ${{ parameters.macosPool }}
+      androidCompatibilityPool: ${{ parameters.androidCompatibilityPool }}
+      iosCompatibilityPool: ${{ parameters.iosCompatibilityPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30 ]
@@ -141,6 +161,10 @@ stages:
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           winui: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
           mac: $(System.DefaultWorkingDirectory)/src/Controls/tests/UITests/Controls.AppiumTests.csproj
+          compatibilityAndroidApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj 
+          compatibilityAndroidTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/Android.UITests/Compatibility.ControlGallery.Android.UITests.csproj
+          compatibilityiOSApp: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj 
+          compatibilityiOSTestProject: $(System.DefaultWorkingDirectory)/src/Compatibility/ControlGallery/test/iOS.UITests/Compatibility.ControlGallery.iOS.UITests.csproj
         # - name: blazorwebview
         #   desc: BlazorWebView
         #   androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome

@@ -94,8 +94,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			// Current Item might transition to null while visibility is adjusting on shell
 			// so we just ignore this and eventually when shell knows
 			// the next current item it will request to sync again
-			if (VirtualView.CurrentItem == null)
+			if (VirtualView.CurrentItem == null || MauiContext is null)
 				return;
+
+			// This is used to assign the ShellContentHandler to ShellContent
+			_ = VirtualView.CurrentItem.ToPlatform(MauiContext);
 
 			List<IView> pageStack = new List<IView>()
 			{
