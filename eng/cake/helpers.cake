@@ -121,3 +121,38 @@ bool IsTarget(string target) =>
 
 bool TargetStartsWith(string target) =>
     Argument<string>("target", "Default").StartsWith(target, StringComparison.InvariantCultureIgnoreCase);
+
+void RunTestsNunit(string unitTestLibrary, NUnit3Settings settings)
+{
+    try
+    {
+        NUnit3(new [] { unitTestLibrary }, settings);
+    }
+    catch
+    {
+        SetTestResultsEnvironmentVariables(settings.Work?.ToString());
+        throw;
+    }
+
+    SetTestResultsEnvironmentVariables(settings.Work?.ToString());
+
+    void SetTestResultsEnvironmentVariables(string? path)
+    {
+        var doc = new System.Xml.XmlDocument();
+        if(string.IsNullOrEmpty(path))
+        {
+            doc.Load("TestResult.xml");
+        }
+        else
+        {
+            doc.Load($"{path}/TestResult.xml");
+        }
+                
+        var root = doc.DocumentElement;
+
+        foreach(System.Xml.XmlAttribute attr in root.Attributes)
+        {
+            SetEnvironmentVariable($"NUNIT_{attr.Name}", attr.Value);
+        }
+    }
+}

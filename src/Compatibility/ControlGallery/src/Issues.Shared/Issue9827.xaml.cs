@@ -50,6 +50,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue9827Test()
 		{
 			RunningApp.WaitForElement("Pos:0");

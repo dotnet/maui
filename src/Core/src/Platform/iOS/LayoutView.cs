@@ -1,7 +1,4 @@
-using System;
-using System.Drawing;
 using CoreGraphics;
-using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -9,65 +6,6 @@ namespace Microsoft.Maui.Platform
 	public class LayoutView : MauiView
 	{
 		bool _userInteractionEnabled;
-
-
-		// TODO: Possibly reconcile this code with ViewHandlerExtensions.MeasureVirtualView
-		// If you make changes here please review if those changes should also
-		// apply to ViewHandlerExtensions.MeasureVirtualView
-		public override CGSize SizeThatFits(CGSize size)
-		{
-			if (View is not ILayout layout)
-			{
-				return base.SizeThatFits(size);
-			}
-
-			var width = size.Width;
-			var height = size.Height;
-
-			var crossPlatformSize = layout.CrossPlatformMeasure(width, height);
-
-			CacheMeasureConstraints(width, height);
-
-			return crossPlatformSize.ToCGSize();
-		}
-
-		// TODO: Possibly reconcile this code with ViewHandlerExtensions.LayoutVirtualView
-		// If you make changes here please review if those changes should also
-		// apply to ViewHandlerExtensions.LayoutVirtualView
-		public override void LayoutSubviews()
-		{
-			base.LayoutSubviews();
-
-			if (View is not ILayout layout)
-			{
-				return;
-			}
-
-			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
-			var widthConstraint = bounds.Width;
-			var heightConstraint = bounds.Height;
-
-			// If the SuperView is a MauiView (backing a cross-platform ContentView or Layout), then measurement
-			// has already happened via SizeThatFits and doesn't need to be repeated in LayoutSubviews. But we
-			// _do_ need LayoutSubviews to make a measurement pass if the parent is something else (for example,
-			// the window); there's no guarantee that SizeThatFits has been called in that case.
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint) && Superview is not MauiView)
-			{
-				layout.CrossPlatformMeasure(widthConstraint, heightConstraint);
-				CacheMeasureConstraints(widthConstraint, heightConstraint);
-			}
-
-			layout.CrossPlatformArrange(bounds);
-		}
-
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
-		}
 
 		public override void SubviewAdded(UIView uiview)
 		{

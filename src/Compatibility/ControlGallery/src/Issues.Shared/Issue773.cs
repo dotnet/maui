@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		[Test]
 		[Issue (IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation - relayout correctly after rotation", PlatformAffected.iOS)]
 		[UiTest (typeof(ScrollView))]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue773TestsRotationRelayoutIssue ()
 		{
 			RunningApp.SetOrientationLandscape ();

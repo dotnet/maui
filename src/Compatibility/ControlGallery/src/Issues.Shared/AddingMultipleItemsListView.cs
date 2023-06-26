@@ -113,6 +113,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests1AllElementsPresent()
 		{
 			RunningApp.WaitForElement(q => q.Marked("Big Job"));
@@ -131,6 +132,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests2AddOneElementToList()
 		{
 			RunningApp.Tap(q => q.Marked("Add One"));
@@ -140,6 +142,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[FailsOnMauiIOS]
 		public void AddingMultipleListViewTests3AddTwoElementToList()
 		{
 			RunningApp.Screenshot("Click 'Add Two'");

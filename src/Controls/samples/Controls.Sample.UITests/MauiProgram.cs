@@ -1,4 +1,4 @@
-﻿using Microsoft.Maui;
+﻿using System;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -17,7 +17,29 @@ namespace Maui.Controls.Sample
 
 	class App : Application
 	{
-		protected override Window CreateWindow(IActivationState activationState) =>
-			new Window(new NavigationPage(new MainPage()));
+		public const string AppName = "CompatibilityGalleryControls";
+		public const string DefaultMainPageId = "ControlGalleryMainPage";
+
+		public App()
+		{
+			SetMainPage(CreateDefaultMainPage());
+		}
+
+		public static bool PreloadTestCasesIssuesList { get; set; } = true;
+
+		public void SetMainPage(Page rootPage)
+		{
+			MainPage = rootPage;
+		}
+
+		public Page CreateDefaultMainPage()
+		{
+			return new CoreNavigationPage();
+		}
+
+		protected override void OnAppLinkRequestReceived(Uri uri)
+		{
+			base.OnAppLinkRequestReceived(uri);
+		}
 	}
 }

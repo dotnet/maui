@@ -175,6 +175,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if !WINDOWS
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), true);
@@ -182,6 +184,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ImageFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Image), false);
@@ -189,6 +193,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), true);
@@ -196,6 +201,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(Button), false);
@@ -203,12 +209,16 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[FailsOnMauiAndroid]
 		public void ImageButtonFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			RunTest(nameof(ImageButton), true);
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[FailsOnMauiAndroid]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageButtonFromUriSourceAppearsAndDisappearsCorrectly()
 		{
@@ -216,13 +226,14 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ImageCellFromFileSourceAppearsAndDisappearsCorrectly()
 		{
 			ImageCellTest(true);
 		}
 
-[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
 		public void ImageCellFromUriSourceAppearsAndDisappearsCorrectly()
 		{

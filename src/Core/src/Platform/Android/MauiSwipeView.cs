@@ -1314,6 +1314,7 @@ namespace Microsoft.Maui.Platform
 			var openSwipeItem = e.OpenSwipeItem;
 			var animated = e.Animated;
 
+			UpdateIsOpen(true);
 			ProgrammaticallyOpenSwipeItem(openSwipeItem, animated);
 		}
 
@@ -1387,6 +1388,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var animated = e.Animated;
 
+			UpdateIsOpen(false);
 			ResetSwipe(animated);
 		}
 
