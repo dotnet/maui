@@ -30,7 +30,11 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						await Wait(() => GetPlatformIsRefreshing((RefreshViewHandler)RefreshView.Handler) == isRefreshing);
 						await Assert();
-					});
+					}
+#if WINDOWS
+					, MauiContext
+#endif
+				);
 			});
 #endif
 			Task Assert()

@@ -390,7 +390,11 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						ViewValue = editor.VerticalTextAlignment,
 						PlatformViewValue = GetNativeVerticalTextAlignment(handler)
-					}));
+					}
+#if WINDOWS
+					, MauiContext
+#endif
+				));
 
 			Assert.Equal(textAlignment, values.ViewValue);
 			Assert.Equal(platformAlignment, values.PlatformViewValue);
