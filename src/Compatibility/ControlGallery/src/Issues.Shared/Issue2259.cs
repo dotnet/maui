@@ -157,6 +157,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[UiTest(typeof(ListView), "ScrollTo")]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2259Tests()
 		{
 			for (int i = 0; i < 20; i++)
