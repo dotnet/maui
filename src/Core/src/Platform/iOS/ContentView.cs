@@ -3,7 +3,6 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
