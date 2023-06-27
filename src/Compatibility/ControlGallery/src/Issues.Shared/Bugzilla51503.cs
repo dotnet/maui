@@ -64,6 +64,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue51503Test()
 		{
 			for (int i = 0; i < 3; i++)

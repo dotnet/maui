@@ -125,8 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			var view = new ContentPanel
 			{
-				CrossPlatformMeasure = ((IContentView)Element).CrossPlatformMeasure,
-				CrossPlatformArrange = ((IContentView)Element).CrossPlatformArrange
+				CrossPlatformLayout = Element
 			};
 
 			view.Content = Element.Content.ToPlatform(MauiContext);
