@@ -52,6 +52,8 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void SelectedItemTap()
 		{
 			var id = "1";

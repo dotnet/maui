@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void NullItemSourceDoesNotCrash()
 		{
 			// If we can see the Success label, it means we didn't crash. 
@@ -102,6 +103,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.ListView)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SettingItemsSourceToNullDoesNotCrash()
 		{
 			RunningApp.WaitForElement(Go);

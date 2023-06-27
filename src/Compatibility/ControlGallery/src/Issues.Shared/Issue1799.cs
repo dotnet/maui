@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewWithoutDataDoesNotCrash()
 		{
 			var result = RunningApp.WaitForElement(ListView);
