@@ -52,7 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView() 
+		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView()
 		{
 			SetupBuilder();
 
