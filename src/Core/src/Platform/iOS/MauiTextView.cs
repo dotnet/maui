@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Platform
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelConstraints();
 			Changed += OnChanged;
 		}
 
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.Platform
 			: base(frame)
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelConstraints();
 			Changed += OnChanged;
 		}
 
@@ -126,13 +128,34 @@ namespace Microsoft.Maui.Platform
 
 			AddSubview(placeholderLabel);
 
-			var edgeInsets = TextContainerInset;
-			var lineFragmentPadding = TextContainer.LineFragmentPadding;
-
-			placeholderLabel.TextInsets = new UIEdgeInsets(edgeInsets.Top, edgeInsets.Left + lineFragmentPadding,
-				edgeInsets.Bottom, edgeInsets.Right + lineFragmentPadding);
-
 			return placeholderLabel;
+		}
+
+		void UpdatePlaceholderLabelConstraints()
+		{
+			if (_placeholderLabel is MauiLabel placeholderLabel)
+			{
+				var edgeInsets = TextContainerInset;
+				var lineFragmentPadding = TextContainer.LineFragmentPadding;
+
+				var vConstraints = NSLayoutConstraint.FromVisualFormat(
+					"V:|-" + edgeInsets.Top + "-[_placeholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
+					NSDictionary.FromObjectsAndKeys(
+						new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
+				);
+
+				var hConstraints = NSLayoutConstraint.FromVisualFormat(
+					"H:|-" + lineFragmentPadding + "-[_placeholderLabel]-" + lineFragmentPadding + "-|",
+					0, new NSDictionary(),
+					NSDictionary.FromObjectsAndKeys(
+						new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
+				);
+
+				placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
+
+				AddConstraints(hConstraints);
+				AddConstraints(vConstraints);
+			}
 		}
 
 		void HidePlaceholderIfTextIsPresent(string? value)
