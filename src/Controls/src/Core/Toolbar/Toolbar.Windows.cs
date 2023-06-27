@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml.Controls;
@@ -16,13 +17,21 @@ namespace Microsoft.Maui.Controls
 		NavigationRootManager? NavigationRootManager =>
 			MauiContext?.GetNavigationRootManager();
 
+		partial void OnHandlerChanging(IElementHandler oldHandler, IElementHandler newHandler)
+		{
+			if (newHandler == null)
+			{
+				foreach (var item in ToolbarItems)
+					item.PropertyChanged -= OnToolbarItemPropertyChanged;
+			}
+		}
+
 		internal void UpdateMenu()
 		{
 			if (Handler.PlatformView is not MauiToolbar wh)
 				return;
 
 			var commandBar = wh.CommandBar;
-
 			if (commandBar == null)
 			{
 				return;
@@ -69,12 +78,33 @@ namespace Microsoft.Maui.Controls
 				{
 					commandBar.SecondaryCommands.Add(button);
 				}
+
+				item.PropertyChanged -= OnToolbarItemPropertyChanged;
+				item.PropertyChanged += OnToolbarItemPropertyChanged;
 			}
 
 			SetDefaultLabelPosition(commandBar, toolbarItems);
 		}
 
-		private static void SetDefaultLabelPosition(CommandBar commandBar, List<ToolbarItem> toolbarItems)
+		internal void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
+		{
+			if (Handler.PlatformView is not MauiToolbar wh)
+				return;
+
+			var commandBar = wh.CommandBar;
+			if (commandBar == null)
+			{
+				return;
+			}
+
+			if (e.PropertyName == nameof(ToolbarItem.Text) || e.PropertyName == nameof(ToolbarItem.IconImageSource))
+			{
+				var toolbarItems = new List<ToolbarItem>(ToolbarItems ?? Array.Empty<ToolbarItem>());
+				SetDefaultLabelPosition(commandBar, toolbarItems);
+			}
+		}
+
+		private static void SetDefaultLabelPosition(CommandBar commandBar, IList<ToolbarItem> toolbarItems)
 		{
 			int itemsWithTextCount = 0;
 			int itemsWithIconCount = 0;

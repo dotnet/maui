@@ -97,5 +97,33 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.CompletedTask;
 			});
 		}
+
+		[Fact(DisplayName = "Toolbar Default Label Position Add Text to Images")]
+		public async Task ToolbarDefaultLabelPositionAddText()
+		{
+			SetupBuilder();
+
+			var item1 = new ToolbarItem() { IconImageSource = "red.png" };
+			var item2 = new ToolbarItem() { IconImageSource = "red.png" };
+
+			var navPage = new NavigationPage(new ContentPage()
+			{
+				ToolbarItems =
+				{
+					item1,
+					item2
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), (handler) =>
+			{
+				navPage.CurrentPage.ToolbarItems[0].Text = "Toolbar Item 1";
+
+				var toolbar = (Toolbar)(navPage.Window as IToolbarElement).Toolbar;
+				var platformCommandBar = ((MauiToolbar)toolbar.Handler.PlatformView).CommandBar;
+				Assert.True(platformCommandBar.DefaultLabelPosition == CommandBarDefaultLabelPosition.Right);
+				return Task.CompletedTask;
+			});
+		}
 	}
 }
