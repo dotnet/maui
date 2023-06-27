@@ -6,8 +6,16 @@ using Windows.System;
 
 namespace Microsoft.Maui.Platform
 {
+	/// <summary>
+	/// Group of helper extension methods related to KeyboardAccelerators.
+	/// </summary>
 	public static class KeyboardAcceleratorExtensions
 	{
+		/// <summary>
+		/// Updates the collection of KeyboardAccelerators used by a MenuFlyoutItemBase.
+		/// </summary>
+		/// <param name="platformView">The platform view, of type MenuFlyoutItemBase.</param>
+		/// <param name="menuFlyoutItem">The abstract MenuFlyoutItem with all the necessary information.</param>
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
 			var keyboardAccelerators = menuFlyoutItem.Accelerators?.ToPlatform();
@@ -19,6 +27,13 @@ namespace Microsoft.Maui.Platform
 				platformView.KeyboardAccelerators.Add(keyboardAccelerator);
 		}
 
+		/// <summary>
+		/// Converts a list of IAccelerator to a list of KeyboardAccelerator.
+		/// A KeyboardAccelerator represents a keyboard shortcut (or accelerator) that lets a user perform an action using the keyboard instead
+		/// of navigating the app UI (directly or through access keys). 
+		/// </summary>
+		/// <param name="accelerators">List of IAccelerator</param>
+		/// <returns>List of KeyboardAccelerator</returns>
 		public static IList<KeyboardAccelerator>? ToPlatform(this IReadOnlyList<IAccelerator> accelerators)
 		{
 			if (accelerators is null)
