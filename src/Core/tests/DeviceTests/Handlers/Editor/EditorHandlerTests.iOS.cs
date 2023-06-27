@@ -101,6 +101,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(isHidden);
 		}
 
+		[Fact(DisplayName = "Placeholder CharacterSpacing Initializes Correctly")]
+		public async Task PlaceholderCharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Test";
+			var xplatCharacterSpacing = 4;
+
+			var editor = new EditorStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Placeholder = originalText
+			};
+
+			var values = await GetValueAsync(editor, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editor.CharacterSpacing,
+					PlatformViewValue = GetNativePlaceholderCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -220,6 +245,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var editor = GetNativeEditor(editorHandler);
 			return editor.AttributedText.GetCharacterSpacing();
+		}
+
+		double GetNativePlaceholderCharacterSpacing(EditorHandler editorHandler)
+		{
+			return GetNativePlaceholder(editorHandler).AttributedText.GetCharacterSpacing();
 		}
 
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
