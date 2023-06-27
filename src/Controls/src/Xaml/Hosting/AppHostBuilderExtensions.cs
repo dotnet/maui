@@ -236,6 +236,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			SearchBar.RemapForControls();
 			TabbedPage.RemapForControls();
 			TimePicker.RemapForControls();
+			Layout.RemapForControls();
 			ScrollView.RemapForControls();
 			RefreshView.RemapForControls();
 			Shape.RemapForControls();
