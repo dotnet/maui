@@ -40,10 +40,14 @@ parameters:
     default:
     - name: $(androidTestsVmPool)
       vmImage: $(androidTestsVmImage)
+      osVersion: Ventura
+      osArch: x64
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+      osVersion: ''
+      osArch: ''
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -134,16 +138,22 @@ jobs:
         ${{ RunPlatform.testName }}:
           TEST_NAME: ${{ RunPlatform.testName }}
           VM_IMAGE: ${{ RunPlatform.vmImage }}
-          OS_VERSION: Ventura
-          OS_ARCH: x64
+          ${{ if ne(RunPlatform.osVersion, '')) }}:
+            OS_VERSION: macOS.Name -equals ${{ RunPlatform.osVersion }}
+          ${{ else }}:
+            OS_VERSION: Agent.OS
+          ${{ if ne(RunPlatform.osArch, '')) }}:
+            OS_ARCH: macOS.Architecture -equals ${{ RunPlatform.osArch }}
+          ${{ else }}:
+            OS_ARCH: Agent.Version
           POOL_NAME: ${{ RunPlatform.name}}
 
   pool: 
     name: $(POOL_NAME)
     vmImage: $(VM_IMAGE)
     demands:
-      - macOS.Name -equals $(OS_VERSION)
-      - macOS.Architecture -equals $(OS_ARCH)
+      - $(OS_VERSION)
+      - $(OS_ARCH)
 
   steps:
   - ${{ each step in parameters.prepareSteps }}:
