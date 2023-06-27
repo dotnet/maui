@@ -282,16 +282,17 @@ namespace Microsoft.Maui.Controls
 		internal static void MapBarTextColor(ITabbedViewHandler handler, TabbedPage view)
 		{
 			view._navigationView?.UpdateTopNavigationViewItemTextColor(view.BarTextColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemTextSelectedColor(view.BarTextColor?.AsPaint());
 		}
 
 		internal static void MapUnselectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._navigationView?.UpdateTopNavigationViewItemBackgroundUnselectedColor(view.UnselectedTabColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemUnselectedColor(view.UnselectedTabColor?.AsPaint());
 		}
 
 		internal static void MapSelectedTabColor(ITabbedViewHandler handler, TabbedPage view)
 		{
-			view._navigationView?.UpdateTopNavigationViewItemBackgroundSelectedColor(view.SelectedTabColor?.AsPaint());
+			view._navigationView?.UpdateTopNavigationViewItemSelectedColor(view.SelectedTabColor?.AsPaint());
 		}
 
 		internal static void MapItemsSource(ITabbedViewHandler handler, TabbedPage view)
@@ -316,9 +317,10 @@ namespace Microsoft.Maui.Controls
 						vm.Icon = page.IconImageSource?.ToIconSource(handler.MauiContext!)?.CreateIconElement();
 						vm.Content = page.Title;
 						vm.Data = page;
-						vm.Foreground = view.BarTextColor?.AsPaint()?.ToPlatform();
-						vm.SelectedBackground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
-						vm.UnselectedBackground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
+						vm.SelectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
+						vm.UnselectedTitleColor = view.BarTextColor?.AsPaint()?.ToPlatform();
+						vm.SelectedForeground = view.SelectedTabColor?.AsPaint()?.ToPlatform();
+						vm.UnselectedForeground = view.UnselectedTabColor?.AsPaint()?.ToPlatform();
 					});
 
 				handler.UpdateValue(nameof(TabbedPage.CurrentPage));
