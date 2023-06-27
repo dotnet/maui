@@ -109,10 +109,14 @@ namespace Microsoft.Maui.Controls
 				// Windows supports nested tabs so we want the tabs to display
 				// if the current shell section has multiple contents
 				if (ShellItemController.GetItems().Count > 1 ||
-					(CurrentItem as IShellSectionController).GetItems().Count > 1)
+					(CurrentItem as IShellSectionController)?.GetItems()?.Count > 1)
+				{
 					defaultShowTabs = true;
+				}
 				else
+				{
 					defaultShowTabs = false;
+				}
 #else
 
 				if (ShellItemController.GetItems().Count <= 1)
