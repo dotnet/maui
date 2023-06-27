@@ -14,8 +14,8 @@ namespace Microsoft.Maui.Platform
 		/// <summary>
 		/// Updates the collection of KeyboardAccelerators used by a MenuFlyoutItemBase.
 		/// </summary>
-		/// <param name="platformView">The platform view, of type MenuFlyoutItemBase.</param>
-		/// <param name="menuFlyoutItem">The abstract MenuFlyoutItem with all the necessary information.</param>
+		/// <param name="platformView">The platform view, of type <see cref="MenuFlyoutItemBase"/>.</param>
+		/// <param name="menuFlyoutItem">The abstract menu flyout item, of type <see cref="IMenuFlyoutItem"/>, with all the necessary information.</param>
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
 			var keyboardAccelerators = menuFlyoutItem.Accelerators?.ToPlatform();
@@ -32,8 +32,8 @@ namespace Microsoft.Maui.Platform
 		/// A KeyboardAccelerator represents a keyboard shortcut (or accelerator) that lets a user perform an action using the keyboard instead
 		/// of navigating the app UI (directly or through access keys). 
 		/// </summary>
-		/// <param name="accelerators">List of IAccelerator</param>
-		/// <returns>List of KeyboardAccelerator</returns>
+		/// <param name="accelerators">List of <see cref="IAccelerator"/></param>
+		/// <returns>List of <see cref="KeyboardAccelerator"/></returns>
 		public static IList<KeyboardAccelerator>? ToPlatform(this IReadOnlyList<IAccelerator> accelerators)
 		{
 			if (accelerators is null)
