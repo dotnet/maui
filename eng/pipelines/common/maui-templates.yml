@@ -139,11 +139,11 @@ jobs:
           TEST_NAME: ${{ RunPlatform.testName }}
           VM_IMAGE: ${{ RunPlatform.vmImage }}
           POOL_NAME: ${{ RunPlatform.name}}
-          ${{ if ne(RunPlatform.osVersion, '')) }}:
+          ${{ if ne(RunPlatform.osVersion, '') }}:
             OS_VERSION: macOS.Name -equals ${{ RunPlatform.osVersion }}
           ${{ else }}:
             OS_VERSION: Agent.OS
-          ${{ if ne(RunPlatform.osArch, '')) }}:
+          ${{ if ne(RunPlatform.osArch, '') }}:
             OS_ARCH: macOS.Architecture -equals ${{ RunPlatform.osArch }}
           ${{ else }}:
             OS_ARCH: Agent.Version
