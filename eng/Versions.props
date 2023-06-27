@@ -12,7 +12,7 @@
     <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
     <MicrosoftExtensionsPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftExtensionsPackageVersion>
     <MicrosoftExtensionsServicingPackageVersion>$(MicrosoftExtensionsPackageVersion)</MicrosoftExtensionsServicingPackageVersion>
-    <SystemCodeDomPackageVersion>8.0.0-preview.6.23317.4</SystemCodeDomPackageVersion>
+    <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.6.359</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
