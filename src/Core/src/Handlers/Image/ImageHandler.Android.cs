@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(Drawable? obj) =>
+		void IImageSourcePartSetter.SetImageSource(Drawable? obj) =>
 			PlatformView.SetImageDrawable(obj);
 
 		public override void PlatformArrange(Graphics.Rect frame)

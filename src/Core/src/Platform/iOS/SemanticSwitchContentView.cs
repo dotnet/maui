@@ -14,8 +14,7 @@ internal class SemanticSwitchContentView : ContentView
 
 	internal SemanticSwitchContentView(IContentView virtualView)
 	{
-		CrossPlatformMeasure = virtualView.CrossPlatformMeasure;
-		CrossPlatformArrange = virtualView.CrossPlatformArrange;
+		CrossPlatformLayout = virtualView;
 		IsAccessibilityElement = true;
 	}
 

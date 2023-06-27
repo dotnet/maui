@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ListView)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewIsGroupingEnabledDoesNotCrash()
 		{
 			RunningApp.WaitForElement("First");
