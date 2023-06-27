@@ -40,6 +40,8 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
+					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
@@ -986,6 +988,8 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						new Label(),
 						new Button(),
+						new Controls.ContentView(),
+						new ScrollView(),
 						new CollectionView(),
 					}
 				};
@@ -1028,6 +1032,64 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 				await shell.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact(DisplayName = "Shell add then remove items from selected item")]
+		public async Task ShellAddRemoveItems()
+		{
+			FlyoutItem rootItem = null;
+			ShellItem homeItem = null;
+			int itemCount = 3;
+
+			SetupBuilder();
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				homeItem = new ShellContent()
+				{
+					Title = "Home",
+					Route = "MainPage",
+					Content = new ContentPage()
+				};
+				shell.Items.Add(homeItem);
+
+				rootItem = new FlyoutItem()
+				{
+					Title = "Items",
+					Route = "Items",
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems
+				};
+
+				for (int i = 0; i < itemCount; i++)
+				{
+					var shellContent = new ShellContent
+					{
+						Content = new ContentPage(),
+						Title = $"Item {i}",
+						Route = $"Item{i}"
+					};
+					rootItem.Items.Add(shellContent);
+				}
+				shell.Items.Add(rootItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			{
+				rootItem.IsVisible = true;
+
+				shell.CurrentItem = rootItem.Items.Last();
+
+				// Remove all root child items
+				for (int i = 0; i < itemCount; i++)
+				{
+					rootItem.Items.RemoveAt(0);
+				}
+
+				shell.CurrentItem = homeItem;
+				Assert.True(shell.CurrentSection.Title == "Home");
+
+				return Task.CompletedTask;
 			});
 		}
 
