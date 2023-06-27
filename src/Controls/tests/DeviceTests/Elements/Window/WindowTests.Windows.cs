@@ -14,8 +14,8 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
-		[Fact(DisplayName = "Swapping MainPage no Crash")]
-		public async Task SwappingMainPageNoCrash()
+		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]
+		public async Task SwappingMainPageDoesntCrash()
 		{
 			SetupBuilder();
 
