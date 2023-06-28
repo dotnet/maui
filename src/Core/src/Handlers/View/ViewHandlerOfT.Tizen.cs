@@ -1,9 +1,9 @@
 using System;
 using Tizen.UIExtensions.Common;
 using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
 using Rect = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
-using NView = Tizen.NUI.BaseComponents.View;
 using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Handlers

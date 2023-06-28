@@ -579,7 +579,7 @@ namespace Microsoft.Maui.Layouts.Flex
 				layout.flex_grows += child.Grow;
 				layout.flex_shrinks += child.Shrink;
 
-				if(layout.flex_dim > 0) 
+				if (layout.flex_dim > 0)
 				{
 					// If flex_dim is zero, it's because we're measuring unconstrained in that direction
 					// So we don't need to keep a running tally of available space

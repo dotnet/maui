@@ -4,10 +4,10 @@ using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.UIExtensions.NUI;
+using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
 using Size = Microsoft.Maui.Graphics.Size;
 using TCollectionView = Tizen.UIExtensions.NUI.CollectionView;
 using TItemSizingStrategy = Tizen.UIExtensions.NUI.ItemSizingStrategy;
-using IMeasurable = Tizen.UIExtensions.Common.IMeasurable;
 using TSize = Tizen.UIExtensions.Common.Size;
 
 namespace Microsoft.Maui.Controls.Handlers.Compatibility

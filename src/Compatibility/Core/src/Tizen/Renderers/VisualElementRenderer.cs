@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using Size = Microsoft.Maui.Graphics.Size;
-using Rect = Microsoft.Maui.Graphics.Rect;
-using Point = Microsoft.Maui.Graphics.Point;
 using Microsoft.Maui.Controls.Platform;
 using Tizen.NUI;
 using Tizen.UIExtensions.Common;
-using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
-using XFocusDirection = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection;
-using NView = Tizen.NUI.BaseComponents.View;
-using TPoint = Tizen.UIExtensions.Common.Point;
 using Tizen.UIExtensions.NUI;
+using NView = Tizen.NUI.BaseComponents.View;
+using Point = Microsoft.Maui.Graphics.Point;
+using Rect = Microsoft.Maui.Graphics.Rect;
+using Size = Microsoft.Maui.Graphics.Size;
+using Specific = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.VisualElement;
+using TPoint = Tizen.UIExtensions.Common.Point;
+using XFocusDirection = Microsoft.Maui.Controls.PlatformConfiguration.TizenSpecific.FocusDirection;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

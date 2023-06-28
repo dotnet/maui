@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Platform
 
 			if (buttonWidth <= 0)
 				return false;
-			
+
 			var x = motionEvent.GetX();
 			var y = motionEvent.GetY();
 

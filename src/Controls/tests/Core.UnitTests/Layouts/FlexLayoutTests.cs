@@ -1,7 +1,7 @@
 ﻿using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using Xunit;
 using NSubstitute;
+using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 {
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 		 * depending on the target platform.
 		 */
 
-		(IFlexLayout, IView) SetUpUnconstrainedTest() 
+		(IFlexLayout, IView) SetUpUnconstrainedTest()
 		{
 			var root = new Grid(); // FlexLayout requires a parent, at least for now
 			var flexLayout = new FlexLayout() as IFlexLayout;
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			_ = flexLayout.CrossPlatformMeasure(400, double.PositiveInfinity);
 
 			var flexFrame = flexLayout.GetFlexFrame(view);
-			
+
 			Assert.Equal(100, flexFrame.Height);
 		}
 
