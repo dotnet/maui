@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Layouts
 					ResolveStarRows(_gridHeightConstraint);
 				}
 			}
-			
+
 			public Rect GetCellBoundsFor(IView view, double xOffset, double yOffset)
 			{
 				var firstColumn = _grid.GetColumn(view).Clamp(0, _columns.Length - 1);
@@ -385,23 +385,23 @@ namespace Microsoft.Maui.Layouts
 			}
 
 			void FirstMeasurePass()
-            {
-                for (int n = 0; n < _cells.Length; n++)
-                {
-                    var cell = _cells[n];
+			{
+				for (int n = 0; n < _cells.Length; n++)
+				{
+					var cell = _cells[n];
 
 					bool treatCellHeightAsAuto = TreatCellHeightAsAuto(cell);
 					bool treatCellWidthAsAuto = TreatCellWidthAsAuto(cell);
 
-                    if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
-                    {
-                        // We still have some unknown measure constraints (* rows/columns that need to have
-                        // the Auto measurements settled before we can measure them). So mark this cell for the 
+					if (double.IsNaN(cell.MeasureHeight) || double.IsNaN(cell.MeasureWidth))
+					{
+						// We still have some unknown measure constraints (* rows/columns that need to have
+						// the Auto measurements settled before we can measure them). So mark this cell for the 
 						// second pass, to be done once we know the constraints.
-                        cell.NeedsSecondPass = true;
+						cell.NeedsSecondPass = true;
 
 						continue;
-                    }
+					}
 
 					var measure = MeasureCell(cell, cell.MeasureWidth, cell.MeasureHeight);
 
@@ -431,7 +431,7 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-            void SecondMeasurePass()
+			void SecondMeasurePass()
 			{
 				foreach (var cell in _cells)
 				{
@@ -960,7 +960,7 @@ namespace Microsoft.Maui.Layouts
 				return !AnyAuto(_rows);
 			}
 
-			void UpdateKnownMeasureWidth(Cell cell) 
+			void UpdateKnownMeasureWidth(Cell cell)
 			{
 				double measureWidth = 0;
 				for (int column = cell.Column; column < cell.Column + cell.ColumnSpan; column++)

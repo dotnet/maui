@@ -100,7 +100,7 @@ namespace Microsoft.Maui.Platform
 				decisionHandler(WKNavigationActionPolicy.Cancel);
 				return;
 			}
-				
+
 
 			var navEvent = WebNavigationEvent.NewPage;
 			var navigationType = navigationAction.NavigationType;
@@ -134,7 +134,7 @@ namespace Microsoft.Maui.Platform
 			_lastEvent = navEvent;
 
 			var virtualView = handler.VirtualView;
-	
+
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();
 

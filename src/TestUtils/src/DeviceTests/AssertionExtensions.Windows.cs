@@ -123,7 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 		// So, for now we're limiting this to 10 parallel windows which seems 
 		// to work fine.
 		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
-    
+
 		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
 			view.AttachAndRun(window => action());
 
@@ -272,10 +272,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
-		
+
 		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor());
-			
+
 		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
