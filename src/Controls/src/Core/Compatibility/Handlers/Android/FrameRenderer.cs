@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			if (Element == null)
 				return;
 
-			var shouldClip = Element.IsClippedToBoundsSet(Element.CornerRadius > 0f);
+			var shouldClip = Element.IsClippedToBoundsSet(Element.IsClippedToBounds);
 
 			this.SetClipToOutline(shouldClip);
 		}
