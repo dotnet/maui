@@ -273,7 +273,7 @@ namespace Microsoft.Maui.Platform
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 
-		internal static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView is null)
 				return;			
