@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
@@ -269,6 +271,23 @@ namespace Microsoft.Maui.Platform
 				navigationView.OpenPaneLength = 320;
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
+		}
+
+		internal static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is null)
+				return;			
+
+			if (provider is not null && imageSource is not null)
+			{
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+
+				platformView.Source = null;
+				
+				var fallbackIconSource = new ImageIconSource { ImageSource = nativeImageSource?.Value };
+				platformView.FallbackIconSource = fallbackIconSource;
+			}
 		}
 	}
 }

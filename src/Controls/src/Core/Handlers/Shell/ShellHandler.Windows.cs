@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Microsoft.Maui.Controls.Handlers
@@ -133,12 +134,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (togglePaneButton is null)
 				return;
 
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+			var icon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
 			var flyoutIcon = view.FlyoutIcon;
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			togglePaneButton
-				.UpdateBackgroundImageAsync(flyoutIcon, provider)
-				.FireAndForget();
+			icon.UpdateFlyoutIconAsync(flyoutIcon, provider).FireAndForget();
 		}
 	
 		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)
