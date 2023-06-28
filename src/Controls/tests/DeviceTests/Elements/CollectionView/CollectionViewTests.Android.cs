@@ -50,5 +50,37 @@ namespace Microsoft.Maui.DeviceTests
 			// Without Exceptions here, the test has passed.
 			Assert.Equal(0, (rootPage as IPageContainer<Page>).CurrentPage.Navigation.ModalStack.Count);
 		}
+
+		[Fact]
+		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView()
+		{
+			SetupBuilder();
+
+			var emptyView = new Label { Text = "Empty" };
+			var header = new Label { Text = "Header" };
+			var footer = new Label { Text = "Footer" };
+
+			var collectionView = new CollectionView
+			{
+				ItemsSource = null,
+				EmptyView = emptyView,
+				Header = header,
+				Footer = footer
+			};
+
+			ContentPage contentPage = new ContentPage() { Content = collectionView };
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(contentPage,
+				async (_) =>
+				{
+					await WaitForUIUpdate(frame, collectionView);
+
+					Assert.True(emptyView.Height > 0, "EmptyView is not displayed");
+					Assert.True(header.Height > 0, "Header is not displayed");
+					Assert.True(footer.Height > 0, "Footer is not displayed");
+				});
+		}
 	}
 }

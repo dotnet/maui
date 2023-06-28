@@ -1035,6 +1035,68 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Shell add then remove items from selected item")]
+		public async Task ShellAddRemoveItems()
+		{
+			FlyoutItem rootItem = null;
+			ShellItem homeItem = null;
+			int itemCount = 3;
+
+			SetupBuilder();
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				homeItem = new ShellContent()
+				{
+					Title = "Home",
+					Route = "MainPage",
+					Content = new ContentPage()
+				};
+				shell.Items.Add(homeItem);
+
+				rootItem = new FlyoutItem()
+				{
+					Title = "Items",
+					Route = "Items",
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems
+				};
+
+				for (int i = 0; i < itemCount; i++)
+				{
+					var shellContent = new ShellContent
+					{
+						Content = new ContentPage(),
+						Title = $"Item {i}",
+						Route = $"Item{i}"
+					};
+					rootItem.Items.Add(shellContent);
+				}
+				shell.Items.Add(rootItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				rootItem.IsVisible = true;
+
+				shell.CurrentItem = rootItem.Items.Last();
+
+				// Wait for the rootItem to finish loading before we remove items.
+				// If we just start removing items directly after setting the current item
+				// This can cause the platform to crash since we're pulling the
+				// carpet out from under it while it's trying to load.
+				await OnLoadedAsync(shell.CurrentPage);
+
+				// Remove all root child items
+				for (int i = 0; i < itemCount; i++)
+				{
+					rootItem.Items.RemoveAt(0);
+				}
+
+				shell.CurrentItem = homeItem;
+				Assert.True(shell.CurrentSection.Title == "Home");
+			});
+		}
+
 		[Fact(DisplayName = "Can Clear ShellContent")]
 		public async Task CanClearShellContent()
 		{
