@@ -41,6 +41,13 @@ namespace Maui.Controls.Sample.Pages
 					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
 				});
 
+				barItem.Add(new MenuFlyoutItem()
+				{
+					Text = "Added Disabled Flyout Item",
+					IsEnabled = false,
+					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
+				});
+
 				MenuBarItems.Add(barItem);
 			}
 			else
