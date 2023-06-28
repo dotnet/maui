@@ -9,18 +9,33 @@ namespace Microsoft.Maui.Platform
 {
 	public static class MenuExtensions
 	{
-		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuElement menuElement)
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuBarItem menuBarItem)
 		{
-			if (uiMenuElement is UIAction action)
-				action.Attributes = menuElement.ToUIMenuElementAttributes();
-
-			if (uiMenuElement is UICommand command)
-				command.Attributes = menuElement.ToUIMenuElementAttributes();
+			uiMenuElement.UpdateIsEnabled(menuBarItem.IsEnabled);
 		}
 
-		internal static UIMenuElementAttributes ToUIMenuElementAttributes(this IMenuElement menuElement)
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, IMenuFlyoutItem menuFlyoutItem)
 		{
-			return menuElement.IsEnabled ? 0 : UIMenuElementAttributes.Disabled;
+			uiMenuElement.UpdateIsEnabled(menuFlyoutItem.IsEnabled);
+		}
+
+		internal static void UpdateIsEnabled(this UIMenuElement uiMenuElement, bool isEnabled)
+		{
+			uiMenuElement.UpdateMenuElementAttributes(isEnabled);
+		}
+
+		internal static void UpdateMenuElementAttributes(this UIMenuElement uiMenuElement, bool isEnabled)
+		{
+			if (uiMenuElement is UIAction action)
+				action.Attributes = isEnabled.ToUIMenuElementAttributes();
+
+			if (uiMenuElement is UICommand command)
+				command.Attributes = isEnabled.ToUIMenuElementAttributes();
+		}
+
+		internal static UIMenuElementAttributes ToUIMenuElementAttributes(this bool isEnabled)
+		{
+			return isEnabled ? 0 : UIMenuElementAttributes.Disabled;
 		}
 
 		internal static UIImage? GetPlatformMenuImage(this IImageSource? imageSource, IMauiContext mauiContext)

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -23,7 +19,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void ToggleMenuBarItem(object sender, EventArgs e)
+		void OnToggleMenuBarItem(object sender, EventArgs e)
 		{
 			MenuBarItem barItem =
 				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");

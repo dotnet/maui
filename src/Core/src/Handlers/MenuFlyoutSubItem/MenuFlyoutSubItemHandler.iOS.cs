@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Foundation;
-using Microsoft.Maui.Platform;
-using ObjCRuntime;
-using UIKit;
+﻿using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -55,7 +49,7 @@ namespace Microsoft.Maui.Handlers
 						var menuElement = menuEnumerator.Current;
 
 						if (child.Title == menuElement.Text)
-							child.UpdateIsEnabled(menuElement);
+							child.UpdateIsEnabled(menuElement.IsEnabled);
 					}
 				}
 
