@@ -1074,11 +1074,17 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(rootItem);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				rootItem.IsVisible = true;
 
 				shell.CurrentItem = rootItem.Items.Last();
+
+				// Wait for the rootItem to finish loading before we remove items.
+				// If we just start removing items directly after setting the current item
+				// This can cause the platform to crash since we're pulling the
+				// carpet out from under it while it's trying to load.
+				await OnLoadedAsync(shell.CurrentPage);
 
 				// Remove all root child items
 				for (int i = 0; i < itemCount; i++)
@@ -1088,8 +1094,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				shell.CurrentItem = homeItem;
 				Assert.True(shell.CurrentSection.Title == "Home");
-
-				return Task.CompletedTask;
 			});
 		}
 
