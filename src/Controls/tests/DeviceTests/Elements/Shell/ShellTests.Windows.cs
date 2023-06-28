@@ -10,10 +10,10 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
-using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 using Xunit;
 using NavigationView = Microsoft.UI.Xaml.Controls.NavigationView;
 using WFrameworkElement = Microsoft.UI.Xaml.FrameworkElement;
+using WNavigationViewItem = Microsoft.UI.Xaml.Controls.NavigationViewItem;
 
 
 namespace Microsoft.Maui.DeviceTests

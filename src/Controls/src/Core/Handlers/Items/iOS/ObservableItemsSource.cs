@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			for (int n = 0; n < Count; n++)
 			{
-				if (this[n] == item)
+				if (Equals(this[n], item))
 				{
 					return NSIndexPath.Create(_section, n);
 				}
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			int count = 0;
 			foreach (var i in _itemsSource)
 			{
-				if (i == item)
+				if (Equals(i, item))
 					return count;
 				count++;
 			}
