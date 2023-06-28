@@ -251,6 +251,13 @@ namespace Microsoft.Maui.Controls
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
 
+			// If translation is only in one dimension => use a simpler more performant translation
+			// We use '.00001' instead of 'double.Epsilon' to permit some floating point calculations errors
+			if (Math.Abs(view.TranslationX - x) <= .00001)
+				return TranslateYTo(view, y, length, easing);
+			if (Math.Abs(view.TranslationY - y) <= .00001)
+				return TranslateXTo(view, x, length, easing);
+
 			easing ??= Easing.Linear;
 
 			var tcs = new TaskCompletionSource<bool>();
@@ -273,6 +280,40 @@ namespace Microsoft.Maui.Controls
 			}.Commit(view, nameof(TranslateTo), 16, length, null, (f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
+		}
+		/// <summary>
+		/// Animates an elements <see cref="VisualElement.TranslationX"/> property
+		/// from their current value to the new value. This ensures that the input layout is in the same position as the visual layout.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="x">The x component of the final translation vector.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+		public static Task<bool> TranslateXTo(this VisualElement view, double x, uint length = 250, Easing easing = null)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+
+			// Note: We use the same param 'name' as 'TranslateTo' stopping previous 'TranslateTo' animations
+			return AnimateTo(view, view.TranslationX, x, nameof(TranslateTo), (v, value) => v.TranslationX = value, length, easing);
+		}
+		/// <summary>
+		/// Animates an elements <see cref="VisualElement.TranslationY"/> property
+		/// from their current value to the new value. This ensures that the input layout is in the same position as the visual layout.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="y">The y component of the final translation vector.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+		public static Task<bool> TranslateYTo(this VisualElement view, double y, uint length = 250, Easing easing = null)
+		{
+			if (view == null)
+				throw new ArgumentNullException(nameof(view));
+
+			// Note: We use the same param 'name' as 'TranslateTo' stopping previous 'TranslateTo' animations
+			return AnimateTo(view, view.TranslationY, y, nameof(TranslateTo), (v, value) => v.TranslationY = value, length, easing);
 		}
 
 		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)
