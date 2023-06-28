@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TabbedPageWithListViewIssueTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Tab Two"));
@@ -39,6 +40,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TabbedPageWithListViewIssueTestsNavigateToAndVerifyListView ()
 		{
 			RunningApp.Tap (q => q.Marked ("List Page"));

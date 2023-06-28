@@ -39,8 +39,7 @@ namespace Microsoft.Maui.Controls
 
 			var viewGroup = new ContentViewGroup(radioButton.Context)
 			{
-				CrossPlatformMeasure = radioButton.VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = radioButton.VirtualView.CrossPlatformArrange
+				CrossPlatformLayout = radioButton.VirtualView
 			};
 
 			return viewGroup;

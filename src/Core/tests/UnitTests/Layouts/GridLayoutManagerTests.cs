@@ -2953,7 +2953,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		public void StarRowExpansionWorksWithDifferingScalars()
 		{
 			var grid = CreateGridLayout(rows: "*, 4.5*, *, 4.5*");
-			
+
 			grid.VerticalLayoutAlignment.Returns(LayoutAlignment.Fill);
 
 			var view0 = CreateTestView(new Size(100, 20));
@@ -2977,7 +2977,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedHeight, measure.Height);
 
 			// Now we'll arrange it at a larger height (as if we were filling up the height of a layout)
-			double arrangeHeight = measure.Height + 100; 
+			double arrangeHeight = measure.Height + 100;
 			manager.ArrangeChildren(new Rect(0, 0, measure.Width, arrangeHeight));
 
 			// Determine the destination Rect values that the manager passed in when calling Arrange() for each view
@@ -3055,7 +3055,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(expectedEvenRowWidth, view3Dest.Width, 1.0);
 		}
 
-		static Rect GetArrangedRect(IView view) 
+		static Rect GetArrangedRect(IView view)
 		{
 			var args = view.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
 			return (Rect)args[0];

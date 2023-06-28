@@ -1,4 +1,4 @@
-using Android.Widget;
+﻿using Android.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Graphics;
 
@@ -8,12 +8,7 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateBackground(this MaterialButton platformView, IButton button)
 		{
-			var background = button.Background;
-
-			if (background is SolidPaint)
-				platformView.UpdateBackground(background);
-			else
-				platformView.UpdateBorderDrawable(button);
+			platformView.UpdateBorderDrawable(button);
 		}
 
 		public static void UpdateStrokeColor(this MaterialButton platformView, IButton button)

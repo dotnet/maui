@@ -69,17 +69,11 @@
       <_MauiValidateRefsInfix> does not automatically include NuGet package references in your project.  Update your project by including this item:  &lt;PackageReference Include=&quot;</_MauiValidateRefsInfix>
       <!-- Microsoft.Maui.Controls -->
       <_MauiValidateRefsSuffix>&quot; Version=&quot;$(MauiVersion)&quot; /&gt;.  You can skip this warning by setting  &lt;SkipValidateMauiImplicitPackageReferences&gt;true&lt;/SkipValidateMauiImplicitPackageReferences&gt;  in your project file.</_MauiValidateRefsSuffix>
-      <_MauiValidateRefsCompatInfix>&quot; Version=&quot;$(MauiVersion)&quot; /&gt;.  If you also want to make use of some of the Xamarin.Forms compatibility types, you can also include this item:  &lt;PackageReference Include=&quot;</_MauiValidateRefsCompatInfix>
     </PropertyGroup>
 
     <Warning
       Code="MA002"
-      Condition="'$(UseMaui)' == 'true' and '$(UseMauiCompat)' != 'false'"
-      Text="$(_MauiValidateRefsPrefix) &lt;UseMaui&gt;true&lt;/UseMaui&gt; $(_MauiValidateRefsInfix)Microsoft.Maui.Controls$(_MauiValidateRefsCompatInfix)Microsoft.Maui.Controls.Compatibility$(_MauiValidateRefsSuffix)" />
-
-    <Warning
-      Code="MA002"
-      Condition="'$(UseMaui)' == 'true' and '$(UseMauiCompat)' == 'false'"
+      Condition="'$(UseMaui)' == 'true'"
       Text="$(_MauiValidateRefsPrefix) &lt;UseMaui&gt;true&lt;/UseMaui&gt; $(_MauiValidateRefsInfix)Microsoft.Maui.Controls$(_MauiValidateRefsSuffix)" />
 
     <Warning

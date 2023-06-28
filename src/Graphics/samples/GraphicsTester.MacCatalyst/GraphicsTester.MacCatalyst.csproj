@@ -8,6 +8,8 @@
     <LangVersion>10.0</LangVersion>
     <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
+    <!-- Disable multi-RID builds to workaround a parallel build issue -->
+    <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
