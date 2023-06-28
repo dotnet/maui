@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 		const string Separator = "+";
 		readonly string _text;
 
-		internal Accelerator(string text, List<string> modifiers, string key)
+		internal Accelerator(string text, IEnumerable<string> modifiers, string key)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
