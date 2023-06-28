@@ -51,5 +51,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			var markupString = @"{x:Type TypeName=sys:String}";
 			Assert.AreEqual(typeof(string), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));
 		}
+
+		[Test]
+		public void DontExpandToExtension()
+		{
+			var markupString = @"{x:Type Binding}";
+			Assert.AreEqual(typeof(Binding), (new MarkupExtensionParser()).ParseExpression(ref markupString, serviceProvider));			
+		}
 	}
 }

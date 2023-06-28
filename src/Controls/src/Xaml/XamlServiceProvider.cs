@@ -177,8 +177,11 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 		}
 
 		Type IXamlTypeResolver.Resolve(string qualifiedTypeName, IServiceProvider serviceProvider)
+			=> ((IXamlTypeResolver)this).Resolve(qualifiedTypeName, true, serviceProvider);		
+
+		Type IXamlTypeResolver.Resolve(string qualifiedTypeName, bool tryExtensionFirst, IServiceProvider serviceProvider)
 		{
-			var type = Resolve(qualifiedTypeName, serviceProvider, out XamlParseException e);
+			var type = Resolve(qualifiedTypeName, tryExtensionFirst, serviceProvider, out XamlParseException e);
 			if (e != null)
 				throw e;
 			return type;
@@ -186,18 +189,18 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 
 		bool IXamlTypeResolver.TryResolve(string qualifiedTypeName, out Type type)
 		{
-			type = Resolve(qualifiedTypeName, null, out XamlParseException exception);
+			type = Resolve(qualifiedTypeName, true, null, out XamlParseException exception);
 			return exception == null;
 		}
 
 		internal bool TryResolve(XmlType xmlType, out Type type)
 		{
 			XamlParseException exception;
-			type = getTypeFromXmlName(xmlType, null, currentAssembly, out exception);
+			type = getTypeFromXmlName(xmlType, true, null, currentAssembly, out exception);
 			return exception == null;
 		}
 
-		Type Resolve(string qualifiedTypeName, IServiceProvider serviceProvider, out XamlParseException exception)
+		Type Resolve(string qualifiedTypeName, bool tryExtensionFirst, IServiceProvider serviceProvider, out XamlParseException exception)
 		{
 			exception = null;
 			var split = qualifiedTypeName.Split(':');
@@ -230,10 +233,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 				return null;
 			}
 
-			return getTypeFromXmlName(new XmlType(namespaceuri, name, null), xmlLineInfo, currentAssembly, out exception);
+			return getTypeFromXmlName(new XmlType(namespaceuri, name, null), tryExtensionFirst, xmlLineInfo, currentAssembly, out exception);
 		}
 
-		internal delegate Type GetTypeFromXmlName(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);
+		internal delegate Type GetTypeFromXmlName(XmlType xmlType, bool tryExtensionFirst, IXmlLineInfo xmlInfo, Assembly currentAssembly, out XamlParseException exception);
 	}
 
 	class XamlRootObjectProvider : IRootObjectProvider

@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				throw new XamlParseException("TypeName isn't set.", li);
 			}
 
-			return typeResolver.Resolve(TypeName, serviceProvider);
+			return typeResolver.Resolve(TypeName, tryExtensionFirst: false, serviceProvider: serviceProvider);
 		}
 
 		object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)

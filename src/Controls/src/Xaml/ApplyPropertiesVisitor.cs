@@ -316,7 +316,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				var typename = localname.Substring(0, dotIdx);
 				localname = localname.Substring(dotIdx + 1);
 				XamlParseException xpe;
-				elementType = XamlParser.GetElementType(new XmlType(namespaceURI, typename, null), lineInfo,
+				elementType = XamlParser.GetElementType(new XmlType(namespaceURI, typename, null), true, lineInfo,
 					rootElement.GetType().Assembly, out xpe);
 
 				if (xpe != null)

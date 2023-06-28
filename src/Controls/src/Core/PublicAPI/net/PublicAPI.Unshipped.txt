@@ -1,5 +1,6 @@
 ﻿#nullable enable
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
+~Microsoft.Maui.Controls.Xaml.IXamlTypeResolver.Resolve(string qualifiedTypeName, bool tryExtensionFirst, System.IServiceProvider serviceProvider = null) -> System.Type
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!

@@ -356,7 +356,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			}
 		}
 
-		public static Type GetElementType(XmlType xmlType, IXmlLineInfo xmlInfo, Assembly currentAssembly,
+		public static Type GetElementType(XmlType xmlType, bool tryExtensionFirst, IXmlLineInfo xmlInfo, Assembly currentAssembly,
 			out XamlParseException exception)
 		{
 			bool hasRetriedNsSearch = false;
@@ -374,7 +374,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					if (t is not null && t.IsPublicOrVisibleInternal(currentAssembly))
 						return t;
 					return null;
-				});
+				}, tryExtensionFirst);
 
 			var typeArguments = xmlType.TypeArguments;
 			exception = null;
@@ -398,7 +398,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				XamlParseException innerexception = null;
 				var args = typeArguments.Select(delegate (XmlType xmltype)
 				{
-					var t = GetElementType(xmltype, xmlInfo, currentAssembly, out XamlParseException xpe);
+					var t = GetElementType(xmltype, true, xmlInfo, currentAssembly, out XamlParseException xpe);
 					if (xpe != null)
 					{
 						innerexception = xpe;

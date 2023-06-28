@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				node.CollectionItems.Clear();
 			}
 
-			var typeref = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, valueNode.Value as string, module, node as BaseNode));
+			var typeref = module.ImportReference(XmlTypeExtensions.GetTypeReference(context.Cache, valueNode.Value as string, false, module, node as BaseNode));
 
 			context.TypeExtensions[node] = typeref ?? throw new BuildException(BuildExceptionCode.TypeResolution, node as IXmlLineInfo, null, valueNode.Value);
 
