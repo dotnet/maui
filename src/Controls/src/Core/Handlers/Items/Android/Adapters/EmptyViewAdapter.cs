@@ -10,12 +10,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 {
 	public class EmptyViewAdapter : RecyclerView.Adapter
 	{
-		double _headerHeight;
+		int _headerHeight;
 		int _headerViewType;
 		object _headerView;
 		DataTemplate _headerViewTemplate;
 
-		double _footerHeight;
+		int _footerHeight;
 		int _footerViewType;
 		object _footerView;
 		DataTemplate _footerViewTemplate;
@@ -301,25 +301,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (item == null)
 				return;
 
-			var size = Size.Zero;
+			var sizeRequest = new SizeRequest(new Size(0, 0));
 
-			if (item is IView view)
-			{
-				if (view.Handler == null)
-				{
-					TemplateHelpers.GetHandler(view as View, ItemsView.FindMauiContext());
-				}
-
-				size = view.Measure(double.PositiveInfinity, double.PositiveInfinity);
-			}
+			if (item is View view)
+				sizeRequest = view.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 
 			if (item is DataTemplate dataTemplate)
 			{
-				var content = dataTemplate.CreateContent() as IView;
-				size = content.Measure(double.PositiveInfinity, double.PositiveInfinity);
+				var content = dataTemplate.CreateContent() as View;
+				sizeRequest = content.Measure(double.PositiveInfinity, double.PositiveInfinity, MeasureFlags.IncludeMargins);
 			}
 
-			var itemHeight = size.Height;
+			var itemHeight = (int)sizeRequest.Request.Height;
 
 			if (isHeader)
 				_headerHeight = itemHeight;
