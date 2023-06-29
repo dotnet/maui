@@ -290,7 +290,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> TranslateXTo(this VisualElement view, double x, uint length = 250, Easing easing = null)
+		public static Task<bool> TranslateXTo(this VisualElement view, double x, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
@@ -307,7 +307,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
-		public static Task<bool> TranslateYTo(this VisualElement view, double y, uint length = 250, Easing easing = null)
+		public static Task<bool> TranslateYTo(this VisualElement view, double y, uint length = 250, Easing? easing = null)
 		{
 			if (view == null)
 				throw new ArgumentNullException(nameof(view));
