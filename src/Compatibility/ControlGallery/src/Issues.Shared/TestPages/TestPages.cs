@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			// Running on the simulator
 			var app = ConfigureApp.iOS
-							.PreferIdeSettings()
+							//.PreferIdeSettings()
 							.AppBundle(AppPaths.iOSPath)
 							.Debug()
 							.StartApp();
