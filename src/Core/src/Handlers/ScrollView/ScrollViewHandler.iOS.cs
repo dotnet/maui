@@ -176,7 +176,8 @@ namespace Microsoft.Maui.Handlers
 			var contentContainer = new ContentView()
 			{
 				View = scrollView.PresentedContent,
-				Tag = ContentPanelTag
+				Tag = ContentPanelTag,
+				ClipsToBounds = true //Content should be clipped to the bounds of the ScrollView otherwise it will be visible outside the ScrollView but it can not be clicked causing problems.
 			};
 
 			// This is where we normally would inject the cross-platform ScrollView's layout logic; instead, we're injecting the
@@ -323,11 +324,16 @@ namespace Microsoft.Maui.Handlers
 
 			var container = GetContentView(platformScrollView);
 
+			scrollView.CrossPlatformArrange(bounds);
+			var contentSize = scrollView.ContentSize; // ContentSize is updated to only the minimum size needed to fit the content
+
 			if (container?.Superview is UIScrollView uiScrollView)
 			{
 				// Ensure the container is at least the size of the UIScrollView itself, so that the 
 				// cross-platform layout logic makes sense and the contents don't arrange outside the 
 				// container. (Everything will look correct if they do, but hit testing won't work properly.)
+
+				// The containers bounds must be at least as large as the ScrollView content size or hit testing won't work properly
 
 				var scrollViewBounds = uiScrollView.Bounds;
 				var containerBounds = contentSize;
