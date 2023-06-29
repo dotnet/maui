@@ -1,4 +1,4 @@
-name: Daily code format check
+name: Daily code format check net7.0 branch
 on:
   workflow_dispatch:
   schedule:
@@ -15,7 +15,7 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: net7.0
 
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v3.2.0
@@ -45,4 +45,5 @@ jobs:
             area/infrastructure 🏗️
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
-          branch: housekeeping/fix-codeformatting
+          branch: housekeeping/fix-codeformatting-net7.0
+          base: net7.0
