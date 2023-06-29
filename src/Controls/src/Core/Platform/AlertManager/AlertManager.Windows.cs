@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 				arguments.SetResult(await CurrentAlert.ConfigureAwait(false));
 				CurrentAlert = null;
 			}
-			
+
 			async void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))

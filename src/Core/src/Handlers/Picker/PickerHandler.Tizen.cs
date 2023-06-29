@@ -1,9 +1,9 @@
 ﻿using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
 using NColor = Tizen.NUI.Color;
+using NEntry = Tizen.UIExtensions.NUI.Entry;
 using NPosition = Tizen.NUI.Position;
 using NView = Tizen.NUI.BaseComponents.View;
-using NEntry = Tizen.UIExtensions.NUI.Entry;
 
 namespace Microsoft.Maui.Handlers
 {

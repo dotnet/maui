@@ -1,5 +1,5 @@
-﻿using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
-using AutoCapital = Tizen.NUI.InputMethod.AutoCapitalType;
+﻿using AutoCapital = Tizen.NUI.InputMethod.AutoCapitalType;
+using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
 
 namespace Microsoft.Maui.Platform
 {

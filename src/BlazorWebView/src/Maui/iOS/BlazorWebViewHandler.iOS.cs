@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 					content.Dispose();
 
 					contentType = headers["Content-Type"];
-			
+
 					_webViewHandler?.Logger.ResponseContentBeingSent(url, statusCode);
 
 					return ms.ToArray();
