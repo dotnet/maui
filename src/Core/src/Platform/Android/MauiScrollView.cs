@@ -327,12 +327,11 @@ namespace Microsoft.Maui.Platform
 
 		internal bool IsBidirectional { get; set; }
 
-		public override void Draw(Canvas? canvas)
+		public override void Draw(Canvas canvas)
 		{
 			try
 			{
-				if (canvas != null)
-					canvas.ClipRect(canvas.ClipBounds);
+				canvas.ClipRect(canvas.ClipBounds);
 
 				base.Draw(canvas);
 			}
