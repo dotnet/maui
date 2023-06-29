@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __IOS__
 		static IApp InitializeiOSApp()
 		{
-			/*
+			
 			string UDID = "";
 
 			if (TestContext.Parameters.Exists("UDID"))
@@ -144,14 +144,14 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
 			{
 				iOSVersion = _iosVersion;
-			}*/
+			}
 
 			// Running on the simulator
-			var app = ConfigureApp.iOS
-							//.PreferIdeSettings()
-							.AppBundle(AppPaths.iOSPath)
-							.Debug()
-							.StartApp();
+			//var app = ConfigureApp.iOS
+			//				//.PreferIdeSettings()
+			//				.AppBundle(AppPaths.iOSPath)
+			//				.Debug()
+			//				.StartApp();
 
 			return app;
 		}
