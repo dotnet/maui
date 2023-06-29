@@ -180,7 +180,7 @@ public static int foo = 2130771968;
 
 ### Compile using a local `bin\dotnet`
 
-This method ensures that the workloads installed by Visual Studio won't get changed. This is usually the best method to use if you want to preserve the global state of your machine. This method will also use the versions that are specific to the branch you are on which is a good way to ensure compatibility.
+This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
 
 #### Cake
 
