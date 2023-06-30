@@ -74,9 +74,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Identifies the PointerEnteredCommandParameter bindable property.
 		/// </summary>
-		public ICommand PointerEnteredCommandParameter
+		public object PointerEnteredCommandParameter
 		{
-			get { return (ICommand)GetValue(PointerEnteredCommandParameterProperty); }
+			get { return GetValue(PointerEnteredCommandParameterProperty); }
 			set { SetValue(PointerEnteredCommandParameterProperty, value); }
 		}
 
@@ -92,9 +92,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Identifies the PointerExitedCommandParameter bindable property.
 		/// </summary>
-		public ICommand PointerExitedCommandParameter
+		public object PointerExitedCommandParameter
 		{
-			get { return (ICommand)GetValue(PointerExitedCommandParameterProperty); }
+			get { return GetValue(PointerExitedCommandParameterProperty); }
 			set { SetValue(PointerExitedCommandParameterProperty, value); }
 		}
 
@@ -110,9 +110,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Identifies the PointerMovedCommandParameter bindable property.
 		/// </summary>
-		public ICommand PointerMovedCommandParameter
+		public object PointerMovedCommandParameter
 		{
-			get { return (ICommand)GetValue(PointerMovedCommandParameterProperty); }
+			get { return GetValue(PointerMovedCommandParameterProperty); }
 			set { SetValue(PointerMovedCommandParameterProperty, value); }
 		}
 
