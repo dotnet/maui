@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		// (like LongPress) don't really work. The test should work manually on a touch screen, though.
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2981Test()
 		{
 			RunningApp.Screenshot("I am at Issue 1");
