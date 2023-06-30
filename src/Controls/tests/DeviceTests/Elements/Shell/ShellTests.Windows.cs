@@ -249,10 +249,12 @@ namespace Microsoft.Maui.DeviceTests
 			var content1 = new ShellContent();
 			content1.Title = "Hello";
 			content1.Route = $"...";
+			content1.Content = new ContentPage();
 
 			var content2 = new ShellContent();
 			content2.Title = "World";
 			content2.Route = $"...";
+			content2.Content = new ContentPage();
 
 			var shell = await CreateShellAsync((shell) =>
 			{

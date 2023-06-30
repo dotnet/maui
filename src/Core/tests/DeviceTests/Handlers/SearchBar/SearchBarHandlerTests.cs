@@ -164,7 +164,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var height = GetInputFieldHeight(handler);
 					Assert.True(height >= 44);
-				});
+				}
+#if WINDOWS
+					, MauiContext
+#endif
+				);
 			});
 		}
 
