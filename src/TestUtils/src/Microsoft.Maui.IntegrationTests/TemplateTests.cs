@@ -14,16 +14,16 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", "net6.0", "Debug", false)]
-		[TestCase("maui", "net6.0", "Release", false)]
+		[TestCase("maui", "net8.0", "Debug", false)]
+		[TestCase("maui", "net8.0", "Release", false)]
 		[TestCase("maui", "net7.0", "Debug", false)]
 		[TestCase("maui", "net7.0", "Release", false)]
-		[TestCase("maui-blazor", "net6.0", "Debug", false)]
-		[TestCase("maui-blazor", "net6.0", "Release", false)]
+		[TestCase("maui-blazor", "net8.0", "Debug", false)]
+		[TestCase("maui-blazor", "net8.0", "Release", false)]
 		[TestCase("maui-blazor", "net7.0", "Debug", false)]
 		[TestCase("maui-blazor", "net7.0", "Release", false)]
-		[TestCase("mauilib", "net6.0", "Debug", true)]
-		[TestCase("mauilib", "net6.0", "Release", true)]
+		[TestCase("mauilib", "net8.0", "Debug", true)]
+		[TestCase("mauilib", "net8.0", "Release", true)]
 		[TestCase("mauilib", "net7.0", "Debug", true)]
 		[TestCase("mauilib", "net7.0", "Release", true)]
 		public void Build(string id, string framework, string config, bool shouldPack)
@@ -47,12 +47,12 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net6.0", "Debug")]
-		[TestCase("maui", "net6.0", "Release")]
+		[TestCase("maui", "net8.0", "Debug")]
+		[TestCase("maui", "net8.0", "Release")]
 		[TestCase("maui", "net7.0", "Debug")]
 		[TestCase("maui", "net7.0", "Release")]
-		[TestCase("maui-blazor", "net6.0", "Debug")]
-		[TestCase("maui-blazor", "net6.0", "Release")]
+		[TestCase("maui-blazor", "net8.0", "Debug")]
+		[TestCase("maui-blazor", "net8.0", "Release")]
 		[TestCase("maui-blazor", "net7.0", "Debug")]
 		[TestCase("maui-blazor", "net7.0", "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
@@ -73,8 +73,8 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("mauilib", "net6.0", "Debug")]
-		[TestCase("mauilib", "net6.0", "Release")]
+		[TestCase("mauilib", "net8.0", "Debug")]
+		[TestCase("mauilib", "net8.0", "Release")]
 		[TestCase("mauilib", "net7.0", "Debug")]
 		[TestCase("mauilib", "net7.0", "Release")]
 		public void PackCoreLib(string id, string framework, string config)
@@ -98,9 +98,9 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net7.0", "Debug")]
-		[TestCase("mauilib", "net7.0", "Debug")]
-		[TestCase("maui-blazor", "net7.0", "Debug")]
+		[TestCase("maui", "net8.0", "Debug")]
+		[TestCase("mauilib", "net8.0", "Debug")]
+		[TestCase("maui-blazor", "net8.0", "Debug")]
 		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;

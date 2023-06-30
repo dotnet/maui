@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
@@ -50,6 +50,8 @@
   <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
+
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
