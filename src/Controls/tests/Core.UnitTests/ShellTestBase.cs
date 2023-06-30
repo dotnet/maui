@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[QueryProperty("SomeQueryParameter", "SomeQueryParameter")]
 		[QueryProperty("CancelNavigationOnBackButtonPressed", "CancelNavigationOnBackButtonPressed")]
 		[QueryProperty("ComplexObject", "ComplexObject")]
-		public class ShellTestPage : ContentPage
+		public class ShellTestPage : ContentPage, IQueryAttributable
 		{
 			public string CancelNavigationOnBackButtonPressed { get; set; }
 			public ShellTestPage()
@@ -127,6 +127,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					return false;
 
 				return base.OnBackButtonPressed();
+			}
+
+			public List<IDictionary<string, object>> AppliedQueryAttributes = new List<IDictionary<string, object>>();
+			public void ApplyQueryAttributes(IDictionary<string, object> query)
+			{
+				AppliedQueryAttributes.Add(new Dictionary<string, object>(query));
 			}
 		}
 

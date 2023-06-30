@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -374,6 +375,103 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 			Assert.Equal(2d, testPage.DoubleQueryParameter);
 			Assert.Equal(obj, testPage.ComplexObject);
+		}
+
+		[Fact]
+		public async Task ExtraParametersDontGetRetained()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			var obj = new object();
+			var parameter = new ShellRouteParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{ "ComplexObject", obj}
+			};
+
+			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+
+			await shell.Navigation.PushAsync(new ContentPage());
+
+			testPage.SomeQueryParameter = String.Empty;
+			testPage.DoubleQueryParameter = -1d;
+			testPage.ComplexObject = null;
+
+			await shell.GoToAsync("..");
+
+			Assert.Equal("1234", testPage.SomeQueryParameter);
+			Assert.Equal(-1d, testPage.DoubleQueryParameter);
+			Assert.Null(testPage.ComplexObject);
+
+			// ensure that AppliedQueryAttributes is called with correct parameters each time
+			Assert.Equal(2, testPage.AppliedQueryAttributes.Count);
+			Assert.Equal(3, testPage.AppliedQueryAttributes[0].Count);
+			Assert.Equal(1, testPage.AppliedQueryAttributes[1].Count);
+			Assert.Equal($"{nameof(ShellTestPage.SomeQueryParameter)}", testPage.AppliedQueryAttributes[1].Keys.First());
+		}
+
+		[Fact]
+		public async Task ExtraParametersArentReAppliedWhenNavigatingBackToShellContent()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem(shellContentRoute: "start");
+			var withParams = CreateShellItem(page: new ShellTestPage(), shellContentRoute: "withParams", templated: true);
+			shell.Items.Add(item);
+			shell.Items.Add(withParams);
+			var obj = new object();
+			var parameter = new ShellRouteParameters
+			{
+				{ "ComplexObject", obj},
+				{ nameof(ShellTestPage.SomeQueryParameter), "1234"}
+			};
+
+			await shell.GoToAsync(new ShellNavigationState($"//start"));
+			await shell.GoToAsync(new ShellNavigationState($"//withParams"), parameter);
+
+			var testPage = (shell.CurrentItem.CurrentItem.CurrentItem as IShellContentController).GetOrCreateContent() as ShellTestPage;
+
+			// Validate parameter was set during first navigation
+			Assert.Equal(obj, testPage.ComplexObject);
+
+			// Clear parameters
+			testPage.ComplexObject = null;
+			testPage.SomeQueryParameter = null;
+
+			// Navigate away and back to page with params
+			await shell.GoToAsync(new ShellNavigationState($"//start"));
+			shell.CurrentItem = withParams;
+			await Task.Yield();
+
+			var testPage2 = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			Assert.Null(testPage2.SomeQueryParameter);
+			Assert.Null(testPage2.ComplexObject);
+			Assert.Equal(testPage2, testPage);
+		}
+
+		[Fact]
+		public async Task SingleUseQueryParametersReplaceQueryStringParams()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+
+			var parameter = new KeyValuePair<string, object>(
+				$"{nameof(ShellTestPage.SomeQueryParameter)}", "4321");
+
+			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
+			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+
+			// Parameters passed in will win
+			Assert.Equal("4321", testPage.SomeQueryParameter);
+			await shell.Navigation.PushAsync(new ContentPage());
+			testPage.SomeQueryParameter = "TheseDontGetSetAgain";
+			await shell.GoToAsync("..");
+
+			Assert.Equal("TheseDontGetSetAgain", testPage.SomeQueryParameter);
 		}
 
 		[Fact]

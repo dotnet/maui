@@ -691,6 +691,31 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="state"></param>
+		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, KeyValuePair<string, object> singleUseQueryParameter)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="state"></param>
+		/// <param name="animate"></param>
+		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, bool animate, KeyValuePair<string, object> singleUseQueryParameter)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 		public void AddLogicalChild(Element element)
 		{
 			if (element == null)
