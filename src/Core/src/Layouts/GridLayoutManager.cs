@@ -660,7 +660,7 @@ namespace Microsoft.Maui.Layouts
 				if (decompressing)
 				{
 					// This pass is for arrangement, we don't need to update the measure values
-					return;				
+					return;
 				}
 
 				foreach (var cell in _cells)
