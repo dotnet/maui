@@ -4,7 +4,7 @@
 string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "14.4";
-const string dotnetVersion = "net7.0";
+const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
