@@ -667,8 +667,9 @@ namespace Microsoft.Maui.Layouts
 				static bool cellCheck(Cell cell) => cell.IsColumnSpanStar;
 				static double getDimension(Size size) => size.Width;
 
-				ResolveStars(_columns, availableSpace, cellCheck, getDimension, _columnStarCount);
 
+				ResolveStars(_columns, availableSpace, cellCheck, getDimension, _columnStarCount);
+        
 				foreach (var cell in _cells)
 				{
 					if (double.IsNaN(cell.MeasureWidth))
