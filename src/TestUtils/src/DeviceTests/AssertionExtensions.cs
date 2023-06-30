@@ -222,8 +222,10 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = await createHandler(view);
 #if WINDOWS
 				return await view.ToPlatform(mauiContext).AttachAndRun<T>((window) => action(handler), mauiContext);
-#else
+#elif !TIZEN
 				return await view.ToPlatform().AttachAndRun(() => action(handler));
+#else
+				throw new NotImplementedException();
 #endif
 			}
 		}
