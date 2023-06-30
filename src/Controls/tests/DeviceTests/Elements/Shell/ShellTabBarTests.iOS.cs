@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
@@ -13,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
 		{
 			var shellItem = item.Parent as ShellItem;
 			var shell = shellItem.Parent as Shell;
@@ -30,10 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(tabBarItemView);
 
-			// TODO: Validate UITabBarItem color
-			//await tabBarItemView.AssertContainsColor(expectedColor, MauiContext);
-
-			return Task.CompletedTask;
+			await tabBar.AssertContainsColor(expectedColor, MauiContext);
 		}
 	}
 }
