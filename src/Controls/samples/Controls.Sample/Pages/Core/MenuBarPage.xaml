@@ -28,6 +28,7 @@
                 <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" />
                 <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2 (Disabled)" IsEnabled="False" />
             </MenuFlyoutSubItem>
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 2 (Disabled)" IsEnabled="False" />
         </MenuBarItem>
     </views:BasePage.MenuBarItems>
     <views:BasePage.Content>
