@@ -7,6 +7,12 @@ Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.FlyoutOve
 Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.FlyoutOverlapsDetailsInPopoverMode.set -> void
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
 Microsoft.Maui.Controls.Platform.ShapesExtensions
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> object!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void

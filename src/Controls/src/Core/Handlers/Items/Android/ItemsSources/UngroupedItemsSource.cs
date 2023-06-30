@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_source = source;
 		}
 
-		public int Count => _source.Count + (HasHeader ? 1 : 0) + (HasFooter ? 1 : 0);
+		public int Count => _source.Count;
 
 		public bool HasHeader { get => _source.HasHeader; set => _source.HasHeader = value; }
 		public bool HasFooter { get => _source.HasFooter; set => _source.HasFooter = value; }
