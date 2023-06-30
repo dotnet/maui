@@ -12,6 +12,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.ge
 *REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
 *REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.~StructuredItemsViewHandler() -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, out object! value) -> bool
 override Microsoft.Maui.Controls.Handlers.BoxViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
@@ -118,7 +119,6 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParam
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object!>>! collection) -> void
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].get -> object!
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].set -> void
-Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, out object! value) -> bool
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters singleUseQueryParameter) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters singleUseQueryParameter) -> System.Threading.Tasks.Task

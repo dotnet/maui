@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Maui.Controls
 {
@@ -94,7 +95,11 @@ namespace Microsoft.Maui.Controls
 			return (_internal as ICollection<KeyValuePair<string, object>>).Remove(item);
 		}
 
+#if NETSTANDARD2_1 || NETSTANDARD2_0
 		public bool TryGetValue(string key, out object value)
+#else
+		public bool TryGetValue(string key, [MaybeNullWhen(false)] out object value)
+#endif
 		{
 			return _internal.TryGetValue(key, out value);
 		}
