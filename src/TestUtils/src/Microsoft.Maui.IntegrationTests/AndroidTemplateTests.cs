@@ -47,12 +47,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 
 		[Test]
-		[TestCase("maui", "net6.0", "Debug")]
-		[TestCase("maui", "net6.0", "Release")]
+		[TestCase("maui", "net8.0", "Debug")]
+		[TestCase("maui", "net8.0", "Release")]
 		[TestCase("maui", "net7.0", "Debug")]
 		[TestCase("maui", "net7.0", "Release")]
-		[TestCase("maui-blazor", "net6.0", "Debug")]
-		[TestCase("maui-blazor", "net6.0", "Release")]
+		[TestCase("maui-blazor", "net8.0", "Debug")]
+		[TestCase("maui-blazor", "net8.0", "Release")]
 		[TestCase("maui-blazor", "net7.0", "Debug")]
 		[TestCase("maui-blazor", "net7.0", "Release")]
 		public void RunOnAndroid(string id, string framework, string config)

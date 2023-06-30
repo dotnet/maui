@@ -31,7 +31,7 @@ ProcessTFMSwitches();
 // Tasks for CI
 
 Task("dotnet")
-    .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
+    .Description("Provisions .NET 8 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
         if (!localDotnet) 

@@ -7,7 +7,7 @@
 
 string TARGET = Argument("target", "Test");
 const string defaultVersion = "30";
-const string dotnetVersion = "net7.0";
+const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");

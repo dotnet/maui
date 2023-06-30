@@ -2,7 +2,7 @@ variables:
 - name: BuildVersion
   value: $[counter('buildversion-counter', 5000)]
 - name: NUGET_VERSION
-  value: 5.8.1
+  value: 6.4.0
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
 - name: DOTNET_VERSION
@@ -24,11 +24,11 @@ variables:
 - name: isPullRequest
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: isLocHandoffBranch
-  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main')]
+  value: $[in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/net8.0', 'refs/heads/main')]
 - name: signingCondition
   value: $[or(
             eq(variables['Sign'], 'true'),
-            in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/main'),
+            in(variables['Build.SourceBranch'], 'refs/heads/net6.0', 'refs/heads/net7.0', 'refs/heads/net8.0', 'refs/heads/main'),
             startsWith(variables['Build.SourceBranch'], 'refs/tags/'),
             startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')
           )]
