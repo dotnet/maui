@@ -698,7 +698,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="state"></param>
 		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
 		/// <returns></returns>
-		public Task GoToAsync(ShellNavigationState state, KeyValuePair<string, object> singleUseQueryParameter)
+		public Task GoToAsync(ShellNavigationState state, ShellNavigationQueryParameters singleUseQueryParameter)
 		{
 			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
 		}
@@ -710,7 +710,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="animate"></param>
 		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
 		/// <returns></returns>
-		public Task GoToAsync(ShellNavigationState state, bool animate, KeyValuePair<string, object> singleUseQueryParameter)
+		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters singleUseQueryParameter)
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
 		}

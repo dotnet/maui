@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls
 {
 	internal class ShellRouteParameters : Dictionary<string, object>
 	{
-		KeyValuePair<string, object>? _singleUseQueryParameter;
+		ShellNavigationQueryParameters _singleUseQueryParameters;
 
 		public ShellRouteParameters()
 		{
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 		public ShellRouteParameters(ShellRouteParameters shellRouteParams) : base(shellRouteParams)
 		{
-			_singleUseQueryParameter = shellRouteParams._singleUseQueryParameter;
+			_singleUseQueryParameters = shellRouteParams._singleUseQueryParameters;
 		}
 
 		internal ShellRouteParameters(ShellRouteParameters query, string prefix)
@@ -32,29 +32,35 @@ namespace Microsoft.Maui.Controls
 				this.Add(key, q.Value);
 			}
 
-			_singleUseQueryParameter = query._singleUseQueryParameter;
+			_singleUseQueryParameters = query._singleUseQueryParameters;
 		}
 
 		internal ShellRouteParameters(IDictionary<string, object> shellRouteParams) : base(shellRouteParams)
 		{
 		}
 
-		internal ShellRouteParameters(KeyValuePair<string, object> singleUseQueryParameter)
+		internal ShellRouteParameters(ShellNavigationQueryParameters singleUseQueryParameters)
 		{
-			this.Add(singleUseQueryParameter.Key, singleUseQueryParameter.Value);
-			_singleUseQueryParameter = singleUseQueryParameter;
+			foreach (var item in singleUseQueryParameters)
+				this.Add(item.Key, item.Value);
+
+			_singleUseQueryParameters = singleUseQueryParameters;
 		}
 
 		internal void ResetToQueryParameters()
 		{
-			if (_singleUseQueryParameter is null)
+			if (_singleUseQueryParameters is null)
 				return;
 
-			if (this.ContainsKey(_singleUseQueryParameter.Value.Key))
+			foreach (var item in _singleUseQueryParameters)
 			{
-				this.Remove(_singleUseQueryParameter.Value.Key);
-				_singleUseQueryParameter = null;
+				if (this.ContainsKey(item.Key))
+				{
+					this.Remove(item.Key);
+				}
 			}
+
+			_singleUseQueryParameters = null;
 		}
 
 		internal void SetQueryStringParameters(string query)

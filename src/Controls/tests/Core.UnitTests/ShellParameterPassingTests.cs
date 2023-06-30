@@ -151,7 +151,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync(new ShellNavigationState($"//content?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
 			await shell.GoToAsync(new ShellNavigationState($"//section2/details?{nameof(ShellTestPage.SomeQueryParameter)}=4321"));
 
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.Equal("4321", testPage.SomeQueryParameter);
 		}
 
@@ -201,7 +201,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shellController.OnFlyoutItemSelectedAsync(flyoutItem1);
 			await shellController.OnFlyoutItemSelectedAsync(flyoutItem2);
 
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 		}
 
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("details", typeof(ShellTestPage));
 			shell.Items.Add(item);
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"));
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 		}
 
@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("details", typeof(ShellTestPage));
 			shell.Items.Add(item);
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.DoubleQueryParameter)}=1234"));
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.Equal(1234d, testPage.DoubleQueryParameter);
 		}
 
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 			Assert.Equal("1234", testPage.SomeQueryParameter);
 			Assert.Equal(2d, testPage.DoubleQueryParameter);
 			Assert.Equal(obj, testPage.ComplexObject);
@@ -392,7 +392,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 
 			await shell.Navigation.PushAsync(new ContentPage());
 
@@ -445,7 +445,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.CurrentItem = withParams;
 			await Task.Yield();
 
-			var testPage2 = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage2 = shell.CurrentPage as ShellTestPage;
 			Assert.Null(testPage2.SomeQueryParameter);
 			Assert.Null(testPage2.ComplexObject);
 			Assert.Equal(testPage2, testPage);
@@ -459,11 +459,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("details", typeof(ShellTestPage));
 			shell.Items.Add(item);
 
-			var parameter = new KeyValuePair<string, object>(
-				$"{nameof(ShellTestPage.SomeQueryParameter)}", "4321");
+			var parameter = new ShellNavigationQueryParameters()
+			{
+				{nameof(ShellTestPage.SomeQueryParameter), "4321" }
+			};
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
-			var testPage = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ShellTestPage;
+			var testPage = shell.CurrentPage as ShellTestPage;
 
 			// Parameters passed in will win
 			Assert.Equal("4321", testPage.SomeQueryParameter);
