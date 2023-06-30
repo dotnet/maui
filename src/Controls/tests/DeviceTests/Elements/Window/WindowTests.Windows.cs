@@ -32,8 +32,8 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
 			{
 				var mainWindow = handler.VirtualView as Window;
-				
-				mainWindow.Page = secondaryPage;
+
+        mainWindow.Page = secondaryPage;
 				Assert.Equal(mainWindow.Page, secondaryPage);
 
 				mainWindow.Page = mainPage;
