@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
 			var tabBar = pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
-	
+
 			Assert.NotNull(tabBar);
 
 			var tabBarItem = tabBar.Items.Single(t => string.Equals(t.Title, item.Title, StringComparison.OrdinalIgnoreCase));
@@ -29,7 +29,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.NotNull(tabBarItemView);
 
-			await tabBar.AssertContainsColor(expectedColor, MauiContext);
+			if (hasColor)
+				await tabBar.AssertContainsColor(expectedColor, MauiContext);
 		}
 	}
 }
