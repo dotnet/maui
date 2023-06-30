@@ -20,6 +20,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.ApiLevel((AndroidApiLevel)31)
 		.ApiLevel((AndroidApiLevel)32)
 		.ApiLevel((AndroidApiLevel)33)
+		.ApiLevel((AndroidApiLevel)34)
 		.VirtualDevice(
 			"Android_API23",
 			(AndroidApiLevel)23,
