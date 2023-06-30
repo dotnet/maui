@@ -800,6 +800,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (sender is Page page)
 				page.Loaded -= OnPageLoaded;
 
+			// This means the user removed this page during the loaded event
+			if (_page is null)
+			{
+				SetDisappeared();
+				return;
+			}
+
 			UpdateToolbarItemsInternal();
 			CheckAppeared();
 		}
