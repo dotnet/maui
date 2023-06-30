@@ -6,21 +6,31 @@ namespace Microsoft.Maui.ApplicationModel
 {
 	static class WebUtils
 	{
+		internal static IDictionary<string, string> ParseQueryString(Uri uri)
+		{
+			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
+
+			if (uri == null)
+				return parameters;
+
+			// Note: Uri.Query starts with a '?'
+			if (!string.IsNullOrEmpty(uri.Query))
+				UnpackParameters(uri.Query.AsSpan(1), parameters);
+
+			// Note: Uri.Fragment starts with a '#'
+			if (!string.IsNullOrEmpty(uri.Fragment))
+				UnpackParameters(uri.Fragment.AsSpan(1), parameters);
+
+			return parameters;
+		}
+
 		// The following method is a port of the logic found in https://source.dot.net/#Microsoft.AspNetCore.WebUtilities/src/Shared/QueryStringEnumerable.cs
 		// but refactored such that it:
 		//
 		// 1. avoids the IEnumerable overhead that isn't needed (the ASP.NET logic was clearly designed that way to offer a public API whereas we don't need that)
 		// 2. avoids the use of unsafe code
-		internal static IDictionary<string, string> ParseQueryString(Uri uri)
+		static void UnpackParameters(ReadOnlySpan<char> query, Dictionary<string, string> parameters)
 		{
-			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
-
-			if (uri == null || string.IsNullOrEmpty(uri.Query))
-				return parameters;
-
-			// Note: Uri.Query starts with a '?'
-			var query = uri.Query.AsSpan(1);
-
 			while (!query.IsEmpty)
 			{
 				int delimeterIndex = query.IndexOf('&');
@@ -66,8 +76,6 @@ namespace Microsoft.Maui.ApplicationModel
 					parameters[name] = Uri.UnescapeDataString(value);
 				}
 			}
-
-			return parameters;
 		}
 
 		internal static Uri EscapeUri(Uri uri)
