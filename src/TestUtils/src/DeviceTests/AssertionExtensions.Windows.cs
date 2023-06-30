@@ -156,9 +156,6 @@ namespace Microsoft.Maui.DeviceTests
 		// to work fine.
 		static SemaphoreSlim _attachAndRunSemaphore = new SemaphoreSlim(10);
 
-		public static Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Task<T>> action) =>
-			view.AttachAndRun(window => action());
-
 		public static async Task<T> AttachAndRun<T>(this FrameworkElement view, Func<Window, Task<T>> action, IMauiContext mauiContext)
 		{
 			if (view.Parent is Border wrapper)
