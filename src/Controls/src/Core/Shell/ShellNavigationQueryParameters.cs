@@ -1,12 +1,9 @@
-﻿#nullable disable
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
-#pragma warning disable RS0016 // Add public types and members to the declared API
 	public class ShellNavigationQueryParameters : IDictionary<string, object>
 	{
 		Dictionary<string, object> _internal = new Dictionary<string, object>();
@@ -28,8 +25,11 @@ namespace Microsoft.Maui.Controls
 				this.Add(item.Key, item.Value);
 		}
 
-		internal void SetToReadOnly() =>
+		internal ShellNavigationQueryParameters SetToReadOnly()
+		{
 			_isReadonly = true;
+			return this;
+		}
 
 		void CheckReadOnlyState()
 		{
@@ -55,11 +55,23 @@ namespace Microsoft.Maui.Controls
 
 		public bool IsReadOnly => _isReadonly;
 
-		public void Add(string key, object value) => _internal.Add(key, value);
+		public void Add(string key, object value)
+		{
+			CheckReadOnlyState();
+			_internal.Add(key, value);
+		}
 
-		public void Add(KeyValuePair<string, object> item) => _internal.Add(item.Key, item.Value);
+		public void Add(KeyValuePair<string, object> item)
+		{
+			CheckReadOnlyState();
+			_internal.Add(item.Key, item.Value);
+		}
 
-		public void Clear() => _internal.Clear();
+		public void Clear()
+		{
+			CheckReadOnlyState();
+			_internal.Clear();
+		}
 
 		public bool Contains(KeyValuePair<string, object> item) => _internal.ContainsKey(item.Key);
 
@@ -90,5 +102,4 @@ namespace Microsoft.Maui.Controls
 		IEnumerator IEnumerable.GetEnumerator() =>
 			_internal.GetEnumerator();
 	}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 }

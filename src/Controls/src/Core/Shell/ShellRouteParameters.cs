@@ -8,7 +8,8 @@ namespace Microsoft.Maui.Controls
 {
 	internal class ShellRouteParameters : Dictionary<string, object>
 	{
-		ShellNavigationQueryParameters _singleUseQueryParameters;
+		readonly ShellNavigationQueryParameters _singleUseQueryParameters =
+			new ShellNavigationQueryParameters();
 
 		public ShellRouteParameters()
 		{
@@ -16,7 +17,26 @@ namespace Microsoft.Maui.Controls
 
 		public ShellRouteParameters(ShellRouteParameters shellRouteParams) : base(shellRouteParams)
 		{
-			_singleUseQueryParameters = shellRouteParams._singleUseQueryParameters;
+			foreach (var item in shellRouteParams._singleUseQueryParameters)
+				_singleUseQueryParameters[item.Key] = item.Value;
+		}
+
+		internal IDictionary<string, object> GiveMeReadOnlyIfOnlyUsingShellNavigationQueryParameters()
+		{
+			if (_singleUseQueryParameters.Count != this.Count)
+				return this;
+
+			foreach (var item in this)
+			{
+				if (!_singleUseQueryParameters.ContainsKey(item.Key))
+				{
+					return this;
+				}
+			}
+
+			return
+				new ShellNavigationQueryParameters(_singleUseQueryParameters)
+					.SetToReadOnly();
 		}
 
 		internal ShellRouteParameters(ShellRouteParameters query, string prefix)
@@ -32,7 +52,8 @@ namespace Microsoft.Maui.Controls
 				this.Add(key, q.Value);
 			}
 
-			_singleUseQueryParameters = query._singleUseQueryParameters;
+			foreach (var item in query._singleUseQueryParameters)
+				_singleUseQueryParameters[item.Key] = item.Value;
 		}
 
 		internal ShellRouteParameters(IDictionary<string, object> shellRouteParams) : base(shellRouteParams)
@@ -44,12 +65,13 @@ namespace Microsoft.Maui.Controls
 			foreach (var item in singleUseQueryParameters)
 				this.Add(item.Key, item.Value);
 
-			_singleUseQueryParameters = singleUseQueryParameters;
+			foreach (var item in singleUseQueryParameters)
+				_singleUseQueryParameters[item.Key] = item.Value;
 		}
 
 		internal void ResetToQueryParameters()
 		{
-			if (_singleUseQueryParameters is null)
+			if (_singleUseQueryParameters.Count == 0)
 				return;
 
 			foreach (var item in _singleUseQueryParameters)
@@ -60,7 +82,7 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 
-			_singleUseQueryParameters = null;
+			_singleUseQueryParameters.Clear();
 		}
 
 		internal void SetQueryStringParameters(string query)

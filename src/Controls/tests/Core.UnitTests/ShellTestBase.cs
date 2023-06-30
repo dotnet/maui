@@ -132,7 +132,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			public List<IDictionary<string, object>> AppliedQueryAttributes = new List<IDictionary<string, object>>();
 			public void ApplyQueryAttributes(IDictionary<string, object> query)
 			{
-				AppliedQueryAttributes.Add(new Dictionary<string, object>(query));
+				if (query is ShellNavigationQueryParameters param && param.IsReadOnly)
+					AppliedQueryAttributes.Add(query);
+				else
+					AppliedQueryAttributes.Add(new Dictionary<string, object>(query));
 			}
 		}
 

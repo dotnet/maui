@@ -287,7 +287,10 @@ namespace Microsoft.Maui.Controls
 			oldQuery = oldQuery ?? new ShellRouteParameters();
 
 			if (content is IQueryAttributable attributable)
-				attributable.ApplyQueryAttributes(query);
+			{
+				attributable
+					.ApplyQueryAttributes(query.GiveMeReadOnlyIfOnlyUsingShellNavigationQueryParameters());
+			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
 				ApplyQueryAttributes(bindable.BindingContext, query, oldQuery);

@@ -691,7 +691,6 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		/// <summary>
 		/// 
 		/// </summary>
@@ -714,7 +713,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		public void AddLogicalChild(Element element)
 		{

@@ -378,6 +378,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ValidateReadOnlyDictionary()
+		{
+			var obj = new object();
+			var parameter = new ShellNavigationQueryParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{ "ComplexObject", obj}
+			}.SetToReadOnly();
+
+			Assert.Throws<InvalidOperationException>(() => parameter.Add("key", "value"));
+			Assert.Throws<InvalidOperationException>(() => parameter.Add(new KeyValuePair<string, object>("key", "value")));
+			Assert.Throws<InvalidOperationException>(() => parameter.Remove(parameter.First()));
+			Assert.Throws<InvalidOperationException>(() => parameter.Remove("DoubleQueryParameter"));
+			Assert.Throws<InvalidOperationException>(() => parameter["key"] = "value");
+			Assert.Throws<InvalidOperationException>(() => parameter.Clear());
+		}
+
+		[Fact]
+		public async Task ShellNavigationQueryParametersPassedInAsReadOnly()
+		{
+			var shell = new Shell();
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			Routing.RegisterRoute("details", typeof(ShellTestPage));
+			shell.Items.Add(item);
+			var obj = new object();
+			var parameter = new ShellNavigationQueryParameters
+			{
+				{"DoubleQueryParameter", 2d },
+				{ "ComplexObject", obj}
+			};
+
+			await shell.GoToAsync(new ShellNavigationState($"details"), parameter);
+			var testPage = shell.CurrentPage as ShellTestPage;
+			Assert.True(testPage.AppliedQueryAttributes[0].IsReadOnly);
+			Assert.False(parameter.IsReadOnly);
+			Assert.Single(testPage.AppliedQueryAttributes);
+		}
+
+		[Fact]
 		public async Task ExtraParametersDontGetRetained()
 		{
 			var shell = new Shell();
@@ -385,7 +424,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Routing.RegisterRoute("details", typeof(ShellTestPage));
 			shell.Items.Add(item);
 			var obj = new object();
-			var parameter = new ShellRouteParameters
+			var parameter = new ShellNavigationQueryParameters
 			{
 				{"DoubleQueryParameter", 2d },
 				{ "ComplexObject", obj}
