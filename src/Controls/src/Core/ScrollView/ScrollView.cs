@@ -429,7 +429,7 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			if ((this as IContentView)?.PresentedContent is not IView content)
 			{
@@ -465,7 +465,7 @@ namespace Microsoft.Maui.Controls
 			return Frame.Size;
 		}
 
-		Size IContentView.CrossPlatformArrange(Rect bounds)
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
 			if (this is IScrollView scrollView)
 			{

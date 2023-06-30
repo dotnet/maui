@@ -290,7 +290,7 @@ namespace TestUtils.Appium.UITests
 					{ "toY", toY }
 				});
 			}
-			else if(IsMac)
+			else if (IsMac)
 			{
 				_driver?.ExecuteScript("macos: clickAndDragAndHold", new Dictionary<string, object>
 				{

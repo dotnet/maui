@@ -1,22 +1,22 @@
-﻿using System;
-using Android.Views;
+﻿using Android.Views;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Layouts.LayoutExtensions;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, MauiScrollView>
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, MauiScrollView>, ICrossPlatformLayout
 	{
 		const string InsetPanelTag = "MAUIContentInsetPanel";
 
 		protected override MauiScrollView CreatePlatformView()
 		{
 			var scrollView = new MauiScrollView(
-				new Android.Views.ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
-					Resource.Attribute.scrollViewStyle);
-
-			scrollView.ClipToOutline = true;
-			scrollView.FillViewport = true;
+				new ContextThemeWrapper(MauiContext!.Context, Resource.Style.scrollViewTheme), null!,
+					Resource.Attribute.scrollViewStyle)
+			{
+				ClipToOutline = true,
+				FillViewport = true
+			};
 
 			return scrollView;
 		}
@@ -106,7 +106,12 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
-			UpdateInsetView(scrollView, handler);
+			if (handler is not ICrossPlatformLayout crossPlatformLayout)
+			{
+				return;
+			}
+
+			UpdateInsetView(scrollView, handler, crossPlatformLayout);
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView scrollView)
@@ -165,7 +170,7 @@ namespace Microsoft.Maui.Handlers
 			return handler.PlatformView.FindViewWithTag(InsetPanelTag) as ContentViewGroup;
 		}
 
-		static void UpdateInsetView(IScrollView scrollView, IScrollViewHandler handler)
+		static void UpdateInsetView(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
 			if (scrollView.PresentedContent == null || handler.MauiContext == null)
 			{
@@ -184,11 +189,11 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				InsertInsetView(handler, scrollView, nativeContent);
+				InsertInsetView(handler, scrollView, nativeContent, crossPlatformLayout);
 			}
 		}
 
-		static void InsertInsetView(IScrollViewHandler handler, IScrollView scrollView, View nativeContent)
+		static void InsertInsetView(IScrollViewHandler handler, IScrollView scrollView, View nativeContent, ICrossPlatformLayout crossPlatformLayout)
 		{
 			if (scrollView.PresentedContent == null || handler.MauiContext?.Context == null)
 			{
@@ -197,7 +202,7 @@ namespace Microsoft.Maui.Handlers
 
 			var paddingShim = new ContentViewGroup(handler.MauiContext.Context)
 			{
-				CrossPlatformMeasure = IncludeScrollViewInsets(scrollView.PresentedContent.Measure, scrollView),
+				CrossPlatformLayout = crossPlatformLayout,
 				Tag = InsetPanelTag
 			};
 
@@ -206,16 +211,10 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.SetContent(paddingShim);
 		}
 
-		static Func<double, double, Size> IncludeScrollViewInsets(Func<double, double, Size> internalMeasure, IScrollView scrollView)
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
-			return (widthConstraint, heightConstraint) =>
-			{
-				return InsetScrollView(widthConstraint, heightConstraint, internalMeasure, scrollView);
-			};
-		}
+			var scrollView = VirtualView;
 
-		static Size InsetScrollView(double widthConstraint, double heightConstraint, Func<double, double, Size> internalMeasure, IScrollView scrollView)
-		{
 			var padding = scrollView.Padding;
 
 			if (scrollView.PresentedContent == null)
@@ -227,7 +226,7 @@ namespace Microsoft.Maui.Handlers
 			var measurementWidth = widthConstraint - padding.HorizontalThickness;
 			var measurementHeight = heightConstraint - padding.VerticalThickness;
 
-			var result = internalMeasure.Invoke(measurementWidth, measurementHeight);
+			var result = scrollView.CrossPlatformMeasure(measurementWidth, measurementHeight);
 
 			// ... and add the padding back in to the final result
 			var fullSize = new Size(result.Width + padding.HorizontalThickness, result.Height + padding.VerticalThickness);
@@ -243,6 +242,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+		{
+			return VirtualView.CrossPlatformArrange(bounds);
 		}
 	}
 }

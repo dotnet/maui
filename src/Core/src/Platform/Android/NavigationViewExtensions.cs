@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using AndroidX.Navigation.Fragment;
 using AndroidX.Navigation;
+using AndroidX.Navigation.Fragment;
 using Java.Lang;
 using Microsoft.Maui.Graphics;
 
