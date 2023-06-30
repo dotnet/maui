@@ -61,6 +61,51 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Null(gestureRecognizer.Parent);
 		}
 
+		[Fact]
+		public void PointerEnteredCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerEnteredCommand = cmd;
+			gesture.PointerEnteredCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void PointerExitedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerExitedCommand = cmd;
+			gesture.PointerExitedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void PointerMovedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerMovedCommand = cmd;
+			gesture.PointerMovedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
 		VisualStateGroupList AddPointerOverVisualState(VisualElement visualElement)
 		{
 			VisualStateGroupList visualStateGroups = new VisualStateGroupList();
