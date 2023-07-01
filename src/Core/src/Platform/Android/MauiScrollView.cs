@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Platform
 			{
 				canvas?.ClipRect(canvas?.ClipBounds!);
 
-				base.Draw(canvas);
+				base.Draw(canvas!);
 			}
 			catch (Java.Lang.NullPointerException)
 			{
