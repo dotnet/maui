@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsGoToSecondPage () 
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
