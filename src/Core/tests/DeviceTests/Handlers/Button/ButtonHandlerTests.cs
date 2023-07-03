@@ -153,9 +153,9 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				await handler.PlatformView.AssertContainsColor(expectedColor
-					#if WINDOWS
+#if WINDOWS
 					,MauiContext
-					#endif
+#endif
 				);
 			});
 		}

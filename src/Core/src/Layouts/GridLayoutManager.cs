@@ -669,7 +669,7 @@ namespace Microsoft.Maui.Layouts
 
 
 				ResolveStars(_columns, availableSpace, cellCheck, getDimension, _columnStarCount);
-        
+
 				foreach (var cell in _cells)
 				{
 					if (double.IsNaN(cell.MeasureWidth))

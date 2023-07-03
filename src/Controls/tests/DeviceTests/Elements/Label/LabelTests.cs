@@ -262,9 +262,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
 				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(
-					#if WINDOWS
+#if WINDOWS
 						formattedHandler.MauiContext
-					#endif
+#endif
 				);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
