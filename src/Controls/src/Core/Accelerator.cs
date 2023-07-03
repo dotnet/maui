@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,6 +11,7 @@ namespace Microsoft.Maui.Controls
 	{
 		const string Separator = "+";
 		readonly string _text;
+		readonly List<string> _modifiers;
 
 		internal Accelerator(string text, IEnumerable<string> modifiers, string key)
 		{
@@ -20,15 +20,15 @@ namespace Microsoft.Maui.Controls
 
 			_text = text;
 			Key = key;
-			Modifiers = modifiers;
+			_modifiers = new List<string>(modifiers);
 		}
 
 		/// <summary>
 		/// Gets the modifiers for the accelerator.
 		/// </summary>
-		public IEnumerable<string> Modifiers { get; }
+		public IEnumerable<string> Modifiers => _modifiers;
 
-		IReadOnlyList<string> IAccelerator.Modifiers => Modifiers?.ToList();
+		IReadOnlyList<string> IAccelerator.Modifiers => _modifiers;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
