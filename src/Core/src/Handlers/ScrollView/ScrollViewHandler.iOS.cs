@@ -116,6 +116,8 @@ namespace Microsoft.Maui.Handlers
 
 				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
 				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
 					scrollViewHandler.PendingScrollToRequest = request;
 					return;
 				}
