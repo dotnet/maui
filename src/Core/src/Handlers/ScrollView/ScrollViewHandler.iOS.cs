@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
@@ -111,6 +113,13 @@ namespace Microsoft.Maui.Handlers
 			if (args is ScrollToRequest request)
 			{
 				var uiScrollView = handler.PlatformView;
+
+				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				{
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+
 				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
 				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
 				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
@@ -379,6 +388,9 @@ namespace Microsoft.Maui.Handlers
 
 				platformView.Scrolled += Scrolled;
 				platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+
+				if(platformView is MauiScrollView mauiScrollView)
+					mauiScrollView.LayoutSubviewsChanged += OnScrollViewLayoutSubviewsChanged;
 			}
 
 			public void Disconnect(UIScrollView platformView)
@@ -387,6 +399,9 @@ namespace Microsoft.Maui.Handlers
 
 				platformView.Scrolled -= Scrolled;
 				platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+
+				if (platformView is MauiScrollView mauiScrollView)
+					mauiScrollView.LayoutSubviewsChanged -= OnScrollViewLayoutSubviewsChanged;
 			}
 
 			void OnButtonTouchUpInside(object? sender, EventArgs e)
@@ -401,6 +416,15 @@ namespace Microsoft.Maui.Handlers
 			void ScrollAnimationEnded(object? sender, EventArgs e)
 			{
 				VirtualView?.ScrollFinished();
+			}
+
+			void OnScrollViewLayoutSubviewsChanged(object? sender, EventArgs e)
+			{
+				if (VirtualView?.Handler is not ScrollViewHandler scrollViewHandler || scrollViewHandler.PendingScrollToRequest is null)
+					return;
+
+				scrollViewHandler.Invoke(nameof(IScrollView.RequestScrollTo), scrollViewHandler.PendingScrollToRequest);
+				scrollViewHandler.PendingScrollToRequest = null;
 			}
 
 			void Scrolled(object? sender, EventArgs e)
