@@ -1,4 +1,5 @@
 ﻿#nullable disable
+using System;
 using Android.Text;
 using Android.Widget;
 using AndroidX.Core.Widget;
@@ -43,7 +44,12 @@ namespace Microsoft.Maui.Controls.Platform
 				editText.Text = newText;
 
 				// When updating from xplat->plat, we set the selection (cursor) to the end of the text
-				editText.SetSelection(newText.Length);
+				int selectionLength = newText.Length;
+				if (inputView.MaxLength >= 0)
+				{
+					selectionLength = Math.Min(selectionLength, inputView.MaxLength);
+				}
+				editText.SetSelection(selectionLength);
 			}
 		}
 

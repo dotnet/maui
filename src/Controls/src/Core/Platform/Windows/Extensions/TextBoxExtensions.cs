@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Controls;
 
@@ -26,6 +27,11 @@ namespace Microsoft.Maui.Controls.Platform
 			// but if the text is being set by code, let's just move the cursor to the end.
 			var cursorOffset = newText.Length - oldText.Length;
 			int cursorPosition = hasFocus ? platformControl.GetCursorPosition(cursorOffset) : newText.Length;
+
+			if (inputView?.MaxLength >= 0)
+			{
+				cursorPosition = Math.Min(cursorPosition, inputView.MaxLength);
+			}
 
 			if (oldText != newText && passwordBox is not null)
 				passwordBox.Password = newText;

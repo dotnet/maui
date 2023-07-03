@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			return Math.Max(0, newCursorPosition);
 		}
 
-		internal static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength)
+		internal static void SetTextRange(this IUITextInput platformView, int start, int selectedTextLength, int maxLength)
 		{
 			int end = start + selectedTextLength;
 
@@ -26,6 +26,12 @@ namespace Microsoft.Maui.Platform
 			// Switch start and end positions if necessary
 			start = Math.Min(start, end);
 			end = Math.Max(start, end);
+
+			if (maxLength >= 0)
+			{
+				start = Math.Min(start, maxLength);
+				end = Math.Min(end, maxLength);
+			}
 
 			var startPosition = platformView.GetPosition(platformView.BeginningOfDocument, start);
 			var endPosition = platformView.GetPosition(platformView.BeginningOfDocument, end);

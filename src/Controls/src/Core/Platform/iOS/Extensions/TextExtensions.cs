@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldText != newText)
 				textView.Text = newText;
 
-			textView.SetTextRange(cursorPosition, 0);
+			textView.SetTextRange(cursorPosition, 0, inputView.MaxLength);
 		}
 
 		public static void UpdateText(this UITextField textField, InputView inputView)
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls.Platform
 			if (oldText != newText)
 				textField.Text = newText;
 
-			textField.SetTextRange(cursorPosition, 0);
+			textField.SetTextRange(cursorPosition, 0, inputView.MaxLength);
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
