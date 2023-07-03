@@ -22,7 +22,6 @@ namespace Microsoft.Maui.Platform
 				stepping = Math.Min((difference) / 1000, 1);
 
 			nativeSlider.StepFrequency = stepping;
-			nativeSlider.SmallChange = stepping;
 		}
 
 		public static void UpdateMinimum(this Slider nativeSlider, ISlider slider)
