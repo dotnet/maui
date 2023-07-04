@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Platform
 
 		static UIMenuElement CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)
 		{
-			var keyCommand = UIKeyCommand.Create(	
+			var keyCommand = UIKeyCommand.Create(
 				title: virtualView.Text,
 				uiImage,
 				selector,
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Platform
 
 		static UIMenuElement CreateMenuItemCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector)
 		{
-			var command = UICommand.Create(				
+			var command = UICommand.Create(
 				title: virtualView.Text,
 				uiImage,
 				selector,
