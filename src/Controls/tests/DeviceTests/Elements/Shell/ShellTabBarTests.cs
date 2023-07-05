@@ -4,9 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
