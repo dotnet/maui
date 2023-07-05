@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
-		internal event EventHandler? LayoutSubviewsChanged;
 
 		public ContentView()
 		{
@@ -33,8 +32,7 @@ namespace Microsoft.Maui.Platform
 				ChildMaskLayer.Frame = bounds;
 
 			SetClip();
-
-			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
+			this.UpdateMauiCALayer();
 		}
 
 		internal IBorderStroke? Clip

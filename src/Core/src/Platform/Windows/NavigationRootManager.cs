@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Platform
 
 			if (_rootView.Content is RootNavigationView navView)
 				navView.Content = null;
-			
+
 			_rootView.Content = null;
 			_disconnected = true;
 		}
