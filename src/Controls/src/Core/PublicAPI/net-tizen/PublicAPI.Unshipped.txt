@@ -79,3 +79,5 @@ Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+static Microsoft.Maui.Controls.ViewExtensions.TranslateXTo(this Microsoft.Maui.Controls.VisualElement! view, double x, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.TranslateYTo(this Microsoft.Maui.Controls.VisualElement! view, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!

@@ -76,3 +76,5 @@ Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targ
 Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
+static Microsoft.Maui.Controls.ViewExtensions.TranslateXTo(this Microsoft.Maui.Controls.VisualElement! view, double x, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Controls.ViewExtensions.TranslateYTo(this Microsoft.Maui.Controls.VisualElement! view, double y, uint length = 250, Microsoft.Maui.Easing? easing = null) -> System.Threading.Tasks.Task<bool>!
