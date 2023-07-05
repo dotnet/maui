@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 			var handler = await CreateHandlerAsync<PickerHandler>(picker);
 
 			await InvokeOnMainThreadAsync(() => Assert.Equal(UI.Xaml.HorizontalAlignment.Right, GetPlatformHorizontalOptions(handler.PlatformView)));
-			
+
 		}
 
 		[Fact(DisplayName = "VerticalOptions Initializes Correctly")]

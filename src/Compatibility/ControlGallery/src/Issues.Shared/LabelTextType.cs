@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LabelToggleHtmlAndPlainTextTest() 
 		{
 			RunningApp.WaitForElement ("TextTypeLabel");

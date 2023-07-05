@@ -349,7 +349,7 @@ namespace Microsoft.Maui.Controls
 		internal void SendResume()
 		{
 			if (Current is null)
-			Current = this;
+				Current = this;
 
 			OnResume();
 		}
