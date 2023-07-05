@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 
 			platformView.LayoutSubviewsChanged -= OnLayoutSubviewsChanged;
+
+			platformView.ClearSubviews();
 		}
 
 		public override void SetVirtualView(IView view)
