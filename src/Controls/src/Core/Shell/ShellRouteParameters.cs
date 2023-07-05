@@ -24,8 +24,17 @@ namespace Microsoft.Maui.Controls
 		internal IDictionary<string, object> ToReadOnlyIfUsingShellNavigationQueryParameters()
 		{
 			if (_shellNavigationQueryParameters.Count > 0)
-				return new ShellNavigationQueryParameters(_shellNavigationQueryParameters)
-							.SetToReadOnly();
+			{
+				var returnValue = new ShellNavigationQueryParameters(_shellNavigationQueryParameters);
+
+				foreach (var item in this)
+				{
+					if (!returnValue.ContainsKey(item.Key))
+						returnValue.Add(item.Key, item.Value);
+
+					return returnValue.SetToReadOnly();
+				}
+			}
 
 			return this;
 		}
