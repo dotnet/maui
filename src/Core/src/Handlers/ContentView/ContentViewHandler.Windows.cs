@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.CrossPlatformLayout = null;
 			platformView.Children?.Clear();
-      
+
 			base.DisconnectHandler(platformView);
 		}
 	}
