@@ -32,7 +32,7 @@ This project is using [NUnit](https://nunit.org/)
 
 All tests should derive from `UITestBase` and should override `FixtureSetup/FixtureTeardown` to navigate to the specific UI you want to test and navigate back when finished.
 
-```
+```csharp
 protected override void FixtureSetup()
 {
     base.FixtureSetup();
@@ -40,7 +40,7 @@ protected override void FixtureSetup()
 }
 ```
 
-```
+```csharp
 protected override void FixtureTeardown()
 {
     base.FixtureTeardown();
@@ -50,7 +50,7 @@ protected override void FixtureTeardown()
 
 The test will have access to gestures/interactions through the `App` property.
 
-```
+```csharp
 App.WaitForElement("btnLogin");
 App.EnterText("entryUsername", "user@email.com");
 App.EnterText("entryPassword", "Password");
