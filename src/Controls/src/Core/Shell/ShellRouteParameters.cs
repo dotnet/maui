@@ -31,9 +31,9 @@ namespace Microsoft.Maui.Controls
 				{
 					if (!returnValue.ContainsKey(item.Key))
 						returnValue.Add(item.Key, item.Value);
-
-					return returnValue.SetToReadOnly();
 				}
+
+				return returnValue.SetToReadOnly();
 			}
 
 			return this;

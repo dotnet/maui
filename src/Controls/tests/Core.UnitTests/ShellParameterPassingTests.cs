@@ -427,7 +427,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var parameter = new ShellNavigationQueryParameters
 			{
 				{"DoubleQueryParameter", 2d },
-				{ "ComplexObject", obj}
+				{"ComplexObject", obj}
 			};
 
 			await shell.GoToAsync(new ShellNavigationState($"details?{nameof(ShellTestPage.SomeQueryParameter)}=1234"), parameter);
