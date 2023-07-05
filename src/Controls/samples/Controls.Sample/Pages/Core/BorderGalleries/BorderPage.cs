@@ -35,6 +35,8 @@ namespace Maui.Controls.Sample.Pages
 							new Borderless(), Navigation),
 						GalleryBuilder.NavButton("Border resize Content", () =>
 							new BorderResizeContent(), Navigation),
+						GalleryBuilder.NavButton("Border Alignment", () =>
+							new BorderAlignment(), Navigation),
 					}
 				}
 			};
