@@ -1,0 +1,65 @@
+parameters:
+  platform: '' # [ android, ios, windows, catalyst ]
+  path: '' # path to csproj
+  device: '' # the xharness device to use
+  cakeArgs: '' # additional cake args
+  app: '' #path to app to test
+  version: '' #the iOS version'
+  provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
+  configuration : "Release"
+  where : "cat==Issues"
+  targetSample: "dotnet-legacy-controlgallery"
+  provisionPlatform: "windows"
+
+steps:
+
+  - template: provision.yml
+    parameters:
+      ${{ if eq(parameters.platform, 'windows') }}:
+        platform: windows
+        skipProvisioning: true
+      ${{ if ne(parameters.platform, 'windows') }}:
+        platform: macos
+        skipProvisioning: false
+      skipXcode: false
+      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+ 
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
+    displayName: 'Install .NET'
+    retryCountOnTaskFailure: 3
+    env:
+      DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+      PRIVATE_BUILD: $(PrivateBuild)
+
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
+  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
+    displayName: 'Build the MSBuild Tasks'
+
+  - pwsh: ./build.ps1 --target=${{ parameters.targetSample }} --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic
+    displayName: 'Build the Legacy ControlGallery'
+
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --target=cg-uitest --project="${{ parameters.path }}" --appproject="${{ parameters.app }}" --device="${{ parameters.device }}" --apiversion="${{ parameters.version }}" --configuration="${{ parameters.configuration }}" --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }} --verbosity=diagnostic --where="${{ parameters.where }}"
+    displayName: $(Agent.JobName)
+    # retryCountOnTaskFailure: 2
+  
+  - task: PublishTestResults@2
+    displayName: Publish the $(System.PhaseName) test results
+    condition: always()
+    inputs:
+      testResultsFormat: NUnit
+      testResultsFiles: '**/TestResult*.xml'
+      testRunTitle: '$(System.PhaseName)'
+      searchFolder: '$(TestResultsDirectory)'
+      failTaskOnFailedTests: true
+
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    displayName: publish artifacts
+
+  # This must always be placed as the last step in the job
+  - template: agent-rebooter/mac.v1.yml@yaml-templates
+    parameters:
+      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

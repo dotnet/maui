@@ -38,11 +38,13 @@ namespace Microsoft.Maui.Storage
 				PickHandler = urls => GetFileResults(urls, tcs)
 			};
 
+#if !MACCATALYST
 			if (documentPicker.PresentationController != null)
 			{
 				documentPicker.PresentationController.Delegate =
 					new UIPresentationControllerDelegate(() => GetFileResults(null, tcs));
 			}
+#endif
 
 			var parentController = WindowStateManager.Default.GetCurrentUIViewController(true);
 

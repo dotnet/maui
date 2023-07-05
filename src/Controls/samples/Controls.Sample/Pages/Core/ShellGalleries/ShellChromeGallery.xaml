@@ -46,6 +46,9 @@
                 Text="Flyout Header Behavior"
                 Style="{StaticResource Headline}"/>
             <Picker x:Name="flyoutHeaderBehavior" />
+            <Button Text="Toggle TabBarTitleColor" Clicked="OnToggleTabBarTitleColor" />
+            <Button Text="Toggle TabBarUnselectedColor" Clicked="OnToggleTabBarUnselectedColor" />
+            <Button Text="Toggle TabBarForegroundColor" Clicked="OnToggleTabBarForegroundColor" />
         </StackLayout>
     </views:BasePage.Content>
 
