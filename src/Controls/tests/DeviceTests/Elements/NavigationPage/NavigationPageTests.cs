@@ -130,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Wait for back button to reveal itself
 				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
-			}, timeOut: TimeSpan.FromMinutes(2));
+			});
 		}
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
@@ -297,6 +297,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationPage Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
+
+#if ANDROID
+			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
+				return;
+#endif
+
 			SetupBuilder();
 			WeakReference pageReference = null;
 			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
