@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -144,6 +144,9 @@ namespace Microsoft.Maui.Controls
 
 			return false;
 		}
+
+		IReadOnlyList<IAccelerator> IMenuElement.Accelerators =>
+			GetAccelerator(this) is Accelerator acc ? new[] { acc } : null;
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;
 
