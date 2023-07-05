@@ -271,8 +271,8 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 200,
 			};
 
-			var dummy = new TType();
-			layout.Add(dummy);
+			var placeholder = new TType();
+			layout.Add(placeholder);
 			layout.Add(control);
 
 			await AttachAndRun(layout, handler => action(control.Handler as THandler));
