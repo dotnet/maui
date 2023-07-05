@@ -294,11 +294,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage Does Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "NavigationPage Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
 			SetupBuilder();
@@ -324,15 +320,14 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 			});
 
-			// As we add more controls to this test, more GCs will be required
-			for (int i = 0; i < 16; i++)
+			// Windows requires an actual delay
+			// Android/iOS require multiple GCs
+			await AssertionExtensions.Wait(() =>
 			{
-				if (!pageReference.IsAlive)
-					break;
-				await Task.Yield();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-			}
+				return !pageReference.IsAlive;
+			}, timeout: 5000);
 
 			Assert.NotNull(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
