@@ -34,28 +34,28 @@ namespace Microsoft.Maui.Controls.Platform
 		public static void UpdateText(this UITextField textField, InputView inputView) =>
 			UpdateText(textField, inputView, textField.IsEditing);
 
-		static void UpdateText(this IUITextInput textField, InputView inputView, bool isEditing)
+		static void UpdateText(this IUITextInput textInput, InputView inputView, bool isEditing)
 		{
-			// Setting the text causes the cursor to be reset to the end of the UITextView.
+			// Setting the text causes the cursor to be reset to the end of the IUITextInput.
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
-			var textRange = textField.GetTextRange(textField.BeginningOfDocument, textField.EndOfDocument);
-			var oldText = textField.TextInRange(textRange) ?? string.Empty;
+			var textRange = textInput.GetTextRange(textInput.BeginningOfDocument, textInput.EndOfDocument);
+			var oldText = textInput.TextInRange(textRange) ?? string.Empty;
 			var newText = TextTransformUtilites.GetTransformedText(
 				inputView?.Text,
-				textField.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
+				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);
-
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = isEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
 
 			if (oldText != newText)
 			{
-				textField.ReplaceText(textRange, newText);
+				// Re-calculate the cursor offset position if the text was modified by a Converter.
+				// but if the text is being set by code, let's just move the cursor to the end.
+				var cursorOffset = newText.Length - oldText.Length;
+				var cursorPosition = isEditing ? textInput.GetCursorPosition(cursorOffset) : newText.Length;
 
-				textField.SetTextRange(cursorPosition, 0);
+				textInput.ReplaceText(textRange, newText);
+
+				textInput.SetTextRange(cursorPosition, 0);
 			}
 		}
 
