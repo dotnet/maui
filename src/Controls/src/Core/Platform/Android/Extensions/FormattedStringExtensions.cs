@@ -171,9 +171,11 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				// Find the next span
-				next = spannableString.NextSpanTransition(i, spannableString.Length(), JavaLangObjectClass);
+				// NOTE: null can be used here for `kind`
+				next = spannableString.NextSpanTransition(i, spannableString.Length(), null);
 
 				// Get all spans in the range - Android can have overlapping spans
+				// NOTE: null is NOT supported for `kind`: https://github.com/xamarin/xamarin-android/issues/8167
 				var spans = spannableString.GetSpans(i, next, JavaLangObjectClass);
 
 				if (spans is null || spans.Length == 0)
