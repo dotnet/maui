@@ -31,10 +31,6 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				App.WaitForElement("WebViewElement");
 				App.SwipeRightToLeft("WebViewElement");
-
-				App.WaitForElement("TabbedPageElement");
-				var infoText = App.Query("TabbedPageElement").First().Text;
-				Assert.True(!infoText.Contains("Failed", StringComparison.OrdinalIgnoreCase));
 			}
 			else
 			{

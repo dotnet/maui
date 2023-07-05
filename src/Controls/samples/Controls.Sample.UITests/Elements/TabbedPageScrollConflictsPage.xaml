@@ -6,20 +6,18 @@
     x:Class="Maui.Controls.Sample.TabbedPageScrollConflictsPage"
     AutomationId="TabbedPageElement"
     Title="TabbedPage scroll conflicts Gallery"
-    ItemsSource="{Binding TabItems}"
     CurrentPageChanged="OnTabbedPageCurrentPageChanged">
-    <TabbedPage.ItemTemplate>
-        <DataTemplate>
-            <ContentPage 
-                Title="{Binding Name}">
-                <StackLayout 
-                    Padding="6, 24">
-                    <WebView
-                        AutomationId="WebViewElement">
-                        <WebView.Source>
-                            <HtmlWebViewSource>
-                                <HtmlWebViewSource.Html>
-                                    <![CDATA[
+    <ContentPage 
+        AutomationId="Tab1Element" 
+        Title="Tab1">
+        <StackLayout       
+            Padding="6, 24">
+            <WebView         
+                AutomationId="WebViewElement">
+                <WebView.Source>
+                    <HtmlWebViewSource>
+                        <HtmlWebViewSource.Html>
+                            <![CDATA[
                 <HTML>
                 <BODY>
                 <div style="overflow-x: scroll">
@@ -28,12 +26,15 @@
                 </BODY>
                 </HTML>
                 ]]>
-                                </HtmlWebViewSource.Html>
-                            </HtmlWebViewSource>
-                        </WebView.Source>
-                    </WebView>
-                </StackLayout>
-            </ContentPage>
-        </DataTemplate>
-    </TabbedPage.ItemTemplate>
+                        </HtmlWebViewSource.Html>
+                    </HtmlWebViewSource>
+                </WebView.Source>
+            </WebView>
+        </StackLayout>
+    </ContentPage>
+    <ContentPage 
+        Title="Tab2">
+        <Grid 
+            BackgroundColor="Red"/>
+    </ContentPage>
 </TabbedPage>
