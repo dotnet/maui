@@ -97,8 +97,8 @@
 ~Microsoft.Maui.Controls.AbsoluteLayout.SetLayoutFlags(Microsoft.Maui.IView view, Microsoft.Maui.Layouts.AbsoluteLayoutFlags flags) -> void
 ~Microsoft.Maui.Controls.Accelerator.Keys.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
-~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
+~Microsoft.Maui.Controls.Accelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
 ~Microsoft.Maui.Controls.ActivityIndicator.Color.get -> Microsoft.Maui.Graphics.Color
 ~Microsoft.Maui.Controls.ActivityIndicator.Color.set -> void
 ~Microsoft.Maui.Controls.ActivityIndicator.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.ActivityIndicator>
