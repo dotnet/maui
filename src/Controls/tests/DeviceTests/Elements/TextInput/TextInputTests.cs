@@ -42,15 +42,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task UnsetCursorPositionKeepsToZeroOnInitializationWithTextTransform(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text,
 				TextTransform = TextTransform.Uppercase
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.CursorPosition,
+				control,
+				() => control.CursorPosition,
 				GetPlatformCursorPosition,
 				0);
 		}
@@ -62,15 +62,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task UnsetSelectionLengthKeepsToZeroOnInitializationWithTextTransform(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text,
 				TextTransform = TextTransform.Uppercase
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.SelectionLength,
+				control,
+				() => control.SelectionLength,
 				GetPlatformSelectionLength,
 				0);
 		}
@@ -79,15 +79,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task CursorPositionInitializesCorrectly(int initialPosition)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				CursorPosition = initialPosition
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				entry,
-				() => entry.CursorPosition,
+				control,
+				() => control.CursorPosition,
 				GetPlatformCursorPosition,
 				initialPosition);
 		}
@@ -96,13 +96,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task CursorPositionInitializesCorrectlyWithUpdateCursorPositionLast(int initialPosition)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				CursorPosition = initialPosition
 			};
 
-			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			var value = await GetValueAsync<int, THandler>(control, handler =>
 			{
 				handler.UpdateValue(nameof(ITextInput.CursorPosition));
 				return GetPlatformCursorPosition(handler);
@@ -115,13 +115,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task CursorPositionInitializesCorrectlyWithUpdateTextLast(int initialPosition)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				CursorPosition = initialPosition
 			};
 
-			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			var value = await GetValueAsync<int, THandler>(control, handler =>
 			{
 				handler.UpdateValue(nameof(ITextInput.Text));
 				return GetPlatformCursorPosition(handler);
@@ -134,15 +134,15 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectly(int initialLength)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				SelectionLength = initialLength
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				entry,
-				() => entry.SelectionLength,
+				control,
+				() => control.SelectionLength,
 				GetPlatformSelectionLength,
 				initialLength);
 		}
@@ -151,13 +151,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectlyWithUpdateCursorPositionLast(int initialLength)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				SelectionLength = initialLength
 			};
 
-			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			var value = await GetValueAsync<int, THandler>(control, handler =>
 			{
 				handler.UpdateValue(nameof(ITextInput.CursorPosition));
 				return GetPlatformSelectionLength(handler);
@@ -170,13 +170,13 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(2)]
 		public async Task SelectionLengthInitializesCorrectlyWithUpdateTextLast(int initialLength)
 		{
-			var entry = new TView
+			var control = new TView
 			{
 				Text = "This is TEXT!",
 				SelectionLength = initialLength
 			};
 
-			var value = await GetValueAsync<int, THandler>(entry, handler =>
+			var value = await GetValueAsync<int, THandler>(control, handler =>
 			{
 				handler.UpdateValue(nameof(ITextInput.Text));
 				return GetPlatformSelectionLength(handler);
@@ -191,13 +191,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text
 			};
 
 			await ValidatePropertyUpdatesValue<int, THandler>(
-				editor,
+				control,
 				nameof(ITextInput.CursorPosition),
 				GetPlatformCursorPosition,
 				setValue,
@@ -211,15 +211,15 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text,
 				CursorPosition = initialPosition
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.CursorPosition,
+				control,
+				() => control.CursorPosition,
 				GetPlatformCursorPosition,
 				text.Length);
 		}
@@ -231,14 +231,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task UnsetCursorPositionKeepsToZeroOnInitialization(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.CursorPosition,
+				control,
+				() => control.CursorPosition,
 				GetPlatformCursorPosition,
 				0);
 		}
@@ -250,14 +250,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task CursorPositionMovesToTheEndOnTextChangeAfterInitialization(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = "Test"
 			};
 
-			await AttachAndRunFocusAffectedControl<TView, THandler>(editor, handler => editor.Text = text);
+			await AttachAndRunFocusAffectedControl<TView, THandler>(control, handler => control.Text = text);
 
-			Assert.Equal(text.Length, editor.CursorPosition);
+			Assert.Equal(text.Length, control.CursorPosition);
 		}
 
 		[Theory(DisplayName = "SelectionLength Updates Correctly")]
@@ -266,13 +266,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text,
 			};
 
 			await ValidatePropertyUpdatesValue<int, THandler>(
-				editor,
+				control,
 				nameof(ITextInput.SelectionLength),
 				GetPlatformSelectionLength,
 				setValue,
@@ -286,15 +286,15 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string text = "This is TEXT!";
 
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text,
 				SelectionLength = selectionLength
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.SelectionLength,
+				control,
+				() => control.SelectionLength,
 				GetPlatformSelectionLength,
 				text.Length);
 		}
@@ -306,14 +306,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task UnsetSelectionLengthKeepsToZeroOnInitialization(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = text
 			};
 
 			await ValidatePropertyInitValue<int, THandler>(
-				editor,
-				() => editor.SelectionLength,
+				control,
+				() => control.SelectionLength,
 				GetPlatformSelectionLength,
 				0);
 		}
@@ -325,14 +325,14 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(" ")]
 		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
 		{
-			var editor = new TView
+			var control = new TView
 			{
 				Text = "Test"
 			};
 
-			await AttachAndRunFocusAffectedControl<TView, THandler>(editor, handler => editor.Text = text);
+			await AttachAndRunFocusAffectedControl<TView, THandler>(control, handler => control.Text = text);
 
-			Assert.Equal(0, editor.SelectionLength);
+			Assert.Equal(0, control.SelectionLength);
 		}
 	}
 }
