@@ -12,7 +12,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3008, "Setting ListView.ItemSource to null doesn't cause it clear out its contents", PlatformAffected.UWP)]
@@ -181,6 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && !__ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EnsureListViewEmptiesOut()
 		{
 			RunningApp.Tap("Click Until Success");

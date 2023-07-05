@@ -1,45 +1,81 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
 namespace Microsoft.Maui.ApplicationModel
 {
 	static class WebUtils
 	{
-		internal static IDictionary<string, string> ParseQueryString(string url)
+		internal static IDictionary<string, string> ParseQueryString(Uri uri)
 		{
-			var d = new Dictionary<string, string>(StringComparer.Ordinal);
+			var parameters = new Dictionary<string, string>(StringComparer.Ordinal);
 
-			if (string.IsNullOrWhiteSpace(url) || (url.IndexOf("?", StringComparison.Ordinal) == -1 && url.IndexOf("#", StringComparison.Ordinal) == -1))
-				return d;
+			if (uri == null)
+				return parameters;
 
-			var qsStartIndex = url.IndexOf("?", StringComparison.Ordinal);
-			if (qsStartIndex < 0)
-				qsStartIndex = url.IndexOf("#", StringComparison.Ordinal);
+			// Note: Uri.Query starts with a '?'
+			if (!string.IsNullOrEmpty(uri.Query))
+				UnpackParameters(uri.Query.AsSpan(1), parameters);
 
-			if (url.Length - 1 < qsStartIndex + 1)
-				return d;
+			// Note: Uri.Fragment starts with a '#'
+			if (!string.IsNullOrEmpty(uri.Fragment))
+				UnpackParameters(uri.Fragment.AsSpan(1), parameters);
 
-			var qs = url.Substring(qsStartIndex + 1);
+			return parameters;
+		}
 
-			var kvps = qs.Split('&');
-
-			if (kvps == null || !kvps.Any())
-				return d;
-
-			foreach (var kvp in kvps)
+		// The following method is a port of the logic found in https://source.dot.net/#Microsoft.AspNetCore.WebUtilities/src/Shared/QueryStringEnumerable.cs
+		// but refactored such that it:
+		//
+		// 1. avoids the IEnumerable overhead that isn't needed (the ASP.NET logic was clearly designed that way to offer a public API whereas we don't need that)
+		// 2. avoids the use of unsafe code
+		static void UnpackParameters(ReadOnlySpan<char> query, Dictionary<string, string> parameters)
+		{
+			while (!query.IsEmpty)
 			{
-				var pair = kvp.Split(new char[] { '=' }, 2);
+				int delimeterIndex = query.IndexOf('&');
+				ReadOnlySpan<char> segment;
 
-				if (pair == null || pair.Length != 2)
-					continue;
+				if (delimeterIndex >= 0)
+				{
+					segment = query.Slice(0, delimeterIndex);
+					query = query.Slice(delimeterIndex + 1);
+				}
+				else
+				{
+					segment = query;
+					query = default;
+				}
 
-				d[pair[0]] = pair[1];
+				// If it's nonempty, emit it
+				if (!segment.IsEmpty)
+				{
+					var equalIndex = segment.IndexOf('=');
+					string name, value;
+
+					if (equalIndex >= 0)
+					{
+						name = segment.Slice(0, equalIndex).ToString();
+
+						var span = segment.Slice(equalIndex + 1);
+						var chars = new char[span.Length];
+
+						for (int i = 0; i < span.Length; i++)
+							chars[i] = span[i] == '+' ? ' ' : span[i];
+
+						value = new string(chars);
+					}
+					else
+					{
+						name = segment.ToString();
+						value = string.Empty;
+					}
+
+					name = Uri.UnescapeDataString(name);
+
+					parameters[name] = Uri.UnescapeDataString(value);
+				}
 			}
-
-			return d;
 		}
 
 		internal static Uri EscapeUri(Uri uri)

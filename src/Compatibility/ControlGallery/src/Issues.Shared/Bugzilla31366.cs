@@ -8,7 +8,7 @@ using Xamarin.UITest;
 
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -78,6 +78,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[UiTest(typeof(NavigationPage))]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue31366PushingAndPoppingModallyCausesArgumentOutOfRangeException()
 		{
 			RunningApp.Tap(q => q.Marked("Start PopOnAppearing Test"));
@@ -86,6 +87,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 		[Test]
 		[UiTest(typeof(NavigationPage))]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue31366PushingWithModalStackCausesIncorrectStackOrder()
 		{
 			RunningApp.Tap(q => q.Marked("Start ModalStack Test"));

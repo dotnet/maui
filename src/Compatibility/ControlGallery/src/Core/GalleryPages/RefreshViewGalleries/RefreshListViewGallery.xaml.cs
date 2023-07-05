@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public partial class RefreshListViewGallery : ContentPage

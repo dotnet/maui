@@ -1,8 +1,19 @@
 #nullable enable
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
+Microsoft.Maui.Controls.IWindowCreator
+Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
 Microsoft.Maui.Controls.Platform.CollectionViewExtensions
 Microsoft.Maui.Controls.Platform.ShapesExtensions
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> object!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.~StructuredItemsViewHandler() -> void
 override Microsoft.Maui.Controls.Handlers.BoxViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
@@ -31,6 +42,7 @@ static Microsoft.Maui.Controls.Region.operator !=(Microsoft.Maui.Controls.Region
 static Microsoft.Maui.Controls.Region.operator ==(Microsoft.Maui.Controls.Region left, Microsoft.Maui.Controls.Region right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator !=(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
 static Microsoft.Maui.Controls.Shapes.Matrix.operator ==(Microsoft.Maui.Controls.Shapes.Matrix left, Microsoft.Maui.Controls.Shapes.Matrix right) -> bool
+virtual Microsoft.Maui.Controls.Handlers.ShellItemHandler.UpdateAppearance(Microsoft.Maui.Controls.IShellAppearanceElement! appearance) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper) -> void
 ~Microsoft.Maui.Controls.Handlers.Compatibility.FrameRenderer.FrameRenderer(Microsoft.Maui.IPropertyMapper mapper, Microsoft.Maui.CommandMapper commandMapper) -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
@@ -59,6 +71,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.DisconnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
+~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool

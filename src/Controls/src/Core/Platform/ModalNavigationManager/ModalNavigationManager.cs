@@ -324,7 +324,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		// Windows and Android have basically the same requirement that
 		// we need to wait for the current page to finish loading before
-		// satsifying Modal requests.
+		// satisfying Modal requests.
 		// This will most likely change once we switch Android to using dialog fragments		
 #if WINDOWS || ANDROID
 		IDisposable? _platformPageWatchingForLoaded;
@@ -338,22 +338,33 @@ namespace Microsoft.Maui.Controls.Platform
 				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
 			else if (_window.IsActivated &&
-				_window?.Page?.Handler is not null)
+					_window?.Page?.Handler is not null)
 			{
 				if (CurrentPlatformPage.Handler is null)
 				{
 					CurrentPlatformPage.HandlerChanged += OnCurrentPlatformPageHandlerChanged;
-					;
+
 					_platformPageWatchingForLoaded = new ActionDisposable(() =>
 					{
 						CurrentPlatformPage.HandlerChanged -= OnCurrentPlatformPageHandlerChanged;
 					});
 				}
-				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
-					CurrentPlatformPage.Handler is not null)
+				// This accounts for cases where we swap the root page out
+				// We want to wait for that to finish loading before processing any modal changes
+#if ANDROID
+				else if (!_window.Page.IsLoadedOnPlatform())
 				{
+					var windowPage = _window.Page;
 					_platformPageWatchingForLoaded =
-						CurrentPlatformPage.OnLoaded(() => OnCurrentPlatformPageLoaded(_platformPageWatchingForLoaded, EventArgs.Empty));
+						windowPage.OnLoaded(() => OnCurrentPlatformPageLoaded(windowPage, EventArgs.Empty));
+				}
+#endif
+				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
+						  CurrentPlatformPage.Handler is not null)
+				{
+					var currentPlatformPage = CurrentPlatformPage;
+					_platformPageWatchingForLoaded =
+						currentPlatformPage.OnLoaded(() => OnCurrentPlatformPageLoaded(currentPlatformPage, EventArgs.Empty));
 				}
 			}
 		}
@@ -382,6 +393,9 @@ namespace Microsoft.Maui.Controls.Platform
 				bool result =
 					_window?.Page?.Handler is not null &&
 					_window.IsActivated
+#if ANDROID
+					&& _window.Page.IsLoadedOnPlatform()
+#endif
 					&& CurrentPlatformPage?.Handler is not null
 					&& CurrentPlatformPage.IsLoadedOnPlatform();
 

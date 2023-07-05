@@ -5,14 +5,13 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Java.Interop;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Compatibility.Platform.Android;
-using Microsoft.Maui.Controls.Compatibility.Platform.Android.AppLinks;
+using Microsoft.Maui.Controls.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	// This is the AppCompat version of Activity1
 
@@ -50,26 +49,25 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 			// so all of our tests run without using the reflection APIs
 			// At some point the Resources class types will go away so
 			// reflection will stop working
-			ResourceManager.Init(null);
-			FormsMaps.Init(this, bundle);
+			//ResourceManager.Init(null);
 
-			//FormsMaterial.Init(this, bundle);
-			AndroidAppLinks.Init(this);
-			Forms.ViewInitialized += (sender, e) =>
-			{
-				//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
-				//					e.NativeView.ContentDescription = e.View.StyleId;
-				//				}
-			};
+			////FormsMaterial.Init(this, bundle);
+			//AndroidAppLinks.Init(this);
+			//Forms.ViewInitialized += (sender, e) =>
+			//{
+			//	//				if (!string.IsNullOrWhiteSpace(e.View.StyleId)) {
+			//	//					e.NativeView.ContentDescription = e.View.StyleId;
+			//	//				}
+			//};
 
 			// uncomment to verify turning off title bar works. This is not intended to be dynamic really.
 			//Forms.SetTitleBarVisibility (AndroidTitleBarVisibility.Never);
 
 			// When the native control gallery loads up, it'll let us know so we can add the nested native controls
-			MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
+			// MessagingCenter.Subscribe<NestedNativeControlGalleryPage>(this, NestedNativeControlGalleryPage.ReadyForNativeControlsMessage, AddNativeControls);
 
 			// When the native binding gallery loads up, it'll let us know so we can set up the native bindings
-			MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
+			// MessagingCenter.Subscribe<NativeBindingGalleryPage>(this, NativeBindingGalleryPage.ReadyForNativeBindingsMessage, AddNativeBindings);
 
 			// Listen for the message from the status bar color toggle test
 			// MessagingCenter.Subscribe<AndroidStatusBarColor>(this, AndroidStatusBarColor.Message, color => SetStatusBarColor(global::Android.Graphics.Color.Red));

@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = paint?.ToPlatform();
 
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -50,7 +50,81 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var item in items)
 				{
-					item.Foreground = brush;
+					item.UnselectedTitleColor = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea is not null)
+			{
+				if (brush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelected");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
+				}
+				else
+				{
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelected"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPressed"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.SelectedTitleColor = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea is not null)
+			{
+				if (brush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("NavigationViewSelectionIndicatorForeground");
+				}
+				else
+				{
+					// Use the TabBarForegroundColor to update the Indicator Brush
+					navigationView.TopNavArea.Resources["NavigationViewSelectionIndicatorForeground"] = brush;
+				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.SelectedForeground = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.UnselectedForeground = brush;
 				}
 			}
 		}
@@ -58,7 +132,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTopNavigationViewItemBackgroundUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -88,7 +162,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTopNavigationViewItemBackgroundSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -144,7 +218,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFlyoutVerticalScrollMode(this MauiNavigationView navigationView, ScrollMode scrollMode)
 		{
 			var scrollViewer = navigationView.MenuItemsScrollViewer;
-			if (scrollViewer != null)
+			if (scrollViewer is not null)
 			{
 				switch (scrollMode)
 				{

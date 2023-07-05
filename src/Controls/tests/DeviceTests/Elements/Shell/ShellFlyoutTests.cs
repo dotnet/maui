@@ -158,7 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea().Top);
 			});
 		}
-#endif
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
@@ -202,6 +201,7 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + GetSafeArea().Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
+#endif
 
 #if ANDROID
 		[Fact]

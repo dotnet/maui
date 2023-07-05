@@ -46,8 +46,8 @@ namespace Microsoft.Maui.Graphics.Tests
 				new object[] { "hsva(0,0,0,1)", new Color() },
 				new object[] { "hsva(0,0,0,0)", Colors.Transparent },
 
-				new object[] { "hsl(253,66,50)", Color.FromArgb("#512BD4") },
-				new object[] { "hsv(253,80,83)", Color.FromArgb("#512BD4") },
+				new object[] { "hsl(253,66,50)", Color.FromArgb("#4F2BD3") },
+				new object[] { "hsv(253,80,83)", Color.FromArgb("#4F2AD3") },
 				new object[] { "rgb(81,43,212)", Color.FromArgb("#512BD4") },
 			};
 

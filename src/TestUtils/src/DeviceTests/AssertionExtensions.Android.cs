@@ -284,6 +284,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static string CreateEqualError(this Bitmap bitmap, Bitmap other, string message) =>
 			$"{message} This is what it looked like: <img>{bitmap.ToBase64String()}</img> and <img>{other.ToBase64String()}</img>";
 
+		public static string CreateScreenshotError(this Bitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
+
 		public static AColor ColorAtPoint(this Bitmap bitmap, int x, int y, bool includeAlpha = false)
 		{
 			int pixel = bitmap.GetPixel(x, y);
@@ -592,6 +595,15 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return Task.CompletedTask;
+		}
+
+		public static async Task ThrowScreenshot(this AView view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			if (ex is null)
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+			else
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
 		}
 
 		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>
