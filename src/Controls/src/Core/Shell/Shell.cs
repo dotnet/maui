@@ -692,26 +692,26 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// 
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" /> that will complete once the navigation animation.
 		/// </summary>
-		/// <param name="state"></param>
-		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
 		/// <returns></returns>
-		public Task GoToAsync(ShellNavigationState state, ShellNavigationQueryParameters singleUseQueryParameter)
+		public Task GoToAsync(ShellNavigationState state, ShellNavigationQueryParameters shellNavigationQueryParameters)
 		{
-			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
 		/// <summary>
-		/// 
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" />.
 		/// </summary>
-		/// <param name="state"></param>
-		/// <param name="animate"></param>
-		/// <param name="singleUseQueryParameter">Any parameters passed here won't be reused when the page is navigated back to</param>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="animate">Indicates if your transition is animated</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
 		/// <returns></returns>
-		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters singleUseQueryParameter)
+		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters shellNavigationQueryParameters)
 		{
-			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(singleUseQueryParameter));
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
 		public void AddLogicalChild(Element element)

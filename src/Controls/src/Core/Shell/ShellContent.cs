@@ -289,7 +289,7 @@ namespace Microsoft.Maui.Controls
 			if (content is IQueryAttributable attributable)
 			{
 				attributable
-					.ApplyQueryAttributes(query.GiveMeReadOnlyIfOnlyUsingShellNavigationQueryParameters());
+					.ApplyQueryAttributes(query.ToReadOnlyIfUsingShellNavigationQueryParameters());
 			}
 
 			if (content is BindableObject bindable && bindable.BindingContext != null && content != bindable.BindingContext)
