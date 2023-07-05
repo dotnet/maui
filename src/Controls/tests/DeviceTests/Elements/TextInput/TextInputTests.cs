@@ -323,7 +323,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("a")]
 		[InlineData("")]
 		[InlineData(" ")]
-		public async Task SelectionLengthMovesToTheEndOnTextChangeAfterInitialization(string text)
+		public async Task SelectionLengthKeepsToZeroOnTextChangeAfterInitialization(string text)
 		{
 			var control = new TView
 			{
