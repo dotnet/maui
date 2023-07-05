@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -8,9 +8,9 @@
         <MenuBarItem Text="Before File">
             <MenuFlyoutItem Text="Cool item 1" />
             <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" Accelerator="b" />
-            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 1" />
             <MenuFlyoutSeparator />
-            <MenuFlyoutItem Text="Cool item 2" />
+            <MenuFlyoutItem Text="Cool item 2 (Disabled)" IsEnabled="False" />
         </MenuBarItem>
         <MenuBarItem Text="File">
             <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File" >
