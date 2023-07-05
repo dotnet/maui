@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <views:BasePage 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
@@ -6,13 +6,14 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.MenuBarItems>
         <MenuBarItem Text="Before File">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" />
             <MenuFlyoutItem Text="Cool item 1" />
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" Accelerator="b" />
+            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutItem Text="Cool item 2" />
         </MenuBarItem>
         <MenuBarItem Text="File">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Custom File">
+            <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File" >
                 <MenuFlyoutItem.IconImageSource>
                         <FontImageSource
                             FontAutoScalingEnabled="False"
@@ -23,10 +24,10 @@
             </MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="Custom Menu">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" />
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" Accelerator="ctrl+5" />
             <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
-                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" />
-                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2 (Disabled)" IsEnabled="False" />
+                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" Accelerator="Shift+M" />
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2" Accelerator="ALT+C" />
             </MenuFlyoutSubItem>
             <MenuFlyoutItem Clicked="ItemClicked" Text="Item 2 (Disabled)" IsEnabled="False" />
         </MenuBarItem>
