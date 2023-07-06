@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -71,6 +72,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			Assert.False(Brush.IsNullOrEmpty(linearGradientBrush));
+		}
+
+		[Fact]
+		public void TestNullOrEmptyLinearGradientPaint()
+		{
+			LinearGradientBrush linearGradientBrush = new LinearGradientBrush
+			{
+				StartPoint = new Point(0, 0),
+				EndPoint = new Point(1, 0),
+				GradientStops = new GradientStopCollection
+				{
+					new GradientStop(),
+					new GradientStop()
+				}
+			};
+
+			Paint linearGradientPaint = linearGradientBrush;
+
+			Assert.True(linearGradientPaint.IsNullOrEmpty());
 		}
 
 		[Fact]
