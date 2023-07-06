@@ -1529,5 +1529,43 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var shellToolBar = testShell.Toolbar;
 			Assert.False(shellToolBar.IsVisible);
 		}
+
+		[Fact]
+		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
+		{
+			var page1 = new ContentPage()
+			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+			{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
+
+			var shell = new Shell();
+			var tabBar = new TabBar()
+			{
+				Items =
+				{
+					new ShellContent(){ Content = page1 },
+					new ShellContent(){ Content = page2 },
+				}
+			};
+
+			shell.Items.Add(tabBar);
+			shell.CurrentItem = page2;
+			page2.IsVisible = false;
+			Assert.Equal(shell.CurrentPage, page1);
+
+			bool fired = false;
+			shell.CurrentItem.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == nameof(ShellItem.CurrentItem))
+				{
+					fired = true;
+				}
+			};
+
+			page2.IsVisible = true;
+			shell.CurrentItem = page2;
+			Assert.Equal(shell.CurrentPage, page2);
+			Assert.True(fired);
+		}
 	}
 }
