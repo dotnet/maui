@@ -1531,7 +1531,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
+		public async Task ShellSectionChangedFires()
 		{
 			var page1 = new ContentPage()
 			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
