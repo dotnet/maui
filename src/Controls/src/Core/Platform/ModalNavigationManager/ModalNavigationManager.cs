@@ -24,8 +24,18 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPlatformModalPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
-		Page? CurrentPage =>
-			_modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1].Page : _window.Page;
+		Page? CurrentPage
+		{
+			get
+			{
+				var currentPage = _modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1].Page : _window.Page;
+
+				if (currentPage is Shell shell)
+					currentPage = shell.CurrentPage;
+
+				return currentPage;
+			}
+		}
 
 		// Shell takes care of firing its own Modal life cycle events
 		// With shell you cam remove / add multiple modals at once
@@ -201,7 +211,21 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FireLifeCycleEvents)
 			{
 				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
-				modal.SendDisappearing();
+			}
+
+			modal.SendDisappearing();
+
+			// With shell we want to make sure to only fire the appearing event
+			// on the final page that will be visible after the pop has completed
+			if (_window.Page is Shell shell)
+			{
+				if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+				{
+					CurrentPage?.SendAppearing();
+				}
+			}
+			else
+			{
 				CurrentPage?.SendAppearing();
 			}
 
@@ -236,6 +260,20 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FireLifeCycleEvents)
 			{
 				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+
+			if (_window.Page is Shell shell)
+			{
+				// With shell we want to make sure to only fire the appearing event
+				// on the final page that will be visible after the pop has completed
+				if (!shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					previousPage?.SendDisappearing();
+					CurrentPage?.SendAppearing();
+				}
+			}
+			else
+			{
 				previousPage?.SendDisappearing();
 				CurrentPage?.SendAppearing();
 			}

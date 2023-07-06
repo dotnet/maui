@@ -123,6 +123,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
 		{
+			if (handler.VirtualView is VisualElement e)
+			{
+				handler = e.Window?.Handler ?? handler;
+			}
+
 			if (handler is IWindowHandler wh)
 			{
 				handler = wh.VirtualView.Content.Handler;

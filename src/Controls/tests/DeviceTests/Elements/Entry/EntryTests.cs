@@ -32,6 +32,26 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
+		[Fact]
+		public async Task MaxLengthTrims()
+		{
+			var entry = new Entry
+			{
+				Text = "This is text",
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+
+				entry.MaxLength = 4;
+				Assert.Equal("This", entry.Text);
+
+				var platformText = await GetPlatformText(handler);
+				Assert.Equal("This", platformText);
+			});
+		}
+
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]
