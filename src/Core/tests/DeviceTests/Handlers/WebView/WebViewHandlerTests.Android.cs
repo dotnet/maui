@@ -14,8 +14,6 @@ namespace Microsoft.Maui.DeviceTests
 		public Task EnsureSupportForCustomWebViewClients() =>
 			InvokeOnMainThreadAsync(async () =>
 			{
-				var pageLoadTimeout = TimeSpan.FromSeconds(30);
-
 				// create the cross-platform view
 				var webView = new WebViewStub
 				{
@@ -29,27 +27,45 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var platformWebView = webViewHandler.PlatformView;
 
+					var tcsLoaded = new TaskCompletionSource<bool>();
+					var tcsNavigating = new TaskCompletionSource();
+					var tcsRequested = new TaskCompletionSource();
+
+					// if the timeout happens, cancel everything
+					var pageLoadTimeout = TimeSpan.FromSeconds(30);
+					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
+					ctsTimeout.Token.Register(() =>
+					{
+						tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML"));
+						tcsNavigating.TrySetException(new TimeoutException($"Failed to navigate to the loaded page"));
+						tcsRequested.TrySetException(new TimeoutException($"Failed to request the image"));
+					});
+
 					// attach some event handlers to track things
 					var navigatingCount = 0;
 					webView.NavigatingDelegate = new((evnt, url) =>
 					{
 						navigatingCount++;
+
+						if (url == "file:///android_asset/extracontent.html")
+							tcsNavigating.TrySetResult();
+
 						return false; // do not cancel the navigation
 					});
 					var shouldRequestCount = 0;
 					webViewHandler.ShouldInterceptRequestDelegate = new((view, request) =>
 					{
 						shouldRequestCount++;
+
+						if (request.Url.ToString().StartsWith("https://raw.githubusercontent.com/dotnet/maui/4c096c1f17e9a23bf3961ba5778d3936039ad881/Assets/icon.png"))
+							tcsRequested.TrySetResult();
 					});
 
 					// set up a task to wait for the page to load
-					var tcsLoaded = new TaskCompletionSource<bool>();
-					var ctsTimeout = new CancellationTokenSource(pageLoadTimeout);
-					ctsTimeout.Token.Register(() => tcsLoaded.TrySetException(new TimeoutException($"Failed to load HTML")));
 					webView.NavigatedDelegate = (evnt, url, result) =>
 					{
 						// Set success when we have a successful nav result
-						if (result == WebNavigationResult.Success)
+						if (result == WebNavigationResult.Success && url == "file:///android_asset/extracontent.html")
 							tcsLoaded.TrySetResult(result == WebNavigationResult.Success);
 					};
 
@@ -63,8 +79,12 @@ namespace Microsoft.Maui.DeviceTests
 					// make sure the mapper override fired at least once
 					Assert.IsType<CustomWebClient>(webViewHandler.CustomWebClient);
 
-					// make sure the maui event and the custom event fired
+					// wait for the navigation to complete
+					await tcsNavigating.Task;
 					Assert.True(navigatingCount > 1); // at least 1 navigation, Android seems to do a few
+
+					// wait for the image to be requested
+					await tcsRequested.Task;
 					Assert.Equal(1, shouldRequestCount); // only 1 request for the image to load
 				});
 			});
