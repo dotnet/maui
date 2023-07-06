@@ -579,7 +579,7 @@ namespace Microsoft.Maui.Controls
 
 					var parentPages = this.GetParentPages();
 					parentPages.Insert(0, this);
-	 				var topLevelPage = parentPages[parentPages.Count - 1];
+					var topLevelPage = parentPages[parentPages.Count - 1];
 
 					// Is my top parent page the root page on the window?
 					// If so then we set the toolbar on the window
