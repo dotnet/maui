@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui;
+﻿using System.Diagnostics;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
@@ -146,6 +147,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				bool animated = animatedCheckBox.IsChecked;
 				swipeView1.Open(OpenSwipeItem.LeftItems, animated);
 				swipeView2.Open(OpenSwipeItem.LeftItems, animated);
+
+				Debug.WriteLine($"swipeView1 IsOpen:{((ISwipeView)swipeView1).IsOpen}, swipeView2 IsOpen:{((ISwipeView)swipeView2).IsOpen}");
 			};
 
 			closeButton.Clicked += (sender, e) =>
@@ -153,6 +156,8 @@ namespace Maui.Controls.Sample.Pages.SwipeViewGalleries
 				bool animated = animatedCheckBox.IsChecked;
 				swipeView1.Close(animated);
 				swipeView2.Close(animated);
+
+				Debug.WriteLine($"swipeView1 IsOpen:{((ISwipeView)swipeView1).IsOpen}, swipeView2 IsOpen:{((ISwipeView)swipeView2).IsOpen}");
 			};
 		}
 	}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if APP
 	[XamlCompilation(XamlCompilationOptions.Compile)]

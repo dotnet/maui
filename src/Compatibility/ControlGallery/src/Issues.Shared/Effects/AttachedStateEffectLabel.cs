@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects
+namespace Microsoft.Maui.Controls.ControlGallery.Effects
 {
 	[Preserve(AllMembers = true)]
 	public class AttachedStateEffectLabel : Label

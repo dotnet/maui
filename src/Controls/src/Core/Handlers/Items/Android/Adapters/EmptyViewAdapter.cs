@@ -96,6 +96,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected readonly ItemsView ItemsView;
 		public override int ItemCount => 1 + ((Header != null || HeaderTemplate != null) ? 1 : 0) + ((Footer != null || FooterTemplate != null) ? 1 : 0);
 
+		internal double RecyclerViewHeight { get; set; }
+
+		internal double RecyclerViewWidth { get; set; }
+
 		public EmptyViewAdapter(ItemsView itemsView)
 		{
 			ItemsView = itemsView;
@@ -228,7 +232,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (template == null)
 			{
-				if (!(content is View formsView))
+				if (content is not View formsView)
 				{
 					// No template, EmptyView is not a Forms View, so just display EmptyView.ToString
 					return SimpleViewHolder.FromText(content?.ToString(), context);
@@ -273,15 +277,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int GetHeight(ViewGroup parent)
 		{
-			//this was using parent.MeasuredHeight on XF but that reports 0 now.
+			int height = (int)RecyclerViewHeight;
+
+			if (height <= 0)
+				height = parent.MeasuredHeight;
+
 			var headerFooterHeight = parent.Context.ToPixels(_headerHeight + _footerHeight);
-			return Math.Abs((int)(parent.Height - headerFooterHeight));
+			return Math.Abs((int)(height - headerFooterHeight));
 		}
 
 		int GetWidth(ViewGroup parent)
 		{
-			//this was using MeasuredWidth on XF but that reports 0 now.
-			return parent.Width;
+			int width = (int)RecyclerViewWidth;
+
+			if (width <= 0)
+				width = parent.MeasuredWidth;
+
+			return width;
 		}
 
 		void UpdateHeaderFooterHeight(object item, bool isHeader)

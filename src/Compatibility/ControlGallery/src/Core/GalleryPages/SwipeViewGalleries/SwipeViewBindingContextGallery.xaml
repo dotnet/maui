@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries.SwipeViewBindingContextGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries.SwipeViewBindingContextGallery"
     Title="SwipeView BindingContext Gallery">
     <ContentPage.BindingContext>
         <vm:SwipeViewBindingContextGalleryViewModel />

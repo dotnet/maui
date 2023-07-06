@@ -2,17 +2,17 @@
 using System;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.UI.Composition;
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Shapes;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentPanel : Panel
+	public class ContentPanel : MauiPanel
 	{
 		readonly Path? _borderPath;
 		IShape? _borderShape;
@@ -30,32 +30,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Graphics.Rect, Size>? CrossPlatformArrange { get; set; }
-
-		protected override global::Windows.Foundation.Size MeasureOverride(global::Windows.Foundation.Size availableSize)
-		{
-			if (CrossPlatformMeasure == null || (availableSize.Width * availableSize.Height == 0))
-			{
-				return base.MeasureOverride(availableSize);
-			}
-
-			var measure = CrossPlatformMeasure(availableSize.Width, availableSize.Height);
-
-			return measure.ToPlatform();
-		}
-
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (CrossPlatformArrange == null)
-			{
-				return base.ArrangeOverride(finalSize);
-			}
-
-			var width = finalSize.Width;
-			var height = finalSize.Height;
-
-			var actual = CrossPlatformArrange(new Graphics.Rect(0, 0, width, height));
+			var actual = base.ArrangeOverride(finalSize);
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 

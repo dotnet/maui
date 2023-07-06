@@ -4,7 +4,7 @@
 			 Title="Welcome"
 			 Routing.Route="shellcontent"
 			 Shell.TabBarIsVisible="false"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.ShellContentTest">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.ShellContentTest">
 	<Page.ToolbarItems>
 		<ToolbarItem Text="Search" IconImageSource="bank.png" />
 	</Page.ToolbarItems>

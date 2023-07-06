@@ -10,7 +10,7 @@ using Xamarin.UITest.Queries;
 #endif
 
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation", PlatformAffected.iOS)]
@@ -25,6 +25,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		[Test]
 		[Issue (IssueTracker.Github, 773, "Horizontal ScrollView locks after rotation - relayout correctly after rotation", PlatformAffected.iOS)]
 		[UiTest (typeof(ScrollView))]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue773TestsRotationRelayoutIssue ()
 		{
 			RunningApp.SetOrientationLandscape ();

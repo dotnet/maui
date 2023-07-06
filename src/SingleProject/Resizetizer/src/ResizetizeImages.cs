@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Resizetizer
 
 			foreach (var img in resizedImages)
 			{
-				var attr = new Dictionary<string, string>();
+				var attr = new Dictionary<string, string>(StringComparer.Ordinal);
 				string itemSpec = Path.GetFullPath(img.Filename);
 
 				// Fix the item spec to be relative for mac

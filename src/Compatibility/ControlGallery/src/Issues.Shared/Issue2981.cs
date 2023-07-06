@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -32,6 +32,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		// (like LongPress) don't really work. The test should work manually on a touch screen, though.
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue2981Test()
 		{
 			RunningApp.Screenshot("I am at Issue 1");

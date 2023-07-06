@@ -55,6 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.ConnectHandler(platformView);
 			VirtualView.ScrollToRequested += ScrollToRequested;
+			FindScrollViewer(ListViewBase);
 		}
 
 		protected override void DisconnectHandler(ListViewBase platformView)
@@ -105,7 +106,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.UpdateItemsUpdatingScrollMode();
+		}
 
+		void UpdateItemsUpdatingScrollMode()
+		{
+			if (PlatformView is null || PlatformView.Items is null)
+				return;
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				// The scroll position is maintained when new items are added as the default,
+				// so we don't need to watch for data changes
+				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+			}
+			else
+			{
+				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+				PlatformView.Items.VectorChanged += OnItemsVectorChanged;
+			}
+		}
+
+		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
+		{
+			if (VirtualView is null)
+				return;
+
+			if (sender is not ItemCollection items)
+				return;
+
+			var itemsCount = items.Count;
+
+			if (itemsCount == 0)
+				return;
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				var firstItem = items[0];
+				// Keeps the first item in the list displayed when new items are added.
+				ListViewBase.ScrollIntoView(firstItem);
+			}
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				var lastItem = items[itemsCount - 1];
+				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+				ListViewBase.ScrollIntoView(lastItem);
+			}
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
@@ -313,6 +360,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 					}
 				}
 			}
+
+			FindScrollViewer(ListViewBase);
 		}
 
 		void FindScrollViewer(ListViewBase listView)
@@ -337,8 +386,19 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateVerticalScrollBarVisibility()
 		{
+			if (Element.VerticalScrollBarVisibility != ScrollBarVisibility.Default)
+			{
+				// If the value is changing to anything other than the default, record the default 
+				if (_defaultVerticalScrollVisibility == null)
+					_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			}
+
 			if (_defaultVerticalScrollVisibility == null)
-				_defaultVerticalScrollVisibility = ScrollViewer.GetVerticalScrollBarVisibility(Control);
+			{
+				// If the default has never been recorded, then this has never been set to anything but the 
+				// default value; there's nothing to do.
+				return;
+			}
 
 			switch (Element.VerticalScrollBarVisibility)
 			{
@@ -375,6 +435,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void OnScrollViewerFound(ScrollViewer scrollViewer)
 		{
+			if (_scrollViewer == scrollViewer)
+			{
+				return;
+			}
+
+			if (_scrollViewer != null)
+			{
+				_scrollViewer.ViewChanged -= ScrollViewChanged;
+			}
+
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanged += ScrollViewChanged;
 		}
@@ -445,6 +515,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			itemsViewScrolledEventArgs = ComputeVisibleIndexes(itemsViewScrolledEventArgs, layoutOrientaton, advancing);
 
 			Element.SendScrolled(itemsViewScrolledEventArgs);
+
+			var remainingItemsThreshold = Element.RemainingItemsThreshold;
+			if (remainingItemsThreshold > -1 &&
+				ItemCount - 1 - itemsViewScrolledEventArgs.LastVisibleItemIndex <= remainingItemsThreshold)
+			{
+				Element.SendRemainingItemsThresholdReached();
+			}
 		}
 
 		protected virtual ItemsViewScrolledEventArgs ComputeVisibleIndexes(ItemsViewScrolledEventArgs args, ItemsLayoutOrientation orientation, bool advancing)

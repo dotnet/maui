@@ -14,23 +14,18 @@ namespace Microsoft.Maui.Handlers
 
 			return new ContentView
 			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
+				CrossPlatformLayout = VirtualView
 			};
 		}
 
 		protected override void ConnectHandler(ContentView platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			platformView.LayoutSubviewsChanged += OnLayoutSubviewsChanged;
 		}
 
 		protected override void DisconnectHandler(ContentView platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			platformView.LayoutSubviewsChanged -= OnLayoutSubviewsChanged;
 		}
 
 		public override void SetVirtualView(IView view)
@@ -40,8 +35,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
 			PlatformView.View = view;
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
 		static void UpdateContent(IBorderHandler handler)
@@ -64,11 +58,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapContent(IBorderHandler handler, IBorderView border)
 		{
 			UpdateContent(handler);
-		}
-
-		void OnLayoutSubviewsChanged(object? sender, EventArgs e)
-		{
-			PlatformView?.UpdateMauiCALayer();
 		}
 	}
 }

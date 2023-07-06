@@ -82,42 +82,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaxLength(this EditText editText, IEditor editor) =>
 			UpdateMaxLength(editText, editor.MaxLength);
 
-		public static void UpdateMaxLength(this EditText editText, int maxLength)
-		{
-			editText.SetLengthFilter(maxLength);
+		public static void UpdateMaxLength(this EditText editText, int maxLength) =>
+			PlatformInterop.UpdateMaxLength(editText, maxLength);
 
-			var newText = editText.Text.TrimToMaxLength(maxLength);
-			if (editText.Text != newText)
-				editText.Text = newText;
-		}
-
-		public static void SetLengthFilter(this EditText editText, int maxLength)
-		{
-			if (maxLength == -1)
-				maxLength = int.MaxValue;
-
-			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
-			var changed = false;
-
-			for (var i = 0; i < currentFilters.Count; i++)
-			{
-				if (currentFilters[i] is InputFilterLengthFilter)
-				{
-					currentFilters.RemoveAt(i);
-					changed = true;
-					break;
-				}
-			}
-
-			if (maxLength >= 0)
-			{
-				currentFilters.Add(new InputFilterLengthFilter(maxLength));
-				changed = true;
-			}
-
-			if (changed)
-				editText.SetFilters(currentFilters.ToArray());
-		}
+		public static void SetLengthFilter(this EditText editText, int maxLength) =>
+			PlatformInterop.SetLengthFilter(editText, maxLength);
 
 		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
@@ -280,16 +249,17 @@ namespace Microsoft.Maui.Platform
 		{
 			var previousCursorPosition = editText.SelectionStart;
 			var keyboard = textInput.Keyboard;
-			var nativeInputTypeToUpdate = keyboard.ToInputType();
+
+			editText.InputType = keyboard.ToInputType();
 
 			if (keyboard is not CustomKeyboard)
 			{
-				// TODO: IsSpellCheckEnabled handling must be here.
-
-				if ((nativeInputTypeToUpdate & InputTypes.TextFlagNoSuggestions) != InputTypes.TextFlagNoSuggestions)
+				if (!editText.InputType.HasFlag(InputTypes.TextFlagNoSuggestions))
 				{
+					// TODO: IsSpellCheckEnabled handling must be here.
+
 					if (!textInput.IsTextPredictionEnabled)
-						nativeInputTypeToUpdate |= InputTypes.TextFlagNoSuggestions;
+						editText.InputType |= InputTypes.TextFlagNoSuggestions;
 				}
 			}
 
@@ -300,14 +270,11 @@ namespace Microsoft.Maui.Platform
 
 			if (textInput is IEntry entry && entry.IsPassword)
 			{
-				if ((nativeInputTypeToUpdate & InputTypes.ClassText) == InputTypes.ClassText)
-					nativeInputTypeToUpdate |= InputTypes.TextVariationPassword;
-
-				if ((nativeInputTypeToUpdate & InputTypes.ClassNumber) == InputTypes.ClassNumber)
-					nativeInputTypeToUpdate |= InputTypes.NumberVariationPassword;
+				if (editText.InputType.HasFlag(InputTypes.ClassText))
+					editText.InputType |= InputTypes.TextVariationPassword;
+				if (editText.InputType.HasFlag(InputTypes.ClassNumber))
+					editText.InputType |= InputTypes.NumberVariationPassword;
 			}
-
-			editText.InputType = nativeInputTypeToUpdate;
 
 			if (textInput is IEditor)
 				editText.InputType |= InputTypes.TextFlagMultiLine;

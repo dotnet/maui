@@ -82,6 +82,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static string CreateEqualError(this UIImage bitmap, UIImage other, string message) =>
 			$"{message} This is what it looked like: <img>{bitmap.ToBase64String()}</img> and <img>{other.ToBase64String()}</img>";
 
+		public static string CreateScreenshotError(this UIImage bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
+
 		public static string ToBase64String(this UIImage bitmap)
 		{
 			var data = bitmap.AsPNG();
@@ -415,6 +418,15 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
+		public static async Task ThrowScreenshot(this UIView view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			if (ex is null)
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+			else
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
+		}
+
 		public static UILineBreakMode ToPlatform(this LineBreakMode mode) =>
 			mode switch
 			{
@@ -601,7 +613,17 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		static UIView GetBackButton(this UINavigationBar uINavigationBar)
+		public static bool HasBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return item is not null;
+		}
+
+		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
