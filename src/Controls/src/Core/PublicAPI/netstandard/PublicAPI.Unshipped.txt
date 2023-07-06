@@ -4,6 +4,8 @@
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
@@ -50,6 +52,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
