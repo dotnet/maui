@@ -19,7 +19,11 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ShellTests
 	{
 #if IOS || MACCATALYST || WINDOWS || ANDROID
-		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title")]
+		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title"
+#if IOS || MACCATALYST
+			, Skip = "On iOS if we set the TitleBar, is used instead the ForegroundColor."
+#endif
+			)]
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
 			SetupBuilder();
