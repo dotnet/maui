@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
-			UpdatePlaceholderLabelConstraints();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 			: base(frame)
 		{
 			_placeholderLabel = InitPlaceholderLabel();
-			UpdatePlaceholderLabelConstraints();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
@@ -114,6 +114,8 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			UpdatePlaceholderLabelFrame();
 			ShouldCenterVertically();
 		}
 
@@ -131,30 +133,16 @@ namespace Microsoft.Maui.Platform
 			return placeholderLabel;
 		}
 
-		void UpdatePlaceholderLabelConstraints()
+		void UpdatePlaceholderLabelFrame()
 		{
-			if (_placeholderLabel is MauiLabel placeholderLabel)
+			if (Bounds != CGRect.Empty && _placeholderLabel is not null)
 			{
-				var edgeInsets = TextContainerInset;
-				var lineFragmentPadding = TextContainer.LineFragmentPadding;
+				var x = TextContainer.LineFragmentPadding;
+				var y = TextContainerInset.Top;
+				var width = Bounds.Width - (x * 2);
+				var height = Frame.Height - (TextContainerInset.Top + TextContainerInset.Bottom);
 
-				var vConstraints = NSLayoutConstraint.FromVisualFormat(
-					"V:|-" + edgeInsets.Top + "-[_placeholderLabel]-" + edgeInsets.Bottom + "-|", 0, new NSDictionary(),
-					NSDictionary.FromObjectsAndKeys(
-						new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
-				);
-
-				var hConstraints = NSLayoutConstraint.FromVisualFormat(
-					"H:|-" + lineFragmentPadding + "-[_placeholderLabel]-" + lineFragmentPadding + "-|",
-					0, new NSDictionary(),
-					NSDictionary.FromObjectsAndKeys(
-						new NSObject[] { _placeholderLabel }, new NSObject[] { new NSString("_placeholderLabel") })
-				);
-
-				placeholderLabel.TranslatesAutoresizingMaskIntoConstraints = false;
-
-				AddConstraints(hConstraints);
-				AddConstraints(vConstraints);
+				_placeholderLabel.Frame = new CGRect(x, y, width, height);
 			}
 		}
 
