@@ -1,10 +1,11 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Widget;
 using Google.Android.Material.Button;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Handlers;
+using static Android.Webkit.WebSettings;
 using static Microsoft.Maui.Controls.Button;
 using AButton = AndroidX.AppCompat.Widget.AppCompatButton;
 
@@ -50,8 +51,14 @@ namespace Microsoft.Maui.Controls.Platform
 				materialButton.IconPadding = (int)context.ToPixels(contentLayout.Spacing);
 
 				iconSize -= materialButton.IconPadding;
-				var lineHeight = materialButton.LineHeight;
 
+				int textSize;
+
+				if (OperatingSystem.IsIOSVersionAtLeast(28))
+					textSize = materialButton.LastBaselineToBottomHeight + materialButton.FirstBaselineToTopHeight;
+				else
+					textSize = (int)materialButton.TextSize + materialButton.PaddingTop + materialButton.PaddingEnd;
+				
 				// For IconGravityTextEnd and IconGravityTextStart, setting the Icon twice
 				// is needed to work around the Android behavior that caused
 				// https://github.com/dotnet/maui/issues/11755
@@ -61,13 +68,13 @@ namespace Microsoft.Maui.Controls.Platform
 						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTop;
 						materialButton.Icon = icon;
-						materialButton.IconSize = Math.Max(0, iconSize - (lineHeight + materialButton.PaddingTop + materialButton.PaddingBottom));
+						materialButton.IconSize = Math.Max(0, iconSize - textSize);
 						break;
 					case ButtonContentLayout.ImagePosition.Bottom:
 						materialButton.Icon = null;
 						TextViewCompat.SetCompoundDrawablesRelative(materialButton, null, null, null, icon);
 						materialButton.IconGravity = MauiMaterialButton.IconGravityBottom;
-						materialButton.IconSize = Math.Max(0, iconSize - (lineHeight + materialButton.PaddingTop + materialButton.PaddingBottom));
+						materialButton.IconSize = Math.Max(0, iconSize - textSize);
 						break;
 					case ButtonContentLayout.ImagePosition.Left:
 						materialButton.Icon = null;
