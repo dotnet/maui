@@ -1508,8 +1508,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var currentPage = Child;
 				var firstPage = n.NavPageController.Pages.FirstOrDefault();
 
-				if (firstPage != pageBeingRemoved && currentPage != firstPage && NavigationPage.GetHasBackButton(currentPage))
+				if (currentPage != firstPage && NavigationPage.GetHasBackButton(currentPage))
 				{
+					NavigationItem.LeftBarButtonItem = null;
 					if (OperatingSystem.IsIOSVersionAtLeast(16))
 					{
 						// it took them 16 version to add an override back action
@@ -1562,12 +1563,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 							NavigationItem.BackBarButtonItem = null;
 					}
 				}
-				else if (NavigationPage.GetHasBackButton(currentPage))
+				else if (n._parentFlyoutPage is not null)
 				{
-					if (n._parentFlyoutPage is not null)
+					SetFlyoutLeftBarButton(this, n._parentFlyoutPage);
+				}
+				else
+				{
+					NavigationItem.LeftBarButtonItem = null;
+					if (OperatingSystem.IsIOSVersionAtLeast(16))
 					{
-						// show hamburger menu button
-						SetFlyoutLeftBarButton(this, n._parentFlyoutPage);
+						// need to reset the back action in the event we no longer need the back button
+						// else the back button will still continue to show up
+						NavigationItem.BackAction = null;
+					}
+					else if (OperatingSystem.IsIOSVersionAtLeast(13))
+					{
+						NavigationItem.SetHidesBackButton(false, false);
 					}
 				}
 			}
