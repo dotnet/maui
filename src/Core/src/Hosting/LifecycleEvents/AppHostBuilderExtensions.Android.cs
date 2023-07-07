@@ -1,4 +1,3 @@
-using System;
 using AndroidX.AppCompat.App;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
