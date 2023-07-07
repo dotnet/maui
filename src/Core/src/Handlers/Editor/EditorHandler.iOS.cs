@@ -105,7 +105,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapPlaceholder(IEditorHandler handler, IEditor editor)
 		{
 			handler.PlatformView?.UpdatePlaceholder(editor);
-			handler.PlatformView?.UpdateCharacterSpacing(editor);
+			handler.UpdateValue(nameof(IEditor.CharacterSpacing));
 		}
 
 		public static void MapPlaceholderColor(IEditorHandler handler, IEditor editor) =>
