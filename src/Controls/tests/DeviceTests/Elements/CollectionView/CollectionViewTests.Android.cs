@@ -77,9 +77,9 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					await WaitForUIUpdate(frame, collectionView);
 
-					Assert.True(emptyView.Height > 0, "EmptyView is not displayed");
-					Assert.True(header.Height > 0, "Header is not displayed");
-					Assert.True(footer.Height > 0, "Footer is not displayed");
+					Assert.True(emptyView.Height > 0, "EmptyView should be laid out");
+					Assert.True(header.Height > 0, "Header should be laid out");
+					Assert.True(footer.Height > 0, "Footer should be laid out");
 				});
 		}
 	}
