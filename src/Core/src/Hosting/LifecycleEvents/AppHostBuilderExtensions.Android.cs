@@ -56,18 +56,8 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.OnDestroy(activity =>
 				{
-					// There are cases IsFinishing was false in OnStop,
-					// and in OnDestroy we actually need to clean up the Window.
-					// In this case, it is possible to destroy the Window twice,
-					// so let's handle InvalidOperationException.
-					try
-					{
-						activity.GetWindow()?.Destroying();
-					}
-					catch (InvalidOperationException)
-					{
-						// if we somehow got "Window was already destroyed", ignore it
-					}
+					// If we tried to call window.Destroying() before, GetWindow() should return null
+					activity.GetWindow()?.Destroying();
 				})
 				.OnBackPressed(activity =>
 				{
