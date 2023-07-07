@@ -1,3 +1,4 @@
+using System;
 using AndroidX.AppCompat.App;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
@@ -55,14 +56,17 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.OnDestroy(activity =>
 				{
-					// If the activity is being recreated from a configuration change
-					// or something like the inspector getting attached then
-					// IsFinishing will be set to false so we still need to call
-					// Destroying to remove the xplat Window from Application
-					if (!activity.IsFinishing)
+					// There are cases IsFinishing was false in OnStop,
+					// and in OnDestroy we actually need to clean up the Window.
+					// In this case, it is possible to destroy the Window twice,
+					// so let's handle InvalidOperationException.
+					try
 					{
-						var window = activity.GetWindow();
-						window?.Destroying();
+						activity.GetWindow()?.Destroying();
+					}
+					catch (InvalidOperationException)
+					{
+						// if we somehow got "Window was already destroyed", ignore it
 					}
 				})
 				.OnBackPressed(activity =>
