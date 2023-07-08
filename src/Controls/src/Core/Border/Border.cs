@@ -268,12 +268,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (oldValue is Element oldElement)
 				{
-					border.RemoveLogicalChildInternal(oldElement);
+					border.RemoveLogicalChild(oldElement);
 				}
 
 				if (newValue is Element newElement)
 				{
-					border.AddLogicalChildInternal(newElement);
+					border.AddLogicalChild(newElement);
 				}
 			}
 

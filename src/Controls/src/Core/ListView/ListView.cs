@@ -17,10 +17,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
-		readonly List<Element> _logicalChildren = new List<Element>();
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _logicalChildren;
-
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
+		// TODO comment about iOS listview issue
+		readonly List<Element> _visualChildren = new List<Element>();
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
 		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
@@ -445,7 +444,7 @@ namespace Microsoft.Maui.Controls
 
 			if (content != null)
 			{
-				_logicalChildren.Add(content);
+				_visualChildren.Add(content);
 				content.Parent = this;
 				VisualDiagnostics.OnChildAdded(this, content);
 			}
@@ -457,10 +456,10 @@ namespace Microsoft.Maui.Controls
 
 			if (content == null)
 				return;
-			var index = _logicalChildren.IndexOf(content);
+			var index = _visualChildren.IndexOf(content);
 			if (index == -1)
 				return;
-			_logicalChildren.RemoveAt(index);
+			_visualChildren.RemoveAt(index);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
 

@@ -109,12 +109,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='AddLogicalChild']/Docs/*" />
-		public void AddLogicalChild(Element element) =>
-			AddLogicalChildInternal(element);
+		public new void AddLogicalChild(Element element) =>
+			base.AddLogicalChild(element);
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemoveLogicalChild']/Docs/*" />
-		public void RemoveLogicalChild(Element element)
-			=> RemoveLogicalChildInternal(element);
+		public new void RemoveLogicalChild(Element element)
+			=> base.RemoveLogicalChild(element);
 
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
