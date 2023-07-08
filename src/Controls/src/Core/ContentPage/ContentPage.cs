@@ -1,5 +1,6 @@
 #nullable disable
 
+using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -19,6 +20,10 @@ namespace Microsoft.Maui.Controls
 			get { return (View)GetValue(ContentProperty); }
 			set { SetValue(ContentProperty, value); }
 		}
+
+		private protected override IList<Element> LogicalChildrenInternalBackingStore 
+			=> base.LogicalChildrenInternalBackingStore;
+
 
 		protected override void OnBindingContextChanged()
 		{

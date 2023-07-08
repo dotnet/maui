@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 
 		void ApplyStyleSheets(List<StyleSheet> sheets, Element element)
 		{
-			if (element == null)
+			if (element is not IVisualTreeElement vte)
 				return;
 
 			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
@@ -64,7 +64,7 @@ namespace Microsoft.Maui.Controls
 				((IStyle)sheets[i]).Apply(element);
 			}
 
-			foreach (Element child in element.AllChildren)
+			foreach (Element child in vte.GetVisualChildren())
 			{
 				var mergedSheets = sheets;
 				var resourceProvider = child as IResourcesProvider;

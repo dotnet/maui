@@ -156,26 +156,6 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		// Todo rework Page to use AddLogical/RemoveLogical.
-		// Rework all the related parts of the code that interact with the `Page` InternalChildren
-		private protected override IList<Element> LogicalChildrenInternalBackingStore =>
-			InternalChildren;
-
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
-		{
-			get
-			{
-				var titleviewPart1TheShell = Shell.GetTitleView(this);
-				var titleViewPart2TheNavBar = NavigationPage.GetTitleView(this);
-
-				if (titleviewPart1TheShell != null)
-					yield return titleviewPart1TheShell;
-
-				if (titleViewPart2TheNavBar != null)
-					yield return titleViewPart2TheNavBar;
-			}
-		}
-
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
 		Thickness ISafeAreaView2.SafeAreaInsets
@@ -309,7 +289,7 @@ namespace Microsoft.Maui.Controls
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = ((IElementController)this).LogicalChildren.ToList();
+			IList<Element> elements = this.InternalChildren;
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
@@ -395,7 +375,7 @@ namespace Microsoft.Maui.Controls
 			if (!ShouldLayoutChildren())
 				return;
 
-			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var logicalChildren = this.InternalChildren;
 			var startingLayout = new List<Rect>(logicalChildren.Count);
 			foreach (Element el in logicalChildren)
 			{
@@ -435,7 +415,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				var logicalChildren = ((IElementController)this).LogicalChildren;
+				var logicalChildren = this.InternalChildren;
 				for (var i = 0; i < logicalChildren.Count; i++)
 				{
 					var v = logicalChildren[i] as VisualElement;
@@ -548,7 +528,8 @@ namespace Microsoft.Maui.Controls
 					var item = (Element)e.OldItems[i];
 					if (item is VisualElement visual)
 						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-					OnChildRemoved(item, e.OldStartingIndex + i);
+
+					RemoveLogicalChild(item);
 				}
 			}
 
@@ -557,19 +538,16 @@ namespace Microsoft.Maui.Controls
 				foreach (Element item in e.NewItems)
 				{
 					if (item is VisualElement visual)
-						OnInternalAdded(visual);
+					{
+						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+
+						AddLogicalChild(visual);
+						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+					}
 					else
-						OnChildAdded(item);
+						AddLogicalChild(item);
 				}
 			}
-		}
-
-		void OnInternalAdded(VisualElement view)
-		{
-			view.MeasureInvalidated += OnChildMeasureInvalidated;
-
-			OnChildAdded(view);
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnPageBusyChanged()
@@ -598,7 +576,7 @@ namespace Microsoft.Maui.Controls
 
 		bool ShouldLayoutChildren()
 		{
-			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var logicalChildren = this.InternalChildren;
 			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
 				return false;
 

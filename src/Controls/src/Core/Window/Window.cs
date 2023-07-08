@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(
 				FlowDirectionProperty.PropertyName,
 				(Element)bindable,
-				((IElementController)bindable).LogicalChildren);
+				((IVisualTreeElement)bindable).GetVisualChildren());
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
@@ -588,7 +588,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_menuBarTracker.Target = null;
 				_visualChildren.Remove(oldPage);
-				RemoveLogicalChildInternal(oldPage);
+				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -599,7 +599,7 @@ namespace Microsoft.Maui.Controls
 			if (newPage != null)
 			{
 				_visualChildren.Add(newPage);
-				AddLogicalChildInternal(newPage);
+				AddLogicalChild(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 

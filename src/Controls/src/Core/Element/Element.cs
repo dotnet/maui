@@ -146,7 +146,8 @@ namespace Microsoft.Maui.Controls
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
 		}
 
-		internal void InsertLogicalChildInternal(int index, Element element)
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public void InsertLogicalChild(int index, Element element)
 		{
 			if (element is null)
 			{
@@ -159,7 +160,7 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
-		internal void AddLogicalChildInternal(Element element)
+		public void AddLogicalChild(Element element)
 		{
 			if (element is null)
 			{
@@ -172,7 +173,7 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
-		internal bool RemoveLogicalChildInternal(Element element)
+		public bool RemoveLogicalChild(Element element)
 		{
 			if (element is null)
 			{
@@ -186,12 +187,12 @@ namespace Microsoft.Maui.Controls
 			if (oldLogicalIndex < 0)
 				return false;
 
-			RemoveLogicalChildInternal(element, oldLogicalIndex);
+			RemoveLogicalChild(element, oldLogicalIndex);
 
 			return true;
 		}
 
-		internal void ClearLogicalChildren()
+		public void ClearLogicalChildren()
 		{
 			if (LogicalChildrenInternalBackingStore is null)
 				return;
@@ -202,7 +203,7 @@ namespace Microsoft.Maui.Controls
 			// Reverse for-loop, so children can be removed while iterating
 			for (int i = LogicalChildrenInternalBackingStore.Count - 1; i >= 0; i--)
 			{
-				RemoveLogicalChildInternal(LogicalChildrenInternalBackingStore[i], i);
+				RemoveLogicalChild(LogicalChildrenInternalBackingStore[i], i);
 			}
 		}
 
@@ -210,32 +211,14 @@ namespace Microsoft.Maui.Controls
 		/// This doesn't validate that the oldLogicalIndex is correct, so be sure you're passing in the
 		/// correct index
 		/// </summary>
-		internal bool RemoveLogicalChildInternal(Element element, int oldLogicalIndex)
+		public bool RemoveLogicalChild(Element element, int oldLogicalIndex)
 		{
 			LogicalChildrenInternalBackingStore.Remove(element);
 			OnChildRemoved(element, oldLogicalIndex);
 
 			return true;
 		}
-
-		internal IEnumerable<Element> AllChildren
-		{
-			get
-			{
-				foreach (var child in LogicalChildrenInternal)
-					yield return child;
-
-				var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
-				if (childrenNotDrawnByThisElement is not null)
-				{
-					foreach (var child in childrenNotDrawnByThisElement)
-						yield return child;
-				}
-			}
-		}
-
-		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
-		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		internal bool Owned { get; set; }
 
@@ -494,16 +477,6 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			Handler?.UpdateValue(propertyName);
-
-			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
-			if (childrenNotDrawnByThisElement is not null)
-			{
-				foreach (var logicalChildren in childrenNotDrawnByThisElement)
-				{
-					if (logicalChildren is IPropertyPropagationController controller)
-						PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
-				}
-			}
 
 			if (_effects?.Count > 0)
 			{
