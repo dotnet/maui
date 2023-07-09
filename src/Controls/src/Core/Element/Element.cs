@@ -274,43 +274,67 @@ namespace Microsoft.Maui.Controls
 				if (RealParent == value)
 					return;
 
-				OnPropertyChanging();
-
-				if (_parentOverride == null)
-					OnParentChangingCore(Parent, value);
-
-				if (RealParent != null)
+				if (value is null)
 				{
-					((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
-
-					if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
-						Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
-				}
-
-				RealParent = value;
-				if (RealParent != null)
-				{
-					OnParentResourcesChanged(RealParent.GetMergedResources());
-					((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
-				}
-
-				object context = value?.BindingContext;
-				if (value != null)
-				{
-					value.SetChildInheritedBindingContext(this, context);
+					RealParent.RemoveLogicalChild(this);
 				}
 				else
 				{
-					SetInheritedBindingContext(this, null);
+					// TODO Add test for switching parents
+					if (RealParent is not null && RealParent != value)
+					{
+						RealParent.RemoveLogicalChild(this);
+					}
+
+					if (!value.LogicalChildrenInternalBackingStore.Contains(this))
+						value.AddLogicalChild(this);
 				}
 
-				OnParentSet();
-
-				if (_parentOverride == null)
-					OnParentChangedCore();
-
-				OnPropertyChanged();
+				RealParent = value;
 			}
+		}
+
+		void SetParent(Element value)
+		{
+			if (RealParent == value)
+				return;
+
+			OnPropertyChanging();
+
+			if (_parentOverride == null)
+				OnParentChangingCore(Parent, value);
+
+			if (RealParent != null)
+			{
+				((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
+
+				if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
+					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
+			}
+
+			RealParent = value;
+			if (RealParent != null)
+			{
+				OnParentResourcesChanged(RealParent.GetMergedResources());
+				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
+			}
+
+			object context = value?.BindingContext;
+			if (value != null)
+			{
+				value.SetChildInheritedBindingContext(this, context);
+			}
+			else
+			{
+				SetInheritedBindingContext(this, null);
+			}
+
+			OnParentSet();
+
+			if (_parentOverride == null)
+				OnParentChangedCore();
+
+			OnPropertyChanged();
 		}
 
 		internal bool IsTemplateRoot { get; set; }
@@ -439,7 +463,7 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnChildAdded(Element child)
 		{
-			child.Parent = this;
+			child.SetParent(this);
 
 			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
 
@@ -454,7 +478,7 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			child.Parent = null;
+			child.SetParent(null);
 
 			ChildRemoved?.Invoke(this, new ElementEventArgs(child));
 
