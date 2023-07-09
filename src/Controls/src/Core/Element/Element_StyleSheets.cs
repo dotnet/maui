@@ -54,17 +54,15 @@ namespace Microsoft.Maui.Controls
 			ApplyStyleSheets(sheets, this);
 		}
 
-		void ApplyStyleSheets(List<StyleSheet> sheets, Element element)
+		void ApplyStyleSheets(List<StyleSheet> sheets, IVisualTreeElement element)
 		{
-			if (element is not IVisualTreeElement vte)
-				return;
-
 			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
 			{
-				((IStyle)sheets[i]).Apply(element);
+				if (element is BindableObject bo)
+					((IStyle)sheets[i]).Apply(bo);
 			}
 
-			foreach (Element child in vte.GetVisualChildren())
+			foreach (var child in element.GetVisualChildren())
 			{
 				var mergedSheets = sheets;
 				var resourceProvider = child as IResourcesProvider;
