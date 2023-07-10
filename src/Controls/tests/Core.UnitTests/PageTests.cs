@@ -559,5 +559,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(sentNav);
 			Assert.True(sent);
 		}
+
+		[Fact]
+		public void LogicalChildrenDontAddToPagesInternalChildren()
+		{
+			var page = new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+			};
+
+			var window = new TestWindow(page);
+
+			var customControl = new VerticalStackLayout();
+			Shell.SetTitleView(page, new VerticalStackLayout());
+			page.AddLogicalChild(customControl);
+
+			Assert.Equal(window, customControl.Window);
+			Assert.Single(page.InternalChildren);
+			Assert.Contains(customControl, page.LogicalChildrenInternal);
+			Assert.Contains(customControl, ((IVisualTreeElement)page).GetVisualChildren());
+		}
 	}
 }
