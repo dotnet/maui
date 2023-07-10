@@ -112,3 +112,5 @@ Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double h
 *REMOVED*override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
 *REMOVED*override Microsoft.Maui.Platform.LayoutView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
+Microsoft.Maui.Platform.UIEdgeInsetsExtensions
+static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness

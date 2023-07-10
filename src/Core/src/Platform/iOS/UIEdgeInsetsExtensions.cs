@@ -1,7 +1,7 @@
 ﻿using System;
 using UIKit;
 
-namespace Microsoft.Maui.Controls.Platform;
+namespace Microsoft.Maui.Platform;
 
 public static class UIEdgeInsetsExtensions
 {

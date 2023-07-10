@@ -63,7 +63,9 @@ namespace Microsoft.Maui.Platform
 		public override void SafeAreaInsetsDidChange()
 		{
 			base.SafeAreaInsetsDidChange();
-			View?.Handler?.UpdateValue(nameof(ISafeAreaView2.SafeAreaInsets));
+
+			if (View is ISafeAreaView2 isav2)
+				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
 		}
 
    		public ICrossPlatformLayout? CrossPlatformLayout
