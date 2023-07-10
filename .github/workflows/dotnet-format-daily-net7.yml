@@ -1,4 +1,4 @@
-name: Daily code format check
+name: Daily code format check net7.0 branch
 on:
   workflow_dispatch:
   schedule:
@@ -45,5 +45,5 @@ jobs:
             area/infrastructure 🏗️
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
-          branch: housekeeping/fix-codeformatting
+          branch: housekeeping/fix-codeformatting-net7.0
           base: net7.0

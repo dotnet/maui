@@ -1,8 +1,17 @@
-﻿#nullable enable
+#nullable enable
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
+*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
 Microsoft.Maui.Controls.LayoutOptions.Equals(Microsoft.Maui.Controls.LayoutOptions other) -> bool
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> object!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
+*REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
@@ -25,6 +34,8 @@ Microsoft.Maui.Controls.Platform.FormattedStringExtensions
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
+Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
@@ -79,3 +90,4 @@ Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
 override Microsoft.Maui.Controls.Shapes.Shape.OnBindingContextChanged() -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
