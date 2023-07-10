@@ -52,6 +52,14 @@ namespace Microsoft.Maui.Platform
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this UITextField textField, IEntry entry)
+		{
+			if (entry.IsSpellCheckEnabled)
+				textField.SpellCheckingType = UITextSpellCheckingType.Yes;
+			else
+				textField.SpellCheckingType = UITextSpellCheckingType.No;
+		}
+
 		public static void UpdateMaxLength(this UITextField textField, IEntry entry)
 		{
 			var newText = textField.AttributedText.TrimToMaxLength(entry.MaxLength);
@@ -112,7 +120,10 @@ namespace Microsoft.Maui.Platform
 			textField.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				textField.UpdateIsTextPredictionEnabled(entry);
+				textField.UpdateIsSpellCheckEnabled(entry);
+			}
 
 			textField.ReloadInputViews();
 		}

@@ -138,6 +138,16 @@ namespace Microsoft.Maui.Platform
 			textBox.UpdateIsTextPredictionEnabled(searchBar);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this AutoSuggestBox platformControl, ISearchBar searchBar)
+		{
+			var textBox = platformControl.GetFirstDescendant<TextBox> ();
+
+			if (textBox is null) 
+				return;
+
+			textBox.UpdateIsSpellCheckEnabled(searchBar);
+		}
+
 		public static void UpdateKeyboard(this AutoSuggestBox platformControl, ISearchBar searchBar)
 		{
 			var queryTextBox = platformControl.GetFirstDescendant<TextBox>();

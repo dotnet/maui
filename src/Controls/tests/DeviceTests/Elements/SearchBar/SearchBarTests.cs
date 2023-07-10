@@ -10,7 +10,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SearchBar)]
 	public partial class SearchBarTests : ControlsHandlerTestBase
 	{
-		[Theory]
+		// TODO: remove these 2 tests and use SearchBarTextInputTests below
+
+		[Theory(DisplayName = "Text is Transformed Correctly at Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)
 		{
@@ -19,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, platformText);
 		}
 
-		[Theory]
+		[Theory(DisplayName = "Text is Transformed Correctly after Initialization")]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task TextTransformUpdated(string text, TextTransform transform, string expected)
 		{
@@ -54,5 +56,30 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
+
+#if false
+		// TODO: The search bar controls are composite controls and need to be attached to the UI to run
+		[Category(TestCategory.SearchBar)]
+		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
+		public class SearchBarTextInputTests : TextInputTests<SearchBarHandler, SearchBar>
+		{
+			protected override int GetPlatformSelectionLength(SearchBarHandler handler) =>
+				SearchBarTests.GetPlatformSelectionLength(handler);
+
+			protected override int GetPlatformCursorPosition(SearchBarHandler handler) =>
+				SearchBarTests.GetPlatformCursorPosition(handler);
+
+			protected override Task<string> GetPlatformText(SearchBarHandler handler) =>
+				SearchBarTests.GetPlatformText(handler);
+		}
+#endif
+
+		[Category(TestCategory.SearchBar)]
+		[Category(TestCategory.TextInput)]
+		[Collection(RunInNewWindowCollection)]
+		public class SearchBarTextInputFocusTests : TextInputFocusTests<SearchBarHandler, SearchBar>
+		{
+		}
 	}
 }
