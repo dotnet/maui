@@ -1,130 +1,130 @@
-# trigger:
-#   branches:
-#     include:
-#     - main
-#     - release/*
-#     - net7.0
-#     - net8.0
-#     - loc
-#   tags:
-#     include:
-#     - '*'
-#   paths:
-#     include:
-#     - '*'
-#     exclude:
-#     - .github/*
-#     - docs/*
-#     - CODE-OF-CONDUCT.md
-#     - CONTRIBUTING.md
-#     - LICENSE.TXT
-#     - PATENTS.TXT
-#     - README.md
-#     - SECURITY.md
-#     - THIRD-PARTY-NOTICES.TXT
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+    - net7.0
+    - net8.0
+    - loc
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
 
-# pr:
-#   branches:
-#     include:
-#     - main
-#     - release/*
-#     - net7.0
-#     - net8.0
-#   paths:
-#     include:
-#     - '*'
-#     exclude:
-#     - .github/*
-#     - docs/*
-#     - CODE-OF-CONDUCT.md
-#     - CONTRIBUTING.md
-#     - LICENSE.TXT
-#     - PATENTS.TXT
-#     - README.md
-#     - SECURITY.md
-#     - THIRD-PARTY-NOTICES.TXT
+pr:
+  branches:
+    include:
+    - main
+    - release/*
+    - net7.0
+    - net8.0
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
 
-# schedules:
-# - cron: "0 0 * * *"
-#   displayName: Daily midnight build
-#   branches:
-#     include:
-#     - main
+schedules:
+- cron: "0 0 * * *"
+  displayName: Daily midnight build
+  branches:
+    include:
+    - main
 
-# variables:
-#   - template: /eng/pipelines/common/variables.yml
-#   - template: templates/common/vs-release-vars.yml@sdk-insertions
+variables:
+  - template: /eng/pipelines/common/variables.yml
+  - template: templates/common/vs-release-vars.yml@sdk-insertions
 
-# parameters:
-#   - name: provisionatorChannel
-#     displayName: 'Provisionator channel'
-#     type: string
-#     default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
 
-#   - name: BuildEverything
-#     type: boolean
-#     default: false
-#   - name: BuildConfigurations
-#     type: object
-#     default:
-#       - Debug
-#       - Release
-#   - name: BuildPlatforms
-#     type: object
-#     default:
-#       - name: Windows
-#         poolName: $(windowsNet6VmPool)
-#         vmImage: $(windowsNet6VmImage)
-#         bootsAndroid: $(Android.Msi)
-#         bootsiOS: $(iOS.Msi)
-#         artifact: build-windows
-#       - name: macOS
-#         poolName: $(macOSXNet6VmPool)
-#         vmImage: $(macOSXNet6VmImage)
-#         bootsAndroid: $(Android.Pkg)
-#         bootsiOS: $(iOS.Pkg)
-#         bootsMacCatalyst: $(MacCatalyst.Pkg)
-#         artifact: build-macos
-#   - name: PackPlatforms
-#     type: object
-#     default:
-#       - name: Windows
-#         poolName: $(windowsNet6VmPool)
-#         vmImage: $(windowsNet6VmImage)
-#         bootsAndroid: $(Android.Msi)
-#         bootsiOS: $(iOS.Msi)
-#         artifact: nuget
-#       - name: macOS
-#         poolName: $(macOSXNet6VmPool)
-#         vmImage: $(macOSXNet6VmImage)
-#         bootsAndroid: $(Android.Pkg)
-#         bootsiOS: $(iOS.Pkg)
-#         bootsMacCatalyst: $(MacCatalyst.Pkg)
-#         artifact: nuget-macos
-#   - name: TestTargetFrameworks
-#     type: object
-#     default:
-#       - name: default
-#         tfm: default
-#       - name: net6
-#         tfm: net6.0
-#       - name: net7
-#         tfm: net7.0
+  - name: BuildEverything
+    type: boolean
+    default: false
+  - name: BuildConfigurations
+    type: object
+    default:
+      - Debug
+      - Release
+  - name: BuildPlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+        bootsAndroid: $(Android.Msi)
+        bootsiOS: $(iOS.Msi)
+        artifact: build-windows
+      - name: macOS
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
+        bootsAndroid: $(Android.Pkg)
+        bootsiOS: $(iOS.Pkg)
+        bootsMacCatalyst: $(MacCatalyst.Pkg)
+        artifact: build-macos
+  - name: PackPlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+        bootsAndroid: $(Android.Msi)
+        bootsiOS: $(iOS.Msi)
+        artifact: nuget
+      - name: macOS
+        poolName: $(macOSXNet6VmPool)
+        vmImage: $(macOSXNet6VmImage)
+        bootsAndroid: $(Android.Pkg)
+        bootsiOS: $(iOS.Pkg)
+        bootsMacCatalyst: $(MacCatalyst.Pkg)
+        artifact: nuget-macos
+  - name: TestTargetFrameworks
+    type: object
+    default:
+      - name: default
+        tfm: default
+      - name: net6
+        tfm: net6.0
+      - name: net7
+        tfm: net7.0
 
-# resources:
-#   repositories:
-#     - repository: yaml-templates
-#       type: github
-#       name: xamarin/yaml-templates
-#       endpoint: xamarin
-#       ref: refs/heads/main
-#     - repository: sdk-insertions
-#       type: github
-#       name: xamarin/sdk-insertions
-#       ref: refs/heads/main
-#       endpoint: xamarin
+resources:
+  repositories:
+    - repository: yaml-templates
+      type: github
+      name: xamarin/yaml-templates
+      endpoint: xamarin
+      ref: refs/heads/main
+    - repository: sdk-insertions
+      type: github
+      name: xamarin/sdk-insertions
+      ref: refs/heads/main
+      endpoint: xamarin
 
-# stages:
+stages:
 
   - stage: build_net
     displayName: Build .NET MAUI
@@ -173,32 +173,32 @@
                 inputs:
                   ArtifactName: ${{ BuildPlatform.artifact }}
 
-#   - stage: pack_net
-#     displayName: Pack .NET MAUI
-#     dependsOn: []
-#     jobs:
-#       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-#         - job: pack_net_${{ PackPlatform.name }}
-#           workspace:
-#             clean: all
-#           displayName: ${{ PackPlatform.name }}
-#           timeoutInMinutes: 240
-#           pool:
-#             name: ${{ PackPlatform.poolName }}
-#             vmImage: ${{ PackPlatform.vmImage }}
-#             demands:
-#               - macOS.Name -equals Ventura
-#               - macOS.Architecture -equals x64
-#               - Agent.HasDevices -equals False
-#               - Agent.IsPaired -equals False
-#           steps:
-#             - template: common/pack.yml
-#               parameters:
-#                 platform: ${{ PackPlatform.name }}
-#                 poolName: ${{ PackPlatform.poolName }}
-#                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
-#                 artifact:  ${{ PackPlatform.artifact }}
-#                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+  - stage: pack_net
+    displayName: Pack .NET MAUI
+    dependsOn: []
+    jobs:
+      - ${{ each PackPlatform in parameters.PackPlatforms }}:
+        - job: pack_net_${{ PackPlatform.name }}
+          workspace:
+            clean: all
+          displayName: ${{ PackPlatform.name }}
+          timeoutInMinutes: 240
+          pool:
+            name: ${{ PackPlatform.poolName }}
+            vmImage: ${{ PackPlatform.vmImage }}
+            demands:
+              - macOS.Name -equals Ventura
+              - macOS.Architecture -equals x64
+              - Agent.HasDevices -equals False
+              - Agent.IsPaired -equals False
+          steps:
+            - template: common/pack.yml
+              parameters:
+                platform: ${{ PackPlatform.name }}
+                poolName: ${{ PackPlatform.poolName }}
+                provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                artifact:  ${{ PackPlatform.artifact }}
+                gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - stage: samples_net
     displayName: Test .NET MAUI Samples
@@ -221,38 +221,38 @@
               parameters:
                 poolName: ${{ BuildPlatform.poolName }}
 
-#             - task: DownloadBuildArtifacts@0
-#               displayName: 'Download Packages'
-#               inputs:
-#                 artifactName: nuget
-#                 itemPattern: '**/*.nupkg'
-#                 downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-#             - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-#               displayName: Move the downloaded artifacts
-#             - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
-#               displayName: 'Install .NET (Local Workloads)'
-#               retryCountOnTaskFailure: 3
-#               env:
-#                 DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-#                 PRIVATE_BUILD: $(PrivateBuild)
-#             - task: DotNetCoreCLI@2
-#               inputs:
-#                 projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
-#               displayName: Build Microsoft.Maui.IntegrationTests
-#             - task: DotNetCoreCLI@2
-#               inputs:
-#                 command: test
-#                 projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-#                 arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
-#                 publishTestResults: true
-#                 testRunTitle: ${{ BuildPlatform.name }} sample build tests
-#               displayName: ${{ BuildPlatform.name }} sample build tests
+            - task: DownloadBuildArtifacts@0
+              displayName: 'Download Packages'
+              inputs:
+                artifactName: nuget
+                itemPattern: '**/*.nupkg'
+                downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+            - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+              displayName: Move the downloaded artifacts
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+              displayName: 'Install .NET (Local Workloads)'
+              retryCountOnTaskFailure: 3
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+            - task: DotNetCoreCLI@2
+              inputs:
+                projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+              displayName: Build Microsoft.Maui.IntegrationTests
+            - task: DotNetCoreCLI@2
+              inputs:
+                command: test
+                projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
+                publishTestResults: true
+                testRunTitle: ${{ BuildPlatform.name }} sample build tests
+              displayName: ${{ BuildPlatform.name }} sample build tests
 
-#   - stage: templates_net
-#     displayName: Test Templates
-#     dependsOn: pack_net
-#     jobs:
-#     - template: common/maui-templates.yml
+  - stage: templates_net
+    displayName: Test Templates
+    dependsOn: pack_net
+    jobs:
+    - template: common/maui-templates.yml
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/security-compliance.yml
