@@ -36,24 +36,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
-
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
-					handlers.AddHandler<Image, ImageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Toolbar, ToolbarHandler>();
-#if WINDOWS
-					handlers.AddHandler<ShellItem, ShellItemHandler>();
-					handlers.AddHandler<ShellSection, ShellSectionHandler>();
-					handlers.AddHandler<ShellContent, ShellContentHandler>();
-#endif
+					SetupShellHandlers(handlers);
 				});
 			});
 		}
@@ -169,6 +157,50 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, windowAppearing);
 			Assert.Equal(2, windowDisappearing);
+		}
+
+		[Fact]
+		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
+		{
+			SetupBuilder();
+			var windowPage = new LifeCycleTrackingPage()
+			{
+				Title = "Window Page Title"
+			};
+
+			var modalPage = new NavigationPage(new LifeCycleTrackingPage()
+			{
+				Content = new Label() { Text = "Modal page with navigation" }
+			})
+			{ Title = "modal page" };
+
+			Window window = new Window(new Shell() { CurrentItem = windowPage })
+			{
+				Title = "PushingNavigationPageModallyWithShellShowsToolbarCorrectly Window Title"
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(window,
+				async (_) =>
+				{
+					await windowPage.Navigation.PushAsync(new ContentPage() { Title = "Second Page on PushingNavigationPageModallyWithShellShowsToolbarCorrectly" });
+					await windowPage.Navigation.PushModalAsync(modalPage);
+
+					// Navigation Bar is visible
+					Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(modalPage.Handler)));
+					Assert.False(IsBackButtonVisible(modalPage.Handler));
+
+					// Verify that new navigation bar can gain a back button
+					var secondModalPage = new ContentPage();
+					await modalPage.Navigation.PushAsync(secondModalPage);
+					Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(secondModalPage.Handler)));
+					await secondModalPage.Navigation.PopAsync();
+
+					// Remove the modal page and validate the root window pages toolbar is still setup correctly
+					await modalPage.Navigation.PopModalAsync();
+
+					Assert.True(await AssertionExtensions.Wait(() => IsNavigationBarVisible(windowPage.Handler)));
+					Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(windowPage.Handler)));
+				});
 		}
 
 		[Theory]
