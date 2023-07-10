@@ -265,7 +265,6 @@ namespace Microsoft.Maui.Controls
 		{
 			BindingContextChanged?.Invoke(this, EventArgs.Empty);
 
-			// Should this be a logical child?
 			if (Shell.GetBackButtonBehavior(this) is BackButtonBehavior buttonBehavior)
 				SetInheritedBindingContext(buttonBehavior, BindingContext);
 

@@ -17,7 +17,9 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
-		// TODO comment about iOS listview issue
+		// The ListViewRenderer has some odd behavior with LogicalChildren
+		// https://github.com/xamarin/Xamarin.Forms/pull/12057
+		// Ideally we'd fix the ListViewRenderer so we don't have this separation
 		readonly List<Element> _visualChildren = new List<Element>();
 		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
