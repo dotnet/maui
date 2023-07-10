@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Platform
 		static readonly string[] MinimumTrackColorResourceKeys =
 		{
 			"SliderTrackValueFill",
-			"SliderTrackValueFilllPointerOver",
+			"SliderTrackValueFillPointerOver",
 			"SliderTrackValueFillPressed",
 			"SliderTrackValueFillDisabled",
 		};
