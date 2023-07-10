@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			for (int n = 0; n < _itemsSource.Count; n++)
 			{
-				if (_itemsSource[n] == item)
+				if (Equals(_itemsSource[n], item))
 				{
 					return NSIndexPath.Create(0, n);
 				}
