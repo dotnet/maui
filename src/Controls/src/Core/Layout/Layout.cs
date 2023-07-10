@@ -277,7 +277,6 @@ namespace Microsoft.Maui.Controls
 			return LayoutManager.ArrangeChildren(bounds);
 		}
 
-		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
 			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
 				propertyChanged: OnCascadeInputTransparentPropertyChanged);
