@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 			{
 #if ANDROID
 				[PlatformConfiguration.AndroidSpecific.Entry.ImeOptionsProperty.PropertyName] = MapImeOptions,
+				[nameof(Entry.Keyboard)] = EntryHandler.MapKeyboard,
 #elif WINDOWS
 				[PlatformConfiguration.WindowsSpecific.InputView.DetectReadingOrderFromContentProperty.PropertyName] = MapDetectReadingOrderFromContent,
 #elif IOS
