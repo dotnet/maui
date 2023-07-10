@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 		[Obsolete]
 		public static void MapInputTransparent(LayoutHandler handler, Layout layout) { }
 
-		[Obsolete]
 		public static void MapInputTransparent(ILayoutHandler handler, Layout layout) { }
 	}
 }

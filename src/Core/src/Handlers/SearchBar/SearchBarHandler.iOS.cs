@@ -142,6 +142,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler?.QueryEditor);
 		}
 
+		public static void MapIsSpellCheckEnabled(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, handler?.QueryEditor);
+		}
+
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateMaxLength(searchBar);
