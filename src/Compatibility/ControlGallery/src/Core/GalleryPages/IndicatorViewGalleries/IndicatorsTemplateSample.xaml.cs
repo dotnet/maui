@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class IndicatorsTemplateSample : ContentPage
 	{

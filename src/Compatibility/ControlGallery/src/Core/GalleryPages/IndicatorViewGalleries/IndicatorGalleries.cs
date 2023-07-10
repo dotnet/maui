@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public class IndicatorGalleries : ContentPage
 	{

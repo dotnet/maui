@@ -113,6 +113,10 @@ namespace Microsoft.Maui.Platform
 			_rootView.OnWindowTitleBarContentSizeChanged -= WindowRootViewOnWindowTitleBarContentSizeChanged;
 			_platformWindow.Activated -= OnWindowActivated;
 			SetToolbar(null);
+
+			if (_rootView.Content is RootNavigationView navView)
+				navView.Content = null;
+
 			_rootView.Content = null;
 			_disconnected = true;
 		}

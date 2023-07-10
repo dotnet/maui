@@ -7,7 +7,7 @@
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     mc:Ignorable="d"
     Title="Test 12912"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue10578"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue10578"
     BarBackgroundColor="CornSilk"
     ios:NavigationPage.HideNavigationBarSeparator="True">
 </NavigationPage>

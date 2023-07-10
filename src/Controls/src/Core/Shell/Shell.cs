@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shell']/Docs/*" />
 	[ContentProperty(nameof(Items))]
-	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>
+	public partial class Shell : Page, IShellController, IPropertyPropagationController, IPageContainer<Page>, IFlyoutView
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='CurrentPage']/Docs/*" />
 		public Page CurrentPage => GetVisiblePage() as Page;
@@ -1581,6 +1581,28 @@ namespace Microsoft.Maui.Controls
 			// we don't want this behavior with shell
 		}
 
+		IView IFlyoutView.Flyout => this.FlyoutContentView;
+		IView IFlyoutView.Detail => null;
+
+		bool IFlyoutView.IsPresented { get => FlyoutIsPresented; set => FlyoutIsPresented = value; }
+
+		bool IFlyoutView.IsGestureEnabled => false;
+
+		FlyoutBehavior IFlyoutView.FlyoutBehavior
+		{
+			get
+			{
+				return GetEffectiveFlyoutBehavior();
+			}
+		}
+
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+			if (propertyName == Shell.FlyoutIsPresentedProperty.PropertyName)
+				Handler?.UpdateValue(nameof(IFlyoutView.IsPresented));
+		}
+
 		#region Shell Flyout Content
 
 
@@ -1675,21 +1697,11 @@ namespace Microsoft.Maui.Controls
 					return page;
 				}
 
-				if (ModalStack.Count > 0)
-					ModalStack[ModalStack.Count - 1].SendDisappearing();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
-				{
-					if (ModalStack.Count > 1)
-						ModalStack[ModalStack.Count - 2].SendAppearing();
-				}
-
 				var modalPopped = await base.OnPopModal(animated);
 
 				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 					_shell.CurrentItem.SendAppearing();
 
-				modalPopped.Parent = null;
 				return modalPopped;
 			}
 
@@ -1711,18 +1723,6 @@ namespace Microsoft.Maui.Controls
 
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
-
-				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
-				{
-					if (ModalStack.Count > 0)
-					{
-						ModalStack[ModalStack.Count - 1].SendDisappearing();
-					}
-
-					modal.SendAppearing();
-				}
 
 				await base.OnPushModal(modal, animated);
 

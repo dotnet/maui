@@ -99,6 +99,11 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler.QueryEditor);
 		}
 
+		public static void MapIsSpellCheckEnabled(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, handler.QueryEditor);
+		}
+
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateMaxLength(searchBar, handler.QueryEditor);
@@ -119,7 +124,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
-		static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
+		public static void MapFocus(ISearchBarHandler handler, ISearchBar searchBar, object? args)
 		{
 			if (args is FocusRequest request)
 				handler.QueryEditor?.Focus(request);

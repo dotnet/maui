@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.RefreshView)]
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				cell.SetBinding(Label.TextProperty, ".");
 				cell.FontSize = 20;
 				cell.BackgroundColor = Colors.LightBlue;
-				grid.Children.Add(cell, 0, 0);
+				grid.Add(cell, 0, 0);
 
 				scroll.Content = grid;
 				return scroll;

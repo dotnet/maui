@@ -126,53 +126,52 @@
 
 # stages:
 
-#   - stage: build_net
-#     displayName: Build .NET MAUI
-#     dependsOn: []
-#     jobs:
-#       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-#         - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-#           - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-#             workspace:
-#               clean: all
-#             displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-#             timeoutInMinutes: 240
-#             condition: or(
-#               ${{ parameters.BuildEverything }},
-#               ne(variables['Build.Reason'], 'PullRequest'),
-#               eq('${{ BuildConfiguration }}', 'Release'))
-#             pool:
-#               name: ${{ BuildPlatform.poolName }}
-#               vmImage: ${{ BuildPlatform.vmImage }}
-#               demands:
-#                 - macOS.Name -equals Ventura
-#                 - macOS.Architecture -equals x64
-#             steps:
-#               - template: common/provision.yml
-#                 parameters:
-#                   platform: ${{ BuildPlatform.name }}
-#                   poolName: ${{ BuildPlatform.poolName }}
-#                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
-#               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-#                 displayName: 'Install .NET'
-#                 retryCountOnTaskFailure: 3
-#                 env:
-#                   DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-#                   PRIVATE_BUILD: $(PrivateBuild)
-#               - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-#                 displayName: 'Build .NET Maui'
-#               - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-#                 displayName: 'Run Unit Tests'
-#               - task: PublishTestResults@2
-#                 condition: always()
-#                 inputs:
-#                   testRunner: VSTest
-#                   testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
-#               - task: PublishBuildArtifacts@1
-#                 condition: always()
-#                 displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
-#                 inputs:
-#                   ArtifactName: ${{ BuildPlatform.artifact }}
+  - stage: build_net
+    displayName: Build .NET MAUI
+    dependsOn: []
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
+          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
+            workspace:
+              clean: all
+            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
+            timeoutInMinutes: 240
+            condition: or(
+              ${{ parameters.BuildEverything }},
+              ne(variables['Build.Reason'], 'PullRequest'),
+              eq('${{ BuildConfiguration }}', 'Release'))
+            pool:
+              name: ${{ BuildPlatform.poolName }}
+              vmImage: ${{ BuildPlatform.vmImage }}
+              demands:
+                - macOS.Name -equals Ventura
+                - macOS.Architecture -equals x64
+            steps:
+              - template: common/provision.yml
+                parameters:
+                  poolName: ${{ BuildPlatform.poolName }}
+                  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
+              - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Install .NET'
+                retryCountOnTaskFailure: 3
+                env:
+                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                  PRIVATE_BUILD: $(PrivateBuild)
+              - pwsh: ./build.ps1 --target=dotnet-build --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Build .NET Maui'
+              - pwsh: ./build.ps1 --target=dotnet-test --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
+                displayName: 'Run Unit Tests'
+              - task: PublishTestResults@2
+                condition: always()
+                inputs:
+                  testRunner: VSTest
+                  testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+              - task: PublishBuildArtifacts@1
+                condition: always()
+                displayName: Publish Artifacts (${{ BuildPlatform.artifact }})
+                inputs:
+                  ArtifactName: ${{ BuildPlatform.artifact }}
 
 #   - stage: pack_net
 #     displayName: Pack .NET MAUI
@@ -201,27 +200,26 @@
 #                 artifact:  ${{ PackPlatform.artifact }}
 #                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
-#   - stage: samples_net
-#     displayName: Test .NET MAUI Samples
-#     dependsOn: pack_net
-#     jobs:
-#       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-#         - job: build_net_${{ BuildPlatform.name }}_samples
-#           workspace:
-#             clean: all
-#           displayName: ${{ BuildPlatform.name }}
-#           timeoutInMinutes: 120
-#           pool:
-#             name: ${{ BuildPlatform.poolName }}
-#             vmImage: ${{ BuildPlatform.vmImage }}
-#             demands:
-#               - macOS.Name -equals Ventura
-#               - macOS.Architecture -equals x64
-#           steps:
-#             - template: common/provision.yml
-#               parameters:
-#                 platform: ${{ BuildPlatform.name }}
-#                 poolName: ${{ BuildPlatform.poolName }}
+  - stage: samples_net
+    displayName: Test .NET MAUI Samples
+    dependsOn: pack_net
+    jobs:
+      - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
+        - job: build_net_${{ BuildPlatform.name }}_samples
+          workspace:
+            clean: all
+          displayName: ${{ BuildPlatform.name }}
+          timeoutInMinutes: 120
+          pool:
+            name: ${{ BuildPlatform.poolName }}
+            vmImage: ${{ BuildPlatform.vmImage }}
+            demands:
+              - macOS.Name -equals Ventura
+              - macOS.Architecture -equals x64
+          steps:
+            - template: common/provision.yml
+              parameters:
+                poolName: ${{ BuildPlatform.poolName }}
 
 #             - task: DownloadBuildArtifacts@0
 #               displayName: 'Download Packages'
@@ -256,9 +254,8 @@
 #     jobs:
 #     - template: common/maui-templates.yml
 
-#   - template: common/security-compliance.yml
-
-#   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-#     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
-#     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
-#     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/security-compliance.yml
+    - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
+    - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
+    - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

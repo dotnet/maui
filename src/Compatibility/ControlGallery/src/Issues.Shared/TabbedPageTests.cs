@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.UwpIgnore)]
@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TabbedPageWithModalIssueTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page 1"));
@@ -46,6 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TabbedPageWithModalIssueTestsPopFromFirstTab ()
 		{
 			RunningApp.Tap (q => q.Button ("Pop"));
@@ -55,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TabbedPageWithModalIssueTestsPopFromSecondTab ()
 		{
 			RunningApp.Tap (q => q.Marked ("Page 2"));

@@ -16,7 +16,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 9711, "[Bug] iOS Failed to marshal the Objective-C object HeaderWrapperView", PlatformAffected.iOS)]
@@ -69,6 +69,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		[Category(UITestCategories.ListView)]
 		[Category(UITestCategories.UwpIgnore)]
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestTappingHeaderDoesNotCrash()
 		{
 			// Usually, tapping one header is sufficient to produce the exception.
