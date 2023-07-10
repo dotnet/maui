@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls
 		{
 			set
 			{
-				SetValue(PlatformConfiguration.iOSSpecific.Page.SafeAreaInsetsPropertyKey, value);
+				On<PlatformConfiguration.iOS>().SetSafeAreaInsets(value);
 			}
 		}
 
