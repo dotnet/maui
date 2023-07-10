@@ -212,12 +212,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnClear()
@@ -233,12 +227,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
