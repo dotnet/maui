@@ -66,6 +66,10 @@ namespace Microsoft.Maui.Controls
 				{
 					InsertLogicalChild(index, newElement);
 				}
+				else
+				{
+					_children[index] = value;
+				}
 
 				OnUpdate(index, value, old);
 			}
@@ -128,7 +132,12 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var index = _children.Count;
-			InsertLogicalChild(index, (Element)child);
+
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else
+				_children.Add(child);
+
 			OnAdd(index, child);
 		}
 
@@ -158,7 +167,11 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
-			InsertLogicalChild(index, (Element)child);
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else 
+				_children.Insert(index, child);
+
 			OnInsert(index, child);
 		}
 
@@ -187,7 +200,12 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var child = _children[index];
-			RemoveLogicalChild((Element)child, index);
+
+			if (child is Element element)
+				RemoveLogicalChild(element, index);
+			else
+				_children.RemoveAt(index);
+
 			OnRemove(index, child);
 		}
 

@@ -269,29 +269,7 @@ namespace Microsoft.Maui.Controls
 		public Element Parent
 		{
 			get { return _parentOverride ?? RealParent; }
-			set
-			{
-				if (RealParent == value)
-					return;
-
-				if (value is null)
-				{
-					RealParent.RemoveLogicalChild(this);
-				}
-				else
-				{
-					// TODO Add test for switching parents
-					if (RealParent is not null && RealParent != value)
-					{
-						RealParent.RemoveLogicalChild(this);
-					}
-
-					if (!value.LogicalChildrenInternalBackingStore.Contains(this))
-						value.AddLogicalChild(this);
-				}
-
-				RealParent = value;
-			}
+			set => SetParent(value);
 		}
 
 		void SetParent(Element value)
@@ -299,7 +277,7 @@ namespace Microsoft.Maui.Controls
 			if (RealParent == value)
 				return;
 
-			OnPropertyChanging();
+			OnPropertyChanging(nameof(Parent));
 
 			if (_parentOverride == null)
 				OnParentChangingCore(Parent, value);
@@ -334,7 +312,7 @@ namespace Microsoft.Maui.Controls
 			if (_parentOverride == null)
 				OnParentChangedCore();
 
-			OnPropertyChanged();
+			OnPropertyChanged(nameof(Parent));
 		}
 
 		internal bool IsTemplateRoot { get; set; }

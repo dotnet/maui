@@ -29,11 +29,11 @@ namespace Microsoft.Maui.Controls
 
 			if (_menuBar.Count == 0)
 			{
-				_menuBar.Parent = null;
+				_menuBar.Parent?.RemoveLogicalChild(_menuBar);
 			}
 			else if (_menuBar.Parent != _parent)
 			{
-				_menuBar.Parent = _parent;
+				_parent.AddLogicalChild(_menuBar);
 			}
 
 			if (_handlerProperty != null)
