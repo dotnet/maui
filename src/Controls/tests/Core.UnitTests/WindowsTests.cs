@@ -422,8 +422,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(window, window.Page.Parent);
 			Assert.Single(app.Windows);
 			Assert.Equal(app.LogicalChildrenInternal[0], window);
-			Assert.Contains(page, window.LogicalChildrenInternal);
+			Assert.Equal(window.LogicalChildrenInternal[0], page);
 			Assert.Single(app.LogicalChildrenInternal);
+			Assert.Single(window.LogicalChildrenInternal);
 			Assert.Single(window.LogicalChildrenInternal.OfType<Page>());
 			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);

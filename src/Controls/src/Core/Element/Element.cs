@@ -146,7 +146,6 @@ namespace Microsoft.Maui.Controls
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public void InsertLogicalChild(int index, Element element)
 		{
 			if (element is null)
@@ -218,7 +217,6 @@ namespace Microsoft.Maui.Controls
 
 			return true;
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		internal bool Owned { get; set; }
 

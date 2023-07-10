@@ -1415,18 +1415,6 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-
-		//void OnInternalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		//{
-		//	if (e.NewItems != null)
-		//		foreach (Element element in e.NewItems)
-		//			AddLogicalChild(element);
-
-		//	if (e.OldItems != null)
-		//		foreach (Element element in e.OldItems)
-		//			RemoveLogicalChild(element);
-		//}
-
 		void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)

@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow/*, IVisualTreeElement*/, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
+	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -566,12 +566,6 @@ namespace Microsoft.Maui.Controls
 				FlowController.EffectiveFlowDirection = flowDirection.ToEffectiveFlowDirection(true);
 			}
 		}
-
-		// Currently this returns MainPage + ModalStack
-		// Depending on how we want this to show up inside LVT
-		// we might want to change this to only return the currently visible page
-		//IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-		//	base.get;
 
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
