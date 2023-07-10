@@ -142,6 +142,7 @@ namespace Microsoft.Maui.Handlers
 
 			// Let the mapping know that the update is coming from changes to the platform control
 			DataFlowDirection = DataFlowDirection.FromPlatform;
+
 			VirtualView.UpdateText(e);
 
 			// Reset to the default direction
