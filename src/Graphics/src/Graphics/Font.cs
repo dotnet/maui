@@ -45,10 +45,10 @@ namespace Microsoft.Maui.Graphics
 		public FontStyleType StyleType { get; private set; }
 
 		public bool Equals(IFont other)
-			=> 
-			StyleType == other.StyleType && 
+			=>
+			StyleType == other.StyleType &&
 			Weight == other.Weight &&
-			string.IsNullOrWhiteSpace(Name) ? string.IsNullOrWhiteSpace(other.Name) : Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase);
+			((Name is null && other.Name is null) || Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase));
 	
 		public override bool Equals(object obj)
 			=> obj is IFont font && Equals(font);
