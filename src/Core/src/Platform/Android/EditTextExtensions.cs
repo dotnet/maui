@@ -65,15 +65,44 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEntry entry)
 		{
-			editText.SetInputType(entry);
+			editText.UpdateIsTextPredictionEnabled(entry as ITextInput);
+		}
+
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEntry entry)
+		{
+			editText.UpdateIsSpellCheckEnabled(entry as ITextInput);
 		}
 
 		public static void UpdateIsTextPredictionEnabled(this EditText editText, IEditor editor)
 		{
-			if (editor.IsTextPredictionEnabled)
-				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+			editText.UpdateIsTextPredictionEnabled(editor as ITextInput);
+		}
+
+		public static void UpdateIsSpellCheckEnabled(this EditText editText, IEditor editor)
+		{
+			editText.UpdateIsSpellCheckEnabled(editor as ITextInput);
+		}
+
+		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
+		{
+			var keyboard = textInput.Keyboard;
+
+			// TextFlagAutoCorrect will correct "Whats" -> "What's"
+			// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
+			// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
+			if (textInput.IsTextPredictionEnabled)
+				editText.InputType |= InputTypes.TextFlagAutoCorrect;
 			else
+				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+		}
+
+		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
+		{
+			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
+			if (!textInput.IsSpellCheckEnabled)
 				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			else
+				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
 		}
 
 		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>
@@ -82,42 +111,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaxLength(this EditText editText, IEditor editor) =>
 			UpdateMaxLength(editText, editor.MaxLength);
 
-		public static void UpdateMaxLength(this EditText editText, int maxLength)
-		{
-			editText.SetLengthFilter(maxLength);
+		public static void UpdateMaxLength(this EditText editText, int maxLength) =>
+			PlatformInterop.UpdateMaxLength(editText, maxLength);
 
-			var newText = editText.Text.TrimToMaxLength(maxLength);
-			if (editText.Text != newText)
-				editText.Text = newText;
-		}
-
-		public static void SetLengthFilter(this EditText editText, int maxLength)
-		{
-			if (maxLength == -1)
-				maxLength = int.MaxValue;
-
-			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
-			var changed = false;
-
-			for (var i = 0; i < currentFilters.Count; i++)
-			{
-				if (currentFilters[i] is InputFilterLengthFilter)
-				{
-					currentFilters.RemoveAt(i);
-					changed = true;
-					break;
-				}
-			}
-
-			if (maxLength >= 0)
-			{
-				currentFilters.Add(new InputFilterLengthFilter(maxLength));
-				changed = true;
-			}
-
-			if (changed)
-				editText.SetFilters(currentFilters.ToArray());
-		}
+		public static void SetLengthFilter(this EditText editText, int maxLength) =>
+			PlatformInterop.SetLengthFilter(editText, maxLength);
 
 		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
@@ -285,13 +283,8 @@ namespace Microsoft.Maui.Platform
 
 			if (keyboard is not CustomKeyboard)
 			{
-				if (!editText.InputType.HasFlag(InputTypes.TextFlagNoSuggestions))
-				{
-					// TODO: IsSpellCheckEnabled handling must be here.
-
-					if (!textInput.IsTextPredictionEnabled)
-						editText.InputType |= InputTypes.TextFlagNoSuggestions;
-				}
+				editText.UpdateIsTextPredictionEnabled(textInput);
+				editText.UpdateIsSpellCheckEnabled(textInput);
 			}
 
 			if (keyboard == Keyboard.Numeric)
