@@ -16,9 +16,26 @@ Appium relies on different implementations called `drivers` for each platform th
 
 The project that is used for UI Tests is located here: `src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj`
 
+There are two types of tests you can add, Issue and Gallery.
+
+### Adding a new Issue
+
+This will be the majority of new tests added which will be primarily for testing functionality and adding regression tests.
+
+You will need to create some kind of UI to test against, which will go in the Controls.Sample.UITests project. Create a new class and attribute it with `[Issue]` and derive from `TestContentPage`.
+
+Then in the Controls.AppiumTests project add a new class that derives from `_IssuesUITest` and add your test.
+
+You can use the example for the sample project [here](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Issues/RefreshViewPage.cs) and the example for the corresponding test [here](https://github.com/dotnet/maui/tree/main/src/Controls/tests/UITests/Tests/Issues/RefreshViewTests.cs).
+
+
+
+
 ### Adding a GalleryPage
 
-Each test will need to have some UI to test against, we have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Elements/ContentViewGalleryPage.cs)
+Gallery tests are to make it easier to run the same set of tests on controls, if you are creating a new control you would want to add a new gallery page.
+
+We have some base classes you can derive from to make setting this up easier: [CoreGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/CoreViews/CoreGalleryPage.cs) and [ContentViewGalleryPage](https://github.com/dotnet/maui/blob/main/src/Controls/samples/Controls.Sample.UITests/Elements/ContentViewGalleryPage.cs)
 
 All controls you intend to interact with need to set the 'AutomationId' property as this will be what you use to query for the element.
 

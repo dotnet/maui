@@ -74,7 +74,7 @@ namespace Microsoft.Maui.AppiumTests
 				AppProjectPath = appProjectPath
 			};
 			var windowsExe = "Controls.Sample.UITests.exe";
-			var windoesExePath = Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\{testConfig.FrameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
+			var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\{testConfig.FrameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
 
 			switch (_testDevice)
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.AppiumTests
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
 					testConfig.AppPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
-						? windoesExePath
+						? windowsExePath
 						: Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
 					break;
 			}
