@@ -361,7 +361,7 @@ namespace Microsoft.Maui.Controls.Platform
 							case UIGestureRecognizerState.Changed:
 								CGPoint currentlocation = r.LocationInView(PlatformView);
 
-								if (r.NumberOfTouches != panRecognizer.TouchPoints || !TouchInsideViewBounds(currentlocation))
+								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									r.State = UIGestureRecognizerState.Ended;
 									panGestureRecognizer.SendPanCompleted(view, PanGestureRecognizer.CurrentId.Value);
@@ -390,19 +390,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			return null;
-		}
-
-		bool TouchInsideViewBounds(CGPoint touchPoint)
-		{
-			if (PlatformView is null)
-				return false;
-
-			var platformBounds = PlatformView.Bounds;
-
-			if (platformBounds.Contains(touchPoint))
-				return true;
-
-			return false;
 		}
 
 		UIPanGestureRecognizer CreatePanRecognizer(int numTouches, Action<UIPanGestureRecognizer> action)

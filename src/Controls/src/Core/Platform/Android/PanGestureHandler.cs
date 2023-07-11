@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using Microsoft.Maui.Controls.Internals;
-using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -30,24 +29,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		Func<View> GetView { get; }
 
-		public bool OnPan(float x, float y, float totalX, float totalY, int pointerCount)
+		public bool OnPan(float x, float y, int pointerCount)
 		{
 			View view = GetView();
 
 			if (view == null)
 				return false;
 
-			if (!TouchInsideViewBounds(new Graphics.Point(x, y)))
-			{
-				OnPanComplete();
-				return false;
-			}
-
 			var result = false;
 			foreach (PanGestureRecognizer panGesture in
 				view.GestureRecognizers.GetGesturesFor<PanGestureRecognizer>(g => g.TouchPoints == pointerCount))
 			{
-				((IPanGestureController)panGesture).SendPan(view, PixelTranslation(totalX), PixelTranslation(totalY), PanGestureRecognizer.CurrentId.Value);
+				((IPanGestureController)panGesture).SendPan(view, PixelTranslation(x), PixelTranslation(y), PanGestureRecognizer.CurrentId.Value);
 				result = true;
 			}
 
@@ -92,33 +85,6 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var view = GetView();
 			return view != null && view.GestureRecognizers.OfType<PanGestureRecognizer>().Any();
-		}
-
-		bool TouchInsideViewBounds(Graphics.Point touchPoint)
-		{
-			var view = GetView();
-
-			if (view is null)
-				return false;
-
-			var platformView = view.Handler?.PlatformView as AView;
-
-			if (platformView is null)
-				return false;
-
-			var bounds = view.Bounds;
-			var density = platformView.Context.GetDisplayDensity();
-
-			var platformBounds = new Graphics.Rect(
-				bounds.X * density,
-				bounds.Y * density,
-				bounds.Width * density,
-				bounds.Height * density);
-
-			if (platformBounds.Contains(touchPoint))
-				return true;
-			
-			return false;
 		}
 	}
 }

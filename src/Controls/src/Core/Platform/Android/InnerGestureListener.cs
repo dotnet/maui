@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 		Func<float, float, bool> _swipeDelegate;
 		Func<bool> _swipeCompletedDelegate;
 		Func<bool> _scrollCompleteDelegate;
-		Func<float, float, float, float, int, bool> _scrollDelegate;
+		Func<float, float, int, bool> _scrollDelegate;
 		Func<int, bool> _scrollStartedDelegate;
 		Func<int, MotionEvent, bool> _tapDelegate;
 		Func<int, IEnumerable<TapGestureRecognizer>> _tapGestureRecognizers;
@@ -225,13 +225,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 			_isScrolling = true;
 
-			float x = e2.GetX();
-			float y = e2.GetY();
+			float totalX = e2.GetX() - _lastX;
+			float totalY = e2.GetY() - _lastY;
 
-			float totalX = x - _lastX;
-			float totalY = y - _lastY;
-
-			return _scrollDelegate(x, y, totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
+			return _scrollDelegate(totalX, totalY, e2.PointerCount) || _swipeDelegate(totalX, totalY);
 		}
 
 		internal void EndScrolling()
