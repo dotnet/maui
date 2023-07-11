@@ -1697,21 +1697,11 @@ namespace Microsoft.Maui.Controls
 					return page;
 				}
 
-				if (ModalStack.Count > 0)
-					ModalStack[ModalStack.Count - 1].SendDisappearing();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
-				{
-					if (ModalStack.Count > 1)
-						ModalStack[ModalStack.Count - 2].SendAppearing();
-				}
-
 				var modalPopped = await base.OnPopModal(animated);
 
 				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 					_shell.CurrentItem.SendAppearing();
 
-				modalPopped.Parent = null;
 				return modalPopped;
 			}
 
@@ -1733,18 +1723,6 @@ namespace Microsoft.Maui.Controls
 
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
-
-				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
-				{
-					if (ModalStack.Count > 0)
-					{
-						ModalStack[ModalStack.Count - 1].SendDisappearing();
-					}
-
-					modal.SendAppearing();
-				}
 
 				await base.OnPushModal(modal, animated);
 
