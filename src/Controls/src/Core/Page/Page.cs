@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			if (string.IsNullOrEmpty(cancel))
-				throw new ArgumentNullException("cancel");
+				throw new ArgumentNullException(nameof(cancel));
 
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
