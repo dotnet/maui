@@ -19,6 +19,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsSpellCheckEnabled"/>.</summary>
 		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create(nameof(IsSpellCheckEnabled), typeof(bool), typeof(InputView), true);
 
+		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), true);
+
 		/// <summary>Bindable property for <see cref="MaxLength"/>.</summary>
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
 
@@ -66,11 +69,22 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(KeyboardProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsSpellCheckEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether spell checking is enabled.</summary>
+		/// <value><see langword = "true" /> if spell checking is enabled. Otherwise <see langword="false" />.</value>
+		/// <remarks>On Windows, spellchecking also turns on auto correction</remarks>
 		public bool IsSpellCheckEnabled
 		{
 			get => (bool)GetValue(IsSpellCheckEnabledProperty);
 			set => SetValue(IsSpellCheckEnabledProperty, value);
+		}
+
+		/// <summary>Gets or sets a value that controls whether text prediction and automatic text correction are enabled.</summary>
+		/// <value><see langword="true" /> if text prediction (auto correction) is enabled. Otherwise <see langword="false" />.</value>
+		/// <remarks>On Windows, text prediction only affects touch keyboards and only affects keyboard word suggestions.</remarks>
+		public bool IsTextPredictionEnabled
+		{
+			get => (bool)GetValue(IsTextPredictionEnabledProperty);
+			set => SetValue(IsTextPredictionEnabledProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />
