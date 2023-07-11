@@ -273,6 +273,21 @@ namespace Microsoft.Maui.Platform
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 
+		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			var togglePaneButton = navigationView.TogglePaneButton;
+
+			if (togglePaneButton is null)
+				return;
+
+			var animatedIcon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
+			
+			if (animatedIcon is null)
+				return;
+
+			await animatedIcon.UpdateFlyoutIconAsync(imageSource, provider);
+		}
+		
 		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView is null)

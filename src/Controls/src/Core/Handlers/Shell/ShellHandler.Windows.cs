@@ -129,16 +129,10 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
 		{
-			var togglePaneButton = handler.PlatformView.TogglePaneButton;
-
-			if (togglePaneButton is null)
-				return;
-
-			var icon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
 			var flyoutIcon = view.FlyoutIcon;
 			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
 
-			icon.UpdateFlyoutIconAsync(flyoutIcon, provider).FireAndForget();
+			handler.PlatformView.UpdateFlyoutIconAsync(flyoutIcon, provider).FireAndForget();
 		}
 	
 		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)
