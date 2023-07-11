@@ -609,12 +609,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			if (oldTitleView != null)
-				oldTitleView.Parent = null;
-
-			if (newTitleView != null)
-				newTitleView.Parent = this;
-
 			_titleView = newTitleView;
 		}
 

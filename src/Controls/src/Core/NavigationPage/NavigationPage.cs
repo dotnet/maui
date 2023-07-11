@@ -159,11 +159,6 @@ namespace Microsoft.Maui.Controls
 			{
 				page.SetTitleView((View)oldValue, (View)newValue);
 			}
-			else if (oldValue != null)
-			{
-				var oldElem = (View)oldValue;
-				oldElem.Parent = null;
-			}
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/NavigationPage.xml" path="//Member[@MemberName='GetBackButtonTitle']/Docs/*" />

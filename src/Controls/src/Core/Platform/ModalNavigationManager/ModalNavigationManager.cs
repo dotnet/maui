@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var page = await PopModalPlatformAsync(animated);
-					page.Parent.RemoveLogicalChild(page);
+					page.Parent?.RemoveLogicalChild(page);
 					syncAgain = true;
 				}
 
