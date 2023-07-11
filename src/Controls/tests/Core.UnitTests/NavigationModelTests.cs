@@ -12,6 +12,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class NavigationModelTests : BaseTestFixture
 	{
 		[Fact]
+		public async Task ParentSetsWhenPushingAndUnsetsWhenPopping()
+		{
+			var mainPage = new ContentPage() { Title = "Main Page" };
+			var modal1 = new ContentPage() { Title = "Modal 1" };
+			TestWindow testWindow = new TestWindow(mainPage);
+
+			await mainPage.Navigation.PushModalAsync(modal1);
+
+			Assert.Equal(testWindow, modal1.Parent);
+			await mainPage.Navigation.PopModalAsync();
+			Assert.Null(modal1.Parent);
+		}
+
+		[Fact]
 		public async Task ModalsWireUpInCorrectOrderWhenPushedBeforeWindowHasBeenCreated()
 		{
 			var mainPage = new ContentPage() { Title = "Main Page" };
