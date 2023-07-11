@@ -106,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(1, unloaded);
 				});
 
-				await Task.Delay(1000);
+				await AssertionExtensions.Wait(() => loaded == 2 && unloaded == 2);
 
 				Assert.Equal(2, loaded);
 				Assert.Equal(2, unloaded);

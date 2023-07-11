@@ -1847,6 +1847,10 @@ namespace Microsoft.Maui.Controls
 
 			_isLoadedFired = true;
 			_loaded?.Invoke(this, EventArgs.Empty);
+
+			// If the user is also watching unloaded we need to verify
+			// unloaded is still correctly being watched for.
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		void OnUnloadedCore()
@@ -1856,6 +1860,10 @@ namespace Microsoft.Maui.Controls
 
 			_isLoadedFired = false;
 			_unloaded?.Invoke(this, EventArgs.Empty);
+
+			// If the user is also watching loaded we need to verify
+			// loaded is still correctly being watched for.
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
@@ -1885,10 +1893,10 @@ namespace Microsoft.Maui.Controls
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
 			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && window == null)
+			if (!_watchingPlatformLoaded && window is null)
 				return;
 
-			if (_unloaded == null && _loaded == null)
+			if (_unloaded is null && _loaded is null)
 			{
 				if (window is not null)
 					window.HandlerChanged -= OnWindowHandlerChanged;
