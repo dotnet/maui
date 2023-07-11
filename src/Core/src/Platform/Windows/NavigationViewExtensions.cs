@@ -295,6 +295,7 @@ namespace Microsoft.Maui.Platform
 
 			if (provider is not null && imageSource is not null)
 			{
+				// Custom Icon
 				var service = provider.GetRequiredImageSourceService(imageSource);
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
 
@@ -303,6 +304,13 @@ namespace Microsoft.Maui.Platform
 				var fallbackIconSource = new ImageIconSource { ImageSource = nativeImageSource?.Value };
 
 				platformView.Height = platformView.Width = double.NaN;
+				platformView.FallbackIconSource = fallbackIconSource;
+			}
+			{
+				// Fallback to the default hamburger icon
+				// https://github.com/microsoft/microsoft-ui-xaml/blob/a7183df20367bc0e2b8c825430597a5c1e6871b6/dev/NavigationView/NavigationView_rs1_themeresources.xaml#L389-L391
+				var fallbackIconSource = new FontIconSource { Glyph = "&#xE700;" };
+				platformView.Height = platformView.Width = 16d;
 				platformView.FallbackIconSource = fallbackIconSource;
 			}
 		}
