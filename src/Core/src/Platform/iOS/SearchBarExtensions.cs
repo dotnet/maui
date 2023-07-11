@@ -141,6 +141,19 @@ namespace Microsoft.Maui.Platform
 				textField.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this UISearchBar uiSearchBar, ISearchBar searchBar, UITextField? textField = null)
+		{
+			textField ??= uiSearchBar.GetSearchTextField();
+
+			if (textField == null)
+				return;
+
+			if (searchBar.IsSpellCheckEnabled)
+				textField.SpellCheckingType = UITextSpellCheckingType.Yes;
+			else
+				textField.SpellCheckingType = UITextSpellCheckingType.No;
+		}
+
 		public static void UpdateKeyboard(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var keyboard = searchBar.Keyboard;
@@ -148,7 +161,10 @@ namespace Microsoft.Maui.Platform
 			uiSearchBar.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				uiSearchBar.UpdateIsTextPredictionEnabled(searchBar);
+				uiSearchBar.UpdateIsSpellCheckEnabled(searchBar);
+			}
 
 			uiSearchBar.ReloadInputViews();
 		}
