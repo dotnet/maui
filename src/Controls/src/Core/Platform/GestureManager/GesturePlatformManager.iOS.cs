@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
@@ -359,8 +359,6 @@ namespace Microsoft.Maui.Controls.Platform
 								panGestureRecognizer.SendPanStarted(view, PanGestureRecognizer.CurrentId.Value);
 								break;
 							case UIGestureRecognizerState.Changed:
-								CGPoint currentlocation = r.LocationInView(PlatformView);
-
 								if (r.NumberOfTouches != panRecognizer.TouchPoints)
 								{
 									r.State = UIGestureRecognizerState.Ended;
