@@ -6,12 +6,24 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarTests
 	{
-		MauiSearchBar GetPlatformControl(SearchBarHandler handler) =>
+		static MauiSearchBar GetPlatformControl(SearchBarHandler handler) =>
 			handler.PlatformView;
 
-		Task<string> GetPlatformText(SearchBarHandler handler)
+		static Task<string> GetPlatformText(SearchBarHandler handler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
+		}
+
+		static int GetPlatformSelectionLength(SearchBarHandler searchBarHandler)
+		{
+			var control = searchBarHandler.QueryEditor;
+			return control.GetSelectedTextLength();
+		}
+
+		static int GetPlatformCursorPosition(SearchBarHandler searchBarHandler)
+		{
+			var control = searchBarHandler.QueryEditor;
+			return control.GetCursorPosition();
 		}
 	}
 }

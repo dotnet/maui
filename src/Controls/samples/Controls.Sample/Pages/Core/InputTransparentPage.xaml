@@ -3,70 +3,100 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.InputTransparentPage">
-	<ContentPage.Resources>
-		<ResourceDictionary>
+
+    <ContentPage.Resources>
+        <ResourceDictionary>
             <Style TargetType="Label">
             </Style>
-
             <Style TargetType="Button">
                 <!-- <Setter Property="Padding" Value="14,10" /> -->
-				<!-- <Setter Property="WidthRequest" Value="200"/> -->
+                <!-- <Setter Property="WidthRequest" Value="200"/> -->
             </Style>
         </ResourceDictionary>
-	</ContentPage.Resources>
-	
-    <ContentPage.Content>
-		<ScrollView>
-			<VerticalStackLayout>
-				<Label Text="This Button has InputTransparent=false; it should be clickable."/>
-				<Button Text="Clickable" Clicked="ClickSuccess" HorizontalOptions="Center" />
-						
-				<Label Margin="0,10,0,0" Text="This Button has InputTransparent=true; it should not be clickable."/>
-				<Button InputTransparent="True" Text="Not Clickable" Clicked="ClickFail" HorizontalOptions="Center" />
-				
-				<Grid Margin="0,10,0,0" RowDefinitions="Auto, Auto">
-				
-					<Label Text="This Button has InputTransparent=true; it should not be clickable. But the button hidden under it should be."/>
-					
-					<Button	Grid.Row="1" Margin="2,2,0,0" InputTransparent="False" Text="Clickable" Clicked="ClickSuccess" 
-						HorizontalOptions="Center" />
-						
-					<Button BackgroundColor="LightBlue"	Grid.Row="1" InputTransparent="True" Text="Not Clickable" Clicked="ClickFail"
-						HorizontalOptions="Center"/>
-				
-				</Grid>
-				
-				<Label Margin="0,10,0,0" Text="The Grid below has controls and an overlay layer with more controls."/>
-				
-				<Grid>
-					
-					<Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
-						<Button Text="Bottom Layer" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
-					</Grid>
-				
-					<Grid HorizontalOptions="Fill" VerticalOptions="Fill" InputTransparent="True" CascadeInputTransparent="False">
-						<Button Text="Overlay BR" Clicked="ClickSuccess" HorizontalOptions="End" VerticalOptions="End" Margin="5" />
-						<Button Text="Overlay TL" Clicked="ClickSuccess" HorizontalOptions="Start" VerticalOptions="Start" Margin="5" />
-					</Grid>
-					
-				</Grid>
-				
-				<Label Margin="0,10,0,0" Text="The Grid below has controls an overlay with CascadeInputTransparent set to true; the overlay buttons should not be usable."/>
-				
-				<Grid>
-					
-					<Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
-						<Button Text="Bottom Layer" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
-					</Grid>
-				
-					<Grid HorizontalOptions="Fill" VerticalOptions="Fill" InputTransparent="True" CascadeInputTransparent="True">
-						<Button Text="Overlay BR" Clicked="ClickFail" HorizontalOptions="End" VerticalOptions="End" Margin="5" />
-						<Button Text="Overlay TL" Clicked="ClickFail" HorizontalOptions="Start" VerticalOptions="Start" Margin="5" />
-					</Grid>
-					
-				</Grid>
-				
-			</VerticalStackLayout>
-		</ScrollView>
-    </ContentPage.Content>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label Text="This Button has InputTransparent=false; it should be clickable."/>
+            <Button Text="Clickable" Clicked="ClickSuccess" HorizontalOptions="Center" />
+
+            <Label Margin="0,10,0,0" Text="This Button has InputTransparent=true; it should not be clickable."/>
+            <Button InputTransparent="True" Text="Not Clickable" Clicked="ClickFail" HorizontalOptions="Center" />
+
+            <Label Margin="0,10,0,0" Text="This Button has InputTransparent=true; it should not be clickable. But the button hidden under it should be."/>
+            <Grid RowDefinitions="Auto" ColumnDefinitions="Auto">
+
+                <Button	InputTransparent="False" Text="Clickable" Clicked="ClickSuccess" Grid.Row="1" Margin="2,2,0,0" HorizontalOptions="Center" />
+
+                <Button InputTransparent="True" Text="Not Clickable" Clicked="ClickFail" BackgroundColor="LightBlue" Grid.Row="1" HorizontalOptions="Center" />
+
+            </Grid>
+
+            <Label Margin="0,10,0,0" Text="The Grid below has controls and an overlay layer with more controls."/>
+            <Grid>
+
+                <Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
+                    <Button Text="Bottom Layer" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+
+                <Grid InputTransparent="True" CascadeInputTransparent="False" HorizontalOptions="Fill" VerticalOptions="Fill">
+                    <Button Text="Overlay BR" Clicked="ClickSuccess" HorizontalOptions="End" VerticalOptions="End" Margin="5" />
+                    <Button Text="Overlay TL" Clicked="ClickSuccess" HorizontalOptions="Start" VerticalOptions="Start" Margin="5" />
+                </Grid>
+
+            </Grid>
+
+            <Label Margin="0,10,0,0" Text="The Grid below has controls an overlay with CascadeInputTransparent set to true; the overlay buttons should not be usable."/>
+            <Grid>
+
+                <Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
+                    <Button Text="Bottom Layer" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
+                </Grid>
+
+                <Grid HorizontalOptions="Fill" VerticalOptions="Fill" InputTransparent="True" CascadeInputTransparent="True">
+                    <Button Text="Overlay BR" Clicked="ClickFail" HorizontalOptions="End" VerticalOptions="End" Margin="5" />
+                    <Button Text="Overlay TL" Clicked="ClickFail" HorizontalOptions="Start" VerticalOptions="Start" Margin="5" />
+                </Grid>
+
+            </Grid>
+
+            <Label Margin="0,10,0,0" Text="The Grid below has a 'Test Button' that is controlled by the switches."/>
+            <VerticalStackLayout>
+
+                <Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
+
+                    <Grid x:Name="rootLayout">
+                        <Grid x:Name="nestedLayout">
+                            <Button x:Name="testButton" Text="Test Button" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+
+                <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,2" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="6" Margin="10,0,10,0">
+                    <!-- root -->
+                    <Label Grid.Row="0" Grid.Column="0" Text="Root" VerticalOptions="Center" FontAttributes="Bold" />
+                    <Label Grid.Row="0" Grid.Column="1" Text="Transparent" VerticalOptions="Center" />
+                    <Switch Grid.Row="0" Grid.Column="2" IsToggled="{Binding InputTransparent, Source={Reference rootLayout}, Mode=OneWayToSource}" VerticalOptions="Center" />
+                    <Label Grid.Row="0" Grid.Column="3" Text="Cascade" VerticalOptions="Center" />
+                    <Switch Grid.Row="0" Grid.Column="4" IsToggled="{Binding CascadeInputTransparent, Source={Reference rootLayout}, Mode=OneWayToSource}" VerticalOptions="Center" />
+                    <BoxView Grid.Row="0" Grid.Column="5" Color="Green" WidthRequest="2" HorizontalOptions="End" IsVisible="{Binding InputTransparent, Source={Reference rootLayout}, Mode=OneWay}" />
+                    <!-- nested -->
+                    <Label Grid.Row="1" Grid.Column="0" Text="Nested" VerticalOptions="Center" FontAttributes="Bold" />
+                    <Label Grid.Row="1" Grid.Column="1" Text="Transparent" VerticalOptions="Center" />
+                    <Switch Grid.Row="1" Grid.Column="2" IsToggled="{Binding InputTransparent, Source={Reference nestedLayout}, Mode=OneWayToSource}" VerticalOptions="Center" />
+                    <Label Grid.Row="1" Grid.Column="3" Text="Cascade" VerticalOptions="Center" />
+                    <Switch Grid.Row="1" Grid.Column="4" IsToggled="{Binding CascadeInputTransparent, Source={Reference nestedLayout}, Mode=OneWayToSource}" VerticalOptions="Center" />
+                    <BoxView Grid.Row="1" Grid.Column="5" Color="Green" WidthRequest="2" HorizontalOptions="End" IsVisible="{Binding InputTransparent, Source={Reference nestedLayout}, Mode=OneWay}" />
+                    <!-- button -->
+                    <Label Grid.Row="2" Grid.Column="0" Text="Button" VerticalOptions="Center" FontAttributes="Bold" />
+                    <Label Grid.Row="2" Grid.Column="1" Text="Transparent" VerticalOptions="Center" />
+                    <Switch Grid.Row="2" Grid.Column="2" IsToggled="{Binding InputTransparent, Source={Reference testButton}, Mode=OneWayToSource}" VerticalOptions="Center" />
+                    <BoxView Grid.Row="2" Grid.Column="5" Color="Green" WidthRequest="2" HorizontalOptions="End" IsVisible="{Binding InputTransparent, Source={Reference testButton}, Mode=OneWay}" />
+                </Grid>
+
+            </VerticalStackLayout>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
 </ContentPage>
