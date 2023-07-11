@@ -231,6 +231,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
+
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
 
@@ -264,7 +267,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 
 		int GetNativeCursorPosition(EditorHandler editorHandler)
