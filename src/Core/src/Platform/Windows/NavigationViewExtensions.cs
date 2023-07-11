@@ -286,6 +286,8 @@ namespace Microsoft.Maui.Platform
 				platformView.Source = null;
 				
 				var fallbackIconSource = new ImageIconSource { ImageSource = nativeImageSource?.Value };
+
+				platformView.Height = platformView.Width = double.NaN;
 				platformView.FallbackIconSource = fallbackIconSource;
 			}
 		}
