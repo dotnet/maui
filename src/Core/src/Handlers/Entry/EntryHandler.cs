@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IEntry, IEntryHandler> Mapper = new PropertyMapper<IEntry, IEntryHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.Background)] = MapBackground,
 			[nameof(IEntry.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEntry.ClearButtonVisibility)] = MapClearButtonVisibility,
@@ -34,7 +35,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,
 			[nameof(IEntry.PlaceholderColor)] = MapPlaceholderColor,
 			[nameof(IEntry.ReturnType)] = MapReturnType,
-			[nameof(IEntry.Text)] = MapText,
 			[nameof(IEntry.TextColor)] = MapTextColor,
 			[nameof(IEntry.CursorPosition)] = MapCursorPosition,
 			[nameof(IEntry.SelectionLength)] = MapSelectionLength

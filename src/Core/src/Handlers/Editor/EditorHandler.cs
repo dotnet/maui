@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<IEditor, IEditorHandler> Mapper = new PropertyMapper<IEditor, IEditorHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.Background)] = MapBackground,
 			[nameof(IEditor.CharacterSpacing)] = MapCharacterSpacing,
 			[nameof(IEditor.Font)] = MapFont,
@@ -26,7 +27,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,
-			[nameof(IEditor.Text)] = MapText,
 			[nameof(IEditor.TextColor)] = MapTextColor,
 			[nameof(IEditor.HorizontalTextAlignment)] = MapHorizontalTextAlignment,
 			[nameof(IEditor.VerticalTextAlignment)] = MapVerticalTextAlignment,

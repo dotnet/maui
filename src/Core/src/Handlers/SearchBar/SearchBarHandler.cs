@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISearchBar, ISearchBarHandler> Mapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(ViewHandler.ViewMapper)
 		{
+			[nameof(ISearchBar.Text)] = MapText,
 #if __IOS__
 			[nameof(ISearchBar.IsEnabled)] = MapIsEnabled,
 #endif
@@ -31,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
 			[nameof(ISearchBar.PlaceholderColor)] = MapPlaceholderColor,
-			[nameof(ISearchBar.Text)] = MapText,
 			[nameof(ISearchBar.TextColor)] = MapTextColor,
 			[nameof(ISearchBar.CancelButtonColor)] = MapCancelButtonColor,
 			[nameof(ISearchBar.Keyboard)] = MapKeyboard
