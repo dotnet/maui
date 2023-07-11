@@ -350,6 +350,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ParentSetsWhenPushingAndUnsetsWhenPopping()
+		{
+			var shell = new TestShell();
+
+			var item = CreateShellItem(shellSectionRoute: "section2");
+			shell.Items.Add(item);
+			await shell.GoToAsync($"ModalTestPage");
+			var modal1 = (shell.CurrentItem.CurrentItem as IShellSectionController).PresentedPage as ModalTestPageBase;
+			Assert.Equal(shell.Window, modal1.Parent);
+			await shell.GoToAsync("..");
+			Assert.Null(modal1.Parent);
+		}
+
+		[Fact]
 		public async Task BasicQueryStringTest()
 		{
 			var shell = new TestShell();
