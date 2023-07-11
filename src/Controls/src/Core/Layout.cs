@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
 	{
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
@@ -72,7 +72,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -517,6 +518,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			UpdateChildrenLayout();
 
 			return Frame.Size;
+		}
+
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
+			{
+				layout.RefreshInputTransparentProperty();
+			}
 		}
 	}
 }
