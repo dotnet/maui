@@ -6,6 +6,14 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class BorderHandler : ViewHandler<IBorderView, ContentView>
 	{
+		WeakReference<LayoutView>? _container;
+
+		~BorderHandler()
+		{
+			Container?.Dispose();
+			PlatformView?.Dispose();
+		}
+
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
@@ -15,6 +23,24 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformLayout = VirtualView
 			};
+		}
+
+		internal LayoutView? Container
+		{
+			get
+			{
+				if (_container?.TryGetTarget(out LayoutView? target) == true)
+					return target;
+
+				return null;
+			}
+			set
+			{
+				_container = null;
+
+				if (value != null)
+					_container = new WeakReference<LayoutView>(value);
+			}
 		}
 
 		protected override void ConnectHandler(ContentView platformView)
@@ -49,15 +75,17 @@ namespace Microsoft.Maui.Handlers
 			var oldChildren = handler.PlatformView.Subviews.ToList();
 			oldChildren.ForEach(x => x.RemoveFromSuperview());
 
-			if (handler.VirtualView.PresentedContent is IView view)
+			if (handler.VirtualView.PresentedContent is IView view && handler is BorderHandler borderHandler)
 			{
 				var child = view.ToPlatform(handler.MauiContext);
-				var containerView = new LayoutView
+
+				borderHandler.Container = new LayoutView
 				{
 					CrossPlatformLayout = handler.VirtualView
 				};
-				containerView.AddSubview(child);
-				handler.PlatformView.AddSubview(containerView);
+				borderHandler.Container.AddSubview(child);
+				handler.PlatformView.AddSubview(borderHandler.Container);
+
 				handler.PlatformView.ChildMaskLayer = null;
 			}
 		}
