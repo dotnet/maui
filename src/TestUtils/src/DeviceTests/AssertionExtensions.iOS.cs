@@ -613,7 +613,17 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		static UIView GetBackButton(this UINavigationBar uINavigationBar)
+		public static bool HasBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return item is not null;
+		}
+
+		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{
