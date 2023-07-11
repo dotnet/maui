@@ -43,6 +43,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Text = view.Text;
 		}
 
+		/// <summary>
+		///	Maps accelerator to the Windows platform control.
+		/// </summary>
+		/// <param name="handler">The handler, of type IMenuFlyoutSubItemHandler.</param>
+		/// <param name="view">The view, of type IMenuFlyoutSubItem.</param>
+		public static void MapAccelerator(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		{
+			handler.PlatformView.UpdateAccelerator(view);
+		}
+
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>
 			handler.PlatformView.UpdateIsEnabled(view.IsEnabled);
 
