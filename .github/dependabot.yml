@@ -5,6 +5,14 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 25
+  groups:
+    AndroidX:
+      patterns:
+        - "Xamarin.AndroidX.*"
+    AspNetCore:
+      patterns:
+        - "Microsoft.AspNetCore.*"
+        - "Microsoft.JSInterop"
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
