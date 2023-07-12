@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test Text Here"
 			};
 
-			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
 				[nameof(IEntry.Keyboard)] = EntryHandler.MapKeyboard
 			};
@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test Text Here"
 			};
 
-			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
 				[nameof(IEntry.IsReadOnly)] = EntryHandler.MapIsReadOnly
 			};
@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test Text Here"
 			};
 
-			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
 				[nameof(IEntry.IsPassword)] = EntryHandler.MapIsPassword
 			};

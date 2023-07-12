@@ -49,7 +49,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test Text Here"
 			};
 
-			CustomSearchBarHandler.TestMapper = new PropertyMapper<ISearchBar, ISearchBarHandler>
+			CustomSearchBarHandler.TestMapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(SearchBarHandler.Mapper)
 			{
 				[nameof(ISearchBar.Keyboard)] = SearchBarHandler.MapKeyboard
 			};

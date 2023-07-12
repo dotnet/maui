@@ -29,7 +29,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Test Text Here"
 			};
 
-			CustomEditorHandler.TestMapper = new PropertyMapper<IEditor, IEditorHandler>
+			CustomEditorHandler.TestMapper = new PropertyMapper<IEditor, IEditorHandler>(EditorHandler.Mapper)
 			{
 				[nameof(IEditor.Keyboard)] = EditorHandler.MapKeyboard
 			};
