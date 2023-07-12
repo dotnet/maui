@@ -93,10 +93,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			shell.CurrentItem = page2;
-			Assert.Equal(1, shell.Items.Count);
+			Assert.Single(shell.Items);
 			Assert.Equal(2, shell.Items[0].Items.Count);
-			Assert.Equal(1, shell.Items[0].Items[0].Items.Count);
-			Assert.Equal(1, shell.Items[0].Items[1].Items.Count);
+			Assert.Single(shell.Items[0].Items[0].Items);
+			Assert.Single(shell.Items[0].Items[1].Items);
 			Assert.Equal(shell.CurrentItem.CurrentItem, shell.Items[0].Items[1]);
 		}
 
@@ -516,7 +516,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"OnBackbuttonPressedFiresOnPage?CancelNavigationOnBackButtonPressed=false");
 
 			shell.SendBackButtonPressed();
-			Assert.Equal(1, shell.Navigation.NavigationStack.Count);
+			Assert.Single(shell.Navigation.NavigationStack);
 		}
 
 		[Fact]
@@ -885,7 +885,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 
-			Assert.Equal(1, shell.Items.Count);
+			Assert.Single(shell.Items);
 			Assert.Equal(3, shell.Items[0].Items.Count);
 
 			Assert.Equal(FlyoutBehavior.Disabled, shell.GetEffectiveFlyoutBehavior());
@@ -898,7 +898,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 
 			Assert.Equal(2, shell.Items.Count);
-			Assert.Equal(0, shell.Items[0].Items.Count);
+			Assert.Empty(shell.Items[0].Items);
 			Assert.Equal(3, shell.Items[1].Items.Count);
 
 
@@ -913,7 +913,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(3, shell.Items.Count);
 			Assert.Equal(3, shell.Items[0].Items.Count);
-			Assert.Equal(0, shell.Items[1].Items.Count);
+			Assert.Empty(shell.Items[1].Items);
 			Assert.Equal(3, shell.Items[0].Items.Count);
 		}
 
@@ -1374,7 +1374,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
 			var shellCount = (shell as IVisualTreeElement).GetVisualChildren();
 			var shellItemCount = (shell.CurrentItem as IVisualTreeElement).GetVisualChildren();
-			Assert.Equal(1, shellCount.Count);
+			Assert.Single(shellCount);
 			Assert.Equal(2, shellItemCount.Count);
 		}
 

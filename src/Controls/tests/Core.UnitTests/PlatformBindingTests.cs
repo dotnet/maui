@@ -370,7 +370,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				PlatformBindingHelpers.BindableObjectProxy<MockPlatformView> proxy;
 				if (!PlatformBindingHelpers.BindableObjectProxy<MockPlatformView>.BindableObjectProxies.TryGetValue(platformView, out proxy))
-					throw new XunitException();
+					throw new XunitException("Proxy should have been collected.");
 
 				wr = new WeakReference(proxy);
 				platformView = null;
