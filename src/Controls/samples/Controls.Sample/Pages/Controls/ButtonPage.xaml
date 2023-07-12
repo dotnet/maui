@@ -160,6 +160,17 @@
                     ContentLayout="Right" TextColor="White" Background="Black" 
                     ImageSource="settings.png" Text="settings" />
                 <Label
+                    Text="Image Source with Positioning (Big Image)"
+                    Style="{StaticResource Headline}"/>
+                <Button
+                    HeightRequest="100"
+                    ContentLayout="Top" TextColor="White" Background="Black" 
+                    ImageSource="dotnet_bot.png" Text="DotNet Bot" />
+                <Button
+                    HeightRequest="100"
+                    ContentLayout="Left" TextColor="White" Background="Black"
+                    ImageSource="dotnet_bot.png" Text="DotNet Bot" />
+                <Label
                     Text="Click To Change Positionng"
                     Style="{StaticResource Headline}"/>
                 <Button 
