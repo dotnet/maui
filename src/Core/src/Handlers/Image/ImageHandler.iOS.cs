@@ -42,10 +42,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			PlatformView.Image = source;
 
-			if (source is null || VirtualView  is null)
-				return;
-
-			PlatformView.InvalidateMeasure(VirtualView);
+			if (VirtualView.Source is IStreamImageSource)
+				PlatformView.InvalidateMeasure(VirtualView);
 		}
 
 		public void OnWindowChanged()
