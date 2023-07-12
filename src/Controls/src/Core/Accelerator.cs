@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Use Key instead.")]
-		public IEnumerable<string> Keys 
+		public IEnumerable<string> Keys
 		{
 			get => Key is null ? null : new[] { Key };
 		}

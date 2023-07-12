@@ -1,7 +1,7 @@
-﻿using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Input;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Windows.System;
 
 namespace Microsoft.Maui.Platform
