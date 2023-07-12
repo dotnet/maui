@@ -30,6 +30,10 @@ updates:
         - "Microsoft.Graphics.Win2D"
         - "Microsoft.Windows.SDK.BuildTools"
         - "Microsoft.WindowsAppSDK"
+    xunit:
+      patterns:
+        - "xunit"
+        - "xunit.runner.*"
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro
