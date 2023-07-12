@@ -9,6 +9,8 @@ updates:
     AndroidX:
       patterns:
         - "Xamarin.AndroidX.*"
+        - "Xamarin.Build.Download"
+        - "Xamarin.Google.Android.Material"
     AspNetCore:
       patterns:
         - "Microsoft.AspNetCore.*"
