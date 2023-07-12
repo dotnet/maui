@@ -21,6 +21,22 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => editor.Text, GetNativeText, editor.Text);
 		}
 
+		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			var editor = new EditorStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEditorHandler.TestMapper = new PropertyMapper<IEditor, IEditorHandler>
+			{
+				[nameof(IEditor.Keyboard)] = EditorHandler.MapKeyboard
+			};
+
+			await ValidatePropertyInitValue<string, CustomEditorHandler>(editor, () => editor.Text, GetNativeText, editor.Text);
+		}
+
 		[Theory(DisplayName = "Text Updates Correctly")]
 		[InlineData(null, null)]
 		[InlineData(null, "Hello")]
@@ -514,6 +530,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
 				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
+		}
+
+		class CustomEditorHandler : EditorHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<IEditor, IEditorHandler> TestMapper = new(Mapper);
+			public static CommandMapper<IEditor, IEditorHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomEditorHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
 		}
 	}
 }

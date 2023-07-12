@@ -23,6 +23,54 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
+		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			{
+				[nameof(IEntry.Keyboard)] = EntryHandler.MapKeyboard
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Text Initializes Correctly when IsReadOnly is Before Text")]
+		public async Task TextInitializesCorrectlyWhenIsReadOnlyIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			{
+				[nameof(IEntry.IsReadOnly)] = EntryHandler.MapIsReadOnly
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Text Initializes Correctly when IsPassword is Before Text")]
+		public async Task TextInitializesCorrectlyWhenIsPasswordIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>
+			{
+				[nameof(IEntry.IsPassword)] = EntryHandler.MapIsPassword
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
 		[Fact(DisplayName = "TextColor Initializes Correctly")]
 		public async Task TextColorInitializesCorrectly()
 		{
@@ -733,6 +781,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
 				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
+		}
+
+		class CustomEntryHandler : EntryHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<IEntry, IEntryHandler> TestMapper = new(Mapper);
+			public static CommandMapper<IEntry, IEntryHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomEntryHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
 		}
 	}
 }

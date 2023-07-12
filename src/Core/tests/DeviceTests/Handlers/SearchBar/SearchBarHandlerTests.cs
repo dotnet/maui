@@ -41,6 +41,22 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Text, GetNativeText, searchBar.Text);
 		}
 
+		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			var searchBar = new SearchBarStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomSearchBarHandler.TestMapper = new PropertyMapper<ISearchBar, ISearchBarHandler>
+			{
+				[nameof(ISearchBar.Keyboard)] = SearchBarHandler.MapKeyboard
+			};
+
+			await ValidatePropertyInitValue<string, CustomSearchBarHandler>(searchBar, () => searchBar.Text, GetNativeText, searchBar.Text);
+		}
+
 		[Theory(DisplayName = "Query Text Updates Correctly")]
 		[InlineData(null, null)]
 		[InlineData(null, "Query")]
@@ -451,5 +467,18 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 #endif
+
+		class CustomSearchBarHandler : SearchBarHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<ISearchBar, ISearchBarHandler> TestMapper = new(Mapper);
+			public static CommandMapper<ISearchBar, ISearchBarHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomSearchBarHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
+		}
 	}
 }

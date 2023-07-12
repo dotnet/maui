@@ -121,6 +121,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapKeyboard(ISearchBarHandler handler, ISearchBar searchBar)
 		{
+			handler.UpdateValue(nameof(IEntry.Text));
+
 			handler.PlatformView?.UpdateKeyboard(searchBar);
 		}
 
