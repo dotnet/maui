@@ -122,7 +122,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 
-			timeOut ??= TimeSpan.FromSeconds(15);
+			if (System.Diagnostics.Debugger.IsAttached)
+				timeOut ??= TimeSpan.FromHours(1);
+			else
+				timeOut ??= TimeSpan.FromSeconds(15);
 
 			return InvokeOnMainThreadAsync(async () =>
 			{

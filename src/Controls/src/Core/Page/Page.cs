@@ -535,17 +535,20 @@ namespace Microsoft.Maui.Controls
 
 			if (e.NewItems != null)
 			{
+				int index = e.NewStartingIndex;
 				foreach (Element item in e.NewItems)
 				{
 					if (item is VisualElement visual)
 					{
 						visual.MeasureInvalidated += OnChildMeasureInvalidated;
 
-						AddLogicalChild(visual);
+						InsertLogicalChild(index, visual);
 						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 					}
 					else
-						AddLogicalChild(item);
+						InsertLogicalChild(index, item);
+
+					index++;
 				}
 			}
 		}
