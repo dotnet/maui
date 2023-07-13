@@ -52,9 +52,15 @@ namespace Microsoft.Maui.Platform
 			if (_borderPath == null)
 				return;
 
-			_borderPath.UpdatePath(_borderStroke?.Shape, ActualWidth, ActualHeight);
+			var width = e.NewSize.Width;
+			var height = e.NewSize.Height;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
 			UpdateContent();
-			UpdateClip(_borderStroke?.Shape);
+			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
 		internal void EnsureBorderPath()
@@ -99,7 +105,14 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
 			UpdateContent();
-			UpdateClip(strokeShape);
+
+			var width = ActualWidth;
+			var height = ActualHeight;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			UpdateClip(strokeShape, width, height);
 		}
 
 		void AddContent(FrameworkElement? content)
@@ -121,20 +134,17 @@ namespace Microsoft.Maui.Platform
 			Content.RenderTransform = new TranslateTransform() { X = -strokeThickness, Y = -strokeThickness };
 		}
 
-		void UpdateClip(IShape? borderShape)
+		void UpdateClip(IShape? borderShape, double width, double height)
 		{
-			if (Content == null)
+			if (Content is null)
+				return;
+
+			if (height <= 0 && width <= 0)
 				return;
 
 			var clipGeometry = borderShape;
 
-			if (clipGeometry == null)
-				return;
-
-			double width = ActualWidth;
-			double height = ActualHeight;
-
-			if (height <= 0 && width <= 0)
+			if (clipGeometry is null)
 				return;
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
@@ -144,13 +154,15 @@ namespace Microsoft.Maui.Platform
 			var pathSize = new Graphics.Rect(0, 0, width, height);
 			PathF? clipPath;
 
-			if (clipGeometry is IRoundRectangle roundRectangle)
+			if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
-				var strokeThickness = (float)(_borderStroke?.StrokeThickness ?? 0);
-				clipPath = roundRectangle.InnerPathForBounds(pathSize, strokeThickness);
+				float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
 			}
 			else
-				clipPath = clipGeometry?.PathForBounds(pathSize);
+			{
+				clipPath = clipGeometry.PathForBounds(pathSize);
+			}
 
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
