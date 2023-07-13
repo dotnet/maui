@@ -47,6 +47,7 @@ override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKi
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.MauiLabel.TextRectForBounds(CoreGraphics.CGRect bounds, nint numberOfLines) -> CoreGraphics.CGRect
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.set -> void
 override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void

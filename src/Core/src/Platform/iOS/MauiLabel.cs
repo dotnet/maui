@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using System;
+using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -45,10 +46,25 @@ namespace Microsoft.Maui.Platform
 			base.DrawText(rect);
 		}
 
+		public override RectangleF TextRectForBounds(RectangleF bounds, nint numberOfLines)
+		{
+			var rect = base.TextRectForBounds(TextInsets.InsetRect(bounds), numberOfLines);
+			rect.Width += (TextInsets.Left + TextInsets.Right);
+			rect.Height += (TextInsets.Top + TextInsets.Bottom);
+			return rect;
+		}
+
 		RectangleF AlignVertical(RectangleF rect)
 		{
 			var frameSize = Frame.Size;
-			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
+			var textSize = new NSString(Text).GetBoundingRect(
+				rect.Size,
+				NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
+				new UIStringAttributes { Font = Font },
+				null
+			).Size;
+
+			var height = Lines == 1 ? Font.LineHeight : textSize.Height;
 
 			if (height < frameSize.Height)
 			{
@@ -88,11 +104,11 @@ namespace Microsoft.Maui.Platform
 			var requestedSize = base.SizeThatFits(size);
 
 			// Let's be sure the label is not larger than the container
-			return AddInsets(new Size()
+			return new Size()
 			{
 				Width = nfloat.Min(requestedSize.Width, size.Width),
 				Height = nfloat.Min(requestedSize.Height, size.Height),
-			});
+			};
 		}
 
 		SizeF AddInsets(SizeF size) => new SizeF(
