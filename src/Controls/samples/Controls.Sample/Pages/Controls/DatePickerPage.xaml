@@ -89,14 +89,30 @@
                     Margin="6, 0"
                     Style="{StaticResource IsFocusedTextStyle}"/>
             </HorizontalStackLayout>
-        <Label      
-                Text="Set to null"
+            <Label      
+                    Text="Set to null"
+                    Style="{StaticResource Headline}"/>
+            <DatePicker
+                    x:Name="NullDatePicker"
+                    Date="{x:Null}"/>
+            <Button Text="Set to null" Clicked="SetDatePickerToNull" />
+            <Button Text="Set to today" Clicked="SetDatePickerToToday" />
+                
+            <Label      
+                Text="Date Selected/Changed Events"
                 Style="{StaticResource Headline}"/>
-        <DatePicker
-                x:Name="NullDatePicker"
-                Date="{x:Null}"/>
-        <Button Text="Set to null" Clicked="SetDatePickerToNull" />
-        <Button Text="Set to today" Clicked="SetDatePickerToToday" />
-    </VerticalStackLayout>
+            <DatePicker
+                DateSelected="DatePicker_DateSelected"
+                DateChanged="DatePicker_DateChanged"/>
+            <Label
+                x:Name="DateSelectedText"
+                Text="Date Selected: "/>
+            <Label
+                x:Name="DateChangedText"
+                Text="Date Changed: "/>
+            <Button
+                Text="Clear Selected/Changed Text"
+                Clicked="OnClearSelectedAndChangedText"/>
+        </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>
