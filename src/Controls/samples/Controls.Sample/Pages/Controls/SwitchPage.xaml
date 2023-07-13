@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.SwitchPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
+    xmlns:windows="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
     Title="Switch">
     <views:BasePage.Content>
         <VerticalStackLayout
@@ -44,6 +45,21 @@
                 Style="{StaticResource Headline}"/>
             <Switch
                 ThumbColor="Orange"/>
+            <Label
+                IsVisible="{OnPlatform False, WinUI=True}"
+                Text="Show Status Label (Windows)"
+                Style="{StaticResource Headline}"/>
+            <Switch
+                x:Name="statusLabelSwitch"
+                IsVisible="{OnPlatform False, WinUI=True}"
+                windows:Switch.ShowStatusLabel="False"/>
+            <HorizontalStackLayout IsVisible="{OnPlatform False, WinUI=True}">
+            <Switch                
+                Toggled="Switch_Toggled"/>
+            <Label
+                Text="Toggle Above Status Label"
+                VerticalOptions="Center" />
+            </HorizontalStackLayout>
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

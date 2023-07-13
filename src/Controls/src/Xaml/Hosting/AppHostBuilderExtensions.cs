@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			ScrollView.RemapForControls();
 			RefreshView.RemapForControls();
 			Shape.RemapForControls();
+			Switch.RemapForControls();
 			WebView.RemapForControls();
 
 			return builder;
