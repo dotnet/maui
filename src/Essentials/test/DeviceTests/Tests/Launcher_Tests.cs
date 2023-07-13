@@ -47,8 +47,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("http://www.example.com")]
 		[InlineData("http://example.com/?query=blah")]
 		[InlineData("https://example.com/?query=blah")]
-		[InlineData("mailto://someone@microsoft.com")]
-		[InlineData("mailto://someone@microsoft.com?subject=test")]
+		[InlineData("mailto://someone@microsoft.com"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("mailto://someone@microsoft.com?subject=test"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
 		[InlineData("tel:+1 555 010 9999"
 #if WINDOWS
 			, Skip = "Doesn't work on Windows on CI"
