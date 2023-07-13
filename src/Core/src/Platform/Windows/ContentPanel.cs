@@ -30,6 +30,8 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal bool IsInnerPath { get; private set; }
+
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			var actual = base.ArrangeOverride(finalSize);
@@ -158,10 +160,12 @@ namespace Microsoft.Maui.Platform
 			{
 				float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
 				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				IsInnerPath = true;
 			}
 			else
 			{
 				clipPath = clipGeometry.PathForBounds(pathSize);
+				IsInnerPath = false;
 			}
 
 			var device = CanvasDevice.GetSharedDevice();

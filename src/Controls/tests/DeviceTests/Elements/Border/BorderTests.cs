@@ -11,6 +11,19 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Border)]
 	public partial class BorderTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+			});
+		}
+
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public async Task RoundedRectangleBorderLayoutIsCorrect()
 		{
