@@ -75,6 +75,7 @@ namespace Maui.Controls.Sample.Pages
 
 		void OnClearPickerEventText(object sender, System.EventArgs e)
 		{
+			Debug.WriteLine("Resetting Date Selected/Changed Label Text");
 			DateSelectedText.Text = "Selected: ";
 			DateChangedText.Text = "Changed: ";
 		}

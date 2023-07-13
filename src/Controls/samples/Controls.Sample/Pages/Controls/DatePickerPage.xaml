@@ -102,8 +102,8 @@
                 Text="Date Selected/Changed Events"
                 Style="{StaticResource Headline}"/>
             <DatePicker
-                DateSelected="DatePicker_DateSelected"
-                DateChanged="DatePicker_DateChanged"/>
+                DateSelected="OnDateSelected"
+                DateChanged="OnDateChanged"/>
             <Label
                 x:Name="DateSelectedText"
                 Text="Date Selected: "/>
@@ -112,7 +112,7 @@
                 Text="Date Changed: "/>
             <Button
                 Text="Clear Selected/Changed Text"
-                Clicked="OnClearSelectedAndChangedText"/>
+                Clicked="OnClearPickerEventText"/>
         </VerticalStackLayout>
     </views:BasePage.Content>               
 </views:BasePage>
