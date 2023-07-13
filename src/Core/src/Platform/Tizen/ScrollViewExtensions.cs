@@ -1,6 +1,6 @@
 ﻿using Tizen.UIExtensions.NUI;
-using TScrollOrientation = Tizen.UIExtensions.Common.ScrollOrientation;
 using TScrollBarVisibility = Tizen.UIExtensions.Common.ScrollBarVisibility;
+using TScrollOrientation = Tizen.UIExtensions.Common.ScrollOrientation;
 
 namespace Microsoft.Maui.Platform
 {

@@ -261,10 +261,18 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						formattedHandler.MauiContext
+#endif
+				);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						normalHandler.MauiContext
+#endif
+				);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});
@@ -298,13 +306,21 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var initialHandler = CreateHandler<LabelHandler>(initialLabel);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						initialHandler.MauiContext
+#endif
+				);
 
 				var updatedHandler = CreateHandler<LabelHandler>(updatedLabel);
 
 				updatedLabel.FormattedText = GetFormattedString();
 
-				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap();
+				var updatedBitmap = await updatedHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						updatedHandler.MauiContext
+#endif
+				);
 
 				await updatedBitmap.AssertEqualAsync(initialBitmap);
 			});
@@ -358,10 +374,18 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var formattedHandler = CreateHandler<LabelHandler>(formattedLabel);
-				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap();
+				var formattedBitmap = await formattedHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						formattedHandler.MauiContext
+#endif
+				);
 
 				var normalHandler = CreateHandler<LabelHandler>(normalLabel);
-				var normalBitmap = await normalHandler.PlatformView.ToBitmap();
+				var normalBitmap = await normalHandler.PlatformView.ToBitmap(
+#if WINDOWS
+						normalHandler.MauiContext
+#endif
+				);
 
 				await normalBitmap.AssertEqualAsync(formattedBitmap);
 			});

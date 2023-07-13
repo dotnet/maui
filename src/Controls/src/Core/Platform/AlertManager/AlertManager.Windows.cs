@@ -17,17 +17,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			if (Subscriptions.Any(s => s.Window == platformWindow))
+			if (Subscriptions.Any(s => s.PlatformView == platformWindow))
 				return;
 
-			Subscriptions.Add(new AlertRequestHelper(platformWindow, window.MauiContext));
+			Subscriptions.Add(new AlertRequestHelper(window, platformWindow));
 		}
 
 		internal void Unsubscribe(Window window)
 		{
 			var platformWindow = window.MauiContext.GetPlatformWindow();
 
-			var toRemove = Subscriptions.Where(s => s.Window == platformWindow).ToList();
+			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
 
 			foreach (AlertRequestHelper alertRequestHelper in toRemove)
 			{
@@ -38,32 +38,33 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal sealed class AlertRequestHelper : IDisposable
 		{
-			static Task<bool>? CurrentAlert;
-			static Task<string?>? CurrentPrompt;
+			Task<bool>? CurrentAlert;
+			Task<string?>? CurrentPrompt;
 
-			internal AlertRequestHelper(UI.Xaml.Window window, IMauiContext mauiContext)
+			internal AlertRequestHelper(Window virtualView, UI.Xaml.Window platformView)
 			{
-				Window = window;
-				MauiContext = mauiContext;
+				VirtualView = virtualView;
+				PlatformView = platformView;
 
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Subscribe<Page, bool>(Window, Page.BusySetSignalName, OnPageBusy);
-				MessagingCenter.Subscribe<Page, AlertArguments>(Window, Page.AlertSignalName, OnAlertRequested);
-				MessagingCenter.Subscribe<Page, PromptArguments>(Window, Page.PromptSignalName, OnPromptRequested);
-				MessagingCenter.Subscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName, OnActionSheetRequested);
+				MessagingCenter.Subscribe<Page, bool>(PlatformView, Page.BusySetSignalName, OnPageBusy);
+				MessagingCenter.Subscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName, OnAlertRequested);
+				MessagingCenter.Subscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName, OnPromptRequested);
+				MessagingCenter.Subscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName, OnActionSheetRequested);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
-			public UI.Xaml.Window Window { get; }
-			public IMauiContext MauiContext { get; }
+			public Window VirtualView { get; }
+
+			public UI.Xaml.Window PlatformView { get; }
 
 			public void Dispose()
 			{
 #pragma warning disable CS0618 // TODO: Remove when we internalize/replace MessagingCenter
-				MessagingCenter.Unsubscribe<Page, bool>(Window, Page.BusySetSignalName);
-				MessagingCenter.Unsubscribe<Page, AlertArguments>(Window, Page.AlertSignalName);
-				MessagingCenter.Unsubscribe<Page, PromptArguments>(Window, Page.PromptSignalName);
-				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(Window, Page.ActionSheetSignalName);
+				MessagingCenter.Unsubscribe<Page, bool>(PlatformView, Page.BusySetSignalName);
+				MessagingCenter.Unsubscribe<Page, AlertArguments>(PlatformView, Page.AlertSignalName);
+				MessagingCenter.Unsubscribe<Page, PromptArguments>(PlatformView, Page.PromptSignalName);
+				MessagingCenter.Unsubscribe<Page, ActionSheetArguments>(PlatformView, Page.ActionSheetSignalName);
 #pragma warning restore CS0618 // Type or member is obsolete
 			}
 
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Controls.Platform
 					alertDialog.PrimaryButtonText = arguments.Accept;
 
 				// This is a temporary workaround
-				alertDialog.XamlRoot = Window.Content.XamlRoot;
+				alertDialog.XamlRoot = PlatformView.Content.XamlRoot;
 
 				var currentAlert = CurrentAlert;
 
@@ -127,7 +128,7 @@ namespace Microsoft.Maui.Controls.Platform
 				arguments.SetResult(await CurrentAlert.ConfigureAwait(false));
 				CurrentAlert = null;
 			}
-			
+
 			async void OnPromptRequested(Page sender, PromptArguments arguments)
 			{
 				if (!PageIsInThisWindow(sender))
@@ -158,7 +159,7 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				// This is a temporary workaround
-				promptDialog.XamlRoot = Window.Content.XamlRoot;
+				promptDialog.XamlRoot = PlatformView.Content.XamlRoot;
 
 				CurrentPrompt = ShowPrompt(promptDialog);
 				arguments.SetResult(await CurrentPrompt.ConfigureAwait(false));
@@ -206,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				try
 				{
-					var current = sender.ToPlatform(MauiContext);
+					var current = sender.ToPlatform(VirtualView.RequireMauiContext());
 					var pageParent = current?.Parent as FrameworkElement;
 
 					if (pageParent != null)
@@ -245,16 +246,8 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 			}
 
-			bool PageIsInThisWindow(Page page)
-			{
-				var window = page?.Window;
-				var platformWindow = window?.MauiContext.GetPlatformWindow();
-
-				if (window is null || platformWindow is null)
-					return false;
-
-				return platformWindow == Window;
-			}
+			bool PageIsInThisWindow(Page page) =>
+				page?.Window == VirtualView;
 		}
 	}
 }

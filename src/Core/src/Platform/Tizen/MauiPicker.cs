@@ -1,9 +1,9 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Tizen.NUI;
+using NColor = Tizen.NUI.Color;
 using NEntry = Tizen.UIExtensions.NUI.Entry;
 using NView = Tizen.NUI.BaseComponents.View;
-using NColor = Tizen.NUI.Color;
 
 namespace Microsoft.Maui.Platform
 {

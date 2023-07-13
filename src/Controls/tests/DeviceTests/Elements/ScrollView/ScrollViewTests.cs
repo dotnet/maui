@@ -36,7 +36,11 @@ namespace Microsoft.Maui.DeviceTests
 
 					expectedSize = new Size(200, 100);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
+				}
+#if WINDOWS
+						, handler.MauiContext
+#endif
+				);
 			});
 		}
 
@@ -61,7 +65,11 @@ namespace Microsoft.Maui.DeviceTests
 
 					expectedSize = new Size(100, 200);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
+				}
+#if WINDOWS
+						,handler.MauiContext
+#endif
+				);
 
 			});
 		}
@@ -82,7 +90,11 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					var expectedSize = new Size(expectedWidth, expectedHeight);
 					await AssertContentSize(() => scroll.ContentSize, expectedSize);
-				});
+				}
+#if WINDOWS
+						,handler.MauiContext
+#endif
+				);
 
 			});
 		}

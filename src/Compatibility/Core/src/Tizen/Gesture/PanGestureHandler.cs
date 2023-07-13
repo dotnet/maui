@@ -1,6 +1,6 @@
+using GestureStateType = Tizen.NUI.Gesture.StateType;
 using NGestureDetector = Tizen.NUI.GestureDetector;
 using PanGestureDetector = Tizen.NUI.PanGestureDetector;
-using GestureStateType = Tizen.NUI.Gesture.StateType;
 
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {

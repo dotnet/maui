@@ -50,17 +50,18 @@ namespace Microsoft.Maui.DeviceTests
 
 			var labelFrame =
 				await InvokeOnMainThreadAsync(async () =>
-					await frame.ToPlatform(MauiContext).AttachAndRun(async () =>
-					{
-						(frame as IView).Measure(300, 300);
-						(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));
+				{
+					return await AttachAndRun(frame, async (handler) =>
+						{
+							(frame as IView).Measure(300, 300);
+							(frame as IView).Arrange(new Graphics.Rect(0, 0, 300, 300));
 
-						await OnFrameSetToNotEmpty(frame.Content);
+							await OnFrameSetToNotEmpty(frame.Content);
 
-						return frame.Content.Frame;
-
-					})
-				);
+							return frame.Content.Frame;
+						}
+					);
+				});
 
 
 			// validate label is centered in the frame
@@ -130,7 +131,11 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var platformView = frame.ToPlatform(MauiContext);
-				platformView.AssertContainsColor(expectedColor);
+				platformView.AssertContainsColor(expectedColor
+#if WINDOWS
+						, frame.Handler.MauiContext
+#endif
+				);
 			});
 		}
 
@@ -161,7 +166,11 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(() =>
 			{
 				var platformView = frame.ToPlatform(MauiContext);
-				platformView.AssertContainsColor(expectedColor);
+				platformView.AssertContainsColor(expectedColor
+#if WINDOWS
+						, frame.Handler.MauiContext
+#endif
+				);
 			});
 		}
 
@@ -228,7 +237,7 @@ namespace Microsoft.Maui.DeviceTests
 		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double measureWidth, double measureHeight)
 		{
 			return await InvokeOnMainThreadAsync(() =>
-					layout.ToPlatform(MauiContext).AttachAndRun(async () =>
+					AttachAndRun(layout, async (handler) =>
 					{
 						var size = (layout as IView).Measure(measureWidth, measureHeight);
 						(layout as IView).Arrange(new Graphics.Rect(0, 0, size.Width, size.Height));
