@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>DOTNET_TFM-android;DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
+		<TargetFrameworks>DOTNET_TFM-android</TargetFrameworks>
+		<TargetFrameworks Condition="!$([MSBuild]::IsOSPlatform('linux'))">;DOTNET_TFM-ios;DOTNET_TFM-maccatalyst</TargetFrameworks>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);DOTNET_TFM-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
 		<!-- <TargetFrameworks>$(TargetFrameworks);DOTNET_TFM-tizen</TargetFrameworks> -->
