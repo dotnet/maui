@@ -1,8 +1,7 @@
 ﻿using Microsoft.Maui.Appium;
-using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
 
-namespace Controls.AppiumTests.Tests.Issues
+namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class RefreshViewTests : _IssuesUITest
 	{

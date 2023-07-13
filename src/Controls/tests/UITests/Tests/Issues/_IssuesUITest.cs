@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Appium;
+using OpenQA.Selenium.Support.UI;
 
 namespace Microsoft.Maui.AppiumTests
 {
@@ -21,16 +22,14 @@ namespace Microsoft.Maui.AppiumTests
 
 		public abstract string Issue { get; }
 
-		private void NavigateToIssue(string issue)
+		private static void NavigateToIssue(string issue)
 		{
 			App.NavigateToIssues();
-			App.WaitForElement(q => q.Raw("* marked:'TestCasesIssueList'"));
 
-			App.EnterText(q => q.Raw("* marked:'SearchBarGo'"), $"{issue}");
+			App.EnterText("SearchBarGo", issue);
 
-			App.WaitForElement(q => q.Raw("* marked:'SearchButton'"));
-			App.Tap(q => q.Raw("* marked:'SearchButton'"));
+			App.WaitForElement("SearchButton");
+			App.Tap("SearchButton");
 		}
 	}
-
 }

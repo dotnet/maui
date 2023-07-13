@@ -1,4 +1,6 @@
 ﻿using System.Text.RegularExpressions;
+using OpenQA.Selenium.Support.UI;
+using TestUtils.Appium.UITests;
 using Xamarin.UITest;
 
 namespace Microsoft.Maui.AppiumTests
@@ -22,26 +24,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		public static bool WaitForTextToBePresentInElement(this IApp app, string automationId, string text)
 		{
-			var timeout = TimeSpan.FromSeconds(15);
-			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(500);
-
-			DateTime start = DateTime.Now;
-			long elapsed = 0;
-
-			while (elapsed <= timeout.Ticks)
+			if (app is IApp2 app2)
 			{
-				elapsed = DateTime.Now.Subtract(start).Ticks;
-				
-				var elementText = app.Query(automationId).FirstOrDefault()?.Text;
-				if (elementText != null && elementText.Contains(text, StringComparison.OrdinalIgnoreCase))
-				{
-					return true;
-				}
-
-				Task.Delay(retryFrequency.Milliseconds).Wait();
+				return app2.WaitForTextToBePresentInElement(automationId, text);
 			}
-			
-			return false;
+
+			throw new InvalidOperationException("Not supported on IApp");
 		}
 
 		public static void NavigateToGallery(this IApp app, string page)
@@ -54,7 +42,12 @@ namespace Microsoft.Maui.AppiumTests
 		public static void NavigateToIssues(this IApp app)
 		{
 			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
-			NavigateTo(app, string.Empty);
+
+			app.WaitForElement("SearchBar");
+			app.ClearText("SearchBar");
+
+			app.Tap(goToTestButtonId);
+			app.WaitForElement("TestCasesIssueList");
 		}
 
 		public static void NavigateBack(this IApp app)

@@ -28,6 +28,7 @@ namespace Maui.Controls.Sample.Issues
 				.ToList()
 				.ForEach(scrollViewContent.Children.Add);
 
+			var isRefreshingLabel = new Label { AutomationId = "IsRefreshingLabel" };
 
 			bool canExecute = true;
 			_refreshCommand = new Command(async (parameter) =>
@@ -42,8 +43,10 @@ namespace Maui.Controls.Sample.Issues
 					throw new Exception("Refresh command incorrectly firing with disabled parameter");
 				}
 
-				await Task.Delay(4000); // Appium catalyst driver seems to be slow, have a longer delay here because of that
+				await Task.Delay(1000);
 				_refreshView.IsRefreshing = false;
+				isRefreshingLabel.Text += "IsRefreshing: False;";
+
 			}, (object parameter) =>
 			{
 				return parameter != null && canExecute && (bool)parameter;
@@ -62,8 +65,7 @@ namespace Maui.Controls.Sample.Issues
 				CommandParameter = true
 			};
 
-			var isRefreshingLabel = new Label { AutomationId = "IsRefreshingLabel", BindingContext = _refreshView };
-			isRefreshingLabel.SetBinding(Label.TextProperty, new Binding("IsRefreshing", stringFormat: "IsRefreshing: {0}", source: _refreshView));
+			_refreshView.Refreshing += (sender, args) => isRefreshingLabel.Text += $"IsRefreshing: {_refreshView.IsRefreshing};";
 
 			var commandEnabledLabel = new Label { AutomationId = "IsEnabledLabel", BindingContext = _refreshView };
 			commandEnabledLabel.SetBinding(Label.TextProperty, new Binding("IsEnabled", stringFormat: "IsEnabled: {0}", source: _refreshView));
