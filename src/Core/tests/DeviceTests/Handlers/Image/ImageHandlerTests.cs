@@ -197,7 +197,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrect()
+		public async Task ImageLoadSequenceIsCorrect()
+		{
+			await ImageLoadSequenceIsCorrectImplementation();
+		}
+
+		async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrectImplementation()
 		{
 			var image = new TStub
 			{
@@ -255,7 +260,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOver()
+		public async Task InterruptingLoadCancelsAndStartsOver()
+		{
+			await InterruptingLoadCancelsAndStartsOverImplementation();
+		}
+
+		async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOverImplementation()
 		{
 			var image = new TStub
 			{
@@ -413,7 +423,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ImageLoadSequenceIsCorrectWithChecks()
 		{
-			var events = await ImageLoadSequenceIsCorrect();
+			var events = await ImageLoadSequenceIsCorrectImplementation();
 
 			Assert.Single(events);
 			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
@@ -430,7 +440,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task InterruptingLoadCancelsAndStartsOverWithChecks()
 		{
-			var events = await InterruptingLoadCancelsAndStartsOver();
+			var events = await InterruptingLoadCancelsAndStartsOverImplementation();
 
 			Assert.Single(events);
 			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
