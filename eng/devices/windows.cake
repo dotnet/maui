@@ -221,8 +221,16 @@ Task("SetupTestPaths")
 	if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
+		// For DeviceTests
 		TEST_APP = TEST_APP_PROJECT.GetFilenameWithoutExtension().ToString();
+
+		// For UITests
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		Information("BinDir: {0}", binDir);
+		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+		UITEST_APP = apps.First().FullPath;
 	}
+	
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
 	}
@@ -230,7 +238,8 @@ Task("SetupTestPaths")
 	CreateDirectory(TEST_RESULTS);
 
 	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
+	Information("Device Test App: {0}", TEST_APP);
+	Information("UI Test App: {0}", UITEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 });
 
@@ -263,7 +272,7 @@ Task("uitest")
 				//.Append("/tl")	
 	});
 
-	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);
+	SetEnvironmentVariable("WINDOWS_APP_PATH", UITEST_APP);
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_windows.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
