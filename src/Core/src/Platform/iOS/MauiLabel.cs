@@ -1,7 +1,6 @@
 ﻿#nullable disable
 
 using System;
-using Foundation;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -13,6 +12,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiLabel : UILabel
 	{
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
+		nfloat _currentRowCount = 0;
 
 		public UIEdgeInsets TextInsets { get; set; }
 		internal UIControlContentVerticalAlignment VerticalAlignment
@@ -57,14 +57,21 @@ namespace Microsoft.Maui.Platform
 		RectangleF AlignVertical(RectangleF rect)
 		{
 			var frameSize = Frame.Size;
-			var textSize = new NSString(Text).GetBoundingRect(
-				rect.Size,
-				NSStringDrawingOptions.UsesLineFragmentOrigin | NSStringDrawingOptions.UsesFontLeading,
-				new UIStringAttributes { Font = Font },
-				null
-			).Size;
+			var height = Lines == 1 ? Font.LineHeight : SizeThatFits(frameSize).Height;
 
-			var height = Lines == 1 ? Font.LineHeight : textSize.Height;
+			if (Lines != 1)
+			{
+				nfloat maximumRowCount = NMath.Floor((Frame.Size.Height - (TextInsets.Top + TextInsets.Bottom)) / Font.LineHeight);
+
+				if (_currentRowCount > maximumRowCount)
+				{
+					height = maximumRowCount * Font.LineHeight;
+				}
+				else
+				{
+					height -= (TextInsets.Top + TextInsets.Bottom);
+				}
+			}
 
 			if (height < frameSize.Height)
 			{
@@ -102,6 +109,8 @@ namespace Microsoft.Maui.Platform
 		public override SizeF SizeThatFits(SizeF size)
 		{
 			var requestedSize = base.SizeThatFits(size);
+
+			_currentRowCount = NMath.Floor((requestedSize.Height - (TextInsets.Top + TextInsets.Bottom)) / Font.LineHeight);
 
 			// Let's be sure the label is not larger than the container
 			return new Size()
