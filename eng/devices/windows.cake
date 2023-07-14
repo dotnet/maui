@@ -22,7 +22,9 @@ var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
+var DEVICETEST_APP = Argument("devicetestapp", EnvironmentVariable("WINDOWS_DEVICETEST_APP") ?? "");
 FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? PROJECT);
+FilePath DEVICETEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_DEVICETEST_APP_PROJECT") ?? PROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("WINDOWS_TEST_RESULTS") ?? "");
 string CONFIGURATION = Argument("configuration", "Debug");
 
@@ -218,19 +220,46 @@ Task("Test")
 Task("SetupTestPaths")
 	.Does(() => {
 
-	if (string.IsNullOrEmpty(TEST_APP) ) {
+	// UI Tests
+	if (string.IsNullOrEmpty(TEST_APP) )
+	{
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+		{
 			throw new Exception("If no app was specified, an app must be provided.");
-		TEST_APP = TEST_APP_PROJECT.GetFilenameWithoutExtension().ToString();
+		}
+
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
+		Information("BinDir: {0}", binDir);
+		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
+		TEST_APP = apps.First().FullPath;
 	}
-	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+
+	if (string.IsNullOrEmpty(TEST_RESULTS))
+	{
 		TEST_RESULTS = TEST_APP + "-results";
+	}
+
+	// Device Tests
+	if (string.IsNullOrEmpty(DEVICETEST_APP) )
+	{
+		if (string.IsNullOrEmpty(DEVICETEST_APP_PROJECT.FullPath))
+		{
+			throw new Exception("If no app was specified, an app must be provided.");
+		}
+
+		DEVICETEST_APP = DEVICETEST_APP_PROJECT.GetFilenameWithoutExtension().ToString();
+	}
+
+	if (string.IsNullOrEmpty(TEST_RESULTS))
+	{
+		TEST_RESULTS = DEVICETEST_APP + "-results";
 	}
 
 	CreateDirectory(TEST_RESULTS);
 
 	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
+	Information("UITest App: {0}", TEST_APP);
+	Information("DeviceTest App: {0}", DEVICETEST_APP);
 	Information("Test Results Directory: {0}", TEST_RESULTS);
 });
 
