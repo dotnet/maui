@@ -2,47 +2,47 @@
   <ItemGroup>
     <PackageReference
         Update="Xamarin.AndroidX.AppCompat.AppCompatResources"
-        Version="1.6.1.2"
+        Version="1.6.1.3"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Browser"
-        Version="1.5.0.2"
+        Version="1.5.0.3"
     />
     <PackageReference
         Update="Xamarin.AndroidX.SwipeRefreshLayout"
-        Version="1.1.0.13"
+        Version="1.1.0.14"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Lifecycle.LiveData"
-        Version="2.6.1.2"
+        Version="2.6.1.3"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.UI"
-        Version="2.6.0"
+        Version="2.6.0.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Fragment"
-        Version="2.6.0"
+        Version="2.6.0.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Runtime"
-        Version="2.6.0"
+        Version="2.6.0.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Navigation.Common"
-        Version="2.6.0"
+        Version="2.6.0.1"
     />
     <PackageReference
         Update="Xamarin.AndroidX.MediaRouter"
-        Version="1.4.0.1"
+        Version="1.4.0.2"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Palette"
-        Version="1.0.0.18"
+        Version="1.0.0.19"
     />
     <PackageReference
         Update="Xamarin.AndroidX.RecyclerView"
-        Version="1.3.0.2"
+        Version="1.3.0.3"
     />
     <PackageReference
         Update="Xamarin.Build.Download"
@@ -50,7 +50,7 @@
     />
     <PackageReference
         Update="Xamarin.Google.Android.Material"
-        Version="1.9.0.1"
+        Version="1.9.0.2"
     />
     <PackageReference
         Update="Xamarin.AndroidX.Migration"
@@ -59,7 +59,7 @@
     />
     <PackageReference
         Update="Xamarin.AndroidX.Window.WindowJava"
-        Version="1.1.0"
+        Version="1.1.0.1"
     />
   </ItemGroup>
 </Project>
