@@ -21,7 +21,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(editor, () => editor.Text, GetNativeText, editor.Text);
 		}
 
-		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
 		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
 		{
 			var editor = new EditorStub()
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			CustomEditorHandler.TestMapper = new PropertyMapper<IEditor, IEditorHandler>(EditorHandler.Mapper)
 			{
+				// this mapper is run first and then the ones in the ctor arg (EditorHandler.Mapper)
 				[nameof(IEditor.Keyboard)] = EditorHandler.MapKeyboard
 			};
 

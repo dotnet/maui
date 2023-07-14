@@ -41,7 +41,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Text, GetNativeText, searchBar.Text);
 		}
 
-		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
 		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
 		{
 			var searchBar = new SearchBarStub()
@@ -51,6 +51,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			CustomSearchBarHandler.TestMapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(SearchBarHandler.Mapper)
 			{
+				// this mapper is run first and then the ones in the ctor arg (SearchBarHandler.Mapper)
 				[nameof(ISearchBar.Keyboard)] = SearchBarHandler.MapKeyboard
 			};
 

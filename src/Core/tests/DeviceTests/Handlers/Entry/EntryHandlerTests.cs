@@ -23,7 +23,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
-		[Fact(DisplayName = "Text Initializes Correctly when Keyboard is Before Text")]
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
 		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
 		{
 			var entry = new EntryStub()
@@ -33,13 +33,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
 				[nameof(IEntry.Keyboard)] = EntryHandler.MapKeyboard
 			};
 
 			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
-		[Fact(DisplayName = "Text Initializes Correctly when IsReadOnly is Before Text")]
+		[Fact(DisplayName = "Text Property Initializes Correctly when IsReadOnly Mapper is Executed Before Text Mapper")]
 		public async Task TextInitializesCorrectlyWhenIsReadOnlyIsBeforeText()
 		{
 			var entry = new EntryStub()
@@ -49,13 +50,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
 				[nameof(IEntry.IsReadOnly)] = EntryHandler.MapIsReadOnly
 			};
 
 			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
-		[Fact(DisplayName = "Text Initializes Correctly when IsPassword is Before Text")]
+		[Fact(DisplayName = "Text Property Initializes Correctly when IsPassword Mapper is Executed Before Text Mapper")]
 		public async Task TextInitializesCorrectlyWhenIsPasswordIsBeforeText()
 		{
 			var entry = new EntryStub()
@@ -65,6 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
 			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
 				[nameof(IEntry.IsPassword)] = EntryHandler.MapIsPassword
 			};
 

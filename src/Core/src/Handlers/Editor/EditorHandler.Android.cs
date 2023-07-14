@@ -104,7 +104,7 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapKeyboard(IEditorHandler handler, IEditor editor)
 		{
-			handler.UpdateValue(nameof(IEntry.Text));
+			handler.UpdateValue(nameof(IEditor.Text));
 
 			handler.PlatformView?.UpdateKeyboard(editor);
 		}
