@@ -7,7 +7,7 @@
   IgnorableNamespaces="uap rescap">
 
   <Identity
-    Name="2C0C8B63-C6D1-48CC-A934-5108983E28CB"
+    Name="maui-package-name-placeholder"
     Publisher="CN=User Name"
     Version="1.0.0.0" />
 

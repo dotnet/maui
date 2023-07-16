@@ -18,11 +18,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact]
 		public void AppPackageName_Is_Correct()
 		{
-#if WINDOWS_UWP || WINDOWS
-			Assert.Equal("CD693923-B3C2-4043-B044-F070046D2DAF", AppInfo.PackageName);
-#elif __IOS__
-			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
-#elif __ANDROID__
+#if WINDOWS_UWP || WINDOWS || __IOS__ || __ANDROID__
 			Assert.Equal("com.microsoft.maui.essentials.devicetests", AppInfo.PackageName);
 #else
 			throw new PlatformNotSupportedException();
