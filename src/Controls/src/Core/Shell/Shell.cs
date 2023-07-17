@@ -691,6 +691,29 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
+		/// <summary>
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" /> that will complete once the navigation animation.
+		/// </summary>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, ShellNavigationQueryParameters shellNavigationQueryParameters)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
+		}
+
+		/// <summary>
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" />.
+		/// </summary>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="animate">Indicates if your transition is animated</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters shellNavigationQueryParameters)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
+		}
+
 		public void AddLogicalChild(Element element)
 		{
 			if (element == null)
@@ -1697,21 +1720,11 @@ namespace Microsoft.Maui.Controls
 					return page;
 				}
 
-				if (ModalStack.Count > 0)
-					ModalStack[ModalStack.Count - 1].SendDisappearing();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
-				{
-					if (ModalStack.Count > 1)
-						ModalStack[ModalStack.Count - 2].SendAppearing();
-				}
-
 				var modalPopped = await base.OnPopModal(animated);
 
 				if (ModalStack.Count == 0 && !_shell.CurrentItem.CurrentItem.IsPoppingModalStack)
 					_shell.CurrentItem.SendAppearing();
 
-				modalPopped.Parent = null;
 				return modalPopped;
 			}
 
@@ -1733,18 +1746,6 @@ namespace Microsoft.Maui.Controls
 
 				if (ModalStack.Count == 0)
 					_shell.CurrentItem.SendDisappearing();
-
-				modal.Parent = (Element)_shell.FindParentOfType<IWindow>();
-
-				if (!_shell.CurrentItem.CurrentItem.IsPushingModalStack)
-				{
-					if (ModalStack.Count > 0)
-					{
-						ModalStack[ModalStack.Count - 1].SendDisappearing();
-					}
-
-					modal.SendAppearing();
-				}
 
 				await base.OnPushModal(modal, animated);
 

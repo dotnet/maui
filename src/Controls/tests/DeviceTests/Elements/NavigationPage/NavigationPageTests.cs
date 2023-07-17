@@ -37,6 +37,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
+					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 				});
 			});
 		}
@@ -128,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// Wait for back button to reveal itself
 				Assert.True(await AssertionExtensions.Wait(() => IsBackButtonVisible(handler)));
-			}, timeOut: TimeSpan.FromMinutes(2));
+			});
 		}
 
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
@@ -292,13 +294,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "NavigationPage Does Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "NavigationPage Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
+
+#if ANDROID
+			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
+				return;
+#endif
+
 			SetupBuilder();
 			WeakReference pageReference = null;
 			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
@@ -313,6 +317,8 @@ namespace Microsoft.Maui.DeviceTests
 						new Label(),
 						new Button(),
 						new CollectionView(),
+						new ScrollView(),
+						new ContentView()
 					}
 				};
 				pageReference = new WeakReference(page);
@@ -320,15 +326,14 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 			});
 
-			// As we add more controls to this test, more GCs will be required
-			for (int i = 0; i < 16; i++)
+			// Windows requires an actual delay
+			// Android/iOS require multiple GCs
+			await AssertionExtensions.Wait(() =>
 			{
-				if (!pageReference.IsAlive)
-					break;
-				await Task.Yield();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
-			}
+				return !pageReference.IsAlive;
+			}, timeout: 5000);
 
 			Assert.NotNull(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");

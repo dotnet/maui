@@ -96,8 +96,13 @@ namespace Microsoft.Maui.Controls.ControlGallery
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var fullApkPath = IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
+			var envApkPath = Environment.GetEnvironmentVariable("APP_APK");
 
+
+			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
+																: envApkPath;
+
+			System.Diagnostics.Debug.WriteLine($"FullAppPath: {fullApkPath}");
 			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
 
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
@@ -145,6 +150,13 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			{
 				iOSVersion = _iosVersion;
 			}
+
+
+			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
+
+
+			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
+																: enviOSPath;
 
 			// Running on the simulator
 			//var app = ConfigureApp.iOS

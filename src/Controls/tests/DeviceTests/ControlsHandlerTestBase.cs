@@ -231,6 +231,53 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			Func<THandler, Task> boop = (handler) =>
+			{
+				action.Invoke(handler);
+				return Task.CompletedTask;
+			};
+
+			await AttachAndRunFocusAffectedControl<TType, THandler>(control, boop);
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<TType, THandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			var placeholder = new TType();
+			layout.Add(placeholder);
+			layout.Add(control);
+
+			await AttachAndRun(layout, handler => action(control.Handler as THandler));
+		}
+
 		async protected Task ValidatePropertyInitValue<TValue, THandler>(
 			IView view,
 			Func<TValue> GetValue,

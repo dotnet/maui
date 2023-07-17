@@ -16,5 +16,8 @@
         <Label x:Name="positionLabel" Text="Hover above label to reveal pointer position"/>
         <Label x:Name="positionToWindow" />
         <Label x:Name="positionToThisLabel" />
+
+        <Label x:Name="colorfulHoverLabel" Text="Hover me green!" FontSize="24" />
+        <Label Text="Hover above label to make it turn green" />
     </StackLayout>
 </views:BasePage>

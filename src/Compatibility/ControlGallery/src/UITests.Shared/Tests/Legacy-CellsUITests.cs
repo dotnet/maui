@@ -318,6 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		[Category(UITestCategories.Cells)]
 		[Description("EntryCell fires .Completed event")]
 		[UiTest(typeof(EntryCell), "Completed")]

@@ -890,7 +890,7 @@ namespace Microsoft.Maui.Layouts
 					// If the biggest current star size we have in the definitions is less than the
 					// targetStarSize, that means we have enough room to expand all of our star rows/columns
 					// to their full size.
-			
+
 					foreach (var definition in defs)
 					{
 						if (definition.IsStar)
