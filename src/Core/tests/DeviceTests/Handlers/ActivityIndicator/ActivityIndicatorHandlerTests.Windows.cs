@@ -15,15 +15,15 @@ namespace Microsoft.Maui.DeviceTests
 			GetNativeActivityIndicator(activityIndicatorHandler).IsActive;
 
 		[Fact(Skip = "Failing on Windows")]
-		public override Task SetSemanticDescription()
+		public override Task SettingSemanticDescriptionMakesElementAccessible()
 		{
-			return base.SetSemanticDescription();
+			return base.SettingSemanticDescriptionMakesElementAccessible();
 		}
 
 		[Fact(Skip = "Failing on Windows")]
-		public override Task SetSemanticHint()
+		public override Task SettingSemanticHintMakesElementAccessible()
 		{
-			return base.SetSemanticHint();
+			return base.SettingSemanticHintMakesElementAccessible();
 		}
 	}
 }

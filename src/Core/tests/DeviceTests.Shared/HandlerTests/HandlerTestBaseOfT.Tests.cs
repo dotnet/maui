@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
-		public async Task SettingSemanticDescriptionMakesElementAccessible()
+		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
-		public async Task SettingSemanticHintMakesElementAccessible()
+		public async virtual Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		public async virtual Task SetSemanticDescription()
+		public async Task SetSemanticDescription()
 		{
 			var view = new TStub();
 			view.Semantics.Description = "Test";
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		public async virtual Task SetSemanticHint()
+		public async Task SetSemanticHint()
 		{
 			var view = new TStub();
 			view.Semantics.Hint = "Test";
