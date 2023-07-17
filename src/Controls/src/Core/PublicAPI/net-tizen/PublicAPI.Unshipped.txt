@@ -116,5 +116,5 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 ~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
-~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element, int oldLogicalIndex) -> bool
+~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element, int index) -> bool
 Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void

@@ -182,11 +182,11 @@ namespace Microsoft.Maui.Controls
 			if (LogicalChildrenInternalBackingStore is null)
 				return false;
 
-			var oldLogicalIndex = LogicalChildrenInternalBackingStore.IndexOf(element);
-			if (oldLogicalIndex < 0)
+			var index = LogicalChildrenInternalBackingStore.IndexOf(element);
+			if (index < 0)
 				return false;
 
-			RemoveLogicalChild(element, oldLogicalIndex);
+			RemoveLogicalChild(element, index);
 
 			return true;
 		}
@@ -207,13 +207,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// This doesn't validate that the oldLogicalIndex is correct, so be sure you're passing in the
+		/// This doesn't validate that the index is correct, so be sure you're passing in the
 		/// correct index
 		/// </summary>
-		public bool RemoveLogicalChild(Element element, int oldLogicalIndex)
+		public bool RemoveLogicalChild(Element element, int index)
 		{
 			LogicalChildrenInternalBackingStore.Remove(element);
-			OnChildRemoved(element, oldLogicalIndex);
+			OnChildRemoved(element, index);
 
 			return true;
 		}
