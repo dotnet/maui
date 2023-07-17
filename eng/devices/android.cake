@@ -31,7 +31,7 @@ var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFOR
 
 // other
 string CONFIGURATION = Argument("configuration", "Debug");
-string TEST_FRAMEWORK = "net472";
+string TEST_FRAMEWORK = "net462";
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
 string DEVICE_ID = "";
 string DEVICE_ARCH = "";

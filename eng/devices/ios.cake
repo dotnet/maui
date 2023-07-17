@@ -33,7 +33,7 @@ string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-x64";
 string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
-string TEST_FRAMEWORK = "net472";
+string TEST_FRAMEWORK = "net462";
 
 Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
