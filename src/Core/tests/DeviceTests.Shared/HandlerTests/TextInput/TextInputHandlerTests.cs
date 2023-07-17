@@ -9,6 +9,10 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, ITextInputStub, new()
 	{
+		protected override void ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			mauiAppBuilder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<TStub, THandler>());
+
 		[Theory(DisplayName = "TextChanged Events Fire Correctly"
 #if WINDOWS
 			, Skip = "For some reason, the PlatformView.TextChanged event is not being fired on tests, something is swallowing the event firing. " +
