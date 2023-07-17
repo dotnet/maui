@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Hosting;
 using Windows.Graphics;
 using Xunit;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
@@ -13,6 +14,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Not Visible With No Navigation Page")]
 		public async Task BackButtonNotVisibleWithBasicView()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<ButtonStub, ButtonHandler>()));
+
 			var window = new WindowStub()
 			{
 				Content = new ButtonStub()

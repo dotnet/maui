@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
@@ -24,6 +25,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(TextAlignment.End)]
 		public async Task VerticalTextAlignmentWorksCorrectlyWithHiddenEntry(TextAlignment textAlignment)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<ButtonStub, ButtonHandler>()));
+
 			var layout = new LayoutStub();
 
 			var entry = new EntryStub

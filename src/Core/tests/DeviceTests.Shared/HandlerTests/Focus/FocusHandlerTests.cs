@@ -10,9 +10,12 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : IStubBase, new()
 		where TLayoutStub : IStubBase, ILayout, new()
 	{
-		protected override void ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
-			mauiAppBuilder.ConfigureMauiHandlers(handlers =>
-				handlers.AddHandler<TStub, THandler>());
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<TStub, THandler>();
+				});
 
 		[Fact]
 		public async Task FocusAndIsFocusedIsWorking()

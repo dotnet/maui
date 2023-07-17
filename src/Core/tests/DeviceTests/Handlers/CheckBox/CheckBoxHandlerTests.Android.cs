@@ -4,6 +4,7 @@ using AndroidX.AppCompat.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -15,6 +16,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(0xFF0000FF)]
 		public async Task ColorUpdatesCorrectly(uint color)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<ButtonStub, ButtonHandler>()));
+
 			var layout = new LayoutStub();
 
 			var checkBox = new CheckBoxStub

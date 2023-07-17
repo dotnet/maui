@@ -45,9 +45,8 @@ namespace Microsoft.Maui.DeviceTests
 			_mauiContext = new ContextStub(_servicesProvider);
 		}
 
-		protected virtual void ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
-		{
-		}
+		protected virtual MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			mauiAppBuilder;
 
 		protected IMauiContext MauiContext
 		{

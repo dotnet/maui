@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Page)]
 	public partial class PageHandlerTests : CoreHandlerTestBase<PageHandler, PageStub>
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<SliderStub, SliderHandler>());
+
 		[Fact(DisplayName = "Content Initializes Correctly")]
 		public async Task ContentInitializes()
 		{

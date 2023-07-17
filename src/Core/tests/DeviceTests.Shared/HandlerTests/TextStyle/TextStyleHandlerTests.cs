@@ -11,9 +11,12 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, ITextStyle, new()
 	{
-		protected override void ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
-			mauiAppBuilder.ConfigureMauiHandlers(handlers =>
-				handlers.AddHandler<TStub, THandler>());
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<TStub, THandler>();
+				});
 
 #if !WINDOWS
 		[Theory(DisplayName = "Font Size Initializes Correctly")]

@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Handlers.Layout
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 	[Category(TestCategory.Layout)]
 	public partial class LayoutHandlerTests : CoreHandlerTestBase<LayoutHandler, LayoutStub>
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<SliderStub, SliderHandler>());
+
 		[Fact(DisplayName = "Shadow Initializes Correctly",
 			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/13692")]
 		public async Task ShadowInitializesCorrectly()
