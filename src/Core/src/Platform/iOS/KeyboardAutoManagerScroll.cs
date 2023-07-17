@@ -104,15 +104,6 @@ public static class KeyboardAutoManagerScroll
 
 			ContainerView = View.GetContainerView();
 
-			// the cursor needs a small amount of time to update the position
-			await Task.Delay(5);
-
-			var localCursor = FindLocalCursorPosition();
-			if (localCursor is CGRect local)
-				CursorRect = View.ConvertRectToView(local, null);
-
-			TextViewTopDistance = ((int?)localCursor?.Height ?? 0) + 20;
-
 			await AdjustPositionDebounce();
 		}
 	}
@@ -257,7 +248,7 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
-		await Task.Delay(10);
+		await Task.Delay(30);
 
 		if (entranceCount == DebounceCount)
 			AdjustPosition();
@@ -267,7 +258,6 @@ public static class KeyboardAutoManagerScroll
 	internal static void AdjustPosition()
 	{
 		if (ContainerView is null
-			|| CursorRect is null
 			|| (View is not UITextField && View is not UITextView))
 		{
 			IsKeyboardAutoScrollHandling = false;
@@ -302,9 +292,22 @@ public static class KeyboardAutoManagerScroll
 
 		var topLayoutGuide = Math.Max(navigationBarAreaHeight, ContainerView.LayoutMargins.Top) + 5;
 
-		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
+		// calculate the cursor rect
+		var localCursor = FindLocalCursorPosition();
+		if (localCursor is CGRect local)
+			CursorRect = View.ConvertRectToView(local, null);
+
+		if (CursorRect is null)
+		{
+			IsKeyboardAutoScrollHandling = false;
+			return;
+		}
 
 		var viewRectInWindow = View.ConvertRectToView(View.Bounds, window);
+
+		TextViewTopDistance = ((int?)localCursor?.Height ?? 0) + 20;
+
+		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
 
 		// readjust contentInset when the textView height is too large for the screen
 		var rootSuperViewFrameInWindow = window.Frame;
@@ -318,6 +321,8 @@ public static class KeyboardAutoManagerScroll
 		bool cursorTooHigh = false;
 		bool cursorTooLow = false;
 
+		// scenario where we go into the next editor, but the cursor location
+		// on the editor is scrolled below the visible section
 		if (cursorRect.Y >= viewRectInWindow.GetMaxY())
 		{
 			cursorNotInViewScroll = viewRectInWindow.GetMaxY() - cursorRect.GetMaxY();
@@ -325,6 +330,8 @@ public static class KeyboardAutoManagerScroll
 			cursorTooLow = true;
 		}
 
+		// scenario where we go into the next editor, but the cursor location
+		// on the editor is scrolled higher than the visible section
 		else if (cursorRect.Y < viewRectInWindow.GetMinY())
 		{
 			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
