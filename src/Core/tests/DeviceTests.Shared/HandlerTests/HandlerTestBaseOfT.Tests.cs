@@ -107,7 +107,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		public async Task SetSemanticDescription()
+		public async virtual Task SetSemanticDescription()
 		{
 			var view = new TStub();
 			view.Semantics.Description = "Test";
@@ -120,7 +120,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "This value can't be validated through automated tests"
 #endif
 		)]
-		public async Task SetSemanticHint()
+		public async virtual Task SetSemanticHint()
 		{
 			var view = new TStub();
 			view.Semantics.Hint = "Test";

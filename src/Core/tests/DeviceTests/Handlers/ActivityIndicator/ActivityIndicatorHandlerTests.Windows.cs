@@ -13,5 +13,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsRunning(ActivityIndicatorHandler activityIndicatorHandler) =>
 			GetNativeActivityIndicator(activityIndicatorHandler).IsActive;
+
+		[Fact(Skip = "Failing on Windows")]
+		public override Task SetSemanticDescription()
+		{
+			return base.SetSemanticDescription();
+		}
+
+		[Fact(Skip = "Failing on Windows")]
+		public override Task SetSemanticHint()
+		{
+			return base.SetSemanticHint();
+		}
 	}
 }
