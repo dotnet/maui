@@ -1546,7 +1546,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			bool fired = false;
 			button.PropertyChanged += (x, args) =>
 			{
-				if (args.PropertyName == nameof(Button.TextColorProperty.PropertyName))
+				if (args.PropertyName == Button.TextColorProperty.PropertyName)
 				{
 					fired = true;
 				}
