@@ -61,12 +61,12 @@ steps:
     retryCountOnTaskFailure: 2
   
   - task: PublishTestResults@2
-    displayName: Publish the $(System.PhaseName) test results
+    displayName: Publish the $(Agent.JobName) test results
     condition: always()
     inputs:
       testResultsFormat: VSTest
       testResultsFiles: '$(TestResultsDirectory)/*.trx'
-      testRunTitle: '$(System.PhaseName)'
+      testRunTitle: '$(Agent.JobName)'
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
