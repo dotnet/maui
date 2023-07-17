@@ -79,7 +79,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
-		public async Task SettingSemanticDescriptionMakesElementAccessible()
+		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
@@ -91,7 +91,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
-		public async Task SettingSemanticHintMakesElementAccessible()
+		public async virtual Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
