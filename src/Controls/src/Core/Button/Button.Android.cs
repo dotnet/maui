@@ -13,20 +13,26 @@ namespace Microsoft.Maui.Controls
 			base.OnHandlerChangedCore();
 
 			if (Handler != null)
-			{
-				if (Handler is ButtonHandler buttonHandler && buttonHandler.PlatformView is MaterialButton materialButton)
-				{
-					_materialButton = materialButton;
-					_materialButton.LayoutChange += OnButtonLayoutChange;
-				}
-			}
+				Connect();
 			else
+				Disconnect();
+		}
+
+		void Connect()
+		{
+			if (Handler is ButtonHandler buttonHandler && buttonHandler.PlatformView is MaterialButton materialButton)
 			{
-				if (_materialButton != null)
-				{
-					_materialButton.LayoutChange -= OnButtonLayoutChange;
-					_materialButton = null;
-				}
+				_materialButton = materialButton;
+				_materialButton.LayoutChange += OnButtonLayoutChange;
+			}
+		}
+
+		void Disconnect()
+		{
+			if (_materialButton != null)
+			{
+				_materialButton.LayoutChange -= OnButtonLayoutChange;
+				_materialButton = null;
 			}
 		}
 
