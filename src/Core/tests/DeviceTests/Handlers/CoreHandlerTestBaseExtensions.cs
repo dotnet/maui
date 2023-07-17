@@ -4,7 +4,7 @@ using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public static class CoreDeviceTestExtensions
+	public static class CoreHandlerTestBaseExtensions
 	{
 		public static MauiAppBuilder ConfigureTestBuilder(this MauiAppBuilder mauiAppBuilder)
 		{

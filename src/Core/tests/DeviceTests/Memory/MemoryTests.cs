@@ -44,7 +44,8 @@ namespace Microsoft.Maui.Handlers.Memory
 				return;
 #endif
 
-			var handler = await InvokeOnMainThreadAsync(() => CreateHandler((IElement)Activator.CreateInstance(data.ViewType), data.HandlerType));
+			var handler = await InvokeOnMainThreadAsync(() => CreateHandler((IElement)Activator.CreateInstance(data.ViewType)));
+			Assert.IsType(data.HandlerType, handler);
 			WeakReference weakHandler = new WeakReference(handler);
 			_fixture.AddReferences(data.HandlerType, (weakHandler, new WeakReference(handler.VirtualView)));
 			handler = null;

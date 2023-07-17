@@ -10,27 +10,31 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, new()
 	{
-		public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
-			AssertionExtensions.Wait(exitCondition, timeout);
+		// Handlers
 
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
-		public Task AttachAndRun(IView view, Action<THandler> action) =>
+		protected Task<THandler> CreateHandlerAsync(IView view, IMauiContext mauiContext = null) =>
+			InvokeOnMainThreadAsync(() => CreateHandler<THandler>(view, mauiContext));
+
+		// AttachAndRun
+
+		protected Task AttachAndRun(IView view, Action<THandler> action) =>
 				AttachAndRun<bool>(view, (handler) =>
 				{
 					action(handler);
 					return Task.FromResult(true);
 				});
 
-		public Task AttachAndRun(IView view, Func<THandler, Task> action) =>
+		protected Task AttachAndRun(IView view, Func<THandler, Task> action) =>
 				AttachAndRun<bool>(view, async (handler) =>
 				{
 					await action(handler);
 					return true;
 				});
 
-		public Task<T> AttachAndRun<T>(IView view, Func<THandler, T> action)
+		protected Task<T> AttachAndRun<T>(IView view, Func<THandler, T> action)
 		{
 			Func<THandler, Task<T>> boop = (handler) =>
 			{
@@ -40,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests
 			return AttachAndRun<T>(view, boop);
 		}
 
-		public Task<T> AttachAndRun<T>(IView view, Func<THandler, Task<T>> action)
+		protected Task<T> AttachAndRun<T>(IView view, Func<THandler, Task<T>> action)
 		{
 			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
 			{
@@ -48,13 +52,7 @@ namespace Microsoft.Maui.DeviceTests
 			}, MauiContext, async (view) => (IPlatformViewHandler)(await CreateHandlerAsync(view)));
 		}
 
-		protected Task<THandler> CreateHandlerAsync(IView view)
-		{
-			return InvokeOnMainThreadAsync(() =>
-			{
-				return CreateHandler(view);
-			});
-		}
+		// Values
 
 		protected Task<TValue> GetValueAsync<TValue>(IView view, Func<THandler, TValue> func)
 		{
@@ -79,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 			return SetValueAsync<TValue, THandler>(view, value, func);
 		}
 
-		async protected Task ValidatePropertyInitValue<TValue>(
+		protected async Task ValidatePropertyInitValue<TValue>(
 			IView view,
 			Func<TValue> GetValue,
 			Func<THandler, TValue> GetPlatformValue,
@@ -98,7 +96,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
-		async protected Task ValidatePropertyInitValue<TValue>(
+		protected async Task ValidatePropertyInitValue<TValue>(
 			IView view,
 			Func<TValue> GetValue,
 			Func<THandler, TValue> GetPlatformValue,
@@ -118,7 +116,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedPlatformValue, values.PlatformViewValue);
 		}
 
-		async protected Task ValidatePropertyUpdatesValue<TValue>(
+		protected async Task ValidatePropertyUpdatesValue<TValue>(
 			IView view,
 			string property,
 			Func<THandler, TValue> GetPlatformValue,
@@ -143,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyUpdatesAfterInitValue(handler, property, GetPlatformValue, expectedSetValue, expectedUnsetValue);
 		}
 
-		async protected Task ValidatePropertyUpdatesAfterInitValue<TValue>(
+		protected async Task ValidatePropertyUpdatesAfterInitValue<TValue>(
 			THandler handler,
 			string property,
 			Func<THandler, TValue> GetPlatformValue,
@@ -180,7 +178,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		async protected Task ValidateUnrelatedPropertyUnaffected<TValue>(
+		protected async Task ValidateUnrelatedPropertyUnaffected<TValue>(
 			IView view,
 			Func<THandler, TValue> GetPlatformValue,
 			string property,
@@ -209,23 +207,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialNativeVal, newNativeVal);
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null, double? tolerance = null) =>
-			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue, tolerance: tolerance);
-
-		protected void MockAccessibilityExpectations(TStub view)
-		{
-#if IOS || MACCATALYST
-			var mapperOverride = new PropertyMapper<TStub, THandler>();
-			view.PropertyMapperOverrides = mapperOverride;
-
-			mapperOverride
-				.ModifyMapping(nameof(IView.Semantics), (handler, view, _) =>
-				{
-					(handler.PlatformView as UIKit.UIView)?.SetupAccessibilityExpectationIfVoiceOverIsOff();
-					mapperOverride.Chained[0]!.UpdateProperty(handler, view, nameof(IView.Semantics));
-				});
-#endif
-		}
+		// Helpers
 
 		protected void AssertWithinTolerance(double expected, double actual, double tolerance = 0.2, string message = "Value was not within tolerance.")
 		{

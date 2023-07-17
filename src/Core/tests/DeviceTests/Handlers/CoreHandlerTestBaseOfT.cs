@@ -7,7 +7,8 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : StubBase, IView, new()
 	{
-		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
-			mauiAppBuilder.ConfigureTestBuilder();
+		protected override void ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			mauiAppBuilder.ConfigureMauiHandlers(handlers =>
+				handlers.AddHandler<TStub, THandler>());
 	}
 }
