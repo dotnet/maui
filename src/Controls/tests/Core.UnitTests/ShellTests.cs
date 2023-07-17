@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -1528,6 +1530,31 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			TestShell testShell = new TestShell(new ContentPage());
 			var shellToolBar = testShell.Toolbar;
 			Assert.False(shellToolBar.IsVisible);
+		}
+
+		[Fact]
+		public async Task ChangingTextColorAfterSetValueFromRendererDoesntFire()
+		{
+			Button button = new Button()
+			{
+				TextColor = Colors.Green
+			};
+
+			button.SetValue(
+				Button.TextColorProperty, Colors.Purple, specificity: SetterSpecificity.FromHandler);
+
+			bool fired = false;
+			button.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == nameof(Button.TextColorProperty.PropertyName))
+				{
+					fired = true;
+				}
+			};
+
+			button.TextColor = Colors.Green; // Won't fire a property Changed event
+			Assert.Equal(Colors.Green, button.TextColor);
+			Assert.True(fired);
 		}
 
 		[Fact]
