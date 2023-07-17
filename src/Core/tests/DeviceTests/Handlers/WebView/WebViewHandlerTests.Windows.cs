@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 					await handler.PlatformView.OnLoadedAsync();
 					await navigationComplete.Task;
 					navigationComplete = null;
-				}, MauiContext);
+				});
 			});
 		}
 
