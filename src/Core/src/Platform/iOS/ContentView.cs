@@ -13,7 +13,8 @@ namespace Microsoft.Maui.Platform
 
 		public ContentView()
 		{
-			Layer.CornerCurve = CACornerCurve.Continuous;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				Layer.CornerCurve = CACornerCurve.Continuous; // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
 		}
 
 		public override void LayoutSubviews()

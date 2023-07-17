@@ -11,6 +11,7 @@
         <item name="materialButtonStyle">@style/MauiMaterialButton</item>
         <item name="checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
+        <item name="alertDialogTheme">@style/MauiAlertDialogTheme</item>
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
         <item name="windowActionBar">false</item>
@@ -64,6 +65,10 @@
       <!-- remove all the min sizes as MAUI manages it -->
       <item name="android:minWidth">0dp</item>
       <item name="android:minHeight">0dp</item>
+    </style>
+
+    <style name="MauiAlertDialogTheme" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
+      <item name="colorPrimary">?attr/colorOnSurface</item>
     </style>
 
   <!-- 
