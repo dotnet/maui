@@ -1866,13 +1866,27 @@ namespace Microsoft.Maui.Controls
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
+		void SetupWindowHandlerChanged(bool connect, Window window)
+		{
+			if (connect)
+			{
+				window.HandlerChanged += OnWindowHandlerChanged;
+				_watchingPlatformLoaded = true;
+			}
+			else
+			{
+				window.HandlerChanged -= OnWindowHandlerChanged;
+				_watchingPlatformLoaded = false;
+			}
+		}
+
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
 		{
 			if (bindable is not VisualElement visualElement)
 				return;
 
 			if (visualElement._watchingPlatformLoaded && oldValue is Window oldWindow)
-				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
+				visualElement.SetupWindowHandlerChanged(false, oldWindow);
 
 			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
 			visualElement.InvalidateStateTriggers(newValue != null);
@@ -1899,7 +1913,7 @@ namespace Microsoft.Maui.Controls
 			if (_unloaded is null && _loaded is null)
 			{
 				if (window is not null)
-					window.HandlerChanged -= OnWindowHandlerChanged;
+					SetupWindowHandlerChanged(false, window);
 
 #if PLATFORM
 				_loadedUnloadedToken?.Dispose();
@@ -1913,9 +1927,7 @@ namespace Microsoft.Maui.Controls
 			if (!_watchingPlatformLoaded)
 			{
 				if (window is not null)
-					window.HandlerChanged += OnWindowHandlerChanged;
-
-				_watchingPlatformLoaded = true;
+					SetupWindowHandlerChanged(true, window);
 			}
 
 			HandlePlatformUnloadedLoaded();
