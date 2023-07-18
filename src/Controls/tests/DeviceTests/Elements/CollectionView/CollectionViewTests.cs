@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false, true)]
 		[InlineData(false, true, false)]
 		[InlineData(false, true, true)]
-		public async Task CollectionViewStructuralItems(bool hasHeader, bool hasFooter, bool hasData) 
+		public async Task CollectionViewStructuralItems(bool hasHeader, bool hasFooter, bool hasData)
 		{
 			SetupBuilder();
 
