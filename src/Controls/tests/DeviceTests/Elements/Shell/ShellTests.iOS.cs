@@ -98,7 +98,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, navigatedFired);
 				Assert.Equal(ShellNavigationSource.PopToRoot, shellNavigationSource.Value);
 
-				Assert.Equal(0, shell.Navigation.ModalStack.Count);
+				Assert.Empty(shell.Navigation.ModalStack);
 
 				void ShellNavigated(object sender, ShellNavigatedEventArgs e)
 				{
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.DeviceTests
 				await finishedNavigation.Task.WaitAsync(TimeSpan.FromSeconds(2));
 				Assert.Equal(1, navigatedFired);
 				Assert.Equal(ShellNavigationSource.PopToRoot, shellNavigationSource.Value);
-				Assert.Equal(0, shell.Navigation.ModalStack.Count);
+				Assert.Empty(shell.Navigation.ModalStack);
 
 				void ShellNavigated(object sender, ShellNavigatedEventArgs e)
 				{

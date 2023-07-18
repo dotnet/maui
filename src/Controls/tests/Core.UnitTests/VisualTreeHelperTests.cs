@@ -114,11 +114,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var windowChildren = ((IVisualTreeElement)window).GetVisualChildren();
 			var pageChildren = ((IVisualTreeElement)page).GetVisualChildren();
 
-			Assert.Equal(1, appChildren.Count);
+			Assert.Single(appChildren);
 			Assert.Equal(window, appChildren[0]);
-			Assert.Equal(1, windowChildren.Count);
+			Assert.Single(windowChildren);
 			Assert.Equal(page, windowChildren[0]);
-			Assert.Equal(0, pageChildren.Count);
+			Assert.Empty(pageChildren);
 		}
 
 		[Fact]

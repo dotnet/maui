@@ -902,7 +902,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			t.Style = s;
 
-			Assert.Equal(1, MockApplication.MockLogger.Messages.Count);
+			Assert.Single(MockApplication.MockLogger.Messages);
 			Assert.Equal($"Style TargetType Microsoft.Maui.Controls.Button is not compatible with element target type Microsoft.Maui.Controls.View", MockApplication.MockLogger.Messages.FirstOrDefault());
 		}
 
@@ -914,7 +914,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			t.Style = s;
 
-			Assert.Equal(1, MockApplication.MockLogger.Messages.Count);
+			Assert.Single(MockApplication.MockLogger.Messages);
 			Assert.Equal($"Style TargetType Microsoft.Maui.Controls.Button is not compatible with element target type Microsoft.Maui.Controls.Label", MockApplication.MockLogger.Messages.FirstOrDefault());
 		}
 

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(root, child.Parent);
 
-			Assert.Equal(1, ((IElementController)root).LogicalChildren.Count);
+			Assert.Single(((IElementController)root).LogicalChildren);
 			Assert.Same(((IElementController)root).LogicalChildren.First(), child);
 
 			((ContentPage)root).Content = null;
