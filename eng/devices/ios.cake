@@ -285,13 +285,23 @@ void SetupAppPackageNameAndResult()
    if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
+		
 		var binDir = USE_DOTNET
 			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
 			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		if(apps.Count == 0)
-			throw new Exception("No app was found in the bin directory.");
+		{
+			//exception for ControlGallery AppCenter UITests
+			binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine("ios-arm64").FullPath;
+			Information("New BinDir: {0}", binDir);
+			apps = GetDirectories(binDir + "/*.app");
+			if(apps.Count == 0)
+			{
+				throw new Exception("No app was found in the bin directory.");
+			}
+		}
 		
 		TEST_APP = apps.First().FullPath;
 	}
