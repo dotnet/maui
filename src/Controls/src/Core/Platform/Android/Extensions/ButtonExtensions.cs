@@ -25,14 +25,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public static void UpdateContentLayout(this MaterialButton materialButton, Button button)
 		{
-			if (materialButton.Height == 0 || materialButton.Width == 0)
-				return;
-			
 			var context = materialButton.Context;
 
 			if (context is null)
 				return;
 
+			bool setIconSize = materialButton.Height > 0 && materialButton.Width > 0;
 			var h = materialButton.Height;
 			var w = materialButton.Width;
 			var iconSize = Math.Min(h, w);
@@ -58,7 +56,7 @@ namespace Microsoft.Maui.Controls.Platform
 					textSize = materialButton.LastBaselineToBottomHeight + materialButton.FirstBaselineToTopHeight;
 				else
 					textSize = (int)materialButton.TextSize + materialButton.PaddingTop + materialButton.PaddingEnd;
-				
+
 				// For IconGravityTextEnd and IconGravityTextStart, setting the Icon twice
 				// is needed to work around the Android behavior that caused
 				// https://github.com/dotnet/maui/issues/11755
@@ -68,25 +66,23 @@ namespace Microsoft.Maui.Controls.Platform
 						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTop;
 						materialButton.Icon = icon;
-						materialButton.IconSize = Math.Max(0, iconSize - textSize);
+						iconSize = Math.Max(0, iconSize - textSize);
 						break;
 					case ButtonContentLayout.ImagePosition.Bottom:
 						materialButton.Icon = null;
 						TextViewCompat.SetCompoundDrawablesRelative(materialButton, null, null, null, icon);
 						materialButton.IconGravity = MauiMaterialButton.IconGravityBottom;
-						materialButton.IconSize = Math.Max(0, iconSize - textSize);
+						iconSize = Math.Max(0, iconSize - textSize);
 						break;
 					case ButtonContentLayout.ImagePosition.Left:
 						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTextStart;
 						materialButton.Icon = icon;
-						materialButton.IconSize = iconSize;
 						break;
 					case ButtonContentLayout.ImagePosition.Right:
 						materialButton.Icon = null;
 						materialButton.IconGravity = MaterialButton.IconGravityTextEnd;
 						materialButton.Icon = icon;
-						materialButton.IconSize = iconSize;
 						break;
 				}
 			}
@@ -97,13 +93,22 @@ namespace Microsoft.Maui.Controls.Platform
 				materialButton.Icon = icon;
 				materialButton.IconPadding = 0;
 				materialButton.IconGravity = MaterialButton.IconGravityTextStart;
-				materialButton.IconSize = iconSize;
 			}
+
+			materialButton.UpdateIconSize(iconSize, setIconSize);
 		}
 
 		public static void UpdateLineBreakMode(this AButton nativeControl, Button button)
 		{
 			nativeControl.SetLineBreakMode(button.LineBreakMode);
+		}
+
+		static void UpdateIconSize(this MaterialButton materialButton, int iconSize, bool setIconSize = true)
+		{
+			if (!setIconSize)
+				return;
+
+			materialButton.IconSize = iconSize;
 		}
 	}
 }
