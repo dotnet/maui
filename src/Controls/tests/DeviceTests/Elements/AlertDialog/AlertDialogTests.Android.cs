@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Android.Graphics;
+using AndroidX.AppCompat.App;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Platform;
 using Xunit;
-using AndroidX.AppCompat.App;
-using Android.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class AlertDialogTests: ControlsHandlerTestBase
+	public partial class AlertDialogTests : ControlsHandlerTestBase
 	{
 
 		async Task<Color> GetDialogButtonTextColor(int nightMode)
