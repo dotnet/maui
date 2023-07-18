@@ -18,6 +18,26 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.ge
 Microsoft.Maui.Controls.Region.Equals(Microsoft.Maui.Controls.Region other) -> bool
 Microsoft.Maui.Controls.Shapes.Matrix.Equals(Microsoft.Maui.Controls.Shapes.Matrix other) -> bool
 Microsoft.Maui.Controls.Shapes.Shape.~Shape() -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(string! key, object! value) -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Clear() -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Contains(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.ContainsKey(string! key) -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.CopyTo(System.Collections.Generic.KeyValuePair<string!, object!>[]! array, int arrayIndex) -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Count.get -> int
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.GetEnumerator() -> System.Collections.Generic.IEnumerator<System.Collections.Generic.KeyValuePair<string!, object!>>!
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.IsReadOnly.get -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Keys.get -> System.Collections.Generic.ICollection<string!>!
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Remove(string! key) -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Remove(System.Collections.Generic.KeyValuePair<string!, object!> item) -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters() -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters(System.Collections.Generic.IDictionary<string!, object!>! dictionary) -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.ShellNavigationQueryParameters(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object!>>! collection) -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].get -> object!
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.this[string! key].set -> void
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, out object! value) -> bool
+Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
 Microsoft.Maui.Controls.VisualElement.~VisualElement() -> void
 override Microsoft.Maui.Controls.LayoutOptions.GetHashCode() -> int
 override Microsoft.Maui.Controls.Region.GetHashCode() -> int
@@ -45,6 +65,8 @@ Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
+~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
+~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
