@@ -474,7 +474,6 @@ namespace Microsoft.Maui.Controls
 				&& originalSpecificity == SetterSpecificity.FromHandler)
 			{
 				context.Values.Remove(SetterSpecificity.FromHandler);
-				original = context.Values.LastOrDefault().Value;
 				originalSpecificity = context.Values.LastOrDefault().Key;
 			}
 
