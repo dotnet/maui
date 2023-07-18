@@ -113,3 +113,11 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
+~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
+~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
+Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
+*REMOVED*~Microsoft.Maui.Controls.ItemsView.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
