@@ -1,18 +1,24 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.DeviceTests.Stubs;
-
 
 namespace Microsoft.Maui.Handlers.Memory
 {
 	public class MemoryTestTypes : IEnumerable<object[]>
 	{
+		public static readonly IReadOnlyDictionary<Type, Type> Types = new Dictionary<Type, Type>
+		{
+			[typeof(DatePickerStub)] = typeof(DatePickerHandler),
+			[typeof(EditorStub)] = typeof(EditorHandler),
+			[typeof(EntryStub)] = typeof(EntryHandler),
+			[typeof(SearchBarStub)] = typeof(SearchBarHandler),
+		};
+
 		public IEnumerator<object[]> GetEnumerator()
 		{
-			yield return new object[] { (typeof(DatePickerStub), typeof(DatePickerHandler)) };
-			yield return new object[] { (typeof(EditorStub), typeof(EditorHandler)) };
-			yield return new object[] { (typeof(EntryStub), typeof(EntryHandler)) };
-			yield return new object[] { (typeof(SearchBarStub), typeof(SearchBarHandler)) };
+			foreach (var pair in Types)
+				yield return new object[] { (pair.Key, pair.Value) };
 		}
 
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

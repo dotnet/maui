@@ -5,6 +5,7 @@ using Android.Text;
 using Android.Text.Method;
 using Android.Widget;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using AColor = Android.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
@@ -119,6 +120,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SearchBarTakesFullWidthByDefault()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler => 
+					handler.AddHandler<LayoutStub, LayoutHandler>()));
+
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var layout = new LayoutStub()
@@ -133,7 +138,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				layout.Add(searchbar);
 
-				var layoutHandler = CreateHandler(layout);
+				var layoutHandler = CreateHandler<LayoutHandler>(layout);
 				await layoutHandler.PlatformView.AttachAndRun(() =>
 				{
 					var layoutSize = layout.Measure(double.PositiveInfinity, double.PositiveInfinity);

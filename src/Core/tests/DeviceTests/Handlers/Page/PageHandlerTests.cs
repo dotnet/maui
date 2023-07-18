@@ -13,7 +13,10 @@ namespace Microsoft.Maui.DeviceTests
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
 			base.ConfigureBuilder(mauiAppBuilder)
 				.ConfigureMauiHandlers(handlers =>
-					handlers.AddHandler<SliderStub, SliderHandler>());
+				{
+					handlers.AddHandler<SliderStub, SliderHandler>();
+					handlers.AddHandler<ButtonStub, ButtonHandler>();
+				});
 
 		[Fact(DisplayName = "Content Initializes Correctly")]
 		public async Task ContentInitializes()

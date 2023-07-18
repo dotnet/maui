@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Webkit;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using AWebView = Android.Webkit.WebView;
 
@@ -11,8 +12,13 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WebViewHandlerTests
 	{
 		[Fact]
-		public Task EnsureSupportForCustomWebViewClients() =>
-			InvokeOnMainThreadAsync(async () =>
+		public async Task EnsureSupportForCustomWebViewClients()
+		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<WebViewStub, CustomWebViewHandler>()));
+
+			await InvokeOnMainThreadAsync(async () =>
 			{
 				// create the cross-platform view
 				var webView = new WebViewStub
@@ -88,6 +94,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(1, shouldRequestCount); // only 1 request for the image to load
 				});
 			});
+		}
 
 		AWebView GetNativeWebView(WebViewHandler webViewHandler) =>
 			webViewHandler.PlatformView;
@@ -98,10 +105,8 @@ namespace Microsoft.Maui.DeviceTests
 		class CustomWebViewHandler : WebViewHandler
 		{
 			// make a copy of the Core mappers because we don't want any Controls changes or to override us
-			static IPropertyMapper<IWebView, IWebViewHandler> TestMapper =
-				new PropertyMapper<IWebView, IWebViewHandler>(WebViewHandler.Mapper);
-			static CommandMapper<IWebView, IWebViewHandler> TestCommandMapper =
-				new(WebViewHandler.CommandMapper);
+			static PropertyMapper<IWebView, IWebViewHandler> TestMapper = new (WebViewHandler.Mapper);
+			static CommandMapper<IWebView, IWebViewHandler> TestCommandMapper = new(WebViewHandler.CommandMapper);
 
 			static CustomWebViewHandler()
 			{

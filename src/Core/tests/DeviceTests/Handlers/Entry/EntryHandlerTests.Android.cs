@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 using AColor = Android.Graphics.Color;
 
@@ -20,6 +21,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Keyboard.Numeric), true)]
 		public async Task ValidateNumericKeyboardUpdatesCorrectlyWithIsPassword(string keyboardName, bool expected)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<ButtonStub, ButtonHandler>()));
+
 			var layout = new LayoutStub();
 
 			var keyboard = (Keyboard)typeof(Keyboard).GetProperty(keyboardName).GetValue(null);
@@ -58,6 +63,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Entry Background Updates Correctly")]
 		public async Task BackgroundUpdatesCorrectly()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<ButtonStub, ButtonHandler>()));
+
 			var expected = Colors.Red;
 
 			var layout = new LayoutStub();

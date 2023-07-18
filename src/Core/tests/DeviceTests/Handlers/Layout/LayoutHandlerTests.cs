@@ -13,7 +13,11 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
 			base.ConfigureBuilder(mauiAppBuilder)
 				.ConfigureMauiHandlers(handlers =>
-					handlers.AddHandler<SliderStub, SliderHandler>());
+				{
+					handlers.AddHandler<SliderStub, SliderHandler>();
+					handlers.AddHandler<ButtonStub, ButtonHandler>();
+					handlers.AddHandler<ButtonWithContainerStub, ButtonWithContainerStubHandler>();
+				});
 
 		[Fact(DisplayName = "Shadow Initializes Correctly",
 			Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/13692")]

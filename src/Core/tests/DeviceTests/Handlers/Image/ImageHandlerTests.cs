@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
+using Microsoft.Maui.Hosting;
 
 #if ANDROID
 using Android.Graphics.Drawables;
@@ -33,6 +34,11 @@ namespace Microsoft.Maui.DeviceTests
 		const string ImageEventAppResourceMemberName = "Image";
 		const string ImageEventCustomMemberName = "Image";
 #endif
+
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureImageSources(services =>
+					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>());
 
 		[Theory(
 #if IOS || MACCATALYST

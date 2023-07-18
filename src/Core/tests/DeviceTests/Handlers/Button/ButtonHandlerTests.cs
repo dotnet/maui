@@ -74,7 +74,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("black.png", "#000000")]
 		public async Task ImageSourceInitializesCorrectly(string filename, string colorHex)
 		{
-			var image = new ButtonStub
+			var button = new ButtonStub
 			{
 				Background = new SolidPaintStub(Colors.Black),
 				ImageSource = new FileImageSourceStub(filename),
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				var handler = CreateHandler(image);
+				var handler = CreateHandler(button);
 
 				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
 

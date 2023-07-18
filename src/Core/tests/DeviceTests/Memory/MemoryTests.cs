@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Media;
+using Microsoft.Maui.Hosting;
 using Xunit;
-using Xunit.Abstractions;
-using Xunit.Sdk;
-
 
 namespace Microsoft.Maui.Handlers.Memory
 {
@@ -33,6 +22,14 @@ namespace Microsoft.Maui.Handlers.Memory
 		{
 			_fixture = fixture;
 		}
+
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+				{
+					foreach (var pair in MemoryTestTypes.Types)
+						handlers.AddHandler(pair.Key, pair.Value);
+				}); 
 
 		[Theory]
 		[ClassData(typeof(MemoryTestTypes))]
