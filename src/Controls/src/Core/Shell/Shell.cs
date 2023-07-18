@@ -714,12 +714,6 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
-		public new void AddLogicalChild(Element element) =>
-			base.AddLogicalChild(element);
-
-		public new void RemoveLogicalChild(Element element) =>
-			base.RemoveLogicalChild(element);
-
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
@@ -1432,7 +1426,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutHeaderTemplate,
 				ref _flyoutHeaderView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1442,7 +1436,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutHeaderView,
 				FlyoutHeader,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}
@@ -1453,7 +1447,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutFooterTemplate,
 				ref _flyoutFooterView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1463,7 +1457,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutFooterView,
 				FlyoutFooter,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}
@@ -1591,7 +1585,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutContentTemplate,
 				ref _flyoutContentView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1601,7 +1595,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutContentView,
 				FlyoutContent,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}

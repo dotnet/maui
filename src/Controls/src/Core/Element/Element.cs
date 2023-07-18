@@ -146,6 +146,11 @@ namespace Microsoft.Maui.Controls
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
 		}
 
+		/// <summary>
+		/// Inserts an <see cref="Element"/> to the logical children at the specified index.
+		/// </summary>
+		/// <param name="index">The zero-based index at which <see cref="Element"/> should be inserted.</param>
+		/// <param name="element">The <see cref="Element"/> to insert into the logical children.</param>
 		public void InsertLogicalChild(int index, Element element)
 		{
 			if (element is null)
@@ -159,6 +164,10 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
+		/// <summary>
+		/// Adds an <see cref="Element"/> to the logical children.
+		/// </summary>
+		/// <param name="element">The <see cref="Element"/> to add to the logical children.</param>
 		public void AddLogicalChild(Element element)
 		{
 			if (element is null)
@@ -172,6 +181,14 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
+		/// <summary>
+		/// Removes the first occurrence of a specific <see cref="Element"/> from the logical children.
+		/// </summary>
+		/// <param name="element">The <see cref="Element"/> to remove.</param>
+		/// <returns>
+		///	true if item was successfully removed from the logical children;
+		/// otherwise, false. This method also returns false if <see cref="Element"/> is not found.
+		///	</returns>
 		public bool RemoveLogicalChild(Element element)
 		{
 			if (element is null)
@@ -191,6 +208,9 @@ namespace Microsoft.Maui.Controls
 			return true;
 		}
 
+		/// <summary>
+		///  Removes all <see cref="Element"/>s.
+		/// </summary>
 		public void ClearLogicalChildren()
 		{
 			if (LogicalChildrenInternalBackingStore is null)
@@ -206,11 +226,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>
-		/// This doesn't validate that the index is correct, so be sure you're passing in the
-		/// correct index
-		/// </summary>
-		public bool RemoveLogicalChild(Element element, int index)
+		internal bool RemoveLogicalChild(Element element, int index)
 		{
 			LogicalChildrenInternalBackingStore.Remove(element);
 			OnChildRemoved(element, index);
