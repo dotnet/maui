@@ -97,6 +97,9 @@ namespace Microsoft.Maui.Layouts
 				_gridMaxWidth = _grid.MaximumWidth;
 				_gridMinWidth = _grid.MinimumWidth;
 
+				_gridWidthConstraint = Math.Min(_gridMaxWidth, _gridWidthConstraint);
+				_gridHeightConstraint = Math.Min(_gridMaxHeight, _gridHeightConstraint);
+
 				// Cache these GridLayout properties so we don't have to keep looking them up via _grid
 				// (Property access via _grid may have performance implications for some SDKs.)
 				_padding = grid.Padding;
