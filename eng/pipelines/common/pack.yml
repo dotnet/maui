@@ -36,7 +36,6 @@ steps:
   - template: provision.yml
     parameters:
       checkoutDirectory: ${{ parameters.checkoutDirectory }}
-      platform: ${{ parameters.platform }}
       poolName: ${{ parameters.poolName }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       gitHubToken: ${{ parameters.gitHubToken }}

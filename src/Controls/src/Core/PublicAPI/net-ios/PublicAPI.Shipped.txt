@@ -3574,8 +3574,8 @@
 ~static readonly Microsoft.Maui.Controls.Entry.FontFamilyProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.FontSizeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.HorizontalTextAlignmentProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.Entry.IsPasswordProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.Entry.IsPasswordProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.KeyboardProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.PlaceholderColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.Entry.PlaceholderProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -4902,8 +4902,6 @@ Microsoft.Maui.Controls.Editor.FontSize.get -> double
 Microsoft.Maui.Controls.Editor.FontSize.set -> void
 Microsoft.Maui.Controls.Editor.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.Editor.HorizontalTextAlignment.set -> void
-Microsoft.Maui.Controls.Editor.IsTextPredictionEnabled.get -> bool
-Microsoft.Maui.Controls.Editor.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.Editor.OnHorizontalTextAlignmentPropertyChanged(Microsoft.Maui.TextAlignment oldValue, Microsoft.Maui.TextAlignment newValue) -> void
 Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
 Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
@@ -4949,8 +4947,6 @@ Microsoft.Maui.Controls.Entry.HorizontalTextAlignment.get -> Microsoft.Maui.Text
 Microsoft.Maui.Controls.Entry.HorizontalTextAlignment.set -> void
 Microsoft.Maui.Controls.Entry.IsPassword.get -> bool
 Microsoft.Maui.Controls.Entry.IsPassword.set -> void
-Microsoft.Maui.Controls.Entry.IsTextPredictionEnabled.get -> bool
-Microsoft.Maui.Controls.Entry.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.Entry.ReturnType.get -> Microsoft.Maui.ReturnType
 Microsoft.Maui.Controls.Entry.ReturnType.set -> void
 Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
@@ -6524,8 +6520,6 @@ Microsoft.Maui.Controls.SearchBar.FontSize.get -> double
 Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
 Microsoft.Maui.Controls.SearchBar.HorizontalTextAlignment.get -> Microsoft.Maui.TextAlignment
 Microsoft.Maui.Controls.SearchBar.HorizontalTextAlignment.set -> void
-Microsoft.Maui.Controls.SearchBar.IsTextPredictionEnabled.get -> bool
-Microsoft.Maui.Controls.SearchBar.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.SearchBar.OnSearchButtonPressed() -> void
 Microsoft.Maui.Controls.SearchBar.SearchBar() -> void
 Microsoft.Maui.Controls.SearchBar.SearchButtonPressed -> System.EventHandler

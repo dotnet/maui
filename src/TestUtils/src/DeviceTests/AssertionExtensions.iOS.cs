@@ -259,7 +259,7 @@ namespace Microsoft.Maui.DeviceTests
 			var cap = bitmap.ColorAtPoint(x, y);
 
 			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
-				Assert.Equal(cap, expectedColor, new ColorComparison());
+				Assert.Equal(expectedColor, cap, new ColorComparison());
 
 			return bitmap;
 		}
@@ -613,7 +613,17 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		static UIView GetBackButton(this UINavigationBar uINavigationBar)
+		public static bool HasBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return item is not null;
+		}
+
+		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{

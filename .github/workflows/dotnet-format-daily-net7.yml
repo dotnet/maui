@@ -1,4 +1,4 @@
-name: Daily code format check
+name: Daily code format check net7.0 branch
 on:
   workflow_dispatch:
   schedule:
@@ -15,7 +15,12 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.head_ref }}
+          ref: net7.0
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v3.2.0
+        with:
+          dotnet-version: 7.0.304
 
       - name: Run dotnet format
         run: dotnet format .\Microsoft.Maui.sln --no-restore --exclude Templates/src BlazorWebView/src/SharedSource/BlazorWebViewDeveloperTools.cs BlazorWebView/src/SharedSource/BlazorWebViewServiceCollectionExtensions.cs Graphics/src/Graphics.Win2D/W2DCanvas.cs Graphics/src/Graphics.Win2D/W2DExtensions.cs
@@ -40,4 +45,5 @@ jobs:
             area/infrastructure 🏗️
           assignees: rmarinho, jsuarezruiz
           reviewers: rmarinho, jsuarezruiz
-          branch: housekeeping/fix-codeformatting
+          branch: housekeeping/fix-codeformatting-net7.0
+          base: net7.0

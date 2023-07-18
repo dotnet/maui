@@ -1927,10 +1927,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var view = new View();
 			var grid = new Grid();
-			Assert.Equal(0, grid.Children.Count);
+			Assert.Empty(grid.Children);
 			(grid as Compatibility.Layout<View>).Children.Add(view);
-			Assert.Equal(1, grid.Children.Count);
-			Assert.Equal(1, (grid as Compatibility.Layout<View>).Children.Count);
+			Assert.Single(grid.Children);
+			Assert.Single((grid as Compatibility.Layout<View>).Children);
 			Assert.Same(view, (grid as Compatibility.Layout<View>).Children.First());
 			Assert.Same(view, grid.Children.First());
 		}

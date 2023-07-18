@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mock = new MockBindable();
 			mock.SetValue(MockBindable.TextProperty, value);
-			mock.PropertyChanging += (s, e) => { throw new XunitException(); };
+			mock.PropertyChanging += (s, e) => { throw new XunitException("Property should not have triggered a change event."); };
 
 			mock.SetValue(MockBindable.TextProperty, value);
 		}
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var prop = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue");
 
 			var mock = new MockBindable();
-			mock.PropertyChanging += (s, e) => { throw new XunitException(); };
+			mock.PropertyChanging += (s, e) => { throw new XunitException("Property should not have triggered a change event."); };
 			mock.SetValue(prop, prop.DefaultValue);
 		}
 
@@ -343,7 +343,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var mock = new MockBindable();
 			mock.SetValue(MockBindable.TextProperty, value);
-			mock.PropertyChanged += (s, e) => { throw new XunitException(); };
+			mock.PropertyChanged += (s, e) => { throw new XunitException("Property should not have triggered a change event."); };
 
 			mock.SetValue(MockBindable.TextProperty, value);
 		}
@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var prop = BindableProperty.Create(nameof(MockBindable.Foo), typeof(string), typeof(MockBindable), "DefaultValue");
 
 			var mock = new MockBindable();
-			mock.PropertyChanged += (s, e) => { throw new XunitException(); };
+			mock.PropertyChanged += (s, e) => { throw new XunitException("Property should not have triggered a change event."); };
 
 			mock.SetValue(prop, prop.DefaultValue);
 		}

@@ -11,6 +11,11 @@ namespace Microsoft.Maui.Controls
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
+		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
+
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, ISwipeItem>(_swipeItems);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public SwipeView()
 		{
@@ -212,11 +217,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 #nullable enable
+		const float SwipeMinimumDelta = 10f;
+
 		bool _isOpen;
 		double _previousScrollX;
 		double _previousScrollY;
 		View? _scrollParent;
-		const float SwipeMinimumDelta = 10f;
+		SwipeDirection? _swipeDirection;
 
 		ISwipeItems ISwipeView.LeftItems => new HandlerSwipeItems(LeftItems);
 
@@ -231,8 +238,12 @@ namespace Microsoft.Maui.Controls
 			get => _isOpen;
 			set
 			{
-				_isOpen = value;
-				Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
+				if (_isOpen != value)
+				{
+					_isOpen = value;
+					UpdateLogicalChildren();
+					Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
+				}
 			}
 		}
 
@@ -347,6 +358,7 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeView.SwipeStarted(SwipeViewSwipeStarted swipeStarted)
 		{
+			_swipeDirection = swipeStarted.SwipeDirection;
 			var swipeStartedEventArgs = new SwipeStartedEventArgs(swipeStarted.SwipeDirection);
 			((ISwipeViewController)this).SendSwipeStarted(swipeStartedEventArgs);
 		}
@@ -359,18 +371,78 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeView.SwipeEnded(SwipeViewSwipeEnded swipeEnded)
 		{
+			_swipeDirection = swipeEnded.SwipeDirection;
 			var swipeEndedEventArgs = new SwipeEndedEventArgs(swipeEnded.SwipeDirection, swipeEnded.IsOpen);
 			((ISwipeViewController)this).SendSwipeEnded(swipeEndedEventArgs);
 		}
 
 		void ISwipeView.RequestOpen(SwipeViewOpenRequest swipeOpenRequest)
 		{
+			switch (swipeOpenRequest.OpenSwipeItem)
+			{
+				case OpenSwipeItem.LeftItems:
+					_swipeDirection = SwipeDirection.Right;
+					break;
+				case OpenSwipeItem.TopItems:
+					_swipeDirection = SwipeDirection.Down;
+					break;
+				case OpenSwipeItem.RightItems:
+					_swipeDirection = SwipeDirection.Left;
+					break;
+				case OpenSwipeItem.BottomItems:
+					_swipeDirection = SwipeDirection.Up;
+					break;
+				default:
+					_swipeDirection = null;
+					break;
+			}
+
 			Handler?.Invoke(nameof(ISwipeView.RequestOpen), swipeOpenRequest);
 		}
 
 		void ISwipeView.RequestClose(SwipeViewCloseRequest swipeCloseRequest)
 		{
 			Handler?.Invoke(nameof(ISwipeView.RequestClose), swipeCloseRequest);
+		}
+
+		void UpdateLogicalChildren()
+		{
+			if (!_isOpen)
+			{
+				ClearLogicalChildren();
+				return;
+			}
+
+			var swipeItems = GetSwipeItemsByDirection(_swipeDirection);
+
+			if (swipeItems is null)
+				return;
+
+			foreach (var swipeItem in swipeItems)
+				AddLogicalChildInternal((Element)swipeItem);
+		}
+
+		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
+		{
+			SwipeItems? swipeItems = null;
+
+			switch (swipeDirection)
+			{
+				case SwipeDirection.Left:
+					swipeItems = RightItems;
+					break;
+				case SwipeDirection.Right:
+					swipeItems = LeftItems;
+					break;
+				case SwipeDirection.Up:
+					swipeItems = BottomItems;
+					break;
+				case SwipeDirection.Down:
+					swipeItems = TopItems;
+					break;
+			}
+
+			return swipeItems;
 		}
 
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems

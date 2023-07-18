@@ -14,7 +14,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IView, ITitledElement, IToolbarElement
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
@@ -178,6 +178,14 @@ namespace Microsoft.Maui.Controls
 
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
+		Thickness ISafeAreaView2.SafeAreaInsets
+		{
+			set
+			{
+				On<PlatformConfiguration.iOS>().SetSafeAreaInsets(value);
+			}
+		}
+
 		public event EventHandler LayoutChanged;
 
 		public event EventHandler Appearing;
@@ -231,7 +239,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			if (string.IsNullOrEmpty(cancel))
-				throw new ArgumentNullException("cancel");
+				throw new ArgumentNullException(nameof(cancel));
 
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
