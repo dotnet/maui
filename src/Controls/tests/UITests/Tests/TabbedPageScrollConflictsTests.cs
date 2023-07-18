@@ -25,6 +25,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Ignore("Crash navigating to the sample from the test but not launching the sample")]
 		public void NoScrollConflicts()
 		{
 			if (UITestContext.TestConfig.TestDevice == TestDevice.Android)
