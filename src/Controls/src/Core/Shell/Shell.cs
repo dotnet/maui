@@ -691,6 +691,29 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(parameters));
 		}
 
+		/// <summary>
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" /> that will complete once the navigation animation.
+		/// </summary>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, ShellNavigationQueryParameters shellNavigationQueryParameters)
+		{
+			return _navigationManager.GoToAsync(state, null, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
+		}
+
+		/// <summary>
+		/// This method navigates to a <see cref="ShellNavigationState" /> and returns a <see cref="Task" />.
+		/// </summary>
+		/// <param name="state">Defines the path for Shell to navigate to.</param>
+		/// <param name="animate">Indicates if your transition is animated</param>
+		/// <param name="shellNavigationQueryParameters">Parameters to use for this specific navigation operation.</param>
+		/// <returns></returns>
+		public Task GoToAsync(ShellNavigationState state, bool animate, ShellNavigationQueryParameters shellNavigationQueryParameters)
+		{
+			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
+		}
+
 		public void AddLogicalChild(Element element)
 		{
 			if (element == null)

@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task IsTextPredictionEnabledInitializesCorrectly(bool isEnabled)
 		{
-			var searchBar = new SearchBarStub() 
+			var searchBar = new SearchBarStub()
 			{
 				IsTextPredictionEnabled = isEnabled
 			};
