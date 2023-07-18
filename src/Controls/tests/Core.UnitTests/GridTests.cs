@@ -2504,5 +2504,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				}
 			});
 		}
+
+		[Fact]
+		public void GridCellsHonorMaxWidth()
+		{
+			var grid = new Grid { MaximumWidthRequest = 100 };
+			var label = new Label { LineBreakMode = LineBreakMode.WordWrap, Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis. Sed fermentum porta diam eu pulvinar. Cras ornare ligula id finibus tincidunt. Sed sagittis aliquam neque sit amet commodo. Sed eget velit tortor. Nam ac fringilla leo, sit amet egestas quam. Praesent finibus sem ac nisi elementum sollicitudin." };
+
+			grid.Children.Add(label, 0, 0);
+
+			var view = new ContentView
+			{
+				IsPlatformEnabled = true,
+				Content = grid,
+			};
+			view.Layout(new Rect(0, 0, 800, 800));
+
+			Assert.True(label.Width < grid.MaximumWidthRequest);
+		}
 	}
 }
