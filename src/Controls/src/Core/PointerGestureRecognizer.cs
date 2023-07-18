@@ -248,6 +248,32 @@ namespace Microsoft.Maui.Controls
 			handler?.Invoke(sender, new PointerEventArgs(getPosition, platformArgs));
 		}
 
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// </summary>
+		internal void SendPointerPressed(View sender, Func<IElement?, Point?>? getPosition)
+		{
+			ICommand cmd = PointerPressedCommand;
+			if (cmd?.CanExecute(PointerPressedCommandParameter) == true)
+				cmd.Execute(PointerPressedCommandParameter);
+
+			EventHandler<PointerEventArgs>? handler = PointerPressed;
+			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+		}
+
+		/// <summary>
+		/// For internal use by the .NET MAUI platform.
+		/// </summary>
+		internal void SendPointerReleased(View sender, Func<IElement?, Point?>? getPosition)
+		{
+			ICommand cmd = PointerReleasedCommand;
+			if (cmd?.CanExecute(PointerReleasedCommandParameter) == true)
+				cmd.Execute(PointerReleasedCommandParameter);
+
+			EventHandler<PointerEventArgs>? handler = PointerReleased;
+			handler?.Invoke(sender, new PointerEventArgs(getPosition));
+		}
+
 		internal static void SetupForPointerOverVSM(
 			VisualElement element,
 			Action<bool> updatePointerState,
