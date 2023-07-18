@@ -322,7 +322,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -336,7 +336,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, await CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			Assert.Fail(await CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
 		}
 
@@ -362,7 +362,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -372,7 +372,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (c.IsEquivalent(unexpectedColor))
 				{
-					Assert.True(false, await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
+					Assert.Fail(await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
 				}
 			}
 

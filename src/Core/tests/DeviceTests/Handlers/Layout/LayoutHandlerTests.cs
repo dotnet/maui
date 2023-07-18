@@ -73,7 +73,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, children.Count);
+			Assert.Single(children);
 			Assert.Same(slider.Handler.PlatformView, children[0]);
 
 			var count = await InvokeOnMainThreadAsync(() =>
@@ -150,7 +150,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, children.Count);
+			Assert.Single(children);
 			Assert.Same(slider.Handler.PlatformView, children[0]);
 
 			children = await InvokeOnMainThreadAsync(() =>
@@ -181,7 +181,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, children.Count);
+			Assert.Single(children);
 			Assert.Same(slider.Handler.PlatformView, children[0]);
 
 			children = await InvokeOnMainThreadAsync(() =>
@@ -191,7 +191,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, children.Count);
+			Assert.Single(children);
 			Assert.Same(button.Handler.PlatformView, children[0]);
 		}
 
@@ -211,7 +211,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 				return GetNativeChildren(handler);
 			});
 
-			Assert.Equal(1, children.Count);
+			Assert.Single(children);
 			Assert.Same(addedSlider.Handler.ContainerView, children[0]);
 
 			children = await InvokeOnMainThreadAsync(() =>

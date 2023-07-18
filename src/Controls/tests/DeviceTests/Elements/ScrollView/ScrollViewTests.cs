@@ -209,7 +209,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (!success)
 			{
-				Assert.False(true, message);
+				Assert.Fail(message);
 			}
 		}
 	}

@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Handlers.Memory
 
 			if (_fixture.DoReferencesStillExist(data.HandlerType))
 			{
-				Assert.True(false, $"{data.HandlerType} failed to collect.");
+				Assert.Fail($"{data.HandlerType} failed to collect.");
 			}
 		}
 	}
