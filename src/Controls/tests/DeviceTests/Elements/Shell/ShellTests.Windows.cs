@@ -43,25 +43,22 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(shellItem);
 			});
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
-				{
-					var rootNavView = handler.PlatformView;
-					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
-			
-					Assert.NotNull(shellItemView);
-			
-					await AssertionExtensions.Wait(() =>
-					{
-						var platformView = shell.Handler.PlatformView as FrameworkElement;
-						return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
-					});
+				var rootNavView = handler.PlatformView;
+				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
 
-					var animatedIcon = GetNativeAnimatedIcon(handler);
-					Assert.NotNull(animatedIcon);
-					Assert.NotNull(animatedIcon.FallbackIconSource);
+				Assert.NotNull(shellItemView);
+
+				await AssertionExtensions.Wait(() =>
+				{
+					var platformView = shell.Handler.PlatformView as FrameworkElement;
+					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
 				});
+
+				var animatedIcon = GetNativeAnimatedIcon(handler);
+				Assert.NotNull(animatedIcon);
+				Assert.NotNull(animatedIcon.FallbackIconSource);
 			});
 		}
 
