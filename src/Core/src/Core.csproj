@@ -37,6 +37,7 @@
     <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" />
     <PackageReference Include="Xamarin.AndroidX.Navigation.Common" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.5.1.2"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />

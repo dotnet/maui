@@ -8,6 +8,11 @@
 		public static IAndroidLifecycleBuilder OnApplicationTrimMemory(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationTrimMemory del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnApplicationConfigurationChanged(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationConfigurationChanged del) => lifecycle.OnEvent(del);
 
+		public static IAndroidLifecycleBuilder OnApplicationStart(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationStart del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationResume(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationResume del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationPause(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationPause del) => lifecycle.OnEvent(del);
+		public static IAndroidLifecycleBuilder OnApplicationStop(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnApplicationStop del) => lifecycle.OnEvent(del);
+
 		public static IAndroidLifecycleBuilder OnActivityResult(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnActivityResult del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnBackPressed(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnBackPressed del) => lifecycle.OnEvent(del);
 		public static IAndroidLifecycleBuilder OnConfigurationChanged(this IAndroidLifecycleBuilder lifecycle, AndroidLifecycle.OnConfigurationChanged del) => lifecycle.OnEvent(del);

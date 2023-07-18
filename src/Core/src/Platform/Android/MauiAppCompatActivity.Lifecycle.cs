@@ -4,7 +4,6 @@ using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
 using Android.OS;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 
 namespace Microsoft.Maui
@@ -38,13 +37,6 @@ namespace Microsoft.Maui
 				base.OnBackPressed();
 #pragma warning restore CA1422 // Validate platform compatibility
 #pragma warning restore CA1416 // Validate platform compatibility
-		}
-
-		public override void OnConfigurationChanged(Configuration newConfig)
-		{
-			base.OnConfigurationChanged(newConfig);
-
-			MauiApplication.Current?.Services?.InvokeLifecycleEvents<AndroidLifecycle.OnConfigurationChanged>(del => del(this, newConfig));
 		}
 
 		protected override void OnNewIntent(Intent? intent)
