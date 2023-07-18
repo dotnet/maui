@@ -60,6 +60,14 @@ namespace Microsoft.Maui.Platform
 			_lastMeasureHeight = heightConstraint;
 		}
 
+		public override void SafeAreaInsetsDidChange()
+		{
+			base.SafeAreaInsetsDidChange();
+
+			if (View is ISafeAreaView2 isav2)
+				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
+		}
+
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
