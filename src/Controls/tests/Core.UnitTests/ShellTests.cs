@@ -772,7 +772,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetTitleView(page, layout);
 
 
-			Assert.Contains(layout, page.ChildrenNotDrawnByThisElement);
+			Assert.Contains(layout, page.LogicalChildren);
+			Assert.DoesNotContain(layout, page.InternalChildren);
+			Assert.Contains(layout, ((IVisualTreeElement)page).GetVisualChildren());
 		}
 
 		[Fact]

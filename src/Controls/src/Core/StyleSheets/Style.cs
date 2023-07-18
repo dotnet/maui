@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				}
 			}
 
-			foreach (var child in styleable.LogicalChildrenInternal)
+			foreach (var child in ((IVisualTreeElement)styleable).GetVisualChildren())
 			{
 				var ve = child as VisualElement;
 				if (ve == null)

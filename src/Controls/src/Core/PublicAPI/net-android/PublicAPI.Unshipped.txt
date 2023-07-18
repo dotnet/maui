@@ -106,6 +106,10 @@ Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targ
 Microsoft.Maui.Controls.IValueConverter.ConvertBack(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
 ~static Microsoft.Maui.Controls.GridExtensions.Add(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int left, int right, int top, int bottom) -> void
 ~static Microsoft.Maui.Controls.GridExtensions.AddWithSpan(this Microsoft.Maui.Controls.Grid grid, Microsoft.Maui.IView view, int row = 0, int column = 0, int rowSpan = 1, int columnSpan = 1) -> void
+~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
+~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
+Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
 Microsoft.Maui.Controls.ShellNavigationQueryParameters
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(string! key, object! value) -> void
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Add(System.Collections.Generic.KeyValuePair<string!, object!> item) -> void
@@ -128,3 +132,7 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, 
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
+*REMOVED*~Microsoft.Maui.Controls.ItemsView.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+*REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void

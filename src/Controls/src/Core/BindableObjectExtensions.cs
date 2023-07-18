@@ -83,6 +83,18 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		internal static void AddRemoveLogicalChildren(this BindableObject bindable, object oldValue, object newValue)
+		{
+			if (!(bindable is Element owner))
+				return;
+			
+			if (oldValue is Element oldView)
+				owner.RemoveLogicalChild(oldView);
+
+			if (newValue is Element newView)
+				owner.AddLogicalChild(newView);
+		}
+
 		internal static bool TrySetAppTheme(
 			this BindableObject self,
 			string lightResourceKey,
