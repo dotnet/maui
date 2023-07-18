@@ -20,7 +20,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NavigatingBackViaBackButtonFiresNavigatedEvent()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 
 			var navPage = new NavigationPage(page) { Title = "App Page" };
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PrefersLargeTitles(bool enabled)
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var navPage = new NavigationPage(page) { Title = "App Page" };
 			Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetPrefersLargeTitles(navPage, enabled);
@@ -57,7 +55,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task TranslucentNavigationBar(bool enabled)
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var navPage = new NavigationPage(page) { Title = "App Page" };
 			Controls.PlatformConfiguration.iOSSpecific.NavigationPage.SetIsNavigationBarTranslucent(navPage, enabled);

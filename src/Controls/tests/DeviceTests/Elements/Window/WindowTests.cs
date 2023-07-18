@@ -39,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					SetupShellHandlers(handlers);
+					handlers.SetupShellHandlers();
 
 #if ANDROID || WINDOWS
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));

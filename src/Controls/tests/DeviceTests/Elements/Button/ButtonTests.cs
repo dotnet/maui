@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -8,6 +9,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Button)]
 	public partial class ButtonTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Button, ButtonHandler>());
+
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
 		public async Task InitialTextTransformApplied(string text, TextTransform transform, string expected)

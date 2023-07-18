@@ -12,17 +12,14 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Border)]
 	public partial class BorderTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
+					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
 				});
-			});
-		}
 
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public Task RoundedRectangleBorderLayoutIsCorrect()
@@ -42,7 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 100
 			};
 
-			return AssertColorAtPoint(border, expected, typeof(BorderHandler), 10, 10);
+			return AssertColorAtPoint(border, expected, 10, 10);
 		}
 
 		[Fact(DisplayName = "StrokeThickness does not inset stroke path")]
@@ -80,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 #if IOS
 			// FIXME: iOS seems to have a white boarder around the Border stroke
 #else
-			await AssertColorAtPoint(grid, Colors.Black, typeof(LayoutHandler), 1, 1);
+			await AssertColorAtPoint(grid, Colors.Black, 1, 1);
 #endif
 		}
 
@@ -88,7 +85,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact("Border Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
-			SetupBuilder();
 			WeakReference platformViewReference = null;
 			WeakReference handlerReference = null;
 

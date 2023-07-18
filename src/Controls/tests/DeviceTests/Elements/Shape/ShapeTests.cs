@@ -12,19 +12,15 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shape)]
 	public partial class ShapeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 
 					handlers.AddHandler<Line, LineHandler>();
 				});
-			});
-		}
 
 		[Theory(DisplayName = "Shape Updates brush Correctly")]
 		[InlineData(0xFFFF0000)]
@@ -32,8 +28,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(0xFF0000FF)]
 		public async Task ShapeUpdatesBrushCorrectly(uint color)
 		{
-			SetupBuilder();
-
 			var expected = Color.FromUint(color);
 
 			var layout = new StackLayout();

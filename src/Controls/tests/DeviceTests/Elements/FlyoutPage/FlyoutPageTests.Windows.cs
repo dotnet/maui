@@ -26,7 +26,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task FlyoutPageInitializesWithFlyoutCustomContentSet(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage(flyoutPageType);
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, (handler) =>
@@ -42,7 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task FlyoutPageInitializesWithHeaderSet(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var flyoutPage = CreateBasicFlyoutPage(flyoutPageType);
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(flyoutPage), (handler) =>
@@ -57,7 +55,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task FlyoutLockedOffset(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var flyout = CreateBasicFlyoutPage(flyoutPageType);
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyout, (handler) =>
 			{
@@ -72,7 +69,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task FlyoutLockedOffsetFromAppTitleBarWithPushedPage(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var flyout = CreateBasicFlyoutPage(flyoutPageType);
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyout, async (handler) =>
 			{

@@ -9,6 +9,10 @@ using Xunit;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
 
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.VisualElementTree)]
@@ -17,18 +21,12 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class VisualElementTreeTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Shell), typeof(ShellHandler));
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(Controls.Handlers.Compatibility.NavigationRenderer));
-#else
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
-#endif
+					handlers.AddHandler<Controls.Shell, ShellHandler>();
+					handlers.AddHandler<Controls.NavigationPage, NavigationViewHandler>();
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Image, ImageHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
@@ -44,13 +42,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<ShellContent, ShellContentHandler>();
 #endif
 				});
-			});
-		}
 
 		[Fact]
 		public async Task GetVisualTreeElements()
 		{
-			SetupBuilder();
 			var label = new Label() { Text = "Find Me" };
 			var page = new ContentPage() { Title = "Title Page" };
 			page.Content = new VerticalStackLayout()

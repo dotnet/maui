@@ -15,17 +15,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class LabelTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-				});
-			});
-		}
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Label, LabelHandler>());
 
 		[Theory]
 		[ClassData(typeof(TextTransformCases))]
@@ -245,7 +238,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangingTextTypeWithFormattedTextSwitchesTextSource()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>()));
 
 			Label label;
 			var layout = new VerticalStackLayout
@@ -474,13 +469,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task LabelTruncatesCorrectly(TextAlignment textAlignment, LineBreakMode lineBreakMode)
 		{
 			EnsureHandlerCreated(builder =>
-			{
 				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-				});
-			});
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>()));
 
 			var labelStart = new Label
 			{

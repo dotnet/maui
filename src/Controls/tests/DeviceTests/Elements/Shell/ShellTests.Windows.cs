@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 
-			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
+			await ValidateHasColor(shell, expectedColor);
 		}
 
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]

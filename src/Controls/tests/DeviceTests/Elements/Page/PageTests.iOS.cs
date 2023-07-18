@@ -12,21 +12,12 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class PageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					SetupShellHandlers(handlers);
-				});
-			});
-		}
-
 		[Fact("SafeAreaInset Property is Set")]
 		public async Task SafeAreaInsetIsSet()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.SetupShellHandlers()));
 
 			var page = new ContentPage { Background = Colors.Blue };
 

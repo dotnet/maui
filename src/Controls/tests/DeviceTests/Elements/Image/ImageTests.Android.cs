@@ -43,7 +43,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ImageSetFromStreamRenders()
 		{
-			SetupBuilder();
 			var layout = new VerticalStackLayout();
 
 			using var stream = GetType().Assembly.GetManifestResourceStream("red-embedded.png");

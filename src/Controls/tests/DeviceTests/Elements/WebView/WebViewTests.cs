@@ -7,15 +7,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.WebView)]
 	public partial class WebViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<WebView, WebViewHandler>();
-				});
-			});
-		}
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<WebView, WebViewHandler>());
 	}
 }

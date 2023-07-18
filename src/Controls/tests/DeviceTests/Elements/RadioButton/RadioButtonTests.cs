@@ -10,6 +10,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.RadioButton)]
 	public partial class RadioButtonTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<RadioButton, RadioButtonHandler>());
+
 #if WINDOWS
 		[Theory(DisplayName = "IsChecked Initializes Correctly")]
 		[InlineData(false)]
@@ -17,13 +22,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task IsCheckedInitializesCorrectly(bool isChecked)
 		{
 			EnsureHandlerCreated(builder =>
-			{
 				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<RadioButton, RadioButtonHandler>();
-				});
-			});
-
+					handlers.AddHandler<Layout, LayoutHandler>()));
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
@@ -41,10 +41,10 @@ namespace Microsoft.Maui.DeviceTests
 				layoutSecond.Add(rdSecond);
 				layoutSecond.Add(new RadioButton { GroupName = "SecondGroup" });
 				var layout = new VerticalStackLayout
-			{
-				layoutFirst,
-				layoutSecond
-			};
+				{
+					layoutFirst,
+					layoutSecond
+				};
 				var valuesFirst = await GetValueAsync(rdFirst, (handler) => { return new { ViewValue = rdFirst.IsChecked, PlatformViewValue = GetNativeIsChecked(handler as RadioButtonHandler) }; });
 				var valuesSecond = await GetValueAsync(rdSecond, (handler) => { return new { ViewValue = rdSecond.IsChecked, PlatformViewValue = GetNativeIsChecked(handler as RadioButtonHandler) }; });
 				Assert.Equal(xplatIsChecked, valuesFirst.ViewValue);

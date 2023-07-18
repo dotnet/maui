@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
@@ -19,7 +20,12 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Update Path Data Test")]
 		public async Task UpdatePathDataTest()
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+				}));
 
 			var layout = new StackLayout();
 

@@ -22,15 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task NestedButtonHasExpectedIconPosition(Button.ButtonContentLayout.ImagePosition imagePosition)
 		{
 			EnsureHandlerCreated(builder =>
-			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
-					handlers.AddHandler<Layout, LayoutHandler>();
-					handlers.AddHandler<Button, ButtonHandler>();
-				});
-			});
+				}));
 
 			var button = new Button()
 			{

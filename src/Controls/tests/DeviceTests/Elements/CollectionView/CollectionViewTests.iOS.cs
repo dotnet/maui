@@ -18,8 +18,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ItemsSourceGroupedClearDoestCrash()
 		{
-			SetupBuilder();
-
 			var data = new List<string> { "test 1", "test 2", "test 3" };
 			var groupData = new ObservableCollection<CollectionViewStringGroup>
 				{
@@ -55,8 +53,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CollectionViewContentRespectsMargin()
 		{
-			SetupBuilder();
-
 			// We'll use an EmptyView to assess whether the CollectionView's content 
 			// is being properly offset by the margin
 			var emptyView = new VerticalStackLayout();
@@ -94,8 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact("Cells Do Not Leak")]
 		public async Task CellsDoNotLeak()
 		{
-			SetupBuilder();
-
 			var labels = new List<WeakReference>();
 			VerticalCell cell = null;
 

@@ -13,11 +13,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ListView)]
 	public partial class ListViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<ViewCell, ViewCellRenderer>();
 					handlers.AddHandler<TextCell, TextCellRenderer>();
@@ -25,13 +23,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
-			});
-		}
 
 		[Fact]
 		public async Task RemovingFirstItemOfListViewDoesntCrash()
 		{
-			SetupBuilder();
 			ObservableCollection<string> data = new ObservableCollection<string>()
 			{
 				"cat",
@@ -79,7 +74,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ReAssigning ListView in VSL Crashes")]
 		public async Task ReAssigninListViewInVSLCrashes()
 		{
-			SetupBuilder();
 			var listView = new ListView()
 			{
 				ItemTemplate = new DataTemplate(() =>
@@ -116,7 +110,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ClearItemsListViewDoesntCrash()
 		{
-			SetupBuilder();
 			ObservableCollection<string> data = new ObservableCollection<string>()
 			{
 				"cat",
@@ -161,7 +154,6 @@ namespace Microsoft.Maui.DeviceTests
 			]
 		public async Task NullTemplateDoesntCrash()
 		{
-			SetupBuilder();
 			ObservableCollection<string> data = new ObservableCollection<string>()
 			{
 				"cat",

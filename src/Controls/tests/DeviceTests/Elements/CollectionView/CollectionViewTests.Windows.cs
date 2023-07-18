@@ -15,8 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "CollectionView Disconnects Correctly")]
 		public async Task CollectionViewHandlerDisconnects()
 		{
-			SetupBuilder();
-
 			ObservableCollection<string> data = new ObservableCollection<string>()
 			{
 				"Item 1",
@@ -57,7 +55,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(Skip = "FIX FOR .NET8")]
 		public async Task ValidateItemContainerDefaultHeight()
 		{
-			SetupBuilder();
 			ObservableCollection<string> data = new ObservableCollection<string>()
 			{
 				"Item 1",
@@ -104,7 +101,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
-			SetupBuilder();
 			ObservableCollection<string> data = new();
 			for (int i = 0; i < 20; i++)
 			{

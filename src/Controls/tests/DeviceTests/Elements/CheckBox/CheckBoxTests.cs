@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -9,6 +10,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.CheckBox)]
 	public partial class CheckBoxTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<CheckBox, CheckBoxHandler>());
+
 		[Theory("Checkbox Background Updates Correctly With BackgroundColor Property"
 #if WINDOWS
 			,Skip = "Failing"
@@ -28,7 +34,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			checkBox.BackgroundColor = color;
 
-			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
+			await ValidateHasColor(checkBox, color);
 		}
 	}
 }

@@ -15,7 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangeModalStackWhileDeactivated()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var modalPage = new ContentPage()
 			{
@@ -43,7 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task DontPushModalPagesWhenWindowIsDeactivated()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var modalPage = new ContentPage()
 			{
@@ -69,8 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(WindowSoftInputModeAdjust.Pan)]
 		public async Task ModalPageMarginCorrectAfterKeyboardOpens(WindowSoftInputModeAdjust panSize)
 		{
-			SetupBuilder();
-
 			var navPage = new NavigationPage(new ContentPage());
 			var window = new Window(navPage);
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window,

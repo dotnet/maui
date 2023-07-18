@@ -18,11 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		// This a hard-coded legacy value
 		const int FrameBorderThickness = 1;
 
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<StackLayout, LayoutHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
@@ -31,14 +29,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
-			});
-		}
 
 		[Fact(DisplayName = "Basic Frame Test")]
 		public async Task BasicFrameTest()
 		{
-			SetupBuilder();
-
 			var frame = new Frame()
 			{
 				HeightRequest = 300,
@@ -71,8 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Frame With Entry Measures")]
 		public async Task FrameWithEntryMeasuresCorrectly()
 		{
-			SetupBuilder();
-
 			var entry = new Entry()
 			{
 				Text = "Hello Frame"
@@ -110,8 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task FrameBackgroundColorInitializesCorrectly(string colorHex)
 		{
-			SetupBuilder();
-
 			var expectedColor = Graphics.Color.FromArgb(colorHex);
 
 			var frame = new Frame()
@@ -141,8 +131,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task FrameBorderColorInitializesCorrectly(string colorHex)
 		{
-			SetupBuilder();
-
 			var expectedColor = Graphics.Color.FromArgb(colorHex);
 
 			var frame = new Frame()
@@ -168,8 +156,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Frame Respects minimum height/width")]
 		public async Task FrameRespectsMinimums()
 		{
-			SetupBuilder();
-
 			var content = new Button { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
 
 			var frame = new Frame()
@@ -198,8 +184,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FrameDoesNotInterpretConstraintsAsMinimums()
 		{
-			SetupBuilder();
-
 			var content = new Button { Text = "Hey", WidthRequest = 50, HeightRequest = 50 };
 
 			var frame = new Frame()
@@ -228,8 +212,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FrameIncludesBorderThickness()
 		{
-			SetupBuilder();
-
 			double contentSize = 50;
 			var content = new Label { Text = "Hey", WidthRequest = contentSize, HeightRequest = contentSize };
 
@@ -266,8 +248,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FrameIncludesPadding()
 		{
-			SetupBuilder();
-
 			double contentSize = 50;
 			var content = new Label { Text = "Hey", WidthRequest = contentSize, HeightRequest = contentSize };
 			var padding = 10;
@@ -306,8 +286,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FrameResizesItsContents()
 		{
-			SetupBuilder();
-
 			var originalLayoutDimensions = 300;
 			var shrunkWindowWidth = originalLayoutDimensions - 100;
 
@@ -368,8 +346,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(double.PositiveInfinity, 500)]
 		public async Task FramesWithinFrames(double widthConstraint, double heightConstraint)
 		{
-			SetupBuilder();
-
 			var frameMargin = 30;
 			var middleFrameMarginWidth = 0;
 			var middleFrameMarginHeight = 0;

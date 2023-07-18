@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					SetupShellHandlers(handlers);
+					handlers.SetupShellHandlers();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));

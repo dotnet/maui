@@ -15,15 +15,12 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-
 	[Category(TestCategory.MenuFlyout)]
 	public partial class ContextFlyoutTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
@@ -34,7 +31,5 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
 					handlers.AddHandler<MenuFlyoutSeparator, MenuFlyoutSeparatorHandler>();
 				});
-			});
-		}
 	}
 }

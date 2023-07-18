@@ -14,8 +14,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(PageTypes))]
 		public async Task PushModalUsingTransparencies(Page rootPage, Page modalPage)
 		{
-			SetupBuilder();
-
 			var expected = Colors.Red;
 
 			rootPage.BackgroundColor = expected;

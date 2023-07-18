@@ -30,7 +30,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Flyout Page Takes Into Account Safe Area by Default")]
 		public async Task FlyoutPageTakesIntoAccountSafeAreaByDefault()
 		{
-			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
 			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
 			{
@@ -62,7 +61,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task DetailsViewPopOverLayoutIsCorrectForIdiom(bool isRtl)
 		{
-			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
 			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
 			{

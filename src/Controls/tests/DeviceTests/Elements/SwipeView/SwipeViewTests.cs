@@ -11,28 +11,20 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.SwipeView)]
 	public partial class SwipeViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Grid), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<Layout, LayoutHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 					handlers.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 				});
-			});
-		}
 
 #if !WINDOWS
 		[Fact(DisplayName = "SwipeView LogicalChildren Works Correctly")]
 		public async Task SwipeViewLogicalChildren()
 		{
-			SetupBuilder();
-
 			var content = new Grid
 			{
 				HeightRequest = 60,

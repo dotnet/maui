@@ -15,6 +15,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task CanCreateHandler()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Image, ImageHandler>()));
+
 			var image = new Image();
 			await CreateHandlerAsync<ImageHandler>(image);
 		}
@@ -22,6 +26,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SettingHandlerDoesNotThrow()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Image, ImageHandler>()));
+
 			var image = new Image();
 			var handler = await CreateHandlerAsync<ImageHandler>(image);
 			image.Handler = handler;

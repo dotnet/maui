@@ -12,6 +12,22 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Compatibility)]
 	public partial class VisualElementRendererTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder).ConfigureMauiHandlers(handlers =>
+			{
+				handlers.AddHandler<LegacyComponent, LegacyComponentRenderer>();
+			});
+
+		[Fact]
+		public async Task CompatibilityRendererWorksWithNoInnerContrlSpecified()
+		{
+			var renderer = await InvokeOnMainThreadAsync(() => new LegacyComponent().ToPlatform(MauiContext));
+
+			await InvokeOnMainThreadAsync(() => Assert.Equal(renderer, (renderer as IPlatformViewHandler).PlatformView));
+
+			Assert.NotNull(renderer);
+		}
+
 		class LegacyComponent : View
 		{
 
@@ -26,33 +42,10 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID
 			public LegacyComponentRenderer(Android.Content.Context context) : base(context)
 			{
-				
+
 			}
 #endif
 		}
 
-
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<LegacyComponent, LegacyComponentRenderer>();
-				});
-			});
-		}
-
-		[Fact]
-		public async Task CompatibilityRendererWorksWithNoInnerContrlSpecified()
-		{
-			SetupBuilder();
-
-			var renderer = await InvokeOnMainThreadAsync(() => new LegacyComponent().ToPlatform(MauiContext));
-
-			await InvokeOnMainThreadAsync(() => Assert.Equal(renderer, (renderer as IPlatformViewHandler).PlatformView));
-
-			Assert.NotNull(renderer);
-		}
 	}
 }

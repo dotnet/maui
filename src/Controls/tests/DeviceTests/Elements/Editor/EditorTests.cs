@@ -10,6 +10,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Editor, EditorHandler>());
+
 #if !IOS && !MACCATALYST
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425
@@ -18,6 +23,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(EditorAutoSizeOption.TextChanges)]
 		public async Task AutoSizeInitializesCorrectly(EditorAutoSizeOption option)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>()));
+
 			var editor = new Editor
 			{
 				AutoSize = option,

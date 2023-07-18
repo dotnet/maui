@@ -16,7 +16,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ScrollViewContentSizeSet()
 		{
-			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<Entry, EntryHandler>(); }); });
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Entry, EntryHandler>()));
 
 			var scrollView = new ScrollView();
 			var entry = new Entry() { Text = "In a ScrollView", HeightRequest = 10000 };

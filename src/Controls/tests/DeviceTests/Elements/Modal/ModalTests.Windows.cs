@@ -19,8 +19,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushingPageWithBackgroundStacksAndUnStacksCorrectly(bool useColor)
 		{
-			SetupBuilder();
-
 			var navPage = new NavigationPage(new ContentPage() { Content = new Label() { Text = "Root Page" } });
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(new Window(navPage),
@@ -57,8 +55,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task WindowTitleSetToModalTitleContainer()
 		{
-			SetupBuilder();
-
 			var navPage = new NavigationPage(new ContentPage());
 			var window = new Window(navPage) { Title = "Original Title" };
 
@@ -91,8 +87,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			const string OriginalTitle = "Original Title";
 			const string UpdatedTitle = "Updated Title";
-
-			SetupBuilder();
 
 			var navPage = new NavigationPage(new ContentPage());
 			var window = new Window(navPage) { Title = OriginalTitle };

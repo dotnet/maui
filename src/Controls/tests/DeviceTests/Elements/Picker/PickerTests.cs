@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -13,6 +14,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Picker)]
 	public partial class PickerTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Picker, PickerHandler>());
+
 		[Fact]
 		public async Task ItemsUpdateWithCollectionChanges()
 		{

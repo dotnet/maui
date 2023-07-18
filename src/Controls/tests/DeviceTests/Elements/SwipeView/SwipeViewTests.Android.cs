@@ -14,8 +14,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "SwipeItem Size Initializes Correctly")]
 		public async Task SwipeItemSizeInitializesCorrectly()
 		{
-			SetupBuilder();
-
 			var expectedColor = Colors.Red;
 
 			var content = new VerticalStackLayout

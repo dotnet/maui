@@ -32,9 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
-		protected void SetupShellHandlers(IMauiHandlersCollection handlers) =>
-			handlers.SetupShellHandlers();
-
 		protected THandler CreateHandler<THandler>(IElement view)
 			where THandler : IElementHandler, new()
 		{
@@ -513,9 +510,6 @@ namespace Microsoft.Maui.DeviceTests
 						.SingleOrDefault(x => x.Toolbar is not null)
 						?.Toolbar;
 		}
-
-		protected Task ValidateHasColor<THandler>(IView view, Color color, Action action = null) =>
-			ValidateHasColor(view, color, typeof(THandler), action);
 
 		protected static void MockAccessibilityExpectations(View view)
 		{

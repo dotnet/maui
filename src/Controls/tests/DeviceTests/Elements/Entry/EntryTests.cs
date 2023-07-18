@@ -12,6 +12,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public partial class EntryTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Entry, EntryHandler>());
+
 		[Fact]
 		public async Task MaxLengthTrims()
 		{

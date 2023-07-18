@@ -24,7 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Default Label Position")]
 		public async Task ToolbarDefaultLabelPositionWithNoImages()
 		{
-			SetupBuilder();
 			var item1 = new ToolbarItem() { Text = "Toolbar Item 1" };
 			var item2 = new ToolbarItem() { Text = "Toolbar Item 2" };
 
@@ -49,7 +48,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Default Label Position with Image and Text")]
 		public async Task ToolbarDefaultLabelPositionWithTextAndImages()
 		{
-			SetupBuilder();
 			var item1 = new ToolbarItem() { IconImageSource = "red.png" };
 			var item2 = new ToolbarItem() { Text = "Toolbar Item 2" };
 			var item3 = new ToolbarItem() { Text = "Toolbar Item 2", IconImageSource = "red.png" };
@@ -76,7 +74,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Default Label Position With Images")]
 		public async Task ToolbarDefaultLabelPositionOnlyImages()
 		{
-			SetupBuilder();
 			var item1 = new ToolbarItem() { IconImageSource = "red.png" };
 			var item2 = new ToolbarItem() { IconImageSource = "red.png" };
 
@@ -101,8 +98,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Default Label Position Add Text to Images")]
 		public async Task ToolbarDefaultLabelPositionAddText()
 		{
-			SetupBuilder();
-
 			var item1 = new ToolbarItem() { IconImageSource = "red.png" };
 			var item2 = new ToolbarItem() { IconImageSource = "red.png" };
 

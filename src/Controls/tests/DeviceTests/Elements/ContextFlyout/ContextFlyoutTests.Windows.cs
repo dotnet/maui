@@ -13,7 +13,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Context flyout creates expected WinUI elements")]
 		public async Task ContextFlyoutCreatesExpectedWinUIElements()
 		{
-			SetupBuilder();
 			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
 			var firstPage = new ContentPage();
 

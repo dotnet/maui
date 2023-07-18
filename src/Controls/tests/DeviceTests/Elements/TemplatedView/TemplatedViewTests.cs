@@ -9,18 +9,13 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.TemplatedView)]
 	public partial class TemplatedViewTests : ControlsHandlerTestBase
 	{
-		public TemplatedViewTests()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<IContentView, ContentViewHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
-			});
-		}
 
 		[Fact]
 		public async Task ControlTemplateInitializesCorrectly()

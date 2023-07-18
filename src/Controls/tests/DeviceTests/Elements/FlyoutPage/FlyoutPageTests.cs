@@ -25,11 +25,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.FlyoutPage)]
 	public partial class FlyoutPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
 					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
@@ -43,14 +41,11 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
 				});
-			});
-		}
 
 		[Theory]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task PoppingFlyoutPageDoesntCrash(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -69,8 +64,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task SwappingDetailPageWorksForSplitFlyoutBehavior(Type flyoutPageType)
 		{
-			SetupBuilder();
-
 			var flyoutPage = CreateFlyoutPage(
 					flyoutPageType,
 					new NavigationPage(new ContentPage() { Content = new Frame(), Title = "Detail" }),
@@ -96,8 +89,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task FlyoutPageWithToolbar(Type flyoutPageType)
 		{
-			SetupBuilder();
-
 			var flyoutPage =
 				CreateFlyoutPage(
 					flyoutPageType,
@@ -116,8 +107,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task DetailsViewUpdatesWithNavigationPage(Type flyoutPageType)
 		{
-			SetupBuilder();
-
 			var flyoutPage =
 				CreateFlyoutPage(
 					flyoutPageType,
@@ -139,7 +128,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task DetailsViewUpdates(Type flyoutPageType)
 		{
-			SetupBuilder();
 			var flyoutPage =
 				CreateFlyoutPage(
 					flyoutPageType,
@@ -177,7 +165,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task DetailsPageMeasuresCorrectlyInSplitMode(bool isRtl)
 		{
-			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
 			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
 			{

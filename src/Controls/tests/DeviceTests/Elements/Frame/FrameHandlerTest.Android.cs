@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = size
 			};
 
-			var nativeBoundingBox = await GetValueAsync(view, handler => GetBoundingBox(handler));
+			var nativeBoundingBox = await GetValueAsync(view, GetBoundingBox);
 			Assert.NotEqual(nativeBoundingBox, Graphics.Rect.Zero);
 
 			AssertWithinTolerance(expectedBounds.Size, nativeBoundingBox.Size);

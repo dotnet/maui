@@ -11,25 +11,19 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.CarouselView)]
 	public partial class CarouselViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<CarouselView, CarouselViewHandler>();
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
-			});
-		}
 
 		[Fact]
 		public async Task CarouselViewDataTemplateSelectorSelectorNoCrash()
 		{
-			SetupBuilder();
-
 			ObservableCollection<int> data = new ObservableCollection<int>()
 			{
 				1,
@@ -77,8 +71,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task HiddenCarouselViewNoCrash()
 		{
-			SetupBuilder();
-
 			ObservableCollection<int> data = new ObservableCollection<int>()
 			{
 				1,

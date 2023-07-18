@@ -22,6 +22,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task IsInAccessibleTree(bool result)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Button, ButtonHandler>()));
+
 			var button = new Button();
 			AutomationProperties.SetIsInAccessibleTree(button, result);
 			var important = await GetValueAsync<bool, ButtonHandler>(button, handler => button.IsAccessibilityElement());
@@ -34,6 +38,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task ExcludedWithChildren(bool result)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Button, ButtonHandler>()));
+
 			var button = new Button();
 			AutomationProperties.SetExcludedWithChildren(button, result);
 			var excluded = await GetValueAsync<bool, ButtonHandler>(button, handler => button.IsExcludedWithChildren());

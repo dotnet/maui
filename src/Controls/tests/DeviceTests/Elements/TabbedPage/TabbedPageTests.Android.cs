@@ -27,8 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Using SelectedTab Color doesnt crash")]
 		public async Task SelectedTabColorNoDoesntCrash()
 		{
-			SetupBuilder();
-
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.SelectedTabColor = Colors.Red;
 
@@ -43,8 +41,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
-			SetupBuilder();
-
 			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
 			{
 				new ContentPage() { Title = "Tab 1", IconImageSource = "red.png" },
@@ -87,13 +83,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Custom RecyclerView Adapter Doesn't Crash")]
 		public async Task CustomRecyclerViewAdapterDoesNotCrash()
 		{
-			SetupBuilder(builder =>
-			{
+			EnsureHandlerCreated(builder =>
 				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler<TabbedPage, CustomTestAdapterHandler>();
-				});
-			});
+					handler.AddHandler<TabbedPage, CustomTestAdapterHandler>()));
 
 			var tabbedPage = CreateBasicTabbedPage();
 

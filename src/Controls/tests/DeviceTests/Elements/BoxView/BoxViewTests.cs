@@ -11,6 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.BoxView)]
 	public partial class BoxViewTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<BoxView, ShapeViewHandler>());
+
 		[Theory(DisplayName = "BoxView Initializes Correctly")]
 		[InlineData(0xFFFF0000)]
 		[InlineData(0xFF00FF00)]
@@ -26,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
+			await ValidateHasColor(boxView, expected);
 		}
 	}
 }

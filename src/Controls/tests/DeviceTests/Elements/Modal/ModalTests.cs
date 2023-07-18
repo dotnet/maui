@@ -30,28 +30,23 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class ModalTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Entry, EntryHandler>();
-					SetupShellHandlers(handlers);
+					handlers.SetupShellHandlers();
 				});
-			});
-		}
 
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task AppearingAndDisappearingFireOnWindowAndModal(bool useShell)
 		{
-			SetupBuilder();
 			var windowPage = new ContentPage()
 			{
 				Content = new Label() { Text = "AppearingAndDisappearingFireOnWindowAndModal.Window" }
@@ -101,7 +96,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task AppearingAndDisappearingFireOnMultipleModals(bool useShell)
 		{
-			SetupBuilder();
 			var windowPage = new ContentPage()
 			{
 				Content = new Label() { Text = "AppearingAndDisappearingFireOnWindowAndModal.Window" }
@@ -162,7 +156,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
 		{
-			SetupBuilder();
 			var windowPage = new LifeCycleTrackingPage()
 			{
 				Title = "Window Page Title"
@@ -208,7 +201,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task LifeCycleEventsFireOnModalPagesPushedBeforeWindowHasLoaded(bool useShell)
 		{
-			SetupBuilder();
 			var windowPage = new LifeCycleTrackingPage();
 			var modalPage = new LifeCycleTrackingPage()
 			{
@@ -242,7 +234,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
 		{
-			SetupBuilder();
 			var windowPage = new ContentPage()
 			{
 				Content = new Label()
@@ -313,7 +304,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task PushModalModalWithoutAwaiting(bool useShell)
 		{
-			SetupBuilder();
 			var windowPage = new LifeCycleTrackingPage();
 			var modalPage = new LifeCycleTrackingPage()
 			{
@@ -358,7 +348,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task LoadModalPagesBeforeWindowHasLoaded()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var modalPage = new ContentPage()
 			{
@@ -382,7 +371,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SwapWindowPageDuringModalAppearing()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var newRootPage = new ContentPage()
 			{
@@ -411,7 +399,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangePageOnWindowRemovesModalStack()
 		{
-			SetupBuilder();
 			var page = new ContentPage()
 			{
 				Content = new Label()
@@ -448,8 +435,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task RecreatingStackCorrectlyRecreatesModalStack()
 		{
-			SetupBuilder();
-
 			var page = new ContentPage();
 			var modalPage = new ContentPage()
 			{
@@ -484,8 +469,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(PageTypes))]
 		public async Task SwappingRootPageWhileModalPageIsOpenDoesntCrash(Page rootPage, Page newRootPage)
 		{
-			SetupBuilder();
-
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (_) =>
 				{
@@ -501,7 +484,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(PageTypes))]
 		public async Task BasicPushAndPop(Page rootPage, Page modalPage)
 		{
-			SetupBuilder();
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (_) =>

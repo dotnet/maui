@@ -22,7 +22,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Pushing And Popping Doesnt Fire BackButtonVisible Toolbar Events")]
 		public async Task PushingAndPoppingDoesntFireBackButtonVisibleToolbarEvents()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"

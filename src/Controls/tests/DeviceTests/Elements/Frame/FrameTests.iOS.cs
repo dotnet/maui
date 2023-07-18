@@ -11,8 +11,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Frame HasShadow Test")]
 		public async Task FrameHasShadowTest()
 		{
-			SetupBuilder();
-
 			var frame = new Frame()
 			{
 				HasShadow = true,
@@ -54,8 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(null)]
 		public async Task FrameClipsCorrectly(bool? isClipped)
 		{
-			SetupBuilder();
-
 			var frame = new Frame()
 			{
 				HeightRequest = 300,

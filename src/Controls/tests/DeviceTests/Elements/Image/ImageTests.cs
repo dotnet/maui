@@ -15,21 +15,16 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Image)]
 	public partial class ImageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Image, ImageHandler>();
 				});
-			});
-		}
 
 		[Fact]
 		public async Task ImageWithUndefinedSizeAndWithBackgroundSetRenders()
 		{
-			SetupBuilder();
 			var layout = new VerticalStackLayout();
 
 			var image = new Image
@@ -51,7 +46,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact("Image Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
-			SetupBuilder();
 			WeakReference platformViewReference = null;
 			WeakReference handlerReference = null;
 

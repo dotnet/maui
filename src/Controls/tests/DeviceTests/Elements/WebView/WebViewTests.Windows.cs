@@ -12,8 +12,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Evaluate JavaScript returning a String value")]
 		public async Task EvaluateJavaScriptWithString()
 		{
-			SetupBuilder();
-
 			string actual = string.Empty;
 
 			var pageLoadTimeout = TimeSpan.FromSeconds(2);
@@ -81,8 +79,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Evaluate JavaScript returning an Integer value")]
 		public async Task EvaluateJavaScriptWithInteger()
 		{
-			SetupBuilder();
-
 			string actual = string.Empty;
 
 			var pageLoadTimeout = TimeSpan.FromSeconds(2);

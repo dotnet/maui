@@ -18,8 +18,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Update Frame Content Test")]
 		public async Task UpdateFrameContentTest()
 		{
-			SetupBuilder();
-
 			var layout = new StackLayout();
 
 			var frame = new Frame()
@@ -70,8 +68,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FrameContentAccountsForBorderThickness()
 		{
-			SetupBuilder();
-
 			double contentSize = 50;
 			var innerFrame = new Frame()
 			{

@@ -17,11 +17,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class NavigationPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 #if IOS || MACCATALYST
@@ -40,13 +38,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 				});
-			});
-		}
 
 		[Fact]
 		public async Task PoppingNavigationPageDoesntCrash()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -59,7 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task InitialPageFiresNavigatedEvent()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var navPage = new NavigationPage(page) { Title = "App Page" };
 
@@ -73,8 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task PushedPageFiresNavigatedEventOnInitialLoad()
 		{
-			SetupBuilder();
-
 			bool pageFiredNavigated = false;
 			var page = new ContentPage();
 			page.NavigatedTo += (_, _) => pageFiredNavigated = true;
@@ -98,7 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swapping Navigation Toggles BackButton Correctly")]
 		public async Task SwappingNavigationTogglesBackButtonCorrectly()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -136,7 +127,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -152,7 +142,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Set Has Back Button")]
 		public async Task SetHasBackButton()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -169,7 +158,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Set Has Navigation Bar")]
 		public async Task SetHasNavigationBar()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage() { Title = "Nav Bar" });
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -185,7 +173,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationBar Removes When MainPage Set To ContentPage")]
 		public async Task NavigationBarRemovesWhenMainPageSetToContentPage()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 			var window = new Window(navPage);
 
@@ -201,7 +188,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Insert Page Before Root Page and then PopToRoot")]
 		public async Task InsertPageBeforeRootPageAndThenPopToRoot()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"
@@ -221,7 +207,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Insert Page Before RootPage ShowsBackButton")]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"
@@ -243,7 +228,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Remove Root Page Hides Back Button")]
 		public async Task RemoveRootPageHidesBackButton()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"
@@ -265,7 +249,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Pushing a Tabbed Page Doesn't Throw Exception")]
 		public async Task PushingATabbedPageDoesntThrowException()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"
@@ -297,13 +280,11 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "NavigationPage Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
-
 #if ANDROID
 			if (!OperatingSystem.IsAndroidVersionAtLeast(30))
 				return;
 #endif
 
-			SetupBuilder();
 			WeakReference pageReference = null;
 			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 
@@ -346,7 +327,6 @@ namespace Microsoft.Maui.DeviceTests
 			)]
 		public async Task CanReusePages()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage { Title = "Page 1" });
 			var reusedPage = new ContentPage
 			{

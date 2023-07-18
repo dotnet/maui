@@ -25,8 +25,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			modalPage.Content = collectionView;
 
-			SetupBuilder();
-
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage,
 				async (_) =>
 				{
@@ -54,8 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView()
 		{
-			SetupBuilder();
-
 			var emptyView = new Label { Text = "Empty" };
 			var header = new Label { Text = "Header" };
 			var footer = new Label { Text = "Footer" };

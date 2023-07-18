@@ -24,7 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Visible When Pushing To TabbedPage")]
 		public async Task ToolbarVisibleWhenPushingToTabbedPage()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -55,7 +54,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TabbedPage Disconnects")]
 		public async Task TabbedViewHandlerDisconnects()
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, (handler) =>
@@ -69,7 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "BarBackground Color")]
 		public async Task BarBackgroundColor()
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.BarBackground = SolidColorBrush.Purple;
 
@@ -85,7 +82,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swapping Root Window Content for New Tabbed Page")]
 		public async Task SwapWindowContentForNewTabbedPage()
 		{
-			SetupBuilder();
 			var window = new Window()
 			{
 				Page = CreateBasicTabbedPage()
@@ -111,7 +107,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Bar Text Color")]
 		public async Task BarTextColor()
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.BarTextColor = Colors.Red;
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
@@ -130,7 +125,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Tab Title")]
 		public async Task TabTitle()
 		{
-			SetupBuilder();
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(CreateBasicTabbedPage(), handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
@@ -145,7 +139,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Selected/Unselected Color")]
 		public async Task SelectedAndUnselectedTabColor()
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
 
@@ -173,7 +166,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Adding and Removing Pages Propagates Correctly")]
 		public async Task AddingAndRemovingPagesPropagatesCorrectly()
 		{
-			SetupBuilder();
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(CreateBasicTabbedPage(), async handler =>
 			{
 				var navView = GetMauiNavigationView(handler.MauiContext);
@@ -197,12 +189,8 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Selected Item Changed Propagates to CurrentPage")]
 		public async Task SelectedItemChangedPropagatesToCurrentPage()
 		{
-			SetupBuilder();
-
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.Children.Add(new ContentPage());
-
-
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{

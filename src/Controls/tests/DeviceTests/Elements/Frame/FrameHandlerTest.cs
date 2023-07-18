@@ -1,12 +1,22 @@
 ﻿#if WINDOWS || ANDROID
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.DeviceTests
 {
 	[Category(TestCategory.Frame)]
 	public partial class FrameHandlerTest : HandlerTestBase<FrameHandlerTest.FrameRendererWithEmptyCtor, FrameStub>
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Frame, FrameHandlerTest.FrameRendererWithEmptyCtor>();
+					handlers.AddHandler<FrameStub, FrameHandlerTest.FrameRendererWithEmptyCtor>();
+				});
+
 		public FrameHandlerTest()
 		{
 

@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			formattedLabel.TextColor = expected;
 
-			await ValidateHasColor<LabelHandler>(formattedLabel, expected);
+			await ValidateHasColor(formattedLabel, expected);
 		}
 
 		[Fact(DisplayName = "Html Text Initializes Correctly")]

@@ -24,7 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Enabled Changes with push/pop")]
 		public async Task BackButtonEnabledChangesWithPushPop()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>
@@ -41,7 +40,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "App Title Bar Margin Sets when Back Button Visible")]
 		public async Task AppTitleBarMarginSetsWhenBackButtonVisible()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<NavigationViewHandler>(navPage, async (handler) =>

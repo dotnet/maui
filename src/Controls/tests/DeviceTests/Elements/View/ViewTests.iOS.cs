@@ -23,6 +23,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GestureRecognizersAttachToPlatformViewWhenNoContainerViewIsPresent()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Label, LabelHandler>()));
+
 			var view = new Label()
 			{
 				GestureRecognizers = { new TapGestureRecognizer() }
@@ -49,6 +53,10 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GestureRecognizersAttachToContainerViewWhenUsingContainerView()
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Label, LabelHandler>()));
+
 			var view = new Label()
 			{
 				Shadow = new Shadow(), // this results in a container view

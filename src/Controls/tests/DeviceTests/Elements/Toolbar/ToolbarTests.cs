@@ -25,31 +25,25 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Toolbar)]
 	public partial class ToolbarTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(Controls.Label), typeof(LabelHandler));
-					handlers.AddHandler(typeof(Controls.Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
-					handlers.AddHandler(typeof(Controls.NavigationPage), typeof(NavigationViewHandler));
+					handlers.AddHandler<Controls.Label, LabelHandler>();
+					handlers.AddHandler<Controls.Toolbar, ToolbarHandler>();
+					handlers.AddHandler<FlyoutPage, FlyoutViewHandler>();
+					handlers.AddHandler<Controls.NavigationPage, NavigationViewHandler>();
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Controls.Window, WindowHandlerStub>();
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
+					handlers.AddHandler<TabbedPage, TabbedViewHandler>();
 
-					SetupShellHandlers(handlers);
+					handlers.SetupShellHandlers();
 				});
-			});
-		}
-
 
 #if !IOS && !MACCATALYST
 		[Fact(DisplayName = "Toolbar Items Map Correctly")]
 		public async Task ToolbarItemsMapCorrectly()
 		{
-			SetupBuilder();
 			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
 			var navPage = new NavigationPage(new ContentPage()
 			{
@@ -69,7 +63,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Items Order Updates Correctly After Navigation")]
 		public async Task ToolbarItemsOrderUpdatesCorrectlyAfterNavigation()
 		{
-			SetupBuilder();
 			var toolbarItemFirstPage = new ToolbarItem() { Text = "Toolbar Item 1" };
 			var toolbarItemSecondPage = new ToolbarItem() { Text = "Toolbar Item Second Page", Order = ToolbarItemOrder.Secondary };
 
@@ -103,7 +96,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Title")]
 		public async Task ToolbarTitle()
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()
 			{
 				Title = "Page Title"
@@ -127,13 +119,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			string[] pageSet = pages.Split(',');
 
-			SetupBuilder();
 			Dictionary<ControlsPageTypesTestCase, Page> createdPages
 				= new Dictionary<ControlsPageTypesTestCase, Page>();
 
 			var nextPage = GetPage(pageSet[0]);
 			var window = new Window(nextPage);
-
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(window, async (handler) =>
 			{
@@ -187,7 +177,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(nameof(Shell))]
 		public async Task ToolbarRecreatesWithNewMauiContext(string type)
 		{
-			SetupBuilder();
 			Page page = null;
 
 			if (type == nameof(FlyoutPage))

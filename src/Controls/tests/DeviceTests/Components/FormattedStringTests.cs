@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Platform;
-using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Handlers;
 using Xunit;
 
@@ -11,6 +11,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Label)]
 	public partial class FormattedStringTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Label, LabelHandler>());
+
 		[Fact]
 		public async Task NativeFormattedStringContainsSpan()
 		{

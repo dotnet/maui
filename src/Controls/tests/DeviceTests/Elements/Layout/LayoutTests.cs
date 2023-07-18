@@ -13,20 +13,20 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Layout)]
 	public partial class LayoutTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Layout, LayoutHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
+				});
+
 		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task InputTransparentCorrectlyAppliedToPlatformView(bool inputTransparent)
 		{
-			EnsureHandlerCreated((builder) =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
-					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
-				});
-			});
-
 			var control = new Grid() { InputTransparent = inputTransparent, CascadeInputTransparent = false };
 			var child = new Button();
 			control.Add(child);
@@ -42,15 +42,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task InputTransparentUpdatesCorrectlyOnPlatformView(bool finalInputTransparent)
 		{
-			EnsureHandlerCreated((builder) =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
-					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
-				});
-			});
-
 			var control = new Grid() { InputTransparent = !finalInputTransparent, CascadeInputTransparent = false };
 			var child = new Button();
 			control.Add(child);

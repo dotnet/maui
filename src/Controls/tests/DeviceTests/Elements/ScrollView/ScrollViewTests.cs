@@ -16,11 +16,20 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ScrollView)]
 	public partial class ScrollViewTests : ControlsHandlerTestBase
 	{
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<ScrollView, ScrollViewHandler>());
+
 		[Theory]
 		[InlineData(ScrollOrientation.Vertical)]
 		[InlineData(ScrollOrientation.Both)]
 		public async Task TestContentSizeChangedHorizontal(ScrollOrientation orientation)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Label, LabelHandler>()));
+
 			var handler = await SetUpScrollView(orientation);
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
@@ -43,6 +52,10 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(ScrollOrientation.Both)]
 		public async Task TestContentSizeChangedVertical(ScrollOrientation orientation)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Label, LabelHandler>()));
+
 			var handler = await SetUpScrollView(orientation);
 			var scroll = handler.VirtualView as ScrollView;
 			var changed = WatchContentSizeChanged(scroll);
@@ -67,9 +80,12 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task TestScrollContentMargin(ScrollOrientation orientation, int verticalMargin,
 			int expectedHeight, int horizontalMargin, int expectedWidth)
 		{
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<Label, LabelHandler>()));
+
 			var handler = await SetUpScrollView(orientation, verticalMargin: verticalMargin, horizontalMargin: horizontalMargin);
 			var scroll = handler.VirtualView as ScrollView;
-
 
 			await AttachAndRun(scroll, async (handler) =>
 			{
@@ -81,7 +97,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ScrollView Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
-			SetupBuilder();
 			WeakReference viewReference = null;
 			WeakReference handlerReference = null;
 			WeakReference platformReference = null;
@@ -114,19 +129,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(viewReference.IsAlive, "View should not be alive!");
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
-		}
-
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<IScrollView, ScrollViewHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
-				});
-			});
 		}
 
 		static async Task AssertContentSizeChanged(Task<bool> changed)

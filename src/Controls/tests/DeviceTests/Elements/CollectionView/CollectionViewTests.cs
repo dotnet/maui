@@ -19,11 +19,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.CollectionView)]
 	public partial class CollectionViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
@@ -35,14 +33,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 				});
-			});
-		}
 
 		[Fact]
 		public async Task ItemsSourceDoesNotLeak()
 		{
-			SetupBuilder();
-
 			IList logicalChildren = null;
 			WeakReference weakReference = null;
 			var collectionView = new CollectionView
@@ -105,8 +99,6 @@ namespace Microsoft.Maui.DeviceTests
 			int[] itemCounts = new int[] { 1, 2, 12, 0 };
 
 			double tolerance = 1;
-
-			SetupBuilder();
 
 			var collectionView = new CollectionView
 			{
@@ -181,8 +173,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, true, true)]
 		public async Task CollectionViewStructuralItems(bool hasHeader, bool hasFooter, bool hasData)
 		{
-			SetupBuilder();
-
 			double containerHeight = 500;
 			double containerWidth = 500;
 			var layout = new Grid() { IgnoreSafeArea = true, HeightRequest = containerHeight, WidthRequest = containerWidth };

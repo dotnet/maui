@@ -187,14 +187,8 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task NestedLayoutsInRTLRemainOnScreen()
 		{
 			EnsureHandlerCreated((builder) =>
-			{
 				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
-					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
-					handler.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
-				});
-			});
+					handler.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler))));
 
 			var level0 = new Controls.ContentView() { FlowDirection = FlowDirection.RightToLeft };
 			var level1 = new Grid() { HorizontalOptions = LayoutOptions.End, WidthRequest = 200 };

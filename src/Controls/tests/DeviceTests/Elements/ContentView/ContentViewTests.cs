@@ -11,23 +11,18 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.ContentView)]
 	public partial class ContentViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<IContentView, ContentViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 				});
-			});
-		}
 
 		[Fact("ContentView updating it's ControlTemplate works")]
 		public async Task ControlTemplateUpdates()
 		{
-			SetupBuilder();
 			var child = new Label { Text = "Content 1" };
 			var contentView = new Microsoft.Maui.Controls.ContentView();
 			var header = new Label { Text = "Header" };
@@ -55,8 +50,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task PropagateContextCorrectly()
 		{
-			SetupBuilder();
-
 			var bindingContext = new object();
 
 			var child = new Label { Text = "Content 1" };
@@ -80,7 +73,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ContentView Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
-			SetupBuilder();
 			WeakReference viewReference = null;
 			WeakReference handlerReference = null;
 			WeakReference platformReference = null;

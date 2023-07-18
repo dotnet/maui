@@ -16,36 +16,27 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if IOS || MACCATALYST
+using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 
 	[Category(TestCategory.TabbedPage)]
 	public partial class TabbedPageTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder(Action<MauiAppBuilder> additionalCreationActions = null)
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-					handlers.AddHandler(typeof(Toolbar), typeof(ToolbarHandler));
-					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handlers.AddHandler<Toolbar, ToolbarHandler>();
 					handlers.AddHandler<Page, PageHandler>();
-					handlers.AddHandler<Label, LabelHandler>();
-
-#if IOS || MACCATALYST
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedRenderer));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationRenderer));
-#else
-					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
-					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
-#endif
+					handlers.AddHandler<TabbedPage, TabbedViewHandler>();
+					handlers.AddHandler<NavigationPage, NavigationViewHandler>();
 				});
-
-				additionalCreationActions?.Invoke(builder);
-			});
-		}
 
 #if !IOS && !MACCATALYST
 		// iOS currently can't handle recreating a handler if it's disconnecting
@@ -54,7 +45,9 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task DisconnectEachPageHandlerAfterNavigation(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Label, LabelHandler>()));
 
 			List<Page> navPages = new List<Page>();
 			var pageCount = 5;
@@ -95,7 +88,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task PoppingTabbedPageDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
 			var navPage = new NavigationPage(new ContentPage()) { Title = "App Page" };
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(navPage), async (handler) =>
@@ -109,8 +101,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
-
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
 			var firstPage = new NavigationPage(new ContentPage());
@@ -143,7 +133,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task SettingCurrentPageToNotBePositionZeroWorks(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 			var firstPage = new NavigationPage(new ContentPage());
 			tabbedPage.Children.Insert(0, firstPage);
@@ -161,7 +150,9 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task MovingBetweenMultiplePagesWithNestedNavigationPages(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handler =>
+					handler.AddHandler<Button, ButtonHandler>()));
 
 			var pages = new NavigationPage[5];
 
@@ -229,7 +220,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
-			SetupBuilder();
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 			var secondPage = new NavigationPage(new ContentPage()) { Title = "Second Page" };
 			tabbedPage.Children.Add(secondPage);
@@ -258,8 +248,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false)]
 		public async Task NavigatingAwayFromTabbedPageResizesContentPage(bool bottomTabs)
 		{
-			SetupBuilder();
-
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs);
 			var navPage = new NavigationPage(tabbedPage);
 
