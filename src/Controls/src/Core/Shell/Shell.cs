@@ -803,7 +803,6 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
-			//InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
 
 			if (Application.Current != null)
 			{
