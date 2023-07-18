@@ -5,7 +5,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.TabbedPageScrollConflictsPage"
     AutomationId="TabbedPageElement"
-    Title="TabbedPage scroll conflicts Gallery"
+    Title="TabbedPage ScrollConflicts Gallery"
     CurrentPageChanged="OnTabbedPageCurrentPageChanged">
     <ContentPage 
         AutomationId="Tab1Element" 
@@ -18,14 +18,14 @@
                     <HtmlWebViewSource>
                         <HtmlWebViewSource.Html>
                             <![CDATA[
-                <HTML>
-                <BODY>
-                <div style="overflow-x: scroll">
-    <div style="width: 3000px">Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test </div>
-</div>
-                </BODY>
-                </HTML>
-                ]]>
+                            <HTML>
+                            <BODY>
+                            <div style="overflow-x: scroll">
+                            <div style="width: 3000px">Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test </div>
+                            </div>
+                            </BODY>
+                            </HTML>
+                            ]]>
                         </HtmlWebViewSource.Html>
                     </HtmlWebViewSource>
                 </WebView.Source>
@@ -33,6 +33,7 @@
         </StackLayout>
     </ContentPage>
     <ContentPage 
+        AutomationId="Tab2Element" 
         Title="Tab2">
         <Grid 
             BackgroundColor="Red"/>
