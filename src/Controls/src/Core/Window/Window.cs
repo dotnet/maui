@@ -506,6 +506,7 @@ namespace Microsoft.Maui.Controls
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
+			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
 			Handler?.DisconnectHandler();
 		}
