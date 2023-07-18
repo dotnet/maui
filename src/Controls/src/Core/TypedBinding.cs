@@ -85,7 +85,11 @@ namespace Microsoft.Maui.Controls.Internals
 
 			_handlers = new PropertyChangedProxy[handlers.Length];
 			for (var i = 0; i < handlers.Length; i++)
+			{
+				if (handlers[i] is null)
+					continue;
 				_handlers[i] = new PropertyChangedProxy(handlers[i].Item1, handlers[i].Item2, this);
+			}
 		}
 
 		readonly WeakReference<object> _weakSource = new WeakReference<object>(null);
@@ -145,7 +149,11 @@ namespace Microsoft.Maui.Controls.Internals
 			if (handlers != null)
 			{
 				for (var i = 0; i < _handlers.Length; i++)
+				{
+					if (_handlers[i] == null)
+						continue;
 					handlers[i] = new Tuple<Func<TSource, object>, string>(_handlers[i].PartGetter, _handlers[i].PropertyName);
+				}
 			}
 			return new TypedBinding<TSource, TProperty>(_getter, _setter, handlers)
 			{
@@ -301,6 +309,8 @@ namespace Microsoft.Maui.Controls.Internals
 		{
 			for (var i = 0; i < _handlers.Length; i++)
 			{
+				if (_handlers[i] == null)
+					continue;
 				var part = _handlers[i].PartGetter(sourceObject);
 				if (part == null)
 					break;
@@ -314,7 +324,7 @@ namespace Microsoft.Maui.Controls.Internals
 		void Unsubscribe()
 		{
 			for (var i = 0; i < _handlers.Length; i++)
-				_handlers[i].Listener.Unsubscribe();
+				_handlers[i]?.Listener.Unsubscribe();
 		}
 	}
 }
