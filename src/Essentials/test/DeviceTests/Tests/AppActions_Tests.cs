@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 #if __ANDROID__
 			expectSupported = OperatingSystem.IsAndroidVersionAtLeast(25);
-#elif __IOS__
+#elif __IOS__ || WINDOWS
 			expectSupported = true;
 #endif
 

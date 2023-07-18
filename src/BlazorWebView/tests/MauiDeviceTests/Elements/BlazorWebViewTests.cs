@@ -59,7 +59,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			});
 		}
 
-		[Fact]
+		[Fact
+#if WINDOWS
+			(Skip = "Times out on CoreWebView2.DOMContentLoaded")
+#endif
+			]
 		public async Task BlazorWebViewLogsRequests()
 		{
 			var testLoggerProvider = new TestLoggerProvider();
@@ -104,7 +108,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 		}
 
 
-		[Fact]
+		[Fact
+#if WINDOWS
+			(Skip= "Times out on CoreWebView2.DOMContentLoaded")
+#endif
+			]
 		public async Task BlazorWebViewUsesStartPath()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
