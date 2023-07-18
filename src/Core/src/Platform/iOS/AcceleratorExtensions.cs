@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -8,25 +7,13 @@ namespace Microsoft.Maui.Platform
 {
 	internal static class AcceleratorExtensions
 	{
+		internal const string MenuItemSelectedSelector = "MenuItemSelected:";
+
 		internal static UIMenuElement CreateMenuItem(this IMenuFlyoutItem virtualView, IMauiContext mauiContext)
 		{
-			int index = MenuFlyoutItemHandler.menus.Count;
-			UIImage? uiImage = virtualView.Source.GetPlatformMenuImage(mauiContext);
-			var selector = new Selector($"MenuItem{index}:");
-
-			bool selectorFound =
-				MauiUIApplicationDelegate.Current.RespondsToSelector(selector);
-
-			if (!selectorFound)
-			{
-				throw new InvalidOperationException(
-					$"By default we only support 50 MenuItems. You can add more by adding the following code to {MauiUIApplicationDelegate.Current.GetType()}\n\n" +
-					$"[Export(\"MenuItem{index}: \")]\n" +
-					$"internal void MenuItem{index}(UICommand uICommand)\n" +
-					"{\n" +
-					"	uICommand.SendClicked();\n" +
-					"}");
-			}
+			var index = MenuFlyoutItemHandler.menus.Count;
+			var uiImage = virtualView.Source.GetPlatformMenuImage(mauiContext);
+			var selector = new Selector(MenuItemSelectedSelector);
 
 			var accelerator = virtualView.Accelerators?[0];
 			if (accelerator is null)
@@ -35,9 +22,8 @@ namespace Microsoft.Maui.Platform
 			var key = accelerator.Key;
 			var modifiers = accelerator.Modifiers;
 
-			UIKeyModifierFlags modifierFlags = 0;
-
 			// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
+			UIKeyModifierFlags modifierFlags = 0;
 			if (modifiers is not null && modifiers.Count > 0)
 			{
 				foreach (var modifier in modifiers)
@@ -91,6 +77,7 @@ namespace Microsoft.Maui.Platform
 				new NSString(index.ToString()));
 
 			MenuFlyoutItemHandler.menus[index] = virtualView;
+
 			return command;
 		}
 	}
