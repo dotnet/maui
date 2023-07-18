@@ -676,37 +676,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			ClearContainerEventHandlers();
 			UpdateDragAndDropGestureRecognizers();
-
-			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
-			IList<TapGestureRecognizer>? childGestures =
-				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
-
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any()
-				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
-			{
-				_container.Tapped += OnTap;
-				_container.RightTapped += OnTap;
-			}
-			else
-			{
-				if (_control != null && PreventGestureBubbling)
-				{
-					_control.Tapped += HandleTapped;
-				}
-			}
-
-			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any()
-				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
-			{
-				_container.DoubleTapped += OnTap;
-			}
-			else
-			{
-				if (_control != null && PreventGestureBubbling)
-				{
-					_control.DoubleTapped += HandleDoubleTapped;
-				}
-			}
+			UpdateTapGestureRecognizers(view, gestures);
 
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
@@ -739,6 +709,61 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.PointerExited += OnPointerExited;
 			_container.PointerReleased += OnPointerReleased;
 			_container.PointerCanceled += OnPointerCanceled;
+		}
+
+		private void UpdateTapGestureRecognizers(View? view, IList<IGestureRecognizer>? gestures)
+		{
+			if (_container == null || gestures == null)
+				return;
+
+			if (view == null)
+				return;
+
+			var children = (view as IGestureController)?.GetChildElements(Point.Zero);
+			IList<TapGestureRecognizer>? childGestures =
+				children?.GetChildGesturesFor<TapGestureRecognizer>().ToList();
+
+			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any()
+				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1).Any() == true)
+			{
+				_container.Tapped += OnTap;
+				_container.RightTapped += OnTap;
+			}
+			else
+			{
+				if (_control != null && PreventGestureBubbling)
+				{
+					_control.Tapped += HandleTapped;
+				}
+			}
+
+			if (gestures.GetGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any()
+				|| children?.GetChildGesturesFor<TapGestureRecognizer>(g => g.NumberOfTapsRequired == 1 || g.NumberOfTapsRequired == 2).Any() == true)
+			{
+				_container.DoubleTapped += OnTap;
+			}
+			else
+			{
+				if (_control != null && PreventGestureBubbling)
+				{
+					_control.DoubleTapped += HandleDoubleTapped;
+				}
+			}
+
+			if (view.TapGestureRecognizerNeedsDelegate())
+			{
+				//UI.Xaml.Automation.AutomationProperties.SetAccessibilityView(_container, UI.Xaml.Automation.Peers.AccessibilityView.Content);
+				_container.IsTabStop = true;
+				_container.IsHitTestVisible = true;
+				_container.KeyDown += _container_KeyDown;
+			}
+		}
+
+		private void _container_KeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key == global::Windows.System.VirtualKey.Enter ||
+				e.Key == global::Windows.System.VirtualKey.Space)
+				OnTap(sender, e);
 		}
 
 		void HandleTapped(object sender, TappedRoutedEventArgs tappedRoutedEventArgs)
