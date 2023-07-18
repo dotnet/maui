@@ -306,6 +306,7 @@ namespace Microsoft.Maui.Platform
 				platformView.Height = platformView.Width = double.NaN;
 				platformView.FallbackIconSource = fallbackIconSource;
 			}
+			else
 			{
 				// Fallback to the default hamburger icon
 				// https://github.com/microsoft/microsoft-ui-xaml/blob/a7183df20367bc0e2b8c825430597a5c1e6871b6/dev/NavigationView/NavigationView_rs1_themeresources.xaml#L389-L391
