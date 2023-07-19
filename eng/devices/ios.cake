@@ -294,10 +294,10 @@ void SetupAppPackageNameAndResult()
 		if(apps.Count == 0)
 		{
 			//exception for ControlGallery AppCenter UITests
-			binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK);
+			binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine("ios-arm64").FullPath;
 			Information("New BinDir: {0}", binDir);
 
-			apps = GetDirectories(binDir.FullPath + "**/*.app");
+			apps = GetDirectories(binDir + "**/*.app");
 			if(apps.Count == 0)
 			{
 				throw new Exception("No app was found in the bin directory.");
