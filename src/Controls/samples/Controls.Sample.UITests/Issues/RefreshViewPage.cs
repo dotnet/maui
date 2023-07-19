@@ -6,7 +6,6 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues
 {
-
 	[Issue(IssueTracker.None, 0, "Refresh View Tests", PlatformAffected.All)]
 	public class RefreshViewPage : TestContentPage
 	{
