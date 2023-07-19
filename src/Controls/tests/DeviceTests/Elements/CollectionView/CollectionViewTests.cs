@@ -140,16 +140,17 @@ namespace Microsoft.Maui.DeviceTests
 					GenerateItems(itemsCount, data);
 					collectionView.ItemsSource = data;
 
-					await WaitForUIUpdate(frame, collectionView);
+					if (n == 0)
+					{
+						await AssertionExtensions.Wait(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
+					}
+					else
+					{
+						await WaitForUIUpdate(frame, collectionView);
+					}
+
 					frame = collectionView.Frame;
 
-#if WINDOWS || ANDROID
-					// On Windows, the ListView pops in and changes the frame, then actually
-					// loads in the data, which updates it again. So we need to wait for the second
-					// update before checking the size
-					await WaitForUIUpdate(frame, collectionView);
-					frame = collectionView.Frame;
-#endif
 					double expectedWidth = layoutOptions == LayoutOptions.Fill
 						? containerWidth
 						: Math.Min(itemsCount * templateWidth, containerWidth);
