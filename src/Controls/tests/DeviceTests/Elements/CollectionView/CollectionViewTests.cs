@@ -137,11 +137,11 @@ namespace Microsoft.Maui.DeviceTests
 					await WaitForUIUpdate(frame, collectionView);
 					frame = collectionView.Frame;
 
-					double expectedWidth = layoutOptions == LayoutOptions.Fill
+					double expectedWidth = layoutOptions.Alignment == LayoutAlignment.Fill
 						? containerWidth
 						: Math.Min(itemsCount * templateWidth, containerWidth);
 
-					double expectedHeight = layoutOptions == LayoutOptions.Fill
+					double expectedHeight = layoutOptions.Alignment == LayoutAlignment.Fill
 						? containerHeight
 						: Math.Min(itemsCount * templateHeight, containerHeight);
 
