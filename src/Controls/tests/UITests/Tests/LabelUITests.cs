@@ -34,6 +34,8 @@ public class LabelUITests : _ViewUITests
 		var textBeforeClick = remote.GetEventLabel().Text;
 		Assert.AreEqual("Event: SpanTapped (none)", textBeforeClick);
 
+		// TODO: This will probably fail on desktops because the tap is in screen coordinates and the
+		//       view seems to either be in window or parent coordinates.
 		var r = remote.GetView().Rect;
 		App.TapCoordinates(r.X + (r.Height * 3), r.CenterY); // 3 "heights" in from the left
 
