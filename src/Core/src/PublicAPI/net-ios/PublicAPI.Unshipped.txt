@@ -1,2 +1,3 @@
 #nullable enable
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
+override Microsoft.Maui.Platform.MauiView.SafeAreaInsetsDidChange() -> void
