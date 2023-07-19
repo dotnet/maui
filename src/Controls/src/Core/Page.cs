@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IView, ITitledElement, IToolbarElement, ISafeAreaView2
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
