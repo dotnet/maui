@@ -21,6 +21,13 @@ public class LabelUITests : _ViewUITests
 	[Test]
 	public void SpanTapped()
 	{
+		if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
+			UITestContext.TestConfig.TestDevice == TestDevice.iOS ||
+			UITestContext.TestConfig.TestDevice == TestDevice.Windows)
+		{
+			Assert.Ignore("This test is failing on iOS/Mac Catalyst/Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
+		}
+
 		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped, PlatformViewType);
 		remote.GoTo();
 
