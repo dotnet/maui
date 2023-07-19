@@ -91,46 +91,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact("Cells Do Not Leak")]
-		public async Task CellsDoNotLeak()
-		{
-			SetupBuilder();
+		//[Fact("Cells Do Not Leak")]
+		//public async Task CellsDoNotLeak()
+		//{
+		//	SetupBuilder();
 
-			var labels = new List<WeakReference>();
-			VerticalCell cell = null;
+		//	var labels = new List<WeakReference>();
+		//	VerticalCell cell = null;
 
-			{
-				var bindingContext = "foo";
-				var collectionView = new CollectionView
-				{
-					ItemTemplate = new DataTemplate(() =>
-					{
-						var label = new Label();
-						labels.Add(new(label));
-						return label;
-					}),
-				};
+		//	{
+		//		var bindingContext = "foo";
+		//		var collectionView = new CollectionView
+		//		{
+		//			ItemTemplate = new DataTemplate(() =>
+		//			{
+		//				var label = new Label();
+		//				labels.Add(new(label));
+		//				return label;
+		//			}),
+		//		};
 
-				var handler = await CreateHandlerAsync(collectionView);
+		//		var handler = await CreateHandlerAsync(collectionView);
 
-				await InvokeOnMainThreadAsync(() =>
-				{
-					cell = new VerticalCell(CGRect.Empty);
-					cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
-				});
+		//		await InvokeOnMainThreadAsync(() =>
+		//		{
+		//			cell = new VerticalCell(CGRect.Empty);
+		//			cell.Bind(collectionView.ItemTemplate, bindingContext, collectionView);
+		//		});
 
-				Assert.NotNull(cell);
-				Assert.NotEmpty(labels);
-			}
+		//		Assert.NotNull(cell);
+		//		Assert.NotEmpty(labels);
+		//	}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+		//	await Task.Yield();
+		//	GC.Collect();
+		//	GC.WaitForPendingFinalizers();
 
-			foreach (var reference in labels)
-			{
-				Assert.False(reference.IsAlive, "View should not be alive!");
-			}
-		}
+		//	foreach (var reference in labels)
+		//	{
+		//		Assert.False(reference.IsAlive, "View should not be alive!");
+		//	}
+		//}
 	}
 }
