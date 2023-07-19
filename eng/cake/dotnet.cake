@@ -169,7 +169,11 @@ Task("dotnet-legacy-controlgallery")
 Task("dotnet-legacy-controlgallery-ios")
     .Does(() =>
     {
-        var properties = new Dictionary<string, string>();
+        var properties = new Dictionary<string, string>()
+        {
+                //this is needed to run locally on simulator
+                ["RuntimeIdentifier"] = "iossimulator-x64"
+        };
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/iOS/Compatibility.ControlGallery.iOS.csproj", properties, binlogPrefix: "controlgallery-ios-");
     });
 
