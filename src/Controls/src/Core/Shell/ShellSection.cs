@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls
 		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, Items);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 		#endregion
 
@@ -1214,8 +1214,6 @@ namespace Microsoft.Maui.Controls
 				return ShellNavigationManager.GetNavigationState(shellItem, shellSection, shellContent, stack, modalStack);
 			}
 		}
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList();
 
 #nullable enable
 		// This code only runs for shell bits that are running through a proper

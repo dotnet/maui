@@ -1,8 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -19,6 +21,30 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(editor, () => editor.Text, GetNativeText, editor.Text);
+		}
+
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			CustomEditorHandler.TestMapper = new PropertyMapper<IEditor, IEditorHandler>(EditorHandler.Mapper)
+			{
+				// this mapper is run first and then the ones in the ctor arg (EditorHandler.Mapper)
+				[nameof(IEditor.Keyboard)] = EditorHandler.MapKeyboard
+			};
+
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<EditorStub, CustomEditorHandler>()));
+
+			var editor = new EditorStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			await ValidatePropertyInitValue<string>(editor, () => editor.Text, GetNativeText, editor.Text);
+		
+			var handler = Assert.IsType<CustomEditorHandler>(editor.Handler);
+			Assert.True(handler._mapper.GetKeys().First() == "Keyboard", "Keyboard was not first in the list.");
 		}
 
 		[Theory(DisplayName = "Text Updates Correctly")]
@@ -514,6 +540,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(EditorHandler editorHandler, int position) =>
 				EditorHandlerTests.UpdateCursorStartPosition(editorHandler, position);
+		}
+
+		class CustomEditorHandler : EditorHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<IEditor, IEditorHandler> TestMapper = new(Mapper);
+			public static CommandMapper<IEditor, IEditorHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomEditorHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
 		}
 	}
 }

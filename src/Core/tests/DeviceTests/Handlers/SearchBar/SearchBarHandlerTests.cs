@@ -1,7 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -39,6 +41,30 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Text, GetNativeText, searchBar.Text);
+		}
+
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			CustomSearchBarHandler.TestMapper = new PropertyMapper<ISearchBar, ISearchBarHandler>(SearchBarHandler.Mapper)
+			{
+				// this mapper is run first and then the ones in the ctor arg (SearchBarHandler.Mapper)
+				[nameof(ISearchBar.Keyboard)] = SearchBarHandler.MapKeyboard
+			};
+
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<SearchBarStub, CustomSearchBarHandler>()));
+
+			var searchBar = new SearchBarStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			await ValidatePropertyInitValue<string>(searchBar, () => searchBar.Text, GetNativeText, searchBar.Text);
+
+			var handler = Assert.IsType<CustomSearchBarHandler>(searchBar.Handler);
+			Assert.True(handler._mapper.GetKeys().First() == "Keyboard", "Keyboard was not first in the list.");
 		}
 
 		[Theory(DisplayName = "Query Text Updates Correctly")]
@@ -451,5 +477,18 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 #endif
+
+		class CustomSearchBarHandler : SearchBarHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<ISearchBar, ISearchBarHandler> TestMapper = new(Mapper);
+			public static CommandMapper<ISearchBar, ISearchBarHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomSearchBarHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
+		}
 	}
 }

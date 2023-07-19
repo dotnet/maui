@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.Equal(1, unloaded);
 				});
 
-				await Task.Delay(1000);
+				await AssertionExtensions.Wait(() => loaded == 2 && unloaded == 2);
 
 				Assert.Equal(2, loaded);
 				Assert.Equal(2, unloaded);
@@ -162,6 +162,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					await navPage.PopAsync();
 
+					await AssertionExtensions.Wait(() => loaded == 1 && unloaded == 1);
 					Assert.Equal(1, loaded);
 					Assert.Equal(1, unloaded);
 				});

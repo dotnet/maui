@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -118,7 +119,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 
-			timeOut ??= TimeSpan.FromSeconds(15);
+			if (System.Diagnostics.Debugger.IsAttached)
+				timeOut ??= TimeSpan.FromHours(1);
+			else
+				timeOut ??= TimeSpan.FromSeconds(15);
 
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -352,12 +356,13 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
+				await Task.Yield();
 				source.TrySetResult();
 			}
 			else
@@ -375,15 +380,16 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Loaded += loaded;
 			}
 
-			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
 		}
 
-		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
+				await Task.Yield();
 				source.TrySetResult();
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
@@ -408,7 +414,7 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Unloaded += unloaded;
 			}
 
-			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
 		}
 
 		// Modal Page's appear to currently not fire loaded/unloaded
