@@ -72,11 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 			});
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.NotNull(weakReference);
+			await AssertionExtensions.WaitForGC(weakReference);
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
 			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
