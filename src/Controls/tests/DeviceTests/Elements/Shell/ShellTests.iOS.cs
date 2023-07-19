@@ -31,6 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
 			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
 
+			pageWithTopTabs.On<iOS>().SetUseSafeArea(true);
+			pageWithoutTopTabs.On<iOS>().SetUseSafeArea(true);
+
 			var mainTab1 = new Tab()
 			{
 				Items =
