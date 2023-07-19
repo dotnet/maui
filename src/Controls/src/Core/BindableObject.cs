@@ -264,17 +264,12 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnBindingContextChanged()
 		{
 			BindingContextChanged?.Invoke(this, EventArgs.Empty);
+
 			if (Shell.GetBackButtonBehavior(this) is BackButtonBehavior buttonBehavior)
 				SetInheritedBindingContext(buttonBehavior, BindingContext);
 
 			if (Shell.GetSearchHandler(this) is SearchHandler searchHandler)
 				SetInheritedBindingContext(searchHandler, BindingContext);
-
-			if (Shell.GetTitleView(this) is View titleView)
-				SetInheritedBindingContext(titleView, BindingContext);
-
-			if (FlyoutBase.GetContextFlyout(this) is BindableObject contextFlyout)
-				SetInheritedBindingContext(contextFlyout, BindingContext);
 		}
 
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

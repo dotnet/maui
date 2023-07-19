@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var page = await PopModalPlatformAsync(animated);
-					page.Parent = null;
+					page.Parent?.RemoveLogicalChild(page);
 					syncAgain = true;
 				}
 
@@ -234,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform
 				(isPlatformReady && !syncing) ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
-			modal.Parent = null;
+			modal.Parent?.RemoveLogicalChild(modal);
 			_window.OnModalPopped(modal);
 
 			if (FireLifeCycleEvents)
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var previousPage = CurrentPage;
 			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
-			modal.Parent = _window;
+			_window.AddLogicalChild(modal);
 
 			if (FireLifeCycleEvents)
 			{

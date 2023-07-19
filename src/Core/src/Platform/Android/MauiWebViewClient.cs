@@ -7,13 +7,14 @@ namespace Microsoft.Maui.Platform
 	public class MauiWebViewClient : WebViewClient
 	{
 		WebNavigationResult _navigationResult;
-		WebViewHandler? _handler;
+		WeakReference<WebViewHandler?> _handler;
 		string? _lastUrlNavigatedCancel;
 
 		public MauiWebViewClient(WebViewHandler handler)
 		{
-			_handler = handler ?? throw new ArgumentNullException(nameof(handler));
+			_ = handler ?? throw new ArgumentNullException(nameof(handler));
 
+			_handler = new WeakReference<WebViewHandler?>(handler);
 			_navigationResult = WebNavigationResult.Success;
 		}
 		public override bool ShouldOverrideUrlLoading(WebView? view, IWebResourceRequest? request)
@@ -21,20 +22,20 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageStarted(WebView? view, string? url, Bitmap? favicon)
 		{
-			if (_handler?.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
+			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || url == WebViewHandler.AssetBaseUrl)
 				return;
 
 			if (!string.IsNullOrWhiteSpace(url))
 			{
-				_handler.SyncPlatformCookiesToVirtualView(url);
+				handler.SyncPlatformCookiesToVirtualView(url);
 			}
 
 			var cancel = false;
 
-			if (!GetValidUrl(url).Equals(_handler.UrlCanceled, StringComparison.OrdinalIgnoreCase))
+			if (!GetValidUrl(url).Equals(handler.UrlCanceled, StringComparison.OrdinalIgnoreCase))
 				cancel = NavigatingCanceled(url);
 
-			_handler.UrlCanceled = null;
+			handler.UrlCanceled = null;
 
 			if (cancel)
 			{
@@ -50,19 +51,19 @@ namespace Microsoft.Maui.Platform
 
 		public override void OnPageFinished(WebView? view, string? url)
 		{
-			if (_handler?.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
+			if (!_handler.TryGetTarget(out var handler) || handler.VirtualView == null || string.IsNullOrWhiteSpace(url) || url == WebViewHandler.AssetBaseUrl)
 				return;
 
 			bool navigate = _navigationResult != WebNavigationResult.Failure || !GetValidUrl(url).Equals(_lastUrlNavigatedCancel, StringComparison.OrdinalIgnoreCase);
 			_lastUrlNavigatedCancel = _navigationResult == WebNavigationResult.Cancel ? url : null;
 
 			if (navigate)
-				_handler.VirtualView.Navigated(_handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
+				handler.VirtualView.Navigated(handler.CurrentNavigationEvent, GetValidUrl(url), _navigationResult);
 
-			_handler.SyncPlatformCookiesToVirtualView(url);
+			handler.SyncPlatformCookiesToVirtualView(url);
 
-			if (_handler != null)
-				_handler.PlatformView.UpdateCanGoBackForward(_handler.VirtualView);
+			if (handler != null)
+				handler.PlatformView.UpdateCanGoBackForward(handler.VirtualView);
 
 			base.OnPageFinished(view, url);
 		}
@@ -70,7 +71,7 @@ namespace Microsoft.Maui.Platform
 		[System.Runtime.Versioning.SupportedOSPlatform("android23.0")]
 		public override void OnReceivedError(WebView? view, IWebResourceRequest? request, WebResourceError? error)
 		{
-			if (request != null && request.Url?.ToString() == _handler?.PlatformView.Url)
+			if (request != null && _handler.TryGetTarget(out var handler) && request.Url?.ToString() == handler?.PlatformView.Url)
 			{
 				_navigationResult = WebNavigationResult.Failure;
 
@@ -81,7 +82,8 @@ namespace Microsoft.Maui.Platform
 			base.OnReceivedError(view, request, error);
 		}
 
-		bool NavigatingCanceled(string? url) => _handler?.NavigatingCanceled(url) ?? true;
+		bool NavigatingCanceled(string? url) =>
+			!_handler.TryGetTarget(out var handler) || handler.NavigatingCanceled(url);
 
 		string GetValidUrl(string? url)
 		{
@@ -101,7 +103,7 @@ namespace Microsoft.Maui.Platform
 
 		internal void Disconnect()
 		{
-			_handler = null;
+			_handler.SetTarget(null);
 		}
 	}
 }
