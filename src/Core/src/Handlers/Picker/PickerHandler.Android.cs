@@ -5,13 +5,14 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
+using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
 using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class PickerHandler : ViewHandler<IPicker, MauiPicker>
 	{
-		AlertDialog? _dialog;
+		AppCompatAlertDialog? _dialog;
 
 		protected override MauiPicker CreatePlatformView() =>
 			new MauiPicker(Context);
@@ -108,7 +109,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (_dialog == null && VirtualView != null)
 			{
-				using (var builder = new AlertDialog.Builder(Context))
+				using (var builder = new AppCompatAlertDialog.Builder(Context))
 				{
 					if (VirtualView.TitleColor == null)
 					{

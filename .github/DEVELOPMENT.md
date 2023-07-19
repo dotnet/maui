@@ -2,45 +2,51 @@
 
 This page contains steps to build and run the .NET MAUI repository from source. If you are looking to build apps with .NET MAUI please head over to the links in the [README](https://github.com/dotnet/maui/blob/main/README.md) to get started.
 
-## Requirements
-
-### Visual Studio
+## Visual Studio
 Follow the instructions here to install .NET MAUI with Visual Studio Stable:
    - [Windows](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vswin)
       - Select the 20348 SDK option inside Individual Components or [install 20348 manually](https://go.microsoft.com/fwlink/?linkid=2164145)
       - If you know you have 20348 installed but are still getting an error around this SDK missing, trying uninstalling and reinstalling the SDK.
    - [macOS](https://learn.microsoft.com/dotnet/maui/get-started/installation?tabs=vsmac)  
    
-### iOS / MacCatalyst
+## iOS / MacCatalyst
 
 iOS and MacCatalyst will require current stable Xcode. You can get this [here](https://developer.apple.com/download/more/?name=Xcode).
 
-### Android
+## Android
 
 If you're missing any of the Android SDKs, Visual Studio should prompt you to install them. If it doesn't prompt you then use the [Android SDK Manager](https://learn.microsoft.com/xamarin/android/get-started/installation/android-sdk) to install the necessary SDKs.
 
-### Opening the Repository
+## Building the Build Tasks
+Before opening the solution in Visual Studio you **MUST** build the build tasks. You have two options:
 
-```dotnetcli
-dotnet tool restore
-dotnet cake --target=VS --workloads=global
-```
+- Do this to build the build tasks and launch Visual Studio, automatically opening the default solution:
 
-*NOTE*: Intellisense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having intellisense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
+   ```dotnetcli
+   dotnet tool restore
+   dotnet cake --target=VS --workloads=global
+   ```
 
-#### MacOS
+   *NOTE*: `--workloads=global` means use the normal (globally installed) .NET workloads.
 
-All of the above cake commands should work fine on `MacOS`.
+- OR do this to just build the build tasks. You can then launch Visual Studio manually and open the solution of your choosing:
 
-#### Solutions
+   ```dotnetcli
+   dotnet tool restore
+   dotnet build ./Microsoft.Maui.BuildTasks.slnf
+   ```
+
+## Available Solutions
 - Microsoft.Maui.sln
   - Kitchen sink solution. This includes all of the `Compatibility` projects and all of the platforms that we compile for. It is very unlikely you will need to use this solution for development. 
 - Microsoft.Maui-dev.sln
   - `Microsoft.Maui.sln` but without the `Compatibility` projects. Because we can't detect solution filters inside `MSBuild` we had to create a separate `sln` without the `Compatibility` projects. 
-- Microsoft.Maui-mac.slnf
-  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out
 - Microsoft.Maui-windows.slnf
-  - `Microsoft.Maui-dev.sln` with all of the targets you can't build on `Windows` removed (GTK/Catalyst).
+  - `Microsoft.Maui-dev.sln` with all of the targets you can't build on `Windows` removed (GTK/Catalyst). Default solution on Windows.
+- Microsoft.Maui-mac.slnf
+  - `Microsoft.Maui-dev.sln` with all of the `Windows` targets filtered out. Default solution on Mac.
+
+*NOTE*: IntelliSense takes a decent amount of time to fully process your solution. It will eventually work through all the necessary tasks. If you are having IntelliSense issues, usually unloading/reloading the `maui.core` and `maui.controls` projects will resolve. 
 
 ## What branch should I use?
 - main
@@ -55,6 +61,7 @@ Always use main no matter what you are working on or where you are hoping your c
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
+│   │   ├── Controls.Sample.UITests
 ├── Essentials 
 │   ├── samples
 │   │   ├── Essentials.Sample
@@ -66,6 +73,7 @@ Always use main no matter what you are working on or where you are hoping your c
 
 - *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
 - *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
+- *Contols.Sample.UITests*: Sample used for the automated UI tests
 - *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
 
 ### Device Test Projects
@@ -91,6 +99,16 @@ These are tests that will run on an actual device
 - *Core.DeviceTests*: .NET MAUI Core Visual Runner for running device based xunit tests. This is for tests that don't require any MAUI Controls based features
 - *Essentials.DeviceTests*: Visual Runner running all the .NET MAUI essentials xunit tests.
 - *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
+
+### UI Test Projects
+
+These are tests used for exercising the UI through accessibility layers to simulate user interactions
+
+```
+├──  Controls
+│    ├── tests
+│    │   ├── UITests
+```
 
 ### Unit Test Projects
 
@@ -174,7 +192,7 @@ public static int foo = 2130771968;
 
 ### Compile using a local `bin\dotnet`
 
-This method ensures that the workloads installed by Visual Studio won't get changed. This is usually the best method to use if you want to preserve the global state of your machine. This method will also use the versions that are specific to the branch you are on which is a good way to ensure compatibility.
+This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
 
 #### Cake
 
