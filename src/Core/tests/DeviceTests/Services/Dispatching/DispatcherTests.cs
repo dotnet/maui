@@ -219,12 +219,12 @@ namespace Microsoft.Maui.DeviceTests
 				var dispatcher = Dispatcher.GetForCurrentThread();
 				var timer = dispatcher.CreateTimer();
 				using var disposer = new TimerDisposer(timer);
-				
+
 				Assert.False(timer.IsRunning);
-				
+
 				timer.Interval = TimeSpan.FromMilliseconds(200);
 				timer.IsRepeating = false;
-				
+
 				timer.Tick += (_, _) => { };
 				timer.Start();
 

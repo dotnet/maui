@@ -545,7 +545,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					}
 					else
 						previousPartTypeRef.ResolveCached(context.Cache);
-					
+
 				}
 			}
 			return properties;
@@ -580,7 +580,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				if (indexArg != null)
 				{
 					if (property == null && int.TryParse(indexArg, out int index)) //array
-						yield return Create(Ldc_I4, index);							
+						yield return Create(Ldc_I4, index);
 					else
 					{
 						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
