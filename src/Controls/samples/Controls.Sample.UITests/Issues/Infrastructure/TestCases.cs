@@ -13,9 +13,10 @@ namespace Maui.Controls.Sample
 		{
 			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
-			bool _filterBugzilla;
+			bool _filterMauiGitHub;
+			bool _filterFormsGitHub;
+			bool _filterFormsBugzilla;
 			bool _filterNone;
-			bool _filterGitHub;
 			string _filter;
 
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
@@ -190,11 +191,14 @@ namespace Maui.Controls.Sample
 			{
 				switch (tracker)
 				{
-					case IssueTracker.Github:
-						_filterGitHub = !_filterGitHub;
+					case IssueTracker.Maui_GitHub:
+						_filterMauiGitHub = !_filterMauiGitHub;
 						break;
-					case IssueTracker.Bugzilla:
-						_filterBugzilla = !_filterBugzilla;
+					case IssueTracker.XamarinForms_GitHub:
+						_filterFormsGitHub = !_filterFormsGitHub;
+						break;
+					case IssueTracker.XamarinForms_Bugzilla:
+						_filterFormsBugzilla = !_filterFormsBugzilla;
 						break;
 					case IssueTracker.None:
 						_filterNone = !_filterNone;
@@ -231,22 +235,33 @@ namespace Maui.Controls.Sample
 
 				var issueCells = Enumerable.Empty<TextCell>();
 
-				if (!_filterBugzilla)
+				if (!_filterFormsBugzilla)
 				{
 					var bugzillaIssueCells =
 						from issueModel in _issues
-						where issueModel.IssueTracker == IssueTracker.Bugzilla && issueModel.Matches(filter)
+						where issueModel.IssueTracker == IssueTracker.XamarinForms_Bugzilla && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending
 						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
 
 					issueCells = issueCells.Concat(bugzillaIssueCells);
 				}
 
-				if (!_filterGitHub)
+				if (!_filterFormsGitHub)
 				{
 					var githubIssueCells =
 						from issueModel in _issues
-						where issueModel.IssueTracker == IssueTracker.Github && issueModel.Matches(filter)
+						where issueModel.IssueTracker == IssueTracker.XamarinForms_GitHub && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(githubIssueCells);
+				}
+
+				if (!_filterMauiGitHub)
+				{
+					var githubIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.Maui_GitHub && issueModel.Matches(filter)
 						orderby issueModel.IssueNumber descending
 						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
 
@@ -371,15 +386,20 @@ namespace Maui.Controls.Sample
 				HorizontalOptions = LayoutOptions.Fill
 			};
 
-			var bzSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla" });
-			trackerFilterLayout.Children.Add(bzSwitch);
-			bzSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Bugzilla);
+			var mghSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "MAUI GH" });
+			trackerFilterLayout.Children.Add(mghSwitch);
+			mghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Maui_GitHub);
 
 			var ghSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "GitHub" });
+			trackerFilterLayout.Children.Add(new Label { Text = "XF GH" });
 			trackerFilterLayout.Children.Add(ghSwitch);
-			ghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Github);
+			ghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.XamarinForms_GitHub);
+
+			var bzSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "XF BZ" });
+			trackerFilterLayout.Children.Add(bzSwitch);
+			bzSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.XamarinForms_Bugzilla);
 
 			var noneSwitch = new Switch { IsToggled = true };
 			trackerFilterLayout.Children.Add(new Label { Text = "None" });

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace Maui.Controls.Sample
 {
@@ -35,6 +36,9 @@ namespace Maui.Controls.Sample
 
 		public IssueTracker IssueTracker { get; }
 
+		public string IssueTrackerKey =>
+			string.Concat(IssueTracker.ToString().Split("_").Select(x => x[..1]));
+
 		public int IssueNumber { get; }
 
 		public int IssueTestNumber { get; }
@@ -46,7 +50,7 @@ namespace Maui.Controls.Sample
 		public NavigationBehavior NavigationBehavior { get; }
 
 		public string DisplayName => IssueTestNumber == 0
-			? $"{IssueTracker.ToString().Substring(0, 1)}{IssueNumber}"
-			: $"{IssueTracker.ToString().Substring(0, 1)}{IssueNumber} ({IssueTestNumber})";
+			? $"{IssueTrackerKey}{IssueNumber}"
+			: $"{IssueTrackerKey}{IssueNumber} ({IssueTestNumber})";
 	}
 }

@@ -7,6 +7,7 @@ using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.MultiTouch;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xamarin.UITest;
@@ -666,7 +667,8 @@ namespace TestUtils.Appium.UITests
 
 		public void TapCoordinates(float x, float y)
 		{
-			throw new NotImplementedException();
+			var ta = new TouchAction(_driver);
+			ta.Tap(x, y).Perform();
 		}
 
 		public void TouchAndHold(Func<AppQuery, AppQuery> query)
@@ -686,7 +688,24 @@ namespace TestUtils.Appium.UITests
 
 		public void WaitFor(Func<bool> predicate, string timeoutMessage = "Timed out waiting...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			throw new NotImplementedException();
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			timeoutMessage ??= "Timed out on query.";
+
+			DateTime start = DateTime.Now;
+
+			while (!predicate())
+			{
+				var elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+
+					throw new TimeoutException(timeoutMessage);
+				}
+
+				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+			}
 		}
 
 		public AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
