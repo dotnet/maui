@@ -4,7 +4,7 @@ using Microsoft.Maui.Controls;
 namespace Maui.Controls.Sample
 {
 	internal class EventViewContainer<T> : ViewContainer<T>
-	where T : View
+		where T : View
 	{
 		string _formsMember;
 		Label _eventLabel;

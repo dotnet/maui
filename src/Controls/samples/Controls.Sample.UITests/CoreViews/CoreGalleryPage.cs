@@ -50,7 +50,9 @@ namespace Maui.Controls.Sample
 			Build(Layout);
 
 			if (SupportsScroll)
+			{
 				Content = new ScrollView { AutomationId = "GalleryScrollView", Content = Layout };
+			}
 			else
 			{
 				var content = new Grid { AutomationId = "GalleryScrollView" };
@@ -83,28 +85,19 @@ namespace Maui.Controls.Sample
 			var isFocusedStateViewContainer = new StateViewContainer<T>(Test.VisualElement.IsFocused, isFocusedView);
 			isFocusedStateViewContainer.StateChangeButton.Command = new Command(() =>
 			{
-
 				if ((bool)isFocusedView.GetValue(VisualElement.IsFocusedProperty))
-				{
 					isFocusedView.SetValueCore(IsFocusedPropertyKey.BindableProperty, false);
-				}
 				else
-				{
 					isFocusedView.SetValueCore(IsFocusedPropertyKey.BindableProperty, true);
-				}
 			});
 
 			var focusStateViewContainer = new StateViewContainer<T>(Test.VisualElement.Focus, new T());
 			focusStateViewContainer.StateChangeButton.Command = new Command(() =>
 			{
 				if (focusStateViewContainer.View.IsFocused)
-				{
 					focusStateViewContainer.View.Unfocus();
-				}
 				else
-				{
 					focusStateViewContainer.View.Focus();
-				}
 			});
 
 			var focusedEventViewContainer = new EventViewContainer<T>(Test.VisualElement.Focused, new T());
@@ -114,42 +107,57 @@ namespace Maui.Controls.Sample
 			unfocusedEventViewContainer.View.Unfocused += (sender, args) => unfocusedEventViewContainer.EventFired();
 
 			var gestureRecognizerEventViewContainer = new EventViewContainer<T>(Test.View.GestureRecognizers, new T());
-			gestureRecognizerEventViewContainer.View.GestureRecognizers.Add(
-				new TapGestureRecognizer
-				{
-					Command = new Command(() => gestureRecognizerEventViewContainer.EventFired())
-				}
-			);
-
-			_viewContainers = new List<ViewContainer<T>> {
-			isFocusedStateViewContainer,
-			new ViewContainer<T> (Test.VisualElement.BackgroundColor, new T { BackgroundColor = Colors.Blue }),
-			new ViewContainer<T>(Test.VisualElement.Background, new T { Background = new LinearGradientBrush
+			gestureRecognizerEventViewContainer.View.GestureRecognizers.Add(new TapGestureRecognizer
 			{
-					StartPoint = new Point(0, 0),
-					EndPoint = new Point(1, 0),
-					GradientStops = new GradientStopCollection
+				Command = new Command(gestureRecognizerEventViewContainer.EventFired)
+			});
+
+			_viewContainers = new List<ViewContainer<T>>
+			{
+				isFocusedStateViewContainer,
+				new ViewContainer<T> (Test.VisualElement.BackgroundColor, new T { BackgroundColor = Colors.Blue }),
+				new ViewContainer<T>(Test.VisualElement.Background, new T {
+					Background = new LinearGradientBrush
 					{
-						new GradientStop(Colors.Yellow, 0.0f),
-						new GradientStop(Colors.Orange, 0.5f),
-						new GradientStop(Colors.Red, 1.0f)
+						StartPoint = new Point(0, 0),
+						EndPoint = new Point(1, 0),
+						GradientStops = new GradientStopCollection
+						{
+							new GradientStop(Colors.Yellow, 0.0f),
+							new GradientStop(Colors.Orange, 0.5f),
+							new GradientStop(Colors.Red, 1.0f)
+						}
 					}
-				} }),
+				}),
 				focusStateViewContainer,
-			gestureRecognizerEventViewContainer,
+				gestureRecognizerEventViewContainer,
 				new LayeredViewContainer<T> (Test.VisualElement.InputTransparent, new T { InputTransparent = true }),
 				IsEnabledStateViewContainer,
 				focusedEventViewContainer,
 				unfocusedEventViewContainer,
-			isVisibleStateViewContainer,
-			new ViewContainer<T> (Test.VisualElement.Opacity, new T { Opacity = 0.5 }),
-			new ViewContainer<T> (Test.VisualElement.Rotation, new T { Rotation = 10 }),
-			new ViewContainer<T> (Test.VisualElement.RotationX, new T { RotationX = 33 }),
-			new ViewContainer<T> (Test.VisualElement.RotationY, new T { RotationY = 10 }),
-			new ViewContainer<T> (Test.VisualElement.Scale, new T { Scale = 0.5 }),
-			new ViewContainer<T> (Test.VisualElement.TranslationX, new T { TranslationX = 30 }),
-			new ViewContainer<T> (Test.VisualElement.TranslationY, new T { TranslationY = 30 }),
-		};
+				isVisibleStateViewContainer,
+				new ViewContainer<T> (Test.VisualElement.Opacity, new T { Opacity = 0.5 }),
+				new ViewContainer<T> (Test.VisualElement.Rotation, new T { Rotation = 10 }),
+				new ViewContainer<T> (Test.VisualElement.RotationX, new T { RotationX = 33 }),
+				new ViewContainer<T> (Test.VisualElement.RotationY, new T { RotationY = 10 }),
+				new ViewContainer<T> (Test.VisualElement.Scale, new T { Scale = 0.5 }),
+				new ViewContainer<T> (Test.VisualElement.TranslationX, new T { TranslationX = 30 }),
+				new ViewContainer<T> (Test.VisualElement.TranslationY, new T { TranslationY = 30 }),
+			};
+
+			if (!SupportsFocus)
+			{
+				_viewContainers.Remove(focusStateViewContainer);
+				_viewContainers.Remove(isFocusedStateViewContainer);
+				_viewContainers.Remove(focusedEventViewContainer);
+				_viewContainers.Remove(unfocusedEventViewContainer);
+			}
+
+			if (!SupportsTapGestureRecognizer)
+			{
+				_viewContainers.Remove(gestureRecognizerEventViewContainer);
+			}
+
 			_layout = new StackLayout();
 
 			_targetEntry = new Entry { AutomationId = "TargetViewContainer", Placeholder = "Jump To ViewContainer" };
@@ -166,9 +174,7 @@ namespace Maui.Controls.Sample
 			{
 				_picker.Items.Add(container.TitleLabel.Text);
 			}
-
 			_picker.SelectedIndex = _currentIndex;
-
 			_picker.SelectedIndexChanged += PickerSelectedIndexChanged;
 
 			_layout.Children.Add(_picker);
@@ -177,17 +183,6 @@ namespace Maui.Controls.Sample
 			_layout.Children.Add(_viewContainers[_currentIndex].ContainerLayout);
 
 			stackLayout.Children.Add(_layout);
-
-			if (!SupportsFocus)
-			{
-				stackLayout.Children.Remove(focusStateViewContainer.ContainerLayout);
-				stackLayout.Children.Remove(isFocusedStateViewContainer.ContainerLayout);
-			}
-
-			if (!SupportsTapGestureRecognizer)
-			{
-				stackLayout.Children.Remove(gestureRecognizerEventViewContainer.ContainerLayout);
-			}
 
 			foreach (var element in _viewContainers)
 			{
