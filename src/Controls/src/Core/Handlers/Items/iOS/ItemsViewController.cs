@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
-		Func<UICollectionViewCell> _getPrototype;
 		CGSize _previousContentSize = CGSize.Empty;
 
 		UIView _emptyUIView;
