@@ -5,8 +5,8 @@ using Android.Content.Res;
 using Android.Graphics.Drawables;
 using Android.Text;
 using Android.Text.Style;
-using AResource = Android.Resource;
 using AppCompatAlertDialog = AndroidX.AppCompat.App.AlertDialog;
+using AResource = Android.Resource;
 
 namespace Microsoft.Maui.Handlers
 {

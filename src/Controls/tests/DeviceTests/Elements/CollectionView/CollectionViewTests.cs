@@ -143,7 +143,7 @@ namespace Microsoft.Maui.DeviceTests
 					await WaitForUIUpdate(frame, collectionView);
 					frame = collectionView.Frame;
 
-#if WINDOWS
+#if WINDOWS || ANDROID
 					// On Windows, the ListView pops in and changes the frame, then actually
 					// loads in the data, which updates it again. So we need to wait for the second
 					// update before checking the size
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(false, false, true)]
 		[InlineData(false, true, false)]
 		[InlineData(false, true, true)]
-		public async Task CollectionViewStructuralItems(bool hasHeader, bool hasFooter, bool hasData) 
+		public async Task CollectionViewStructuralItems(bool hasHeader, bool hasFooter, bool hasData)
 		{
 			SetupBuilder();
 
