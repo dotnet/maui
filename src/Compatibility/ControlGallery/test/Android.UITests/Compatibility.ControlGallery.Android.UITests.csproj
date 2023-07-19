@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net462</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <RootNamespace>Microsoft.Maui.Controls.UITests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Android.UITests</AssemblyName>
     <IsPackable>false</IsPackable>
