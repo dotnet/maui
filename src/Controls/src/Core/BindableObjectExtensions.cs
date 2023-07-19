@@ -89,7 +89,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (!(bindable is Element owner))
 				return;
-			
+
 			if (oldValue is Element oldView)
 				owner.RemoveLogicalChild(oldView);
 
