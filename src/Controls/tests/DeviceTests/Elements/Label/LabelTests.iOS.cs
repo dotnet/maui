@@ -45,20 +45,17 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Using CharacterSpacing with LineHeight and TextDecorations works Correctly")]
 		public async Task CharacterSpacingWithLineHeightWithTextDecorationsWorksCorrectly()
 		{
-			var expectedCharacterSpacing1 = 5;
+			var expectedCharacterSpacing1 = 5d;
+			var expectedCharacterSpacing2 = 5d;
+			var expectedCharacterSpacing3 = 0d;
+			var expectedCharacterSpacing4 = 0d;
 			var expectedLineHeight1 = 1.5d;
-			var expectedTextDecorations1 = TextDecorations.Underline;
-
-			var expectedCharacterSpacing2 = 5;
 			var expectedLineHeight2 = 1.5d;
+			var expectedLineHeight3 = 0d;
+			var expectedLineHeight4 = 0d;
+			var expectedTextDecorations1 = TextDecorations.Underline;
 			var expectedTextDecorations2 = TextDecorations.Strikethrough;
-
-			var expectedCharacterSpacing3 = 0;
-			var expectedLineHeight3 = 0;
 			var expectedTextDecorations3 = TextDecorations.None;
-
-			var expectedCharacterSpacing4 = 0;
-			var expectedLineHeight4 = 0;
 			var expectedTextDecorations4 = TextDecorations.None;
 
 			var label1 = new Label()
@@ -79,13 +76,16 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label3 = new Label()
 			{
-				FormattedText = new FormattedString()
+				FormattedText = new FormattedString(),
+				CharacterSpacing = 5d,
+				LineHeight = 1.5d,
+				TextDecorations = TextDecorations.Underline
 			};
 			label3.FormattedText.AddLogicalChild(
 				new Span()
 				{
 					Text = "This is label tests.",
-					CharacterSpacing = 5,
+					CharacterSpacing = 5d,
 					LineHeight = 1.5d,
 					TextDecorations = TextDecorations.Underline
 				}
@@ -94,7 +94,10 @@ namespace Microsoft.Maui.DeviceTests
 			var label4 = new Label()
 			{
 				TextType = TextType.Html,
-				Text = "This is <strong style=\"color:red\">label</strong> tests."
+				Text = "<h1>This is label tests.</h1>",
+				CharacterSpacing = 5d,
+				LineHeight = 1.5d,
+				TextDecorations = TextDecorations.Underline
 			};
 
 			var handler1 = await CreateHandlerAsync<LabelHandler>(label1);
