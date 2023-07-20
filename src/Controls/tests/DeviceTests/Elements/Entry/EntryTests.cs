@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "initial text"
 			};
 
-			await InvokeOnMainThreadAsync(async () =>
+			await InvokeOnMainThreadAsync(() =>
 			{
 				var handler = CreateHandler<EntryHandler>(entry);
 
