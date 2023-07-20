@@ -73,6 +73,8 @@ namespace Microsoft.Maui
 				return new Size(widthConstraint, heightConstraint);
 			}
 
+			// The measurements ran in SizeThatFits percolate down to child views
+			// So if MaximumWidth/Height are not taken into account for constraints, the children may have wrong dimensions
 			widthConstraint = Math.Min(widthConstraint, virtualView.MaximumWidth);
 			heightConstraint = Math.Min(heightConstraint, virtualView.MaximumHeight);
 
