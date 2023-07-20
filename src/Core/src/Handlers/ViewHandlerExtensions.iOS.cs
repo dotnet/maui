@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using CoreHaptics;
 using Microsoft.Maui.Graphics;
 using UIKit;
@@ -71,6 +72,9 @@ namespace Microsoft.Maui
 			{
 				return new Size(widthConstraint, heightConstraint);
 			}
+
+			widthConstraint = Math.Min(widthConstraint, virtualView.MaximumWidth);
+			heightConstraint = Math.Min(heightConstraint, virtualView.MaximumHeight);
 
 			var sizeThatFits = platformView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
 
