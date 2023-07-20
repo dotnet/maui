@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls
 		{
 			if (page is IFlyoutPageController fpc && fpc.ShouldShowSplitMode)
 			{
-				page.SetValueCore(IsPresentedProperty, true);
+				page.SetValue(IsPresentedProperty, true);
 				if (page.FlyoutLayoutBehavior != FlyoutLayoutBehavior.Default)
 					fpc.CanChangeIsPresented = false;
 			}
@@ -306,9 +306,8 @@ namespace Microsoft.Maui.Controls
 		public FlyoutPage()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<FlyoutPage>>(() => new PlatformConfigurationRegistry<FlyoutPage>(this));
-
-			this.Loaded += OnLoaded;
-			this.Unloaded += OnUnloaded;
+			(this as IControlsVisualElement).WindowChanged += OnWindowChanged;
+			this.SizeChanged += OnSizeChanged;
 		}
 
 		readonly Lazy<PlatformConfigurationRegistry<FlyoutPage>> _platformConfigurationRegistry;
@@ -319,15 +318,27 @@ namespace Microsoft.Maui.Controls
 			return _platformConfigurationRegistry.Value.On<T>();
 		}
 
-		void OnUnloaded(object sender, EventArgs e)
+		void OnSizeChanged(object sender, EventArgs e)
 		{
-			DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			if (Handler is not null)
+			{
+				Handler?.UpdateValue(nameof(FlyoutBehavior));
+				SizeChanged -= OnSizeChanged;
+			}
 		}
 
-		void OnLoaded(object sender, EventArgs e)
+		void OnWindowChanged(object sender, EventArgs e)
 		{
-			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
-			Handler?.UpdateValue(nameof(FlyoutBehavior));
+			if (Window is null)
+			{
+				SizeChanged -= OnSizeChanged;
+				SizeChanged += OnSizeChanged;
+				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
+			}
+			else
+			{
+				DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			}
 		}
 
 		void OnMainDisplayInfoChanged(object sender, DisplayInfoChangedEventArgs e)

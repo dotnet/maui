@@ -48,11 +48,11 @@ namespace Microsoft.Maui.DeviceTests
 
 
 			// Without Exceptions here, the test has passed.
-			Assert.Equal(0, (rootPage as IPageContainer<Page>).CurrentPage.Navigation.ModalStack.Count);
+			Assert.Empty((rootPage as IPageContainer<Page>).CurrentPage.Navigation.ModalStack);
 		}
 
 		[Fact]
-		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView() 
+		public async Task NullItemsSourceDisplaysHeaderFooterAndEmptyView()
 		{
 			SetupBuilder();
 

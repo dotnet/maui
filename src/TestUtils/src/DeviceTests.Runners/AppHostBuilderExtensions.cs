@@ -30,7 +30,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 		{
 			appHostBuilder.Services.AddSingleton(options);
 
-#if __ANDROID__ || __IOS__ || MACCATALYST
+#if __ANDROID__ || __IOS__ || MACCATALYST || WINDOWS
 			appHostBuilder.Services.AddTransient(svc => new HeadlessTestRunner(
 					svc.GetRequiredService<HeadlessRunnerOptions>(),
 					svc.GetRequiredService<TestOptions>()));

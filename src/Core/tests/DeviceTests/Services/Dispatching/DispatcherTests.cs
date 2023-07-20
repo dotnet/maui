@@ -211,6 +211,28 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(ticks > 1, $"# of Ticks: {ticks}, expected > 1");
 			});
 
+		[Fact]
+		public async Task NonRepeatingTimerIsStoppedAfterFiring()
+		{
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+				var timer = dispatcher.CreateTimer();
+				using var disposer = new TimerDisposer(timer);
+
+				Assert.False(timer.IsRunning);
+
+				timer.Interval = TimeSpan.FromMilliseconds(200);
+				timer.IsRepeating = false;
+
+				timer.Tick += (_, _) => { };
+				timer.Start();
+
+				await Task.Delay(TimeSpan.FromSeconds(1));
+				Assert.False(timer.IsRunning, "The timer is not repeating, so it should no longer be marked as running after the first tick.");
+			});
+		}
+
 		class TimerDisposer : IDisposable
 		{
 			IDispatcherTimer _timer;
