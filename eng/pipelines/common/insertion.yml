@@ -3,20 +3,6 @@ parameters:
   vmImage: windows-latest 
 
 stages:
-  - template: vs-insertion/stage/v1.yml@yaml-templates
-    parameters:
-      dependsOn: nuget_signing
-      approvalTimeoutInMinutes: 1
-      symbolArtifactName: nuget
-      symbolArtifactPatterns: |
-        **/signed/*.nupkg
-        **/*.snupkg
-        **/additional-assets.zip
-      pushToShippingFeed: true
-      nupkgArtifactName: nuget
-      nupkgArtifactPatterns: |
-        **/signed/*.nupkg
-      msiNupkgArtifactName: vs-msi-nugets
 
   - stage: sdk_insertion
     displayName: 'SDK Insertion'
