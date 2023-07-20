@@ -27,6 +27,30 @@ namespace Microsoft.Maui.DeviceTests
 			return exitCondition.Invoke();
 		}
 
+		public static Task<bool> WaitForGC(params WeakReference[] references)
+		{
+			// Check all the WeakReference values are non-null
+			Assert.NotEmpty(references);
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+			}
+
+			return Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				foreach (var reference in references)
+				{
+					if (reference.IsAlive)
+						return false;
+				}
+
+				return true; // No references alive
+			}, timeout: 5000);
+		}
+
 		public static void AssertHasFlag(this Enum self, Enum flag)
 		{
 			var hasFlag = self.HasFlag(flag);
