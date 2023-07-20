@@ -962,11 +962,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact(DisplayName = "Pages Do Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{
 			SetupBuilder();
@@ -999,17 +995,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 			});
 
-			// As we add more controls to this test, more GCs will be required
-			for (int i = 0; i < 16; i++)
-			{
-				if (!pageReference.IsAlive)
-					break;
-				await Task.Yield();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-			}
-
-			Assert.NotNull(pageReference);
+			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 

@@ -46,9 +46,6 @@ namespace Microsoft.Maui
 #if __ANDROID__
 		public static void UpdateText(this ITextInput textInput, Android.Text.TextChangedEventArgs e)
 		{
-			if (e.BeforeCount == 0 && e.AfterCount == 0)
-				return;
-
 			if (e.Text is Java.Lang.ICharSequence cs)
 				textInput.UpdateText(cs.ToString());
 			else if (e.Text != null)

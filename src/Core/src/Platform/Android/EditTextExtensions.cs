@@ -82,42 +82,11 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateMaxLength(this EditText editText, IEditor editor) =>
 			UpdateMaxLength(editText, editor.MaxLength);
 
-		public static void UpdateMaxLength(this EditText editText, int maxLength)
-		{
-			editText.SetLengthFilter(maxLength);
+		public static void UpdateMaxLength(this EditText editText, int maxLength) =>
+			PlatformInterop.UpdateMaxLength(editText, maxLength);
 
-			var newText = editText.Text.TrimToMaxLength(maxLength);
-			if (editText.Text != newText)
-				editText.Text = newText;
-		}
-
-		public static void SetLengthFilter(this EditText editText, int maxLength)
-		{
-			if (maxLength == -1)
-				maxLength = int.MaxValue;
-
-			var currentFilters = new List<IInputFilter>(editText.GetFilters() ?? new IInputFilter[0]);
-			var changed = false;
-
-			for (var i = 0; i < currentFilters.Count; i++)
-			{
-				if (currentFilters[i] is InputFilterLengthFilter)
-				{
-					currentFilters.RemoveAt(i);
-					changed = true;
-					break;
-				}
-			}
-
-			if (maxLength >= 0)
-			{
-				currentFilters.Add(new InputFilterLengthFilter(maxLength));
-				changed = true;
-			}
-
-			if (changed)
-				editText.SetFilters(currentFilters.ToArray());
-		}
+		public static void SetLengthFilter(this EditText editText, int maxLength) =>
+			PlatformInterop.SetLengthFilter(editText, maxLength);
 
 		public static void UpdatePlaceholder(this EditText editText, IPlaceholder textInput)
 		{
