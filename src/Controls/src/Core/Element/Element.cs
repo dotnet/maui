@@ -266,10 +266,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// you're not my real dad
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RealParent']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public Element RealParent { get; private set; }
+		internal Element RealParent { get; private set; }
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
