@@ -44,6 +44,8 @@ pr:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
+  - group: Xamarin-Secrets
+  - group: Xamarin Signing
   - name: AgentPoolAccessToken
     value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
 
