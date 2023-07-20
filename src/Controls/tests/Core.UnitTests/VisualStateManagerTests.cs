@@ -69,8 +69,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label1 = new Label();
 			var label2 = new Label();
 
-			x.Apply(label1);
-			x.Apply(label2);
+			x.Apply(label1, new SetterSpecificity());
+			x.Apply(label2, new SetterSpecificity());
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 			var groups2 = VisualStateManager.GetVisualStateGroups(label2);
@@ -241,8 +241,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label1 = new Label();
 			var label2 = new Label();
 
-			x.Apply(label1);
-			x.Apply(label2);
+			x.Apply(label1, new SetterSpecificity());
+			x.Apply(label2, new SetterSpecificity());
 
 			Assert.Equal(label1.Margin.Bottom, targetBottomMargin);
 			Assert.Equal(label2.Margin.Bottom, targetBottomMargin);
