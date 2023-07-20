@@ -10,6 +10,7 @@ parameters:
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
+  keyringPass : ""
 
 steps:
   # Prepare macOS
@@ -67,6 +68,14 @@ steps:
     displayName: 'Configure Visual Studio'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
   # Install Certificates and Provisioning Profiles
+  - template: install-certificates.yml@yaml-templates
+    parameters:
+      DeveloperIdApplication: $(developer-id-application)
+      DeveloperIdInstaller: $(developer-id-installer)
+      IphoneDeveloper: $(iphone-developer)
+      MacDeveloper: $(mac-developer)
+      HostedMacKeychainPassword: ${{ parameters.keyringPass }}
+
   # - task: InstallAppleProvisioningProfile@1
   #   displayName: 'Install the iOS provisioning profile'
   #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))

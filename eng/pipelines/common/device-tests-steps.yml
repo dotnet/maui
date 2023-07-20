@@ -20,6 +20,7 @@ steps:
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      keyringPass: $(pass--lab--mac--builder--keychain)
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
@@ -32,7 +33,6 @@ steps:
     displayName: 'Add .NET to PATH'
 
   - ${{ if eq(parameters.useArtifacts, true) }}:
-
     - task: DownloadBuildArtifacts@0
       displayName: 'Download Packages'
       inputs:
