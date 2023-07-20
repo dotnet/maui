@@ -10,6 +10,7 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
   useAzurePipelines : true
+  keyChainPass : $(pass--lab--mac--builder--keychain)
 
 steps:
   - template: provision.yml
@@ -21,7 +22,7 @@ steps:
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      keyringPass: $(pass--lab--mac--builder--keychain)
+      keyringPass: ${{ parameters.keyChainPass }}
       useOldCertsTasks: ${{ parameters.useAzurePipelines }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -75,6 +76,10 @@ steps:
     condition: always()
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
+
+  - template: uninstall-certificates/v1.yml@yaml-templates
+    parameters:
+      HostedMacKeychainPassword: ${{ parameters.keyChainPass }}
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates

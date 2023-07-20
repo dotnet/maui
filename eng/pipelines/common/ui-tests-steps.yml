@@ -9,6 +9,8 @@ parameters:
   agentPoolAccessToken: ''
   configuration : "Release"
   useAzurePipelines : true
+  keyChainPass : $(pass--lab--mac--builder--keychain)
+
 
 steps:
 
@@ -20,7 +22,7 @@ steps:
         skipProvisioning: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      keyringPass: $(pass--lab--mac--builder--keychain)
+      keyringPass: ${{ parameters.keyChainPass }}
       useOldCertsTasks: ${{ parameters.useAzurePipelines }}
 
   - task: PowerShell@2
@@ -76,6 +78,10 @@ steps:
     condition: always()
     displayName: publish artifacts
 
+  - template: uninstall-certificates/v1.yml@yaml-templates
+    parameters:
+      HostedMacKeychainPassword: ${{ parameters.keyChainPass }}
+      
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates
     parameters:
