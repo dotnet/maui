@@ -311,6 +311,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "https://github.com/dotnet/maui/issues/7939"
 #endif
 			)]
+		[InlineData(0)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -358,6 +359,7 @@ namespace Microsoft.Maui.DeviceTests
 			, Skip = "https://github.com/dotnet/maui/issues/7939"
 #endif
 		)]
+		[InlineData(0)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]

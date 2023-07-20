@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
@@ -11,6 +12,18 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Border)]
 	public partial class BorderTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
+				});
+			});
+		}
+
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public async Task RoundedRectangleBorderLayoutIsCorrect()
 		{
@@ -30,6 +43,32 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await AssertColorAtPoint(border, expected, typeof(BorderHandler), 10, 10);
+		}
+
+
+		[Fact("Border Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var border = new Border();
+				var label = new Label();
+				border.Content = label;
+				layout.Add(border);
+
+				var handler = CreateHandler<LayoutHandler>(layout);
+				handlerReference = new WeakReference(label.Handler);
+				platformViewReference = new WeakReference(label.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 	}
 }
