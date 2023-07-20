@@ -43,7 +43,9 @@ namespace Microsoft.Maui.Controls
 
 		IList<Element> _internalChildren;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs/*" />
+		/// <summary>Gets or sets a value that allows the automation framework to find and interact with this element.</summary>
+		/// <value>A value that the automation framework can use to find and interact with this element.</value>
+		/// <remarks>This value may only be set once on an element.</remarks>
 		public string AutomationId
 		{
 			get { return (string)GetValue(AutomationIdProperty); }
@@ -56,14 +58,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassId']/Docs/*" />
+		/// <summary>Gets or sets a value used to identify a collection of semantically similar elements.</summary>
+		/// <value>A string that represents the collection the element belongs to.</value>
+		/// <remarks>Use the class id property to collect together elements into semantically similar groups for identification in ui testing and in theme engines.</remarks>
 		public string ClassId
 		{
 			get => (string)GetValue(ClassIdProperty);
 			set => SetValue(ClassIdProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Effects']/Docs/*" />
+		/// <summary> Gets or sets the styles and properties that will be applied to the element during runtime.</summary>
+		/// <value> A collection containing the different <see cref="Effect"/> to be applied to the element</value>
 		public IList<Effect> Effects
 		{
 			get
@@ -78,7 +83,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Id']/Docs/*" />
+		/// <summary>Gets a value that can be used to uniquely identify an element throughout the run of your application.</summary>
+		/// <value>A Guid uniquely identifying the element.</value>
+		/// <remarks>This value is generated at runtime and is not stable across different runs.</remarks>
+		/// <seealso cref="StyleId"/>
 		public Guid Id
 		{
 			get
@@ -89,7 +97,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='StyleId']/Docs/*" />
+		/// <summary>Gets or sets a user defined value to uniquely identify the element.</summary>
+		/// <value>A string uniquely identifying the element.</value>
+		/// <remarks>Use the StyleId property to identify individual elements in your application for identification in ui testing and in theme engines.</remarks>
 		public string StyleId
 		{
 			get { return _styleId; }
@@ -209,7 +219,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		///  Removes all <see cref="Element"/>s.
+		///  Removes all child <see cref="Element"/>s.
 		/// </summary>
 		public void ClearLogicalChildren()
 		{
@@ -266,8 +276,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// you're not my real dad
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RealParent']/Docs/*" />
+		// JD TODO: Check if we still needs this
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
@@ -279,7 +288,9 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Add(onchanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Parent']/Docs/*" />
+		/// <summary>Gets or sets the parent <see cref="Element"/> of this element.</summary>
+		/// <value>The <see cref="Element"/> which should be the parent of this element.</value>
+		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
 			get { return _parentOverride ?? RealParent; }
@@ -338,6 +349,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
+		// JD TODO
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectControlProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEffectControlProvider EffectControlProvider

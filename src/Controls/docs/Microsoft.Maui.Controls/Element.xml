@@ -93,26 +93,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="AutomationId">
-      <MemberSignature Language="C#" Value="public string AutomationId { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string AutomationId" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.AutomationId" />
-      <MemberSignature Language="F#" Value="member this.AutomationId : string with get, set" Usage="Microsoft.Maui.Controls.Element.AutomationId" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets a value that allows the automation framework to find and interact with this element.</summary>
-        <value>A value that the automation framework can use to find and interact with this element.</value>
-        <remarks>This value may only be set once on an element.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="AutomationIdProperty">
       <MemberSignature Language="C#" Value="public static readonly Microsoft.Maui.Controls.BindableProperty AutomationIdProperty;" />
       <MemberSignature Language="ILAsm" Value=".field public static initonly class Microsoft.Maui.Controls.BindableProperty AutomationIdProperty" />
@@ -181,33 +161,6 @@
       <Docs>
         <summary>Occurs whenever a child element is removed from the element.</summary>
         <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="ClassId">
-      <MemberSignature Language="C#" Value="public string ClassId { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string ClassId" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.ClassId" />
-      <MemberSignature Language="F#" Value="member this.ClassId : string with get, set" Usage="Microsoft.Maui.Controls.Element.ClassId" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.3.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets a value used to identify a collection of semantically similar elements.</summary>
-        <value>A string that represents the collection the element belongs to.</value>
-        <remarks>Use the class id property to collect together elements into semantically similar groups for identification in ui testing and in theme engines.</remarks>
       </Docs>
     </Member>
     <Member MemberName="ClassIdProperty">
@@ -380,26 +333,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Effects">
-      <MemberSignature Language="C#" Value="public System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.Effect&gt; Effects { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class System.Collections.Generic.IList`1&lt;class Microsoft.Maui.Controls.Effect&gt; Effects" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.Effects" />
-      <MemberSignature Language="F#" Value="member this.Effects : System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.Effect&gt;" Usage="Microsoft.Maui.Controls.Element.Effects" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Collections.Generic.IList&lt;Microsoft.Maui.Controls.Effect&gt;</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>A list of the effects that are applied to this item.</summary>
-        <value>To be added.</value>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="FindByName">
       <MemberSignature Language="C#" Value="public object FindByName (string name);" />
       <MemberSignature Language="ILAsm" Value=".method public hidebysig newslot virtual instance object FindByName(string name) cil managed" />
@@ -449,33 +382,6 @@
         <summary>Gets the <see cref="T:Microsoft.Maui.Controls.Menu" /> object for <paramref name="bindable" />.</summary>
         <returns>The <see cref="T:Microsoft.Maui.Controls.Menu" /> object for <paramref name="bindable" />.</returns>
         <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="Id">
-      <MemberSignature Language="C#" Value="public Guid Id { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance valuetype System.Guid Id" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.Id" />
-      <MemberSignature Language="F#" Value="member this.Id : Guid" Usage="Microsoft.Maui.Controls.Element.Id" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.3.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Guid</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets a value that can be used to uniquely identify an element through the run of an application.</summary>
-        <value>A Guid uniquely identifying the element.</value>
-        <remarks>This value is generated at runtime and is not stable across runs of your app.</remarks>
       </Docs>
     </Member>
     <Member MemberName="LogicalChildren">
@@ -697,33 +603,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="Parent">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Element Parent { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Element Parent" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.Parent" />
-      <MemberSignature Language="F#" Value="member this.Parent : Microsoft.Maui.Controls.Element with get, set" Usage="Microsoft.Maui.Controls.Element.Parent" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.3.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Element</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>Gets or sets the parent element of the element.</summary>
-        <value>The element which should be the parent of this element.</value>
-        <remarks>Most application authors will not need to set the parent element by hand.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="ParentView">
       <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.VisualElement ParentView { get; }" />
       <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.VisualElement ParentView" />
@@ -815,31 +694,6 @@
       </ReturnValue>
       <Docs>
         <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RealParent">
-      <MemberSignature Language="C#" Value="public Microsoft.Maui.Controls.Element RealParent { get; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance class Microsoft.Maui.Controls.Element RealParent" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.RealParent" />
-      <MemberSignature Language="F#" Value="member this.RealParent : Microsoft.Maui.Controls.Element" Usage="Microsoft.Maui.Controls.Element.RealParent" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <Attributes>
-        <Attribute>
-          <AttributeName>System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)</AttributeName>
-        </Attribute>
-      </Attributes>
-      <ReturnValue>
-        <ReturnType>Microsoft.Maui.Controls.Element</ReturnType>
-      </ReturnValue>
-      <Docs>
-        <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
-        <value>To be added.</value>
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
@@ -1014,9 +868,9 @@
         <ReturnType>System.String</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>Gets or sets a user defined value to uniquely identify the element.</summary>
-        <value>A string uniquely identifying the element.</value>
-        <remarks>Use the StyleId property to identify individual elements in your application for identification in ui testing and in theme engines.</remarks>
+<summary>Gets or sets a user defined value to uniquely identify the element.</summary>
+<value>A string uniquely identifying the element.</value>
+<remarks>Use the StyleId property to identify individual elements in your application for identification in ui testing and in theme engines.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IElementController.SetValueFromRenderer">
