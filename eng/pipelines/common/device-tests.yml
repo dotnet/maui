@@ -56,6 +56,7 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            useAzurePipelines: false
 
   - stage: ios_device_tests
     displayName: iOS Device Tests
@@ -93,6 +94,7 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            useAzurePipelines: true
 
   - stage: catalyst_device_tests
     displayName: macOS Device Tests
@@ -162,3 +164,4 @@ stages:
             artifactItemPattern: ${{ parameters.artifactItemPattern }}
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
+            useAzurePipelines: true
