@@ -260,7 +260,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task GridCellsHonorMaxHeight()
 		{
-			var grid = new Grid() { MaximumWidthRequest = 20 };
+			var grid = new Grid() { MaximumHeightRequest = 20 };
 			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
 
 			grid.Add(label);
@@ -273,8 +273,8 @@ namespace Microsoft.Maui.DeviceTests
 				await AttachAndRun(grid, (handler) => { });
 			});
 
-			Assert.True(label.Width <= grid.MaximumHeightRequest);
-			Assert.True(grid.Width <= grid.MaximumHeightRequest);
+			Assert.True(label.Height <= grid.MaximumHeightRequest);
+			Assert.True(grid.Height <= grid.MaximumHeightRequest);
 		}
 
 	}
