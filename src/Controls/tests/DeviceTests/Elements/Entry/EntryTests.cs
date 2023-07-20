@@ -32,10 +32,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
-		[InlineData("hello", "HELLO")]
-		[InlineData("woRld", "WORLD")]
-		public async Task TextTransformBeforeTextInitializesCorrectly(string text, string expected)
+		[Fact]
+		public async Task InitializingTextTransformBeforeTextShouldUpdateTextProperty()
 		{
 			var entry = new Entry
 			{
@@ -48,6 +46,23 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<EntryHandler>(entry);
 
 				Assert.Equal("INITIAL TEXT", entry.Text);
+			});
+		}
+
+		[Theory]
+		[InlineData("hello", "HELLO")]
+		[InlineData("woRld", "WORLD")]
+		public async Task ChangingPlatformTextPreservesTextTransform(string text, string expected)
+		{
+			var entry = new Entry
+			{
+				TextTransform = TextTransform.Uppercase,
+				Text = "initial text"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
 
 				SetPlatformText(handler, text);
 
