@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls
 			if (ItemDisplayBinding == null)
 				return item == null ? string.Empty : item.ToString();
 
-			ItemDisplayBinding.Apply(item, this, s_displayProperty);
+			ItemDisplayBinding.Apply(item, this, s_displayProperty, false, SetterSpecificity.FromBinding);
 			ItemDisplayBinding.Unapply();
 			return (string)GetValue(s_displayProperty);
 		}
@@ -244,7 +244,9 @@ namespace Microsoft.Maui.Controls
 		void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			var oldIndex = SelectedIndex;
-			var newIndex = SelectedIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			//FIXME use the specificity of the caller
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 			// If the index has not changed, still need to change the selected item
 			if (newIndex == oldIndex)
 				UpdateSelectedItem(newIndex);
@@ -339,29 +341,34 @@ namespace Microsoft.Maui.Controls
 
 		void UpdateSelectedIndex(object selectedItem)
 		{
+			//FIXME use the specificity of the caller
+
 			if (ItemsSource != null)
 			{
-				SetValueCore(SelectedIndexProperty, ItemsSource.IndexOf(selectedItem));
+				SetValue(SelectedIndexProperty, ItemsSource.IndexOf(selectedItem), SetterSpecificity.FromHandler);
 				return;
 			}
-			SetValueCore(SelectedIndexProperty, Items.IndexOf(selectedItem));
+			SetValue(SelectedIndexProperty, Items.IndexOf(selectedItem), SetterSpecificity.FromHandler);
 		}
 
 		void UpdateSelectedItem(int index)
 		{
+			//FIXME use the specificity of the caller
+
 			if (index == -1)
 			{
-				SetValueCore(SelectedItemProperty, null);
+				SetValue(SelectedItemProperty, null, SetterSpecificity.FromBinding);
 				return;
 			}
 
 			if (ItemsSource != null)
 			{
-				SetValueCore(SelectedItemProperty, ItemsSource[index]);
+				var item = index < ItemsSource.Count ? ItemsSource[index] : null;
+				SetValue(SelectedItemProperty, item, SetterSpecificity.FromBinding);
 				return;
 			}
 
-			SetValueCore(SelectedItemProperty, Items[index]);
+			SetValue(SelectedItemProperty, Items[index], SetterSpecificity.FromBinding);
 		}
 
 		/// <inheritdoc/>

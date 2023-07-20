@@ -175,6 +175,9 @@ namespace Microsoft.Maui.DeviceTests
 
 						await OnLoadedAsync(content as VisualElement);
 
+						if (view is VisualElement veBeingTested)
+							await OnLoadedAsync(veBeingTested);
+
 #if !WINDOWS
 						if (window is Window controlsWindow)
 						{

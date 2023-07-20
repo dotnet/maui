@@ -1533,10 +1533,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void InvalidCallsToStaticMethods()
 		{
-			Assert.Throws<ArgumentException>(() => Grid.SetRow(new Label(), -1));
-			Assert.Throws<ArgumentException>(() => Grid.SetColumn(new Label(), -1));
-			Assert.Throws<ArgumentException>(() => Grid.SetRowSpan(new Label(), 0));
-			Assert.Throws<ArgumentException>(() => Grid.SetColumnSpan(new Label(), 0));
+			var label = new Label();
+			Grid.SetRow(label, -1);
+			Grid.SetColumn(label, -1);
+			Grid.SetRowSpan(label, 0);
+			Grid.SetColumnSpan(label, 0);
+
+			Assert.NotEqual(-1, Grid.GetRow(label));
+			Assert.NotEqual(-1, Grid.GetColumn(label));
+			Assert.NotEqual(0, Grid.GetRowSpan(label));
+			Assert.NotEqual(0, Grid.GetColumnSpan(label));
 		}
 
 		[Fact]
