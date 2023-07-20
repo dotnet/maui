@@ -32,11 +32,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			var shell = new Shell() { CurrentItem = page };
 
-			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
 			{
 				if (handler.VirtualView is Window window && window.Page is Shell shellPage)
 				{
-					Assert.NotEqual(shellPage.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
+					await OnFrameSetToNotEmpty(shell.CurrentPage);
+					Assert.NotEqual(shell.CurrentPage.On<iOS>().SafeAreaInsets(), Thickness.Zero);
 				}
 			});
 		}
