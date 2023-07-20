@@ -8,12 +8,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		WeakReference<LayoutView>? _container;
 
-		~BorderHandler()
-		{
-			Container?.Dispose();
-			PlatformView?.Dispose();
-		}
-
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
