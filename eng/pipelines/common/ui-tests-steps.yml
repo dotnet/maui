@@ -8,6 +8,7 @@ parameters:
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   configuration : "Release"
+  useAzurePipelines : true
 
 steps:
 
@@ -19,6 +20,8 @@ steps:
         skipProvisioning: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
+      keyringPass: $(pass--lab--mac--builder--keychain)
+      useOldCertsTasks: ${{ parameters.useAzurePipelines }}
 
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')

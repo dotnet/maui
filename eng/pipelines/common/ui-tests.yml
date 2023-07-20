@@ -55,6 +55,7 @@ stages:
                       device: android-emulator-32_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      useAzurePipelines: false
 
   - stage: ios_ui_tests
     displayName: iOS UITests
@@ -88,6 +89,7 @@ stages:
                         device: ios-simulator-64_${{ version }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      useAzurePipelines: false
 
   - stage: winui_ui_tests
     displayName: WinUI UITests
@@ -111,6 +113,7 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      useAzurePipelines: true
 
   - stage: mac_ui_tests
     displayName: macOS UITests
@@ -136,6 +139,7 @@ stages:
                       app: ${{ project.app }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                      useAzurePipelines: true
 
   - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
     - stage: android_compatibility_ui_tests
@@ -171,6 +175,7 @@ stages:
                         device: android-emulator-32_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        useAzurePipelines: false
 
 
     - stage: ios_compatibility_ui_tests
@@ -208,3 +213,4 @@ stages:
                           device: ios-simulator-64_${{ version }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+                        useAzurePipelines: false

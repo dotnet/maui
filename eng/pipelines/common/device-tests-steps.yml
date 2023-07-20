@@ -9,7 +9,7 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
-  useAzurePipelines : false
+  useAzurePipelines : true
 
 steps:
   - template: provision.yml
@@ -22,7 +22,7 @@ steps:
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       keyringPass: $(pass--lab--mac--builder--keychain)
-      useAzurePipelines: ${{ parameters.useAzurePipelines }}
+      useOldCertsTasks: ${{ parameters.useAzurePipelines }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'

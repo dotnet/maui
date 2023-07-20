@@ -11,7 +11,7 @@ parameters:
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
   keyringPass : ""
-  useAzurePipelines : false
+  useOldCertsTasks: true
 
 steps:
   # Prepare macOS
@@ -70,7 +70,7 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   
-  - ${{ if eq(parameters.useAzurePipelines, 'true') }}:
+  - ${{ if eq(parameters.useOldCertsTasks, 'true') }}:
     - task: InstallAppleProvisioningProfile@1
       displayName: 'Install the iOS provisioning profile'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
