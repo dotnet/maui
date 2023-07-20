@@ -331,7 +331,8 @@ namespace Microsoft.Maui.Controls
 		{
 			if (Window is null)
 			{
-				this.SizeChanged += OnSizeChanged;
+				SizeChanged -= OnSizeChanged;
+				SizeChanged += OnSizeChanged;
 				DeviceDisplay.MainDisplayInfoChanged -= OnMainDisplayInfoChanged;
 			}
 			else
