@@ -105,17 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 				platformViewReference = new WeakReference(label.Handler.PlatformView);
 			});
 
-			Assert.NotNull(handlerReference);
-			Assert.NotNull(platformViewReference);
-
-			// Windows requires an actual delay
-			// Android/iOS require multiple GCs
-			await AssertionExtensions.Wait(() =>
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				return !handlerReference.IsAlive && !platformViewReference.IsAlive;
-			}, timeout: 5000);
+			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
 
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");

@@ -87,6 +87,8 @@ namespace Microsoft.Maui.Dispatching
 
 			if (IsRepeating)
 				_handler.PostDelayed(OnTimerTick, (long)Interval.TotalMilliseconds);
+			else
+				Stop();
 		}
 	}
 
