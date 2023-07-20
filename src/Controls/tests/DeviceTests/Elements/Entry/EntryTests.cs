@@ -32,6 +32,29 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory]
+		[InlineData("hello", "HELLO")]
+		[InlineData("woRld", "WORLD")]
+		public async Task TextTransformBeforeTextInitializesCorrectly(string text, string expected)
+		{
+			var entry = new Entry
+			{
+				TextTransform = TextTransform.Uppercase,
+				Text = "initial text"
+			};
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+
+				Assert.Equal("INITIAL TEXT", entry.Text);
+
+				SetPlatformText(handler, text);
+
+				Assert.Equal(expected, entry.Text);
+			});
+		}
+
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]
