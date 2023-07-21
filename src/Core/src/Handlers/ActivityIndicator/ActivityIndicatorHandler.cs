@@ -49,5 +49,42 @@ namespace Microsoft.Maui.Handlers
 		IActivityIndicator IActivityIndicatorHandler.VirtualView => VirtualView;
 
 		PlatformView IActivityIndicatorHandler.PlatformView => PlatformView;
+
+		/// <summary>
+		/// Maps the abstract <see cref="IActivityIndicator.IsRunning"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
+		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IActivityIndicator.Color"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
+		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
+
+#if WINDOWS
+		/// <summary>
+		/// Maps the abstract <see cref="IActivityIndicator.Width"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
+		public static partial void MapWidth(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IActivityIndicator.Height"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
+		public static partial void MapHeight(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IActivityIndicator.Background"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
+		public static partial void MapBackground(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
+#endif
 	}
 }
