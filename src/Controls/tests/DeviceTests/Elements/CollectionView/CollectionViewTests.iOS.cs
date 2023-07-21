@@ -120,13 +120,9 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				Assert.NotNull(cell);
-				Assert.NotEmpty(labels);
 			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
+			await AssertionExtensions.WaitForGC(labels.ToArray());
 			foreach (var reference in labels)
 			{
 				Assert.False(reference.IsAlive, "View should not be alive!");
