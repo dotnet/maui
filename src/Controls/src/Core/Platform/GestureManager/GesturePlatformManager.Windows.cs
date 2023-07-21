@@ -137,7 +137,16 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+
+			DragEventArgs dragEventArgs;
+
+			if (e.OriginalSource is UIElement element)
+			{
+				var position = GetPosition(element, e);
+				dragEventArgs = new DragEventArgs(package, position);
+			}
+			else
+				dragEventArgs = new DragEventArgs(package);
 
 			dragEventArgs.AcceptedOperation = (DataPackageOperation)((int)dragEventArgs.AcceptedOperation);
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -167,7 +176,16 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+			
+			DragEventArgs dragEventArgs;
+
+			if (e.OriginalSource is UIElement element)
+			{
+				var position = GetPosition(element, e);
+				dragEventArgs = new DragEventArgs(package, position);
+			}
+			else
+				dragEventArgs = new DragEventArgs(package);
 
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
@@ -512,6 +530,13 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			return new Point(result.Value.X, result.Value.Y);
+		}
+
+		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragEventArgs e)
+		{
+			var result = e.GetPosition(element);
+
+			return new Point(result.X, result.Y);
 		}
 
 		void OnTap(object sender, RoutedEventArgs e)

@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,9 +14,18 @@ namespace Microsoft.Maui.Controls
 			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
+		public DragEventArgs(DataPackage dataPackage, Point position)
+		{
+			Data = dataPackage;
+			Position = position;
+			AcceptedOperation = DataPackageOperation.Copy;
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public DataPackage Data { get; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='AcceptedOperation']/Docs/*" />
 		public DataPackageOperation AcceptedOperation { get; set; }
+
+		public Point Position { get; set; }
 	}
 }

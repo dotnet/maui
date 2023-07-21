@@ -6,6 +6,7 @@ using System.Linq;
 using Android.Content;
 using Android.Views;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics;
 using ADragFlags = Android.Views.DragFlags;
 using AUri = Android.Net.Uri;
 using AView = Android.Views.View;
@@ -122,6 +123,10 @@ namespace Microsoft.Maui.Controls.Platform
 				package = new DataPackage();
 				_currentCustomLocalStateData.DataPackage = package;
 			}
+			
+			var x = e.GetX();
+			var y = e.GetY();
+			var position = new Point(x, y);
 
 			switch (e.Action)
 			{
@@ -137,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform
 				case DragAction.Started:
 					break;
 				case DragAction.Location:
-					HandleDragOver(package);
+					HandleDragOver(package, position);
 					break;
 				case DragAction.Drop:
 					{
@@ -145,10 +150,10 @@ namespace Microsoft.Maui.Controls.Platform
 						break;
 					}
 				case DragAction.Entered:
-					HandleDragOver(package);
+					HandleDragOver(package, position);
 					break;
 				case DragAction.Exited:
-					HandleDragLeave(package);
+					HandleDragLeave(package, position);
 					break;
 			}
 
@@ -161,9 +166,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
-		bool HandleDragLeave(DataPackage package)
+		bool HandleDragLeave(DataPackage package, Point position)
 		{
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = new DragEventArgs(package, position);
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
@@ -178,9 +183,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(DataPackage package)
+		bool HandleDragOver(DataPackage package, Point position)
 		{
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = new DragEventArgs(package, position);
+
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
