@@ -26,5 +26,9 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Access to your location is required for cool things to happen!</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Contacts</string>
 </dict>
 </plist>
