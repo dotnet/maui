@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Do not use! This is to be removed! Just used by Hot Reload! To be replaced with IVisualTreeElement!")]
-		public ReadOnlyCollection<Element> LogicalChildren =>
+		internal ReadOnlyCollection<Element> LogicalChildren =>
 			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
 
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
@@ -336,9 +336,8 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectControlProvider']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IEffectControlProvider EffectControlProvider
+		internal IEffectControlProvider EffectControlProvider
 		{
 			get { return _effectControlProvider; }
 			set
@@ -363,23 +362,21 @@ namespace Microsoft.Maui.Controls
 		}
 
 		void IElementController.SetValueFromRenderer(BindableProperty property, object value) => SetValueFromRenderer(property, value);
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][1]/Docs/*" />
+
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetValueFromRenderer(BindableProperty property, object value)
+		internal void SetValueFromRenderer(BindableProperty property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][2]/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public void SetValueFromRenderer(BindablePropertyKey property, object value)
+		internal void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectIsAttached']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public bool EffectIsAttached(string name)
+		internal bool EffectIsAttached(string name)
 		{
 			foreach (var effect in Effects)
 			{
