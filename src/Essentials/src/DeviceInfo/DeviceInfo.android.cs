@@ -11,6 +11,17 @@ namespace Microsoft.Maui.Devices
 	{
 		const int tabletCrossover = 600;
 
+		public string DeviceId
+		{
+			get
+			{
+				var context = Application.Context;
+				var id = Settings.Secure.GetString(context.ContentResolver, Settings.Secure.AndroidId);
+
+				return id;
+			}
+		}
+
 		public string Model => Build.Model;
 
 		public string Manufacturer => Build.Manufacturer;

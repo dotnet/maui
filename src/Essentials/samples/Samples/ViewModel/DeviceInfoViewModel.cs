@@ -6,6 +6,8 @@ namespace Samples.ViewModel
 	{
 		DisplayInfo screenMetrics;
 
+		public string DeviceId => DeviceInfo.DeviceId;
+
 		public string Model => DeviceInfo.Model;
 
 		public string Manufacturer => DeviceInfo.Manufacturer;
