@@ -11,16 +11,14 @@ namespace Microsoft.Maui.Controls
 	{
 		bool _isSealed;
 
-		//each trigger is different
-		static int count = 1;
-
 		internal TriggerBase(Type targetType)
 		{
-			TargetType = targetType ?? throw new ArgumentNullException(nameof(targetType));
+			if (targetType == null)
+				throw new ArgumentNullException("targetType");
+			TargetType = targetType;
 
 			EnterActions = new SealedList<TriggerAction>();
 			ExitActions = new SealedList<TriggerAction>();
-			Specificity = new SetterSpecificity(0, 100 + (count++), 0, 0, 0, 0, 0, 0);
 		}
 
 		internal TriggerBase(Condition condition, Type targetType) : this(targetType)
@@ -58,9 +56,6 @@ namespace Microsoft.Maui.Controls
 
 		//Setters and Condition are used by Trigger, DataTrigger and MultiTrigger
 		internal IList<Setter> Setters { get; }
-
-		//FIXME: add specificity as ctor argument
-		internal SetterSpecificity Specificity { get; }
 
 		void IAttachedObject.AttachTo(BindableObject bindable)
 		{
@@ -109,12 +104,12 @@ namespace Microsoft.Maui.Controls
 				foreach (TriggerAction action in EnterActions)
 					action.DoInvoke(bindable);
 				foreach (Setter setter in Setters)
-					setter.Apply(bindable, Specificity);
+					setter.Apply(bindable);
 			}
 			else
 			{
 				foreach (Setter setter in Setters)
-					setter.UnApply(bindable, Specificity);
+					setter.UnApply(bindable);
 				foreach (TriggerAction action in ExitActions)
 					action.DoInvoke(bindable);
 			}

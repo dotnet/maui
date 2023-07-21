@@ -59,8 +59,7 @@ namespace Microsoft.Maui.Controls
 			for (var i = (sheets?.Count ?? 0) - 1; i >= 0; i--)
 			{
 				if (element is BindableObject bo)
-					//FIXME: is it ok to ignore specificty here ?
-					((IStyle)sheets[i]).Apply(bo, new SetterSpecificity());
+					((IStyle)sheets[i]).Apply(bo);
 			}
 
 			foreach (var child in element.GetVisualChildren())

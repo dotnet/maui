@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Controls
 		WeakReference<BindableObject> _weakTarget;
 		BindableProperty _targetProperty;
 		bool _attached;
-		SetterSpecificity specificity;
 
 		internal override BindingBase Clone() => new AppThemeBinding
 		{
@@ -27,13 +26,12 @@ namespace Microsoft.Maui.Controls
 			SetAttached(true);
 		}
 
-		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
+		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
 		{
 			_weakTarget = new WeakReference<BindableObject>(bindObj);
 			_targetProperty = targetProperty;
-			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged, specificity);
-			this.specificity = specificity;
-			ApplyCore(false);
+			base.Apply(context, bindObj, targetProperty, fromBindingContextChanged);
+			ApplyCore();
 			SetAttached(true);
 		}
 
@@ -61,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			else
 				Set();
 
-			void Set() => target.SetValueCore(_targetProperty, GetValue(), Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+			void Set() => target.SetValueCore(_targetProperty, GetValue());
 		}
 
 		object _light;

@@ -96,7 +96,8 @@ namespace Microsoft.Maui.Controls
 			if (newState == oldState)
 				return;
 
-			ConditionChanged?.Invoke(bindable, oldState, newState);
+			if (ConditionChanged != null)
+				ConditionChanged(bindable, oldState, newState);
 		}
 	}
 }

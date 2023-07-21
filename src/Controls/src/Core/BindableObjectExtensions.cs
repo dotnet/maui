@@ -25,7 +25,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children)
-			=> PropagateBindingContext(self, children, BindableObject.SetInheritedBindingContext);
+		{
+			PropagateBindingContext(self, children, BindableObject.SetInheritedBindingContext);
+		}
 
 		internal static void PropagateBindingContext<T>(this BindableObject self, IEnumerable<T> children, Action<BindableObject, object> setChildBindingContext)
 		{
@@ -49,9 +51,9 @@ namespace Microsoft.Maui.Controls
 									  string stringFormat = null)
 		{
 			if (self == null)
-				throw new ArgumentNullException(nameof(self));
+				throw new ArgumentNullException("self");
 			if (targetProperty == null)
-				throw new ArgumentNullException(nameof(targetProperty));
+				throw new ArgumentNullException("targetProperty");
 
 			var binding = new Binding(path, mode, converter, stringFormat: stringFormat);
 			self.SetBinding(targetProperty, binding);
@@ -122,7 +124,6 @@ namespace Microsoft.Maui.Controls
 		public static void SetAppTheme<T>(this BindableObject self, BindableProperty targetProperty, T light, T dark) => self.SetBinding(targetProperty, new AppThemeBinding { Light = light, Dark = dark });
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObjectExtensions.xml" path="//Member[@MemberName='SetAppThemeColor']/Docs/*" />
-		public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, Color light, Color dark)
-			=> SetAppTheme(self, targetProperty, light, dark);
+		public static void SetAppThemeColor(this BindableObject self, BindableProperty targetProperty, Color light, Color dark) => SetAppTheme(self, targetProperty, light, dark);
 	}
 }

@@ -368,7 +368,9 @@ namespace Microsoft.Maui.Controls
 		void SelectRadioButton(object sender, EventArgs e)
 		{
 			if (IsEnabled)
-				SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			{
+				IsChecked = true;
+			}
 		}
 
 		void OnIsCheckedPropertyChanged(bool isChecked)
@@ -431,7 +433,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			SetValue(IsCheckedProperty, false, specificity: SetterSpecificity.FromHandler);
+			IsChecked = false;
 		}
 
 		void HandleRadioButtonGroupValueChanged(Element layout, RadioButtonGroupValueChanged args)
@@ -441,7 +443,7 @@ namespace Microsoft.Maui.Controls
 				return;
 			}
 
-			SetValue(IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+			IsChecked = true;
 		}
 
 		static void BindToTemplatedParent(BindableObject bindableObject, params BindableProperty[] properties)

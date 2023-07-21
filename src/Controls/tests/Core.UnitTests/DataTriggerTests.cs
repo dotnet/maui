@@ -50,7 +50,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			element.Triggers.Add(datatrigger);
 
 			Assert.Equal("default", element.GetValue(setterbp));
-
 			element.BindingContext = new { foo = "foobar" };
 			Assert.Equal("qux", element.GetValue(setterbp));
 			element.Triggers.Remove(datatrigger);

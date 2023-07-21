@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			UpdateClearButtonState();
 
-			SearchHandler.SetValue(SearchHandler.QueryProperty, text);
+			SearchHandler.SetValueCore(SearchHandler.QueryProperty, text);
 
 			if (SearchHandler.ShowsResults)
 			{

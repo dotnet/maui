@@ -237,7 +237,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 
 		[TestFixture]
-		[Ignore("fails for now")]
 		public class Tests
 		{
 			MockDeviceInfo mockDeviceInfo;
@@ -275,7 +274,6 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 
 			[TestCase(false, "iOS")]
 			[TestCase(false, "Android")]
-			[Ignore("fails for now")]
 			//[TestCase(true)]
 			public void PlatformInContentView(bool useCompiledXaml, string platform)
 			{

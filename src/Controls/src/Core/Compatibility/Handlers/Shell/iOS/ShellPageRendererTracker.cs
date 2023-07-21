@@ -709,7 +709,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_searchController.SetSearchResultsUpdater(sc =>
 			{
-				SearchHandler.SetValue(SearchHandler.QueryProperty, sc.SearchBar.Text);
+				SearchHandler.SetValueCore(SearchHandler.QueryProperty, sc.SearchBar.Text);
 			});
 
 			searchBar.BookmarkButtonClicked += BookmarkButtonClicked;
@@ -845,11 +845,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			_isVisiblePage = false;
 
-			// This will only be null if the user removes a shell page
-			// while that shell page is loading.
-			// When that happens this control will dispose and these
-			// events will be cleaned up there
-			if (_context?.Shell?.Toolbar is not null)
+			if (_context.Shell.Toolbar != null)
 				_context.Shell.Toolbar.PropertyChanged -= OnToolbarPropertyChanged;
 		}
 

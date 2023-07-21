@@ -236,7 +236,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(42, view.GetValue(Grid.RowProperty));
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void Set2WayBindings()
 		{
 			var platformView = new MockPlatformView();
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(42, vm.BBar);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void Set2WayBindingsWithUpdateSourceEvent()
 		{
 			var platformView = new MockPlatformView();
@@ -293,7 +293,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("foo", vm.FFoo);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void Set2WayBindingsWithUpdateSourceEventInBindingObject()
 		{
 			var platformView = new MockPlatformView();
@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			platformView.SetBindingContext(vm);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void TestConverterWorks()
 		{
 			var platformView = new MockPlatformView();
@@ -433,7 +433,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(vm.CColor, platformView.SelectedColor.FormsColor);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void TestConverter2WayWorks()
 		{
 			var platformView = new MockPlatformView();
@@ -456,7 +456,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void Binding2WayWithConvertersDoNotLoop()
 		{
 			var platformView = new MockPlatformView();
@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(1, count);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void ThrowsOnMissingProperty()
 		{
 			var platformView = new MockPlatformView();
@@ -501,7 +501,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("foobar", vm.FFoo);
 		}
 
-		[Fact(Skip = "PlatformBindings aren't used")]
+		[Fact]
 		public void DoNotApplyNull()
 		{
 			var native = new MockPlatformView();

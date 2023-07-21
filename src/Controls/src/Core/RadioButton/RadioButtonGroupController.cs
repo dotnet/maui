@@ -106,7 +106,7 @@ namespace Microsoft.Maui.Controls
 
 			if (object.Equals(radioButton.Value, this.SelectedValue))
 			{
-				radioButton.SetValue(RadioButton.IsCheckedProperty, true, specificity: SetterSpecificity.FromHandler);
+				radioButton.IsChecked = true;
 			}
 		}
 

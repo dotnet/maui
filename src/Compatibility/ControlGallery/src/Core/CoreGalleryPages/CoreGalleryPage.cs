@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 		protected virtual void Build(StackLayout stackLayout)
 		{
 			var isFocusedView = new T();
-			isFocusedView.SetValue(IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+			isFocusedView.SetValueCore(IsFocusedPropertyKey, true);
 
 			IsEnabledStateViewContainer = new StateViewContainer<T>(Test.VisualElement.IsEnabled, new T { IsEnabled = true });
 			IsEnabledStateViewContainer.StateChangeButton.Command = new Command(() =>
@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 				if ((bool)isFocusedView.GetValue(VisualElement.IsFocusedProperty))
 				{
-					isFocusedView.SetValue(IsFocusedPropertyKey, false, specificity: SetterSpecificity.FromHandler);
+					isFocusedView.SetValueCore(IsFocusedPropertyKey, false);
 				}
 				else
 				{
-					isFocusedView.SetValue(IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+					isFocusedView.SetValueCore(IsFocusedPropertyKey, true);
 				}
 			});
 

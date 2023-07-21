@@ -110,11 +110,11 @@ namespace Microsoft.Maui.Controls
 
 			if (Command != null)
 			{
-				SetValue(IsEnabledProperty, Command.CanExecute(CommandParameter));
+				SetValueCore(IsEnabledProperty, Command.CanExecute(CommandParameter));
 			}
 			else
 			{
-				SetValue(IsEnabledProperty, true);
+				SetValueCore(IsEnabledProperty, true);
 			}
 		}
 

@@ -115,33 +115,33 @@ namespace Microsoft.Maui.Controls
 			_expression.Apply(fromTarget);
 		}
 
-		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
+		internal override void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false)
 		{
 			object src = _source;
 			var isApplied = IsApplied;
 
-			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged, specificity);
+			base.Apply(src ?? context, bindObj, targetProperty, fromBindingContextChanged: fromBindingContextChanged);
 
 			if (src != null && isApplied && fromBindingContextChanged)
 				return;
 
 			if (Source is RelativeBindingSource)
 			{
-				ApplyRelativeSourceBinding(bindObj, targetProperty, specificity);
+				ApplyRelativeSourceBinding(bindObj, targetProperty);
 			}
 			else
 			{
 				object bindingContext = src ?? Context ?? context;
 				if (_expression == null)
 					_expression = new BindingExpression(this, SelfPath);
-				_expression.Apply(bindingContext, bindObj, targetProperty, specificity);
+				_expression.Apply(bindingContext, bindObj, targetProperty);
 			}
 		}
 
 #pragma warning disable RECS0165 // Asynchronous methods should return a Task instead of void
 		async void ApplyRelativeSourceBinding(
 			BindableObject targetObject,
-			BindableProperty targetProperty, SetterSpecificity specificity)
+			BindableProperty targetProperty)
 #pragma warning restore RECS0165 // Asynchronous methods should return a Task instead of void
 		{
 			if (!(Source is RelativeBindingSource relativeSource))
@@ -164,21 +164,20 @@ namespace Microsoft.Maui.Controls
 
 				case RelativeBindingSourceMode.FindAncestor:
 				case RelativeBindingSourceMode.FindAncestorBindingContext:
-					ApplyAncestorTypeBinding(targetObject, relativeSourceTarget, targetProperty, specificity);
+					ApplyAncestorTypeBinding(targetObject, relativeSourceTarget, targetProperty);
 					return;
 
 				default:
 					throw new InvalidOperationException();
 			}
 
-			_expression.Apply(resolvedSource, targetObject, targetProperty, specificity);
+			_expression.Apply(resolvedSource, targetObject, targetProperty);
 		}
 
 		void ApplyAncestorTypeBinding(
 			BindableObject actualTarget,
 			Element relativeSourceTarget,
 			BindableProperty targetProperty,
-			SetterSpecificity specificity,
 			Element currentElement = null,
 			int currentLevel = 0,
 			List<Element> chain = null,
@@ -195,7 +194,7 @@ namespace Microsoft.Maui.Controls
 			{
 				// Couldn't find the desired ancestor type in the chain, but it may be added later, 
 				// so apply with a null source for now.
-				_expression.Apply(null, actualTarget, targetProperty, specificity);
+				_expression.Apply(null, actualTarget, targetProperty);
 				_expression.SubscribeToAncestryChanges(
 					chain,
 					relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext,
@@ -211,7 +210,7 @@ namespace Microsoft.Maui.Controls
 						resolvedSource = currentElement.RealParent;
 					else
 						resolvedSource = currentElement.RealParent?.BindingContext;
-					_expression.Apply(resolvedSource, actualTarget, targetProperty, specificity);
+					_expression.Apply(resolvedSource, actualTarget, targetProperty);
 					_expression.SubscribeToAncestryChanges(
 						chain,
 						relativeSource.Mode == RelativeBindingSourceMode.FindAncestorBindingContext,
@@ -223,7 +222,6 @@ namespace Microsoft.Maui.Controls
 						actualTarget,
 						relativeSourceTarget,
 						targetProperty,
-						specificity,
 						currentElement.RealParent,
 						currentLevel,
 						chain,
@@ -240,7 +238,6 @@ namespace Microsoft.Maui.Controls
 						actualTarget,
 						relativeSourceTarget,
 						targetProperty,
-						specificity,
 						currentElement,
 						currentLevel,
 						chain,

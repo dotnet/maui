@@ -355,7 +355,7 @@ namespace Microsoft.Maui.Controls
 			if (!RefreshAllowed)
 				return;
 
-			SetValue(IsRefreshingProperty, true);
+			SetValueCore(IsRefreshingProperty, true);
 			OnRefreshing(EventArgs.Empty);
 
 			ICommand command = RefreshCommand;
@@ -365,7 +365,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='EndRefresh']/Docs/*" />
 		public void EndRefresh()
 		{
-			SetValue(IsRefreshingProperty, false);
+			SetValueCore(IsRefreshingProperty, false);
 		}
 
 		public event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
@@ -517,9 +517,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-#pragma warning disable CS0618 // Type or member is obsolete
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			cell?.OnTapped();
 
@@ -545,9 +543,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-#pragma warning disable CS0618 // Type or member is obsolete
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
-#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (isContextMenuRequested || cell == null)
 			{

@@ -26,7 +26,6 @@ namespace Microsoft.Maui.Controls
 		WeakReference<BindableObject> _weakTarget;
 		List<WeakReference<Element>> _ancestryChain;
 		bool _isBindingContextRelativeSource;
-		SetterSpecificity _specificity;
 
 		internal BindingExpression(BindingBase binding, string path)
 		{
@@ -55,16 +54,15 @@ namespace Microsoft.Maui.Controls
 			}
 
 			if (_weakSource.TryGetTarget(out var source) && _targetProperty != null)
-				ApplyCore(source, target, _targetProperty, fromTarget, _specificity);
+				ApplyCore(source, target, _targetProperty, fromTarget);
 		}
 
 		/// <summary>
 		///     Applies the binding expression to a new source or target.
 		/// </summary>
-		internal void Apply(object sourceObject, BindableObject target, BindableProperty property, SetterSpecificity specificity)
+		internal void Apply(object sourceObject, BindableObject target, BindableProperty property)
 		{
 			_targetProperty = property;
-			_specificity = specificity;
 
 			if (_weakTarget != null && _weakTarget.TryGetTarget(out BindableObject prevTarget) && !ReferenceEquals(prevTarget, target))
 				throw new InvalidOperationException("Binding instances cannot be reused");
@@ -75,7 +73,7 @@ namespace Microsoft.Maui.Controls
 			_weakSource = new WeakReference<object>(sourceObject);
 			_weakTarget = new WeakReference<BindableObject>(target);
 
-			ApplyCore(sourceObject, target, property, false, specificity);
+			ApplyCore(sourceObject, target, property);
 		}
 
 		internal void Unapply()
@@ -102,7 +100,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		///     Applies the binding expression to a previously set source or target.
 		/// </summary>
-		void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget, SetterSpecificity specificity)
+		void ApplyCore(object sourceObject, BindableObject target, BindableProperty property, bool fromTarget = false)
 		{
 			BindingMode mode = Binding.GetRealizedMode(_targetProperty);
 			if ((mode == BindingMode.OneWay || mode == BindingMode.OneTime) && fromTarget)
@@ -160,7 +158,7 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
-				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+				target.SetValueCore(property, value, SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted);
 			}
 			else if (needsSetter && part.LastSetter != null && current != null)
 			{
@@ -553,7 +551,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			binding.Unapply();
-			binding.Apply(null, target, _targetProperty, false, SetterSpecificity.FromBinding);
+			binding.Apply(null, target, _targetProperty);
 		}
 
 		void OnElementParentSet(object sender, EventArgs e)
@@ -582,12 +580,12 @@ namespace Microsoft.Maui.Controls
 				// Force the binding expression to resolve to null
 				// for now, until someone in the chain gets a new
 				// non-null parent.
-				this.ApplyCore(null, target, _targetProperty, false, _specificity);
+				this.ApplyCore(null, target, _targetProperty);
 			}
 			else
 			{
 				binding.Unapply();
-				binding.Apply(null, target, _targetProperty, false, _specificity);
+				binding.Apply(null, target, _targetProperty);
 			}
 		}
 

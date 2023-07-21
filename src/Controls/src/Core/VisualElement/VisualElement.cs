@@ -1581,7 +1581,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value);
+			set => SetValueCore(IsFocusedPropertyKey, value);
 		}
 
 		FlowDirection IView.FlowDirection => FlowDirection;

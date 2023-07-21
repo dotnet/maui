@@ -657,6 +657,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void HeaderTemplateThrowsIfCell()
+		{
+			var lv = new ListView();
+
+			Assert.Throws<ArgumentException>(() => lv.HeaderTemplate = new DataTemplate(typeof(TextCell)));
+		}
+
+		[Fact]
+		public void FooterTemplateThrowsIfCell()
+		{
+			var lv = new ListView();
+
+			Assert.Throws<ArgumentException>(() => lv.FooterTemplate = new DataTemplate(typeof(TextCell)));
+		}
+
+		[Fact]
 		public void HeaderObjectTemplatedChanged()
 		{
 			var lv = new ListView

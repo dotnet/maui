@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void DoNotSignalWhenAlreadyFocused()
 		{
 			var view = new View();
-			view.SetValue(VisualElement.IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 			bool signaled = false;
 			view.FocusChangeRequested += (sender, args) => signaled = true;
 
@@ -409,7 +409,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UnFocus()
 		{
 			var view = new View();
-			view.SetValue(VisualElement.IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 			var requested = false;
 			view.FocusChangeRequested += (sender, args) =>
@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void UnFocusDoesNotFireWhenNotFocused()
 		{
 			var view = new View();
-			view.SetValue(VisualElement.IsFocusedPropertyKey, false, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, false);
 
 			var requested = false;
 			view.FocusChangeRequested += (sender, args) =>
@@ -446,7 +446,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool fired = false;
 			view.Focused += (sender, args) => fired = true;
-			view.SetValue(VisualElement.IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 
 			Assert.True(fired);
@@ -456,11 +456,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestUnFocusedEvent()
 		{
 			var view = new View();
-			view.SetValue(VisualElement.IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, true);
 
 			bool fired = false;
 			view.Unfocused += (sender, args) => fired = true;
-			view.SetValue(VisualElement.IsFocusedPropertyKey, false, specificity: SetterSpecificity.FromHandler);
+			view.SetValueCore(VisualElement.IsFocusedPropertyKey, false);
 
 			Assert.True(fired);
 		}

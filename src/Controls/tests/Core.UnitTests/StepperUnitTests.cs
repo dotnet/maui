@@ -28,23 +28,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void TestInvalidMaxValue()
 		{
 			Stepper stepper = new Stepper();
-			stepper.Maximum = stepper.Minimum - 1;
-			Assert.NotEqual(stepper.Minimum, stepper.Maximum);
+			Assert.Throws<ArgumentException>(() => stepper.Maximum = stepper.Minimum - 1);
 		}
 
 		[Fact]
 		public void TestInvalidMinValue()
 		{
 			Stepper stepper = new Stepper();
-			stepper.Minimum = stepper.Maximum + 1;
-			Assert.NotEqual(stepper.Minimum, stepper.Maximum);
+			Assert.Throws<ArgumentException>(() => stepper.Minimum = stepper.Maximum + 1);
 		}
 
 		[Fact]
 		public void TestValidMaxValue()
 		{
 			Stepper stepper = new Stepper();
+
 			stepper.Maximum = 2000;
+
 			Assert.Equal(2000, stepper.Maximum);
 		}
 

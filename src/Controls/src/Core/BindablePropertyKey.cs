@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 		internal BindablePropertyKey(BindableProperty property)
 		{
 			if (property == null)
-				throw new ArgumentNullException(nameof(property));
+				throw new ArgumentNullException("property");
 
 			BindableProperty = property;
 		}

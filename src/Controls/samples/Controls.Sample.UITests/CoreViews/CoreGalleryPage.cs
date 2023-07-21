@@ -66,7 +66,7 @@ namespace Maui.Controls.Sample
 		protected virtual void Build(StackLayout stackLayout)
 		{
 			var isFocusedView = new T();
-			isFocusedView.SetValueFromRenderer(IsFocusedPropertyKey.BindableProperty, true);
+			isFocusedView.SetValueCore(IsFocusedPropertyKey.BindableProperty, true);
 
 			IsEnabledStateViewContainer = new StateViewContainer<T>(Test.VisualElement.IsEnabled, new T { IsEnabled = true });
 			IsEnabledStateViewContainer.StateChangeButton.Command = new Command(() =>
@@ -86,11 +86,11 @@ namespace Maui.Controls.Sample
 
 				if ((bool)isFocusedView.GetValue(VisualElement.IsFocusedProperty))
 				{
-					isFocusedView.SetValueFromRenderer(IsFocusedPropertyKey.BindableProperty, false);
+					isFocusedView.SetValueCore(IsFocusedPropertyKey.BindableProperty, false);
 				}
 				else
 				{
-					isFocusedView.SetValueFromRenderer(IsFocusedPropertyKey.BindableProperty, true);
+					isFocusedView.SetValueCore(IsFocusedPropertyKey.BindableProperty, true);
 				}
 			});
 

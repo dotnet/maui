@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	public class DatePickerUnitTest : BaseTestFixture
 	{
 		[Fact]
-		public void TestMinimumDate()
+		public void TestMinimumDateException()
 		{
 			DatePicker picker = new DatePicker();
 
@@ -16,12 +16,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(new DateTime(1950, 1, 1), picker.MinimumDate);
 
-			picker.MinimumDate = new DateTime(2200, 1, 1);
-			Assert.Equal(new DateTime(1950, 1, 1), picker.MinimumDate);
+			Assert.Throws<ArgumentException>(() => picker.MinimumDate = new DateTime(2200, 1, 1));
 		}
 
 		[Fact]
-		public void TestMaximumDate()
+		public void TestMaximumDateException()
 		{
 			DatePicker picker = new DatePicker();
 
@@ -29,8 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(new DateTime(2050, 1, 1), picker.MaximumDate);
 
-			picker.MaximumDate = new DateTime(1800, 1, 1);
-			Assert.Equal(new DateTime(2050, 1, 1), picker.MaximumDate);
+			Assert.Throws<ArgumentException>(() => picker.MaximumDate = new DateTime(1800, 1, 1));
 		}
 
 		[Fact]
