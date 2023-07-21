@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
 			new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper);
 
-		internal static new void RemapForControls()
+		internal static void RemapForControls()
 		{
 #if ANDROID || WINDOWS || TIZEN
 			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.IsVisible), MapIsVisible);
