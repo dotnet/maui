@@ -296,7 +296,6 @@ Task("uitest")
 			ToolPath = toolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
-				.Append("/p:SelfContained=True")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
 				//.Append("/tl")
