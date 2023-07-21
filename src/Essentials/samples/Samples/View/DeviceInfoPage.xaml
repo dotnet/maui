@@ -14,6 +14,7 @@
         <ScrollView Grid.Row="1">
             <StackLayout Padding="12,0,12,12" Spacing="6">
                 <Label Text="Device Info:" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="{Binding DeviceId, StringFormat='Device ID: {0}'}" />
                 <Label Text="{Binding Model, StringFormat='Model: {0}'}" />
                 <Label Text="{Binding Manufacturer, StringFormat='Manufacturer: {0}'}" />
                 <Label Text="{Binding Name, StringFormat='Device Name: {0}'}" />

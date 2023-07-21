@@ -5,6 +5,8 @@ namespace Microsoft.Maui.Devices
 {
 	class DeviceInfoImplementation : IDeviceInfo
 	{
+		public string DeviceId => PlatformUtils.GetSystemInfo("tizenid");
+
 		public string Model => PlatformUtils.GetSystemInfo("model_name");
 
 		public string Manufacturer => PlatformUtils.GetSystemInfo("manufacturer");

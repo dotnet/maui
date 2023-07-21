@@ -515,6 +515,7 @@ Microsoft.Maui.Devices.IDeviceDisplay.KeepScreenOn.set -> void
 Microsoft.Maui.Devices.IDeviceDisplay.MainDisplayInfo.get -> Microsoft.Maui.Devices.DisplayInfo
 Microsoft.Maui.Devices.IDeviceDisplay.MainDisplayInfoChanged -> System.EventHandler<Microsoft.Maui.Devices.DisplayInfoChangedEventArgs!>!
 Microsoft.Maui.Devices.IDeviceInfo
+Microsoft.Maui.Devices.IDeviceInfo.DeviceId.get -> string!
 Microsoft.Maui.Devices.IDeviceInfo.DeviceType.get -> Microsoft.Maui.Devices.DeviceType
 Microsoft.Maui.Devices.IDeviceInfo.Idiom.get -> Microsoft.Maui.Devices.DeviceIdiom
 Microsoft.Maui.Devices.IDeviceInfo.Manufacturer.get -> string!
@@ -993,6 +994,7 @@ static Microsoft.Maui.Devices.DeviceIdiom.TV.get -> Microsoft.Maui.Devices.Devic
 static Microsoft.Maui.Devices.DeviceIdiom.Unknown.get -> Microsoft.Maui.Devices.DeviceIdiom
 static Microsoft.Maui.Devices.DeviceIdiom.Watch.get -> Microsoft.Maui.Devices.DeviceIdiom
 static Microsoft.Maui.Devices.DeviceInfo.Current.get -> Microsoft.Maui.Devices.IDeviceInfo!
+static Microsoft.Maui.Devices.DeviceInfo.DeviceId.get -> string!
 static Microsoft.Maui.Devices.DeviceInfo.DeviceType.get -> Microsoft.Maui.Devices.DeviceType
 static Microsoft.Maui.Devices.DeviceInfo.Idiom.get -> Microsoft.Maui.Devices.DeviceIdiom
 static Microsoft.Maui.Devices.DeviceInfo.Manufacturer.get -> string!
