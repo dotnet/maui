@@ -66,21 +66,21 @@ namespace Microsoft.Maui.Handlers
 
 #if WINDOWS
 		/// <summary>
-		/// Maps the abstract <see cref="IActivityIndicator.Width"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IView.Width"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
 		public static partial void MapWidth(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
 
 		/// <summary>
-		/// Maps the abstract <see cref="IActivityIndicator.Height"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IView.Height"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
 		public static partial void MapHeight(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator);
 
 		/// <summary>
-		/// Maps the abstract <see cref="IActivityIndicator.Background"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="activityIndicator">The associated <see cref="IActivityIndicator"/> instance.</param>
