@@ -283,6 +283,7 @@ namespace Microsoft.Maui.Controls
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
+		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
@@ -343,6 +344,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool IsTemplateRoot { get; set; }
 
+		/// <inheritdoc/>
 		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			if (_changeHandlers == null)
@@ -550,6 +552,7 @@ namespace Microsoft.Maui.Controls
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
 
+		/// <inheritdoc/>
 		IEnumerable<Element> IElementController.Descendants() =>
 			Descendants<Element>();
 
@@ -784,8 +787,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Occurs whenever the element's parent has changed.</summary>
 		public event EventHandler ParentChanged;
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanging"/> event</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanging"/> event</remarks>
+		/// <param name="args">Provides data for the <see cref="ParentChanging"/> event</param>
 		protected virtual void OnParentChanging(ParentChangingEventArgs args) { }
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanged"/> event</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanged"/> event</remarks>
 		protected virtual void OnParentChanged() { }
 
 		private protected virtual void OnParentChangedCore()
@@ -830,7 +838,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanging"/> event</summary>
 		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanging"/> event</remarks>
-		/// <param name="args">Event arguments containing information about the old and new handlers</param>
+		/// <param name="args">Provides data for the <see cref="HandlerChanging"/> event</param>
 		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
 
 		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanged"/> event</summary>
