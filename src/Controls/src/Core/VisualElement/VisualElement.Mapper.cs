@@ -7,36 +7,33 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="Type[@FullName='Microsoft.Maui.Controls.VisualElement']/Docs/*" />
 	public partial class VisualElement
 	{
-		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper =
-			new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper);
+		[Obsolete("Use ViewHandler.ViewMapper instead.")]
+		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper = new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper);
 
 		internal static new void RemapForControls()
 		{
 #if WINDOWS
-			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
-			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
-			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
-			ViewHandler.ViewMapper.AppendToMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
+			ViewHandler.ViewMapper.ReplaceMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyHorizontalOffsetProperty.PropertyName, MapAccessKeyHorizontalOffset);
+			ViewHandler.ViewMapper.ReplaceMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyPlacementProperty.PropertyName, MapAccessKeyPlacement);
+			ViewHandler.ViewMapper.ReplaceMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyProperty.PropertyName, MapAccessKey);
+			ViewHandler.ViewMapper.ReplaceMapping(PlatformConfiguration.WindowsSpecific.VisualElement.AccessKeyVerticalOffsetProperty.PropertyName, MapAccessKeyVerticalOffset);
 #endif
-			ViewHandler.ViewMapper.AppendToMapping(nameof(BackgroundColor), MapBackgroundColor);
-			ViewHandler.ViewMapper.AppendToMapping(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
-			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
-			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
-			ViewHandler.ViewMapper.AppendToMapping(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
-			ViewHandler.ViewMapper.AppendToMapping(nameof(IViewHandler.ContainerView), MapContainerView);
+			ViewHandler.ViewMapper.ReplaceMapping(nameof(BackgroundColor), MapBackgroundColor);
+			ViewHandler.ViewMapper.ReplaceMapping(nameof(Page.BackgroundImageSource), MapBackgroundImageSource);
+			ViewHandler.ViewMapper.ReplaceMapping(SemanticProperties.DescriptionProperty.PropertyName, MapSemanticPropertiesDescriptionProperty);
+			ViewHandler.ViewMapper.ReplaceMapping(SemanticProperties.HintProperty.PropertyName, MapSemanticPropertiesHintProperty);
+			ViewHandler.ViewMapper.ReplaceMapping(SemanticProperties.HeadingLevelProperty.PropertyName, MapSemanticPropertiesHeadingLevelProperty);
+
+			ViewHandler.ViewMapper.AppendToMapping<VisualElement, IViewHandler>(nameof(IViewHandler.ContainerView), MapContainerView);
 
 			ViewHandler.ViewCommandMapper.ModifyMapping<VisualElement, IViewHandler>(nameof(IView.Focus), MapFocus);
 		}
 
-		public static void MapBackgroundColor(IViewHandler handler, IView view)
-		{
+		public static void MapBackgroundColor(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
-		}
 
-		public static void MapBackgroundImageSource(IViewHandler handler, IView view)
-		{
+		public static void MapBackgroundImageSource(IViewHandler handler, IView view) =>
 			handler.UpdateValue(nameof(Background));
-		}
 
 		static void MapSemanticPropertiesHeadingLevelProperty(IViewHandler handler, IView element) =>
 			(element as VisualElement)?.UpdateSemanticsFromMapper();
@@ -53,13 +50,8 @@ namespace Microsoft.Maui.Controls
 			Handler?.UpdateValue(nameof(IView.Semantics));
 		}
 
-		static void MapContainerView(IViewHandler arg1, IView arg2)
-		{
-			if (arg2 is VisualElement ve)
-			{
-				ve._platformContainerViewChanged?.Invoke(arg2, EventArgs.Empty);
-			}
-		}
+		static void MapContainerView(IViewHandler handler, VisualElement element) =>
+			element._platformContainerViewChanged?.Invoke(element, EventArgs.Empty);
 
 		static void MapFocus(IViewHandler handler, VisualElement view, object args, Action<IElementHandler, IElement, object> baseMethod)
 		{
