@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal new static void RemapForControls()
 		{
-			CheckBoxHandler.Mapper.ReplaceMapping(nameof(Color), MapColor);
+			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
 		}
 
 		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)
