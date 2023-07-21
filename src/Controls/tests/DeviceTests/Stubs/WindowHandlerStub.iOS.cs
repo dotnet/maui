@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				_workSpace = new WorkspaceViewController();
 			}
 
-			for(int i = _workSpace.ChildViewControllers.Length - 1; i >= 0; i--)
+			for (int i = _workSpace.ChildViewControllers.Length - 1; i >= 0; i--)
 			{
 				_workSpace.ChildViewControllers[i].View.RemoveFromSuperview();
 				_workSpace.ChildViewControllers[i].RemoveFromParentViewController();
