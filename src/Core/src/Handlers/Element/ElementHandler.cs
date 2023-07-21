@@ -46,6 +46,11 @@ namespace Microsoft.Maui.Handlers
 
 			bool setupPlatformView = oldVirtualView == null;
 
+			if (oldVirtualView is not null)
+			{
+				(this as IElementHandler)?.Disconnect(false);
+			}
+
 			VirtualView = view;
 			PlatformView ??= CreatePlatformElement();
 
@@ -64,6 +69,7 @@ namespace Microsoft.Maui.Handlers
 				ConnectHandler(PlatformView);
 			}
 
+			(this as IElementHandler)?.Connect();
 			_mapper = _defaultMapper;
 
 			if (VirtualView is IPropertyMapperView imv)
@@ -120,8 +126,9 @@ namespace Microsoft.Maui.Handlers
 
 		void IElementHandler.DisconnectHandler()
 		{
-			if (PlatformView != null && VirtualView != null)
+			if (PlatformView is not null && VirtualView is not null)
 			{
+				DisconnectHandler(true);
 				// We set the PlatformView to null so no one outside of this handler tries to access
 				// PlatformView. PlatformView access should be isolated to the instance passed into
 				// DisconnectHandler
@@ -130,5 +137,52 @@ namespace Microsoft.Maui.Handlers
 				DisconnectHandler(oldPlatformView);
 			}
 		}
+
+		bool _isDisconnected;
+		bool _isConnected;
+
+		void IElementHandler.Disconnect(bool isDestroying)
+		{
+			// If the handler is being destroyed always call disconnect
+			if (isDestroying)
+			{
+				_isDisconnected = true;
+				_isConnected = false;
+				Disconnect(isDestroying);
+				return;
+			}
+
+			if (_isDisconnected)
+				return;
+
+			_isDisconnected = true;
+			_isConnected = false;
+			Disconnect(isDestroying);
+		}
+
+		void IElementHandler.Connect()
+		{
+			if (_isConnected)
+				return;
+
+			_isConnected = true;
+			_isDisconnected = false;
+			Connect();
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+
+		protected virtual void Disconnect(bool isDestroying)
+		{
+
+		}
+
+		protected virtual void Connect()
+		{
+
+		}
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }
