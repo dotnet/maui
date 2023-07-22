@@ -49,5 +49,13 @@ namespace Microsoft.Maui.Platform
 			_lastMeasureWidth = widthConstraint;
 			_lastMeasureHeight = heightConstraint;
 		}
+		public override void SafeAreaInsetsDidChange()
+		{
+			base.SafeAreaInsetsDidChange();
+
+			if (View is ISafeAreaView2 isav2)
+				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
+		}
+
 	}
 }
