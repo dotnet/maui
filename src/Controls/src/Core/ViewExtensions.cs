@@ -353,7 +353,7 @@ namespace Microsoft.Maui.Controls
 		{
 			Element current = self;
 
-			while (!Application.IsApplicationOrNull(current.RealParent))
+			while (!Application.IsApplicationOrNull(current?.RealParent))
 			{
 				current = current.RealParent;
 				yield return current;
