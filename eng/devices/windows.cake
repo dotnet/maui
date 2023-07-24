@@ -84,11 +84,13 @@ Task("uitest")
 	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
 	Information("new dotnet root: {0}", localDotnetRoot);
 
+	DOTNET_ROOT = localDotnetRoot.ToString();
+
 	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
 
 	Information("new dotnet toolPath: {0}", localToolPath);
 
-	SetDotNetEnvironmentVariables(dd.FullPath);
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
