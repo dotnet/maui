@@ -96,10 +96,9 @@ steps:
       displayName: 'Install the macOS certificate'
       inputs:
         certSecureFile: 'Components Mac Certificate.p12'
-  - ${{ else }}:
+  - ${{ if and(eq(parameters.useOldCertsTasks, 'false'), eq(variables['Agent.OS'], 'Darwin')) }}:
      # Install Certificates and Provisioning Profiles
     - template: install-certificates.yml@yaml-templates
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       parameters:
         DeveloperIdApplication: $(developer-id-application)
         DeveloperIdInstaller: $(developer-id-installer)
