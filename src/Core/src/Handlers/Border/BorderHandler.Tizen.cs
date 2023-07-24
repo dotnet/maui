@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
+
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
@@ -36,28 +37,29 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		public static void MapContent(IBorderHandler handler, IBorderView border)
+		static partial void UpdateContent(IBorderHandler handler)
 		{
-			if (handler is BorderHandler borderHandler)
-				borderHandler.UpdateContent();
-		}
+			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
+			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
+			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
-		void UpdateContent()
-		{
-			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
-			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
-			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+			handler.PlatformView.Children.Clear();
 
-			PlatformView.Children.Clear();
-			_contentHandler?.Dispose();
-			_contentHandler = null;
-
-			if (VirtualView.PresentedContent is IView view)
+			if (handler is BorderHandler bh)
 			{
-				PlatformView.Children.Add(view.ToPlatform(MauiContext));
+				bh._contentHandler?.Dispose();
+				bh._contentHandler = null;
+			}
+
+			if (handler.VirtualView.PresentedContent is IView view)
+			{
+				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
 				if (view.Handler is IPlatformViewHandler thandler)
 				{
-					_contentHandler = thandler;
+					if (handler is BorderHandler bh)
+					{
+						bh._contentHandler = thandler;
+					}
 				}
 			}
 		}

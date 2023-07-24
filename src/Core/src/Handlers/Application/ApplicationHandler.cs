@@ -14,6 +14,9 @@ using PlatformView = Tizen.Applications.CoreApplication;
 
 namespace Microsoft.Maui.Handlers
 {
+	/// <summary>
+	/// Represents the view handler for the abstract <see cref="IApplication"/> view and its platform-specific implementation.
+	/// </summary>
 	public partial class ApplicationHandler
 	{
 		internal const string TerminateCommandKey = "Terminate";
@@ -55,5 +58,29 @@ namespace Microsoft.Maui.Handlers
 		protected override PlatformView CreatePlatformElement() =>
 			MauiContext?.Services.GetService<PlatformView>() ?? throw new InvalidOperationException($"MauiContext did not have a valid application.");
 #endif
+
+		/// <summary>
+		/// Maps the abstract "Terminate" command to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
+		/// <param name="args">The associated command arguments.</param>
+		public static partial void MapTerminate(ApplicationHandler handler, IApplication application, object? args);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IApplication.OpenWindow"/> command to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
+		/// <param name="args">The associated command arguments.</param>
+		public static partial void MapOpenWindow(ApplicationHandler handler, IApplication application, object? args);
+
+		/// <summary>
+		/// Maps the abstract <see cref="IApplication.CloseWindow"/> command to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="application">The associated <see cref="IApplication"/> instance.</param>
+		/// <param name="args">The associated command arguments.</param>
+		public static partial void MapCloseWindow(ApplicationHandler handler, IApplication application, object? args);
 	}
 }

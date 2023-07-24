@@ -12,6 +12,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
+	/// <summary>
+	/// Represents the view handler for the abstract <see cref="IActivityIndicator"/> view and its platform-specific implementation.
+	/// </summary>
 	public partial class ActivityIndicatorHandler : IActivityIndicatorHandler
 	{
 		public static IPropertyMapper<IActivityIndicator, IActivityIndicatorHandler> Mapper = new PropertyMapper<IActivityIndicator, IActivityIndicatorHandler>(ViewHandler.ViewMapper)
