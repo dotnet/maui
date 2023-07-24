@@ -12,6 +12,7 @@ parameters:
   gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
   keyringPass : ""
   useOldCertsTasks: true
+  agentOS : $(Agent.OS)
 
 steps:
   # Prepare macOS
@@ -24,7 +25,7 @@ steps:
       SelfHealPowerShell: false
       AUTH_TOKEN_GITHUB_COM: $(github--pat--vs-mobiletools-engineering-service2)
 
-  - ${{ if eq(variables['Agent.OS'], 'Darwin') }}:
+  - ${{ if eq(parameters.agentOS, 'Darwin') }}:
     # Provision Xcode
     - ${{ if ne(parameters.skipXcode, 'true') }}:
       - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -101,7 +102,7 @@ steps:
           MacDeveloper: $(mac-developer)
           HostedMacKeychainPassword: ${{ parameters.keyringPass }}
       
-  - ${{ if eq(variables['Agent.OS'], 'Windows_NT') }}:
+  - ${{ if eq(parameters.agentOS, 'Windows_NT') }}:
     # Prepare Windows
     - powershell: |
         if (-not $(where.exe pwsh)) {
