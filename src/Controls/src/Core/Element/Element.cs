@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Controls
 
 		List<Action<object, ResourcesChangedEventArgs>> _changeHandlers;
 
-		Dictionary<BindableProperty, string> _dynamicResources;
+		Dictionary<BindableProperty, (string, SetterSpecificity)> _dynamicResources;
 
 		IEffectControlProvider _effectControlProvider;
 
@@ -146,7 +146,12 @@ namespace Microsoft.Maui.Controls
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
 		}
 
-		internal void InsertLogicalChildInternal(int index, Element element)
+		/// <summary>
+		/// Inserts an <see cref="Element"/> to the logical children at the specified index.
+		/// </summary>
+		/// <param name="index">The zero-based index at which <see cref="Element"/> should be inserted.</param>
+		/// <param name="element">The <see cref="Element"/> to insert into the logical children.</param>
+		public void InsertLogicalChild(int index, Element element)
 		{
 			if (element is null)
 			{
@@ -159,7 +164,11 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
-		internal void AddLogicalChildInternal(Element element)
+		/// <summary>
+		/// Adds an <see cref="Element"/> to the logical children.
+		/// </summary>
+		/// <param name="element">The <see cref="Element"/> to add to the logical children.</param>
+		public void AddLogicalChild(Element element)
 		{
 			if (element is null)
 			{
@@ -172,7 +181,15 @@ namespace Microsoft.Maui.Controls
 			OnChildAdded(element);
 		}
 
-		internal bool RemoveLogicalChildInternal(Element element)
+		/// <summary>
+		/// Removes the first occurrence of a specific <see cref="Element"/> from the logical children.
+		/// </summary>
+		/// <param name="element">The <see cref="Element"/> to remove.</param>
+		/// <returns>
+		///	true if item was successfully removed from the logical children;
+		/// otherwise, false. This method also returns false if <see cref="Element"/> is not found.
+		///	</returns>
+		public bool RemoveLogicalChild(Element element)
 		{
 			if (element is null)
 			{
@@ -182,16 +199,19 @@ namespace Microsoft.Maui.Controls
 			if (LogicalChildrenInternalBackingStore is null)
 				return false;
 
-			var oldLogicalIndex = LogicalChildrenInternalBackingStore.IndexOf(element);
-			if (oldLogicalIndex < 0)
+			var index = LogicalChildrenInternalBackingStore.IndexOf(element);
+			if (index < 0)
 				return false;
 
-			RemoveLogicalChildInternal(element, oldLogicalIndex);
+			RemoveLogicalChild(element, index);
 
 			return true;
 		}
 
-		internal void ClearLogicalChildren()
+		/// <summary>
+		///  Removes all <see cref="Element"/>s.
+		/// </summary>
+		public void ClearLogicalChildren()
 		{
 			if (LogicalChildrenInternalBackingStore is null)
 				return;
@@ -202,40 +222,17 @@ namespace Microsoft.Maui.Controls
 			// Reverse for-loop, so children can be removed while iterating
 			for (int i = LogicalChildrenInternalBackingStore.Count - 1; i >= 0; i--)
 			{
-				RemoveLogicalChildInternal(LogicalChildrenInternalBackingStore[i], i);
+				RemoveLogicalChild(LogicalChildrenInternalBackingStore[i], i);
 			}
 		}
 
-		/// <summary>
-		/// This doesn't validate that the oldLogicalIndex is correct, so be sure you're passing in the
-		/// correct index
-		/// </summary>
-		internal bool RemoveLogicalChildInternal(Element element, int oldLogicalIndex)
+		internal bool RemoveLogicalChild(Element element, int index)
 		{
 			LogicalChildrenInternalBackingStore.Remove(element);
-			OnChildRemoved(element, oldLogicalIndex);
+			OnChildRemoved(element, index);
 
 			return true;
 		}
-
-		internal IEnumerable<Element> AllChildren
-		{
-			get
-			{
-				foreach (var child in LogicalChildrenInternal)
-					yield return child;
-
-				var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
-				if (childrenNotDrawnByThisElement is not null)
-				{
-					foreach (var child in childrenNotDrawnByThisElement)
-						yield return child;
-				}
-			}
-		}
-
-		// return null by default so we don't need to foreach over an empty collection in OnPropertyChanged
-		internal virtual IEnumerable<Element> ChildrenNotDrawnByThisElement => null;
 
 		internal bool Owned { get; set; }
 
@@ -274,7 +271,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
-		Dictionary<BindableProperty, string> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, string>());
+		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
@@ -286,48 +283,50 @@ namespace Microsoft.Maui.Controls
 		public Element Parent
 		{
 			get { return _parentOverride ?? RealParent; }
-			set
+			set => SetParent(value);
+		}
+
+		void SetParent(Element value)
+		{
+			if (RealParent == value)
+				return;
+
+			OnPropertyChanging(nameof(Parent));
+
+			if (_parentOverride == null)
+				OnParentChangingCore(Parent, value);
+
+			if (RealParent != null)
 			{
-				if (RealParent == value)
-					return;
+				((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
 
-				OnPropertyChanging();
-
-				if (_parentOverride == null)
-					OnParentChangingCore(Parent, value);
-
-				if (RealParent != null)
-				{
-					((IElementDefinition)RealParent).RemoveResourcesChangedListener(OnParentResourcesChanged);
-
-					if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
-						Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
-				}
-
-				RealParent = value;
-				if (RealParent != null)
-				{
-					OnParentResourcesChanged(RealParent.GetMergedResources());
-					((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
-				}
-
-				object context = value?.BindingContext;
-				if (value != null)
-				{
-					value.SetChildInheritedBindingContext(this, context);
-				}
-				else
-				{
-					SetInheritedBindingContext(this, null);
-				}
-
-				OnParentSet();
-
-				if (_parentOverride == null)
-					OnParentChangedCore();
-
-				OnPropertyChanged();
+				if (value != null && (RealParent is Layout || RealParent is IControlTemplated))
+					Application.Current?.FindMauiContext()?.CreateLogger<Element>()?.LogWarning($"{this} is already a child of {RealParent}. Remove {this} from {RealParent} before adding to {value}.");
 			}
+
+			RealParent = value;
+			if (RealParent != null)
+			{
+				OnParentResourcesChanged(RealParent.GetMergedResources());
+				((IElementDefinition)RealParent).AddResourcesChangedListener(OnParentResourcesChanged);
+			}
+
+			object context = value?.BindingContext;
+			if (value != null)
+			{
+				value.SetChildInheritedBindingContext(this, context);
+			}
+			else
+			{
+				SetInheritedBindingContext(this, null);
+			}
+
+			OnParentSet();
+
+			if (_parentOverride == null)
+				OnParentChangedCore();
+
+			OnPropertyChanged(nameof(Parent));
 		}
 
 		internal bool IsTemplateRoot { get; set; }
@@ -370,14 +369,14 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
-			SetValueCore(property, value);
+			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][2]/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
-			SetValueCore(property, value);
+			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectIsAttached']/Docs/*" />
@@ -456,7 +455,7 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnChildAdded(Element child)
 		{
-			child.Parent = this;
+			child.SetParent(this);
 
 			child.ApplyBindings(skipBindingContext: false, fromBindingContextChanged: true);
 
@@ -471,7 +470,7 @@ namespace Microsoft.Maui.Controls
 
 		protected virtual void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
-			child.Parent = null;
+			child.SetParent(null);
 
 			ChildRemoved?.Invoke(this, new ElementEventArgs(child));
 
@@ -494,16 +493,6 @@ namespace Microsoft.Maui.Controls
 			base.OnPropertyChanged(propertyName);
 
 			Handler?.UpdateValue(propertyName);
-
-			var childrenNotDrawnByThisElement = ChildrenNotDrawnByThisElement;
-			if (childrenNotDrawnByThisElement is not null)
-			{
-				foreach (var logicalChildren in childrenNotDrawnByThisElement)
-				{
-					if (logicalChildren is IPropertyPropagationController controller)
-						PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { logicalChildren });
-				}
-			}
 
 			if (_effects?.Count > 0)
 			{
@@ -585,22 +574,22 @@ namespace Microsoft.Maui.Controls
 				_bindableResources = new List<BindableObject>();
 			foreach (KeyValuePair<string, object> value in values)
 			{
-				List<BindableProperty> changedResources = null;
-				foreach (KeyValuePair<BindableProperty, string> dynR in DynamicResources)
+				List<(BindableProperty, SetterSpecificity)> changedResources = null;
+				foreach (KeyValuePair<BindableProperty, (string, SetterSpecificity)> dynR in DynamicResources)
 				{
 					// when the DynamicResource bound to a BindableProperty is
 					// changing then the BindableProperty needs to be refreshed;
-					// The .Value is the name of DynamicResouce to which the BindableProperty is bound.
+					// The .Value.Item1 is the name of DynamicResouce to which the BindableProperty is bound.
 					// The .Key is the name of the DynamicResource whose value is changing.
-					if (dynR.Value != value.Key)
+					if (dynR.Value.Item1 != value.Key)
 						continue;
-					changedResources = changedResources ?? new List<BindableProperty>();
-					changedResources.Add(dynR.Key);
+					changedResources = changedResources ?? new List<(BindableProperty, SetterSpecificity)>();
+					changedResources.Add((dynR.Key, dynR.Value.Item2));
 				}
 				if (changedResources == null)
 					continue;
-				foreach (BindableProperty changedResource in changedResources)
-					OnResourceChanged(changedResource, value.Value);
+				foreach ((BindableProperty, SetterSpecificity) changedResource in changedResources)
+					OnResourceChanged(changedResource.Item1, value.Value, changedResource.Item2);
 
 				var bindableObject = value.Value as BindableObject;
 				if (bindableObject != null && (bindableObject as Element)?.Parent == null)
@@ -612,12 +601,12 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal override void OnSetDynamicResource(BindableProperty property, string key)
+		internal override void OnSetDynamicResource(BindableProperty property, string key, SetterSpecificity specificity)
 		{
-			base.OnSetDynamicResource(property, key);
-			DynamicResources[property] = key;
+			base.OnSetDynamicResource(property, key, specificity);
+			DynamicResources[property] = (key, specificity);
 			if (this.TryGetResource(key, out var value))
-				OnResourceChanged(property, value);
+				OnResourceChanged(property, value, specificity);
 		}
 
 		internal event EventHandler ParentSet;
@@ -743,8 +732,8 @@ namespace Microsoft.Maui.Controls
 			RealParent?.OnDescendantRemoved(child);
 		}
 
-		void OnResourceChanged(BindableProperty property, object value)
-			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings);
+		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
+			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings, SetValuePrivateFlags.Default, specificity);
 
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
 		public event EventHandler ParentChanged;

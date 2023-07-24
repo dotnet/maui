@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 
 				if (_view != null)
 				{
-					RemoveLogicalChildInternal(_view);
+					RemoveLogicalChild(_view);
 					_view.ComputedConstraint = LayoutConstraint.None;
 				}
 
@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 				if (_view != null)
 				{
 					_view.ComputedConstraint = LayoutConstraint.Fixed;
-					AddLogicalChildInternal(_view);
+					AddLogicalChild(_view);
 				}
 
 				ForceUpdateSize();

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsFocused { get; set; }
 
-		public List<StubBase> Children { get; set; }
+		public IList<IView> Children { get; set; } = new List<IView>();
 
 		public Visibility Visibility { get; set; } = Visibility.Visible;
 
