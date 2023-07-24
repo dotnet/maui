@@ -160,8 +160,11 @@ Task("Build")
 	{
 		Information($"Build target dotnet root: {DOTNET_ROOT}");
 		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
 
-		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+		DOTNET_ROOT = localDotnetRoot.ToString();
 
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
@@ -304,7 +307,7 @@ Task("uitest")
 	CleanDirectories(TEST_RESULTS);
 
 	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
-
+	
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -394,6 +397,14 @@ void SetupAppPackageNameAndResult()
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
 	}
+
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
 	Information("Test App: {0}", TEST_APP);
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);

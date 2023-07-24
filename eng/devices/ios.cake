@@ -106,10 +106,8 @@ Task("Build")
 		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
 		Information("new dotnet root: {0}", localDotnetRoot);
 
-		if (string.IsNullOrEmpty(DOTNET_ROOT)) {
-			Information($"DOTNET_ROOT is empty");
-			DOTNET_ROOT = localDotnetRoot.ToString();
-		}
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
 		SetDotNetEnvironmentVariables(DOTNET_ROOT);
 		
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
@@ -309,6 +307,14 @@ void SetupAppPackageNameAndResult()
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS =  GetTestResultsDirectory().FullPath;
 	}
+
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
 	Information("Test Device: {0}", TEST_DEVICE);
 	Information("Test App: {0}", TEST_APP);
