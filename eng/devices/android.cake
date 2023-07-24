@@ -16,6 +16,7 @@ string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
@@ -157,7 +158,10 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		
+		Information($"Build target set dotnet root: {DOTNET_ROOT}");
+		Information($"Build target set dotnet path: {DOTNET_PATH}");
+	//	SetDotNetEnvironmentVariables(DOTNET_PATH);
 
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
