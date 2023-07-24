@@ -11,6 +11,7 @@ parameters:
   useArtifacts: false
   useAzurePipelines : true
   keyChainPass : $(pass--lab--mac--builder--keychain)
+  configuration: 'Release'
 
 steps:
   - template: provision.yml
@@ -25,7 +26,7 @@ steps:
       keyringPass: ${{ parameters.keyChainPass }}
       useOldCertsTasks: ${{ parameters.useAzurePipelines }}
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
@@ -55,10 +56,10 @@ steps:
         PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ else }}:
-    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
       displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --configuration="${{ parameters.configuration }}" --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 2

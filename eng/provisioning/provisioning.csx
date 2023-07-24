@@ -2,6 +2,7 @@ if (IsMac)
 {
 	ForceJavaCleanup();
 	MicrosoftOpenJdk ("11.0.13.8.1");
+	Item ("Mono", "6.12.0.199");
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
@@ -71,7 +72,6 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 }
 else
 {
-
 	var androidSDK = AndroidSdk();
 	foreach(var sdk in ANDROID_API_SDKS.Split(','))
 	{

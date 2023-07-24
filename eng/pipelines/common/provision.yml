@@ -69,6 +69,8 @@ steps:
         cat ~/Library/Preferences/Xamarin/Settings.plist || true
       displayName: 'Configure Visual Studio'
   
+    # Install Certificates and Provisioning Profiles
+    # Use the default tasks on public machines
     - ${{ if eq(parameters.useOldCertsTasks, 'true') }}:
       - task: InstallAppleProvisioningProfile@1
         displayName: 'Install the iOS provisioning profile'
@@ -90,8 +92,7 @@ steps:
         displayName: 'Install the macOS certificate'
         inputs:
           certSecureFile: 'Components Mac Certificate.p12'
-    - ${{ if and(eq(parameters.useOldCertsTasks, 'false'), eq(variables['Agent.OS'], 'Darwin')) }}:
-      # Install Certificates and Provisioning Profiles
+    - ${{ if eq(parameters.useOldCertsTasks, 'false') }}:
       - template: install-certificates.yml@yaml-templates
         parameters:
           DeveloperIdApplication: $(developer-id-application)
