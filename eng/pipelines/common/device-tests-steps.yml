@@ -27,8 +27,8 @@ steps:
       ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
         useOldCertsTasks: ${{ parameters.useAzurePipelines }}
       ${{ else }}:
-      useOldCertsTasks: false #we can't run on public right now
-      
+        useOldCertsTasks: false #we can't run on public right now
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
