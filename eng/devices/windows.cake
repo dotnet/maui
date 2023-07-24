@@ -12,6 +12,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-windows{defaultVersion}");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -77,18 +78,21 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("DOTNET_PATH: {0}", dd);
+	Information("old dotnet root: {0}", DOTNET_ROOT);
+	Information("old dotnet path: {0}", DOTNET_PATH);
 
-	var toolPath = $"{dd}/dotnet.exe";
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
 
-	Information("toolPath: {0}", toolPath);
+	var localToolPath = $"{localDotnetRoot}/dotnet.exe";
+
+	Information("new dotnet toolPath: {0}", localToolPath);
 
 	SetDotNetEnvironmentVariables(dd.FullPath);
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
-			ToolPath = toolPath,
+			ToolPath = localToolPath,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)

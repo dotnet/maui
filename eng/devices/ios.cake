@@ -14,6 +14,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-ios" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
@@ -99,7 +100,7 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
 
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
