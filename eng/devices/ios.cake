@@ -100,8 +100,18 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
+		Information($"Build target dotnet root: {DOTNET_ROOT}");
 		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
 
+		if (string.IsNullOrEmpty(DOTNET_ROOT)) {
+			Information($"DOTNET_ROOT is empty");
+			DOTNET_ROOT = localDotnetRoot.ToString();
+		}
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+		
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,

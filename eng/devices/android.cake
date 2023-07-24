@@ -158,9 +158,10 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		
 		Information($"Build target dotnet root: {DOTNET_ROOT}");
 		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
