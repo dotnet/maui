@@ -42,36 +42,22 @@ namespace Microsoft.Maui.DeviceTests
 			return textDecorations;
 		}
 
-		[Fact(DisplayName = "Using CharacterSpacing with LineHeight and TextDecorations works Correctly")]
-		public async Task CharacterSpacingWithLineHeightWithTextDecorationsWorksCorrectly()
+		public static IEnumerable<object[]> GetCharacterSpacingWithLineHeightWithTextDecorationsWorksTestData()
 		{
-			var expectedCharacterSpacing1 = 5d;
-			var expectedCharacterSpacing2 = 5d;
-			var expectedCharacterSpacing3 = 0d;
-			var expectedCharacterSpacing4 = 0d;
-			var expectedLineHeight1 = 1.5d;
-			var expectedLineHeight2 = 1.5d;
-			var expectedLineHeight3 = 0d;
-			var expectedLineHeight4 = 0d;
-			var expectedTextDecorations1 = TextDecorations.Underline;
-			var expectedTextDecorations2 = TextDecorations.Strikethrough;
-			var expectedTextDecorations3 = TextDecorations.None;
-			var expectedTextDecorations4 = TextDecorations.None;
-
 			var label1 = new Label()
 			{
 				Text = "This is label tests.",
-				CharacterSpacing = expectedCharacterSpacing1,
-				LineHeight = expectedLineHeight1,
-				TextDecorations = expectedTextDecorations1
+				CharacterSpacing = 5d,
+				LineHeight = 1.5d,
+				TextDecorations = TextDecorations.Underline
 			};
 
 			var label2 = new Label()
 			{
 				Text = "This is label tests.",
-				CharacterSpacing = expectedCharacterSpacing2,
-				LineHeight = expectedLineHeight2,
-				TextDecorations = expectedTextDecorations2
+				CharacterSpacing = 5d,
+				LineHeight = 1.5d,
+				TextDecorations = TextDecorations.Strikethrough
 			};
 
 			var label3 = new Label()
@@ -81,7 +67,7 @@ namespace Microsoft.Maui.DeviceTests
 				LineHeight = 1.5d,
 				TextDecorations = TextDecorations.Underline
 			};
-			label3.FormattedText.AddLogicalChild(
+			label3.AddLogicalChild(
 				new Span()
 				{
 					Text = "This is label tests.",
@@ -100,37 +86,26 @@ namespace Microsoft.Maui.DeviceTests
 				TextDecorations = TextDecorations.Underline
 			};
 
-			var handler1 = await CreateHandlerAsync<LabelHandler>(label1);
-			var actualCharacterSpacing1 = await InvokeOnMainThreadAsync(() => GetPlatformCharacterSpacing(handler1));
-			Assert.Equal(expectedCharacterSpacing1, actualCharacterSpacing1);
-			var actualLineHeight1 = await InvokeOnMainThreadAsync(() => GetPlatformLineHeight(handler1));
-			Assert.Equal(expectedLineHeight1, actualLineHeight1);
-			var actualTextDecorations1 = await InvokeOnMainThreadAsync(() => GetPlatformTextDecorations(handler1));
-			Assert.Equal(expectedTextDecorations1, actualTextDecorations1);
+			return new List<object[]>()
+			{
+				new object[] { label1, 5d, 1.5d, TextDecorations.Underline },
+				new object[] { label2, 5d, 1.5d, TextDecorations.Strikethrough },
+				new object[] { label3, 0d, 0d, TextDecorations.None },
+				new object[] { label4, 0d, 0d, TextDecorations.None }
+			};
+		}
 
-			var handler2 = await CreateHandlerAsync<LabelHandler>(label2);
-			var actualCharacterSpacing2 = await InvokeOnMainThreadAsync(() => GetPlatformCharacterSpacing(handler2));
-			Assert.Equal(expectedCharacterSpacing2, actualCharacterSpacing2);
-			var actualLineHeight2 = await InvokeOnMainThreadAsync(() => GetPlatformLineHeight(handler2));
-			Assert.Equal(expectedLineHeight2, actualLineHeight2);
-			var actualTextDecorations2 = await InvokeOnMainThreadAsync(() => GetPlatformTextDecorations(handler2));
-			Assert.Equal(expectedTextDecorations2, actualTextDecorations2);
-
-			var handler3 = await CreateHandlerAsync<LabelHandler>(label3);
-			var actualCharacterSpacing3 = await InvokeOnMainThreadAsync(() => GetPlatformCharacterSpacing(handler3));
-			Assert.Equal(expectedCharacterSpacing3, actualCharacterSpacing3);
-			var actualLineHeight3 = await InvokeOnMainThreadAsync(() => GetPlatformLineHeight(handler3));
-			Assert.Equal(expectedLineHeight3, actualLineHeight3);
-			var actualTextDecorations3 = await InvokeOnMainThreadAsync(() => GetPlatformTextDecorations(handler3));
-			Assert.Equal(expectedTextDecorations3, actualTextDecorations3);
-
-			var handler4 = await CreateHandlerAsync<LabelHandler>(label4);
-			var actualCharacterSpacing4 = await InvokeOnMainThreadAsync(() => GetPlatformCharacterSpacing(handler4));
-			Assert.Equal(expectedCharacterSpacing4, actualCharacterSpacing4);
-			var actualLineHeight4 = await InvokeOnMainThreadAsync(() => GetPlatformLineHeight(handler4));
-			Assert.Equal(expectedLineHeight4, actualLineHeight4);
-			var actualTextDecorations4 = await InvokeOnMainThreadAsync(() => GetPlatformTextDecorations(handler4));
-			Assert.Equal(expectedTextDecorations4, actualTextDecorations4);
+		[Theory(DisplayName = "Using CharacterSpacing with LineHeight and TextDecorations works Correctly")]
+		[MemberData(nameof(GetCharacterSpacingWithLineHeightWithTextDecorationsWorksTestData))]
+		public async Task CharacterSpacingWithLineHeightWithTextDecorationsWorksCorrectly(Label label, double expectedCharacterSpacing, double expectedLineHeight, TextDecorations expectedTextDecorations)
+		{
+			var handler = await CreateHandlerAsync<LabelHandler>(label);
+			var actualCharacterSpacing = await InvokeOnMainThreadAsync(() => GetPlatformCharacterSpacing(handler));
+			Assert.Equal(expectedCharacterSpacing, actualCharacterSpacing);
+			var actualLineHeight = await InvokeOnMainThreadAsync(() => GetPlatformLineHeight(handler));
+			Assert.Equal(expectedLineHeight, actualLineHeight);
+			var actualTextDecorations = await InvokeOnMainThreadAsync(() => GetPlatformTextDecorations(handler));
+			Assert.Equal(expectedTextDecorations, actualTextDecorations);
 		}
 	}
 }
