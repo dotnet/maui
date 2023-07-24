@@ -263,54 +263,66 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 		View CreateEntryInsetView()
 		{
 			ScrollView view = null;
+			var content = new Grid();
+
 			view = new ScrollView()
 			{
-				Content = new StackLayout()
-				{
-					Children =
-						{
-							new Label(){ AutomationId = EntrySuccess, VerticalOptions= LayoutOptions.FillAndExpand, Text = "Click the entry and it should scroll up and stay visible. Click off entry and this label should still be visible"},
-							new Button(){ Text = "Change Navbar Visible", Command = new Command(() => Shell.SetNavBarIsVisible(view.Parent, !(Shell.GetNavBarIsVisible(view.Parent))))},
-							new Button()
-							{
-								Text = "Push On Page",
-								Command = new Command(() => Navigation.PushAsync(new ContentPage(){ Content = CreateEntryInsetView() }))
-							},
-							new Button(){Text = "Reset", Command = new Command(() => SetupLandingPage() )},
-							new Button()
-							{
-								Text = ResetKeyboard
-
-							},
-							new Entry()
-							{
-								AutomationId = EntryToClick
-							},
-							new Button()
-							{
-								Text = ResetKeyboard,
-								AutomationId = ResetKeyboard2
-
-							},
-							new Button()
-							{
-								Text = "Top Tab",
-								AutomationId = CreateTopTabButton,
-								Command = new Command(() => AddTopTab("top"))
-							},
-							new Button()
-							{
-								Text = "Bottom Tab",
-								AutomationId = CreateBottomTabButton,
-								Command = new Command(() => AddBottomTab("bottom"))
-							},
-							new Entry()
-							{
-								AutomationId = EntryToClick2
-							},
-						}
-				}
+				Content = content
 			};
+
+			content.AddRowDefinition(new RowDefinition());
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+			content.AddRowDefinition(new RowDefinition() { Height = GridLength.Auto });
+
+			content.AddChild(new Label() { AutomationId = EntrySuccess, VerticalOptions = LayoutOptions.Fill, Text = "Click the entry and it should scroll up and stay visible. Click off entry and this label should still be visible" },
+					0, 0);
+
+			content.AddChild(new Button() { Text = "Change Navbar Visible", Command = new Command(() => Shell.SetNavBarIsVisible(view.Parent, !(Shell.GetNavBarIsVisible(view.Parent)))) }, 0, 1);
+			content.AddChild(new Button()
+			{
+				Text = "Push On Page",
+				Command = new Command(() => Navigation.PushAsync(new ContentPage() { Content = CreateEntryInsetView() }))
+			}, 0, 2);
+			content.AddChild(new Button() { Text = "Reset", Command = new Command(() => SetupLandingPage()) }, 0, 3);
+			content.AddChild(new Button()
+			{
+				Text = ResetKeyboard
+
+			}, 0, 4);
+			content.AddChild(new Entry()
+			{
+				AutomationId = EntryToClick
+			}, 0, 5);
+			content.AddChild(new Button()
+			{
+				Text = ResetKeyboard,
+				AutomationId = ResetKeyboard2
+
+			}, 0, 6);
+			content.AddChild(new Button()
+			{
+				Text = "Top Tab",
+				AutomationId = CreateTopTabButton,
+				Command = new Command(() => AddTopTab("top"))
+			}, 0, 7);
+			content.AddChild(new Button()
+			{
+				Text = "Bottom Tab",
+				AutomationId = CreateBottomTabButton,
+				Command = new Command(() => AddBottomTab("bottom"))
+			}, 0, 8);
+			content.AddChild(new Entry()
+			{
+				AutomationId = EntryToClick2
+			}, 0, 9);
 
 			return view;
 		}
