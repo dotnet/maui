@@ -81,11 +81,12 @@ steps:
     condition: always()
     displayName: publish artifacts
 
-  - template: uninstall-certificates/v1.yml@yaml-templates
-    parameters:
-      HostedMacKeychainPassword: ${{ parameters.keyChainPass }}
+  - ${{ if ne(parameters.useAzurePipelines, 'true') }}:
+    - template: uninstall-certificates/v1.yml@yaml-templates
+      parameters:
+        HostedMacKeychainPassword: ${{ parameters.keyChainPass }}
       
-  # This must always be placed as the last step in the job
-  - template: agent-rebooter/mac.v1.yml@yaml-templates
-    parameters:
-      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+    # This must always be placed as the last step in the job
+    - template: agent-rebooter/mac.v1.yml@yaml-templates
+      parameters:
+        AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
