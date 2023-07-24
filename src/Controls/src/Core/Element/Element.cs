@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets or sets a value used to identify a collection of semantically similar elements.</summary>
 		/// <value>A string that represents the collection the element belongs to.</value>
-		/// <remarks>Use the class id property to collect together elements into semantically similar groups for identification in ui testing and in theme engines.</remarks>
+		/// <remarks>Use the class id property to collect together elements into semantically similar groups for identification in UI testing and in theme engines.</remarks>
 		public string ClassId
 		{
 			get => (string)GetValue(ClassIdProperty);
