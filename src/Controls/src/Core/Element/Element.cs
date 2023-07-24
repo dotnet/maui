@@ -554,6 +554,7 @@ namespace Microsoft.Maui.Controls
 			foreach (Element element in child.Descendants())
 				OnDescendantRemoved(element);
 		}
+
 		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected virtual void OnParentSet()
