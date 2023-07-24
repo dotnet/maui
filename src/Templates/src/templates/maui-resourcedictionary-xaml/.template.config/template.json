@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.XamlResourceDictionary",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ResourceDictionary (XAML)",
+    "description": "Creates a resource dictionary for .NET MAUI XAML projects.",
     "shortName": "maui-dict-xaml",
     "tags": {
         "language": "C#",

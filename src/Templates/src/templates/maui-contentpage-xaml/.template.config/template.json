@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.XamlContentPage",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ContentPage (XAML)",
+    "description": "Creates a class for single view, which is often a layout such as as Grid or StackLayout (XAML).",
     "shortName": "maui-page-xaml",
     "tags": {
       "language": "C#",

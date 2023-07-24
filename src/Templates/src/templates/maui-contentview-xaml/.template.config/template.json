@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.XamlContentView",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ContentView (XAML)",
+    "description": "Creates a class that enables the creation of custom, reusable controls (XAML).",
     "shortName": "maui-view-xaml",
     "tags": {
         "language": "C#",
