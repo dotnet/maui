@@ -23,7 +23,10 @@ steps:
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
       keyringPass: ${{ parameters.keyChainPass }}
-      useOldCertsTasks: ${{ parameters.useAzurePipelines }}
+      ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+        useOldCertsTasks: ${{ parameters.useAzurePipelines }}
+      ${{ else }}:
+        useOldCertsTasks: false #we can't run on public right now
 
   - task: PowerShell@2
     condition: ne('${{ parameters.platform }}' , 'windows')

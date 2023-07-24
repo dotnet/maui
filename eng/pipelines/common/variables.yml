@@ -57,6 +57,10 @@ variables:
   value: 7.1.3
 - name: Codeql.Enabled
   value: false
+- group: Xamarin-Secrets
+# To sign iOS apps
+- ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  - group: Xamarin Signing
 - ${{ if ne(variables['Build.DefinitionName'], 'MAUI-private') }}:
   - name: PrivateBuild
     value: false
@@ -67,4 +71,3 @@ variables:
   # For eng/common/SetupNugetSources.ps1
   - group: DotNetBuilds storage account read tokens
   - group: AzureDevOps-Artifact-Feeds-Pats
-- group: Xamarin-Secrets
