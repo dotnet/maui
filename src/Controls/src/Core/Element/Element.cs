@@ -67,8 +67,8 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(ClassIdProperty, value);
 		}
 
-		/// <summary> Gets or sets the styles and properties that will be applied to the element during runtime.</summary>
-		/// <value> A collection containing the different <see cref="Effect"/> to be applied to the element</value>
+		/// <summary>Gets or sets the styles and properties that will be applied to the element during runtime.</summary>
+		/// <value>A collection containing the different <see cref="Effect"/> to be applied to the element.</value>
 		public IList<Effect> Effects
 		{
 			get
@@ -84,7 +84,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Gets a value that can be used to uniquely identify an element throughout the run of your application.</summary>
-		/// <value>A Guid uniquely identifying the element.</value>
+		/// <value>A <see cref="Guid"/> uniquely identifying the element.</value>
 		/// <remarks>This value is generated at runtime and is not stable across different runs.</remarks>
 		/// <seealso cref="StyleId"/>
 		public Guid Id
@@ -99,7 +99,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Gets or sets a user defined value to uniquely identify the element.</summary>
 		/// <value>A string uniquely identifying the element.</value>
-		/// <remarks>Use the StyleId property to identify individual elements in your application for identification in ui testing and in theme engines.</remarks>
+		/// <remarks>Use the <see cref="StyleId"/> property to identify individual elements in your application for identification in UI testing and in theme engines.</remarks>
 		public string StyleId
 		{
 			get { return _styleId; }
@@ -407,8 +407,8 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		/// <summary> Returns the element that has the specified name.</summary>
-		/// <param name="name">The name of the element to be found</param>
+		/// <summary>Returns the element that has the specified name.</summary>
+		/// <param name="name">The name of the element to be found.</param>
 		/// <returns>The element that has the specified name.</returns>
 		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
@@ -433,28 +433,28 @@ namespace Microsoft.Maui.Controls
 			namescope.UnregisterName(name);
 		}
 
-		/// <summary>Occurs whenever a child element is added to the element.</summary>
+		/// <summary>Raised whenever a child element is added to the element.</summary>
 		public event EventHandler<ElementEventArgs> ChildAdded;
 
-		/// <summary>Occurs whenever a child element is removed from the element.</summary>
+		/// <summary>Raised whenever a child element is removed from the element.</summary>
 		public event EventHandler<ElementEventArgs> ChildRemoved;
 
-		/// <summary>Occurs whenever a child element is added to the element's subtree.</summary>
+		/// <summary>Raised whenever a child element is added to the element's subtree.</summary>
 		public event EventHandler<ElementEventArgs> DescendantAdded;
 
-		/// <summary>Occurs whenever a child element is removed from the elements subtree.</summary>
+		/// <summary>Raised whenever a child element is removed from the elements subtree.</summary>
 		public event EventHandler<ElementEventArgs> DescendantRemoved;
 
 		/// <summary>Removes a previously set dynamic resource.</summary>
-		/// <param name="property">The BindableProperty from which to remove the DynamicResource</param>
+		/// <param name="property">The <see cref="BindableProperty"/> from which to remove the DynamicResource.</param>
 		public new void RemoveDynamicResource(BindableProperty property)
 		{
 			base.RemoveDynamicResource(property);
 		}
 
 		/// <summary>Sets the <see cref="BindableProperty"/> property of this element to be updated via the DynamicResource with the provided key.</summary>
-		/// <param name="property">The property to be updated</param>
-		/// <param name="key">The key for the requested resource</param>
+		/// <param name="property">The property to be updated.</param>
+		/// <param name="key">The key for the requested resource.</param>
 		public new void SetDynamicResource(BindableProperty property, string key)
 		{
 			base.SetDynamicResource(property, key);
@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Raises the <see cref="ChildAdded"/> event. Implement this method to add class handling for this event.</summary>
 		/// <remarks>This method has no default implementation. You should still call the base implementation in case an intermediate class has implemented this method.</remarks>
-		/// <param name="child">The element that's been added as a child</param>
+		/// <param name="child">The element that's been added as a child.</param>
 		protected virtual void OnChildAdded(Element child)
 		{
 			child.SetParent(this);
@@ -506,10 +506,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary> Raises the <see cref="ChildRemoved"/> event. Implement this method to add class handling for this event </summary>
 		/// <remarks>
 		/// This method has no default implementation. You should still call the base implementation in case an intermediate class has implemented this method.
-		/// If not debugging, the logical tree index will not have any effect
+		/// If not debugging, the logical tree index will not have any effect.
 		/// </remarks>
-		/// <param name="child">The child element that's been removed</param>
-		/// <param name="oldLogicalIndex">The child's element index in the logical tree</param>
+		/// <param name="child">The child element that's been removed.</param>
+		/// <param name="oldLogicalIndex">The child's element index in the logical tree.</param>
 		protected virtual void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			child.SetParent(null);
@@ -522,7 +522,7 @@ namespace Microsoft.Maui.Controls
 			foreach (Element element in child.Descendants())
 				OnDescendantRemoved(element);
 		}
-		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent</summary>
+		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
 		/// <remarks>Implementors must call the base method.</remarks>
 		protected virtual void OnParentSet()
 		{
@@ -781,19 +781,19 @@ namespace Microsoft.Maui.Controls
 		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
 			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings, SetValuePrivateFlags.Default, specificity);
 
-		/// <summary>Occurs whenever the element's starts to change.</summary>
+		/// <summary>Raised whenever the element's starts to change.</summary>
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
 
-		/// <summary>Occurs whenever the element's parent has changed.</summary>
+		/// <summary>Raised whenever the element's parent has changed.</summary>
 		public event EventHandler ParentChanged;
 
-		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanging"/> event</summary>
-		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanging"/> event</remarks>
-		/// <param name="args">Provides data for the <see cref="ParentChanging"/> event</param>
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanging"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanging"/> event.</remarks>
+		/// <param name="args">Provides data for the <see cref="ParentChanging"/> event.</param>
 		protected virtual void OnParentChanging(ParentChangingEventArgs args) { }
 
-		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanged"/> event</summary>
-		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanged"/> event</remarks>
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanged"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanged"/> event.</remarks>
 		protected virtual void OnParentChanged() { }
 
 		private protected virtual void OnParentChangedCore()
@@ -821,19 +821,19 @@ namespace Microsoft.Maui.Controls
 		EffectsFactory EffectsFactory => _effectsFactory ??= Handler.MauiContext.Services.GetRequiredService<EffectsFactory>();
 
 		/// <summary>Gets or sets the associated handler for this element.</summary>
-		/// <value>An implementation of <see cref="IElementHandler"/></value>
+		/// <value>An implementation of <see cref="IElementHandler"/>.</value>
 		/// <remarks>Maps the element to platform-specific controls and implementations.</remarks>
-		/// <seealso href="https://learn.microsoft.com/en-us/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
+		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 		public IElementHandler Handler
 		{
 			get => _handler;
 			set => SetHandler(value);
 		}
 
-		/// <summary>Occurs whenever the element's handler starts to change.</summary>
+		/// <summary>Raised whenever the element's handler starts to change.</summary>
 		public event EventHandler<HandlerChangingEventArgs> HandlerChanging;
 
-		/// <summary>Occurs whenever the element's handler has changed.</summary>
+		/// <summary>Raised whenever the element's handler has changed.</summary>
 		public event EventHandler HandlerChanged;
 
 		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanging"/> event</summary>

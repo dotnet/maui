@@ -162,7 +162,7 @@
       <ReturnValue>
         <ReturnType>System.Collections.Generic.IEnumerable&lt;Microsoft.Maui.Controls.Element&gt;</ReturnType>
       </ReturnValue>
-      <Parameters />EffectIsAttached
+      <Parameters />
       <Docs>
         <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
         <returns>To be added.</returns>
@@ -384,33 +384,6 @@
         <param name="menu">The new menu.</param>
         <summary>Sets the menu for <paramref name="bindable" />.</summary>
         <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="StyleId">
-      <MemberSignature Language="C#" Value="public string StyleId { get; set; }" />
-      <MemberSignature Language="ILAsm" Value=".property instance string StyleId" />
-      <MemberSignature Language="DocId" Value="P:Microsoft.Maui.Controls.Element.StyleId" />
-      <MemberSignature Language="F#" Value="member this.StyleId : string with get, set" Usage="Microsoft.Maui.Controls.Element.StyleId" />
-      <MemberType>Property</MemberType>
-      <AssemblyInfo>
-        <AssemblyVersion>0.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.0.0.0</AssemblyVersion>
-        <AssemblyVersion>1.1.0.0</AssemblyVersion>
-        <AssemblyVersion>1.2.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.0.0</AssemblyVersion>
-        <AssemblyVersion>1.3.3.0</AssemblyVersion>
-        <AssemblyVersion>1.4.0.0</AssemblyVersion>
-        <AssemblyVersion>1.5.0.0</AssemblyVersion>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.String</ReturnType>
-      </ReturnValue>
-      <Docs>
-<summary>Gets or sets a user defined value to uniquely identify the element.</summary>
-<value>A string uniquely identifying the element.</value>
-<remarks>Use the StyleId property to identify individual elements in your application for identification in ui testing and in theme engines.</remarks>
       </Docs>
     </Member>
     <Member MemberName="Microsoft.Maui.Controls.IElementController.SetValueFromRenderer">
