@@ -12,7 +12,39 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
+	/// <summary>Provides the base class for all <see cref="Controls"/> hierarchal elements.
+	/// This class contains all the methods and properties required to represent an element in the <see cref="Controls"/>  hierarchy.
+	/// </summary>
+	/// <remarks>
+	///		<para>Important categories of visual elements are noted in the following table:</para>
+	///		<list type = "table" >
+	///			<listheader>
+	///				<term > Class </term >
+	///				<description > Description </description >
+	///			</listheader >
+	///			<item>
+	///				<term><see cref="VisualElement" /></term>
+	///				<description>An <see cref="Element" /> that occupies an area on the screen, has a visual appearance, and can obtain touch input.</description>
+	///			</item>
+	///			<item>
+	///				<term><see cref = "Cell"/></term>
+	///				<description> Cells are elements meant to be added to <see cref="ListView"/> or <see cref="TableView"/>.</description>
+	///			</item>
+	///			<item>
+	///				<term><see cref = "Page"/>
+	///				</term>
+	///				<description> A <see cref= "VisualElement"/> that occupies most or all of the screen and contains a single child.</description>
+	///			</item>
+	///			<item>
+	///			<term><see cref = "Layout"/></term>
+	///			<description><see cref= "Layout"/> have a single child of type <see cref="View" />, while subclasses of <see cref = "Layout"/> have a collection of multiple children views, including other layouts.</description>
+	///			</item>
+	///			<item>
+	///				<term> Controls and specialized <see cref="View" /></term>
+	///				<description>The lower part of the diagram shows the <see cref="Controls"/> classes for universally-available controls, such as <see cref = "Button"/> and <see cref="TableView"/>.</description>
+	///			</item>
+	///		</list>
+	///</remarks>
 	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
@@ -277,7 +309,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
@@ -352,7 +384,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEffectControlProvider EffectControlProvider
 		{
@@ -378,24 +410,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		void IElementController.SetValueFromRenderer(BindableProperty property, object value) => SetValueFromRenderer(property, value);
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
+		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool EffectIsAttached(string name)
 		{
@@ -836,13 +868,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Raised whenever the element's handler has changed.</summary>
 		public event EventHandler HandlerChanged;
 
-		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanging"/> event</summary>
-		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanging"/> event</remarks>
-		/// <param name="args">Provides data for the <see cref="HandlerChanging"/> event</param>
+		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanging"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanging"/> event.</remarks>
+		/// <param name="args">Provides data for the <see cref="HandlerChanging"/> event.</param>
 		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
 
-		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanged"/> event</summary>
-		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanged"/> event</remarks>
+		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanged"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanged"/> event.</remarks>
 		protected virtual void OnHandlerChanged() { }
 
 		private protected virtual void OnHandlerChangedCore()
