@@ -99,13 +99,14 @@ steps:
   - ${{ else }}:
      # Install Certificates and Provisioning Profiles
     - template: install-certificates.yml@yaml-templates
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
       parameters:
         DeveloperIdApplication: $(developer-id-application)
         DeveloperIdInstaller: $(developer-id-installer)
         IphoneDeveloper: $(iphone-developer)
         MacDeveloper: $(mac-developer)
         HostedMacKeychainPassword: ${{ parameters.keyringPass }}
-        condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+      
 
   # Prepare Windows
   - powershell: |
