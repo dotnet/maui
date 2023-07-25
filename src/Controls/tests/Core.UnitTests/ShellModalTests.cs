@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var navStack = shell.Items[0].Items[0].Navigation;
 
-			Assert.Equal(1, navStack.ModalStack.Count);
+			Assert.Single(navStack.ModalStack);
 			Assert.Equal(typeof(ModalTestPage), navStack.ModalStack[0].GetType());
 		}
 
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("///NewRoute");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(0, navStack.ModalStack.Count);
+			Assert.Empty(navStack.ModalStack);
 		}
 
 		[Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Navigates to different Shell Item
 			await shell.GoToAsync("///NewRoute");
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(0, navStack.ModalStack.Count);
+			Assert.Empty(navStack.ModalStack);
 		}
 
 		[Fact]
@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			await shell.GoToAsync($"///MainContent");
 			navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(0, navStack.ModalStack.Count);
+			Assert.Empty(navStack.ModalStack);
 		}
 
 		[Fact]
@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("///NewRoute");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(0, navStack.ModalStack.Count);
+			Assert.Empty(navStack.ModalStack);
 		}
 
 		[Fact]
@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("///NewRoute");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(0, navStack.ModalStack.Count);
+			Assert.Empty(navStack.ModalStack);
 		}
 
 
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync("///NewRoute/ModalTestPage2");
 
 			var navStack = shell.Items[0].Items[0].Navigation;
-			Assert.Equal(1, navStack.ModalStack.Count);
+			Assert.Single(navStack.ModalStack);
 			Assert.Equal(typeof(ModalTestPage2), navStack.ModalStack[0].GetType());
 		}
 
@@ -449,9 +449,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
 			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
 			await shell.GoToAsync("..");
-			Assert.Equal(1, shell.Navigation.ModalStack.Count);
+			Assert.Single(shell.Navigation.ModalStack);
 			await shell.GoToAsync("..");
-			Assert.Equal(0, shell.Navigation.ModalStack.Count);
+			Assert.Empty(shell.Navigation.ModalStack);
 		}
 
 		[Fact]
@@ -469,7 +469,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			await shell.GoToAsync("ModalTestPage");
-			Assert.Equal(0, shell.Navigation.ModalStack.Count);
+			Assert.Empty(shell.Navigation.ModalStack);
 		}
 
 		[Fact]
@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			await shell.CurrentPage.Navigation.PushModalAsync(new ContentPage());
-			Assert.Equal(0, shell.Navigation.ModalStack.Count);
+			Assert.Empty(shell.Navigation.ModalStack);
 		}
 
 		[Fact]

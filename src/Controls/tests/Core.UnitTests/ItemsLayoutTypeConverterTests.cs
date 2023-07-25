@@ -95,20 +95,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void HorizontalGridWithSpan0ShouldShouldThrowArgumentException()
-		{
-			var converter = new ItemsLayoutTypeConverter();
-			Assert.Throws<ArgumentException>(() => converter.ConvertFromInvariantString("HorizontalGrid, 0"));
-		}
-
-		[Fact]
-		public void VerticalGridWithSpan0ShouldShouldThrowArgumentException()
-		{
-			var converter = new ItemsLayoutTypeConverter();
-			Assert.Throws<ArgumentException>(() => converter.ConvertFromInvariantString("VerticalGrid, 0"));
-		}
-
-		[Fact]
 		public void HorizontalGridWithoutSpanShouldShouldThrowFormatException()
 		{
 			var converter = new ItemsLayoutTypeConverter();

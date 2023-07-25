@@ -420,11 +420,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Validate all the parent hierarchies are correct
 			Assert.Equal(app, window.Parent);
 			Assert.Equal(window, window.Page.Parent);
-			Assert.Equal(1, app.Windows.Count);
+			Assert.Single(app.Windows);
 			Assert.Equal(app.LogicalChildrenInternal[0], window);
 			Assert.Equal(window.LogicalChildrenInternal[0], page);
 			Assert.Single(app.LogicalChildrenInternal);
 			Assert.Single(window.LogicalChildrenInternal);
+			Assert.Single(window.LogicalChildrenInternal.OfType<Page>());
 			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);
 		}
