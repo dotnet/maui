@@ -138,12 +138,14 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
 
-	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("DOTNET_PATH: {0}", dd);
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
-	var toolPath = $"{dd}/dotnet.exe";
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
+
+	var toolPath = $"{localDotnetRoot}/dotnet.exe";
 
 	Information("toolPath: {0}", toolPath);
 
