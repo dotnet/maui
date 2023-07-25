@@ -199,7 +199,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			new Action(() =>
 			{
 				var subscriber = new TestSubcriber();
-				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => throw new XunitException());
+				MessagingCenter.Subscribe<TestPublisher>(subscriber, "test", p => throw new XunitException("The subscriber should have been collected."));
 			})();
 
 			GC.Collect();

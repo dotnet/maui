@@ -1581,7 +1581,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValueCore(IsFocusedPropertyKey, value);
+			set => SetValue(IsFocusedPropertyKey, value);
 		}
 
 		FlowDirection IView.FlowDirection => FlowDirection;
@@ -1847,6 +1847,10 @@ namespace Microsoft.Maui.Controls
 
 			_isLoadedFired = true;
 			_loaded?.Invoke(this, EventArgs.Empty);
+
+			// If the user is also watching unloaded we need to verify
+			// unloaded is still correctly being watched for.
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		void OnUnloadedCore()
@@ -1856,6 +1860,10 @@ namespace Microsoft.Maui.Controls
 
 			_isLoadedFired = false;
 			_unloaded?.Invoke(this, EventArgs.Empty);
+
+			// If the user is also watching loaded we need to verify
+			// loaded is still correctly being watched for.
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
@@ -1863,10 +1871,10 @@ namespace Microsoft.Maui.Controls
 			if (bindable is not VisualElement visualElement)
 				return;
 
-			if (visualElement._watchingPlatformLoaded && oldValue is Window oldWindow)
-				oldWindow.HandlerChanged -= visualElement.OnWindowHandlerChanged;
+			var newWindow = (Window?)newValue;
+			var oldWindow = (Window?)oldValue;
 
-			visualElement.UpdatePlatformUnloadedLoadedWiring(newValue as Window);
+			visualElement.UpdatePlatformUnloadedLoadedWiring(newWindow, oldWindow);
 			visualElement.InvalidateStateTriggers(newValue != null);
 			visualElement._windowChanged?.Invoke(visualElement, EventArgs.Empty);
 		}
@@ -1880,18 +1888,18 @@ namespace Microsoft.Maui.Controls
 		// if the user is watching for them. Otherwise
 		// this will get wired up for every single VE that's on 
 		// the screen
-		void UpdatePlatformUnloadedLoadedWiring(Window? window)
+		void UpdatePlatformUnloadedLoadedWiring(Window? newWindow, Window? oldWindow = null)
 		{
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
 			// This VE gets connected to the xplat Window before wiring up any events
-			if (!_watchingPlatformLoaded && window == null)
+			if (!_watchingPlatformLoaded && newWindow is null)
 				return;
 
-			if (_unloaded == null && _loaded == null)
+			if (_unloaded is null && _loaded is null)
 			{
-				if (window is not null)
-					window.HandlerChanged -= OnWindowHandlerChanged;
+				if (newWindow is not null)
+					newWindow.HandlerChanged -= OnWindowHandlerChanged;
 
 #if PLATFORM
 				_loadedUnloadedToken?.Dispose();
@@ -1901,11 +1909,23 @@ namespace Microsoft.Maui.Controls
 				_watchingPlatformLoaded = false;
 				return;
 			}
+			else if (oldWindow is not null)
+			{
+				oldWindow.HandlerChanged -= OnWindowHandlerChanged;
+				_watchingPlatformLoaded = false;
+
+				if (newWindow is null)
+				{
+					// This will take care of cleaning up any pending unloaded events
+					HandlePlatformUnloadedLoaded();
+					return;
+				}
+			}
 
 			if (!_watchingPlatformLoaded)
 			{
-				if (window is not null)
-					window.HandlerChanged += OnWindowHandlerChanged;
+				if (newWindow is not null)
+					newWindow.HandlerChanged += OnWindowHandlerChanged;
 
 				_watchingPlatformLoaded = true;
 			}
