@@ -6,17 +6,23 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiScrollView : UIScrollView
 	{
-		internal event EventHandler? LayoutSubviewsChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
 		public MauiScrollView()
 		{
+		}
+
+		public event EventHandler LayoutSubviewsChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
 		}
 
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 
-			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(LayoutSubviewsChanged));
 		}
 
 		// overriding this method so it does not automatically scroll large UITextFields
