@@ -92,7 +92,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 
 		Type IStyle.TargetType => typeof(VisualElement);
 
-		void IStyle.Apply(BindableObject bindable)
+		void IStyle.Apply(BindableObject bindable, SetterSpecificity setterspecificity)
 		{
 			if (!(bindable is Element styleable))
 				return;

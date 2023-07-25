@@ -26,18 +26,17 @@
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.0.5.1</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.8</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>7.0.8</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
-    <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.8</MicrosoftAspNetCoreAuthorizationPackageVersion>
-    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>7.0.8</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
-    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>7.0.8</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
+    <MicrosoftAspNetCoreAuthorizationPackageVersion>7.0.9</MicrosoftAspNetCoreAuthorizationPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>7.0.9</MicrosoftAspNetCoreAuthenticationFacebookPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationGooglePackageVersion>7.0.9</MicrosoftAspNetCoreAuthenticationGooglePackageVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>7.0.9</MicrosoftAspNetCoreAuthenticationMicrosoftAccountPackageVersion>
     <MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsAnalyzersPackageVersion>
     <MicrosoftAspNetCoreComponentsFormsPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsFormsPackageVersion>
     <MicrosoftAspNetCoreComponentsPackageVersion>7.0.1</MicrosoftAspNetCoreComponentsPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebPackageVersion>7.0.8</MicrosoftAspNetCoreComponentsWebPackageVersion>
-    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>7.0.8</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebPackageVersion>7.0.9</MicrosoftAspNetCoreComponentsWebPackageVersion>
+    <MicrosoftAspNetCoreComponentsWebViewPackageVersion>7.0.9</MicrosoftAspNetCoreComponentsWebViewPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>7.0.1</MicrosoftAspNetCoreMetadataPackageVersion>
-    <MicrosoftJSInteropPackageVersion>7.0.8</MicrosoftJSInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>7.0.9</MicrosoftJSInteropPackageVersion>
     <!-- Other packages -->
     <MicrosoftCodeAnalysisNetAnalyzersVersion>7.0.3</MicrosoftCodeAnalysisNetAnalyzersVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>3.3.4</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
@@ -54,11 +53,11 @@
     <_MicrosoftWebWebView2Version>1.0.1823.32</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
-    <_XamarinAndroidGlideVersion>4.15.1</_XamarinAndroidGlideVersion>
-    <_XamarinAndroidXSecurityVersion>1.1.0-alpha06</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.9.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinAndroidGlideVersion>4.15.1.2</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidXSecurityVersion>1.1.0.1-alpha06</_XamarinAndroidXSecurityVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.9.0.2</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
-    <XamarinGooglePlayServicesMaps>118.1.0.2</XamarinGooglePlayServicesMaps>
+    <XamarinGooglePlayServicesMaps>118.1.0.3</XamarinGooglePlayServicesMaps>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
@@ -69,9 +68,9 @@
     <_HarfBuzzSharpVersion>2.8.2.2</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.193b587552cb0ed39372a049d7e6c692db98c267.483</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23326.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23326.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23326.1</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23370.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23370.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23370.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
