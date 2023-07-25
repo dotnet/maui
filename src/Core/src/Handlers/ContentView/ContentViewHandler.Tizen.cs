@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Handlers
 			handler.ToPlatform()?.UpdateBackground(view);
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			if (handler is ContentViewHandler contentViewHandler)
 			{

@@ -166,14 +166,14 @@ namespace Microsoft.Maui.Handlers
 
 #if __ANDROID__
 		/// <summary>
-		/// Maps the abstract <see cref="IView.Content"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IView.Width"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static partial void MapWidth(IBorderHandler handler, IBorderView border);
 
 		/// <summary>
-		/// Maps the abstract <see cref="IView.Content"/> property to the platform-specific implementations.
+		/// Maps the abstract <see cref="IView.Height"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
