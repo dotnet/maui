@@ -28,5 +28,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Empty(page.Children);
 		}
+
+		[Fact]
+		public void LogicalAndInternalChildrenMaintainOrder()
+		{
+			TabbedPage tabbedPage = new TabbedPage();
+
+			ContentPage page1 = new ContentPage();
+			ContentPage page2 = new ContentPage();
+
+			tabbedPage.Children.Add(page2);
+			tabbedPage.Children.Insert(0, page1);
+			tabbedPage.Children.Remove(page1);
+			tabbedPage.Children.Insert(0, page1);
+
+			Assert.Equal(tabbedPage.LogicalChildren[0], tabbedPage.InternalChildren[0]);
+			Assert.Equal(tabbedPage.LogicalChildren[1], tabbedPage.InternalChildren[1]);
+		}
 	}
 }

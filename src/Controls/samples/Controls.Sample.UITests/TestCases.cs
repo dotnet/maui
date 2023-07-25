@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 	{
 		public class TestCaseScreen : TableView
 		{
-			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>();
+			public static Dictionary<string, Action> PageToAction = new Dictionary<string, Action>(StringComparer.OrdinalIgnoreCase);
 
 			bool _filterBugzilla;
 			bool _filterNone;
@@ -149,7 +149,7 @@ namespace Maui.Controls.Sample
 				var duplicates = new HashSet<string>();
 				_issues.ForEach(im =>
 				{
-					if (duplicates.Contains(im.Name) && !IsExempt(im.Name))
+					if (duplicates.Contains(im.Name, StringComparer.OrdinalIgnoreCase) && !IsExempt(im.Name))
 					{
 						throw new NotSupportedException("Please provide unique tracker + issue number combo: "
 							+ im.IssueTracker.ToString() + im.IssueNumber.ToString() + im.IssueTestNumber.ToString());
@@ -208,7 +208,7 @@ namespace Maui.Controls.Sample
 
 			public bool TryToNavigateTo(string name)
 			{
-				var issue = _issues.SingleOrDefault(x => String.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
+				var issue = _issues.SingleOrDefault(x => string.Equals(x.Name, name, StringComparison.OrdinalIgnoreCase));
 				if (issue == null)
 					return false;
 
@@ -279,7 +279,7 @@ namespace Maui.Controls.Sample
 				Root.Add(_section);
 			}
 
-			HashSet<string> _exemptNames = new HashSet<string> { "N0", "G342", "G1305", "G1461", "G1653", "G1700" };
+			HashSet<string> _exemptNames = new HashSet<string> { };
 
 			// Legacy reasons, do not add to this list
 			// Going forward, make sure only one Issue attribute exist for a Tracker + Issue number pair
