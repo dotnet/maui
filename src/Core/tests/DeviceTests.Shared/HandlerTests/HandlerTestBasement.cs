@@ -134,7 +134,7 @@ namespace Microsoft.Maui.DeviceTests
 				view.Arrange(new Rect(0, 0, w, h));
 
 #if WINDOWS
-				if (viewHandler.PlatformView is SwipeControl swipeControl)
+				if (viewHandler.PlatformView is SwipeControl swipeControl && !swipeControl.IsLoaded)
 				{
 					void SwipeViewLoaded(object s, RoutedEventArgs e)
 					{
