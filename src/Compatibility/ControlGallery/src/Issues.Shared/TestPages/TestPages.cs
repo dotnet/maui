@@ -143,6 +143,11 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				appConfiguration = appConfiguration.EnableLocalScreenshots();
 			}
 
+			var app = appConfiguration
+	  						.PreferIdeSettings()
+	  						.Debug()
+	  						.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
+		 
 			int _iosVersion;
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
 			{
@@ -153,11 +158,6 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
 																: enviOSPath;
-			
-   			var app = appConfiguration
-	  						.PreferIdeSettings()
-	  						.Debug()
-	  						.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			// Running on the simulator
 			//var app = ConfigureApp.iOS
