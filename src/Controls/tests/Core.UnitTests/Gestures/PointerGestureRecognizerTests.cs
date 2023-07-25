@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, (view as IGestureController).CompositeGestureRecognizers.Count);
 
 			view.GestureRecognizers.Clear();
-			Assert.Equal(1, (view as IGestureController).CompositeGestureRecognizers.Count);
+			Assert.Single((view as IGestureController).CompositeGestureRecognizers);
 			Assert.Null(gestureRecognizer.Parent);
 		}
 

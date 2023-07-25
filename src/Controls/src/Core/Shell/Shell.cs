@@ -714,40 +714,6 @@ namespace Microsoft.Maui.Controls
 			return _navigationManager.GoToAsync(state, animate, false, parameters: new ShellRouteParameters(shellNavigationQueryParameters));
 		}
 
-		public void AddLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			if (_logicalChildren.Contains(element))
-				return;
-
-			_logicalChildren.Add(element);
-			element.Parent = this;
-			OnChildAdded(element);
-			VisualDiagnostics.OnChildAdded(this, element);
-		}
-
-		public void RemoveLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			element.Parent = null;
-
-			var oldLogicalIndex = _logicalChildren.IndexOf(element);
-			if (oldLogicalIndex == -1)
-				return;
-
-			_logicalChildren.RemoveAt(oldLogicalIndex);
-			OnChildRemoved(element, oldLogicalIndex);
-			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
-		}
-
 		/// <summary>Bindable property for <see cref="CurrentItem"/>.</summary>
 		public static readonly BindableProperty CurrentItemProperty =
 			BindableProperty.Create(nameof(CurrentItem), typeof(ShellItem), typeof(Shell), null, BindingMode.TwoWay,
@@ -818,12 +784,6 @@ namespace Microsoft.Maui.Controls
 		ShellFlyoutItemsManager _flyoutManager;
 		Page _previousPage;
 
-		ObservableCollection<Element> _logicalChildren
-			= new ObservableCollection<Element>();
-
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> _logicalChildren;
-
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Shell.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public Shell()
 		{
@@ -837,7 +797,6 @@ namespace Microsoft.Maui.Controls
 			Navigation = new NavigationImpl(this);
 			Route = Routing.GenerateImplicitRoute("shell");
 			Initialize();
-			InternalChildren.CollectionChanged += OnInternalChildrenCollectionChanged;
 
 			if (Application.Current != null)
 			{
@@ -1336,27 +1295,8 @@ namespace Microsoft.Maui.Controls
 			shell.OnFlyoutFooterTemplateChanged((DataTemplate)oldValue, (DataTemplate)newValue);
 		}
 
-		static void OnTitleViewChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			if (!(bindable is Element owner))
-				return;
-
-			var oldView = (View)oldValue;
-			var newView = (View)newValue;
-			var shell = bindable as Shell;
-
-			if (oldView != null)
-			{
-				shell?.RemoveLogicalChild(oldView);
-				oldView.Parent = null;
-			}
-
-			if (newView != null)
-			{
-				newView.Parent = owner;
-				shell?.AddLogicalChild(newView);
-			}
-		}
+		static void OnTitleViewChanged(BindableObject bindable, object oldValue, object newValue) =>
+			bindable.AddRemoveLogicalChildren(oldValue, newValue);
 
 		internal FlyoutBehavior GetEffectiveFlyoutBehavior()
 		{
@@ -1468,18 +1408,6 @@ namespace Microsoft.Maui.Controls
 			return null;
 		}
 
-
-		void OnInternalChildrenCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-		{
-			if (e.NewItems != null)
-				foreach (Element element in e.NewItems)
-					AddLogicalChild(element);
-
-			if (e.OldItems != null)
-				foreach (Element element in e.OldItems)
-					RemoveLogicalChild(element);
-		}
-
 		void NotifyFlyoutBehaviorObservers()
 		{
 			if (CurrentItem == null || GetVisiblePage() == null)
@@ -1498,7 +1426,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutHeaderTemplate,
 				ref _flyoutHeaderView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1508,7 +1436,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutHeaderView,
 				FlyoutHeader,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}
@@ -1519,7 +1447,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutFooterTemplate,
 				ref _flyoutFooterView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1529,7 +1457,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutFooterView,
 				FlyoutFooter,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}
@@ -1589,13 +1517,7 @@ namespace Microsoft.Maui.Controls
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
-			if (FlyoutHeaderView != null)
-				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutHeaderView });
-			if (FlyoutFooterView != null)
-				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutFooterView });
-			if (FlyoutContentView != null)
-				PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, new[] { FlyoutContentView });
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
 		protected override void LayoutChildren(double x, double y, double width, double height)
@@ -1663,7 +1585,7 @@ namespace Microsoft.Maui.Controls
 				FlyoutContentTemplate,
 				ref _flyoutContentView,
 				newVal,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild);
 		}
 
@@ -1673,7 +1595,7 @@ namespace Microsoft.Maui.Controls
 				newValue,
 				ref _flyoutContentView,
 				FlyoutContent,
-				RemoveLogicalChild,
+				(element) => RemoveLogicalChild(element),
 				AddLogicalChild,
 				this);
 		}

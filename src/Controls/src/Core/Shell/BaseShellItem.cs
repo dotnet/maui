@@ -26,10 +26,6 @@ namespace Microsoft.Maui.Controls
 		const string DefaultFlyoutItemLayoutStyle = "Default_FlyoutItemLayoutStyle";
 
 		protected private ObservableCollection<Element> DeclaredChildren { get; } = new ObservableCollection<Element>();
-		readonly ObservableCollection<Element> _logicalChildren = new ObservableCollection<Element>();
-
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> _logicalChildren;
 
 		#region PropertyKeys
 
@@ -262,43 +258,9 @@ namespace Microsoft.Maui.Controls
 				to.SetValue(property, from.GetValue(property));
 		}
 
-		internal void AddLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			if (_logicalChildren.Contains(element))
-				return;
-
-			_logicalChildren.Add(element);
-			element.Parent = this;
-			OnChildAdded(element);
-			VisualDiagnostics.OnChildAdded(this, element);
-		}
-
-		internal void RemoveLogicalChild(Element element)
-		{
-			if (element == null)
-			{
-				return;
-			}
-
-			element.Parent = null;
-
-			if (!_logicalChildren.Contains(element))
-				return;
-
-			var oldLogicalIndex = _logicalChildren.IndexOf(element);
-			_logicalChildren.Remove(element);
-			OnChildRemoved(element, oldLogicalIndex);
-			VisualDiagnostics.OnChildRemoved(this, element, oldLogicalIndex);
-		}
-
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
 		EffectiveFlowDirection _effectiveFlowDirection = default(EffectiveFlowDirection);

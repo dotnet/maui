@@ -81,12 +81,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			// get an image
 			var result1 = await service.GetImageAsync(imageSource);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again
 			var result2 = await service.GetImageAsync(imageSource);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
 			// make sure it was NOT collected and we got the same image
@@ -106,7 +106,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// get an image
 			var result1 = await service.GetImageAsync(imageSource);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// release
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// get the image again
 			var result2 = await service.GetImageAsync(imageSource);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// make sure it WAS collected and we got a new image
