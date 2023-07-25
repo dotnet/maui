@@ -388,7 +388,7 @@ namespace Microsoft.Maui.Platform
 				mode = MeasureSpecMode.Exactly;
 				constraint = explicitSize;
 			}
-			else if (IsMaximumSet(maximumSize))
+			else if (IsMaximumSet(maximumSize) && maximumSize < constraint)
 			{
 				mode = MeasureSpecMode.AtMost;
 				constraint = maximumSize;

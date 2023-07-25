@@ -1,8 +1,10 @@
 parameters:
   androidPool: { }
   iosPool: { }
+  catalystPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
+  catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   artifactName: 'nuget'
@@ -14,6 +16,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
+      catalyst: /optional/path/to/catalyst.csproj
 
 stages:
   - stage: android_device_tests
@@ -46,6 +49,7 @@ stages:
             platform: android
             path: $(PROJECT_PATH) 
             device: $(DEVICE)
+            windowsPackageId: android # Only needed for Windows, will be ignored
             provisionatorChannel: ${{ parameters.provisionatorChannel }}
             agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
             artifactName: ${{ parameters.artifactName }}
@@ -82,6 +86,76 @@ stages:
             platform: ios
             path: $(PROJECT_PATH)
             device: $(DEVICE)
+            windowsPackageId: ios # Only needed for Windows, will be ignored
+            provisionatorChannel: ${{ parameters.provisionatorChannel }}
+            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+            artifactName: ${{ parameters.artifactName }}
+            artifactItemPattern: ${{ parameters.artifactItemPattern }}
+            checkoutDirectory: ${{ parameters.checkoutDirectory }}
+            useArtifacts: ${{ parameters.useArtifacts }}
+
+  - stage: catalyst_device_tests
+    displayName: macOS Device Tests
+    dependsOn: []
+    jobs:
+    - job: catalyst_device_tests
+      workspace:
+        clean: all
+      displayName: "macOS tests"
+      pool: ${{ parameters.catalystPool }}
+      strategy:
+        matrix:
+          # create all the variables used for the matrix
+          ${{ each project in parameters.projects }}:
+            ${{ if ne(project.catalyst, '') }}:
+              ${{ each version in parameters.catalystVersions }}:
+                ${{ if not(containsValue(project.catalystVersionsExclude, version)) }}:
+                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    PROJECT_PATH: ${{ project.catalyst }}
+                    ${{ if eq(version, 'latest') }}:
+                      DEVICE: maccatalyst
+                    ${{ else }}:
+                      DEVICE: maccatalyst_${{ version }}
+      steps:
+        - template: device-tests-steps.yml
+          parameters:
+            platform: catalyst
+            path: $(PROJECT_PATH)
+            device: $(DEVICE)
+            windowsPackageId: catalyst # Only needed for Windows, will be ignored
+            provisionatorChannel: ${{ parameters.provisionatorChannel }}
+            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+            artifactName: ${{ parameters.artifactName }}
+            artifactItemPattern: ${{ parameters.artifactItemPattern }}
+            checkoutDirectory: ${{ parameters.checkoutDirectory }}
+            useArtifacts: ${{ parameters.useArtifacts }}
+
+  - stage: windows_device_tests
+    displayName: Windows Device Tests
+    dependsOn: []
+    jobs:
+    - job: windows_device_tests
+      workspace:
+        clean: all
+      displayName: "Windows device tests"
+      pool:
+        vmImage: windows-latest
+      strategy:
+        matrix:
+          # create all the variables used for the matrix
+          ${{ each project in parameters.projects }}:
+            ${{ if ne(project.windows, '') }}:
+              ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}:
+                PROJECT_PATH: ${{ project.windows }}
+                PACKAGE_ID: ${{ project.windowsPackageId }}
+      steps:
+        - template: device-tests-steps.yml
+          parameters:
+            platform: windows
+            path: $(PROJECT_PATH)
+            windowsPackageId: $(PACKAGE_ID)
+            device: windows
             provisionatorChannel: ${{ parameters.provisionatorChannel }}
             agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
             artifactName: ${{ parameters.artifactName }}

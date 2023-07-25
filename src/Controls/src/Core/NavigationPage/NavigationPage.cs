@@ -40,7 +40,8 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IconColorProperty = BindableProperty.CreateAttached("IconColor", typeof(Color), typeof(NavigationPage), null);
 
 		/// <summary>Bindable property for attached property <c>TitleView</c>.</summary>
-		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null, propertyChanging: TitleViewPropertyChanging);
+		public static readonly BindableProperty TitleViewProperty = BindableProperty.CreateAttached("TitleView", typeof(View), typeof(NavigationPage), null,
+			propertyChanging: TitleViewPropertyChanging, propertyChanged: (bo, oldV, newV) => bo.AddRemoveLogicalChildren(oldV, newV));
 
 		static readonly BindablePropertyKey CurrentPagePropertyKey = BindableProperty.CreateReadOnly("CurrentPage", typeof(Page), typeof(NavigationPage), null, propertyChanged: OnCurrentPageChanged);
 
@@ -157,11 +158,6 @@ namespace Microsoft.Maui.Controls
 			if (bindable is Page page)
 			{
 				page.SetTitleView((View)oldValue, (View)newValue);
-			}
-			else if (oldValue != null)
-			{
-				var oldElem = (View)oldValue;
-				oldElem.Parent = null;
 			}
 		}
 
@@ -575,14 +571,31 @@ namespace Microsoft.Maui.Controls
 				else
 				{
 					// Is the root the window or is this part of a modal stack
-					var rootPage = this.FindParentWith(x => (x is IWindow te || Window.Navigation.ModalStack.Contains(x)), true);
+					Element toolbarRoot;
 
-					if (rootPage is Window w)
+					var parentPages = this.GetParentPages();
+					parentPages.Insert(0, this);
+					var topLevelPage = parentPages[parentPages.Count - 1];
+
+					// Is my top parent page the root page on the window?
+					// If so then we set the toolbar on the window
+					if (Window.Page == topLevelPage)
+					{
+						toolbarRoot = Window;
+					}
+					else
+					{
+						// This means the page is a modal page so we set the toolbar on the top level page
+						// of the modal
+						toolbarRoot = topLevelPage;
+					}
+
+					if (toolbarRoot is Window w)
 					{
 						_toolbar = new NavigationPageToolbar(w, w.Page);
 						w.Toolbar = _toolbar;
 					}
-					else if (rootPage is Page p)
+					else if (toolbarRoot is Page p)
 					{
 						_toolbar = new NavigationPageToolbar(p, p);
 						p.Toolbar = _toolbar;

@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public CheckBoxHandler() : base(Mapper)
+		public CheckBoxHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
