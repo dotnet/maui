@@ -248,6 +248,8 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
+		// allow time to debounce from the observers as well as allow
+		// other external scrolling to finish before we initiate ours
 		await Task.Delay(30);
 
 		if (entranceCount == DebounceCount)
@@ -305,6 +307,8 @@ public static class KeyboardAutoManagerScroll
 
 		var viewRectInWindow = View.ConvertRectToView(View.Bounds, window);
 
+		// give a small offset of 20 plus the cursor.Height for the distance
+		// between the selected text and the keyboard
 		TextViewTopDistance = ((int?)localCursor?.Height ?? 0) + 20;
 
 		var keyboardYPosition = window.Frame.Height - kbSize.Height - TextViewTopDistance;
