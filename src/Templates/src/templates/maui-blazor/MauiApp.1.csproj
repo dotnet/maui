@@ -64,12 +64,17 @@
 
   <!-- Build Properties must be defined within these property groups to ensure successful publishing
        to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
-    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
-  </PropertyGroup>
+  <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
+  <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+    <!-- Enable this value to use browser developer tools while debugging.-->
+    <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
+    <CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
+  </ItemGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
-    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
+  <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+    <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
+    <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
     <UseHardenedRuntime>true</UseHardenedRuntime>
-  </PropertyGroup>
+  </ItemGroup>
+
 </Project>
