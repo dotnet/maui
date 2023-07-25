@@ -59,16 +59,16 @@ namespace Microsoft.Maui.Controls
 
 				if (old is Element oldElement)
 				{
-					oldElement.Parent = null;
-					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
+					RemoveLogicalChild(oldElement, index);
 				}
-
-				_children[index] = value;
 
 				if (value is Element newElement)
 				{
-					newElement.Parent = this;
-					VisualDiagnostics.OnChildAdded(this, newElement);
+					InsertLogicalChild(index, newElement);
+				}
+				else
+				{
+					_children[index] = value;
 				}
 
 				OnUpdate(index, value, old);
@@ -132,22 +132,18 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var index = _children.Count;
-			_children.Add(child);
+
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else
+				_children.Add(child);
 
 			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
-			for (var index = Count - 1; index >= 0; index--)
-			{
-				if (this[index] is Element element)
-				{
-					OnChildRemoved(element, index);
-				}
-			}
-
-			_children.Clear();
+			ClearLogicalChildren();
 			OnClear();
 		}
 
@@ -171,7 +167,10 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
-			_children.Insert(index, child);
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else
+				_children.Insert(index, child);
 
 			OnInsert(index, child);
 		}
@@ -202,7 +201,10 @@ namespace Microsoft.Maui.Controls
 
 			var child = _children[index];
 
-			_children.RemoveAt(index);
+			if (child is Element element)
+				RemoveLogicalChild(element, index);
+			else
+				_children.RemoveAt(index);
 
 			OnRemove(index, child);
 		}
@@ -210,12 +212,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnClear()
@@ -226,23 +222,11 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemove(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)

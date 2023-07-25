@@ -9,18 +9,14 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class CheckBox
 	{
-		// TODO Make public for NET8
-		internal static IPropertyMapper<ICheckBox, CheckBoxHandler> ControlsCheckBoxMapper = new PropertyMapper<CheckBox, CheckBoxHandler>(CheckBoxHandler.Mapper)
-		{
-			[nameof(Color)] = (handler, view) =>
-			{
-				handler?.UpdateValue(nameof(ICheckBox.Foreground));
-			}
-		};
-
 		internal new static void RemapForControls()
 		{
-			CheckBoxHandler.Mapper = ControlsCheckBoxMapper;
+			CheckBoxHandler.Mapper.ReplaceMapping<ICheckBox, ICheckBoxHandler>(nameof(Color), MapColor);
+		}
+
+		internal static void MapColor(ICheckBoxHandler handler, ICheckBox view)
+		{
+			handler?.UpdateValue(nameof(ICheckBox.Foreground));
 		}
 	}
 }

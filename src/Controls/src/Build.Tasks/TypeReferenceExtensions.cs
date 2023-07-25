@@ -424,5 +424,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static TypeDefinition ResolveCached(this TypeReference typeReference, XamlCache cache) => cache.Resolve(typeReference);
+
 	}
 }
