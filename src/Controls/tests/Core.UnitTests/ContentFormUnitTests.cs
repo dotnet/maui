@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var expected = new View();
 			sut.Content = expected;
 
-			Assert.Equal(1, internalChildren.Count);
+			Assert.Single(internalChildren);
 			Assert.Same(expected, internalChildren[0]);
 		}
 	}

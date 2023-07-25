@@ -97,18 +97,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			}
 
-			Assert.NotNull(viewReference);
-			Assert.NotNull(platformReference);
-			Assert.NotNull(handlerReference);
-
-			// Multiple GCs are sometimes required on iOS
-			for (int i = 0; i < 3; i++)
-			{
-				await Task.Yield();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-			}
-
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
 			Assert.False(viewReference.IsAlive, "View should not be alive!");
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");

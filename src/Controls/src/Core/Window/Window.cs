@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
+	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(
 				FlowDirectionProperty.PropertyName,
 				(Element)bindable,
-				((IElementController)bindable).LogicalChildren);
+				((IVisualTreeElement)bindable).GetVisualChildren());
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
@@ -412,8 +412,6 @@ namespace Microsoft.Maui.Controls
 			ModalPopped?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 
-			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
-
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
@@ -434,7 +432,6 @@ namespace Microsoft.Maui.Controls
 			var args = new ModalPushedEventArgs(modalPage);
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
-			VisualDiagnostics.OnChildAdded(this, modalPage);
 
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
@@ -570,12 +567,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Currently this returns MainPage + ModalStack
-		// Depending on how we want this to show up inside LVT
-		// we might want to change this to only return the currently visible page
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-			_visualChildren;
-
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is Page oldPage)
@@ -588,7 +579,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_menuBarTracker.Target = null;
 				_visualChildren.Remove(oldPage);
-				RemoveLogicalChildInternal(oldPage);
+				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -599,7 +590,7 @@ namespace Microsoft.Maui.Controls
 			if (newPage != null)
 			{
 				_visualChildren.Add(newPage);
-				AddLogicalChildInternal(newPage);
+				AddLogicalChild(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 

@@ -326,16 +326,7 @@ namespace Microsoft.Maui.DeviceTests
 				await navPage.Navigation.PopAsync();
 			});
 
-			// Windows requires an actual delay
-			// Android/iOS require multiple GCs
-			await AssertionExtensions.Wait(() =>
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				return !pageReference.IsAlive;
-			}, timeout: 5000);
-
-			Assert.NotNull(pageReference);
+			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
