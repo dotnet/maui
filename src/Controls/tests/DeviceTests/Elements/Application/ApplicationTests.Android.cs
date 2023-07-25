@@ -100,7 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			class SoftInputApplicationHandlerStub : ApplicationHandler
 			{
-				public SoftInputApplicationHandlerStub() : base(Application.ControlsApplicationMapper)
+				public SoftInputApplicationHandlerStub() : base(ApplicationHandler.Mapper)
 				{
 				}
 

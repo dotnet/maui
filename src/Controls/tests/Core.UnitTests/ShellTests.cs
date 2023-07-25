@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -93,10 +94,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			shell.CurrentItem = page2;
-			Assert.Equal(1, shell.Items.Count);
+			Assert.Single(shell.Items);
 			Assert.Equal(2, shell.Items[0].Items.Count);
-			Assert.Equal(1, shell.Items[0].Items[0].Items.Count);
-			Assert.Equal(1, shell.Items[0].Items[1].Items.Count);
+			Assert.Single(shell.Items[0].Items[0].Items);
+			Assert.Single(shell.Items[0].Items[1].Items);
 			Assert.Equal(shell.CurrentItem.CurrentItem, shell.Items[0].Items[1]);
 		}
 
@@ -516,7 +517,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await shell.GoToAsync($"OnBackbuttonPressedFiresOnPage?CancelNavigationOnBackButtonPressed=false");
 
 			shell.SendBackButtonPressed();
-			Assert.Equal(1, shell.Navigation.NavigationStack.Count);
+			Assert.Single(shell.Navigation.NavigationStack);
 		}
 
 		[Fact]
@@ -771,7 +772,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetTitleView(page, layout);
 
 
-			Assert.Contains(layout, page.ChildrenNotDrawnByThisElement);
+			Assert.Contains(layout, page.LogicalChildren);
+			Assert.DoesNotContain(layout, page.InternalChildren);
+			Assert.Contains(layout, ((IVisualTreeElement)page).GetVisualChildren());
 		}
 
 		[Fact]
@@ -885,7 +888,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 
-			Assert.Equal(1, shell.Items.Count);
+			Assert.Single(shell.Items);
 			Assert.Equal(3, shell.Items[0].Items.Count);
 
 			Assert.Equal(FlyoutBehavior.Disabled, shell.GetEffectiveFlyoutBehavior());
@@ -898,7 +901,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.Items.Add(ShellItem.CreateFromShellSection(CreateShellSection<Tab>()));
 
 			Assert.Equal(2, shell.Items.Count);
-			Assert.Equal(0, shell.Items[0].Items.Count);
+			Assert.Empty(shell.Items[0].Items);
 			Assert.Equal(3, shell.Items[1].Items.Count);
 
 
@@ -913,7 +916,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(3, shell.Items.Count);
 			Assert.Equal(3, shell.Items[0].Items.Count);
-			Assert.Equal(0, shell.Items[1].Items.Count);
+			Assert.Empty(shell.Items[1].Items);
 			Assert.Equal(3, shell.Items[0].Items.Count);
 		}
 
@@ -1374,7 +1377,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			shell.CurrentItem.CurrentItem.Items.Add(CreateShellContent());
 			var shellCount = (shell as IVisualTreeElement).GetVisualChildren();
 			var shellItemCount = (shell.CurrentItem as IVisualTreeElement).GetVisualChildren();
-			Assert.Equal(1, shellCount.Count);
+			Assert.Single(shellCount);
 			Assert.Equal(2, shellItemCount.Count);
 		}
 
@@ -1559,6 +1562,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			TestShell testShell = new TestShell(new ContentPage());
 			var shellToolBar = testShell.Toolbar;
 			Assert.False(shellToolBar.IsVisible);
+		}
+
+		[Fact]
+		public async Task ChangingTextColorAfterSetValueFromRendererDoesntFire()
+		{
+			Button button = new Button()
+			{
+				TextColor = Colors.Green
+			};
+
+			button.SetValue(
+				Button.TextColorProperty, Colors.Purple, specificity: SetterSpecificity.FromHandler);
+
+			bool fired = false;
+			button.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == Button.TextColorProperty.PropertyName)
+				{
+					fired = true;
+				}
+			};
+
+			button.TextColor = Colors.Green; // Won't fire a property Changed event
+			Assert.Equal(Colors.Green, button.TextColor);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public async Task ShellSectionChangedFires()
+		{
+			var page1 = new ContentPage()
+			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+			{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
+
+			var shell = new Shell();
+			var tabBar = new TabBar()
+			{
+				Items =
+				{
+					new ShellContent(){ Content = page1 },
+					new ShellContent(){ Content = page2 },
+				}
+			};
+
+			shell.Items.Add(tabBar);
+			shell.CurrentItem = page2;
+			page2.IsVisible = false;
+			Assert.Equal(shell.CurrentPage, page1);
+
+			bool fired = false;
+			shell.CurrentItem.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == nameof(ShellItem.CurrentItem))
+				{
+					fired = true;
+				}
+			};
+
+			page2.IsVisible = true;
+			shell.CurrentItem = page2;
+			Assert.Equal(shell.CurrentPage, page2);
+			Assert.True(fired);
 		}
 	}
 }
