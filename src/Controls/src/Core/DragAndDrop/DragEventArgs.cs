@@ -26,6 +26,9 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='AcceptedOperation']/Docs/*" />
 		public DataPackageOperation AcceptedOperation { get; set; }
 
+		/// <summary>
+		/// A point in the coordinate system that is where is dragging being done.
+		/// </summary>
 		public Point Position { get; set; }
 	}
 }

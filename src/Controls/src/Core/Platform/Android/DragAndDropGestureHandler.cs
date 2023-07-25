@@ -124,9 +124,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_currentCustomLocalStateData.DataPackage = package;
 			}
 			
-			var x = e.GetX();
-			var y = e.GetY();
-			var position = new Point(x, y);
+			var position = new Point(e.GetX(), e.GetY());
 
 			switch (e.Action)
 			{
@@ -267,7 +265,9 @@ namespace Microsoft.Maui.Controls.Platform
 				if (v.Handle == IntPtr.Zero)
 					return;
 
-				var args = rec.SendDragStarting(element);
+				var position = new Point(e.GetX(), e.GetY());
+
+				var args = rec.SendDragStarting(element, position);
 
 				if (args.Cancel)
 					return;

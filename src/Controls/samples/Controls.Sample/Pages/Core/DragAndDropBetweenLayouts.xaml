@@ -7,7 +7,9 @@
     <views:BasePage.Resources>
 
         <DataTemplate x:Key="colorTemplate">
-            <BoxView HeightRequest="100" Background="{Binding .}">
+            <BoxView 
+                HeightRequest="100" 
+                Background="{Binding .}">
                 <BoxView.GestureRecognizers>
                     <DragGestureRecognizer 
                         DropCompleted="OnDropCompleted" 
@@ -28,7 +30,8 @@
             <ScrollView>
                 <StackLayout  
                     x:Name="SLAllColors" 
-                    BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding AllColors}">
+                    BindableLayout.ItemTemplate="{StaticResource colorTemplate}" 
+                    BindableLayout.ItemsSource="{Binding AllColors}">
                     <StackLayout.GestureRecognizers>
                         <DropGestureRecognizer 
                             DragOver="OnDragOver"
@@ -37,11 +40,18 @@
                     </StackLayout.GestureRecognizers>
                 </StackLayout>
             </ScrollView>
-            <Label 
-                x:Name="PositionLabel"/>
+            <StackLayout>
+                <Label 
+                    x:Name="DragStartingPositionLabel"/>
+                <Label 
+                    x:Name="DragPositionLabel"/>
+            </StackLayout>
         </Grid>
         <ScrollView Grid.Column="1">
-            <StackLayout x:Name="SLRainbow" BindableLayout.ItemTemplate="{StaticResource colorTemplate}" BindableLayout.ItemsSource="{Binding RainbowColors}">
+            <StackLayout 
+                x:Name="SLRainbow" 
+                BindableLayout.ItemTemplate="{StaticResource colorTemplate}" 
+                BindableLayout.ItemsSource="{Binding RainbowColors}">
                 <StackLayout.GestureRecognizers>
                     <DropGestureRecognizer 
                         DragOver="OnDragOver"

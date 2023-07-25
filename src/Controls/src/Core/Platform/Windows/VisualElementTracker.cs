@@ -156,9 +156,17 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
+				Point position = Point.Zero;
+
+				if (e.OriginalSource is UIElement element)
+				{
+					var result = e.GetPosition(element);
+					position = new Point(result.X, result.Y);
+				}
+
 				rec.SendDragOver(dragEventArgs);
-				var result = (int)dragEventArgs.AcceptedOperation;
-				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				var acceptedOperation = (int)dragEventArgs.AcceptedOperation;
+				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)acceptedOperation;
 			});
 		}
 
@@ -200,7 +208,17 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var renderer = sender as IViewHandler;
-				var args = rec.SendDragStarting(renderer?.VirtualView);
+
+				Point position = Point.Zero;
+
+				if (e.OriginalSource is UIElement element)
+				{
+					var result = e.GetPosition(element);
+					position = new Point(result.X, result.Y);
+				}
+
+				var args = rec.SendDragStarting(renderer?.VirtualView, position);
+
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
 				if (!args.Handled && renderer != null)

@@ -36,6 +36,8 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
+			DragStartingPositionLabel.Text = $"Drag Starting Position X:{e.Position.X}, Y:{e.Position.Y}";
+
 			var boxView = (sender as Element).Parent as BoxView;
 			var sl = boxView.Parent as StackLayout;
 			e.Data.Properties.Add("Color", boxView.Background);
@@ -63,7 +65,7 @@ namespace Maui.Controls.Sample.Pages
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			PositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
+			DragPositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
 
 			var sl = (sender as Element).Parent as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
@@ -80,7 +82,7 @@ namespace Maui.Controls.Sample.Pages
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			PositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
+			DragPositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
 
 			var sl = (sender as Element).Parent as StackLayout;
 			if (e.Data.Properties["Source"] == sl)

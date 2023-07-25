@@ -10,6 +10,7 @@ using Foundation;
 using Microsoft.Extensions.Logging;
 using ObjCRuntime;
 using UIKit;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -139,7 +140,8 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element);
+				// TODO: Pass the drag starting position
+				var args = rec.SendDragStarting(element, Point.Zero);
 
 				if (args.Cancel)
 					return;

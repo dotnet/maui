@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -92,10 +93,32 @@ namespace Microsoft.Maui.Controls
 
 		internal DragStartingEventArgs SendDragStarting(IView element)
 		{
-			var args = new DragStartingEventArgs();
+			var args = CreateDragStartingEventArgs(element);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);
+
+			return args;
+		}
+		
+		internal DragStartingEventArgs SendDragStarting(IView element, Point position)
+		{
+			var args = CreateDragStartingEventArgs(element);
+
+			if (position != Point.Zero)
+			{
+				args.Position = position;
+			}
+
+			DragStartingCommand?.Execute(DragStartingCommandParameter);
+			DragStarting?.Invoke(this, args);
+
+			return args;
+		}
+
+		internal DragStartingEventArgs CreateDragStartingEventArgs(IView element)
+		{
+			var args = new DragStartingEventArgs();
 
 			if (!args.Handled)
 			{

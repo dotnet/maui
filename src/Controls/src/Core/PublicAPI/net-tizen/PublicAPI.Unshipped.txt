@@ -2,6 +2,12 @@
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
+Microsoft.Maui.Controls.DragEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
+Microsoft.Maui.Controls.DragEventArgs.Position.set -> void
+Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(Microsoft.Maui.Graphics.Point position) -> void
+Microsoft.Maui.Controls.DragStartingEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
+Microsoft.Maui.Controls.DragStartingEventArgs.Position.set -> void
+~Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage dataPackage, Microsoft.Maui.Graphics.Point position) -> void
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!

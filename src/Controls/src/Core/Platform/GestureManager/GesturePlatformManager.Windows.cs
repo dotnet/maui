@@ -246,7 +246,14 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var handler = sender as IViewHandler;
-				var args = rec.SendDragStarting(handler?.VirtualView as IView);
+
+				Point position = Point.Zero;
+
+				if (e.OriginalSource is UIElement element)
+					position = GetPosition(element, e);
+
+				var args = rec.SendDragStarting(handler?.VirtualView, position);
+
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
 				if (!args.Handled && handler != null)
@@ -530,6 +537,13 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			return new Point(result.Value.X, result.Value.Y);
+		}
+
+		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragStartingEventArgs e)
+		{
+			var result = e.GetPosition(element);
+
+			return new Point(result.X, result.Y);
 		}
 
 		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragEventArgs e)
