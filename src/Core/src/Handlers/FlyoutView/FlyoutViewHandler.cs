@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public FlyoutViewHandler() : base(Mapper)
+		public FlyoutViewHandler() : base(Mapper, CommandMapper)
 		{
 		}
 
