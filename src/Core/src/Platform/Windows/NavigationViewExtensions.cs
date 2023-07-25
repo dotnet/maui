@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
 using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
@@ -312,6 +313,7 @@ namespace Microsoft.Maui.Platform
 				// https://github.com/microsoft/microsoft-ui-xaml/blob/a7183df20367bc0e2b8c825430597a5c1e6871b6/dev/NavigationView/NavigationView_rs1_themeresources.xaml#L389-L391
 				var fallbackIconSource = new FontIconSource { Glyph = "&#xE700;" };
 				platformView.Height = platformView.Width = 16d;
+				platformView.Source = new AnimatedGlobalNavigationButtonVisualSource();
 				platformView.FallbackIconSource = fallbackIconSource;
 			}
 		}
