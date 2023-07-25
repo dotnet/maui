@@ -10,14 +10,12 @@ namespace Microsoft.Maui.Controls.Shapes
 {
 	public partial class Shape
 	{
-		public static IPropertyMapper<IShapeView, IShapeViewHandler> ControlsShapeViewMapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ShapeViewHandler.Mapper)
-		{
-			[nameof(StrokeDashArray)] = MapStrokeDashArray,
-		};
+		[Obsolete("Use ShapeViewHandler.Mapper instead.")]
+		public static IPropertyMapper<IShapeView, IShapeViewHandler> ControlsShapeViewMapper = new PropertyMapper<IShapeView, IShapeViewHandler>(ShapeViewHandler.Mapper);
 
 		internal new static void RemapForControls()
 		{
-			ShapeViewHandler.Mapper = ControlsShapeViewMapper;
+			ShapeViewHandler.Mapper.ReplaceMapping<IShapeView, IShapeViewHandler>(nameof(StrokeDashArray), MapStrokeDashArray);
 		}
 	}
 }
