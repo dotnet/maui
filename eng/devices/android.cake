@@ -16,6 +16,7 @@ string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-android" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("ANDROID_TEST_BINLOG") ?? "");
@@ -157,7 +158,13 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		Information($"Build target dotnet root: {DOTNET_ROOT}");
+		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
+
+		DOTNET_ROOT = localDotnetRoot.ToString();
 
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
@@ -300,7 +307,7 @@ Task("uitest")
 	CleanDirectories(TEST_RESULTS);
 
 	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
-
+	
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -390,6 +397,14 @@ void SetupAppPackageNameAndResult()
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";
 	}
+
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
 	Information("Test App: {0}", TEST_APP);
 	Information("Test App Package Name: {0}", TEST_APP_PACKAGE_NAME);
