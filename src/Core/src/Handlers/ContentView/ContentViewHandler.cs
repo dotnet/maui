@@ -13,6 +13,9 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
+	/// <summary>
+	/// Represents the view handler for the abstract <see cref="IContentView"/> view and its platform-specific implementation.
+	/// </summary>
 	public partial class ContentViewHandler : IContentViewHandler
 	{
 		public static IPropertyMapper<IContentView, IContentViewHandler> Mapper =
@@ -45,5 +48,21 @@ namespace Microsoft.Maui.Handlers
 		IContentView IContentViewHandler.VirtualView => VirtualView;
 
 		PlatformView IContentViewHandler.PlatformView => PlatformView;
+
+#if TIZEN
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
+		public static partial void MapBackground(ICheckBoxHandler handler, ICheckBox check);
+#endif
+
+		/// <summary>
+		/// Maps the abstract <see cref="IContentView.Content"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="page">The associated <see cref="IContentView"/> instance.</param>
+		public static partial void MapContent(IContentViewHandler handler, IContentView page);
 	}
 }

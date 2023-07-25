@@ -18,39 +18,39 @@ namespace Microsoft.Maui.Handlers
 			platformView.DateChanged -= DateChanged;
 		}
 
-		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateDate(datePicker);
 		}
 
-		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateMinimumDate(datePicker);
 		}
 
-		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateMaximumDate(datePicker);
 		}
 
-		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView.UpdateTextColor(datePicker);
 		}
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		// TODO NET8 add to public API
-		internal static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
+		internal static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateBackground(datePicker);
 		}

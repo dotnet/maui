@@ -29,12 +29,12 @@ namespace Microsoft.Maui.Handlers
 			platformView.CheckedChanged -= OnCheckedChanged;
 		}
 
-		public static void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
+		public static partial void MapIsChecked(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.PlatformView?.UpdateIsChecked(check);
 		}
 
-		public static void MapForeground(ICheckBoxHandler handler, ICheckBox check)
+		public static partial void MapForeground(ICheckBoxHandler handler, ICheckBox check)
 		{
 			handler.PlatformView?.UpdateForeground(check);
 		}
