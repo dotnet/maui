@@ -419,7 +419,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			foreach (var swipeItem in swipeItems)
-				AddLogicalChildInternal((Element)swipeItem);
+				AddLogicalChild((Element)swipeItem);
 		}
 
 		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
