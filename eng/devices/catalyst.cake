@@ -55,7 +55,15 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
+
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
