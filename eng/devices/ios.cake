@@ -14,6 +14,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-ios" : ""));
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
@@ -99,8 +100,16 @@ Task("Build")
 
 	if (USE_DOTNET)
 	{
-		SetDotNetEnvironmentVariables(DOTNET_PATH);
+		Information($"Build target dotnet root: {DOTNET_ROOT}");
+		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("new dotnet root: {0}", localDotnetRoot);
 
+		DOTNET_ROOT = localDotnetRoot.ToString();
+
+		SetDotNetEnvironmentVariables(DOTNET_ROOT);
+		
 		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
@@ -298,6 +307,14 @@ void SetupAppPackageNameAndResult()
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS =  GetTestResultsDirectory().FullPath;
 	}
+
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
 
 	Information("Test Device: {0}", TEST_DEVICE);
 	Information("Test App: {0}", TEST_APP);

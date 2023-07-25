@@ -131,11 +131,6 @@ namespace Microsoft.Maui
 							return ApplyScaling(font, result);
 					}
 
-					var cleansedFont = CleanseFontName(family);
-					result = UIFont.FromName(cleansedFont, size);
-					if (result != null)
-						return ApplyScaling(font, result);
-
 					if (family.StartsWith(".SFUI", StringComparison.InvariantCultureIgnoreCase))
 					{
 						var weights = family.Split('-');
@@ -154,6 +149,11 @@ namespace Microsoft.Maui
 						if (result != null)
 							return ApplyScaling(font, result);
 					}
+
+					var cleansedFont = CleanseFontName(family);
+					result = UIFont.FromName(cleansedFont, size);
+					if (result != null)
+						return ApplyScaling(font, result);
 
 					result = UIFont.FromName(family, size);
 					if (result != null)

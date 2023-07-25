@@ -115,6 +115,34 @@
                     Text="I am read only" 
                     IsReadOnly="True"/>
                 <Label
+                    Text="SpellCheck (True), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="False"/>
+                <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />
                 <Entry 

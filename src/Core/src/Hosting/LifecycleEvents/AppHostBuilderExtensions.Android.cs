@@ -55,15 +55,8 @@ namespace Microsoft.Maui.LifecycleEvents
 				})
 				.OnDestroy(activity =>
 				{
-					// If the activity is being recreated from a configuration change
-					// or something like the inspector getting attached then
-					// IsFinishing will be set to false so we still need to call
-					// Destroying to remove the xplat Window from Application
-					if (!activity.IsFinishing)
-					{
-						var window = activity.GetWindow();
-						window?.Destroying();
-					}
+					// If we tried to call window.Destroying() before, GetWindow() should return null
+					activity.GetWindow()?.Destroying();
 				})
 				.OnBackPressed(activity =>
 				{

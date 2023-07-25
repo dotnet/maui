@@ -69,6 +69,11 @@ parameters:
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+  - name: catalystPool
+    type: object
+    default:
+      name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
 
 resources:
   repositories:
@@ -84,41 +89,62 @@ stages:
     parameters:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
+      catalystPool: ${{ parameters.catalystPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
         iosVersions: [ 'latest', '15.5', '14.5', '13.7']
+        catalystVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30, 23 ]
         # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
         iosVersions: [ 'latest' ]
+        catalystVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       projects:
         - name: essentials
           desc: Essentials
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          windowsPackageId: 'com.microsoft.maui.essentials.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/Essentials/test/DeviceTests/Essentials.DeviceTests.csproj
         - name: graphics
           desc: Graphics
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          windowsPackageId: 'com.microsoft.maui.graphics.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/Graphics/tests/DeviceTests/Graphics.DeviceTests.csproj
         - name: core
           desc: Core
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          windowsPackageId: 'com.microsoft.maui.core.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          # Skip this one for Mac Catalyst for now, it's crashing
+          catalyst: #$(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
           androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          windowsPackageId: 'com.microsoft.maui.controls.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          # Skip this one for Mac Catalyst for now, it's crashing
+          catalyst: #$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
+          # Skip this one for Windows for now, it's crashing
+          windows: #$(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
         - name: blazorwebview
           desc: BlazorWebView
           androidApiLevelsExclude: [ 27, 26, 25, 24, 23, 22, 21 ] # BlazorWebView requires a recent version of Chrome
+          windowsPackageId: 'Microsoft.Maui.MauiBlazorWebView.DeviceTests'
           android: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+          catalyst: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
+          windows: $(System.DefaultWorkingDirectory)/src/BlazorWebView/tests/MauiDeviceTests/MauiBlazorWebView.DeviceTests.csproj
 

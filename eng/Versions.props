@@ -16,12 +16,12 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-preview.6.361</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.4.8646-net8-p6</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>13.3.8646-net8-p6</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.4.8646-net8-p6</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.4.8646-net8-p6</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.4.8690-net8-p7</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>13.3.8690-net8-p7</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>16.4.8690-net8-p7</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.4.8690-net8-p7</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
-    <SamsungTizenSdkPackageVersion>7.0.112</SamsungTizenSdkPackageVersion>
+    <SamsungTizenSdkPackageVersion>7.0.122</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportVersion>8.0.0-preview.6.23326.2</MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportVersion>
     <MicrosoftNETWorkloadEmscriptenPackageVersion>$(MicrosoftNETWorkloadEmscriptenCurrentManifest80100TransportVersion)</MicrosoftNETWorkloadEmscriptenPackageVersion>
@@ -54,11 +54,11 @@
     <_MicrosoftWebWebView2Version>1.0.1823.32</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
-    <_XamarinAndroidGlideVersion>4.14.2.1</_XamarinAndroidGlideVersion>
-    <_XamarinAndroidXSecurityVersion>1.1.0-alpha05</_XamarinAndroidXSecurityVersion>
-    <_XamarinGoogleCryptoTinkAndroidVersion>1.8.0</_XamarinGoogleCryptoTinkAndroidVersion>
+    <_XamarinAndroidGlideVersion>4.15.1.1</_XamarinAndroidGlideVersion>
+    <_XamarinAndroidXSecurityVersion>1.1.0-alpha06</_XamarinAndroidXSecurityVersion>
+    <_XamarinGoogleCryptoTinkAndroidVersion>1.9.0.1</_XamarinGoogleCryptoTinkAndroidVersion>
     <!-- Android Maps -->
-    <XamarinGooglePlayServicesMaps>118.1.0.1</XamarinGooglePlayServicesMaps>
+    <XamarinGooglePlayServicesMaps>118.1.0.3</XamarinGooglePlayServicesMaps>
     <!--
       SKIASHARP & HARFBUZZSHARP - the various things must be kept in sync with maui graphics:
        - NuGet versions below
@@ -69,9 +69,9 @@
     <_HarfBuzzSharpVersion>2.8.2.4-preview.82</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.936270ba9372ac6c94505de44884ef4ba5d96aa2.588</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23321.2</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23321.2</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23321.2</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23363.3</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23363.3</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23363.3</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
@@ -84,7 +84,7 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
-    <DotNetMaciOSManifestVersionBand>8.0.100-preview.6</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>8.0.100-preview.6</DotNetTizenManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
+    <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>

@@ -17,10 +17,11 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ListView']/Docs/*" />
 	public class ListView : ItemsView<Cell>, IListViewController, IElementConfiguration<ListView>, IVisualTreeElement
 	{
-		readonly List<Element> _logicalChildren = new List<Element>();
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _logicalChildren;
-
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement => _logicalChildren;
+		// The ListViewRenderer has some odd behavior with LogicalChildren
+		// https://github.com/xamarin/Xamarin.Forms/pull/12057
+		// Ideally we'd fix the ListViewRenderer so we don't have this separation
+		readonly List<Element> _visualChildren = new List<Element>();
+		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => _visualChildren;
 
 		/// <summary>Bindable property for <see cref="IsPullToRefreshEnabled"/>.</summary>
 		public static readonly BindableProperty IsPullToRefreshEnabledProperty = BindableProperty.Create("IsPullToRefreshEnabled", typeof(bool), typeof(ListView), false);
@@ -354,7 +355,7 @@ namespace Microsoft.Maui.Controls
 			if (!RefreshAllowed)
 				return;
 
-			SetValueCore(IsRefreshingProperty, true);
+			SetValue(IsRefreshingProperty, true);
 			OnRefreshing(EventArgs.Empty);
 
 			ICommand command = RefreshCommand;
@@ -364,7 +365,7 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/ListView.xml" path="//Member[@MemberName='EndRefresh']/Docs/*" />
 		public void EndRefresh()
 		{
-			SetValueCore(IsRefreshingProperty, false);
+			SetValue(IsRefreshingProperty, false);
 		}
 
 		public event EventHandler<ItemVisibilityEventArgs> ItemAppearing;
@@ -445,7 +446,7 @@ namespace Microsoft.Maui.Controls
 
 			if (content != null)
 			{
-				_logicalChildren.Add(content);
+				_visualChildren.Add(content);
 				content.Parent = this;
 				VisualDiagnostics.OnChildAdded(this, content);
 			}
@@ -457,10 +458,10 @@ namespace Microsoft.Maui.Controls
 
 			if (content == null)
 				return;
-			var index = _logicalChildren.IndexOf(content);
+			var index = _visualChildren.IndexOf(content);
 			if (index == -1)
 				return;
-			_logicalChildren.RemoveAt(index);
+			_visualChildren.RemoveAt(index);
 			content.Parent = null;
 			VisualDiagnostics.OnChildRemoved(this, content, index);
 
@@ -516,7 +517,9 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
+#pragma warning disable CS0618 // Type or member is obsolete
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			cell?.OnTapped();
 
@@ -542,7 +545,9 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
+#pragma warning disable CS0618 // Type or member is obsolete
 				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			if (isContextMenuRequested || cell == null)
 			{

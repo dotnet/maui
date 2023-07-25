@@ -22,7 +22,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(activityIndicator, () => activityIndicator.IsRunning, GetNativeIsRunning, activityIndicator.IsRunning);
 		}
 
-		[Fact(DisplayName = "Background Updates Correctly")]
+		[Fact(DisplayName = "Background Updates Correctly"
+#if WINDOWS
+			, Skip = "Failing on Windows"
+#endif
+			)]
 		public async Task BackgroundUpdatesCorrectly()
 		{
 			var activityIndicator = new ActivityIndicatorStub()

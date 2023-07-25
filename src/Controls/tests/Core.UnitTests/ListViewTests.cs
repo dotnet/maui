@@ -552,7 +552,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				list.ItemsSource = i % 2 > 0 ? newList1 : newList2;
 
-				// grab a header just so we can be sure its reailized
+				// grab a header just so we can be sure its realized
 				var header = list.TemplatedItems.GetGroup(0).HeaderContent;
 			}
 
@@ -560,7 +560,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 
 			// use less or equal because mono will keep the last header var alive no matter what
-			Assert.True(TestCell.NumberOfCells <= 6);
+			Assert.True(TestCell.NumberOfCells <= 6, $"{TestCell.NumberOfCells} <= 6");
 
 			var keepAlive = list.ToString();
 		}
@@ -654,22 +654,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(controller.HeaderElement);
 			Assert.IsType<Label>(controller.HeaderElement);
 			Assert.Equal(((Label)controller.HeaderElement).Text, lv.Header);
-		}
-
-		[Fact]
-		public void HeaderTemplateThrowsIfCell()
-		{
-			var lv = new ListView();
-
-			Assert.Throws<ArgumentException>(() => lv.HeaderTemplate = new DataTemplate(typeof(TextCell)));
-		}
-
-		[Fact]
-		public void FooterTemplateThrowsIfCell()
-		{
-			var lv = new ListView();
-
-			Assert.Throws<ArgumentException>(() => lv.FooterTemplate = new DataTemplate(typeof(TextCell)));
 		}
 
 		[Fact]

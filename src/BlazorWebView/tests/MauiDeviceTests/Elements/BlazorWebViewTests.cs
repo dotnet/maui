@@ -60,7 +60,11 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			});
 		}
 
-		[Fact]
+		[Fact
+#if WINDOWS
+			(Skip = "Times out on CoreWebView2.DOMContentLoaded")
+#endif
+			]
 		public async Task BlazorWebViewLogsRequests()
 		{
 			var testLoggerProvider = new TestLoggerProvider();
@@ -104,7 +108,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			Assert.Equal(1, events.Count(c => c.EventId.Id == 4 && c.LogLevel == LogLevel.Debug && c.EventId.Name == "HandlingWebRequest" && c.Message.Contains("/_framework/blazor.webview.js", System.StringComparison.Ordinal)));
 		}
 
-		[Fact(Skip = "Disable while we investigate this on 8.0.0-p5")]
+		[Fact(Skip = "Disable while we investigate this on 8.0.0-p5, windows Times out on CoreWebView2.DOMContentLoaded")]
 		public async Task BlazorWebViewUsesStartPath()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>

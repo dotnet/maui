@@ -159,6 +159,7 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
     <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
   <Target Name="GitVersion" />

@@ -428,7 +428,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (properties != null && properties.Count > 0)
 			{
 				var lastProp = properties[properties.Count - 1];
-				tPropertyRef = lastProp.property.PropertyType.ResolveGenericParameters(lastProp.propDeclTypeRef);
+				if (lastProp.property != null)
+					tPropertyRef = lastProp.property.PropertyType.ResolveGenericParameters(lastProp.propDeclTypeRef);
+				else //array type
+					tPropertyRef = lastProp.propDeclTypeRef.ResolveCached(context.Cache);
 			}
 			tPropertyRef = module.ImportReference(tPropertyRef);
 			var valuetupleRef = context.Module.ImportReference(module.ImportReference(context.Cache, ("mscorlib", "System", "ValueTuple`2")).MakeGenericInstanceType(new[] { tPropertyRef, module.TypeSystem.Boolean }));
@@ -533,10 +536,16 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 																			&& pd.GetMethod.IsPublic, out indexerDeclTypeRef);
 
 					properties.Add((indexer, indexerDeclTypeRef, indexArg));
-					var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
-					if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
-						throw new BuildException(BuildExceptionCode.BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
-					previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
+					if (indexer != null) //the case when we index on an array, not a list
+					{
+						var indexType = indexer.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(indexerDeclTypeRef);
+						if (!TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String) && !TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32))
+							throw new BuildException(BuildExceptionCode.BindingIndexerTypeUnsupported, lineInfo, null, indexType.FullName);
+						previousPartTypeRef = indexer.PropertyType.ResolveGenericParameters(indexerDeclTypeRef);
+					}
+					else
+						previousPartTypeRef.ResolveCached(context.Cache);
+
 				}
 			}
 			return properties;
@@ -570,22 +579,31 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 				if (indexArg != null)
 				{
-					var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
-					if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
-						yield return Create(Ldstr, indexArg);
-					else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out int index))
+					if (property == null && int.TryParse(indexArg, out int index)) //array
 						yield return Create(Ldc_I4, index);
 					else
-						throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
+					{
+						var indexType = property.GetMethod.Parameters[0].ParameterType.ResolveGenericParameters(propDeclTypeRef);
+						if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.String))
+							yield return Create(Ldstr, indexArg);
+						else if (TypeRefComparer.Default.Equals(indexType, module.TypeSystem.Int32) && int.TryParse(indexArg, out index))
+							yield return Create(Ldc_I4, index);
+						else
+							throw new BuildException(BindingIndexerParse, lineInfo, null, indexArg, property.Name);
+					}
 				}
 
-				var getMethod = module.ImportReference((module.ImportReference(property.GetMethod)).ResolveGenericParameters(propDeclTypeRef, module));
-
-				if (property.GetMethod.IsVirtual)
-					yield return Create(Callvirt, getMethod);
+				if (indexArg != null && property == null)
+					yield return Create(Ldelem_Ref);
 				else
-					yield return Create(Call, getMethod);
+				{
+					var getMethod = module.ImportReference((module.ImportReference(property.GetMethod)).ResolveGenericParameters(propDeclTypeRef, module));
 
+					if (property.GetMethod.IsVirtual)
+						yield return Create(Callvirt, getMethod);
+					else
+						yield return Create(Call, getMethod);
+				}
 				first = false;
 			}
 		}
@@ -719,7 +737,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			setter.Body.InitLocals = true;
 
 			var il = setter.Body.GetILProcessor();
-			if (!properties.Any() || properties.Last().property.SetMethod == null)
+			if (!properties.Any() || properties.Last().property == null || properties.Last().property.SetMethod == null)
 			{
 				yield return Create(Ldnull); //throw or not ?
 				yield break;
@@ -910,6 +928,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			for (var i = 0; i < properties.Count; i++)
 			{
+				if (properties[i].property == null)
+					continue;
 				yield return Create(Dup);
 				yield return Create(Ldc_I4, i);
 				yield return Create(Ldnull);
