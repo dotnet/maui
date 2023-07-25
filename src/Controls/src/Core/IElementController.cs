@@ -6,7 +6,6 @@ using System.Collections.ObjectModel;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
-	[Obsolete("Use IVisualTreeElement instead")]
 	public interface IElementController
 	{
 		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
