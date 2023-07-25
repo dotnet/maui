@@ -13,6 +13,7 @@ using Xunit;
 
 #if WINDOWS
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -133,26 +134,21 @@ namespace Microsoft.Maui.DeviceTests
 				view.Arrange(new Rect(0, 0, w, h));
 
 #if WINDOWS
-				if (viewHandler is SwipeViewHandler)
+				if (viewHandler.PlatformView is SwipeControl swipeControl)
 				{
-					var platformView = viewHandler.ToPlatform();
-
-					if (platformView is not null)
+					void SwipeViewLoaded(object s, RoutedEventArgs e)
 					{
-						void SwipeViewLoaded(object s, RoutedEventArgs e)
-						{
-							platformView.Arrange(new global::Windows.Foundation.Rect(0, 0, w, h));
-							platformView.Loaded -= SwipeViewLoaded;
-						};
+						swipeControl.Arrange(new global::Windows.Foundation.Rect(0, 0, w, h));
+						swipeControl.Loaded -= SwipeViewLoaded;
+					};
 
-						// Doing the SwipeItems arrange before the view has loaded causes the SwipeControl
-						// to crash on the first layout pass. So we wait until the control has been loaded.
-						platformView.Loaded += SwipeViewLoaded;
-					}
+					// Doing the SwipeItems arrange before the view has loaded causes the SwipeControl
+					// to crash on the first layout pass. So we wait until the control has been loaded.
+					swipeControl.Loaded += SwipeViewLoaded;
 				}
 				else
 #endif
-				viewHandler.PlatformArrange(view.Frame);
+					viewHandler.PlatformArrange(view.Frame);
 			}
 		}
 
