@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
 		}
 
-   		public ICrossPlatformLayout? CrossPlatformLayout
+		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get => _crossPlatformLayoutReference != null && _crossPlatformLayoutReference.TryGetTarget(out var v) ? v : null;
 			set => _crossPlatformLayoutReference = value == null ? null : new WeakReference<ICrossPlatformLayout>(value);

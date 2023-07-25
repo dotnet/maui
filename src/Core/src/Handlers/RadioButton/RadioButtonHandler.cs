@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public RadioButtonHandler() : base(Mapper)
+		public RadioButtonHandler() : base(Mapper, CommandMapper)
 		{
 		}
 
