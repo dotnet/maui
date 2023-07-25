@@ -59,22 +59,21 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
-        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
+        <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsPackageVersion)" />
     </ItemGroup>
 
-  <!-- Build Properties must be defined within these property groups to ensure successful publishing
-       to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
-  <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
-  <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
-    <!-- Enable this value to use browser developer tools while debugging.-->
-    <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
-    <CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
-  </ItemGroup>
+    <!-- Build Properties must be defined within these property groups to ensure successful publishing
+         to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
+    <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
+    <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+        <!-- Enable this value to use browser developer tools while debugging.-->
+        <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
+        <CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
+    </ItemGroup>
 
-  <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
-    <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
-    <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
-    <UseHardenedRuntime>true</UseHardenedRuntime>
-  </ItemGroup>
+    <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+        <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
+        <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
+    </ItemGroup>
 
 </Project>
