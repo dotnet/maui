@@ -236,5 +236,46 @@ namespace Microsoft.Maui.DeviceTests
 				await AttachAndRun(root, (handler) => { });
 			});
 		}
+
+		[Fact]
+		public async Task GridCellsHonorMaxWidth()
+		{
+			var grid = new Grid() { MaximumWidthRequest = 50 };
+			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
+
+			grid.Add(label);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAsync<LabelHandler>(label);
+				await CreateHandlerAsync<LayoutHandler>(grid);
+
+				await AttachAndRun(grid, (handler) => { });
+			});
+
+			Assert.True(label.Width <= grid.MaximumWidthRequest);
+			Assert.True(grid.Width <= grid.MaximumWidthRequest);
+		}
+
+		[Fact]
+		public async Task GridCellsHonorMaxHeight()
+		{
+			var grid = new Grid() { MaximumHeightRequest = 20 };
+			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
+
+			grid.Add(label);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAsync<LabelHandler>(label);
+				await CreateHandlerAsync<LayoutHandler>(grid);
+
+				await AttachAndRun(grid, (handler) => { });
+			});
+
+			Assert.True(label.Height <= grid.MaximumHeightRequest);
+			Assert.True(grid.Height <= grid.MaximumHeightRequest);
+		}
+
 	}
 }

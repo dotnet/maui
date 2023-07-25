@@ -13,6 +13,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		TaskCompletionSource _finishedDisconnecting = new TaskCompletionSource();
 		public Task FinishedDisconnecting => _finishedDisconnecting.Task;
 		IView _currentView;
+		WorkspaceViewController _workSpace;
 		public bool IsDisconnected { get; private set; }
 
 		public static IPropertyMapper<IWindow, WindowHandlerStub> WindowMapper = new PropertyMapper<IWindow, WindowHandlerStub>(WindowHandler.Mapper)
@@ -20,55 +21,70 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			[nameof(IWindow.Content)] = MapContent
 		};
 
-		void UpdateContent(UIWindow platformView)
+		class WorkspaceViewController : UIViewController
 		{
-			ReplaceCurrentView(_currentView, platformView, () =>
+			public WorkspaceViewController()
 			{
-				if (IsDisconnected)
-					return;
+				ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+			}
 
-				var virtualView = VirtualView;
-				var view = virtualView.Content.ToPlatform(MauiContext);
-				_currentView = virtualView.Content;
+			public override void ViewDidLayoutSubviews()
+			{
+				base.ViewDidLayoutSubviews();
+				if (View.Subviews.Length > 0)
+					View.Subviews[0].Frame = View.Bounds;
+			}
+		}
 
-				bool fireEvents = !(virtualView as Window)?.IsActivated ?? true;
-				if (virtualView.Content is IFlyoutView)
-				{
-					var vc =
-						((IPlatformViewHandler)_currentView.Handler).ViewController;
+		void UpdateContent()
+		{
+			bool needsToPush = false;
+			if (_workSpace is null)
+			{
+				needsToPush = true;
+				_workSpace = new WorkspaceViewController();
+			}
 
-					_ = vc ?? throw new Exception($"{_currentView} needs to have a ViewController");
+			for (int i = _workSpace.ChildViewControllers.Length - 1; i >= 0; i--)
+			{
+				_workSpace.ChildViewControllers[i].View.RemoveFromSuperview();
+				_workSpace.ChildViewControllers[i].RemoveFromParentViewController();
+			}
 
-					vc.ModalPresentationStyle = UIModalPresentationStyle.FullScreen;
+			_currentView = VirtualView.Content;
+			var view = _currentView.ToPlatform(MauiContext);
+			if (needsToPush)
+			{
+				bool fireEvents = !(VirtualView as Window)?.IsActivated ?? true;
+				var vc =
+					((IPlatformViewHandler)_currentView.Handler).ViewController;
 
-					if (fireEvents)
-						FireWindowEvent(virtualView, (window) => !window.IsCreated, () => virtualView.Created());
+				_ = vc ?? throw new Exception($"{_currentView} needs to have a ViewController");
 
-					PlatformView.RootViewController.PresentViewController(vc, false,
-						() =>
-						{
-							if (fireEvents)
-								FireWindowEvent(virtualView, (window) => !window.IsActivated, () => virtualView.Activated());
-						});
-				}
-				else
-				{
-					if (fireEvents)
-						FireWindowEvent(virtualView, (window) => !window.IsCreated, () => virtualView.Created());
+				PlatformView.RootViewController.PresentViewController(_workSpace, false,
+					() =>
+					{
+						_workSpace.AddChildViewController(vc);
+						_workSpace.View.AddSubview(vc.View);
+						if (fireEvents)
+							FireWindowEvent(VirtualView, (window) => !window.IsActivated, () => VirtualView.Activated());
+					});
+			}
+			else
+			{
+				var vc =
+					((IPlatformViewHandler)_currentView.Handler).ViewController;
 
-					var contentView = AssertionExtensions.FindContentView();
-					contentView.AddSubview(view);
-
-					if (fireEvents)
-						FireWindowEvent(virtualView, (window) => !window.IsActivated, () => virtualView.Activated());
-				}
-			}, false);
+				_ = vc ?? throw new Exception($"{_currentView} needs to have a ViewController");
+				_workSpace.AddChildViewController(vc);
+				_workSpace.View.AddSubview(vc.View);
+			}
 		}
 
 		// If the content on the window is updated as part of the test
 		// this logic takes care of removing the old view and then adding the incoming
 		// view to the testing surface
-		async void ReplaceCurrentView(IView view, UIWindow platformView, Action finishedClosing, bool disconnecting)
+		void Disconnect(IView view, UIWindow platformView, Action finishedClosing)
 		{
 			if (view == null)
 			{
@@ -76,64 +92,34 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return;
 			}
 
+			if (_workSpace is not null)
+			{
+				for (int i = _workSpace.ChildViewControllers.Length - 1; i >= 0; i--)
+				{
+					_workSpace.ChildViewControllers[i].View.RemoveFromSuperview();
+					_workSpace.ChildViewControllers[i].RemoveFromParentViewController();
+				}
+			}
+
 			var vc = (view.Handler as IPlatformViewHandler).ViewController;
 			var virtualView = VirtualView;
+			var pvc = platformView?.RootViewController?.PresentedViewController;
 
-			if (view is IFlyoutView)
+			// This means shell never got to the point of being preesented
+			if (pvc is null || _workSpace is null)
 			{
-				var pvc = platformView?.RootViewController?.PresentedViewController;
-				// This means shell never got to the point of being preesented
-				if (pvc is null)
-				{
-					finishedClosing?.Invoke();
-					return;
-				}
-
-				if (disconnecting)
-				{
-					FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
-				}
-
-				pvc.PresentingViewController.DismissViewController(false,
-					() =>
-					{
-						finishedClosing.Invoke();
-
-						if (disconnecting)
-						{
-							FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
-						}
-					});
+				finishedClosing?.Invoke();
+				return;
 			}
-			else
-			{
-				// With a real app the Modals will get dismissed automatically
-				// When the presenting view controller (RootView) gets replaced with a new
-				// Window.Page
-				// So, we're just simulating that cleanup here ourselves.
-				var presentedVC =
-					platformView?.RootViewController?.PresentedViewController ??
-					vc.PresentedViewController;
 
-				if (presentedVC is ModalWrapper mw)
+			FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
+
+			pvc.PresentingViewController.DismissViewController(false,
+				() =>
 				{
-					await mw.PresentingViewController.DismissViewControllerAsync(false);
-				}
-
-				vc.RemoveFromParentViewController();
-
-				view
-					.ToPlatform()
-					.RemoveFromSuperview();
-
-				finishedClosing.Invoke();
-
-				if (disconnecting &&
-					FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated()))
-				{
-					virtualView.Destroying();
-				}
-			}
+					finishedClosing.Invoke();
+					FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
+				});
 
 		}
 
@@ -152,12 +138,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public static void MapContent(WindowHandlerStub handler, IWindow window)
 		{
-			handler.UpdateContent(handler.PlatformView);
+			handler.UpdateContent();
 		}
 
 		protected override void DisconnectHandler(UIWindow platformView)
 		{
-			ReplaceCurrentView(VirtualView.Content, platformView, () => _finishedDisconnecting.TrySetResult(), true);
+			Disconnect(VirtualView.Content, platformView, () => _finishedDisconnecting.TrySetResult());
 			base.DisconnectHandler(platformView);
 			IsDisconnected = true;
 		}
