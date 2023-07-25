@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var bo = new MockBindable { BindingContext = vm };
 			bo.SetBinding(property, binding);
 
-			bo.SetValue(property, "Baz");
+			bo.SetValue(property, "Baz", SetterSpecificity.FromHandler);
 
 			Assert.Equal("Baz", vm.Text);
 			Assert.Equal("Foo Baz", bo.GetValue(property));

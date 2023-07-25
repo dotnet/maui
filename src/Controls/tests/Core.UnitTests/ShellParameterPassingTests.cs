@@ -448,7 +448,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// ensure that AppliedQueryAttributes is called with correct parameters each time
 			Assert.Equal(2, testPage.AppliedQueryAttributes.Count);
 			Assert.Equal(3, testPage.AppliedQueryAttributes[0].Count);
-			Assert.Equal(1, testPage.AppliedQueryAttributes[1].Count);
+			Assert.Single(testPage.AppliedQueryAttributes[1]);
 			Assert.Equal($"{nameof(ShellTestPage.SomeQueryParameter)}", testPage.AppliedQueryAttributes[1].Keys.First());
 		}
 
