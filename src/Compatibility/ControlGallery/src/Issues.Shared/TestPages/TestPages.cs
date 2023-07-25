@@ -136,6 +136,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			{
 				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
 			}
+			else
+			{
+				appConfiguration = appConfiguration.PreferIdeSettings()
+			}
 
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
 				Convert.ToBoolean(TestContext.Parameters["IncludeScreenShots"]))
