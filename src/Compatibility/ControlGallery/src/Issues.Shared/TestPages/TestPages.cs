@@ -130,24 +130,18 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			}
 
 			// Running on a device
-			var appConfiguration = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug();
+			var appConfiguration = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId);
 
 			if(!String.IsNullOrWhiteSpace(UDID))
 			{
 				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
 			}
-			else
-			{
-				appConfiguration = appConfiguration.PreferIdeSettings()
-			}
-
+   
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
 				Convert.ToBoolean(TestContext.Parameters["IncludeScreenShots"]))
 			{
 				appConfiguration = appConfiguration.EnableLocalScreenshots();
 			}
-
-			var app = appConfiguration.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			int _iosVersion;
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
@@ -155,12 +149,15 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				iOSVersion = _iosVersion;
 			}
 
-
 			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
-
 
 			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
 																: enviOSPath;
+			
+   			var app = appConfiguration
+	  						.PreferIdeSettings()
+	  						.Debug()
+	  						.StartApp(Xamarin.UITest.Configuration.AppDataMode.DoNotClear);
 
 			// Running on the simulator
 			//var app = ConfigureApp.iOS
