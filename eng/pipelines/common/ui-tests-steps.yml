@@ -39,7 +39,7 @@ steps:
   - pwsh: ./eng/scripts/appium-install.ps1
     displayName: "Install Appium"
     continueOnError: false
-    retryCountOnTaskFailure: 2
+    retryCountOnTaskFailure: 1
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
