@@ -53,6 +53,14 @@ echo "Node version"
 node -v
 echo "Check if appium is installed"
 npm list -g | grep appium
+
+$modulesFolder = "/Users/builder/azdo/_work/_tool/node/20.3.1/x64/lib/node_modules/"
+if (Test-Path -Path $modulesFolder ) {
+    echo "node_modules exists!"
+    rm -rf $modulesFolder
+} else {
+    echo "node_modules doesn't exist."
+}
 echo "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
 appium -v
