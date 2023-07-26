@@ -45,49 +45,78 @@ param
     [string] $macDriverVersion = '1.6.3'
 )
 
+echo "Welcome to the Appium installer"
 node -v
+echo "Updating npm"
 npm install -g npm
+echo "Node version"
 node -v
+echo "Check if appium is installed"
+npm list -g | grep appium
+echo "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
 appium -v
+
+echo "Installing appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
 $x = appium driver list --installed --json  | ConvertFrom-Json
 
 if(!$x.windows)
 {
+    echo "Installing appium driver windows $windowsDriverVersion"
     appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+    echo "Installed appium driver windows"
 }
 else
 {
+    echo "Uninstalling appium driver windows"
     appium driver uninstall windows
+    echo "Installing appium driver windows $windowsDriverVersion"
     appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
+    echo "Installed appium driver windows"
 }
 
 if(!$x.uiautomator2)
 {
+    echo "Installing appium driver uiautomator2 $androidDriverVersion"
     appium driver install uiautomator2@$androidDriverVersion
+    echo "Installed appium driver uiautomator2"
 }
 else
 {
+    echo "Uninstalling appium driver uiautomator2"
     appium driver uninstall uiautomator2
+    echo "Installing appium driver uiautomator2 $androidDriverVersion"
     appium driver install uiautomator2@$androidDriverVersion
+    echo "Installed appium driver uiautomator2"
 }
 
 if(!$x.xcuitest)
 {
+    echo "Installing appium driver xcuitest $iOSDriverVersion"
     appium driver install xcuitest@$iOSDriverVersion
+    echo "Installed appium driver xcuitest"
 }
 else
 {
+    echo "Uninstalling appium driver xcuitest"
     appium driver uninstall xcuitest
+    echo "Installing appium driver xcuitest $iOSDriverVersion"
     appium driver install xcuitest@$iOSDriverVersion
+    echo "Installed appium driver xcuitest"
 }
 
 if(!$x.mac2)
 {
+    echo "Installing appium driver mac2 $macDriverVersion"
     appium driver install mac2@$macDriverVersion
+    echo "Installed appium driver mac2"
 }
 else
 {
+    echo "Uninstalling appium driver mac2"
     appium driver uninstall mac2
+    echo "Installing appium driver mac2 $macDriverVersion"
     appium driver install mac2@$macDriverVersion
+    echo "Installed appium driver mac2"
 }
+echo "Done, thanks!"
