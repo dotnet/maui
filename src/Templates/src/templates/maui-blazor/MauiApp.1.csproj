@@ -65,9 +65,14 @@
     <!-- Build Properties must be defined within these property groups to ensure successful publishing
          to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
     <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
-    <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
+
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
         <!-- Enable this value to use browser developer tools while debugging.-->
         <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
+        <EnableDefaultMacCatalystDebugEntitlements Condition="'$(EnableDefaultMacCatalystDebugEntitlements)' == ''">True</EnableDefaultMacCatalystDebugEntitlements>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(EnableDefaultMacCatalystDebugEntitlements)' == 'True' and '$(Configuration)' == 'Debug'">
         <CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
     </ItemGroup>
 
