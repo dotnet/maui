@@ -61,6 +61,7 @@ Always use main no matter what you are working on or where you are hoping your c
 │   ├── samples
 │   │   ├── Maui.Controls.Sample
 │   │   ├── Maui.Controls.Sample.Sandbox
+│   │   ├── Controls.Sample.UITests
 ├── Essentials 
 │   ├── samples
 │   │   ├── Essentials.Sample
@@ -72,6 +73,7 @@ Always use main no matter what you are working on or where you are hoping your c
 
 - *Maui.Controls.Sample*: Full gallery sample with all of the controls and features of .NET MAUI
 - *Maui.Controls.Sample.Sandbox*: Empty project useful for testing reproductions or use cases
+- *Contols.Sample.UITests*: Sample used for the automated UI tests
 - *Essentials.Sample*: Full gallery demonstrating  the library previously known as essentials. These are all the non UI related MAUI APIs.
 
 ### Device Test Projects
@@ -97,6 +99,16 @@ These are tests that will run on an actual device
 - *Core.DeviceTests*: .NET MAUI Core Visual Runner for running device based xunit tests. This is for tests that don't require any MAUI Controls based features
 - *Essentials.DeviceTests*: Visual Runner running all the .NET MAUI essentials xunit tests.
 - *MauiBlazorWebView.DeviceTests*: Visual Runner for BlazorWebView tests. 
+
+### UI Test Projects
+
+These are tests used for exercising the UI through accessibility layers to simulate user interactions
+
+```
+├──  Controls
+│    ├── tests
+│    │   ├── UITests
+```
 
 ### Unit Test Projects
 

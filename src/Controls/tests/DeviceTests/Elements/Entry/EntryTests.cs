@@ -12,6 +12,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public partial class EntryTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+				});
+			});
+		}
+
 		[Fact]
 		public async Task MaxLengthTrims()
 		{
@@ -30,6 +41,70 @@ namespace Microsoft.Maui.DeviceTests
 				var platformText = await GetPlatformText(handler);
 				Assert.Equal("This", platformText);
 			});
+		}
+
+		[Fact]
+		public async Task InitializingTextTransformBeforeTextShouldUpdateTextProperty()
+		{
+			var entry = new Entry
+			{
+				TextTransform = TextTransform.Uppercase,
+				Text = "initial text"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+
+				Assert.Equal("INITIAL TEXT", entry.Text);
+			});
+		}
+
+		[Theory]
+		[InlineData("hello", "HELLO")]
+		[InlineData("woRld", "WORLD")]
+		public async Task ChangingPlatformTextPreservesTextTransform(string text, string expected)
+		{
+			var entry = new Entry
+			{
+				TextTransform = TextTransform.Uppercase,
+				Text = "initial text"
+			};
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<EntryHandler>(entry);
+
+				SetPlatformText(handler, text);
+
+				Assert.Equal(expected, entry.Text);
+			});
+		}
+
+		[Fact(DisplayName = "Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+
+			WeakReference viewReference = null;
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var entry = new Entry();
+				layout.Add(entry);
+				var handler = CreateHandler<LayoutHandler>(layout);
+				viewReference = new WeakReference(entry);
+				handlerReference = new WeakReference(entry.Handler);
+				platformViewReference = new WeakReference(entry.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+			Assert.False(viewReference.IsAlive, "Entry should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 #if WINDOWS

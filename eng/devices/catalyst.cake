@@ -3,32 +3,31 @@
 
 string TARGET = Argument("target", "Test");
 
-const string defaultVersion = "14.4";
 const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
+string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
-var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
+var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
 FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? "");
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
 
 // other
-string PLATFORM = "mac";
-string DOTNET_PLATFORM = "maccatalyst-x64";
+string RUNTIME_IDENTIFIER = Argument("rid", EnvironmentVariable("MAC_RUNTIME_IDENTIFIER") ?? "maccatalyst-x64");
 string CONFIGURATION = Argument("configuration", "Release");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 
 Information("Project File: {0}", PROJECT);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
-Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
+Information("Build Runtime Identifier: {0}", RUNTIME_IDENTIFIER);
+Information("Build Target Framework: {0}", TARGET_FRAMEWORK);
 
 Setup(context =>
 {
@@ -48,13 +47,104 @@ void Cleanup()
 
 Task("Cleanup");
 
+Task("Build")
+	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
+	.Does(() =>
+{
+	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
+
+	SetDotNetEnvironmentVariables(DOTNET_PATH);
+
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+		Configuration = CONFIGURATION,
+		Framework = TARGET_FRAMEWORK,
+		MSBuildSettings = new DotNetMSBuildSettings {
+			MaxCpuCount = 0
+		},
+		ToolPath = DOTNET_PATH,
+		ArgumentCustomization = args => args
+			.Append("/p:BuildIpa=true")
+			.Append("/p:RuntimeIdentifier=" + RUNTIME_IDENTIFIER)
+			.Append("/bl:" + binlog)
+	});
+});
+
+Task("Test")
+	.IsDependentOn("Build")
+	.Does(() =>
+{
+	if (string.IsNullOrEmpty(TEST_APP)) {
+		if (string.IsNullOrEmpty(PROJECT.FullPath))
+			throw new Exception("If no app was specified, an app must be provided.");
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
+		var apps = GetDirectories(binDir + "/*.app");
+		TEST_APP = apps.First().FullPath;
+	}
+	if (string.IsNullOrEmpty(TEST_RESULTS)) {
+		TEST_RESULTS = TEST_APP + "-results";
+	}
+
+	Information("Test Device: {0}", TEST_DEVICE);
+	Information("Test App: {0}", TEST_APP);
+	Information("Test Results Directory: {0}", TEST_RESULTS);
+
+	if (!IsCIBuild())
+		CleanDirectories(TEST_RESULTS);
+	else
+	{
+		// Because we retry on CI we don't want to delete the previous failures
+		// We want to publish those files for reference
+		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+	}
+
+	var settings = new DotNetToolSettings {
+		DiagnosticOutput = true,
+		ArgumentCustomization = args => args.Append("run xharness apple test " +
+		$"--app=\"{TEST_APP}\" " +
+		$"--targets=\"{TEST_DEVICE}\" " +
+		$"--output-directory=\"{TEST_RESULTS}\" " +
+		$"--verbosity=\"Debug\" ")
+	};
+
+	bool testsFailed = true;
+	try {
+		DotNetTool("tool", settings);
+		testsFailed = false;
+	} finally {
+		// catalyst test result files are weirdly named, so fix it up
+		var resultsFile = GetFiles($"{TEST_RESULTS}/xunit-test-*.xml").FirstOrDefault();
+		if (FileExists(resultsFile)) {
+			CopyFile(resultsFile, resultsFile.GetDirectory().CombineWithFilePath("TestResults.xml"));
+		}
+
+		if (testsFailed && IsCIBuild())
+		{
+			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+			EnsureDirectoryExists(failurePath);
+			// The tasks will retry the tests and overwrite the failed results each retry
+			// we want to retain the failed results for diagnostic purposes
+			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
+			
+			// We don't want these to upload
+			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
+		}
+	}
+
+	// this _may_ not be needed, but just in case
+	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	if (!string.IsNullOrEmpty(failed)) {
+		throw new Exception($"At least {failed} test(s) failed.");
+	}
+});
+
 Task("uitest")
 	.Does(() =>
 {
 	if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
+		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		TEST_APP = apps.First().FullPath;

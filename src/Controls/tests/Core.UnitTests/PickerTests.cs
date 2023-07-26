@@ -160,11 +160,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ItemsSource = list
 			};
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 			var newList = new ObservableCollection<string>();
 			picker.ItemsSource = newList;
 			list.Add("item");
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.Equal(3, picker.Items.Count);
 			picker.ItemsSource = new ObservableCollection<string>();
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.Equal(3, picker.Items.Count);
 			items.Clear();
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -371,7 +371,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Equal(bindingContext.SelectedItem, picker.SelectedItem);
 		}
@@ -443,7 +443,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
 		}
@@ -466,15 +466,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
+
 			picker.SelectedItem = obj;
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]
