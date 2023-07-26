@@ -31,6 +31,7 @@ Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) 
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll
+Microsoft.Maui.Platform.MauiCheckBox.CheckedChanged -> System.EventHandler!
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void

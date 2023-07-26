@@ -1595,7 +1595,6 @@ Microsoft.Maui.Platform.MauiCALayer.SetBorderWidth(double borderWidth) -> void
 Microsoft.Maui.Platform.MauiCheckBox
 Microsoft.Maui.Platform.MauiCheckBox.CheckBoxTintColor.get -> Microsoft.Maui.Graphics.Color?
 Microsoft.Maui.Platform.MauiCheckBox.CheckBoxTintColor.set -> void
-Microsoft.Maui.Platform.MauiCheckBox.CheckedChanged -> System.EventHandler?
 Microsoft.Maui.Platform.MauiCheckBox.IsChecked.get -> bool
 Microsoft.Maui.Platform.MauiCheckBox.IsChecked.set -> void
 Microsoft.Maui.Platform.MauiCheckBox.IsEnabled.get -> bool
