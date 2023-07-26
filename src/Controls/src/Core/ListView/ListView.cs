@@ -517,9 +517,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-#pragma warning disable CS0618 // Type or member is obsolete
-				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
-#pragma warning restore CS0618 // Type or member is obsolete
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
 
 			cell?.OnTapped();
 
@@ -545,9 +543,7 @@ namespace Microsoft.Maui.Controls
 
 			// Set SelectedItem before any events so we don't override any changes they may have made.
 			if (SelectionMode != ListViewSelectionMode.None)
-#pragma warning disable CS0618 // Type or member is obsolete
-				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0));
-#pragma warning restore CS0618 // Type or member is obsolete
+				SetValueCore(SelectedItemProperty, cell?.BindingContext, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearDynamicResource | (changed ? SetValueFlags.RaiseOnEqual : 0), SetValuePrivateFlags.Default, SetterSpecificity.FromHandler);
 
 			if (isContextMenuRequested || cell == null)
 			{

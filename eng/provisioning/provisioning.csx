@@ -2,6 +2,7 @@ if (IsMac)
 {
 	ForceJavaCleanup();
 	MicrosoftOpenJdk ("11.0.13.8.1");
+	Item ("Mono", "6.12.0.199");
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
