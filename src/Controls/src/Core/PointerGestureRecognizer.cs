@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty PointerReleasedCommandProperty = BindableProperty.Create(nameof(PointerReleasedCommand), typeof(ICommand), typeof(PointerGestureRecognizer), null);
 
 		/// <summary>
-		/// An object to be passed to the PointerPressedCommand. This is a bindable property.
+		/// An object to be passed to the PointerReleasedCommand. This is a bindable property.
 		/// </summary>
 		public static readonly BindableProperty PointerReleasedCommandParameterProperty = BindableProperty.Create(nameof(PointerReleasedCommandParameter), typeof(object), typeof(PointerGestureRecognizer), null);
 
