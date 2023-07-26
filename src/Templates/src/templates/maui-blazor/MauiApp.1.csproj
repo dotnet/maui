@@ -70,13 +70,14 @@
         <!-- Enable this value to use browser developer tools while debugging.-->
         <!-- See https://aka.ms/blazor-hybrid-developer-tools -->
         <EnableDefaultMacCatalystDebugEntitlements Condition="'$(EnableDefaultMacCatalystDebugEntitlements)' == ''">True</EnableDefaultMacCatalystDebugEntitlements>
+        <EnableDefaultMacCatalystReleaseEntitlements Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == ''">True</EnableDefaultMacCatalystReleaseEntitlements>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(EnableDefaultMacCatalystDebugEntitlements)' == 'True' and '$(Configuration)' == 'Debug'">
         <CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
     </ItemGroup>
 
-    <ItemGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
+    <ItemGroup Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == 'True' and '$(Configuration)' == 'Release'">
         <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
         <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
     </ItemGroup>
