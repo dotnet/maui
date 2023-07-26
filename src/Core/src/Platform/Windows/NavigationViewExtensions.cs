@@ -282,17 +282,17 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			var animatedIcon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
-			
+
 			if (animatedIcon is null)
 				return;
 
 			await animatedIcon.UpdateFlyoutIconAsync(imageSource, provider);
 		}
-		
+
 		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
 		{
 			if (platformView is null)
-				return;			
+				return;
 
 			if (provider is not null && imageSource is not null)
 			{
@@ -301,7 +301,7 @@ namespace Microsoft.Maui.Platform
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
 
 				platformView.Source = null;
-				
+
 				var fallbackIconSource = new ImageIconSource { ImageSource = nativeImageSource?.Value };
 
 				platformView.Height = platformView.Width = double.NaN;
