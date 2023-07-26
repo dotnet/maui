@@ -3,8 +3,10 @@ using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
-	public class Issue14257(TestDevice device) : _IssuesUITest(device)
+	public class Issue14257 : _IssuesUITest
 	{
+		public Issue14257(TestDevice device) : base(device) { }
+
 		public override string Issue => "VerticalStackLayout inside Scrollview: Button at the bottom not clickable on IOS";
 
 		[Test]
