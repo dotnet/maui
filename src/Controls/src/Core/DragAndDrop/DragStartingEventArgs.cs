@@ -4,31 +4,50 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.DragStartingEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="DragGestureRecognizer.DragStarting"/> event.
+	/// </summary>
 	public class DragStartingEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
+		/// </summary>
+		// TODO: JD - Maybe mark this as obsolete? 
 		public DragStartingEventArgs()
 		{
 			Data = new DataPackage();
+			Position = Point.Zero;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
+		/// </summary>
+		/// <param name="position">The location in the coordinate system where the drag started.</param>
 		public DragStartingEventArgs(Point position)
 		{
 			Data = new DataPackage();
 			Position = position;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates whether the event handler has handled the event or whether .NET MAUI should continue its own processing.
+		/// </summary>
 		public bool Handled { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Cancel']/Docs/*" />
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether the event should be canceled.
+		/// </summary>
 		public bool Cancel { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
+
+		/// <summary>
+		/// Gets the data package that accompanies the drag source.
+		/// </summary>
 		public DataPackage Data { get; private set; }
 
 		/// <summary>
-		/// A point in the coordinate system that is where is dragging started.
+		/// Gets the location of the point in the coordinate system where dragging started.
 		/// </summary>
-		public Point Position { get; set; }
+		// TODO: JD - Confirm that it makes sense to have a private set for this property
+		public Point Position { get; private set; }
 	}
 }
