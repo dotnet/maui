@@ -40,7 +40,7 @@
                     </StackLayout.GestureRecognizers>
                 </StackLayout>
             </ScrollView>
-            <StackLayout>
+            <StackLayout MaximumHeightRequest="100">
                 <Label 
                     x:Name="DragStartingPositionLabel"/>
                 <Label 

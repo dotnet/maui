@@ -38,7 +38,9 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
+			var dragLocation = session.LocationInView(_viewHandler.PlatformView);
+
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, new Point(dragLocation.X, dragLocation.Y));
 		}
 
 		[Export("dropInteraction:canHandleSession:")]
@@ -91,7 +93,9 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			if (HandleDragOver((View)_viewHandler.VirtualView, package))
+			var dragLocation = session.LocalDragSession.LocationInView(_viewHandler.PlatformView);
+
+			if (HandleDragOver((View)_viewHandler.VirtualView, package, new Point(dragLocation.X, dragLocation.Y)))
 			{
 				operation = UIDropOperation.Copy;
 			}
@@ -132,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, Point location)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -140,8 +144,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				// TODO: Pass the drag starting position
-				var args = rec.SendDragStarting(element, Point.Zero);
+				var args = rec.SendDragStarting(element, location);
 
 				if (args.Cancel)
 					return;
@@ -221,9 +224,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(View element, DataPackage dataPackage)
+		bool HandleDragOver(View element, DataPackage dataPackage, Point location)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage);
+			var dragEventArgs = new DragEventArgs(dataPackage, location);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
