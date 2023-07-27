@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 	/// <summary>
 	/// Represents the view handler for the abstract <see cref="IApplication"/> view and its platform-specific implementation.
 	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class ApplicationHandler
 	{
 		internal const string TerminateCommandKey = "Terminate";
