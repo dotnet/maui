@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Handlers
 	/// <summary>
 	/// Represents the view handler for the abstract <see cref="IDatePicker"/> view and its platform-specific implementation.
 	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class DatePickerHandler : IDatePickerHandler
 	{
 		public static IPropertyMapper<IDatePicker, IDatePickerHandler> Mapper = new PropertyMapper<IDatePicker, IDatePickerHandler>(ViewHandler.ViewMapper)

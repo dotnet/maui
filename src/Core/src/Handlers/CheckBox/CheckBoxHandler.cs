@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Handlers
 	/// <summary>
 	/// Represents the view handler for the abstract <see cref="ICheckBox"/> view and its platform-specific implementation.
 	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class CheckBoxHandler : ICheckBoxHandler
 	{
 		public static IPropertyMapper<ICheckBox, ICheckBoxHandler> Mapper = new PropertyMapper<ICheckBox, ICheckBoxHandler>(ViewHandler.ViewMapper)
