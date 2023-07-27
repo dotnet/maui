@@ -55,8 +55,8 @@ namespace Microsoft.Maui.Handlers
 		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
 		/// </summary>
 		/// <param name="handler">The associated handler.</param>
-		/// <param name="page">The associated <see cref="IContentView"/> instance.</param>
-		public static partial void MapBackground(IContentViewHandler handler, IContentView page);
+		/// <param name="view">The associated <see cref="IContentView"/> instance.</param>
+		public static partial void MapBackground(IContentViewHandler handler, IContentView view);
 #endif
 
 		/// <summary>

@@ -44,22 +44,18 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			handler.PlatformView.Children.Clear();
-
-			if (handler is BorderHandler bh)
+			if (handler is BorderHandler borderHandler)
 			{
-				bh._contentHandler?.Dispose();
-				bh._contentHandler = null;
+				borderHandler._contentHandler?.Dispose();
+				borderHandler._contentHandler = null;
 			}
 
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
-				if (view.Handler is IPlatformViewHandler thandler)
+				if (view.Handler is IPlatformViewHandler thandler && borderHandler is not null)
 				{
-					if (handler is BorderHandler bh)
-					{
-						bh._contentHandler = thandler;
-					}
+					borderHandler._contentHandler = thandler;
 				}
 			}
 		}
