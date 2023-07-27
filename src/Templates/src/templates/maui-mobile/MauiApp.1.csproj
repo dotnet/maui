@@ -62,13 +62,14 @@
 	</ItemGroup>
 
 	<!-- Build Properties must be defined within these property groups to ensure successful publishing
-       to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
-  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Debug'">
-    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Debug.plist</CodesignEntitlements>
-  </PropertyGroup>
+         to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
+    <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
+    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
+        <EnableDefaultMacCatalystReleaseEntitlements Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == ''">True</EnableDefaultMacCatalystReleaseEntitlements>
+    </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Configuration)' == 'Release'">
-    <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Release.plist</CodesignEntitlements>
-    <UseHardenedRuntime>true</UseHardenedRuntime>
-  </PropertyGroup>
+    <ItemGroup Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == 'True' and '$(Configuration)' == 'Release'">
+        <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
+        <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
+    </ItemGroup>
 </Project>
