@@ -27,24 +27,36 @@ namespace Microsoft.Maui.DeviceTests
 			return exitCondition.Invoke();
 		}
 
+		public static Task<bool> WaitForGC(params WeakReference[] references)
+		{
+			// Check all the WeakReference values are non-null
+			Assert.NotEmpty(references);
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+			}
+
+			return Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				foreach (var reference in references)
+				{
+					if (reference.IsAlive)
+						return false;
+				}
+
+				return true; // No references alive
+			}, timeout: 5000);
+		}
+
 		public static void AssertHasFlag(this Enum self, Enum flag)
 		{
 			var hasFlag = self.HasFlag(flag);
 
 			if (!hasFlag)
-				throw new ContainsException(flag, self);
-		}
-
-		public static void AssertWithMessage(Action assertion, string message)
-		{
-			try
-			{
-				assertion();
-			}
-			catch (Exception e)
-			{
-				Assert.True(false, $"Message: {message} Failure: {e}");
-			}
+				throw ContainsException.ForSetItemNotFound(flag.ToString(), self.ToString());
 		}
 
 		public static void CloseEnough(double expected, double actual, double epsilon = 0.2, string? message = null)

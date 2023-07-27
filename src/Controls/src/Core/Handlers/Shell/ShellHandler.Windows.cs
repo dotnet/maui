@@ -1,9 +1,11 @@
 ﻿#nullable disable
 using System;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Hosting;
 using Microsoft.UI.Xaml.Media;
+using WBorder = Microsoft.UI.Xaml.Controls.Border;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 
 namespace Microsoft.Maui.Controls.Handlers
@@ -38,6 +40,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)
 		{
+			UpdateValue(nameof(Shell.FlyoutIcon));
 			UpdateValue(nameof(Shell.FlyoutBackground));
 		}
 
@@ -122,6 +125,14 @@ namespace Microsoft.Maui.Controls.Handlers
 				!Brush.IsNullOrEmpty(view.FlyoutBackground) ?
 					view.FlyoutBackground :
 					view.FlyoutBackgroundColor?.AsPaint());
+		}
+
+		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
+		{
+			var flyoutIcon = view.FlyoutIcon;
+			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+			handler.PlatformView.UpdateFlyoutIconAsync(flyoutIcon, provider).FireAndForget();
 		}
 
 		public static void MapFlyoutVerticalScrollMode(ShellHandler handler, Shell view)

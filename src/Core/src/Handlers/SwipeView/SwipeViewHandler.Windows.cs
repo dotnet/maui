@@ -48,17 +48,16 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView.Close();
 		}
 
-
 		protected override void ConnectHandler(WSwipeControl platformView)
 		{
 			base.ConnectHandler(platformView);
-			PlatformView.Loaded += OnLoaded;
+			platformView.Loaded += OnLoaded;
 		}
 
 		protected override void DisconnectHandler(WSwipeControl platformView)
 		{
 			base.DisconnectHandler(platformView);
-			PlatformView.Loaded -= OnLoaded;
+			platformView.Loaded -= OnLoaded;
 		}
 
 		void OnLoaded(object sender, UI.Xaml.RoutedEventArgs e)

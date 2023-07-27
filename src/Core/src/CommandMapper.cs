@@ -99,7 +99,7 @@ namespace Microsoft.Maui
 
 
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
-			Add(key, action);
+			SetPropertyCore(key, (h, v, _) => action?.Invoke((TViewHandler)h, (TVirtualView)v));
 
 		public void Add(string key, Action<TViewHandler, TVirtualView, object?> action) =>
 			SetPropertyCore(key, (h, v, o) => action?.Invoke((TViewHandler)h, (TVirtualView)v, o));

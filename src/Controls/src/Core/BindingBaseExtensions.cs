@@ -8,7 +8,12 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static BindingMode GetRealizedMode(this BindingBase self, BindableProperty property)
 		{
-			return self.Mode != BindingMode.Default ? self.Mode : property.DefaultBindingMode;
+			var mode = self.Mode != BindingMode.Default ? self.Mode : property.DefaultBindingMode;
+
+			if (mode == BindingMode.TwoWay && property.IsReadOnly)
+				return BindingMode.OneWayToSource;
+
+			return mode;
 		}
 	}
 }
