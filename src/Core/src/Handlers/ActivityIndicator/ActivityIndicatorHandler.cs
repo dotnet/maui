@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Handlers
 	/// <summary>
 	/// Represents the view handler for the abstract <see cref="IActivityIndicator"/> view and its platform-specific implementation.
 	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class ActivityIndicatorHandler : IActivityIndicatorHandler
 	{
 		public static IPropertyMapper<IActivityIndicator, IActivityIndicatorHandler> Mapper = new PropertyMapper<IActivityIndicator, IActivityIndicatorHandler>(ViewHandler.ViewMapper)
