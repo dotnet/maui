@@ -48,6 +48,11 @@ namespace Microsoft.Maui.AppiumTests
 					var pageSource = app2.ElementTree;
 					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
 				}
+
+				foreach (var log in Directory.GetFiles(logDir))
+				{
+					TestContext.AddTestAttachment(log, Path.GetFileName(log));
+				}
 			}
 		}
 
