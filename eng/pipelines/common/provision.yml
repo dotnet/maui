@@ -33,6 +33,7 @@ steps:
         github_token: ${{ parameters.gitHubToken }}
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
