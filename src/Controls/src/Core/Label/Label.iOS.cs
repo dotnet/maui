@@ -95,6 +95,11 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.UpdateValue(nameof(ILabel.TextColor));
 			handler.UpdateValue(nameof(ILabel.Font));
+
+			if (!IsPlainText(label))
+				return;
+
+			LabelHandler.MapFormatting(handler, label);
 		}
 
 		static bool IsDefaultFont(Label label)
