@@ -41,12 +41,12 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
-				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-ScreenShot"));
+				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
 
 				if (App is IApp2 app2)
 				{
 					var pageSource = app2.ElementTree;
-					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-PageSource.txt"), pageSource);
+					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
 				}
 			}
 		}
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.AppiumTests
 				AppProjectPath = appProjectPath
 			};
 			var windowsExe = "Controls.Sample.UITests.exe";
-			var windoesExePath = Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\{testConfig.FrameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
+			var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{testConfig.Configuration}\\{testConfig.FrameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
 
 			switch (_testDevice)
 			{
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.AppiumTests
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
 					testConfig.AppPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
-						? windoesExePath
+						? windowsExePath
 						: Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
 					break;
 			}

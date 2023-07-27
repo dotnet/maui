@@ -43,7 +43,8 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 				.Distinct()
 				.Select(assembly => new TestAssemblyInfo(assembly, assembly.Location));
 
-		protected override void TerminateWithSuccess() {
+		protected override void TerminateWithSuccess()
+		{
 			Microsoft.UI.Xaml.Application.Current.Exit();
 		}
 
