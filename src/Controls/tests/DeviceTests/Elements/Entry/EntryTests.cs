@@ -12,6 +12,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Entry)]
 	public partial class EntryTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Entry, EntryHandler>();
+				});
+			});
+		}
+
 		[Fact]
 		public async Task MaxLengthTrims()
 		{
@@ -68,6 +79,32 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.Equal(expected, entry.Text);
 			});
+		}
+
+		[Fact(DisplayName = "Does Not Leak")]
+		public async Task DoesNotLeak()
+		{
+			SetupBuilder();
+
+			WeakReference viewReference = null;
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				var layout = new Grid();
+				var entry = new Entry();
+				layout.Add(entry);
+				var handler = CreateHandler<LayoutHandler>(layout);
+				viewReference = new WeakReference(entry);
+				handlerReference = new WeakReference(entry.Handler);
+				platformViewReference = new WeakReference(entry.Handler.PlatformView);
+			});
+
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+			Assert.False(viewReference.IsAlive, "Entry should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
 #if WINDOWS

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
@@ -65,7 +66,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EntryTests.DoesNotLeak")]
 		public event EventHandler? TextPropertySet;
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EntryTests.DoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
 	}
 }

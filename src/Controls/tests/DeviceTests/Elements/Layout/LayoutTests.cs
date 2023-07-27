@@ -241,7 +241,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task GridCellsHonorMaxWidth()
 		{
 			var grid = new Grid() { MaximumWidthRequest = 50 };
-			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap};
+			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
 
 			grid.Add(label);
 

@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public ProgressBarHandler() : base(Mapper)
+		public ProgressBarHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

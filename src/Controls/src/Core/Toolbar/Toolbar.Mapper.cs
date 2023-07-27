@@ -12,30 +12,28 @@ namespace Microsoft.Maui.Controls
 	{
 		IMauiContext MauiContext => Handler?.MauiContext ?? throw new InvalidOperationException("MauiContext not set");
 
+		[Obsolete("Use ToolbarHandler.Mapper instead.")]
 		public static IPropertyMapper<Toolbar, ToolbarHandler> ControlsToolbarMapper =
-			   new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper)
-			   {
-#if ANDROID || WINDOWS || TIZEN
-				   [nameof(IToolbar.IsVisible)] = MapIsVisible,
-				   [nameof(IToolbar.BackButtonVisible)] = MapBackButtonVisible,
-				   [nameof(Toolbar.TitleIcon)] = MapTitleIcon,
-				   [nameof(Toolbar.TitleView)] = MapTitleView,
-				   [nameof(Toolbar.IconColor)] = MapIconColor,
-				   [nameof(Toolbar.ToolbarItems)] = MapToolbarItems,
-				   [nameof(Toolbar.BackButtonTitle)] = MapBackButtonTitle,
-				   [nameof(Toolbar.BarBackground)] = MapBarBackground,
-				   [nameof(Toolbar.BarTextColor)] = MapBarTextColor,
-#endif
-#if WINDOWS
-				   [nameof(Toolbar.BackButtonEnabled)] = MapBackButtonEnabled,
-				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName] = MapToolbarPlacement,
-				   [PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName] = MapToolbarDynamicOverflowEnabled,
-#endif
-			   };
+			new PropertyMapper<Toolbar, ToolbarHandler>(ToolbarHandler.Mapper);
 
 		internal static void RemapForControls()
 		{
-			ToolbarHandler.Mapper = ControlsToolbarMapper;
+#if ANDROID || WINDOWS || TIZEN
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.IsVisible), MapIsVisible);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(IToolbar.BackButtonVisible), MapBackButtonVisible);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.TitleIcon), MapTitleIcon);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.TitleView), MapTitleView);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.IconColor), MapIconColor);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.ToolbarItems), MapToolbarItems);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BackButtonTitle), MapBackButtonTitle);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BarBackground), MapBarBackground);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BarTextColor), MapBarTextColor);
+#endif
+#if WINDOWS
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(nameof(Toolbar.BackButtonEnabled), MapBackButtonEnabled);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(PlatformConfiguration.WindowsSpecific.Page.ToolbarPlacementProperty.PropertyName, MapToolbarPlacement);
+			ToolbarHandler.Mapper.ReplaceMapping<Toolbar, IToolbarHandler>(PlatformConfiguration.WindowsSpecific.Page.ToolbarDynamicOverflowEnabledProperty.PropertyName, MapToolbarDynamicOverflowEnabled);
+#endif
 		}
 	}
 }
