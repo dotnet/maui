@@ -5,7 +5,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Maui.Controls.Sample.Issues;
 
-[Issue(IssueTracker.GitHub, 3525, "Finicky tap gesture recognition on Spans")]
+[Issue(IssueTracker.Github, 3525, "Finicky tap gesture recognition on Spans")]
 public class Issue3525 : TestContentPage
 {
 	const string kClickCount = "Click Count: ";
