@@ -109,5 +109,19 @@ namespace Microsoft.Maui.Controls
 			});
 		}
 		#endregion
+
+#if NETSTANDARD
+		// NetStandard doesn't support default interface implementations, so we provide them here.
+
+		Size IContentView.CrossPlatformArrange(Rect bounds) 
+		{
+			return (this as ICrossPlatformLayout).CrossPlatformArrange(bounds);
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		{
+			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
+#endif
 	}
 }
