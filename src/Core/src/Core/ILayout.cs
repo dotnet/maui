@@ -24,5 +24,10 @@ namespace Microsoft.Maui
 		/// Implementing classes should implement the ICrossPlatformLayout interface rather than directly implementing this method.
 		/// </summary>
 		new Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
+
+#if !NETSTANDARD2_0
+		Size ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) => CrossPlatformArrange(bounds);
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) => CrossPlatformMeasure(widthConstraint, heightConstraint);
+#endif
 	}
 }

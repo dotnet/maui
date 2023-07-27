@@ -89,7 +89,6 @@ namespace Microsoft.Maui.Controls
 		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
 		HotReload.IReloadHandler HotReload.IHotReloadableView.ReloadHandler { get; set; }
-		Thickness IPadding.Padding { get; }
 
 		void HotReload.IHotReloadableView.TransferState(IView newView)
 		{
