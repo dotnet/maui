@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
@@ -9,6 +10,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : UITextView
 	{
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: EditorTests.DoesNotLeak")]
 		readonly UILabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 
@@ -34,6 +36,7 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EditorTests.DoesNotLeak")]
 		public event EventHandler? TextSetOrChanged;
 
 		public string? PlaceholderText

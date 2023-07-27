@@ -70,6 +70,7 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.LayoutOptions.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Region.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
+~static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutIcon(Microsoft.Maui.Controls.Handlers.ShellHandler handler, Microsoft.Maui.Controls.Shell view) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
