@@ -9,7 +9,7 @@ parameters:
   provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
-  gitHubToken : $(github--pat--vs-mobiletools-engineering-service2)
+  gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
   certPass: $(pass--components-mac-ios-certificate-p12)
 
 steps:
@@ -39,7 +39,7 @@ steps:
     - task: xamops.azdevex.provisionator-task.provisionator@2
       displayName: 'Provision Additional Software'
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-      continueOnError: true 
+      continueOnError: true
       inputs:
         provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorPath }}
         provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
