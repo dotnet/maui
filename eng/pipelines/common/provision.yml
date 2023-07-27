@@ -91,10 +91,10 @@ steps:
   #   inputs:
   #     certSecureFile: 'Components iOS Certificate.p12'
   # - task: InstallAppleCertificate@2
-    condition: eq(variables['System.JobName'], 'macos')
-    displayName: 'Install the macOS certificate'
-    inputs:
-      certSecureFile: 'Components Mac Certificate.p12'
+    # condition: eq(variables['System.JobName'], 'macos')
+    # displayName: 'Install the macOS certificate'
+    # inputs:
+    #   certSecureFile: 'Components Mac Certificate.p12'
 
   # Prepare Windows
   - powershell: |
