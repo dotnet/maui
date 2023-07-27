@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		bool ClipsToBounds { get; }
 
-#if NETSTANDARD
+#if NETSTANDARD2_0
 		/// <summary>
 		/// This interface method is provided as a stub for .NET Standard
 		/// </summary>

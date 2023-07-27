@@ -17,7 +17,7 @@ namespace Microsoft.Maui
 		/// </summary>
 		IView? PresentedContent { get; }
 
-#if NETSTANDARD
+#if NETSTANDARD2_0
 		/// <summary>
 		/// This interface method is provided as a stub for .NET Standard
 		/// </summary>
