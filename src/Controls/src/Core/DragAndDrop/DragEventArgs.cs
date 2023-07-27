@@ -4,16 +4,27 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.DragEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="DropGestureRecognizer.DragOver"/> and <see cref="DropGestureRecognizer.DragLeave"/> events.
+	/// </summary>
 	public class DragEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragEventArgs"/> class.
+		/// </summary>
+		/// <param name="dataPackage">The data package associated with the drag source.</param>
 		public DragEventArgs(DataPackage dataPackage)
 		{
 			Data = dataPackage;
 			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragEventArgs"/> class.
+		/// </summary>
+		/// <param name="dataPackage">The data package associated with the drag source.</param>
+		/// <param name="position">The current location in the coordinate system of the drag.</param>
 		public DragEventArgs(DataPackage dataPackage, Point position)
 		{
 			Data = dataPackage;
@@ -21,14 +32,20 @@ namespace Microsoft.Maui.Controls
 			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
+		/// <summary>
+		/// Gets the data package associated with the drag source.
+		/// </summary>
 		public DataPackage Data { get; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='AcceptedOperation']/Docs/*" />
+
+		/// <summary>
+		/// Gets a value that specifies which operations are allowed by the drop target.
+		/// </summary>
 		public DataPackageOperation AcceptedOperation { get; set; }
 
 		/// <summary>
-		/// A point in the coordinate system that is where is dragging being done.
+		/// Gets the location of the point in coordinate system where dragging is being done.
 		/// </summary>
-		public Point Position { get; set; }
+		// TODO: JD - Confirm that it makes sense to have a private set for this property
+		public Point Position { get; private set; }
 	}
 }
