@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Controls
 		IView IReplaceableView.ReplacedView => HotReload.MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
 		HotReload.IReloadHandler HotReload.IHotReloadableView.ReloadHandler { get; set; }
+		Thickness IPadding.Padding { get; }
 
 		void HotReload.IHotReloadableView.TransferState(IView newView)
 		{
@@ -108,10 +109,8 @@ namespace Microsoft.Maui.Controls
 				//TODO: if reload handler is null, Do a manual reload?
 			});
 		}
-		#endregion
 
-#if NETSTANDARD
-		// NetStandard doesn't support default interface implementations, so we provide them here.
+		#endregion
 
 		Size IContentView.CrossPlatformArrange(Rect bounds) 
 		{
@@ -122,6 +121,5 @@ namespace Microsoft.Maui.Controls
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}
-#endif
 	}
 }
