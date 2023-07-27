@@ -11,7 +11,7 @@ const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-32_{defaultVersion}");
+string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
@@ -93,7 +93,9 @@ Setup(context =>
 			else
 				DEVICE_ARCH = "armeabi-v7a";
 		} else if (parts[2] == "64") {
-			if (emulator)
+			if (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+				DEVICE_ARCH = "arm64-v8a";
+			else if (emulator)
 				DEVICE_ARCH = "x86_64";
 			else
 				DEVICE_ARCH = "arm64-v8a";

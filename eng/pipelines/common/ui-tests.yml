@@ -40,10 +40,6 @@ stages:
                 displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                 pool: ${{ parameters.androidPool }}
                 variables:
-                  ${{ if ge(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                  ${{ if lt(api, 24) }}:
-                    ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                   REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                 steps:
                   - template: ui-tests-steps.yml
@@ -52,7 +48,7 @@ stages:
                       version: ${{ api }}
                       path: ${{ project.android }}
                       app: ${{ project.app }}
-                      device: android-emulator-32_${{ api }}
+                      device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
@@ -153,10 +149,6 @@ stages:
                   displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
                   pool: ${{ parameters.androidCompatibilityPool }}
                   variables:
-                    ${{ if ge(api, 24) }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                    ${{ if lt(api, 24) }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                   steps:
                     - template: ui-tests-compatibility-steps.yml

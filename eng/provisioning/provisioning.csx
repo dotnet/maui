@@ -28,49 +28,145 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 			"Android_API23",
 			(AndroidApiLevel)23,
 			AndroidSystemImageApi.Google,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API24",
 			AndroidApiLevel.Nougat,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API25",
 			AndroidApiLevel.Nougat_7_1,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API26",
 			AndroidApiLevel.Oreo,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API27",
 			AndroidApiLevel.Oreo_8_1 ,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API28",
 			AndroidApiLevel.P,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API29",
 			AndroidApiLevel.Q,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
 			AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice(
 			"Android_API30",
 			AndroidApiLevel.R,
 			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
+			AndroidSystemImageAbi.x86_64,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API31",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86_64,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API32",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86_64,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API33",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86_64,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API34",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.x86_64,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API23",
+			(AndroidApiLevel)23,
+			AndroidSystemImageApi.Google,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API24",
+			AndroidApiLevel.Nougat,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API25",
+			AndroidApiLevel.Nougat_7_1,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API26",
+			AndroidApiLevel.Oreo,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API27",
+			AndroidApiLevel.Oreo_8_1 ,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API28",
+			AndroidApiLevel.P,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API29",
+			AndroidApiLevel.Q,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API30",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API31",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API32",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API33",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
+			AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice(
+			"Android_API34",
+			AndroidApiLevel.R,
+			AndroidSystemImageApi.GooglePlayStore,
+			AndroidSystemImageAbi.ARM64_v8a,
 			AndroidVirtualDevice.NEXUS_5X)
 		.SdkManagerPackage ("build-tools;33.0.0");
 }
