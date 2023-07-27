@@ -77,7 +77,6 @@ namespace Microsoft.Maui.Handlers
 			return dialog;
 		}
 
-		// This is a Android-specific mapping
 		public static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateBackground(datePicker);

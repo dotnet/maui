@@ -53,9 +53,9 @@ namespace Microsoft.Maui.Handlers
 			if (handler.VirtualView.PresentedContent is IView view)
 			{
 				handler.PlatformView.Children.Add(view.ToPlatform(handler.MauiContext));
-				if (view.Handler is IPlatformViewHandler thandler && borderHandler is not null)
+				if (view.Handler is IPlatformViewHandler thandler && handler is BorderHandler alsoBorderHandler)
 				{
-					borderHandler._contentHandler = thandler;
+					alsoBorderHandler._contentHandler = thandler;
 				}
 			}
 		}
