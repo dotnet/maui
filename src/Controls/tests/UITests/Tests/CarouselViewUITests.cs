@@ -5,7 +5,8 @@ namespace Microsoft.Maui.AppiumTests
 {
 	public class CarouselViewUITests : UITestBase
 	{
-		const string DragAndDropGallery = "* marked:'CarouselView Gallery'";
+		const string CarouselViewGallery = "* marked:'CarouselView Gallery'";
+
 		public CarouselViewUITests(TestDevice device)
 			: base(device)
 		{
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			App.NavigateToGallery(DragAndDropGallery);
+			App.NavigateToGallery(CarouselViewGallery);
 		}
 
 		protected override void FixtureTeardown()
