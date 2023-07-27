@@ -71,5 +71,6 @@
     <ItemGroup Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == 'True' and '$(Configuration)' == 'Release'">
         <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
         <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
+				<UseHardenedRuntime>true</UseHardenedRuntime>
     </ItemGroup>
 </Project>
