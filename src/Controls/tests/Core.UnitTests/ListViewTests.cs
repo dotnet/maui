@@ -203,6 +203,33 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(((TextCell)cell).Text, items[0].ToString());
 		}
 
+
+		[Fact]
+		public void SettingSelectItemManuallyBetweenTwoTapsFiresPropertyChanged()
+		{
+			var listView = new ListView
+			{
+				ItemsSource = new[] {
+					"item1",
+					"item2",
+					"item3"
+				}
+			};
+
+			listView.NotifyRowTapped(0);
+			listView.SelectedItem = null;
+
+			bool raised = false;
+			listView.PropertyChanged += (sender, arg) =>
+			{
+				if (arg.PropertyName == ListView.SelectedItemProperty.PropertyName)
+					raised = true;
+			};
+
+			listView.NotifyRowTapped(1);
+			Assert.True(raised);
+		}
+
 		[Fact("Tapping a different item (row) that is equal to the current item selection should still raise ItemSelected")]
 		public void NotifyRowTappedDifferentIndex()
 		{
