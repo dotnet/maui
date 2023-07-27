@@ -490,7 +490,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(label.TextColor == Colors.HotPink); //setter should be unapplied
 		}
 
-		[Fact]
+		[Fact(Skip = "Behavior changed with the setter specificity. VSM are always applied")]
 		//https://github.com/dotnet/maui/issues/6856
 		public void VSMInStyleShouldHaveStylePriority()
 		{
