@@ -21,16 +21,19 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
-			if (Subviews.Length != 0)
+			if (Clip is not null)
 			{
-				if (Subviews[0] is LayoutView content)
-					content.Frame = bounds;
-			}
+				var bounds = AdjustForSafeArea(Bounds).ToRectangle();
 
-			if (ChildMaskLayer != null)
-				ChildMaskLayer.Frame = bounds;
+				if (Subviews.Length != 0)
+				{
+					if (Subviews[0] is LayoutView content && content.Frame != bounds)
+						content.Frame = bounds;
+				}
+
+				if (ChildMaskLayer is not null && ChildMaskLayer.Frame != bounds)
+					ChildMaskLayer.Frame = bounds;
+			}
 
 			SetClip();
 			this.UpdateMauiCALayer();
