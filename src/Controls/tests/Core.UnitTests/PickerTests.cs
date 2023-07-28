@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -336,6 +337,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, picker.Items.Count);
 			Assert.Equal("Ringo", picker.Items[1]);
 		}
+
+		[Fact]
+		public void SettingSelectedIndexUpdatesSelectedItem()
+		{
+			var source = Enum.GetNames(typeof(HorizontalAlignment));
+
+			var picker = new Picker
+			{
+				WidthRequest = 200,
+				ItemsSource = source,
+				SelectedItem = source[0]
+			};
+
+			picker.SelectedIndex = 1;
+			Assert.Equal(source[1], picker.SelectedItem);
+		}
+
 
 		[Fact]
 		public void TestItemsSourceCollectionOfStrings()
