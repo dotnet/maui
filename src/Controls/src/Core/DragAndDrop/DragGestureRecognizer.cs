@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Controls
 
 		// We can't pass Point.Zero as default param because it triggers CS1736 "default parameter must be compile time constant"
 		// Instead, we pass an empty new point since its the same thing as Point.Zero
-		internal DragStartingEventArgs SendDragStarting(IView element, Point position = new Point())
+		internal DragStartingEventArgs SendDragStarting(IView element, Point position = default)
 		{
 			var args = new DragStartingEventArgs(position);
 
