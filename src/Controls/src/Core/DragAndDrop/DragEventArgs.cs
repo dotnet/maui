@@ -17,7 +17,6 @@ namespace Microsoft.Maui.Controls
 		public DragEventArgs(DataPackage dataPackage)
 		{
 			Data = dataPackage;
-			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
 		/// <summary>
@@ -29,7 +28,6 @@ namespace Microsoft.Maui.Controls
 		{
 			Data = dataPackage;
 			Position = position;
-			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
 		/// <summary>
@@ -40,12 +38,11 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that specifies which operations are allowed by the drop target.
 		/// </summary>
-		public DataPackageOperation AcceptedOperation { get; set; }
+		public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
 
 		/// <summary>
 		/// Gets the location of the point in coordinate system where dragging is being done.
 		/// </summary>
-		// TODO: JD - Confirm that it makes sense to have a private set for this property
-		public Point Position { get; private set; }
+		public Point Position { get; private init; }
 	}
 }

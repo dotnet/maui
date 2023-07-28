@@ -35,9 +35,15 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-
+		/// <summary>
+		/// Occurs when a drop gesture is detected.
+		/// </summary>
 		public event EventHandler<DropCompletedEventArgs> DropCompleted;
 
+
+		/// <summary>
+		/// Occurs when a drag gesture is detected.
+		/// </summary>
 		public event EventHandler<DragStartingEventArgs> DragStarting;
 
 		/// <summary>
@@ -103,10 +109,9 @@ namespace Microsoft.Maui.Controls
 			DropCompleted?.Invoke(this, args);
 		}
 
-		// TODO: JD - Maybe mark this as obsolete?
-		internal DragStartingEventArgs SendDragStarting(IView element) => SendDragStarting(element, Point.Zero);
-		
-		internal DragStartingEventArgs SendDragStarting(IView element, Point position)
+		// We can't pass Point.Zero as default param because it triggers CS1736 "default parameter must be compile time constant"
+		// Instead, we pass an empty new point since its the same thing as Point.Zero
+		internal DragStartingEventArgs SendDragStarting(IView element, Point position = new Point())
 		{
 			var args = new DragStartingEventArgs(position);
 

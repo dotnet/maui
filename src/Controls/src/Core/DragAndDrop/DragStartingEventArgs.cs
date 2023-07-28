@@ -15,7 +15,6 @@ namespace Microsoft.Maui.Controls
 		// TODO: JD - Maybe mark this as obsolete? 
 		public DragStartingEventArgs()
 		{
-			Data = new DataPackage();
 			Position = Point.Zero;
 		}
 
@@ -25,7 +24,6 @@ namespace Microsoft.Maui.Controls
 		/// <param name="position">The location in the coordinate system where the drag started.</param>
 		public DragStartingEventArgs(Point position)
 		{
-			Data = new DataPackage();
 			Position = position;
 		}
 
@@ -42,12 +40,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the data package that accompanies the drag source.
 		/// </summary>
-		public DataPackage Data { get; private set; }
+		public DataPackage Data { get; private init; } = new DataPackage();
 
 		/// <summary>
 		/// Gets the location of the point in the coordinate system where dragging started.
 		/// </summary>
 		// TODO: JD - Confirm that it makes sense to have a private set for this property
-		public Point Position { get; private set; }
+		public Point Position { get; private init; }
 	}
 }
