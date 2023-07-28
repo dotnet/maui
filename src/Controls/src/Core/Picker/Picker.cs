@@ -357,18 +357,18 @@ namespace Microsoft.Maui.Controls
 
 			if (index == -1)
 			{
-				SetValue(SelectedItemProperty, null, SetterSpecificity.FromBinding);
+				SetValue(SelectedItemProperty, null, SetterSpecificity.FromHandler);
 				return;
 			}
 
 			if (ItemsSource != null)
 			{
 				var item = index < ItemsSource.Count ? ItemsSource[index] : null;
-				SetValue(SelectedItemProperty, item, SetterSpecificity.FromBinding);
+				SetValue(SelectedItemProperty, item, SetterSpecificity.FromHandler);
 				return;
 			}
 
-			SetValue(SelectedItemProperty, Items[index], SetterSpecificity.FromBinding);
+			SetValue(SelectedItemProperty, Items[index], SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>
