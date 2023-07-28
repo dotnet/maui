@@ -513,24 +513,21 @@ namespace Microsoft.Maui.Controls.Platform
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
 		{
 			var result = e.GetPositionRelativeToElement(relativeTo);
-			if (result == null)
+
+			if (result is null)
 				return null;
 
-			return new Point(result.Value.X, result.Value.Y);
+			return result.Value.ToPoint();
 		}
 
 		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragStartingEventArgs e)
 		{
-			var result = e.GetPosition(element);
-
-			return new Point(result.X, result.Y);
+			return e.GetPosition(element).ToPoint();
 		}
 
 		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var result = e.GetPosition(element);
-
-			return new Point(result.X, result.Y);
+			return e.GetPosition(element).ToPoint();
 		}
 
 		void OnTap(object sender, RoutedEventArgs e)
