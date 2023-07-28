@@ -38,7 +38,7 @@ namespace Microsoft.Maui.Controls
 		public DataPackage Data { get; }
 
 		/// <summary>
-		/// Gets a value that specifies which operations are allowed by the drop target.
+		/// Gets or sets a value that specifies which operations are allowed by the drop target.
 		/// </summary>
 		public DataPackageOperation AcceptedOperation { get; set; }
 
