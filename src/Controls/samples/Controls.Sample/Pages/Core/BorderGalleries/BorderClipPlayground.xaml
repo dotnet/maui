@@ -17,13 +17,14 @@
     <Grid
         Padding="12">
         <Grid.RowDefinitions>
-            <RowDefinition Height="80" />
+            <RowDefinition Height="110" />
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
        
-        <Border x:Name="BorderView" Margin="5"
-                Stroke="Red" Padding="0"
-                HorizontalOptions="Center" HeightRequest="100" WidthRequest="100">
+        <Border 
+            x:Name="BorderView" Margin="5"
+            Stroke="Red" Padding="0"
+            HorizontalOptions="Center" HeightRequest="100" WidthRequest="100">
             <Image x:Name="BorderContent" Aspect="AspectFill" Source="oasis.jpg" />
         </Border>
 
