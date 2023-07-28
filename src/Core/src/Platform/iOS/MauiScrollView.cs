@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
 
@@ -6,23 +7,18 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiScrollView : UIScrollView
 	{
-		readonly WeakEventManager _weakEventManager = new WeakEventManager();
-
 		public MauiScrollView()
 		{
 		}
 
-		public event EventHandler LayoutSubviewsChanged
-		{
-			add => _weakEventManager.AddEventHandler(value);
-			remove => _weakEventManager.RemoveEventHandler(value);
-		}
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: ScrollViewTests.DoesNotleak")]
+		public event EventHandler? LayoutSubviewsChanged;
 
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
 
-			_weakEventManager.HandleEvent(this, EventArgs.Empty, nameof(LayoutSubviewsChanged));
+			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);	
 		}
 
 		// overriding this method so it does not automatically scroll large UITextFields
