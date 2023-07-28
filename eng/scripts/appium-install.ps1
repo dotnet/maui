@@ -45,88 +45,94 @@ param
     [string] $macDriverVersion = '1.6.3'
 )
 
-echo "Welcome to the Appium installer"
+Write-Output  "Welcome to the Appium installer"
 node -v
-echo "Updating npm"
+
+Write-Output  "Updating npm"
 npm install -g npm
-echo "Node version"
+
+Write-Output  "Node version"
 node -v
-echo "Check if appium is installed"
+
+Write-Output  "Check if appium is installed"
 npm list -g | grep appium
 
 $modulesFolder = "/Users/builder/azdo/_work/_tool/node/20.3.1/x64/lib/node_modules/appium"
 if (Test-Path -Path $modulesFolder ) {
-    echo "appium exists!"
-    echo "Uninstalling appium"
+    Write-Output  "appium exists!"
+    Write-Output  "Uninstalling appium"
     npm uninstall -g appium
     #rm -rf $modulesFolder
 } else {
-    echo "node_modules doesn't exist."
+    Write-Output  "node_modules doesn't exist."
 }
-echo "Installing appium $appiumVersion"
+Write-Output "Check if appium is installed after uninstall"
+npm list -g | grep appium
+
+Write-Output  "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
 appium -v
 
-echo "Installing appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
+Write-Output  "Installing appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
 $x = appium driver list --installed --json  | ConvertFrom-Json
 
 if(!$x.windows)
 {
-    echo "Installing appium driver windows $windowsDriverVersion"
+    Write-Output  "Installing appium driver windows $windowsDriverVersion"
     appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
-    echo "Installed appium driver windows"
+    Write-Output  "Installed appium driver windows"
 }
 else
 {
-    echo "Uninstalling appium driver windows"
+    Write-Output  "Uninstalling appium driver windows"
     appium driver uninstall windows
-    echo "Installing appium driver windows $windowsDriverVersion"
+    Write-Output  "Installing appium driver windows $windowsDriverVersion"
     appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
-    echo "Installed appium driver windows"
+    Write-Output  "Installed appium driver windows"
 }
 
 if(!$x.uiautomator2)
 {
-    echo "Installing appium driver uiautomator2 $androidDriverVersion"
+    Write-Output  "Installing appium driver uiautomator2 $androidDriverVersion"
     appium driver install uiautomator2@$androidDriverVersion
-    echo "Installed appium driver uiautomator2"
+    Write-Output  "Installed appium driver uiautomator2"
 }
 else
 {
-    echo "Uninstalling appium driver uiautomator2"
+    Write-Output  "Uninstalling appium driver uiautomator2"
     appium driver uninstall uiautomator2
-    echo "Installing appium driver uiautomator2 $androidDriverVersion"
+    Write-Output  "Installing appium driver uiautomator2 $androidDriverVersion"
     appium driver install uiautomator2@$androidDriverVersion
-    echo "Installed appium driver uiautomator2"
+    Write-Output  "Installed appium driver uiautomator2"
 }
 
 if(!$x.xcuitest)
 {
-    echo "Installing appium driver xcuitest $iOSDriverVersion"
+    Write-Output  "Installing appium driver xcuitest $iOSDriverVersion"
     appium driver install xcuitest@$iOSDriverVersion
-    echo "Installed appium driver xcuitest"
+    Write-Output  "Installed appium driver xcuitest"
 }
 else
 {
-    echo "Uninstalling appium driver xcuitest"
+    Write-Output  "Uninstalling appium driver xcuitest"
     appium driver uninstall xcuitest
-    echo "Installing appium driver xcuitest $iOSDriverVersion"
+    Write-Output  "Installing appium driver xcuitest $iOSDriverVersion"
     appium driver install xcuitest@$iOSDriverVersion
-    echo "Installed appium driver xcuitest"
+    Write-Output  "Installed appium driver xcuitest"
 }
 
 if(!$x.mac2)
 {
-    echo "Installing appium driver mac2 $macDriverVersion"
+    Write-Output  "Installing appium driver mac2 $macDriverVersion"
     appium driver install mac2@$macDriverVersion
-    echo "Installed appium driver mac2"
+    Write-Output  "Installed appium driver mac2"
 }
 else
 {
-    echo "Uninstalling appium driver mac2"
+    Write-Output  "Uninstalling appium driver mac2"
     appium driver uninstall mac2
-    echo "Installing appium driver mac2 $macDriverVersion"
+    Write-Output  "Installing appium driver mac2 $macDriverVersion"
     appium driver install mac2@$macDriverVersion
-    echo "Installed appium driver mac2"
+    Write-Output  "Installed appium driver mac2"
 }
-echo "Done, thanks!"
+Write-Output  "Done, thanks!"
