@@ -87,6 +87,7 @@ Setup(context =>
 		else if (parts[1] != "emulator" && parts[1] != "simulator")
 			throw new Exception("Unexpected device type (expected: device|emulator) in device: " + TEST_DEVICE);
 		// arch/bits
+		Information("Host System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 		if (parts[2] == "32") {
 			if (emulator)
 				DEVICE_ARCH = "x86";
