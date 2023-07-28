@@ -159,10 +159,7 @@ namespace Microsoft.Maui.Controls.Platform
 				Point position = Point.Zero;
 
 				if (e.OriginalSource is UIElement element)
-				{
-					var result = e.GetPosition(element);
-					position = new Point(result.X, result.Y);
-				}
+					position = e.GetPosition(element).ToPoint();
 
 				rec.SendDragOver(dragEventArgs);
 				var acceptedOperation = (int)dragEventArgs.AcceptedOperation;
@@ -212,11 +209,8 @@ namespace Microsoft.Maui.Controls.Platform
 				Point position = Point.Zero;
 
 				if (e.OriginalSource is UIElement element)
-				{
-					var result = e.GetPosition(element);
-					position = new Point(result.X, result.Y);
-				}
-
+					position = e.GetPosition(element).ToPoint();
+				
 				var args = rec.SendDragStarting(renderer?.VirtualView, position);
 
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
