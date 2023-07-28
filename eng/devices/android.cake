@@ -82,19 +82,21 @@ Setup(context =>
 		if (parts[0] != "android")
 			throw new Exception("Unexpected platform (expected: android) in device: " + TEST_DEVICE);
 		// device/emulator
+		Information("Create for: {0}", parts[1]);
 		if (parts[1] == "device")
 			emulator = false;
 		else if (parts[1] != "emulator" && parts[1] != "simulator")
 			throw new Exception("Unexpected device type (expected: device|emulator) in device: " + TEST_DEVICE);
 		// arch/bits
-		Information("Host System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+		Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+		Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 		if (parts[2] == "32") {
 			if (emulator)
 				DEVICE_ARCH = "x86";
 			else
 				DEVICE_ARCH = "armeabi-v7a";
 		} else if (parts[2] == "64") {
-			if (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+			if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
 				DEVICE_ARCH = "arm64-v8a";
 			else if (emulator)
 				DEVICE_ARCH = "x86_64";
@@ -106,6 +108,7 @@ Setup(context =>
 			sdk = "default";
 		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
+		Information("Going to run image: {0}", DEVICE_ID);
 		// we are not using a virtual device, so quit
 		if (!emulator)
 			return;
