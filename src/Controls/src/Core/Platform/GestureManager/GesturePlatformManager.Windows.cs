@@ -227,10 +227,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var handler = sender as IViewHandler;
 
-				Point position = Point.Zero;
-
-				if (e.OriginalSource is UIElement element)
-					position = GetPosition(element, e);
+				var position = e.OriginalSource is UIElement element ? GetPosition(element, e) : Point.Zero;
 
 				var args = rec.SendDragStarting(handler?.VirtualView, position);
 
@@ -771,13 +768,8 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 
-			if (e.OriginalSource is UIElement element)
-			{
-				var position = GetPosition(element, e);
-				return new DragEventArgs(package, position);
-			}
-
-			return new DragEventArgs(package);
+			var point = e.OriginalSource is UIElement element ? GetPosition(element, e) : Point.Zero;
+			return new DragEventArgs(package, point);
 		}
 	}
 }

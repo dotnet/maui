@@ -156,10 +156,8 @@ namespace Microsoft.Maui.Controls.Platform
 					return;
 				}
 
-				Point position = Point.Zero;
+				var position = e.OriginalSource is UIElement element ? e.GetPosition(element).ToPoint() :  Point.Zero;
 
-				if (e.OriginalSource is UIElement element)
-					position = e.GetPosition(element).ToPoint();
 
 				rec.SendDragOver(dragEventArgs);
 				var acceptedOperation = (int)dragEventArgs.AcceptedOperation;
