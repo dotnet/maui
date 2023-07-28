@@ -45,7 +45,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the location of the point in the coordinate system where dragging started.
 		/// </summary>
-		// TODO: JD - Confirm that it makes sense to have a private set for this property
 		public Point Position { get; private init; }
 	}
 }
