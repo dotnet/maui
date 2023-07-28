@@ -75,6 +75,7 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/*.zip
         ${{ parameters.checkoutDirectory }}/artifacts/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
+        ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true

@@ -23,3 +23,19 @@ stages:
           artifactPath: signed
           propsArtifactName: nuget
           signType: Real
+          postConvertSteps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.ArtifactStagingDirectory)\sign-verify
+              patterns: |
+                **/SignVerifyIgnore.txt
+
+          - task: MicroBuildCodesignVerify@3
+            displayName: verify signed msi content
+            inputs:
+              TargetFolders: |
+                $(Build.ArtifactStagingDirectory)\bin\manifests
+                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+              ExcludeSNVerify: true
+              ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt
