@@ -933,14 +933,14 @@ namespace TestUtils.Appium.UITests
 
 			// First we need to determine the area within which we'll make our scroll gestures
 			Size? scrollAreaSize = null;
-			
+
 			if (withinQuery != null)
 			{
 				var within = FindFirstElement(withinQuery);
 				scrollAreaSize = within?.Size;
 			}
 
-			if(scrollAreaSize is null)
+			if (scrollAreaSize is null)
 			{
 				var window = _driver?.Manage().Window ?? throw new InvalidOperationException("Element to scroll within not specified, and no Window available. Cannot scroll.");
 				scrollAreaSize = window.Size;

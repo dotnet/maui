@@ -308,7 +308,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			var scrollView = VirtualView;
 			var platformScrollView = PlatformView;
-			
+
 			var contentSize = scrollView.CrossPlatformArrange(bounds);
 
 			// The UIScrollView's bounds are available, so we can use them to make sure the ContentSize makes sense
