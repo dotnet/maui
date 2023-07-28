@@ -21,32 +21,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Does Not Leak")]
-		public async Task DoesNotLeak()
-		{
-			SetupBuilder();
-
-			WeakReference viewReference = null;
-			WeakReference platformViewReference = null;
-			WeakReference handlerReference = null;
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var layout = new Grid();
-				var editor = new Editor();
-				layout.Add(editor);
-				var handler = CreateHandler<LayoutHandler>(layout);
-				viewReference = new WeakReference(editor);
-				handlerReference = new WeakReference(editor.Handler);
-				platformViewReference = new WeakReference(editor.Handler.PlatformView);
-			});
-
-			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
-			Assert.False(viewReference.IsAlive, "Editor should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
-		}
-
 #if !IOS && !MACCATALYST
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425

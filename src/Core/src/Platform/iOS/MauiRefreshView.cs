@@ -15,11 +15,11 @@ namespace Microsoft.Maui.Platform
 		bool _isRefreshing;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: RefreshViewTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		UIView _refreshControlParent;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: RefreshViewTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		UIView? _contentView;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: RefreshViewTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		UIRefreshControl _refreshControl;
 		public UIRefreshControl RefreshControl => _refreshControl;
 

@@ -43,31 +43,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			await ValidateHasColor<CheckBoxHandler>(checkBox, color);
 		}
-
-		[Fact(DisplayName = "Does Not Leak")]
-		public async Task DoesNotLeak()
-		{
-			SetupBuilder();
-
-			WeakReference viewReference = null;
-			WeakReference platformViewReference = null;
-			WeakReference handlerReference = null;
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var layout = new Grid();
-				var checkBox = new CheckBox();
-				layout.Add(checkBox);
-				var handler = CreateHandler<LayoutHandler>(layout);
-				viewReference = new WeakReference(checkBox);
-				handlerReference = new WeakReference(checkBox.Handler);
-				platformViewReference = new WeakReference(checkBox.Handler.PlatformView);
-			});
-
-			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
-			Assert.False(viewReference.IsAlive, "CheckBox should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
-		}
 	}
 }
