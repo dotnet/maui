@@ -32,6 +32,7 @@
 		public const string Path = "Path";
 		public const string Picker = "Picker";
 		public const string RadioButton = "RadioButton";
+		public const string RefreshView = "RefreshView";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Shape = "Shape";
