@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   iosPool: { }
   catalystPool: { }
+  windowsPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   catalystVersions: [ 'latest' ]
@@ -135,8 +136,7 @@ stages:
       workspace:
         clean: all
       displayName: "Windows device tests"
-      pool:
-        vmImage: windows-latest
+      pool: ${{ parameters.windowsPool }}
       strategy:
         matrix:
           # create all the variables used for the matrix
