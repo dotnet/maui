@@ -75,6 +75,7 @@ appium -v
 
 Write-Output  "Installing appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
 $x = appium driver list --installed --json  | ConvertFrom-Json
+Write-Output "List of installed drivers $x"
 
 if(!$x.windows)
 {
