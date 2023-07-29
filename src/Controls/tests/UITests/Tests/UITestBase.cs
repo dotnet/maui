@@ -37,7 +37,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			var testOutcome = TestContext.CurrentContext.Result.Outcome;
 			if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
-				SaveScreenshotAndPageSource();
+				SaveScreenshotAndPageSource("UITestBaseTearDown");
 		}
 
 		[OneTimeSetUp]
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.AppiumTests
 			}
 			catch
 			{
-				SaveScreenshotAndPageSource();
+				SaveScreenshotAndPageSource("OneTimeSetup");
 				throw;
 			}
 		}
@@ -60,21 +60,26 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			var testOutcome = TestContext.CurrentContext.Result.Outcome;
 			if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
-				SaveScreenshotAndPageSource();
+				SaveScreenshotAndPageSource("OneTimeTearDown");
 
 			FixtureTeardown();
 		}
 
-		static void SaveScreenshotAndPageSource()
+		static void SaveScreenshotAndPageSource(string note)
 		{
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
-			_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
+			_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
 
 			if (App is IApp2 app2)
 			{
 				var pageSource = app2.ElementTree;
-				File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
+				File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
+			}
+
+			foreach (var log in Directory.GetFiles(logDir))
+			{
+				TestContext.AddTestAttachment(log, Path.GetFileName(log));
 			}
 		}
 

@@ -87,3 +87,4 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapAccelerator(Microsoft
 *REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 *REMOVED*override Microsoft.Maui.Platform.LayoutPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
+static Microsoft.Maui.Handlers.DatePickerHandler.MapBackground(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
