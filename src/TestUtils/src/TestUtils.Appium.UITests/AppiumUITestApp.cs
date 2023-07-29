@@ -520,6 +520,17 @@ namespace TestUtils.Appium.UITests
 			return file;
 		}
 
+		public byte[] Screenshot()
+		{
+			if (_driver == null)
+			{
+				throw new NullReferenceException("Screenshot: _driver is null");
+			}
+
+			Screenshot screenshot = _driver.GetScreenshot();
+			return screenshot.AsByteArray;
+		}
+
 		public void ScrollDown(Func<AppQuery, AppQuery>? withinQuery = null, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			throw new NotImplementedException();
