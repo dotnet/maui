@@ -36,32 +36,46 @@ namespace Microsoft.Maui.AppiumTests
 		public void UITestBaseTearDown()
 		{
 			var testOutcome = TestContext.CurrentContext.Result.Outcome;
-			if (testOutcome == ResultState.Error ||
-				testOutcome == ResultState.Failure)
-			{
-				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
-
-				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
-
-				if (App is IApp2 app2)
-				{
-					var pageSource = app2.ElementTree;
-					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
-				}
-			}
+			if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
+				SaveScreenshotAndPageSource();
 		}
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
 		{
 			InitialSetup(TestContextSetupFixture.TestContext);
-			FixtureSetup();
+			try
+			{
+				FixtureSetup();
+			}
+			catch
+			{
+				SaveScreenshotAndPageSource();
+				throw;
+			}
 		}
 
 		[OneTimeTearDown()]
 		public void OneTimeTearDown()
 		{
+			var testOutcome = TestContext.CurrentContext.Result.Outcome;
+			if (testOutcome == ResultState.Error || testOutcome == ResultState.Failure)
+				SaveScreenshotAndPageSource();
+
 			FixtureTeardown();
+		}
+
+		static void SaveScreenshotAndPageSource()
+		{
+			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+			_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
+
+			if (App is IApp2 app2)
+			{
+				var pageSource = app2.ElementTree;
+				File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
+			}
 		}
 
 		public override TestConfig GetTestConfig()
