@@ -160,7 +160,7 @@ stages:
                         path: ${{ project.compatibilityAndroidTestProject }}
                         app: ${{ project.compatibilityAndroidApp }}
                         targetSample: "dotnet-legacy-controlgallery-android"
-                        device: android-emulator-32_${{ api }}
+                        device: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
