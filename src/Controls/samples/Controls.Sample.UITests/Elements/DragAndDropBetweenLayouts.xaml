@@ -63,5 +63,7 @@
             </ScrollView>
         </Grid>
         <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel"/>
+        <Label x:Name="startLocation" AutomationId="StartDragEventLabel" Text="Drag Start"/>
+        <Label x:Name="endLocation" AutomationId="EndDragEventLabel" Text="Drag End"/>
     </StackLayout>
 </ContentView>
