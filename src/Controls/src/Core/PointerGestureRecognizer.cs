@@ -119,7 +119,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PointerPlatformEventArgs? platformArgs = null)
+		internal void SendPointerEntered(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerEnteredCommand;
 			if (cmd?.CanExecute(PointerEnteredCommandParameter) == true)
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PointerPlatformEventArgs? platformArgs = null)
+		internal void SendPointerExited(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerExitedCommand;
 			if (cmd?.CanExecute(PointerExitedCommandParameter) == true)
@@ -145,7 +145,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// For internal use by the .NET MAUI platform.
 		/// </summary>
-		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PointerPlatformEventArgs? platformArgs = null)
+		internal void SendPointerMoved(View sender, Func<IElement?, Point?>? getPosition, PlatformPointerEventArgs? platformArgs = null)
 		{
 			ICommand cmd = PointerMovedCommand;
 			if (cmd?.CanExecute(PointerMovedCommandParameter) == true)

@@ -244,7 +244,7 @@ namespace Microsoft.Maui.Controls.Platform
 						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 					{
 						var originPoint = r.LocationInView(eventTracker?.PlatformView);
-						var platformPointerArgs = new PointerPlatformEventArgs(r.View, r);
+						var platformPointerArgs = new PlatformPointerEventArgs(r.View, r);
 
 						switch (r.State)
 						{
