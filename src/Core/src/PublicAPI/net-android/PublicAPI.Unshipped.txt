@@ -93,7 +93,6 @@ Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateNightMode(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.ShapeExtensions.ToPlatform(this Microsoft.Maui.Graphics.IShape! shape, Microsoft.Maui.Graphics.Rect bounds, float strokeThickness, bool innerPath = false) -> Android.Graphics.Path!
-static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Android.Widget.EditText! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void

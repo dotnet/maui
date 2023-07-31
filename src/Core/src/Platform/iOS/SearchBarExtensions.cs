@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 				return searchBar.GetSearchTextField();
 		}
 
-		public static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
+		internal static void UpdateBackground(this UISearchBar uiSearchBar, ISearchBar searchBar)
 		{
 			var background = searchBar.Background;
 
