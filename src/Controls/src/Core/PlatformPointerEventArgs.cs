@@ -8,7 +8,7 @@ public class PlatformPointerEventArgs
 	public UIKit.UIView Sender { get; }
 	public UIKit.UIGestureRecognizer GestureRecognzier { get; }
 
-	public PlatformPointerEventArgs(UIKit.UIView sender, UIKit.UIGestureRecognizer gestureRecognizer)
+	internal PlatformPointerEventArgs(UIKit.UIView sender, UIKit.UIGestureRecognizer gestureRecognizer)
 	{
 		Sender = sender;
 		GestureRecognzier = gestureRecognizer;
@@ -18,7 +18,7 @@ public class PlatformPointerEventArgs
 	public Android.Views.View Sender { get; }
 	public Android.Views.MotionEvent MotionEvent { get; }
 
-	public PlatformPointerEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
+	internal PlatformPointerEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
 	{
 		Sender = sender;
 		MotionEvent = motionEvent;
@@ -28,7 +28,7 @@ public class PlatformPointerEventArgs
 	public Microsoft.UI.Xaml.FrameworkElement? Sender { get; }
 	public Microsoft.UI.Xaml.RoutedEventArgs? RoutedEventArgs { get; }
 
-	public PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement? sender, Microsoft.UI.Xaml.RoutedEventArgs routedEventArgs)
+	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement? sender, Microsoft.UI.Xaml.RoutedEventArgs routedEventArgs)
 	{
 		Sender = sender;
 		RoutedEventArgs = routedEventArgs;
