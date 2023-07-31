@@ -6,14 +6,14 @@
           RowDefinitions="*,*,*"
           ColumnDefinitions="*,*">
         <Label AutomationId="WaitForStubControl" />
-        <BoxView Color="Red"
+        <BoxView Color="Black"
                  Grid.Column="1" />
-        <BoxView Color="Lime"
+        <BoxView Color="White"
                  Grid.Row="1" />
-        <BoxView Color="Violet"
+        <BoxView Color="Blue"
                  Grid.Row="1"
                  Grid.Column="1"
                  Grid.RowSpan="2" />
-        <BoxView Color="Yellow" />
+        <BoxView Color="Red" />
     </Grid>
 </ContentPage>
