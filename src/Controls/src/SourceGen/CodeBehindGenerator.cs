@@ -409,15 +409,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 						if (!IsPublicOrVisibleInternal(type, caches.InternalsVisible))
 							continue;
-						return fullName; // TODO: remove and replace with below
-	  /*
 						int i = fullName.IndexOf('`');
 						if (i > 0)
 						{
 							fullName = fullName.Substring(0, i);
 						}
 						return fullName;
-	   */
 					}
 
 					return null;
