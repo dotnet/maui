@@ -10,10 +10,10 @@ namespace Microsoft.Maui.Controls
 
 		//Use these 2 instead of an event to avoid cloning way too much multicastdelegates on mono
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		void AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged);
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		void RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged);
 	}
 }

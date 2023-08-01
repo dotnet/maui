@@ -12,8 +12,8 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <summary>Provides the base class for all <see cref="Controls"/> hierarchal elements.
-	/// This class contains all the methods and properties required to represent an element in the <see cref="Controls"/>  hierarchy.
+	/// <summary>Provides the base class for all Microsoft.Maui.Controls hierarchal elements.
+	/// This class contains all the methods and properties required to represent an element in the Microsoft.Maui.Controls hierarchy.
 	/// </summary>
 	/// <remarks>
 	///		<para>Important categories of visual elements are noted in the following table:</para>
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 	///			</item>
 	///			<item>
 	///				<term> Controls and specialized <see cref="View" /></term>
-	///				<description>The lower part of the diagram shows the <see cref="Controls"/> classes for universally-available controls, such as <see cref = "Button"/> and <see cref="TableView"/>.</description>
+	///				<description>The lower part of the diagram shows the Microsoft.Maui.Controls classes for universally-available controls, such as <see cref = "Button"/> and <see cref="TableView"/>.</description>
 	///			</item>
 	///		</list>
 	///</remarks>
