@@ -158,11 +158,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
 		{
 			if (Element?.Handler is IPlatformViewHandler pvh &&
-				Element is IContentView cv &&
+				Element is ICrossPlatformLayout cpl &&
 				VirtualView is not null &&
 				Context is not null)
 			{
-				var measure = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cv.CrossPlatformMeasure);
+				var measure = pvh.MeasureVirtualView(widthMeasureSpec, heightMeasureSpec, cpl.CrossPlatformMeasure);
 				SetMeasuredDimension((int)measure.Width, (int)measure.Height);
 			}
 			else

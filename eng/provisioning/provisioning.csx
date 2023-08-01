@@ -25,74 +25,38 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.ApiLevel((AndroidApiLevel)31)
 		.ApiLevel((AndroidApiLevel)32)
 		.ApiLevel((AndroidApiLevel)33)
-		.ApiLevel((AndroidApiLevel)34)
-		.VirtualDevice(
-			"Android_API23",
-			(AndroidApiLevel)23,
-			AndroidSystemImageApi.Google,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API24",
-			AndroidApiLevel.Nougat,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API25",
-			AndroidApiLevel.Nougat_7_1,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API26",
-			AndroidApiLevel.Oreo,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API27",
-			AndroidApiLevel.Oreo_8_1 ,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API28",
-			AndroidApiLevel.P,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API29",
-			AndroidApiLevel.Q,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice(
-			"Android_API30",
-			AndroidApiLevel.R,
-			AndroidSystemImageApi.GooglePlayStore,
-			AndroidSystemImageAbi.x86,
-			AndroidVirtualDevice.NEXUS_5X)
-		// .VirtualDevice(
-		// 	"Android_API31",
-		// 	AndroidApiLevel.Android_12,
-		// 	AndroidSystemImageApi.GooglePlayStore,
-		// 	AndroidSystemImageAbi.x86,
-		// 	AndroidVirtualDevice.NEXUS_5X)
-		// .VirtualDevice(
-		// 	"Android_API32",
-		// 	AndroidApiLevel.Android_12sv2,
-		// 	AndroidSystemImageApi.GooglePlayStore,
-		// 	AndroidSystemImageAbi.x86,
-		// 	AndroidVirtualDevice.NEXUS_5X)
-		// .VirtualDevice(
-		// 	"Android_API33",
-		// 	AndroidApiLevel.Android_13,
-		// 	AndroidSystemImageApi.GooglePlayStore,
-		// 	AndroidSystemImageAbi.x86,
-		// 	AndroidVirtualDevice.NEXUS_5X)
-		.SdkManagerPackage ("build-tools;33.0.0");
+		.VirtualDevice("Android_x64_API23",   (AndroidApiLevel)23, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API24",   (AndroidApiLevel)24, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API25",   (AndroidApiLevel)25, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API26",   (AndroidApiLevel)26, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API27",   (AndroidApiLevel)27, AndroidSystemImageApi.Default, /*!!*/  AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API28",   (AndroidApiLevel)28, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API29",   (AndroidApiLevel)29, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API30",   (AndroidApiLevel)30, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API31",   (AndroidApiLevel)31, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API32",   (AndroidApiLevel)32, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x64_API33",   (AndroidApiLevel)33, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X);
+		.VirtualDevice("Android_x64_API34",   (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X);
+		
+		
+	if (IsArm64)
+	{
+		AndroidSdk()
+			.VirtualDevice("Android_arm64_API23", (AndroidApiLevel)23, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API24", (AndroidApiLevel)24, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API25", (AndroidApiLevel)25, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API26", (AndroidApiLevel)26, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API27", (AndroidApiLevel)27, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API28", (AndroidApiLevel)28, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API29", (AndroidApiLevel)29, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API30", (AndroidApiLevel)30, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API31", (AndroidApiLevel)31, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API32", (AndroidApiLevel)32, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X)
+			.VirtualDevice("Android_arm64_API33", (AndroidApiLevel)33, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X);
+			.VirtualDevice("Android_arm64_API34", (AndroidApiLevel)34, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.ARM64_v8a, AndroidVirtualDevice.NEXUS_5X);
+	}
+
+	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
 }
 else
 {
