@@ -10,6 +10,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorTests : ControlsHandlerTestBase
 	{
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Editor, EditorHandler>();
+				});
+			});
+		}
+
 #if !IOS && !MACCATALYST
 		// iOS is broken until this point
 		// https://github.com/dotnet/maui/issues/3425

@@ -11,6 +11,11 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
+#if WINDOWS
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 	public class HandlerTestBasement : TestBase, IDisposable
@@ -127,7 +132,23 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 				view.Arrange(new Rect(0, 0, w, h));
-				viewHandler.PlatformArrange(view.Frame);
+
+#if WINDOWS
+				if (viewHandler.PlatformView is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				{
+					void SwipeViewLoaded(object s, RoutedEventArgs e)
+					{
+						swipeControl.Arrange(new global::Windows.Foundation.Rect(0, 0, w, h));
+						swipeControl.Loaded -= SwipeViewLoaded;
+					};
+
+					// Doing the SwipeItems arrange before the view has loaded causes the SwipeControl
+					// to crash on the first layout pass. So we wait until the control has been loaded.
+					swipeControl.Loaded += SwipeViewLoaded;
+				}
+				else
+#endif
+					viewHandler.PlatformArrange(view.Frame);
 			}
 		}
 

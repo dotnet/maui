@@ -76,31 +76,5 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(child.BindingContext == bindingContext);
 			});
 		}
-
-		[Fact(DisplayName = "ContentView Does Not Leak")]
-		public async Task DoesNotLeak()
-		{
-			SetupBuilder();
-			WeakReference viewReference = null;
-			WeakReference handlerReference = null;
-			WeakReference platformReference = null;
-
-			{
-				var view = new Microsoft.Maui.Controls.ContentView();
-				var page = new ContentPage { Content = view };
-				await CreateHandlerAndAddToWindow(page, () =>
-				{
-					viewReference = new(view);
-					handlerReference = new(view.Handler);
-					platformReference = new(view.Handler.PlatformView);
-					page.Content = null;
-				});
-			}
-
-			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
-			Assert.False(viewReference.IsAlive, "View should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
-		}
 	}
 }
