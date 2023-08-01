@@ -309,7 +309,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
@@ -384,7 +384,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEffectControlProvider EffectControlProvider
 		{
@@ -410,24 +410,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		void IElementController.SetValueFromRenderer(BindableProperty property, object value) => SetValueFromRenderer(property, value);
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <summary>For internal use by the <see cref="Controls"/> platform.</summary>
+		/// <summary>For internal use by the Microsoft.Maui.Controls platform.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool EffectIsAttached(string name)
 		{
