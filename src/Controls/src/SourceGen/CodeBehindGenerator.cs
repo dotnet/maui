@@ -407,8 +407,15 @@ namespace Microsoft.Maui.Controls.SourceGen
 						if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
 							continue;
 
-						if (IsPublicOrVisibleInternal(type, caches.InternalsVisible))
-							return fullName;
+						if (!IsPublicOrVisibleInternal(type, caches.InternalsVisible))
+							continue;
+						return fullName;
+						int i = fullName.IndexOf('`');
+						if (i > 0)
+						{
+							fullName = fullName.Substring(0, i);
+						}
+						return fullName;
 					}
 
 					return null;
