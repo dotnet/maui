@@ -64,6 +64,7 @@ parameters:
       vmImage: $(androidTestsVmImage)
       demands:
         - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
 
   - name: iosPool
     type: object
