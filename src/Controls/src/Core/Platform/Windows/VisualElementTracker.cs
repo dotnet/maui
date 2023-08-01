@@ -204,10 +204,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var renderer = sender as IViewHandler;
 
-				Point position = Point.Zero;
+				var element = (UIElement)e.OriginalSource;
 
-				if (e.OriginalSource is UIElement element)
-					position = e.GetPosition(element).ToPoint();
+                // WinUI's APIs should still work if the source element is null
+                // Trying to catch the null here and returning a (0,0) point would always return (0,0)
+                var position = e.GetPosition(element).ToPoint();
 				
 				var args = rec.SendDragStarting(renderer?.VirtualView, position);
 

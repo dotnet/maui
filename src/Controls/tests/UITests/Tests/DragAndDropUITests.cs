@@ -1,5 +1,6 @@
 ﻿using Maui.Controls.Sample;
 using Microsoft.Maui.Appium;
+using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 using TestUtils.Appium.UITests;
 
@@ -58,6 +59,28 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.True(textAfterDrag.Contains("DragOver", StringComparison.OrdinalIgnoreCase));
 			Assert.True(textAfterDrag.Contains("DropCompleted", StringComparison.OrdinalIgnoreCase));
 			Assert.True(textAfterDrag.Contains("RainbowColorsAdd:Red", StringComparison.OrdinalIgnoreCase));
+		}
+
+		[Test]
+		public void DragAndDropCoordinates()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
+			App.Tap("GoButton");
+
+			App.WaitForElement("Blue");
+			App.DragAndDrop("Blue", "Green");
+			App.WaitForElement("DragEventsLabel");
+
+			var textStartDrag = App.Query("StartDragEventLabel").First().Text;
+			var textEndDrag = App.Query("EndDragEventLabel").First().Text;
+
+			Point startPoint = new Point(float.Parse(textStartDrag.Split(",")[0]), float.Parse(textStartDrag.Split(",")[1]));
+			Point endPoint = new Point(float.Parse(textEndDrag.Split(",")[0]), float.Parse(textEndDrag.Split(",")[1]));
+
+			Assert.True(startPoint.X != 0 && startPoint.Y != 0);
+			Assert.True(endPoint.X != 0 && endPoint.Y != 0);
+			Assert.True(endPoint.Y < startPoint.Y); // Blue is below Green as of writing this test
 		}
 	}
 }

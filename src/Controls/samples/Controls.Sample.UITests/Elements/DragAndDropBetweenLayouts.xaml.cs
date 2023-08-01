@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample
 
 			AddEvent(nameof(OnDragStarting));
 
-			startLocation.Text = $"Drag start: X: {e.Position.X}, Y: {e.Position.Y}";
+			startLocation.Text = $"{e.Position.X},{e.Position.Y}";
 		}
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
@@ -73,7 +73,7 @@ namespace Maui.Controls.Sample
 				_emittedDragOver = true;
 			}
 
-			endLocation.Text = $"Drag location: {e.Position.X}, Y: {e.Position.Y}";
+			endLocation.Text = $"{e.Position.X},{e.Position.Y}";
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)
