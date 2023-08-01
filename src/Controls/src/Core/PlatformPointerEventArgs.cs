@@ -6,12 +6,12 @@ public class PlatformPointerEventArgs
 {
 #if IOS || MACCATALYST
 	public UIKit.UIView Sender { get; }
-	public UIKit.UIGestureRecognizer GestureRecognzier { get; }
+	public UIKit.UIGestureRecognizer GestureRecognizer { get; }
 
 	internal PlatformPointerEventArgs(UIKit.UIView sender, UIKit.UIGestureRecognizer gestureRecognizer)
 	{
 		Sender = sender;
-		GestureRecognzier = gestureRecognizer;
+		GestureRecognizer = gestureRecognizer;
 	}
 
 #elif ANDROID
@@ -25,10 +25,10 @@ public class PlatformPointerEventArgs
 	}
 
 #elif WINDOWS
-	public Microsoft.UI.Xaml.FrameworkElement? Sender { get; }
+	public Microsoft.UI.Xaml.FrameworkElement Sender { get; }
 	public Microsoft.UI.Xaml.RoutedEventArgs? RoutedEventArgs { get; }
 
-	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement? sender, Microsoft.UI.Xaml.RoutedEventArgs routedEventArgs)
+	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.RoutedEventArgs routedEventArgs)
 	{
 		Sender = sender;
 		RoutedEventArgs = routedEventArgs;
