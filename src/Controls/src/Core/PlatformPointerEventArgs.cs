@@ -1,7 +1,6 @@
 ﻿using System;
 namespace Microsoft.Maui.Controls;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 public class PlatformPointerEventArgs
 {
 #if IOS || MACCATALYST
@@ -26,12 +25,17 @@ public class PlatformPointerEventArgs
 
 #elif WINDOWS
 	public Microsoft.UI.Xaml.FrameworkElement Sender { get; }
-	public Microsoft.UI.Xaml.RoutedEventArgs? RoutedEventArgs { get; }
+	public Microsoft.UI.Xaml.RoutedEventArgs RoutedEventArgs { get; }
 
 	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.RoutedEventArgs routedEventArgs)
 	{
 		Sender = sender;
 		RoutedEventArgs = routedEventArgs;
+	}
+
+#else
+	internal PlatformPointerEventArgs()
+	{
 	}
 #endif
 }

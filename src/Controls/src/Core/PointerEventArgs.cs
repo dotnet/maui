@@ -10,7 +10,6 @@ namespace Microsoft.Maui.Controls
 	{
 
 		Func<IElement?, Point?>? _getPosition;
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public PlatformPointerEventArgs? PlatformArgs { get; private set; }
 
 		public PointerEventArgs()
