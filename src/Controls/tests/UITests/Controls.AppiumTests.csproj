@@ -33,7 +33,6 @@
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils\TestUtils.csproj" />
   </ItemGroup>
 
   <ItemGroup>
