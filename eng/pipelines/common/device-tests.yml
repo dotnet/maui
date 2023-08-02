@@ -4,7 +4,7 @@ parameters:
   catalystPool: { }
   windowsPool: { }
   androidApiLevels: [ 30 ]
-  iosVersions: [ '16.4' ]
+  iosVersions: [ 'latest' ]
   catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
@@ -73,7 +73,10 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.ios }}
-                    DEVICE: ios-simulator-64_${{ version }}
+                    ${{ if eq(version, 'latest') }}:
+                      DEVICE: ios-simulator-64
+                    ${{ else }}:
+                      DEVICE: ios-simulator-64_${{ version }}
       steps:
         - template: device-tests-steps.yml
           parameters:
@@ -107,7 +110,10 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.catalyst }}
-                    DEVICE: maccatalyst_${{ version }}
+                    ${{ if eq(version, 'latest') }}:
+                      DEVICE: maccatalyst
+                    ${{ else }}:
+                      DEVICE: maccatalyst_${{ version }}
       steps:
         - template: device-tests-steps.yml
           parameters:
