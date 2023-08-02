@@ -65,16 +65,16 @@ namespace Microsoft.Maui.AppiumTests
 			FixtureTeardown();
 		}
 
-		static void SaveScreenshotAndPageSource(string note)
+		void SaveScreenshotAndPageSource(string note)
 		{
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
-			_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
+			_ = App.Screenshot(Path.Combine(logDir, $"{GetType().FullName}-{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
 
 			if (App is IApp2 app2)
 			{
 				var pageSource = app2.ElementTree;
-				File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
+				File.WriteAllText(Path.Combine(logDir, $"{GetType().FullName}-{TestContext.CurrentContext.Test.MethodName}-{note}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
 			}
 
 			foreach (var log in Directory.GetFiles(logDir))
