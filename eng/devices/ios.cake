@@ -6,7 +6,7 @@
 
 string TARGET = Argument("target", "Test");
 
-const string defaultVersion = "16.2";
+const string defaultVersion = "16.4";
 const string dotnetVersion = "net7.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
