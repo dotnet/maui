@@ -253,6 +253,7 @@ Task("dotnet-pack-maui")
         DotNetTool("pwsh", new DotNetToolSettings
         {
             DiagnosticOutput = true,
+            ToolPath = dotnetPath,
             ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
         });
     });
