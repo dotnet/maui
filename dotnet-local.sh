@@ -3,7 +3,7 @@ ROOT="$(dirname "${BASH_SOURCE}")"
 FULLROOT="$(cd "${ROOT}"; pwd)"
 
 if [[ ! -x "${ROOT}/bin/dotnet/dotnet" ]] ; then
-    echo "You need to run 'build.sh' first." 1>&2
+    echo 'You must build MAUI first. Please see `.github/DEVELOPMENT.md` for details.' 1>&2
     exit 1
 fi
 

@@ -5,5 +5,5 @@ IF EXIST "%ROOT%\bin\dotnet\dotnet.exe" (
     SET PATH=%DOTNET_ROOT%;%PATH%
     call "%ROOT%\bin\dotnet\dotnet.exe" %*
 ) ELSE (
-    echo "You need to run 'build.ps1' first."
+    echo "You must build MAUI first. Please see '.github/DEVELOPMENT.md' for details."
 )
