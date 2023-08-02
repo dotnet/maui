@@ -1059,7 +1059,21 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);
+		protected void SizeAllocated(double width, double height)
+		{
+			OnSizeAllocated(width, height);
+
+			// This covers a couple cases
+			// Currently on iOS we track the platform frame to fire unloaded/loaded.
+			// This lets us short circuit that code a bit so we aren't running against
+			// Observer exceptions we've hit on iOS
+			//
+			// This works to fire internal code we only want to trigger when
+			// the platformView is attached to the visual tree. We also don't want
+			// to add an event to every platformView we created monitoring this
+			// so this covers us for cases where we aren't explicitly watching unloaded/loaded
+			UpdatePlatformUnloadedLoadedWiring(Window);
+		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<VisualElement>> BatchCommitted;
@@ -1884,12 +1898,46 @@ namespace Microsoft.Maui.Controls
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
+		internal bool IsAddedToPlatformVisualTree { get; private set; }
+
+		void CheckAddedToPlatformVisualTree(Window? newWindow, Window? oldWindow = null)
+		{
+			if (newWindow == oldWindow)
+				return;
+
+			if (IsLoaded)
+			{
+				if (!IsAddedToPlatformVisualTree)
+					AddedToPlatformVisualTree();
+
+				IsAddedToPlatformVisualTree = true;
+			}
+			else
+			{
+				if (IsAddedToPlatformVisualTree)
+					RemovedFromPlatformVisualTree();
+
+				IsAddedToPlatformVisualTree = false;
+			}
+		}
+
+		private protected virtual void AddedToPlatformVisualTree()
+		{
+		}
+
+		private protected virtual void RemovedFromPlatformVisualTree()
+		{
+
+		}
+
 		// We only want to wire up to platform loaded events
 		// if the user is watching for them. Otherwise
 		// this will get wired up for every single VE that's on 
 		// the screen
 		void UpdatePlatformUnloadedLoadedWiring(Window? newWindow, Window? oldWindow = null)
 		{
+			CheckAddedToPlatformVisualTree(newWindow, oldWindow);
+
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
 			// This VE gets connected to the xplat Window before wiring up any events
