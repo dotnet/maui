@@ -1,12 +1,12 @@
-﻿using Xunit;
+﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
-using Microsoft.UI.Xaml.Hosting;
 using Microsoft.Maui.Platform;
-using System.Threading.Tasks;
 using Microsoft.UI.Composition;
+using Microsoft.UI.Xaml.Hosting;
+using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 100,
 				WidthRequest = 300
 			};
-			
+
 			await AttachAndRun(border, (handler) =>
 			{
 				var contentPanel = GetNativeBorder(handler as BorderHandler);
