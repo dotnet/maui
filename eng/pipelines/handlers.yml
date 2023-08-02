@@ -76,13 +76,11 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
   - name: PackPlatforms
@@ -92,13 +90,11 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
   - name: TestTargetFrameworks
