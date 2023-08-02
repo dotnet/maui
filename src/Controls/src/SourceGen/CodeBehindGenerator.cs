@@ -409,6 +409,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 						if (!IsPublicOrVisibleInternal(type, caches.InternalsVisible))
 							continue;
+
 						int i = fullName.IndexOf('`');
 						if (i > 0)
 						{
