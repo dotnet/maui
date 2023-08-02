@@ -1,4 +1,7 @@
 ﻿#nullable disable
+using System;
+using UIKit;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class Entry
@@ -26,5 +29,25 @@ namespace Microsoft.Maui.Controls
 
 		public static void MapText(EntryHandler handler, Entry entry) =>
 			MapText((IEntryHandler)handler, entry);
+
+		IDisposable _watchingForTaps;
+		private protected override void AddedToPlatformVisualTree()
+		{
+			base.AddedToPlatformVisualTree();
+
+			_watchingForTaps =
+				this
+					.FindParentOfType<ContentPage>()?
+					.SetupTapIntoNothingness(Handler?.PlatformView as UIView);
+
+		}
+
+		private protected override void RemovedFromPlatformVisualTree()
+		{
+			base.RemovedFromPlatformVisualTree();
+
+			_watchingForTaps?.Dispose();
+			_watchingForTaps = null;
+		}
 	}
 }

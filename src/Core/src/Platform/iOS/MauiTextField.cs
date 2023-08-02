@@ -21,7 +21,6 @@ namespace Microsoft.Maui.Platform
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
-			ResignFirstResponderTouchGestureRecognizer.Update(this, window);
 		}
 
 		public override string? Text

@@ -1,4 +1,7 @@
 ﻿#nullable disable
+using System;
+using UIKit;
+
 namespace Microsoft.Maui.Controls
 {
 	public partial class SearchBar
@@ -17,6 +20,29 @@ namespace Microsoft.Maui.Controls
 		public static void MapText(ISearchBarHandler handler, SearchBar searchBar)
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
+		}
+
+		IDisposable _watchingForTaps;
+		private protected override void AddedToPlatformVisualTree()
+		{
+			base.AddedToPlatformVisualTree();
+
+			var platformView =
+				(Handler?.PlatformView as UISearchBar)?.GetSearchTextField();
+
+			_watchingForTaps =
+				this
+					.FindParentOfType<ContentPage>()?
+					.SetupTapIntoNothingness(platformView);
+
+		}
+
+		private protected override void RemovedFromPlatformVisualTree()
+		{
+			base.RemovedFromPlatformVisualTree();
+
+			_watchingForTaps?.Dispose();
+			_watchingForTaps = null;
 		}
 	}
 }

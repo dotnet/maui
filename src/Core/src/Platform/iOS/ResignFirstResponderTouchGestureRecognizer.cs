@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Platform
 
 		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
-			while (view != null)
+			while (view is not null)
 			{
 				yield return view;
 				view = view.Superview;
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void Update(UITextView textView, UIWindow? window)
 		{
-			if (window != null)
+			if (window is not null)
 			{
 				textView.Started += OnEditingDidBegin;
 				textView.Ended += OnEditingDidEnd;
@@ -80,9 +80,26 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		internal static void Update(
+			UITextView textView,
+			UIWindow? window,
+			out IDisposable unwire)
+		{
+			if (window is not null)
+			{
+				Update(textView, window);
+				unwire = new ActionDisposable(() => Update(textView, window));
+			}
+			else
+			{
+				Update(textView, window);
+				unwire = new ActionDisposable(() => { });
+			}
+		}
+
 		internal static void Update(UIControl platformControl, UIWindow? window)
 		{
-			if (window != null)
+			if (window is not null)
 			{
 				platformControl.EditingDidBegin += OnEditingDidBegin;
 				platformControl.EditingDidEnd += OnEditingDidEnd;
@@ -91,6 +108,23 @@ namespace Microsoft.Maui.Platform
 			{
 				platformControl.EditingDidBegin -= OnEditingDidBegin;
 				platformControl.EditingDidEnd -= OnEditingDidEnd;
+			}
+		}
+
+		internal static void Update(
+			UIControl platformControl,
+			UIWindow? window,
+			out IDisposable unwire)
+		{
+			if (window is not null)
+			{
+				Update(platformControl, window);
+				unwire = new ActionDisposable(() => Update(platformControl, window));
+			}
+			else
+			{
+				Update(platformControl, window);
+				unwire = new ActionDisposable(() => { });
 			}
 		}
 

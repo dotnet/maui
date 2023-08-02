@@ -61,9 +61,6 @@ namespace Microsoft.Maui.Platform
 			base.WillMoveToWindow(window);
 
 			if (editor != null)
-				ResignFirstResponderTouchGestureRecognizer.Update(editor, window);
-
-			if (editor != null)
 			{
 				editor.EditingChanged -= OnEditingChanged;
 				if (window != null)
