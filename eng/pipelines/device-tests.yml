@@ -56,6 +56,7 @@ parameters:
   - name: BuildEverything
     type: boolean
     default: false
+
   - name: androidPool
     type: object
     default:
@@ -64,16 +65,24 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+
   - name: iosPool
     type: object
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+
   - name: catalystPool
     type: object
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+
+  - name: windowsPool
+    type: object
+    default:
+      name: $(windowsTestsVmPool)
+      vmImage: $(windowsTestsVmImage)
 
 resources:
   repositories:
@@ -90,6 +99,7 @@ stages:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
       catalystPool: ${{ parameters.catalystPool }}
+      windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]

@@ -18,8 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 				});
 			});
 		}
