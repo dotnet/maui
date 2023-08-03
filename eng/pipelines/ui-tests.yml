@@ -84,14 +84,12 @@ parameters:
     default:
       name: $(windowsTestsVmPool)
       vmImage: $(windowsTestsVmImage)
-      demands:
 
   - name: macosPool
     type: object
     default:
       name: $(macosTestsVmPool)
       vmImage: $(macosTestsVmImage)
-      demands:
 
   - name: androidCompatibilityPool
     type: object
