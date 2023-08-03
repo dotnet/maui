@@ -2,7 +2,10 @@
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
+using OpenQA.Selenium;
 using TestUtils.Appium.UITests;
+using VisualTestUtils;
+using VisualTestUtils.MagickNet;
 
 namespace Microsoft.Maui.AppiumTests
 {
@@ -23,9 +26,27 @@ namespace Microsoft.Maui.AppiumTests
 	public class UITestBase : UITestContextTestBase
 	{
 		readonly TestDevice _testDevice;
+		readonly VisualRegressionTester _visualRegressionTester;
+		readonly IImageEditorFactory _imageEditorFactory;
+		readonly VisualTestContext _visualTestContext;
+
 		public UITestBase(TestDevice device)
 		{
 			_testDevice = device;
+
+			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
+			if (ciArtifactsDirectory != null)
+				ciArtifactsDirectory = Path.Combine(ciArtifactsDirectory, "Controls.AppiumTests");
+
+			string assemblyDirectory = Path.GetDirectoryName(System.AppDomain.CurrentDomain.BaseDirectory)!;
+			string projectRootDirectory = Path.GetFullPath(Path.Combine(assemblyDirectory, "..", "..", ".."));
+			_visualRegressionTester = new VisualRegressionTester(testRootDirectory: projectRootDirectory,
+				visualComparer: new MagickNetVisualComparer(),
+				visualDiffGenerator: new MagickNetVisualDiffGenerator(),
+				ciArtifactsDirectory: ciArtifactsDirectory);
+
+			_imageEditorFactory = new MagickNetImageEditorFactory();
+			_visualTestContext = new VisualTestContext();
 		}
 
 		protected virtual void FixtureSetup() { }
@@ -97,6 +118,61 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			return testConfig;
+		}
+
+		public void VerifyScreenshot(string? name = null)
+		{
+			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac)
+			{
+				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
+				// is of the entire screen, not just the app. Later when xharness relay support is in place to
+				// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
+				// the app.
+				Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+			}
+
+			if (name == null)
+				name = TestContext.CurrentContext.Test.MethodName;
+
+			IApp2? app = App as IApp2;
+			if (app is null)
+				throw new InvalidOperationException("App is not an IApp2");
+
+			byte[] screenshotPngBytes = app.Screenshot();
+			if (screenshotPngBytes is null)
+				throw new InvalidOperationException("Failed to get screenshot");
+
+			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
+
+			// For Android and iOS, crop off the OS status bar at the top since it's not part of the
+			// app itself and contains the time, which always changes
+			int topStatusBarHeight = _testDevice switch
+			{
+				TestDevice.Android => 60,
+				TestDevice.iOS => 90,
+				_ => -1,
+			};
+
+			if (topStatusBarHeight != -1)
+			{
+				IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
+				(int width, int height) = imageEditor.GetSize();
+
+				imageEditor.Crop(0, topStatusBarHeight, width, height - topStatusBarHeight);
+
+				actualImage = imageEditor.GetUpdatedImage();
+			}
+
+			string platform = _testDevice switch
+			{
+				TestDevice.Android => "android",
+				TestDevice.iOS => "ios",
+				TestDevice.Mac => "mac",
+				TestDevice.Windows => "windows",
+				_ => throw new NotImplementedException($"Unknown device type {_testDevice}"),
+			};
+
+			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: platform, testContext: _visualTestContext);
 		}
 	}
 }
