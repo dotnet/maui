@@ -10,8 +10,15 @@ namespace Microsoft.Maui.Controls
 	{
 
 		Func<IElement?, Point?>? _getPosition;
+
+		/// <summary>
+		/// Platform-specific arguments associated with the PointerEventArgs
+		/// </summary>
 		public PlatformPointerEventArgs? PlatformArgs { get; private set; }
 
+		/// <summary>
+		/// Public constructor that creates an instance of <see cref="PointerEventArgs"/>
+		/// </summary>
 		public PointerEventArgs()
 		{
 		}
@@ -22,6 +29,10 @@ namespace Microsoft.Maui.Controls
 			PlatformArgs = args;
 		}
 
+		/// <summary>
+		/// Returns the position of the pointer relative to the element
+		/// </summary>
+		/// <param name="relativeTo">Element from which the position is relative to</param>
 		public virtual Point? GetPosition(Element? relativeTo) =>
 			_getPosition?.Invoke(relativeTo);
 	}
