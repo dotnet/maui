@@ -30,6 +30,9 @@ namespace Microsoft.Maui.Controls.Handlers
 					[nameof(Shell.FlyoutHeaderBehavior)] = MapFlyoutHeaderBehavior,
 					[nameof(Shell.Items)] = MapItems,
 					[nameof(Shell.FlyoutItems)] = MapFlyoutItems,
+#if WINDOWS
+					[nameof(Shell.FlyoutIcon)] = MapFlyoutIcon,
+#endif
 				};
 
 		public static CommandMapper<Shell, ShellHandler> CommandMapper =
