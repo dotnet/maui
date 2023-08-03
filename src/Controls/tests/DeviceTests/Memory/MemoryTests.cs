@@ -17,6 +17,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			{
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
+				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
@@ -34,6 +35,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
+	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
 	[InlineData(typeof(Image))]
