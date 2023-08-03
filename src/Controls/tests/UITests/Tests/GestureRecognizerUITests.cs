@@ -36,7 +36,7 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			App.WaitForElement("TargetView");
-			App.EnterText("TargetView", "GestureRecognizerEvents");
+			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
 			App.Tap("GoButton");
 
 			App.WaitForElement("primaryLabel");

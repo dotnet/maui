@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class GestureRecognizerEvents : ContentView
+	public partial class PointerGestureRecognizerEvents : ContentView
 	{
-		public GestureRecognizerEvents()
+		public PointerGestureRecognizerEvents()
 		{
 			InitializeComponent();
 		}
