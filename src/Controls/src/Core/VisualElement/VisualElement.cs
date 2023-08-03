@@ -1915,7 +1915,7 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				if (IsAddedToPlatformVisualTree)
-					RemovedFromPlatformVisualTree();
+					RemovedFromPlatformVisualTree(oldWindow);
 
 				IsAddedToPlatformVisualTree = false;
 			}
@@ -1925,7 +1925,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		private protected virtual void RemovedFromPlatformVisualTree()
+		private protected virtual void RemovedFromPlatformVisualTree(IWindow? oldWindow)
 		{
 
 		}

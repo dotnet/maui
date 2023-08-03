@@ -12,7 +12,6 @@ namespace Microsoft.Maui.Platform
 	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		IBorderStroke? _clip;
-		private IPlatformEventsListener? _crossPlatformInteractions;
 		readonly Context _context;
 
 		public ContentViewGroup(Context context) : base(context)
@@ -45,25 +44,6 @@ namespace Microsoft.Maui.Platform
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
 			get; set;
-		}
-
-		internal IPlatformEventsListener? CrossPlatformInteractions
-		{
-			get
-			{
-				if (_crossPlatformInteractions is not null)
-					return _crossPlatformInteractions;
-
-				if (CrossPlatformLayout is IPlatformEventsListener cpi &&
-					cpi.IsThisMyPlatformView(this))
-				{
-					return cpi;
-				}
-
-				return null;
-			}
-
-			set => _crossPlatformInteractions = value;
 		}
 
 		Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)

@@ -20,6 +20,15 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ContentProperty, value); }
 		}
 
+		public static readonly BindableProperty HideSoftInputOnTappedProperty
+			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
+
+		public bool HideSoftInputOnTapped
+		{
+			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
+			set { SetValue(HideSoftInputOnTappedProperty, value); }
+		}
+
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();

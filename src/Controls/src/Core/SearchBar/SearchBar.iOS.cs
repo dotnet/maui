@@ -37,9 +37,9 @@ namespace Microsoft.Maui.Controls
 
 		}
 
-		private protected override void RemovedFromPlatformVisualTree()
+		private protected override void RemovedFromPlatformVisualTree(IWindow oldWindow)
 		{
-			base.RemovedFromPlatformVisualTree();
+			base.RemovedFromPlatformVisualTree(oldWindow);
 
 			_watchingForTaps?.Dispose();
 			_watchingForTaps = null;
