@@ -7,11 +7,9 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage
 	{
-		IDisposable? _watchingForTaps;
 		internal IDisposable? SetupTapIntoNothingness(UIView? uIView)
 		{
-			_watchingForTaps?.Dispose();
-			_watchingForTaps = null;
+			IDisposable? watchingForTaps = null;
 
 			if (Window?.Handler?.PlatformView is UIWindow window)
 			{
@@ -20,32 +18,21 @@ namespace Microsoft.Maui.Controls
 					ResignFirstResponderTouchGestureRecognizer.Update(
 						textView,
 						window,
-						out _watchingForTaps);
+						out watchingForTaps);
 				}
 				else if (uIView is UIControl uiControl)
 				{
 					ResignFirstResponderTouchGestureRecognizer.Update(
 						uiControl,
 						window,
-						out _watchingForTaps);
+						out watchingForTaps);
 				}
 			}
 
-			if (_watchingForTaps is null)
+			if (watchingForTaps is null)
 				return null;
 
-			return new ActionDisposable(() =>
-			{
-				_watchingForTaps?.Dispose();
-				_watchingForTaps = null;
-			});
-		}
-
-		private protected override void RemovedFromPlatformVisualTree()
-		{
-			base.RemovedFromPlatformVisualTree();
-			_watchingForTaps?.Dispose();
-			_watchingForTaps = null;
+			return watchingForTaps;
 		}
 	}
 }
