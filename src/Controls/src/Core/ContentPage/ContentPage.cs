@@ -108,6 +108,17 @@ namespace Microsoft.Maui.Controls
 				//TODO: if reload handler is null, Do a manual reload?
 			});
 		}
+
 		#endregion
+
+		Size IContentView.CrossPlatformArrange(Rect bounds) 
+		{
+			return (this as ICrossPlatformLayout).CrossPlatformArrange(bounds);
+		}
+
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		{
+			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
+		}
 	}
 }
