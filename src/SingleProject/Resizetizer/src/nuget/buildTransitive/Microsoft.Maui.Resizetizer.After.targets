@@ -370,7 +370,7 @@
 
         <DetectInvalidResourceOutputFilenamesTask
             Condition="'$(_MauiHasSplashScreens)' == 'true'"
-            Items="@(MauiSplashScreen->Distinct())"
+            Items="@(MauiSplashScreen)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)"
         />
 
@@ -570,7 +570,7 @@
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage->Distinct())"
+            Items="@(MauiImage)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
@@ -579,7 +579,7 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage->Distinct())">
+            Images="@(MauiImage)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
