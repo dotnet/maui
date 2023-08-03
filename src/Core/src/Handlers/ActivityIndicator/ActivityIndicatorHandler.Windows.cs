@@ -15,23 +15,23 @@ namespace Microsoft.Maui.Handlers
 			IsIndeterminate = true
 		};
 
-		public static void MapBackground(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapBackground(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.ToPlatform().UpdateBackground(activityIndicator);
 		}
 
-		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateIsRunning(activityIndicator);
 		}
 
-		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateColor(activityIndicator);
 		}
 
-		public static void MapWidth(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapWidth(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			if (handler.PlatformView is ProgressRing platformView)
 			{
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapHeight(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapHeight(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			if (handler.PlatformView is ProgressRing platformView)
 			{
