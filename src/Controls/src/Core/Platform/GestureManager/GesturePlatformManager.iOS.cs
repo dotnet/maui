@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		}
 
-		protected virtual UIGestureRecognizer? GetPlatformRecognizer(IGestureRecognizer recognizer)
+		protected virtual List<UIGestureRecognizer?>? GetPlatformRecognizer(IGestureRecognizer recognizer)
 		{
 			if (recognizer == null)
 				return null;
@@ -224,44 +224,68 @@ namespace Microsoft.Maui.Controls.Platform
 			var weakRecognizer = new WeakReference(recognizer);
 			var weakEventTracker = new WeakReference(this);
 
-
 			var tapGestureRecognizer = CreateTapRecognizer(weakEventTracker, weakRecognizer);
 
 			if (tapGestureRecognizer != null)
 			{
-				return tapGestureRecognizer;
+				return new List<UIGestureRecognizer?> { tapGestureRecognizer };
 			}
 
 			var pointerGestureRecognizer = recognizer as PointerGestureRecognizer;
 
 			if (pointerGestureRecognizer != null && OperatingSystem.IsIOSVersionAtLeast(13))
 			{
-				var uiRecognizer = CreatePointerRecognizer(r =>
-				{
-					if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
-						weakEventTracker.Target is GesturePlatformManager eventTracker &&
-						eventTracker._handler?.VirtualView is View view &&
-						eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+				var uiRecognizers = CreatePointerRecognizer(
+					hoverGesture =>
 					{
-						var originPoint = r.LocationInView(eventTracker?.PlatformView);
-
-						switch (r.State)
+						if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+							weakEventTracker.Target is GesturePlatformManager eventTracker &&
+							eventTracker._handler?.VirtualView is View view &&
+							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 						{
-							case UIGestureRecognizerState.Began:
-								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-								break;
-							case UIGestureRecognizerState.Changed:
-								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-								break;
-							case UIGestureRecognizerState.Cancelled:
-							case UIGestureRecognizerState.Failed:
-							case UIGestureRecognizerState.Ended:
-								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-								break;
+							var originPoint = hoverGesture.LocationInView(eventTracker?.PlatformView);
+
+							switch (hoverGesture.State)
+							{
+								case UIGestureRecognizerState.Began:
+									pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+									break;
+								case UIGestureRecognizerState.Changed:
+									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+									break;
+								case UIGestureRecognizerState.Cancelled:
+								case UIGestureRecognizerState.Failed:
+								case UIGestureRecognizerState.Ended:
+									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+									break;
+							}
+						}
+					},
+					pressGesture =>
+					{
+						if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+							weakEventTracker.Target is GesturePlatformManager eventTracker &&
+							eventTracker._handler?.VirtualView is View view &&
+							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+						{
+							var originPoint = pressGesture.LocationInView(eventTracker?.PlatformView);
+
+							switch (pressGesture.State)
+							{
+								case UIGestureRecognizerState.Began:
+									pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+									break;
+								case UIGestureRecognizerState.Changed:
+								case UIGestureRecognizerState.Cancelled:
+								case UIGestureRecognizerState.Failed:
+								case UIGestureRecognizerState.Ended:
+									pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
+									break;
+							}
 						}
 					}
-				});
-				return uiRecognizer;
+				);
+				return uiRecognizers;
 			}
 
 			var swipeRecognizer = recognizer as SwipeGestureRecognizer;
@@ -277,7 +301,7 @@ namespace Microsoft.Maui.Controls.Platform
 						swipeGestureRecognizer.SendSwiped(view, direction);
 				});
 				var uiRecognizer = CreateSwipeRecognizer(swipeRecognizer.Direction, returnAction, 1);
-				return uiRecognizer;
+				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
 			var pinchRecognizer = recognizer as IPinchGestureController;
@@ -337,7 +361,7 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 				});
-				return uiRecognizer;
+				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
 			var panRecognizer = recognizer as PanGestureRecognizer;
@@ -384,7 +408,7 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 				});
-				return uiRecognizer;
+				return new List<UIGestureRecognizer?> { uiRecognizer };
 			}
 
 			return null;
@@ -418,10 +442,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0")]
-		CustomHoverGestureRecognizer CreatePointerRecognizer(Action<UIHoverGestureRecognizer> action)
+		List<UIGestureRecognizer?>? CreatePointerRecognizer(Action<UIHoverGestureRecognizer> hoverAction, Action pressAction)
 		{
-			var result = new CustomHoverGestureRecognizer(action);
-			return result;
+			var results = new List<UIGestureRecognizer?>()
+			{
+				new CustomHoverGestureRecognizer(hoverAction),
+				new CustomPressGestureRecognizer(pressAction)
+			};
+			return results;
 		}
 
 		UITapGestureRecognizer? CreateTapRecognizer(
@@ -540,6 +568,13 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 			}
+
+			var longPressGestureRecognizer = new CustomLongPressGestureRecognizer(() =>
+			{
+			});
+			longPressGestureRecognizer.ShouldRecognizeSimultaneously = (g, o) => true;
+
+			PlatformView?.AddGestureRecognizer(longPressGestureRecognizer);
 
 			bool dragFound = false;
 			bool dropFound = false;

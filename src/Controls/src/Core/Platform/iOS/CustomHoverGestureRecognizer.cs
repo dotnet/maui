@@ -12,32 +12,29 @@ namespace Microsoft.Maui.Controls.Platform.iOS;
 [SupportedOSPlatform("maccatalyst13.0")]
 internal class CustomHoverGestureRecognizer : UIHoverGestureRecognizer
 {
-	NSObject _target;
-
-	public CustomHoverGestureRecognizer(NSObject target, Selector action) : base(target, action)
+	public CustomHoverGestureRecognizer(Action<UIHoverGestureRecognizer> action) : base(action)
 	{
-		_target = target;
+		ShouldRecognizeSimultaneously = (_, __) =>
+		{
+			return true;
+		};
 	}
 
-	internal CustomHoverGestureRecognizer(Action<UIHoverGestureRecognizer> action)
-		: this(new Callback(action), Selector.FromHandle(Selector.GetHandle("target:"))!) { }
-
-	[Register("__UIHoverGestureRecognizer")]
-	class Callback : Token
+	public override void TouchesBegan(NSSet touches, UIEvent evt)
 	{
-		Action<UIHoverGestureRecognizer> action;
+		State = UIGestureRecognizerState.Began;
+		base.TouchesBegan(touches, evt);
+	}
 
-		internal Callback(Action<UIHoverGestureRecognizer> action)
-		{
-			this.action = action;
-		}
+	public override void TouchesEnded(NSSet touches, UIEvent evt)
+	{
+		State = UIGestureRecognizerState.Ended;
+		base.TouchesEnded(touches, evt);
+	}
 
-		[Export("target:")]
-		[Preserve(Conditional = true)]
-		public void Activated(UIHoverGestureRecognizer sender)
-		{
-			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				action(sender);
-		}
+	public override void TouchesMoved(NSSet touches, UIEvent evt)
+	{
+		State = UIGestureRecognizerState.Changed;
+		base.TouchesMoved(touches, evt);
 	}
 }
