@@ -26,10 +26,11 @@ namespace Maui.Controls.Sample.Issues
 			scrollView.Content = layout;
 			Content = scrollView;
 
-			resizeButton.Clicked += (sender, args) => { 
+			resizeButton.Clicked += (sender, args) =>
+			{
 				// Resize the ScrollView content so the test button will be off the screen
 				// If the bug is present, this will make the button untappable
-				layoutContent.HeightRequest = 1000; 
+				layoutContent.HeightRequest = 1000;
 			};
 
 			// Show the Success label if the button is tapped, so we can verify the bug is not present

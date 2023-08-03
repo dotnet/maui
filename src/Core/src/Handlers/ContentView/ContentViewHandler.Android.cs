@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}

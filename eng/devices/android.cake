@@ -11,7 +11,7 @@ const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? "");
-string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-32_{defaultVersion}");
+string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
 string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
@@ -82,25 +82,33 @@ Setup(context =>
 		if (parts[0] != "android")
 			throw new Exception("Unexpected platform (expected: android) in device: " + TEST_DEVICE);
 		// device/emulator
+		Information("Create for: {0}", parts[1]);
 		if (parts[1] == "device")
 			emulator = false;
 		else if (parts[1] != "emulator" && parts[1] != "simulator")
 			throw new Exception("Unexpected device type (expected: device|emulator) in device: " + TEST_DEVICE);
 		// arch/bits
+		Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+		Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
 		if (parts[2] == "32") {
 			if (emulator)
 				DEVICE_ARCH = "x86";
 			else
 				DEVICE_ARCH = "armeabi-v7a";
 		} else if (parts[2] == "64") {
-			if (emulator)
+			if (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
+				DEVICE_ARCH = "arm64-v8a";
+			else if (emulator)
 				DEVICE_ARCH = "x86_64";
 			else
 				DEVICE_ARCH = "arm64-v8a";
 		}
-		var sdk = api >= 24 ? "google_apis_playstore" : "google_apis";
+		var sdk = api >= 28 ? "google_apis_playstore" : "google_apis";
+		if (api == 27 && DEVICE_ARCH == "x86_64")
+			sdk = "default";
 		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
+		Information("Going to run image: {0}", DEVICE_ID);
 		// we are not using a virtual device, so quit
 		if (!emulator)
 			return;
@@ -365,7 +373,7 @@ RunTarget(TARGET);
 void SetupAppPackageNameAndResult()
 {
    if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+   		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
@@ -376,7 +384,13 @@ void SetupAppPackageNameAndResult()
 			TEST_APP = apps.FirstOrDefault().FullPath;
 		} else {
 			apps = GetFiles(binDir + "/*.apk");
-			TEST_APP = apps.First().FullPath;
+			if (apps.Any()) {
+				TEST_APP = apps.First().FullPath;
+			}
+			else {
+				Error("Error: Couldn't find .apk file");
+				throw new Exception("Error: Couldn't find .apk file");
+			}
 		}
 	}
 	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
