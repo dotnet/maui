@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -17,19 +18,21 @@ namespace Microsoft.Maui.Resizetizer
 		public string ErrorMessage { get; set; }
 
 		[Output]
-		public string[] InvalidItems { get; set; }
+		public ITaskItem[] InvalidItems { get; set; }
 
 		public override bool Execute()
 		{
-			var invalidFilenames = new List<string>();
+			var tempInvalidItems = new Dictionary<ITaskItem, string>();
 			try
 			{
 				if (Items != null)
 				{
 					foreach (var item in Items)
 					{
-						if (!Utils.IsValidResourceFilename(item.ItemSpec))
-							invalidFilenames.Add(item.ItemSpec);
+						var image = ResizeImageInfo.Parse(item);
+						var output = image.OutputName;
+						if (!Utils.IsValidResourceFilename(output))
+							tempInvalidItems.Add(item, output);
 					}
 				}
 			}
@@ -39,21 +42,24 @@ namespace Microsoft.Maui.Resizetizer
 			}
 			finally
 			{
-				if (invalidFilenames.Count > 0)
+				if (tempInvalidItems.Count > 0)
 				{
-					InvalidItems = invalidFilenames.ToArray();
+					InvalidItems = tempInvalidItems.Keys.ToArray();
 
 					if (ThrowsError)
 					{
 						var builder = new StringBuilder();
 						builder.Append(ErrorMessage);
 
-						for (var i = 0; i < invalidFilenames.Count; i++)
+						var idx = 0;
+						foreach(var pair in tempInvalidItems)
 						{
-							if (i > 0)
+							if (idx > 0)
 								builder.Append(", ");
-							var file = invalidFilenames[i];
-							builder.Append(Path.GetFileNameWithoutExtension(file));
+
+							builder.Append($"{pair.Value} ({pair.Key.ItemSpec})");
+
+							idx++;
 						}
 
 						Log.LogError(builder.ToString());
