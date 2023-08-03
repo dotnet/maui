@@ -4,7 +4,7 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class XHarness
 	{
-		static readonly string XCODE_PATH = "/Applications/Xcode_14.3.app";
+		static readonly string XCODE_PATH = "/Applications/Xcode_14.3.0.app";
 		static readonly string XHarnessTool = "xharness";
 		const int DEFAULT_TIMEOUT = 300;
 
