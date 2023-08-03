@@ -6,6 +6,8 @@ using Xamarin.UITest;
 
 namespace Microsoft.Maui.AppiumTests
 {
+	[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Windows)]
 	public class GestureRecognizerUITests : UITestBase
 	{
 		const string GestureRecognizerGallery = "* marked:'Gesture Recognizer Gallery'";
