@@ -520,6 +520,17 @@ namespace TestUtils.Appium.UITests
 			return file;
 		}
 
+		public byte[] Screenshot()
+		{
+			if (_driver == null)
+			{
+				throw new NullReferenceException("Screenshot: _driver is null");
+			}
+
+			Screenshot screenshot = _driver.GetScreenshot();
+			return screenshot.AsByteArray;
+		}
+
 		public void ScrollDown(Func<AppQuery, AppQuery>? withinQuery = null, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			throw new NotImplementedException();
@@ -933,14 +944,14 @@ namespace TestUtils.Appium.UITests
 
 			// First we need to determine the area within which we'll make our scroll gestures
 			Size? scrollAreaSize = null;
-			
+
 			if (withinQuery != null)
 			{
 				var within = FindFirstElement(withinQuery);
 				scrollAreaSize = within?.Size;
 			}
 
-			if(scrollAreaSize is null)
+			if (scrollAreaSize is null)
 			{
 				var window = _driver?.Manage().Window ?? throw new InvalidOperationException("Element to scroll within not specified, and no Window available. Cannot scroll.");
 				scrollAreaSize = window.Size;

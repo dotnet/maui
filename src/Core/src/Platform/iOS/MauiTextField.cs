@@ -66,9 +66,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EntryTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		public event EventHandler? TextPropertySet;
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EntryTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
 	}
 }

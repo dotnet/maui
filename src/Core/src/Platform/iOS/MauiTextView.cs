@@ -10,13 +10,14 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiTextView : UITextView
 	{
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: EditorTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		readonly UILabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
@@ -24,6 +25,7 @@ namespace Microsoft.Maui.Platform
 			: base(frame)
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
@@ -36,7 +38,7 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: EditorTests.DoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		public event EventHandler? TextSetOrChanged;
 
 		public string? PlaceholderText
@@ -115,6 +117,8 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			UpdatePlaceholderLabelFrame();
 			ShouldCenterVertically();
 		}
 
@@ -129,13 +133,20 @@ namespace Microsoft.Maui.Platform
 
 			AddSubview(placeholderLabel);
 
-			var edgeInsets = TextContainerInset;
-			var lineFragmentPadding = TextContainer.LineFragmentPadding;
-
-			placeholderLabel.TextInsets = new UIEdgeInsets(edgeInsets.Top, edgeInsets.Left + lineFragmentPadding,
-				edgeInsets.Bottom, edgeInsets.Right + lineFragmentPadding);
-
 			return placeholderLabel;
+		}
+
+		void UpdatePlaceholderLabelFrame()
+		{
+			if (Bounds != CGRect.Empty && _placeholderLabel is not null)
+			{
+				var x = TextContainer.LineFragmentPadding;
+				var y = TextContainerInset.Top;
+				var width = Bounds.Width - (x * 2);
+				var height = Frame.Height - (TextContainerInset.Top + TextContainerInset.Bottom);
+
+				_placeholderLabel.Frame = new CGRect(x, y, width, height);
+			}
 		}
 
 		void HidePlaceholderIfTextIsPresent(string? value)
