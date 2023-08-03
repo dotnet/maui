@@ -6,8 +6,6 @@ using Xamarin.UITest;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	[TestFixture(TestDevice.Mac)]
-	[TestFixture(TestDevice.Windows)]
 	public class GestureRecognizerUITests : UITestBase
 	{
 		const string GestureRecognizerGallery = "* marked:'Gesture Recognizer Gallery'";
@@ -31,6 +29,12 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void PointerGestureTest()
 		{
+			if (UITestContext.TestConfig.TestDevice == TestDevice.Android ||
+				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			{
+				Assert.Pass("PointerGestureRecognizer doesn't work with mouse in Android or iOS");
+			}
+
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "GestureRecognizerEvents");
 			App.Tap("GoButton");
