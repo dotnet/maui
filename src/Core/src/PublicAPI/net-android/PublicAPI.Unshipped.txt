@@ -109,8 +109,4 @@ override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.Vie
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.OnConfigurationChanged(Android.Content.Res.Configuration newConfig) -> void
-*REMOVED*Microsoft.Maui.IContentView.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.ILayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path
