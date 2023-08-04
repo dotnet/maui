@@ -47,20 +47,7 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-
-  # Setup SDK Paths
-  - bash: |
-      echo "##vso[task.prependpath]/Library/Frameworks/Mono.framework/Versions/Current/Commands/"
-      echo "##vso[task.prependpath]~/Library/Developer/Xamarin/android-sdk-macosx"
-    displayName: 'Setup SDK Paths'
-    condition: and(succeeded(), ne(variables['osx2019VmPool'], 'Azure Pipelines'), eq(variables['Agent.OS'], 'Darwin'))
-  # Setup JDK Paths
-  - bash: |
-      echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
-      echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
-    displayName: 'Setup JDK Paths'
-    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
+        
   # Prepare Windows
   - powershell: |
       if (-not $(where.exe pwsh)) {
