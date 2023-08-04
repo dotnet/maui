@@ -46,24 +46,24 @@ namespace Microsoft.Maui.Resizetizer
 				{
 					InvalidItems = tempInvalidItems.Keys.ToArray();
 
-					if (ThrowsError)
+					var builder = new StringBuilder();
+					builder.Append(ErrorMessage);
+
+					var idx = 0;
+					foreach (var pair in tempInvalidItems)
 					{
-						var builder = new StringBuilder();
-						builder.Append(ErrorMessage);
+						if (idx > 0)
+							builder.Append(", ");
 
-						var idx = 0;
-						foreach(var pair in tempInvalidItems)
-						{
-							if (idx > 0)
-								builder.Append(", ");
+						builder.Append($"{pair.Value} ({pair.Key.ItemSpec})");
 
-							builder.Append($"{pair.Value} ({pair.Key.ItemSpec})");
-
-							idx++;
-						}
-
-						Log.LogError(builder.ToString());
+						idx++;
 					}
+
+					if (ThrowsError)
+						Log.LogError(builder.ToString());
+					else
+						Log.LogMessage(builder.ToString());
 				}
 			}
 
