@@ -40,47 +40,24 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 		}
 	}
 
-	//public CustomPressGestureRecognizer(Action action) : base(action)
-	//{
-	//	ShouldRecognizeSimultaneously = (_, __) =>
-	//	{
-	//		return true;
-	//	};
-	//}
-
-
-	//public CustomPressGestureRecognizer(Action<UIGestureRecognizer> action) : base(action)
-	//{
-	//	_action = action;
-	//	_action.Invoke();
-
-	//	ShouldRecognizeSimultaneously = (_, __) =>
-	//	{
-	//		return true;
-	//	};
-	//}
-
 	public override void TouchesBegan(NSSet touches, UIEvent evt)
 	{
-		System.Diagnostics.Debug.WriteLine("TouchesBegan");
+		//System.Diagnostics.Debug.WriteLine("TouchesBegan");
 		State = UIGestureRecognizerState.Began;
 		base.TouchesBegan(touches, evt);
-		
 	}
 
 	public override void TouchesEnded(NSSet touches, UIEvent evt)
 	{
-		System.Diagnostics.Debug.WriteLine("TouchesEnded");
+		//System.Diagnostics.Debug.WriteLine("TouchesEnded");
 		State = UIGestureRecognizerState.Ended;
 		base.TouchesEnded(touches, evt);
-		
 	}
 
 	public override void TouchesMoved(NSSet touches, UIEvent evt)
 	{
-		System.Diagnostics.Debug.WriteLine("TouchesMoved");
+		//System.Diagnostics.Debug.WriteLine("TouchesMoved");
 		State = UIGestureRecognizerState.Changed;
 		base.TouchesMoved(touches, evt);
-		
 	}
 }

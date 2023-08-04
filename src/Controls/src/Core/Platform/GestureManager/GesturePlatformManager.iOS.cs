@@ -450,14 +450,14 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0")]
-		List<UIGestureRecognizer?>? CreatePointerRecognizer(Action<UIHoverGestureRecognizer> hoverAction, Action pressAction)
+		List<UIGestureRecognizer?> CreatePointerRecognizer(Action<UIHoverGestureRecognizer> hoverAction, Action<UIGestureRecognizer> pressAction)
 		{
-			var results = new List<UIGestureRecognizer?>()
+			var result = new List<UIGestureRecognizer?>()
 			{
-				new CustomHoverGestureRecognizer(hoverAction),
-				new CustomPressGestureRecognizer(pressAction)
+				new UIHoverGestureRecognizer(hoverAction) { ShouldRecognizeSimultaneously = (g, o) => true },
+				new CustomPressGestureRecognizer(pressAction) { ShouldRecognizeSimultaneously = (g, o) => true }
 			};
-			return results;
+			return result;
 		}
 
 		UITapGestureRecognizer? CreateTapRecognizer(
@@ -577,13 +577,6 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 			}
 
-			var longPressGestureRecognizer = new CustomLongPressGestureRecognizer(() =>
-			{
-			});
-			longPressGestureRecognizer.ShouldRecognizeSimultaneously = (g, o) => true;
-
-			PlatformView?.AddGestureRecognizer(longPressGestureRecognizer);
-
 			bool dragFound = false;
 			bool dropFound = false;
 
@@ -630,38 +623,42 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 				}
 
-				var nativeRecognizer = GetPlatformRecognizer(recognizer);
+				var nativeRecognizers = GetPlatformRecognizer(recognizer);
 
-				if (nativeRecognizer != null && PlatformView != null)
+				if (nativeRecognizers is null)
+					continue;
+
+				foreach (UIGestureRecognizer? nativeRecognizer in nativeRecognizers)
 				{
-					nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
-					PlatformView.AddGestureRecognizer(nativeRecognizer);
-
-					_gestureRecognizers[recognizer] = nativeRecognizer;
-				}
-
-				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
-				{
-					dragFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDragInteraction == null && PlatformView != null)
+					if (nativeRecognizer != null && PlatformView != null)
 					{
-						var interaction = new UIDragInteraction(_dragAndDropDelegate);
-						interaction.Enabled = true;
-						_interactions.Add(interaction);
-						PlatformView.AddInteraction(interaction);
+						nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
+						PlatformView.AddGestureRecognizer(nativeRecognizer);
+
+						_gestureRecognizers[recognizer] = nativeRecognizer;
 					}
-				}
 
-				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
-				{
-					dropFound = true;
-					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-					if (uIDropInteraction == null && PlatformView != null)
+					if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 					{
-						var interaction = new UIDropInteraction(_dragAndDropDelegate);
-						_interactions.Add(interaction);
-						PlatformView.AddInteraction(interaction);
+						dragFound = true;
+						_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+						if (uIDragInteraction == null && PlatformView != null)
+						{
+							var interaction = new UIDragInteraction(_dragAndDropDelegate);
+							interaction.Enabled = true;
+							PlatformView.AddInteraction(interaction);
+						}
+					}
+
+					if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
+					{
+						dropFound = true;
+						_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+						if (uIDropInteraction == null && PlatformView != null)
+						{
+							var interaction = new UIDropInteraction(_dragAndDropDelegate);
+							PlatformView.AddInteraction(interaction);
+						}
 					}
 				}
 			}
