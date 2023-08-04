@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Design
 			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 
+			AddTypeAttributes("Microsoft.Maui.Controls.Brush", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.GridLength", new TypeConverterAttribute(typeof(GridLengthDesignTypeConverter)));
 
