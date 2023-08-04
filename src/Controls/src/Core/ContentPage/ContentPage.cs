@@ -1,5 +1,6 @@
 #nullable disable
 
+using System;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.HotReload;
 using Microsoft.Maui.Layouts;
@@ -20,13 +21,23 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ContentProperty, value); }
 		}
 
+		/// <summary>Bindable property for <see cref="HideSoftInputOnTapped"/>.</summary>
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
 			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
+		/// <summary>
+		/// When true, tapping anywhere on the page will cause the soft input to hide
+		/// </summary>
 		public bool HideSoftInputOnTapped
 		{
 			get { return (bool)GetValue(HideSoftInputOnTappedProperty); }
 			set { SetValue(HideSoftInputOnTappedProperty, value); }
+		}
+
+		HideSoftInputOnTappedChangedManager _hideSoftInputOnTappedChangedManager;
+		public ContentPage()
+		{
+			_hideSoftInputOnTappedChangedManager = new HideSoftInputOnTappedChangedManager(this);
 		}
 
 		protected override void OnBindingContextChanged()

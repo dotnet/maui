@@ -142,12 +142,20 @@ namespace Microsoft.Maui.Platform
 		{
 			if (sender is UIView view && view.Window?.GestureRecognizers != null)
 			{
-				for (var i = 0; i < view.Window.GestureRecognizers.Length; i++)
+				Remove(view.Window);
+			}
+		}
+
+		static void Remove(UIWindow window)
+		{
+			if (window.GestureRecognizers != null)
+			{
+				for (var i = 0; i < window.GestureRecognizers.Length; i++)
 				{
-					UIGestureRecognizer? gr = view.Window.GestureRecognizers[i];
+					UIGestureRecognizer? gr = window.GestureRecognizers[i];
 					if (gr is ResignFirstResponderTouchGestureRecognizer)
 					{
-						view.Window.RemoveGestureRecognizer(gr);
+						window.RemoveGestureRecognizer(gr);
 						return;
 					}
 				}

@@ -4,21 +4,21 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	class TapPageTracker
+	class TapWindowTracker
 	{
 		bool _hasFocus;
 		AView? _platformView;
 		GestureDetector? _gestureDetector;
 		GestureListener? _gestureListener;
-		ContentPage? _contentPage;
+		HideSoftInputOnTappedChangedManager? _hideSoftInputOnTappedChangedManager;
 
-		public TapPageTracker(AView platformView, ContentPage contentPage)
+		public TapWindowTracker(AView platformView, HideSoftInputOnTappedChangedManager hideSoftInputOnTappedChangedManager)
 		{
 			_platformView = platformView;
-			_contentPage = contentPage;
+			_hideSoftInputOnTappedChangedManager = hideSoftInputOnTappedChangedManager;
 
 			_platformView.FocusChange += OnFocusChanged;
-			_contentPage.DispatchTouchEvent += OnDispatchTouchEvent;
+			_hideSoftInputOnTappedChangedManager.DispatchTouchEvent += OnDispatchTouchEvent;
 		}
 
 
@@ -32,10 +32,10 @@ namespace Microsoft.Maui.Controls
 				_platformView = null;
 			}
 
-			if (_contentPage is not null)
+			if (_hideSoftInputOnTappedChangedManager is not null)
 			{
-				_contentPage.DispatchTouchEvent -= OnDispatchTouchEvent;
-				_contentPage = null;
+				_hideSoftInputOnTappedChangedManager.DispatchTouchEvent -= OnDispatchTouchEvent;
+				_hideSoftInputOnTappedChangedManager = null;
 			}
 		}
 

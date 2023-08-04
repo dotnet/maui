@@ -21,28 +21,5 @@ namespace Microsoft.Maui.Controls
 		{
 			Platform.SearchBarExtensions.UpdateText(handler.PlatformView, searchBar);
 		}
-
-		IDisposable _watchingForTaps;
-		private protected override void AddedToPlatformVisualTree()
-		{
-			base.AddedToPlatformVisualTree();
-
-			var platformView =
-				(Handler?.PlatformView as UISearchBar)?.GetSearchTextField();
-
-			_watchingForTaps =
-				this
-					.FindParentOfType<ContentPage>()?
-					.SetupTapIntoNothingness(platformView);
-
-		}
-
-		private protected override void RemovedFromPlatformVisualTree(IWindow oldWindow)
-		{
-			base.RemovedFromPlatformVisualTree(oldWindow);
-
-			_watchingForTaps?.Dispose();
-			_watchingForTaps = null;
-		}
 	}
 }
