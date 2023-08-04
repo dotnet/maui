@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
 using NSubstitute;
 using NSubstitute.Core;
+using NSubstitute.ReceivedExtensions;
 
 namespace Microsoft.Maui.UnitTests.Layouts
 {
@@ -22,8 +23,12 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		{
 			var view = CreateTestView();
 
-			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(viewSize);
-			view.DesiredSize.Returns(viewSize);
+			// Prior to being measured, the View has no DesiredSize set
+			view.DesiredSize.Returns(Size.Zero);
+
+			// After the first time Measure is called, the View has a DesiredSize
+			view.Measure(Arg.Any<double>(), Arg.Any<double>()).Returns(viewSize)
+				.AndDoes(ci => view.DesiredSize.Returns(viewSize));
 
 			return view;
 		}

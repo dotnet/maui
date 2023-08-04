@@ -480,7 +480,7 @@ namespace Microsoft.Maui.Layouts
 					}
 					else if (cell.ColumnSpan == 1)
 					{
-						if (_columns[cell.Column].IsAuto)
+						if (TreatCellWidthAsAuto(cell))
 						{
 							_columns[cell.Column].Update(measure.Width);
 						}
@@ -492,7 +492,7 @@ namespace Microsoft.Maui.Layouts
 					}
 					else if (cell.RowSpan == 1)
 					{
-						if (_rows[cell.Row].IsAuto)
+						if (TreatCellHeightAsAuto(cell))
 						{
 							_rows[cell.Row].Update(measure.Height);
 						}
