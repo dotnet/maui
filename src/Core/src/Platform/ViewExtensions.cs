@@ -186,7 +186,6 @@ namespace Microsoft.Maui.Platform
 
 		}
 
-
 #if PLATFORM
 		internal static T? FindDescendantView<T>(this PlatformView view, Func<PlatformView, bool> predicate) where T : PlatformView
 		{
