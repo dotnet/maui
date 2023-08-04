@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="Type[@FullName='Microsoft.Maui.Controls.InputView']/Docs/*" />
-	public class InputView : View, IPlaceholderElement, ITextElement
+	public partial class InputView : View, IPlaceholderElement, ITextElement
 	{
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(InputView), defaultBindingMode: BindingMode.TwoWay,
