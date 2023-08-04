@@ -159,22 +159,5 @@ namespace Microsoft.Maui.Platform
 #endif
 
 		}
-
-		internal static bool IsThisMyPlatformView(this IElement? element, PlatformView platformView)
-		{
-			if (element is not null &&
-				element.Handler is IPlatformViewHandler pvh)
-			{
-				return pvh.PlatformView == platformView || pvh.ContainerView == platformView;
-			}
-
-			return false;
-		}
-
-		internal static bool IsThisMyPlatformView(this ICrossPlatformLayout? element, PlatformView platformView)
-			=> (element as IElement)?.IsThisMyPlatformView(platformView) == true;
-
-		internal static bool IsThisMyPlatformView(this IPlatformEventsListener? element, PlatformView platformView)
-			=> (element as IElement)?.IsThisMyPlatformView(platformView) == true;
 	}
 }
