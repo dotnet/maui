@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			protected ResizetizeImages GetNewTask(string type, params ITaskItem[] items) =>
 				new ResizetizeImages
 				{
+					DuplicateOutputErrorMessage = "Duplicate File: ",
 					PlatformType = type,
 					IntermediateOutputPath = DestinationDirectory,
 					InputsFile = "mauiimage.inputs",
@@ -90,6 +91,89 @@ namespace Microsoft.Maui.Resizetizer.Tests
 
 				AssertFileExists(GetPlatformOutputFileName("ImageTwo.png"));
 				AssertFileSize(GetPlatformOutputFileName("ImageTwo.png"), 1792, 1792);
+			}
+
+			[Fact]
+			public void CanUseSameFileMultipleTimesWhenOneHasALink()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileExists(GetPlatformOutputFileName("camera.png"));
+				AssertFileSize(GetPlatformOutputFileName("camera.png"), 1792, 1792);
+
+				AssertFileExists(GetPlatformOutputFileName("ImageOne.png"));
+				AssertFileSize(GetPlatformOutputFileName("ImageOne.png"), 1792, 1792);
+			}
+
+			[Fact]
+			public void FailsOnExactMatchingMultipleFiles()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
+			public void FailsOnExactMatchingMultipleFilesWhenTheMetadataIsNotRelevant()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["SomeRandomMetadata"] = "NotMe",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
+			public void FailsOnAlmostExactMatchingMultipleFiles()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["TintColor"] = "#FF00FF",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
 			}
 		}
 

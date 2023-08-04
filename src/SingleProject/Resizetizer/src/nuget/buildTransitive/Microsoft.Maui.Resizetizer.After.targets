@@ -86,6 +86,11 @@
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
         <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultDuplicateFilenamesErrorMessage>One or more duplicate file names were detected.  All image output filenames must be unique: </_ResizetizerDefaultDuplicateFilenamesErrorMessage>
+        <_ResizetizerThrowsErrorOnInvalidFilename>true</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnInvalidFilename Condition="'$(ResizetizerErrorOnInvalidFilename)' == 'false'">false</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename>true</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename Condition="'$(ResizetizerErrorOnDuplicateOutputFilename)' == 'false'">false</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -571,11 +576,14 @@
 
         <DetectInvalidResourceOutputFilenamesTask
             Items="@(MauiImage)"
+            ThrowsError="$(_ResizetizerThrowsErrorOnInvalidFilename)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
         <!-- Resize the images -->
         <ResizetizeImages
+            ThrowsErrorOnDuplicateOutput="$(_ResizetizerThrowsErrorOnDuplicateOutputFilename)"
+            DuplicateOutputErrorMessage="$(_ResizetizerDefaultDuplicateFilenamesErrorMessage)"
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"

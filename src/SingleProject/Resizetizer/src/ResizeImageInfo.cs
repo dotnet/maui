@@ -10,6 +10,8 @@ namespace Microsoft.Maui.Resizetizer
 {
 	internal class ResizeImageInfo
 	{
+		public string? ItemSpec { get; set; }
+
 		public string? Alias { get; set; }
 
 		public string? Filename { get; set; }
@@ -73,6 +75,8 @@ namespace Microsoft.Maui.Resizetizer
 		public static ResizeImageInfo Parse(ITaskItem image)
 		{
 			var info = new ResizeImageInfo();
+
+			info.ItemSpec = image.ItemSpec;
 
 			var fileInfo = new FileInfo(image.GetMetadata("FullPath"));
 			if (!fileInfo.Exists)
