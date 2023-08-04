@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 
 			IDisposable? watchingForTaps = null;
 
-			if (_contentPage?.Handler?.PlatformView is UIWindow window)
+			if (_contentPage?.Window?.Handler?.PlatformView is UIWindow window)
 			{
 				if (uIView is UITextView textView)
 				{
