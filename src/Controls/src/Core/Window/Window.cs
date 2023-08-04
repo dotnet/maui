@@ -210,24 +210,15 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			var x = X;
-			var y = Y;
-			var width = Width;
-			var height = Height;
-			if (new Rect(x, y, width, height) == frame)
+			if (new Rect(X, Y, Width, Height) == frame)
 				return;
 
 			_batchFrameUpdate++;
 
-			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
-			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
-			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
-			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
-
-			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent);
+			X = frame.X;
+			Y = frame.Y;
+			Width = frame.Width;
+			Height = frame.Height;
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
@@ -235,32 +226,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_batchFrameUpdate == 0)
 			{
-				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
-				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
-				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
-				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
-
 				SizeChanged?.Invoke(this, EventArgs.Empty);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				property.PropertyChanging?.Invoke(this, oldValue, newValue);
-				OnPropertyChanging(name);
-			}
-
-			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
-			{
-				if (oldValue == newValue)
-					return;
-
-				OnPropertyChanged(name);
-				property.PropertyChanged?.Invoke(this, oldValue, newValue);
 			}
 		}
 
