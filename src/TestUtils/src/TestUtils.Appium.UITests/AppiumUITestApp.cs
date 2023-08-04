@@ -115,6 +115,8 @@ namespace TestUtils.Appium.UITests
 			}
 		}
 
+		public AppiumDriver? Driver => _driver;
+
 		public void ResetApp()
 		{
 			_driver?.ResetApp();
