@@ -87,12 +87,6 @@ parameters:
       name: $(windowsTestsVmPool)
       vmImage: $(windowsTestsVmImage)
 
-  - name: windowsPool
-    type: object
-    default:
-      name: $(windowsTestsVmPool)
-      vmImage: $(windowsTestsVmImage)
-
 resources:
   repositories:
     - repository: yaml-templates
