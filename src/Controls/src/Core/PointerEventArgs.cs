@@ -12,12 +12,12 @@ namespace Microsoft.Maui.Controls
 		Func<IElement?, Point?>? _getPosition;
 
 		/// <summary>
-		/// Platform-specific arguments associated with the PointerEventArgs
+		/// Gets the platform-specific arguments associated with the <see cref="PointerEventArgs"/>.
 		/// </summary>
 		public PlatformPointerEventArgs? PlatformArgs { get; private set; }
 
 		/// <summary>
-		/// Public constructor that creates an instance of <see cref="PointerEventArgs"/>
+		/// Initializes a new instance of the <see cref="PointerEventArgs"/> class.
 		/// </summary>
 		public PointerEventArgs()
 		{
@@ -30,9 +30,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Returns the position of the pointer relative to the element
+		/// When overridden in a derived class, gets the position of the pointer.
 		/// </summary>
-		/// <param name="relativeTo">Element from which the position is relative to</param>
+		/// <remarks>
+		/// Gets the position of the pointer relative to the element by default.
+		/// </remarks>
+		/// <param name="relativeTo">Where the pointer will be measured from.</param>
+		/// <returns>The position relative to the <see cref="Element"/>.</returns>
 		public virtual Point? GetPosition(Element? relativeTo) =>
 			_getPosition?.Invoke(relativeTo);
 	}

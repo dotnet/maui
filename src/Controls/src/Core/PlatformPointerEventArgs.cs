@@ -8,12 +8,12 @@ public class PlatformPointerEventArgs
 {
 #if IOS || MACCATALYST
 	/// <summary>
-	/// UIView that has the attached PointerGestureRecognizer
+	/// Gets the <see cref="UIKit.UIView"/> that has the attached <see cref="UIKit.UIGestureRecognizer"/>.
 	/// </summary>
 	public UIKit.UIView Sender { get; }
 
 	/// <summary>
-	/// UIGestureRecognizer attached to the UIView
+	/// Gets the <see cref="UIKit.UIGestureRecognizer"/> attached to the <see cref="UIKit.UIView"/>.
 	/// </summary>
 	public UIKit.UIGestureRecognizer GestureRecognizer { get; }
 
@@ -25,12 +25,12 @@ public class PlatformPointerEventArgs
 
 #elif ANDROID
 	/// <summary>
-	/// View that has the attached MotionEvent
+	/// Gets the <see cref="Android.Views.View"/> that has the attached <see cref="Android.Views.MotionEvent"/>.
 	/// </summary>
 	public Android.Views.View Sender { get; }
 
 	/// <summary>
-	/// MotionEvent attached to the View
+	/// Gets the <see cref="Android.Views.MotionEvent"/> attached to the <see cref="Android.Views.View"/>.
 	/// </summary>
 	public Android.Views.MotionEvent MotionEvent { get; }
 
@@ -42,12 +42,12 @@ public class PlatformPointerEventArgs
 
 #elif WINDOWS
 	/// <summary>
-	/// FrameworkElement that has the attached RoutedEventArgs
+	/// Gets the <see cref="Microsoft.UI.Xaml.FrameworkElement"/> that has the attached <see cref="Microsoft.UI.Xaml.RoutedEventArgs"/>.
 	/// </summary>
 	public Microsoft.UI.Xaml.FrameworkElement Sender { get; }
 
 	/// <summary>
-	/// RoutedEventArgs attached to the FrameworkElement
+	/// Gets the <see cref="Microsoft.UI.Xaml.RoutedEventArgs"/> attached to the <see cref="Microsoft.UI.Xaml.FrameworkElement"/>.
 	/// </summary>
 	public Microsoft.UI.Xaml.RoutedEventArgs RoutedEventArgs { get; }
 
