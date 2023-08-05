@@ -29,11 +29,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void PointerGestureTest()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Android ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
-			{
-				Assert.Pass("PointerGestureRecognizer doesn't work with mouse in Android or iOS");
-			}
+			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
+				"PointerGestureRecognizer doesn't work with mouse in Android or iOS");
 
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
