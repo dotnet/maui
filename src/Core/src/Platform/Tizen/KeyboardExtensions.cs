@@ -3,7 +3,7 @@ using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class KeyboardExtensions
+	public static partial class KeyboardExtensions
 	{
 		public static TKeyboard ToPlatform(this Keyboard keyboard)
 		{
@@ -47,6 +47,22 @@ namespace Microsoft.Maui.Platform
 			{
 				return AutoCapital.None;
 			}
+		}
+
+		internal static bool HideKeyboard(this View view) => SetKeyInputFocus(view, false);
+
+		internal static bool ShowKeyboard(this View view) => SetKeyInputFocus(view, true);
+
+		internal static bool IsSoftKeyboardShowing(this View view)
+		{
+			return view.KeyInputFocus;
+		}
+
+		internal static bool SetKeyInputFocus(View view, bool isShow)
+		{
+			view.KeyInputFocus = isShow;
+
+			return view.KeyInputFocus;
 		}
 	}
 }

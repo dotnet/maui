@@ -133,7 +133,7 @@ namespace Microsoft.Maui.Platform
 			textView.Focus(request, () =>
 			{
 				if (textView.ShowSoftInputOnFocus)
-					KeyboardManager.PostShowKeyboard(textView);
+					KeyboardExtensions.PostShowKeyboard(textView);
 			});
 		}
 	}
