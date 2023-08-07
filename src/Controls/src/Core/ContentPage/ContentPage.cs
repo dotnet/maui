@@ -111,12 +111,12 @@ namespace Microsoft.Maui.Controls
 
 		#endregion
 
-		Size IContentView.CrossPlatformArrange(Rect bounds) 
+		Size IContentView.CrossPlatformArrange(Rect bounds)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformArrange(bounds);
 		}
 
-		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		Size IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
 			return (this as ICrossPlatformLayout).CrossPlatformMeasure(widthConstraint, heightConstraint);
 		}

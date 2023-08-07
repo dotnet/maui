@@ -9,10 +9,10 @@ Write-Host "MSBUILD_EXE: $env:MSBUILD_EXE"
 
 $artifacts = Join-Path $PSScriptRoot ../artifacts
 $logsDirectory = Join-Path $artifacts logs
-if ($IsWindows) {
-    $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
-} else {
+if ($IsMacOS) {
     $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages-mac.slnf
+} else {
+    $sln = Join-Path $PSScriptRoot ../Microsoft.Maui.Packages.slnf
 }
 
 # Full path to dotnet folder

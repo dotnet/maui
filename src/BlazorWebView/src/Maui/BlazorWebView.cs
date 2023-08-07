@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			RootComponents = new RootComponentsCollection(_jSComponents);
 		}
 
+		/// <inheritdoc />
 		JSComponentConfigurationStore IBlazorWebView.JSComponents => _jSComponents;
 
 		/// <summary>
@@ -96,12 +97,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			return await ((BlazorWebViewHandler)(Handler!)).TryDispatchAsync(workItem);
 		}
 
+		/// <inheritdoc />
 		void IBlazorWebView.UrlLoading(UrlLoadingEventArgs args) =>
 			UrlLoading?.Invoke(this, args);
 
+		/// <inheritdoc />
 		void IBlazorWebView.BlazorWebViewInitializing(BlazorWebViewInitializingEventArgs args) =>
 			BlazorWebViewInitializing?.Invoke(this, args);
 
+		/// <inheritdoc />
 		void IBlazorWebView.BlazorWebViewInitialized(BlazorWebViewInitializedEventArgs args) =>
 			BlazorWebViewInitialized?.Invoke(this, args);
 	}

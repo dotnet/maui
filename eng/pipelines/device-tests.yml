@@ -71,12 +71,15 @@ parameters:
     default:
       name: $(iosTestsVmPool)
       vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
 
   - name: catalystPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmImage)
 
   - name: windowsPool
     type: object
@@ -104,7 +107,7 @@ stages:
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
         # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ 'latest', '15.5', '14.5', '13.7']
+        iosVersions: [ 'latest', '14.5', '13.7']
         catalystVersions: [ 'latest' ]
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:

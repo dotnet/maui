@@ -60,11 +60,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			});
 		}
 
-		[Fact
-#if WINDOWS
-			(Skip = "Times out on CoreWebView2.DOMContentLoaded")
-#endif
-			]
+		[Fact]
 		public async Task BlazorWebViewLogsRequests()
 		{
 			var testLoggerProvider = new TestLoggerProvider();
@@ -108,7 +104,8 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			Assert.Equal(1, events.Count(c => c.EventId.Id == 4 && c.LogLevel == LogLevel.Debug && c.EventId.Name == "HandlingWebRequest" && c.Message.Contains("/_framework/blazor.webview.js", System.StringComparison.Ordinal)));
 		}
 
-		[Fact(Skip = "Disable while we investigate this on 8.0.0-p5, windows Times out on CoreWebView2.DOMContentLoaded")]
+
+		[Fact]
 		public async Task BlazorWebViewUsesStartPath()
 		{
 			EnsureHandlerCreated(additionalCreationActions: appBuilder =>
@@ -252,7 +249,7 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 			public static readonly string DefaultMauiIndexHtmlContent = @"
 <!DOCTYPE html>
 <html>
-<head>
+<head testhtmlloaded=""true"">
     <meta charset=""utf-8"" />
     <meta name=""viewport"" content=""width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"" />
     <title>Blazor app</title>
