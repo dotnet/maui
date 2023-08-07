@@ -31,7 +31,7 @@ ProcessTFMSwitches();
 // Tasks for CI
 
 Task("dotnet")
-    .Description("Provisions .NET 8 into bin/dotnet based on eng/Versions.props")
+    .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
         if (!localDotnet) 
@@ -251,17 +251,22 @@ Task("dotnet-pack-maui")
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
 
-        string powershellCommand = "powershell";
-        
-        if (!IsRunningOnWindows())
+        var pwshArgs = $"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"";
+        if (IsRunningOnWindows())
         {
-            powershellCommand = "pwsh";
+            StartProcess("powershell", new ProcessSettings
+            {
+                Arguments = pwshArgs
+            });
         }
-        
-        StartProcess(powershellCommand, new ProcessSettings
+        else
         {
-            Arguments = $"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\""
-        });
+            DotNetTool("pwsh", new DotNetToolSettings
+            {
+                DiagnosticOutput = true,
+                ArgumentCustomization = args => args.Append(pwshArgs)
+            });
+        }
     });
 
 Task("dotnet-pack-additional")
