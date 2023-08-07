@@ -250,19 +250,9 @@ Task("dotnet-pack-maui")
                  $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
-        
-        DotNetTool("tool", new DotNetToolSettings
+        StartProcess("powershell", new ProcessSettings
         {
-            DiagnosticOutput = true,
-            ToolPath = dotnetPath,
-            ArgumentCustomization = args => args.Append($"restore")
-        });
-
-        DotNetTool("pwsh", new DotNetToolSettings
-        {
-            DiagnosticOutput = true,
-            ToolPath = dotnetPath,
-            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
+            Arguments = $"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\""
         });
     });
 
