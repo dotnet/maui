@@ -1,9 +1,8 @@
 ﻿using Android.Views;
 using Android.Widget;
 using AView = Android.Views.View;
-using AViewGroup = Android.Views.ViewGroup;
 using System;
-using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -13,8 +12,29 @@ namespace Microsoft.Maui.Controls
 
 		void OnDispatchTouch(object? sender, MotionEvent? e)
 		{
-			if (_contentPage.HideSoftInputOnTapped)
-				DispatchTouchEvent?.Invoke(this, e);
+			if (!_contentPage.HasNavigatedTo || e is null)
+			{
+				return;
+			}
+
+			if (_contentPage.HasNavigatedTo &&
+				_contentPage.HideSoftInputOnTapped &&
+				_contentPage.Handler is IPlatformViewHandler pvh &&
+				pvh.MauiContext?.Context is not null)
+			{
+				var location = pvh.PlatformView.GetBoundingBox();
+				var androidContext = pvh.MauiContext.Context;
+
+				var point =
+					new Point
+					(
+						androidContext.FromPixels(e.RawX),
+						androidContext.FromPixels(e.RawY)
+					);
+
+				if (location.Contains(point))
+					DispatchTouchEvent?.Invoke(this, e);
+			}
 		}
 
 		internal void AddedToPlatformVisualTree()

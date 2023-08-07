@@ -14,16 +14,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 		public override string Issue => "Hide Soft Input On Tapped Page";
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-		}
-
 		[TestCase("Entry", false)]
 		[TestCase("Editor", false)]
 		[TestCase("SearchBar", false)]
@@ -32,18 +22,59 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SearchBar", true)]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{
-			if (hideOnTapped)
-				App.Tap("ToggleHideSoftInputOnTapped");
+			try
+			{
+				if (App.IsKeyboardShown())
+					App.DismissKeyboard();
 
-			if (App.IsKeyboardShown())
+				if (hideOnTapped)
+					App.Tap("HideSoftInputOnTappedTrue");
+				else
+					App.Tap("HideSoftInputOnTappedFalse");
+
+				App.Tap(control);
+
+				Assert.True(App.IsKeyboardShown());
+
+				App.Tap("EmptySpace");
+				Assert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
+			}
+			finally
+			{
 				App.DismissKeyboard();
+				App.NavigateBack();
+			}
+		}
 
-			App.Tap(control);
+		[Test]
+		public void TogglingHideSoftInputOnTapped()
+		{
+			try
+			{
+				if (App.IsKeyboardShown())
+					App.DismissKeyboard();
 
-			Assert.True(App.IsKeyboardShown());
+				App.Tap("HideSoftInputOnTappedFalse");
 
-			App.Tap("EmptySpace");
-			Assert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
+				// Switch between enabling/disabling feature
+				for (int i = 0; i < 2; i++)
+				{
+					App.Tap("HideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Tap("EmptySpace");
+					Assert.AreEqual(false, App.IsKeyboardShown());
+
+					App.Tap("DontHideKeyboardWhenTappingPage");
+					Assert.True(App.IsKeyboardShown());
+					App.Tap("EmptySpace");
+					Assert.AreEqual(true, App.IsKeyboardShown());
+				}
+			}
+			finally
+			{
+				App.DismissKeyboard();
+				App.NavigateBack();
+			}
 		}
 	}
 }
