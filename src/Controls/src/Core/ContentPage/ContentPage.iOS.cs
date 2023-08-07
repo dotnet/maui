@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class ContentPage
 	{
-		internal IDisposable? SetupHideSoftInputOnTapped(UIView? uIView) =>
-			_hideSoftInputOnTappedChangedManager.SetupHideSoftInputOnTapped(uIView);
+		internal IDisposable? SetupHideSoftInputOnTapped(IView view) =>
+			_hideSoftInputOnTappedChangedManager.SetCurrentlyFocusedView(view);
 	}
 }

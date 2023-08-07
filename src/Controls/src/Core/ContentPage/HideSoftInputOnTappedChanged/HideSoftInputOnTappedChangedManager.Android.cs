@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal event EventHandler<MotionEvent?>? DispatchTouchEvent;
 
-		void OnDispatchTouch(object? sender, MotionEvent? e)
+		void OnWindowDispatchedTouch(object? sender, MotionEvent? e)
 		{
 			if (!_contentPage.HasNavigatedTo || e is null)
 			{
@@ -37,20 +37,8 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void AddedToPlatformVisualTree()
-		{
-			if (_contentPage.Window is not null)
-				_contentPage.Window.DispatchTouchEvent += OnDispatchTouch;
-		}
-
-		internal void RemovedFromPlatformVisualTree(IWindow? oldWindow)
-		{
-			if (oldWindow is Window window)
-				window.DispatchTouchEvent -= OnDispatchTouch;
-		}
-
 		// This is called from InputViews as they are added to the visual tree
-		internal IDisposable? SetupHideSoftInputOnTapped(AView? aView)
+		IDisposable? SetupHideSoftInputOnTapped(AView? aView)
 		{
 			if (aView is SearchView sv)
 				aView = sv.GetFirstChildOfType<EditText>();
