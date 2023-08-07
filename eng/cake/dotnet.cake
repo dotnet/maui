@@ -250,7 +250,15 @@ Task("dotnet-pack-maui")
                  $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
-        StartProcess("powershell", new ProcessSettings
+
+        string powershellCommand = "powershell";
+        
+        if (!IsRunningOnWindows())
+        {
+            powershellCommand = "pwsh";
+        }
+        
+        StartProcess(powershellCommand, new ProcessSettings
         {
             Arguments = $"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\""
         });
