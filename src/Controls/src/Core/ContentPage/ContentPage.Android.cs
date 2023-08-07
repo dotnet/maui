@@ -12,16 +12,16 @@ namespace Microsoft.Maui.Controls
 		private protected override void AddedToPlatformVisualTree()
 		{
 			base.AddedToPlatformVisualTree();
-			_hideSoftInputOnTappedChangedManager.AddedToPlatformVisualTree();
+			_hideSoftInputOnTappedChangedManager.PageAddedToPlatformVisualTree();
 		}
 
 		private protected override void RemovedFromPlatformVisualTree(IWindow? oldWindow)
 		{
 			base.RemovedFromPlatformVisualTree(oldWindow);
-			_hideSoftInputOnTappedChangedManager.RemovedFromPlatformVisualTree(oldWindow);
+			_hideSoftInputOnTappedChangedManager.PageRemovedFromPlatformVisualTree(oldWindow);
 		}
 
-		internal IDisposable? SetupHideSoftInputOnTapped(AView? aView) =>
-			_hideSoftInputOnTappedChangedManager.SetupHideSoftInputOnTapped(aView);
+		internal IDisposable? SetupHideSoftInputOnTapped(InputView inputView) =>
+			_hideSoftInputOnTappedChangedManager.SetCurrentlyFocusedView(inputView);
 	}
 }
