@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 	class TapWindowTracker
 	{
 		bool _hasFocus;
+		bool _initialFocusSetup;
 		AView? _platformView;
 		GestureDetector? _gestureDetector;
 		GestureListener? _gestureListener;
@@ -44,7 +45,7 @@ namespace Microsoft.Maui.Controls
 
 		void SetupFocus(bool hasFocus)
 		{
-			System.Diagnostics.Debug.WriteLine($"FocusChanged {hasFocus}");
+			_initialFocusSetup = true;
 			if (hasFocus && _platformView is not null)
 			{
 				_gestureListener = new GestureListener(_platformView);
@@ -62,10 +63,14 @@ namespace Microsoft.Maui.Controls
 
 		public void OnDispatchTouchEvent(object? sender, MotionEvent? e)
 		{
+			if (!_initialFocusSetup && _platformView is not null)
+			{
+				SetupFocus(_platformView.HasFocus);
+			}
+
 			if (!_hasFocus || _platformView is null || this is null || e is null)
 				return;
 
-			System.Diagnostics.Debug.WriteLine($"{e}");
 			_gestureDetector?.OnTouchEvent(e);
 		}
 
@@ -108,11 +113,17 @@ namespace Microsoft.Maui.Controls
 
 			public bool OnSingleTapUp(MotionEvent e)
 			{
-				if (_platformView is null)
+				var context = _platformView?.Context;
+				if (context is null || _platformView is null)
 					return false;
 
-				var location = GetBoundingBox(_platformView);
-				var point = new Point(e.RawX, e.RawY);
+				var location = _platformView.GetBoundingBox();
+
+				var point =
+					new Point(
+						context.FromPixels(e.RawX),
+						context.FromPixels(e.RawY)
+					);
 
 				if (location.Contains(point))
 					return true;
@@ -121,19 +132,6 @@ namespace Microsoft.Maui.Controls
 					KeyboardManager.HideKeyboard(_platformView);
 
 				return true;
-			}
-
-			Rect GetBoundingBox(AView view)
-			{
-				var context = view.Context;
-				var rect = new Android.Graphics.Rect();
-				view.GetGlobalVisibleRect(rect);
-
-				return new Rect(
-					 rect.ExactCenterX() - (rect.Width() / 2),
-					 rect.ExactCenterY() - (rect.Height() / 2),
-					 (float)rect.Width(),
-					 (float)rect.Height());
 			}
 		}
 	}
