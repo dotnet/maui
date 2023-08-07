@@ -194,6 +194,7 @@ namespace Microsoft.Maui.Controls.Platform
 					alert.PopoverPresentationController.SourceView = platformView.RootViewController.View;
 					alert.PopoverPresentationController.SourceRect = platformView.RootViewController.View.Bounds;
 					alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
+					alert.ModalPresentationStyle = UIModalPresentationStyle.OverCurrentContext;
 				}
 
 				var modalStack = virtualView?.Navigation?.ModalStack;
@@ -215,8 +216,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 				platformView.BeginInvokeOnMainThread(() =>
 				{
-					_ = platformView.RootViewController.PresentViewControllerAsync(alert, true);
+					_ = GetTopUIViewController(platformView).PresentViewControllerAsync(alert, true);
 				});
+			}
+
+			static UIViewController GetTopUIViewController(UIWindow platformWindow)
+			{
+				var topUIViewController = platformWindow.RootViewController;
+
+				while (topUIViewController.PresentedViewController is not null)
+				{
+					topUIViewController = topUIViewController.PresentedViewController;
+				}
+
+				return topUIViewController;
 			}
 
 			bool PageIsInThisWindow(Page page) =>
