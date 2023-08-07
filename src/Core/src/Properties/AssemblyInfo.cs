@@ -36,3 +36,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests.Runners")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.TestUtils.DeviceTests")]
 [assembly: InternalsVisibleTo("Microsoft.Maui.DeviceTests.Shared")]
+[assembly: InternalsVisibleTo("Controls.Sample.UITests")]
