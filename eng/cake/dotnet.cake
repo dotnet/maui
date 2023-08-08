@@ -240,34 +240,25 @@ Task("dotnet-pack-maui")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
-        //We are passing a nuget folder with nuget locations
-        if(!string.IsNullOrEmpty(nugetSource))
+        // We are passing a nuget folder with nuget locations
+        if (!string.IsNullOrEmpty(nugetSource))
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
             ReplaceTextInFiles(
                 originalNuget,
-                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
 
-        var pwshArgs = $"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"";
-        if (IsRunningOnWindows())
+        var sln = "./Microsoft.Maui.Packages.slnf";
+        if (!IsRunningOnWindows())
+            sln = "./Microsoft.Maui.Packages-mac.slnf";
+
+        RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
-            StartProcess("powershell", new ProcessSettings
-            {
-                Arguments = pwshArgs
-            });
-        }
-        else
-        {
-            DotNetTool("pwsh", new DotNetToolSettings
-            {
-                DiagnosticOutput = true,
-                ToolPath = dotnetPath,
-                ArgumentCustomization = args => args.Append(pwshArgs)
-            });
-        }
+            { "SymbolPackageFormat", "snupkg" }
+        };
     });
 
 Task("dotnet-pack-additional")
