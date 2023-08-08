@@ -24,6 +24,8 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<SwipeView, SwipeViewHandler>();
+				handlers.AddHandler<TimePicker, TimePickerHandler>();
 			});
 		});
 	}
@@ -38,6 +40,8 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(SwipeView))]
+	[InlineData(typeof(TimePicker))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
