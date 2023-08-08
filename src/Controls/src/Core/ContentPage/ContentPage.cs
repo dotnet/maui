@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls
 			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
 		/// <summary>
-		/// When true, tapping anywhere on the page will cause the soft input to hide
+		/// When true, tapping anywhere on the page will cause the soft input to hide.
 		/// </summary>
 		public bool HideSoftInputOnTapped
 		{
