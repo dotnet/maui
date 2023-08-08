@@ -2,6 +2,7 @@ parameters:
   androidPool: { }
   iosPool: { }
   catalystPool: { }
+  windowsPool: { }
   androidApiLevels: [ 30 ]
   iosVersions: [ 'latest' ]
   catalystVersions: [ 'latest' ]
@@ -36,13 +37,9 @@ stages:
               ${{ each api in parameters.androidApiLevels }}:
                 ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
-                    ${{ if ge(api, 24) }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                    ${{ else }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DEVICE: android-emulator-32_${{ api }}
+                    DEVICE: android-emulator-64_${{ api }}
       steps:
         - template: device-tests-steps.yml
           parameters:
@@ -139,8 +136,7 @@ stages:
       workspace:
         clean: all
       displayName: "Windows device tests"
-      pool:
-        vmImage: windows-latest
+      pool: ${{ parameters.windowsPool }}
       strategy:
         matrix:
           # create all the variables used for the matrix

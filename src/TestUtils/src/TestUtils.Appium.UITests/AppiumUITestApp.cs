@@ -6,12 +6,16 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Interactions;
+using OpenQA.Selenium.Appium.Interfaces;
 using OpenQA.Selenium.Appium.iOS;
+using OpenQA.Selenium.Appium.MultiTouch;
+using OpenQA.Selenium.DevTools.V104.Page;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
+using Xamarin.UITest.Shared.Execution;
 
 namespace TestUtils.Appium.UITests
 {
@@ -141,13 +145,13 @@ namespace TestUtils.Appium.UITests
 			}
 			else
 			{
-				QueryWindows("NavigationViewBackButton", true).First().Click();
+				QueryAppium("NavigationViewBackButton", true).First().Click();
 			}
 		}
 
 		public void ClearText(Func<AppQuery, AppQuery> query)
 		{
-			var result = QueryWindows(query, true).First();
+			var result = QueryAppium(query, true).First();
 			result.Clear();
 		}
 
@@ -158,7 +162,7 @@ namespace TestUtils.Appium.UITests
 
 		public void ClearText(string marked)
 		{
-			var result = QueryWindows(marked, true).First();
+			var result = QueryAppium(marked, true).First();
 			result.Clear();
 		}
 
@@ -194,13 +198,13 @@ namespace TestUtils.Appium.UITests
 
 		public void DoubleTap(Func<AppQuery, AppQuery> query)
 		{
-			var result = QueryWindows(query, true).First();
+			var result = QueryAppium(query, true).First();
 			DoubleTap(result);
 		}
 
 		public void DoubleTap(string marked)
 		{
-			var result = QueryWindows(marked, true).First();
+			var result = QueryAppium(marked, true).First();
 			DoubleTap(result);
 		}
 
@@ -235,15 +239,15 @@ namespace TestUtils.Appium.UITests
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)
 		{
 			DragAndDrop(
-				QueryWindows(from, true).First(),
-				QueryWindows(to, true).First());
+				QueryAppium(from, true).First(),
+				QueryAppium(to, true).First());
 		}
 
 		public void DragAndDrop(string from, string to)
 		{
 			DragAndDrop(
-				QueryWindows(from, true).First(),
-				QueryWindows(to, true).First());
+				QueryAppium(from, true).First(),
+				QueryAppium(to, true).First());
 		}
 
 		public void DragAndDrop(AppiumElement source, AppiumElement destination)
@@ -335,13 +339,13 @@ namespace TestUtils.Appium.UITests
 
 		public void EnterText(Func<AppQuery, AppQuery> query, string text)
 		{
-			var result = QueryWindows(query, true).First();
+			var result = QueryAppium(query, true).First();
 			EnterText(result, text);
 		}
 
 		public void EnterText(string marked, string text)
 		{
-			var result = QueryWindows(marked, true).First();
+			var result = QueryAppium(marked, true).First();
 			EnterText(result, text);
 		}
 
@@ -439,13 +443,13 @@ namespace TestUtils.Appium.UITests
 
 		public AppResult[] Query(Func<AppQuery, AppQuery>? query = null)
 		{
-			ReadOnlyCollection<AppiumElement> elements = QueryWindows(query);
+			ReadOnlyCollection<AppiumElement> elements = QueryAppium(query);
 			return elements.Select(ToAppResult).ToArray();
 		}
 
 		public AppResult[] Query(string marked)
 		{
-			ReadOnlyCollection<AppiumElement> elements = QueryWindows(marked);
+			ReadOnlyCollection<AppiumElement> elements = QueryAppium(marked);
 			return elements.Select(ToAppResult).ToArray();
 		}
 
@@ -528,7 +532,7 @@ namespace TestUtils.Appium.UITests
 
 		public void ScrollDownTo(string toMarked, string? withinMarked = null, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true, TimeSpan? timeout = null)
 		{
-			throw new NotImplementedException();
+			ScrollTo(FromMarked(toMarked), withinMarked == null ? null : FromMarked(withinMarked), timeout);
 		}
 
 		public void ScrollDownTo(Func<AppQuery, AppWebQuery> toQuery, string withinMarked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true, TimeSpan? timeout = null)
@@ -691,13 +695,13 @@ namespace TestUtils.Appium.UITests
 
 		public AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(query);
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryAppium(query);
 			return WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult).ToArray();
 		}
 
 		public AppResult[] WaitForElement(string marked, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(marked);
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryAppium(marked);
 			var results = WaitForAtLeastOne(result, timeoutMessage, timeout, retryFrequency).Select(AppiumExtensions.ToAppResult).ToArray();
 
 			return results;
@@ -710,13 +714,13 @@ namespace TestUtils.Appium.UITests
 
 		public void WaitForNoElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(query);
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryAppium(query);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
 		}
 
 		public void WaitForNoElement(string marked, string timeoutMessage = "Timed out waiting for no element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryWindows(marked);
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryAppium(marked);
 			WaitForNone(result, timeoutMessage, timeout, retryFrequency);
 		}
 
@@ -743,13 +747,13 @@ namespace TestUtils.Appium.UITests
 			}
 		}
 
-		ReadOnlyCollection<AppiumElement> QueryWindows(string marked, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryAppium(string marked, bool findFirst = false)
 		{
 			AppiumQuery appiumQuery = AppiumQuery.FromMarked(marked, _appId, Platform);
 			return QueryAppium(appiumQuery, findFirst);
 		}
 
-		ReadOnlyCollection<AppiumElement> QueryWindows(Func<AppQuery, AppQuery>? query, bool findFirst = false)
+		ReadOnlyCollection<AppiumElement> QueryAppium(Func<AppQuery, AppQuery>? query, bool findFirst = false)
 		{
 			AppiumQuery winQuery = AppiumQuery.FromQuery(query, _appId, Platform);
 			return QueryAppium(winQuery, findFirst);
@@ -896,10 +900,9 @@ namespace TestUtils.Appium.UITests
 				return _window;
 			}
 
-			_window = QueryWindows(_appId)[0];
+			_window = QueryAppium(_appId)[0];
 			return _window;
 		}
-
 
 		static PointF GetClickablePoint(AppiumElement element)
 		{
@@ -911,7 +914,6 @@ namespace TestUtils.Appium.UITests
 			return new PointF(x, y);
 		}
 
-
 		internal enum ClickType
 		{
 			SingleClick,
@@ -919,5 +921,73 @@ namespace TestUtils.Appium.UITests
 			ContextClick
 		}
 
+		AppiumQuery FromMarked(string marked)
+		{
+			return AppiumQuery.FromMarked(marked, _appId, Platform);
+		}
+
+		void ScrollTo(AppiumQuery toQuery, AppiumQuery? withinQuery = null, TimeSpan? timeout = null, bool down = true)
+		{
+			// This method will keep scrolling in the specified direction until it finds an element 
+			// which matches the query, or until it times out.
+
+			// First we need to determine the area within which we'll make our scroll gestures
+			Size? scrollAreaSize = null;
+
+			if (withinQuery != null)
+			{
+				var within = FindFirstElement(withinQuery);
+				scrollAreaSize = within?.Size;
+			}
+
+			if (scrollAreaSize is null)
+			{
+				var window = _driver?.Manage().Window ?? throw new InvalidOperationException("Element to scroll within not specified, and no Window available. Cannot scroll.");
+				scrollAreaSize = window.Size;
+			}
+
+			var x = scrollAreaSize.Value.Width / 2;
+			var windowHeight = scrollAreaSize.Value.Height;
+			var topEdgeOfScrollAction = windowHeight * 0.1;
+			var bottomEdgeOfScrollAction = windowHeight * 0.5;
+			var startY = down ? bottomEdgeOfScrollAction : topEdgeOfScrollAction;
+			var endY = down ? topEdgeOfScrollAction : bottomEdgeOfScrollAction;
+
+			timeout ??= DefaultTimeout;
+			DateTime start = DateTime.Now;
+
+			TimeSpan iterationTimeout = TimeSpan.FromMilliseconds(0);
+			TimeSpan retryFrequency = TimeSpan.FromMilliseconds(0);
+			Func<ReadOnlyCollection<AppiumElement>> result = () => QueryAppium(toQuery);
+
+			while (true)
+			{
+				try
+				{
+					ReadOnlyCollection<AppiumElement> found = WaitForAtLeastOne(result, timeoutMessage: null,
+						timeout: iterationTimeout, retryFrequency: retryFrequency);
+
+					if (found.Count > 0)
+					{
+						// Success!
+						return;
+					}
+				}
+				catch (TimeoutException)
+				{
+					// Haven't found it yet, keep scrolling
+				}
+
+				long elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+					throw new TimeoutException($"Timed out scrolling to {toQuery}");
+				}
+
+				var scrollAction = new TouchAction(_driver).Press(x, startY).MoveTo(x, endY).Release();
+				scrollAction.Perform();
+			}
+		}
 	}
 }
