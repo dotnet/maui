@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using Entry = Microsoft.Maui.Controls.Entry;
 
 namespace Maui.Controls.Sample.Pages
@@ -95,6 +96,16 @@ namespace Maui.Controls.Sample.Pages
 					new GradientStop { Color = endColor, Offset = 1 }
 				}
 			};
+		}
+
+		private void ShowSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		{
+			this.PlaceholderEntryItem.ShowSoftInputAsync(System.Threading.CancellationToken.None);
+		}
+
+		private void HideSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		{
+			this.PlaceholderEntryItem.HideSoftInputAsync(System.Threading.CancellationToken.None);
 		}
 	}
 }
