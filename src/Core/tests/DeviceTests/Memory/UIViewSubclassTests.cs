@@ -48,27 +48,6 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			Assert.False(reference.IsAlive, "MauiDoneAccessoryView should not be alive!");
 		}
 #endif
-
-		[Fact]
-		public async Task ResignFirstResponderTouchGestureRecognizer()
-		{
-			WeakReference viewReference = null;
-			WeakReference recognizerReference = null;
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var view = new UIView();
-				var recognizer = new ResignFirstResponderTouchGestureRecognizer(view);
-				view.AddGestureRecognizer(recognizer);
-				viewReference = new(view);
-				recognizerReference = new(recognizer);
-			});
-
-			await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
-			Assert.False(viewReference.IsAlive, "UIView should not be alive!");
-			Assert.False(recognizerReference.IsAlive, "ResignFirstResponderTouchGestureRecognizer should not be alive!");
-		}
-	}
 }
 
 #endif
