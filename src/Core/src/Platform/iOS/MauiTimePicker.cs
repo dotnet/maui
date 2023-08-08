@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 		readonly UIDatePicker _picker;
 
 #if !MACCATALYST
-		readonly Action _dateSelected;
+		readonly MauiDoneAccessoryViewProxy _proxy;
 		public MauiTimePicker(Action dateSelected)
 #else
 		public MauiTimePicker()
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			_picker = new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
 
 #if !MACCATALYST
-			_dateSelected = dateSelected;
+			_proxy = new(dateSelected);
 #endif
 
 			if (OperatingSystem.IsIOSVersionAtLeast(14))
@@ -32,11 +32,7 @@ namespace Microsoft.Maui.Platform
 			InputView = _picker;
 
 #if !MACCATALYST
-			InputAccessoryView = new MauiDoneAccessoryView(() =>
-			{
-				DateSelected?.Invoke(this, EventArgs.Empty);
-				_dateSelected?.Invoke();
-			});
+			InputAccessoryView = new MauiDoneAccessoryView(_proxy.OnDateSelected);
 
 			InputAccessoryView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight;
 #endif
@@ -53,12 +49,27 @@ namespace Microsoft.Maui.Platform
 
 		public NSDate Date => Picker.Date;
 
-#if !MACCATALYST
-		public event EventHandler? DateSelected;
-#endif
 		public void UpdateTime(TimeSpan time)
 		{
 			_picker.Date = new DateTime(1, 1, 1, time.Hours, time.Minutes, time.Seconds).ToNSDate();
 		}
+
+#if !MACCATALYST
+		[Obsolete("Use MauiTimePicker constructor instead.")]
+		public event EventHandler? DateSelected
+		{
+			add { }
+			remove { }
+		}
+
+		class MauiDoneAccessoryViewProxy
+		{
+			readonly Action _dateSelected;
+
+			public MauiDoneAccessoryViewProxy(Action dateSelected) => _dateSelected = dateSelected;
+
+			public void OnDateSelected() => _dateSelected();
+		}
+#endif
 	}
 }

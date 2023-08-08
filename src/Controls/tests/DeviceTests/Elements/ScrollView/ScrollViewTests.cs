@@ -78,6 +78,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
+		// It calls CreateHandlerAndAddToWindow(), a valid test case.
 		[Fact(DisplayName = "ScrollView Does Not Leak")]
 		public async Task DoesNotLeak()
 		{

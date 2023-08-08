@@ -187,6 +187,10 @@ namespace Microsoft.Maui.ApplicationModel
 				new[] { ("http://tizen.org/privilege/recorder", false) };
 		}
 
+		public partial class NearbyWifiDevices : BasePlatformPermission
+		{
+		}
+
 		public partial class NetworkState : BasePlatformPermission
 		{
 			/// <inheritdoc/>
