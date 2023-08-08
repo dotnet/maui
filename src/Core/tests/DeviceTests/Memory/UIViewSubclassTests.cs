@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 	[Category(TestCategory.Memory)]
 	public class UIViewSubclassTests : TestBase
 	{
-		#if IOS // MauiDoneAccessoryView is iOS only
+#if IOS // MauiDoneAccessoryView is iOS only
 		void DoAction() { }
 		void DoAction(object data) { }
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			await AssertionExtensions.WaitForGC(reference);
 			Assert.False(reference.IsAlive, "MauiDoneAccessoryView should not be alive!");
 		}
-		#endif
+#endif
 	}
 }
 
