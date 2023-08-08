@@ -1908,27 +1908,26 @@ namespace Microsoft.Maui.Controls
 			if (IsLoaded)
 			{
 				if (!IsAddedToPlatformVisualTree)
-					AddedToPlatformVisualTree();
+					OnAddedToPlatformVisualTree();
 
 				IsAddedToPlatformVisualTree = true;
 			}
 			else
 			{
 				if (IsAddedToPlatformVisualTree)
-					RemovedFromPlatformVisualTree(oldWindow);
+					OnRemovedFromPlatformVisualTree(oldWindow);
 
 				IsAddedToPlatformVisualTree = false;
 			}
 		}
 
-		private protected virtual void AddedToPlatformVisualTree()
-		{
-		}
+		internal event EventHandler AddedToPlatformVisualTree;
+		internal event EventHandler RemovedFromPlatformVisualTree;
 
-		private protected virtual void RemovedFromPlatformVisualTree(IWindow? oldWindow)
-		{
-
-		}
+		private protected virtual void OnAddedToPlatformVisualTree() =>
+			AddedToPlatformVisualTree?.Invoke(this, EventArgs.Empty);
+		private protected virtual void OnRemovedFromPlatformVisualTree(IWindow? oldWindow) =>
+			RemovedFromPlatformVisualTree?.Invoke(this, EventArgs.Empty);
 
 		// We only want to wire up to platform loaded events
 		// if the user is watching for them. Otherwise

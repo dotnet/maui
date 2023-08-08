@@ -654,25 +654,43 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		NavigatedToEventArgs _pendingNavigatedToArgs;
 		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
-			HasNavigatedTo = true;
-			NavigatedTo?.Invoke(this, args);
-			OnNavigatedTo(args);
-			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+			_pendingNavigatedToArgs = null;
+			if (!IsLoaded)
+			{
+				_pendingNavigatedToArgs = args;
+			}
+			else
+			{
+				HasNavigatedTo = true;
+				OnNavigatedTo(args);
+				(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
+			}
+		}
+
+		private protected override void OnAddedToPlatformVisualTree()
+		{
+			if (_pendingNavigatedToArgs is not null)
+			{
+				SendNavigatedTo(_pendingNavigatedToArgs);
+			}
+
+			base.OnAddedToPlatformVisualTree();
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
-			NavigatingFrom?.Invoke(this, args);
+			_pendingNavigatedToArgs = null;
 			OnNavigatingFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
+			_pendingNavigatedToArgs = null;
 			HasNavigatedTo = false;
-			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
 		}
@@ -681,9 +699,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<NavigatingFromEventArgs> NavigatingFrom;
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
 
-		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
-		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
-		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
+		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { NavigatedTo?.Invoke(this, args); }
+		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { NavigatingFrom?.Invoke(this, args); }
+		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { NavigatedFrom?.Invoke(this, args); }
 
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
