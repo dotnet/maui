@@ -28,48 +28,34 @@ namespace Microsoft.Maui.Controls.Platform
 			textField.AdjustsFontSizeToFitWidth = entry.OnThisPlatform().AdjustsFontSizeToFitWidth();
 		}
 
-		public static void UpdateText(this UITextView textView, InputView inputView)
+		public static void UpdateText(this UITextView textView, InputView inputView) =>
+			UpdateText(textView, inputView, textView.IsFirstResponder);
+
+		public static void UpdateText(this UITextField textField, InputView inputView) =>
+			UpdateText(textField, inputView, textField.IsEditing);
+
+		static void UpdateText(this IUITextInput textInput, InputView inputView, bool isEditing)
 		{
-			// Setting the text causes the cursor to be reset to the end of the UITextView.
+			// Setting the text causes the cursor to be reset to the end of the IUITextInput.
 			// So, let's set back the cursor to the last known position and calculate a new
 			// position if needed when the text was modified by a Converter.
-			var oldText = textView.Text ?? string.Empty;
+			var textRange = textInput.GetTextRange(textInput.BeginningOfDocument, textInput.EndOfDocument);
+			var oldText = textInput.TextInRange(textRange) ?? string.Empty;
 			var newText = TextTransformUtilites.GetTransformedText(
 				inputView?.Text,
-				textView.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
+				textInput.GetSecureTextEntry() ? TextTransform.Default : inputView.TextTransform
 				);
 
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textView.IsFirstResponder ? textView.GetCursorPosition(cursorOffset) : newText.Length;
-
 			if (oldText != newText)
-				textView.Text = newText;
+			{
+				// Re-calculate the cursor offset position if the text was modified by a Converter.
+				// but if the text is being set by code, let's just move the cursor to the end.
+				var cursorOffset = newText.Length - oldText.Length;
+				var cursorPosition = isEditing ? textInput.GetCursorPosition(cursorOffset) : newText.Length;
 
-			textView.SetTextRange(cursorPosition, 0, inputView.MaxLength);
-		}
-
-		public static void UpdateText(this UITextField textField, InputView inputView)
-		{
-			// Setting the text causes the cursor to be reset to the end of the UITextView.
-			// So, let's set back the cursor to the last known position and calculate a new
-			// position if needed when the text was modified by a Converter.
-			var oldText = textField.Text ?? string.Empty;
-			var newText = TextTransformUtilites.GetTransformedText(
-				inputView?.Text,
-				textField.SecureTextEntry ? TextTransform.Default : inputView.TextTransform
-				);
-
-			// Re-calculate the cursor offset position if the text was modified by a Converter.
-			// but if the text is being set by code, let's just move the cursor to the end.
-			var cursorOffset = newText.Length - oldText.Length;
-			var cursorPosition = textField.IsEditing ? textField.GetCursorPosition(cursorOffset) : newText.Length;
-
-			if (oldText != newText)
-				textField.Text = newText;
-
-			textField.SetTextRange(cursorPosition, 0, inputView.MaxLength);
+				textInput.ReplaceText(textRange, newText);
+				textInput.SetTextRange(cursorPosition, 0, inputView.MaxLength);
+			}
 		}
 
 		public static void UpdateLineBreakMode(this UILabel platformLabel, Label label)
