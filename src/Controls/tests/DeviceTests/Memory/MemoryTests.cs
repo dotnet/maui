@@ -48,6 +48,12 @@ public class MemoryTests : ControlsHandlerTestBase
 	{
 		SetupBuilder();
 
+#if ANDROID
+		// NOTE: skip certain controls on older Android devices
+		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
+				return;
+#endif
+
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
