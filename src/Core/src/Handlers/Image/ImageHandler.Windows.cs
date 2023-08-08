@@ -9,16 +9,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, Image>
 	{
+		/// <inheritdoc/>
 		protected override Image CreatePlatformView() => new Image();
 
+		/// <inheritdoc/>
 		protected override void DisconnectHandler(Image platformView)
 		{
 			base.DisconnectHandler(platformView);
 			SourceLoader.Reset();
 		}
 
+		/// <inheritdoc/>
 		public override bool NeedsContainer => true;
 
+		/// <inheritdoc/>
 		protected override void SetupContainer()
 		{
 			base.SetupContainer();
@@ -30,6 +34,7 @@ namespace Microsoft.Maui.Handlers
 			MapWidth(this, VirtualView);
 		}
 
+		/// <inheritdoc/>
 		protected override void RemoveContainer()
 		{
 			base.RemoveContainer();
@@ -38,6 +43,11 @@ namespace Microsoft.Maui.Handlers
 			MapWidth(this, VirtualView);
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Height"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="view">The associated <see cref="Image"/> instance.</param>
 		public static void MapHeight(IImageHandler handler, IImage view)
 		{
 			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
@@ -48,6 +58,11 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Width"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="view">The associated <see cref="Image"/> instance.</param>
 		public static void MapWidth(IImageHandler handler, IImage view)
 		{
 			if (handler.ContainerView is FrameworkElement element)
@@ -56,12 +71,22 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapBackground(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.ToPlatform().UpdateBackground(image);
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="IImage.Aspect"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapAspect(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
@@ -72,12 +97,27 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="IImageSourcePart.IsAnimationPlaying"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
 			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
+		/// <summary>
+		/// Maps the abstract <see cref="IImageSourcePart.Source"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
+		/// <summary>
+		/// Maps the abstract <see cref="IImageSourcePart.Source"/> property to the platform-specific implementations as an asynchronous operation.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="image">The associated <see cref="Image"/> instance.</param>
 		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			handler.SourceLoader.UpdateImageSourceAsync();
 
