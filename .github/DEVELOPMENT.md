@@ -190,9 +190,11 @@ public static int foo = 2130771968;
 
 # Advanced Scenarios
 
-### Compile using a local `bin\dotnet`
+### Compile using a local `bin\dotnet` via `dotnet-local.*`
 
 This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
+
+Use `dotnet-local.cmd` on Windows or `dotnet-local.sh` on Unix to ensure that `PATH` is set consistently.
 
 #### Cake
 

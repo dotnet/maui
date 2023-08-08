@@ -373,7 +373,7 @@ RunTarget(TARGET);
 void SetupAppPackageNameAndResult()
 {
    if (string.IsNullOrEmpty(TEST_APP)) {
-		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
+   		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
 		
 		var binFolder = TEST_APP_PROJECT.GetDirectory().Combine("bin");
@@ -384,7 +384,13 @@ void SetupAppPackageNameAndResult()
 			TEST_APP = apps.FirstOrDefault().FullPath;
 		} else {
 			apps = GetFiles(binDir + "/*.apk");
-			TEST_APP = apps.First().FullPath;
+			if (apps.Any()) {
+				TEST_APP = apps.First().FullPath;
+			}
+			else {
+				Error("Error: Couldn't find .apk file");
+				throw new Exception("Error: Couldn't find .apk file");
+			}
 		}
 	}
 	if (string.IsNullOrEmpty(TEST_APP_PACKAGE_NAME)) {
