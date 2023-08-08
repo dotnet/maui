@@ -12,28 +12,31 @@ namespace Microsoft.Maui.Controls
 
 		void OnWindowDispatchedTouch(object? sender, MotionEvent? e)
 		{
-			if (!_contentPage.HasNavigatedTo || e is null)
+			if (!FeatureEnabled || e is null)
 			{
 				return;
 			}
 
-			if (_contentPage.HasNavigatedTo &&
-				_contentPage.HideSoftInputOnTapped &&
-				_contentPage.Handler is IPlatformViewHandler pvh &&
-				pvh.MauiContext?.Context is not null)
+			foreach (var page in _contentPages)
 			{
-				var location = pvh.PlatformView.GetBoundingBox();
-				var androidContext = pvh.MauiContext.Context;
+				if (page.HasNavigatedTo &&
+					page.HideSoftInputOnTapped &&
+					page.Handler is IPlatformViewHandler pvh &&
+					pvh.MauiContext?.Context is not null)
+				{
+					var location = pvh.PlatformView.GetBoundingBox();
+					var androidContext = pvh.MauiContext.Context;
 
-				var point =
-					new Point
-					(
-						androidContext.FromPixels(e.RawX),
-						androidContext.FromPixels(e.RawY)
-					);
+					var point =
+						new Point
+						(
+							androidContext.FromPixels(e.RawX),
+							androidContext.FromPixels(e.RawY)
+						);
 
-				if (location.Contains(point))
-					DispatchTouchEvent?.Invoke(this, e);
+					if (location.Contains(point))
+						DispatchTouchEvent?.Invoke(this, e);
+				}
 			}
 		}
 
@@ -49,7 +52,7 @@ namespace Microsoft.Maui.Controls
 			if (aView is null)
 				return null;
 
-			if (!_contentPage.HideSoftInputOnTapped)
+			if (!FeatureEnabled)
 				return null;
 
 			var tracker = new TapWindowTracker(aView, this);

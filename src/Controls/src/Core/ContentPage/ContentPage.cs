@@ -23,14 +23,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="HideSoftInputOnTapped"/>.</summary>
 		public static readonly BindableProperty HideSoftInputOnTappedProperty
-			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false, propertyChanged: OnHideSoftInputOnTappedPropertyChanged);
-
-		static void OnHideSoftInputOnTappedPropertyChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			if (bindable is ContentPage page)
-				page._hideSoftInputOnTappedChangedManager
-					.PageHideSoftInputOnTappedPropertyChanged(page, (bool)oldValue, (bool)newValue);
-		}
+			= BindableProperty.Create(nameof(HideSoftInputOnTapped), typeof(bool), typeof(ContentPage), false);
 
 		/// <summary>
 		/// When true, tapping anywhere on the page will cause the soft input to hide
@@ -41,10 +34,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HideSoftInputOnTappedProperty, value); }
 		}
 
-		HideSoftInputOnTappedChangedManager _hideSoftInputOnTappedChangedManager;
 		public ContentPage()
 		{
-			_hideSoftInputOnTappedChangedManager = new HideSoftInputOnTappedChangedManager(this);
+			this.NavigatedTo += (_, _) => UpdateHideSoftInputOnTapped();
+			this.NavigatedFrom += (_, _) => UpdateHideSoftInputOnTapped();
 		}
 
 		protected override void OnBindingContextChanged()
