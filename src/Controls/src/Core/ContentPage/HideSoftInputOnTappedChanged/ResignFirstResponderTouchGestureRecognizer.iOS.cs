@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	internal class ResignFirstResponderTouchGestureRecognizer : UITapGestureRecognizer
 	{
-		UIView? _targetView;
+		readonly WeakReference<UIView> _targetView;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: UIViewSubclassTests.ResignFirstResponderTouchGestureRecognizer")]
 		Token? _token;
 
 		public ResignFirstResponderTouchGestureRecognizer(UIView targetView) :
@@ -26,13 +28,13 @@ namespace Microsoft.Maui.Platform
 				}
 			});
 
-			_targetView = targetView;
+			_targetView = new(targetView);
 		}
 
 		void OnTapped()
 		{
-			if (_targetView?.IsFirstResponder == true)
-				_targetView?.ResignFirstResponder();
+			if (_targetView.TryGetTarget(out var targetView) && targetView.IsFirstResponder)
+				targetView.ResignFirstResponder();
 
 			Disconnect();
 		}
@@ -42,15 +44,14 @@ namespace Microsoft.Maui.Platform
 			if (_token != null)
 				RemoveTarget(_token);
 
-			if (_targetView?.Window is not null)
-				_targetView.Window.RemoveGestureRecognizer(this);
+			if (_targetView.TryGetTarget(out var targetView) && targetView?.Window is UIWindow window)
+				window.RemoveGestureRecognizer(this);
 
 			_token = null;
-			_targetView = null;
 
 		}
 
-		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
+		static bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 		{
 			foreach (UIView v in ViewAndSuperviewsOfView(touch.View))
 			{
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
+		static IEnumerable<UIView> ViewAndSuperviewsOfView(UIView view)
 		{
 			while (view is not null)
 			{
@@ -114,6 +115,9 @@ namespace Microsoft.Maui.Platform
 
 			if (!ConnectToPlatformEvents(uiView))
 				return null;
+
+			if (uiView.IsFirstResponder)
+				OnEditingDidBegin(uiView, EventArgs.Empty);
 
 			var localWindow = window;
 			var localControl = uiView;

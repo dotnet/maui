@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	{
 		internal IDisposable? SetupHideSoftInputOnTapped(UIView? uIView)
 		{
-			if (FeatureEnabled || uIView?.Window is null)
+			if (!FeatureEnabled || uIView?.Window is null)
 				return null;
 
 			if (uIView is UISearchBar searchBar)
