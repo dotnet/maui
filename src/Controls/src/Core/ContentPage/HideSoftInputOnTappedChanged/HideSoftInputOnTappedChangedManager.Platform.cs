@@ -14,15 +14,33 @@ namespace Microsoft.Maui.Controls
 			if (page.HideSoftInputOnTapped && page.HasNavigatedTo)
 			{
 				if (!_contentPages.Contains(page))
+				{
 					_contentPages.Add(page);
+					page.NavigatedFrom += OnPageNavigatedFrom;
+					SetupHideSoftInputOnTapped();
+				}
 			}
 			else
 			{
-				if (_contentPages.Contains(page))
-					_contentPages.Remove(page);
+				RemovePage(page);
 			}
 
-			SetupHideSoftInputOnTapped();
+			void RemovePage(ContentPage pageToRemove)
+			{
+				page.NavigatedFrom -= OnPageNavigatedFrom;
+				if (_contentPages.Contains(pageToRemove))
+					_contentPages.Remove(pageToRemove);
+
+				SetupHideSoftInputOnTapped();
+			}
+
+			void OnPageNavigatedFrom(object? sender, NavigatedFromEventArgs e)
+			{
+				if (sender is ContentPage pageNavigatedFrom)
+				{
+					RemovePage(pageNavigatedFrom);
+				}
+			}
 		}
 
 		internal IDisposable? UpdateFocusForView(IView _view)
