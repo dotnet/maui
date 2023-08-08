@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnViewAttachedToWindow(object? sender = null, View.ViewAttachedToWindowEventArgs? e = null)
 		{
-			DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
+			//DeviceDisplay.MainDisplayInfoChanged += OnMainDisplayInfoChanged;
 		}
 
 		protected override void DisconnectHandler(MauiDatePicker platformView)
