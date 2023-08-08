@@ -258,7 +258,7 @@ Task("dotnet-pack-maui")
         RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
             { "SymbolPackageFormat", "snupkg" }
-        };
+        });
     });
 
 Task("dotnet-pack-additional")
