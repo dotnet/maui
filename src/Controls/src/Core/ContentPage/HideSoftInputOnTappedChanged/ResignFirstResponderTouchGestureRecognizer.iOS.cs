@@ -37,13 +37,17 @@ namespace Microsoft.Maui.Platform
 			Disconnect();
 		}
 
-		internal void Disconnect()
+		void Disconnect()
 		{
 			if (_token != null)
 				RemoveTarget(_token);
 
+			if (_targetView?.Window is not null)
+				_targetView.Window.RemoveGestureRecognizer(this);
+
 			_token = null;
 			_targetView = null;
+
 		}
 
 		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
@@ -66,72 +70,69 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static void Update(UITextView textView, UIWindow? window)
+
+		static bool ConnectToPlatformEvents(UIView uiView)
 		{
-			if (window is not null)
+			if (uiView is UITextView textView)
 			{
 				textView.Started += OnEditingDidBegin;
 				textView.Ended += OnEditingDidEnd;
+				return true;
 			}
-			else
+			else if (uiView is UIControl uiControl)
+			{
+				uiControl.EditingDidBegin += OnEditingDidBegin;
+				uiControl.EditingDidEnd += OnEditingDidEnd;
+				return true;
+			}
+
+			return false;
+		}
+
+
+		static void DisconnectFromPlatformEvents(UIView uiView)
+		{
+			if (uiView is UITextView textView)
 			{
 				textView.Started -= OnEditingDidBegin;
 				textView.Ended -= OnEditingDidEnd;
 			}
-		}
-
-		internal static void Update(
-			UITextView textView,
-			UIWindow? window,
-			out IDisposable unwire)
-		{
-			if (window is not null)
+			else if (uiView is UIControl uiControl)
 			{
-				Update(textView, window);
-				unwire = new ActionDisposable(() => Update(textView, window));
-			}
-			else
-			{
-				Update(textView, window);
-				unwire = new ActionDisposable(() => { });
+				uiControl.EditingDidBegin -= OnEditingDidBegin;
+				uiControl.EditingDidEnd -= OnEditingDidEnd;
 			}
 		}
 
-		internal static void Update(UIControl platformControl, UIWindow? window)
+		internal static IDisposable? Update(UIView uiView)
 		{
-			if (window is not null)
+			if (uiView.Window is not UIWindow window)
 			{
-				platformControl.EditingDidBegin += OnEditingDidBegin;
-				platformControl.EditingDidEnd += OnEditingDidEnd;
+				DisconnectFromPlatformEvents(uiView);
+				return null;
 			}
-			else
-			{
-				platformControl.EditingDidBegin -= OnEditingDidBegin;
-				platformControl.EditingDidEnd -= OnEditingDidEnd;
-			}
-		}
 
-		internal static void Update(
-			UIControl platformControl,
-			UIWindow? window,
-			out IDisposable unwire)
-		{
-			if (window is not null)
+			if (!ConnectToPlatformEvents(uiView))
+				return null;
+
+			var localWindow = window;
+			var localControl = uiView;
+
+			return new ActionDisposable(() =>
 			{
-				Update(platformControl, window);
-				unwire = new ActionDisposable(() => Update(platformControl, window));
-			}
-			else
-			{
-				Update(platformControl, window);
-				unwire = new ActionDisposable(() => { });
-			}
+				DisconnectFromPlatformEvents(localControl);
+				Remove(localWindow);
+
+				localWindow = null;
+				localControl = null;
+			});
 		}
 
 		static void OnEditingDidBegin(object? sender, EventArgs e)
 		{
-			if (sender is UIView view && view.Window != null)
+			if (sender is UIView view && view.Window is not null)
 			{
+				Remove(view.Window);
 				var resignFirstResponder = new ResignFirstResponderTouchGestureRecognizer(view);
 				view.Window.AddGestureRecognizer(resignFirstResponder);
 				return;
@@ -140,23 +141,23 @@ namespace Microsoft.Maui.Platform
 
 		static void OnEditingDidEnd(object? sender, EventArgs e)
 		{
-			if (sender is UIView view && view.Window?.GestureRecognizers != null)
+			if (sender is UIView view)
 			{
 				Remove(view.Window);
 			}
 		}
 
-		static void Remove(UIWindow window)
+		static void Remove(UIWindow? window)
 		{
-			if (window.GestureRecognizers != null)
+			var grs = window?.GestureRecognizers;
+			if (grs is not null)
 			{
-				for (var i = 0; i < window.GestureRecognizers.Length; i++)
+				for (var i = grs.Length - 1; i >= 0; i--)
 				{
-					UIGestureRecognizer? gr = window.GestureRecognizers[i];
-					if (gr is ResignFirstResponderTouchGestureRecognizer)
+					UIGestureRecognizer? gr = grs[i];
+					if (gr is ResignFirstResponderTouchGestureRecognizer gesture)
 					{
-						window.RemoveGestureRecognizer(gr);
-						return;
+						gesture.Disconnect();
 					}
 				}
 			}

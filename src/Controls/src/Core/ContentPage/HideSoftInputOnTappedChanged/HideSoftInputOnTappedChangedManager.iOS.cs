@@ -15,30 +15,11 @@ namespace Microsoft.Maui.Controls
 			if (uIView is UISearchBar searchBar)
 				uIView = searchBar.GetSearchTextField();
 
-			IDisposable? watchingForTaps = null;
-
-			if (uIView?.Window is UIWindow window)
-			{
-				if (uIView is UITextView textView)
-				{
-					ResignFirstResponderTouchGestureRecognizer.Update(
-						textView,
-						window,
-						out watchingForTaps);
-				}
-				else if (uIView is UIControl uiControl)
-				{
-					ResignFirstResponderTouchGestureRecognizer.Update(
-						uiControl,
-						window,
-						out watchingForTaps);
-				}
-			}
-
-			if (watchingForTaps is null)
+			if (uIView is null)
 				return null;
 
-			return watchingForTaps;
+			return ResignFirstResponderTouchGestureRecognizer
+					.Update(uIView);
 		}
 	}
 }
