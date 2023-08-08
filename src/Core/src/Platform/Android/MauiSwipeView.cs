@@ -209,7 +209,7 @@ namespace Microsoft.Maui.Platform
 
 			AView? itemContentView = null;
 
-			var parentFound = _contentView.Parent.FindParent(parent =>
+			var parentFound = _contentView.FindParent(parent =>
 			{
 				if (parent is RecyclerView)
 					return true;

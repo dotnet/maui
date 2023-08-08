@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
 using CoreAnimation;
@@ -239,21 +240,10 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border;
 		}
 
-		internal static T? FindDescendantView<T>(this UIView view, Func<T, bool> predicate) where T : UIView
+		internal static T? GetChildAt<T>(this UIView view, int index) where T : UIView
 		{
-			var queue = new Queue<UIView>();
-			queue.Enqueue(view);
-
-			while (queue.Count > 0)
-			{
-				var descendantView = queue.Dequeue();
-
-				if (descendantView is T result && predicate.Invoke(result))
-					return result;
-
-				for (var i = 0; i < descendantView.Subviews?.Length; i++)
-					queue.Enqueue(descendantView.Subviews[i]);
-			}
+			if (index < view.Subviews.Length)
+				return (T?)view.Subviews[index];
 
 			return null;
 		}
