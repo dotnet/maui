@@ -176,8 +176,7 @@ namespace Microsoft.Maui.Handlers
 			var contentContainer = new ContentView()
 			{
 				View = scrollView.PresentedContent,
-				Tag = ContentPanelTag,
-				ClipsToBounds = true //Content should be clipped to the bounds of the ScrollView otherwise it will be visible outside the ScrollView but it can not be clicked causing problems.
+				Tag = ContentPanelTag				
 			};
 
 			// This is where we normally would inject the cross-platform ScrollView's layout logic; instead, we're injecting the
