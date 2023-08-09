@@ -1062,17 +1062,6 @@ namespace Microsoft.Maui.Controls
 		protected void SizeAllocated(double width, double height)
 		{
 			OnSizeAllocated(width, height);
-
-			// This covers a couple cases
-			// Currently on iOS we track the platform frame to fire unloaded/loaded.
-			// This lets us short circuit that code a bit so we aren't running against
-			// Observer exceptions we've hit on iOS
-			//
-			// This works to fire internal code we only want to trigger when
-			// the platformView is attached to the visual tree. We also don't want
-			// to add an event to every platformView we created monitoring this
-			// so this covers us for cases where we aren't explicitly watching unloaded/loaded
-			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1556,6 +1545,7 @@ namespace Microsoft.Maui.Controls
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
+			UpdatePlatformUnloadedLoadedWiring(Window);
 			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
