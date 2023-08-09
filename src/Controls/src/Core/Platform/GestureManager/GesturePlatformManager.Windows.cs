@@ -323,6 +323,8 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.PointerEntered -= OnPgrPointerEntered;
 				_container.PointerExited -= OnPgrPointerExited;
 				_container.PointerMoved -= OnPgrPointerMoved;
+				_container.PointerPressed -= OnPgrPointerPressed;
+				_container.PointerReleased -= OnPgrPointerReleased;
 			}
 		}
 
@@ -480,7 +482,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
-				_fingers.Remove(id);
+				_fingers.Remove(id);		
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
@@ -497,6 +499,14 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
 				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
@@ -728,6 +738,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
+			_container.PointerPressed += OnPgrPointerPressed;
+			_container.PointerReleased += OnPgrPointerReleased;
 
 			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
