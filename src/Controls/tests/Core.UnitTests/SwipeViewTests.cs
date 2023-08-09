@@ -1,5 +1,6 @@
 using Microsoft.Maui.Graphics;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
@@ -15,6 +16,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Empty(swipeView.TopItems);
 			Assert.Empty(swipeView.RightItems);
 			Assert.Empty(swipeView.BottomItems);
+		}
+
+		[Fact]
+		public void TestSwipeViewBindingContextChangedEvent()
+		{
+			var swipeView = new SwipeView();
+			bool passed = false;
+			swipeView.BindingContextChanged += (sender, args) => passed = true;
+
+			swipeView.BindingContext = new object();
+
+			if (!passed)
+			{
+				throw new XunitException("The BindingContextChanged event was not fired.");
+			}
+		}
+
+		[Fact]
+		public void TestContentBindingContextChangedEvent()
+		{
+			var content = new Label();
+			var swipeView = new SwipeView
+			{
+				Content = content
+			};
+
+			bool passed = false;
+			content.BindingContextChanged += (sender, args) => passed = true;
+
+			swipeView.BindingContext = new object();
+
+			if (!passed)
+			{
+				throw new XunitException("The BindingContextChanged event was not fired.");
+			}
 		}
 
 		[Fact]

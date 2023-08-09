@@ -174,10 +174,18 @@ namespace Microsoft.Maui.Controls
 
 		protected override void OnBindingContextChanged()
 		{
-			base.OnBindingContextChanged();
-
 			object bc = BindingContext;
 
+			// Set Inherited BindingContext to the Content
+			IView content = Content;
+
+			if (content == null && this is IContentView { PresentedContent: IView presentedContent })
+				content = presentedContent;
+
+			if (content is BindableObject bindableContent)
+				SetInheritedBindingContext(bindableContent, bc);
+
+			// Set Inherited BindingContext to SwipeItems
 			if (LeftItems != null)
 				SetInheritedBindingContext(LeftItems, bc);
 
