@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Microsoft.Maui
 {
-	interface ICanReturnVisualTreeElement
+	interface IVisualTreeElementProvidable
 	{
 		IVisualTreeElement? GetElement();
 	}

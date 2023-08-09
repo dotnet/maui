@@ -202,7 +202,7 @@ namespace Microsoft.Maui
 						if (x is PlatformView pv)
 							platformParentPath.Add(pv);
 
-						if (x is ICanReturnVisualTreeElement backing)
+						if (x is IVisualTreeElementProvidable backing)
 						{
 							foundParent = backing.GetElement();
 							return foundParent is not null;

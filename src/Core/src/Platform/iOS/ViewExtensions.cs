@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Media;
-using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 

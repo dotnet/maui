@@ -11,7 +11,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking, ICanReturnVisualTreeElement
+	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Platform
 			return base.OnTouchEvent(e);
 		}
 
-		IVisualTreeElement? ICanReturnVisualTreeElement.GetElement()
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
 		{
 			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
 				layoutElement.IsThisMyPlatformView(this))
