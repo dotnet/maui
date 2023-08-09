@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
-		
+
 		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 		private const string BlazorInitScript = @"
