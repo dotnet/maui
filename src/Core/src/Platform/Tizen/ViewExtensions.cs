@@ -344,7 +344,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static T? GetChildAt<T>(this NView view, int index) where T : NView
 		{
-			throw new NotImplementedException();
+			return (T?)view.Children[index];
 		}
 	}
 }
