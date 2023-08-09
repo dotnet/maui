@@ -70,6 +70,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				platformView.Loaded += OnNavigationViewLoaded;
 
 			base.ConnectHandler(platformView);
+
+			
 			ShellItemNavigationView.SelectionChanged += OnNavigationTabChanged;
 		}
 
@@ -129,16 +131,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
-			// only add items if we should be showing the tabs
-			if (shellItemController.ShowTabs)
+			foreach (var item in shellItemController.GetItems())
 			{
-				foreach (var item in shellItemController.GetItems())
-				{
-					if (Routing.IsImplicit(item))
-						items.Add(item.CurrentItem);
-					else
-						items.Add(item);
-				}
+				if (Routing.IsImplicit(item))
+					items.Add(item.CurrentItem);
+				else
+					items.Add(item);
 			}
 
 			object? selectedItem = null;
@@ -431,6 +429,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
 			handler.ShellItemNavigationView.PaneDisplayMode = handler.GetNavigationViewPaneDisplayMode(item);
+			handler.ShellItemNavigationView.IsPaneVisible = ((IShellItemController)item).ShowTabs;
 		}
 
 		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)

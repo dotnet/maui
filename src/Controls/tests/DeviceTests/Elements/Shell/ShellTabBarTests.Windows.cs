@@ -18,6 +18,25 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
+		[Fact(DisplayName = "Shell TabBar Visibility Toggle")]
+		public async Task ShellTabBarVisibilityToggleWorks()
+		{
+			await RunShellTabBarTests(shell => { },
+			(shell) =>
+			{
+				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+				var navView = shellItemHandler.PlatformView as MauiNavigationView;
+
+				Shell.SetTabBarIsVisible(shell.CurrentPage, true);
+				Assert.True(navView.IsPaneVisible);
+
+				Shell.SetTabBarIsVisible(shell.CurrentPage, false);
+				Assert.False(navView.IsPaneVisible);
+
+				return Task.FromResult(true);
+			});
+		}
+
 		List<WNavigationViewItem> GetTabBarItems(Shell shell)
 		{
 			var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
