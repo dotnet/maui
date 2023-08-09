@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
-		private static bool IsiOS16OrNewer => UIDevice.CurrentDevice.CheckSystemVersion(16, 4);
 		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 		private const string BlazorInitScript = @"
@@ -100,7 +99,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
 				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
 			}
-			
+
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
