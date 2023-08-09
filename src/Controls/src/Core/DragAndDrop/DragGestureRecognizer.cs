@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using System.Windows.Input;
 using Microsoft.Maui.Graphics;
@@ -38,13 +37,13 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Occurs when a drop gesture is detected.
 		/// </summary>
-		public event EventHandler<DropCompletedEventArgs> DropCompleted;
+		public event EventHandler<DropCompletedEventArgs>? DropCompleted;
 
 
 		/// <summary>
 		/// Occurs when a drag gesture is detected.
 		/// </summary>
-		public event EventHandler<DragStartingEventArgs> DragStarting;
+		public event EventHandler<DragStartingEventArgs>? DragStarting;
 
 		/// <summary>
 		/// Gets or sets the value which indicates whether the element the gesture recognizer is attached to can be a drag source.
@@ -111,9 +110,9 @@ namespace Microsoft.Maui.Controls
 
 		// We can't pass Point.Zero as default param because it triggers CS1736 "default parameter must be compile time constant"
 		// Instead, we pass an empty new point since its the same thing as Point.Zero
-		internal DragStartingEventArgs SendDragStarting(IView element, Point position = default)
+		internal DragStartingEventArgs SendDragStarting(IView element, Func<IElement?, Point?>? getPosition = null)
 		{
-			var args = new DragStartingEventArgs(position);
+			var args = new DragStartingEventArgs(getPosition);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);

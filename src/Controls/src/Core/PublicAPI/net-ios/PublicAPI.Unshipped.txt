@@ -6,6 +6,16 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs
 Microsoft.Maui.Controls.PlatformPointerEventArgs.GestureRecognizer.get -> UIKit.UIGestureRecognizer!
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> UIKit.UIView!
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
+Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
+Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.set -> void
+Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.get -> object!
+Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameter.set -> void
+Microsoft.Maui.Controls.DragGestureRecognizer.DropCompleted -> System.EventHandler<Microsoft.Maui.Controls.DropCompletedEventArgs!>?
+Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.set -> void
+Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.get -> object!
+Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set -> void
 Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition) -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
@@ -18,6 +28,11 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
