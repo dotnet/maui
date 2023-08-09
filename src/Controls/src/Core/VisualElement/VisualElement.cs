@@ -1854,7 +1854,9 @@ namespace Microsoft.Maui.Controls
 			remove => _platformContainerViewChanged -= value;
 		}
 
-		void OnLoadedCore(bool updateWiring = true)
+		void OnLoadedCore() => OnLoadedCore(true);
+
+		void OnLoadedCore(bool updateWiring)
 		{
 			if (_isLoadedFired)
 				return;
@@ -1868,7 +1870,8 @@ namespace Microsoft.Maui.Controls
 				UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
-		void OnUnloadedCore(bool updateWiring = true)
+		void OnUnloadedCore() => OnUnloadedCore(true);
+		void OnUnloadedCore(bool updateWiring)
 		{
 			if (!_isLoadedFired)
 				return;
