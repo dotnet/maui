@@ -66,9 +66,9 @@ body:
     attributes:
       label: Is this a regression from previous behavior? In other words, did this work before an update and now does not?
       options:
-        - Yes
-        - No
-        - Not sure, did not test other versions
+        - label: Yes
+        - label: No
+        - label: Not sure, did not test other versions
   - type: dropdown
     id: version-that-worked
     attributes:
