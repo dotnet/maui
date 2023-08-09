@@ -22,6 +22,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SearchBar", true)]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac,TestDevice.Windows
+			});
+
 			try
 			{
 				if (App.IsKeyboardShown())
