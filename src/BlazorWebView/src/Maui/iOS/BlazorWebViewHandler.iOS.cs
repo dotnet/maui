@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-			if (UIDevice.CurrentDevice.CheckSystemVersion(16, 4))
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1)) 
 			{
 				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
 				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
