@@ -150,3 +150,7 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 *REMOVED*~Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
+Microsoft.Maui.Controls.PlatformPointerEventArgs
+Microsoft.Maui.Controls.PlatformPointerEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
+Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Android.Views.View!
