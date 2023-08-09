@@ -359,7 +359,6 @@
 ~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommand.set -> void
 ~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.get -> object
 ~Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set -> void
-~Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage
 ~Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView
 ~Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView view) -> void
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommand.get -> System.Windows.Input.ICommand

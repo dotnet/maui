@@ -17,8 +17,6 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 Microsoft.Maui.Controls.DragEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
-Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(Microsoft.Maui.Graphics.Point position) -> void
-Microsoft.Maui.Controls.DragStartingEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
 ~Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage dataPackage, Microsoft.Maui.Graphics.Point position) -> void
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator

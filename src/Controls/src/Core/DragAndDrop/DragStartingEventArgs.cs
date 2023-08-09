@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -9,22 +8,23 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class DragStartingEventArgs : EventArgs
 	{
+		Func<IElement?, Point?>? _getPosition;
+
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
 		/// </summary>
 		// TODO: JD - Maybe mark this as obsolete? 
 		public DragStartingEventArgs()
 		{
-			Position = Point.Zero;
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
 		/// </summary>
-		/// <param name="position">The location in the coordinate system where the drag started.</param>
-		public DragStartingEventArgs(Point position)
+		/// <param name="getPosition"> Something</param>
+		public DragStartingEventArgs(Func<IElement?, Point?>? getPosition)
 		{
-			Position = position;
+			_getPosition = getPosition;
 		}
 
 		/// <summary>
@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the location of the point in the coordinate system where dragging started.
 		/// </summary>
-		public Point Position { get; private init; }
+		public virtual Point? GetPosition(Element? relativeTo) =>
+			_getPosition?.Invoke(relativeTo);
 	}
 }
