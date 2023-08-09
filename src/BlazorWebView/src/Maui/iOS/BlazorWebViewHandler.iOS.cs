@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 	public partial class BlazorWebViewHandler : ViewHandler<IBlazorWebView, WKWebView>
 	{
 		private IOSWebViewManager? _webviewManager;
-
+		private static bool IsiOS16OrNewer => UIDevice.CurrentDevice.CheckSystemVersion(16, 4);
 		internal const string AppOrigin = "app://" + BlazorWebView.AppHostAddress + "/";
 		internal static readonly Uri AppOriginUri = new(AppOrigin);
 		private const string BlazorInitScript = @"
@@ -95,10 +95,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
-			// Enable Developer Extras for Catalyst/iOS builds for 16.4+
-			webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
-#endif
+			if (UIDevice.CurrentDevice.CheckSystemVersion(16, 4))
+			{
+				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
+				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
+			}
+			
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview
