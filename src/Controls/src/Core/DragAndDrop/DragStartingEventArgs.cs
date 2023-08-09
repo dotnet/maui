@@ -43,8 +43,11 @@ namespace Microsoft.Maui.Controls
 		public DataPackage Data { get; private init; } = new DataPackage();
 
 		/// <summary>
-		/// Gets the location of the point in the coordinate system where dragging started.
+		/// Gets the location where dragging started relative to the specified element.
 		/// </summary>
+		/// <remarks>If <paramref name="relativeTo"/> is <see langword="null"/> then the position of where dragging started in the screen is returned.</remarks>
+		/// <param name="relativeTo">Element whose position is used to calculate the relative position.</param>
+		/// <returns>The point where dragging started relative to <paramref name="relativeTo"/>.</returns>
 		public virtual Point? GetPosition(Element? relativeTo) =>
 			_getPosition?.Invoke(relativeTo);
 	}

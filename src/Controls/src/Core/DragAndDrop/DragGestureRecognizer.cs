@@ -108,14 +108,12 @@ namespace Microsoft.Maui.Controls
 			DropCompleted?.Invoke(this, args);
 		}
 
-		// We can't pass Point.Zero as default param because it triggers CS1736 "default parameter must be compile time constant"
-		// Instead, we pass an empty new point since its the same thing as Point.Zero
-		internal DragStartingEventArgs SendDragStarting(IView element, Func<IElement?, Point?>? getPosition = null)
+		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null)
 		{
 			var args = new DragStartingEventArgs(getPosition);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
-			DragStarting?.Invoke(this, args);
+			DragStarting?.Invoke(element, args);
 
 			if (!args.Handled)
 				args.Data.PropertiesInternal.Add("DragSource", element);
@@ -129,7 +127,7 @@ namespace Microsoft.Maui.Controls
 				args.Data.Image = ie.Source;
 
 			if (String.IsNullOrWhiteSpace(args.Data.Text))
-				args.Data.Text = element.GetStringValue();
+				args.Data.Text = element?.GetStringValue();
 
 			return args;
 		}

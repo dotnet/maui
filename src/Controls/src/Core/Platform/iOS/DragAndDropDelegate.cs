@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			var dragLocation = session.LocationInView(_viewHandler.PlatformView);
+			var originalPoint = session.LocationInView(_viewHandler.PlatformView);
 
-			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, new Point(dragLocation.X, dragLocation.Y));
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
 		}
 
 		[Export("dropInteraction:canHandleSession:")]
@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, Point location)
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element, location);
+				var args = rec.SendDragStarting(element, null); // JDTODO: Fix ios here
 
 				if (args.Cancel)
 					return;

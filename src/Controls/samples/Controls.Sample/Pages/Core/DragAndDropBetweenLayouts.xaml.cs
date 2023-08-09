@@ -36,9 +36,13 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
-			DragStartingPositionLabel.Text = $"Drag Starting Position X:{e.Position.X}, Y:{e.Position.Y}";
+			var view = (View)sender;
 
-			var boxView = (sender as Element).Parent as BoxView;
+			DragStartingPositionLabel.Text = $"Drag Start relative to self X:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragStartingScreenPositionLabel.Text = $"Drag Start relative to screen X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragStartingRelativePositionLabel.Text = $"Drag Start relative to this label X:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.Y}";
+
+			var boxView = sender as BoxView;
 			var sl = boxView.Parent as StackLayout;
 			e.Data.Properties.Add("Color", boxView.Background);
 			e.Data.Properties.Add("Source", sl);
@@ -51,7 +55,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
-			var sl = (sender as Element).Parent.Parent as StackLayout;
+			var sl = (sender as Element).Parent as StackLayout;
 
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.White;

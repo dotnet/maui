@@ -219,21 +219,16 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				if (!rec.CanDrag)
+				var view = Element as View;
+
+				if (!rec.CanDrag | view is null)
 				{
 					e.Cancel = true;
 					return;
 				}
 
 				var handler = sender as IViewHandler;
-
-				var element = (UIElement)e.OriginalSource;
-
-				// WinUI's APIs should still work if the source element is null
-				// Trying to catch the null here and returning a (0,0) point would always return (0,0)
-				var position = GetPosition(element, e); 
-
-				var args = rec.SendDragStarting(handler?.VirtualView, position);
+				var args = rec.SendDragStarting(view!, (relativeTo) => GetPosition(relativeTo, e));
 
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
@@ -532,11 +527,6 @@ namespace Microsoft.Maui.Controls.Platform
 				return null;
 
 			return result.Value.ToPoint();
-		}
-
-		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragStartingEventArgs e)
-		{
-			return e.GetPosition(element).ToPoint();
 		}
 
 		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragEventArgs e)

@@ -24,6 +24,7 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
         <Grid
             Grid.Column="0">
@@ -40,12 +41,6 @@
                     </StackLayout.GestureRecognizers>
                 </StackLayout>
             </ScrollView>
-            <StackLayout MaximumHeightRequest="100">
-                <Label 
-                    x:Name="DragStartingPositionLabel"/>
-                <Label 
-                    x:Name="DragPositionLabel"/>
-            </StackLayout>
         </Grid>
         <ScrollView Grid.Column="1">
             <StackLayout 
@@ -60,5 +55,11 @@
                 </StackLayout.GestureRecognizers>
             </StackLayout>
         </ScrollView>
+        <StackLayout MaximumHeightRequest="100" Grid.Column="2">
+            <Label x:Name="DragStartingPositionLabel"/>
+            <Label x:Name="DragStartingScreenPositionLabel"/>
+            <Label x:Name="DragStartingRelativePositionLabel"/>
+            <Label x:Name="DragPositionLabel"/>
+        </StackLayout>
     </Grid>
 </views:BasePage>

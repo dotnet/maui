@@ -265,9 +265,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (v.Handle == IntPtr.Zero)
 					return;
 
-				var position = new Point(e.GetX(), e.GetY());
-
-				var args = rec.SendDragStarting(element, position);
+				var args = rec.SendDragStarting(element, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
 
 				if (args.Cancel)
 					return;
