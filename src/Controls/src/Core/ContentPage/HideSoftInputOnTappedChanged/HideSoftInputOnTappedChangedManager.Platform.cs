@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls
 
 			DisconnectFromPlatform();
 			IDisposable? platformToken = SetupHideSoftInputOnTapped((_view.Handler as IPlatformViewHandler)?.PlatformView);
-			ve.RemovedFromPlatformVisualTree += OnFocusedViewRemovedFromPlatformTree;
+			ve.Loaded += OnFocusedViewRemovedFromPlatformTree;
 
 #if ANDROID
 			var window = ve.Window;
@@ -86,7 +86,7 @@ namespace Microsoft.Maui.Controls
 				window.DispatchTouchEvent -= OnWindowDispatchedTouch;
 				window = null;
 #endif
-				ve.RemovedFromPlatformVisualTree -= OnFocusedViewRemovedFromPlatformTree;
+				ve.Loaded -= OnFocusedViewRemovedFromPlatformTree;
 			});
 
 			return _watchingForTaps;
