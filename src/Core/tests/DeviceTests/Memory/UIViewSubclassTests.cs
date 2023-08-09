@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
-using UIKit;
 using Xunit;
 
 #if IOS || MACCATALYST
+
+using UIKit;
 
 namespace Microsoft.Maui.DeviceTests.Memory
 {
@@ -48,6 +49,6 @@ namespace Microsoft.Maui.DeviceTests.Memory
 			Assert.False(reference.IsAlive, "MauiDoneAccessoryView should not be alive!");
 		}
 #endif
+	}
 }
-
 #endif
