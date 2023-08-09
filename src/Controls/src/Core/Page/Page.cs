@@ -661,6 +661,8 @@ namespace Microsoft.Maui.Controls
 			if (!IsLoaded)
 			{
 				_pendingNavigatedToArgs = args;
+				Loaded -= OnPageLoaded;
+				Loaded += OnPageLoaded;
 			}
 			else
 			{
@@ -670,14 +672,13 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		private protected override void OnAddedToPlatformVisualTree()
+		void OnPageLoaded(object sender, EventArgs e)
 		{
+			Loaded -= OnPageLoaded;
 			if (_pendingNavigatedToArgs is not null)
 			{
 				SendNavigatedTo(_pendingNavigatedToArgs);
 			}
-
-			base.OnAddedToPlatformVisualTree();
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)

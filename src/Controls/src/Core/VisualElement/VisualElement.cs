@@ -1854,7 +1854,7 @@ namespace Microsoft.Maui.Controls
 			remove => _platformContainerViewChanged -= value;
 		}
 
-		void OnLoadedCore()
+		void OnLoadedCore(bool updateWiring = true)
 		{
 			if (_isLoadedFired)
 				return;
@@ -1864,10 +1864,11 @@ namespace Microsoft.Maui.Controls
 
 			// If the user is also watching unloaded we need to verify
 			// unloaded is still correctly being watched for.
-			UpdatePlatformUnloadedLoadedWiring(Window);
+			if (updateWiring)
+				UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
-		void OnUnloadedCore()
+		void OnUnloadedCore(bool updateWiring = true)
 		{
 			if (!_isLoadedFired)
 				return;
@@ -1877,7 +1878,8 @@ namespace Microsoft.Maui.Controls
 
 			// If the user is also watching loaded we need to verify
 			// loaded is still correctly being watched for.
-			UpdatePlatformUnloadedLoadedWiring(Window);
+			if (updateWiring)
+				UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
@@ -1898,45 +1900,12 @@ namespace Microsoft.Maui.Controls
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
-		internal bool IsAddedToPlatformVisualTree { get; private set; }
-
-		void CheckAddedToPlatformVisualTree(Window? newWindow, Window? oldWindow = null)
-		{
-			if (newWindow == oldWindow)
-				return;
-
-			if (IsLoaded)
-			{
-				if (!IsAddedToPlatformVisualTree)
-					OnAddedToPlatformVisualTree();
-
-				IsAddedToPlatformVisualTree = true;
-			}
-			else
-			{
-				if (IsAddedToPlatformVisualTree)
-					OnRemovedFromPlatformVisualTree(oldWindow);
-
-				IsAddedToPlatformVisualTree = false;
-			}
-		}
-
-		internal event EventHandler AddedToPlatformVisualTree;
-		internal event EventHandler RemovedFromPlatformVisualTree;
-
-		private protected virtual void OnAddedToPlatformVisualTree() =>
-			AddedToPlatformVisualTree?.Invoke(this, EventArgs.Empty);
-		private protected virtual void OnRemovedFromPlatformVisualTree(IWindow? oldWindow) =>
-			RemovedFromPlatformVisualTree?.Invoke(this, EventArgs.Empty);
-
 		// We only want to wire up to platform loaded events
 		// if the user is watching for them. Otherwise
 		// this will get wired up for every single VE that's on 
 		// the screen
 		void UpdatePlatformUnloadedLoadedWiring(Window? newWindow, Window? oldWindow = null)
 		{
-			CheckAddedToPlatformVisualTree(newWindow, oldWindow);
-
 			// If I'm not attached to a window and I haven't started watching any platform events
 			// then it's not useful to wire anything up. We will just wait until
 			// This VE gets connected to the xplat Window before wiring up any events
@@ -1954,6 +1923,18 @@ namespace Microsoft.Maui.Controls
 #endif
 
 				_watchingPlatformLoaded = false;
+
+				// If no ones watching the events let's still
+				// just update the loaded states if they've changed
+				if (IsLoaded)
+				{
+					OnLoadedCore(false);
+				}
+				else
+				{
+					OnUnloadedCore(false);
+				}
+
 				return;
 			}
 			else if (oldWindow is not null)
