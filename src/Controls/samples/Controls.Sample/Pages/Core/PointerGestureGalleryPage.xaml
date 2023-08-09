@@ -5,6 +5,19 @@
     x:Class="Maui.Controls.Sample.Pages.PointerGestureGalleryPage"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <StackLayout>
+
+        <Label 
+            x:Name="pgrLabel"
+            FontSize="24"
+            Text="Hover, press, and release me!">
+            <Label.GestureRecognizers>
+                <PointerGestureRecognizer PointerEntered="PointerHoverStarted" PointerExited="PointerHoverEnded" PointerMoved="PointerMoved" PointerPressed="PointerPressStarted" PointerReleased="PointerPressEnded" />
+            </Label.GestureRecognizers>
+        </Label>
+        <Label x:Name="pgrPositionLabel" Text="Hover above label to reveal pointer position"/>
+        <Label x:Name="pgrPositionToWindow" />
+        <Label x:Name="pgrPositionToThisLabel" />
+
         <Label 
             x:Name="hoverLabel"
             FontSize="24"
