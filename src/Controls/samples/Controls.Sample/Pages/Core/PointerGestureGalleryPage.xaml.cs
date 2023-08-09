@@ -5,20 +5,54 @@ namespace Maui.Controls.Sample.Pages
 {
 	public partial class PointerGestureGalleryPage
 	{
-		Command _hoverEnterCommand;
+		Command _hoverCommand;
 
 		public PointerGestureGalleryPage()
 		{
 			InitializeComponent();
 
-			_hoverEnterCommand = new Command<Color>(HandleHoverEnterCommand);
+			_hoverCommand = new Command<Color>(HandleHoverCommand);
 
-			var colorfulHoverEnterGesture = new PointerGestureRecognizer
+			var colorfulHoverGesture = new PointerGestureRecognizer
 			{
-				PointerEnteredCommand = _hoverEnterCommand,
-				PointerEnteredCommandParameter = Colors.Green
+				PointerEnteredCommand = _hoverCommand,
+				PointerEnteredCommandParameter = Colors.Green,
+				PointerExitedCommand = _hoverCommand,
+				PointerExitedCommandParameter = Colors.Black
 			};
-			colorfulHoverLabel.GestureRecognizers.Add(colorfulHoverEnterGesture);
+			colorfulHoverLabel.GestureRecognizers.Add(colorfulHoverGesture);
+		}
+
+		void PointerHoverStarted(object sender, PointerEventArgs e)
+		{
+			pgrLabel.Text = "Thanks for hovering me! Now press me!";
+			pgrLabel.BackgroundColor = Colors.PaleGreen;
+		}
+
+		void PointerHoverEnded(object sender, PointerEventArgs e)
+		{
+			pgrLabel.Text = "Hover me again!";
+			pgrPositionLabel.Text = "Hover above label to reveal pointer position again";
+			pgrLabel.BackgroundColor = Colors.Transparent;
+		}
+
+		void PointerMoved(object sender, PointerEventArgs e)
+		{
+			pgrPositionLabel.Text = $"Pointer position is at: {e.GetPosition((View)sender)}";
+			pgrPositionToWindow.Text = $"Pointer position inside window: {e.GetPosition(null)}";
+			pgrPositionToThisLabel.Text = $"Pointer position relative to this label: {e.GetPosition(pgrPositionToThisLabel)}";
+		}
+
+		void PointerPressStarted(object sender, PointerEventArgs e)
+		{
+			pgrLabel.Text = "Thanks for pressing me! Now release me!";
+			pgrLabel.BackgroundColor = Colors.SkyBlue;
+		}
+
+		void PointerPressEnded(object sender, PointerEventArgs e)
+		{
+			pgrLabel.Text = "Thanks for releasing me! Press me again or leave me!";
+			pgrLabel.BackgroundColor = Colors.Yellow;
 		}
 
 		void HoverBegan(object sender, PointerEventArgs e)
@@ -39,7 +73,7 @@ namespace Maui.Controls.Sample.Pages
 			positionToThisLabel.Text = $"Pointer position relative to this label: {e.GetPosition(positionToThisLabel)}";
 		}
 
-		void HandleHoverEnterCommand(Color hoverColor)
+		void HandleHoverCommand(Color hoverColor)
 		{
 			colorfulHoverLabel.TextColor = hoverColor;
 		}
