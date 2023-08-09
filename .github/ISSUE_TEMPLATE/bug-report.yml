@@ -61,7 +61,7 @@ body:
         - Unknown/Other
     validations:
       required: true
-  - type: checkbox
+  - type: checkboxes
     id: is-regression
     attributes:
       label: Is this a regression from previous behavior? In other words, did this work before an update and now does not?
