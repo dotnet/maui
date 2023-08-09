@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Graphics
 			StyleType == other.StyleType &&
 			Weight == other.Weight &&
 			((Name is null && other.Name is null) || Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase));
-	
+
 		public override bool Equals(object obj)
 			=> obj is IFont font && Equals(font);
 
