@@ -1438,7 +1438,7 @@ namespace Microsoft.Maui.Controls
 
 #nullable enable
 		Semantics? _semantics;
-		bool _isLoadedFired;
+		private protected bool IsLoadedSet { get; private set; }
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
@@ -1804,7 +1804,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
-				if (_isLoadedFired)
+				if (IsLoadedSet)
 					_loaded?.Invoke(this, EventArgs.Empty);
 
 			}
@@ -1848,10 +1848,10 @@ namespace Microsoft.Maui.Controls
 
 		void OnLoadedCore(bool updateWiring)
 		{
-			if (_isLoadedFired)
+			if (IsLoadedSet)
 				return;
 
-			_isLoadedFired = true;
+			IsLoadedSet = true;
 			_loaded?.Invoke(this, EventArgs.Empty);
 
 			// If the user is also watching unloaded we need to verify
@@ -1863,10 +1863,10 @@ namespace Microsoft.Maui.Controls
 		void OnUnloadedCore() => OnUnloadedCore(true);
 		void OnUnloadedCore(bool updateWiring)
 		{
-			if (!_isLoadedFired)
+			if (!IsLoadedSet)
 				return;
 
-			_isLoadedFired = false;
+			IsLoadedSet = false;
 			_unloaded?.Invoke(this, EventArgs.Empty);
 
 			// If the user is also watching loaded we need to verify

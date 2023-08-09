@@ -514,28 +514,43 @@ namespace Microsoft.Maui.Platform
 			return frameworkElement.IsAttachedToWindow;
 		}
 
-		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
+		internal static IDisposable OnLoaded(this View view, Action action)
 		{
-			if (frameworkElement.IsLoaded())
+			if (view.IsLoaded())
 			{
 				action();
 				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
-					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
+					view.ViewAttachedToWindow -= routedEventHandler;
 			});
 
 			routedEventHandler = (_, __) =>
 			{
-				disposable.Dispose();
+				if (!view.IsLoaded() && Looper.MyLooper() is Looper q)
+				{
+					new Handler(q).Post(() =>
+					{
+						if (disposable is not null)
+							action.Invoke();
+
+						disposable?.Dispose();
+						disposable = null;
+					});
+
+					return;
+				}
+
+				disposable?.Dispose();
+				disposable = null;
 				action();
 			};
 
-			frameworkElement.ViewAttachedToWindow += routedEventHandler;
+			view.ViewAttachedToWindow += routedEventHandler;
 			return disposable;
 		}
 
@@ -548,7 +563,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					view.ViewDetachedFromWindow -= routedEventHandler;
@@ -556,23 +571,24 @@ namespace Microsoft.Maui.Platform
 
 			routedEventHandler = (_, __) =>
 			{
-				disposable.Dispose();
 				// This event seems to fire prior to the view actually being
 				// detached from the window
-				if (view.IsLoaded())
+				if (view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
-					var q = Looper.MyLooper();
-					if (q != null)
+					new Handler(q).Post(() =>
 					{
-						new Handler(q).Post(() =>
-						{
+						if (disposable is not null)
 							action.Invoke();
-						});
 
-						return;
-					}
+						disposable?.Dispose();
+						disposable = null;
+					});
+
+					return;
 				}
 
+				disposable?.Dispose();
+				disposable = null;
 				action();
 			};
 
