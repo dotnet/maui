@@ -70,8 +70,6 @@ namespace Microsoft.Maui.Controls.Handlers
 				platformView.Loaded += OnNavigationViewLoaded;
 
 			base.ConnectHandler(platformView);
-
-			
 			ShellItemNavigationView.SelectionChanged += OnNavigationTabChanged;
 		}
 
