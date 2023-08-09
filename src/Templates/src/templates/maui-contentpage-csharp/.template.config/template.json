@@ -6,7 +6,7 @@
     "groupIdentity": "Microsoft.Maui.CSharpContentPage",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ContentPage (C#)",
-    "description": "Creates a class for single view, which is often a layout such as as Grid or StackLayout (C#).",
+    "description": "A page for displaying content using C#.",
     "shortName": "maui-page-csharp",
     "tags": {
       "language": "C#",
