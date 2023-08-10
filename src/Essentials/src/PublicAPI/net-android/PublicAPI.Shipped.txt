@@ -90,6 +90,7 @@
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequestAsync() -> System.Threading.Tasks.Task<Microsoft.Maui.ApplicationModel.PermissionStatus>
 ~override Microsoft.Maui.ApplicationModel.Permissions.LocationWhenInUse.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Microphone.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
+~override Microsoft.Maui.ApplicationModel.Permissions.NearbyWifiDevices.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.NetworkState.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Phone.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
 ~override Microsoft.Maui.ApplicationModel.Permissions.Sensors.RequiredPermissions.get -> (string androidPermission, bool isRuntime)[]
@@ -423,6 +424,8 @@ Microsoft.Maui.ApplicationModel.Permissions.Media
 Microsoft.Maui.ApplicationModel.Permissions.Media.Media() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Microphone
 Microsoft.Maui.ApplicationModel.Permissions.Microphone.Microphone() -> void
+Microsoft.Maui.ApplicationModel.Permissions.NearbyWifiDevices
+Microsoft.Maui.ApplicationModel.Permissions.NearbyWifiDevices.NearbyWifiDevices() -> void
 Microsoft.Maui.ApplicationModel.Permissions.NetworkState
 Microsoft.Maui.ApplicationModel.Permissions.NetworkState.NetworkState() -> void
 Microsoft.Maui.ApplicationModel.Permissions.PermissionResult
