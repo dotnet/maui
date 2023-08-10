@@ -42,12 +42,13 @@ namespace Maui.Controls.Sample
 			}
 		}
 
-		readonly List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
+		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
 			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 			new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Core Gallery"),
 			new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
+      new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 			new GalleryPageFactory(() => new TabbedPageScrollConflictsPage(), "TabbedPage ScrollConflicts Gallery"),
 		};
 

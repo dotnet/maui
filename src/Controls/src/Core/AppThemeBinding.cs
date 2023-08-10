@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
@@ -61,7 +62,13 @@ namespace Microsoft.Maui.Controls
 			else
 				Set();
 
-			void Set() => target.SetValueCore(_targetProperty, GetValue(), Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+			void Set() {
+				var value = GetValue();
+				if (value is DynamicResource dynamicResource)
+					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
+				else
+					target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+			};
 		}
 
 		object _light;

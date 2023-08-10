@@ -19,6 +19,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
@@ -36,6 +37,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(CheckBox))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(RefreshView))]
