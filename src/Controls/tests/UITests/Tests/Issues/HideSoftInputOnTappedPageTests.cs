@@ -24,7 +24,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			UITestContext.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Mac,TestDevice.Windows
+				TestDevice.Mac, TestDevice.Windows
 			});
 
 			try
@@ -54,6 +54,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void TogglingHideSoftInputOnTapped()
 		{
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac, TestDevice.Windows
+			});
+
 			try
 			{
 				if (App.IsKeyboardShown())
