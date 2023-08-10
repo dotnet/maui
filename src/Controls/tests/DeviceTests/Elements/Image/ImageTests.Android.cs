@@ -59,7 +59,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 				await image.Wait();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
+				await handler.ToPlatform().AssertContainsColor(Colors.Red
+#if WINDOWS
+					, handler.MauiContext
+#endif
+				);
 			});
 		}
 	}
