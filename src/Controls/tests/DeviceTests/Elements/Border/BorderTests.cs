@@ -77,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 			// This marks the outside edge of the rounded corner.
 			var outerXY = xy;
 
-			// Add the stroke thickness to find the inner edge of the rounded corner.
+			// Add half the stroke thickness to find the inner edge of the rounded corner.
 			var innerXY = xy + (strokeThickness / 2);
 
 			// Verify that the color outside of the rounded corner is the parent's color (White)

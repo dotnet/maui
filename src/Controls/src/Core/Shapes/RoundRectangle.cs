@@ -54,12 +54,10 @@ namespace Microsoft.Maui.Controls.Shapes
 				Handler?.UpdateValue(nameof(IShapeView.Shape));
 		}
 
-		public override PathF GetPath()
+		PathF GetPathWithInset(float inset)
 		{
 			var width = WidthForPathComputation;
 			var height = HeightForPathComputation;
-
-			var path = new PathF();
 
 			float x = (float)StrokeThickness / 2;
 			float y = (float)StrokeThickness / 2;
@@ -67,18 +65,27 @@ namespace Microsoft.Maui.Controls.Shapes
 			float w = (float)(width - StrokeThickness);
 			float h = (float)(height - StrokeThickness);
 
-			float density = 1f;
 #if ANDROID
-			density = (float)DeviceDisplay.MainDisplayInfo.Density;
+			float density = Handler?.MauiContext?.Context?.GetDisplayDensity() ?? (float)DeviceDisplay.MainDisplayInfo.Density;
+#else
+			float density = 1f;
 #endif
-			float topLeftCornerRadius = (float)CornerRadius.TopLeft * density;
-			float topRightCornerRadius = (float)CornerRadius.TopRight * density;
-			float bottomLeftCornerRadius = (float)CornerRadius.BottomLeft * density;
-			float bottomRightCornerRadius = (float)CornerRadius.BottomRight * density;
+
+			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft * density - inset);
+			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight * density - inset);
+			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft * density - inset);
+			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight * density - inset);
+
+			var path = new PathF();
 
 			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
 
 			return path;
+		}
+
+		public override PathF GetPath()
+		{
+			return GetPathWithInset(0.0f);
 		}
 
 		PathF IShape.PathForBounds(Graphics.Rect viewBounds)
@@ -95,29 +102,7 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		internal PathF GetInnerPath(float strokeWidth)
 		{
-			var width = WidthForPathComputation;
-			var height = HeightForPathComputation;
-
-			var path = new PathF();
-
-			float x = (float)StrokeThickness / 2;
-			float y = (float)StrokeThickness / 2;
-
-			float w = (float)(width - StrokeThickness);
-			float h = (float)(height - StrokeThickness);
-
-			float density = 1f;
-#if ANDROID
-			density = (float)DeviceDisplay.MainDisplayInfo.Density;
-#endif
-			float topLeftCornerRadius = (float)Math.Max(0, CornerRadius.TopLeft * density - strokeWidth);
-			float topRightCornerRadius = (float)Math.Max(0, CornerRadius.TopRight * density - strokeWidth);
-			float bottomLeftCornerRadius = (float)Math.Max(0, CornerRadius.BottomLeft * density - strokeWidth);
-			float bottomRightCornerRadius = (float)Math.Max(0, CornerRadius.BottomRight * density - strokeWidth);
-
-			path.AppendRoundedRectangle(x, y, w, h, topLeftCornerRadius, topRightCornerRadius, bottomLeftCornerRadius, bottomRightCornerRadius);
-
-			return path;
+			return GetPathWithInset(strokeWidth);
 		}
 
 		PathF IRoundRectangle.InnerPathForBounds(Rect viewBounds, float strokeWidth)
