@@ -1804,8 +1804,6 @@ namespace Microsoft.Maui.Controls
 			{
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
-				if (IsLoadedSet)
-					_loaded?.Invoke(this, EventArgs.Empty);
 
 			}
 			remove
