@@ -2,7 +2,7 @@ parameters:
   androidPool: { }
   iosPool: { }
   androidApiLevels: [ 30 ]
-  iosVersions: [ 'latest' ]
+  iosVersions: [ '16.4' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   projects:
