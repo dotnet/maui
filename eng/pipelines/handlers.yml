@@ -76,13 +76,11 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
   - name: PackPlatforms
@@ -92,15 +90,32 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
+
+  - name: RunTemplatePlatforms
+    type: object
+    default:
+    - name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOnAndroid
+      artifact: templates-run-android
+    - name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOniOS
+      artifact: templates-run-ios
+
   - name: TestTargetFrameworks
     type: object
     default:
@@ -253,6 +268,9 @@ stages:
     dependsOn: pack_net
     jobs:
     - template: common/maui-templates.yml
+      parameters:
+        RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
+        BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - template: common/security-compliance.yml
