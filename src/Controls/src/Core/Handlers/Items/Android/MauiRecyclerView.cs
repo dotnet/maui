@@ -425,13 +425,31 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual int DetermineTargetPosition(ScrollToRequestEventArgs args)
 		{
+			var item = args.Item;
 			if (args.Mode == ScrollToMode.Position)
 			{
-				// TODO hartez 2018/08/28 15:40:03 Need to handle group indices here as well	
-				return args.Index;
+				item = FindBoundItem(args);
 			}
 
-			return ItemsViewAdapter.GetPositionForItem(args.Item);
+			return ItemsViewAdapter.GetPositionForItem(item);
+		}
+
+		private object FindBoundItem(ScrollToRequestEventArgs args)
+		{
+			if (args.Index >= ItemsViewAdapter.ItemsSource.Count)
+			{
+				return null;
+			}
+
+			if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource &&
+				args.GroupIndex < groupItemSource.Count)
+			{
+				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
+
+				// NOTE: GetItem calls AdjustIndexRequest, which subtracts 1 if we have a header
+				return group.GetItem(args.Index + 1);
+			}
+			return ItemsViewAdapter.ItemsSource.GetItem(args.Index);
 		}
 
 		protected virtual void UpdateItemSpacing()

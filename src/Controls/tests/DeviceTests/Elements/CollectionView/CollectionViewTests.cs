@@ -2,8 +2,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.DeviceTests.Stubs;
@@ -11,7 +13,6 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -76,6 +77,75 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
 			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
+		}
+
+		[Fact]
+		public async Task CollectionScrollToGroupWorks()
+		{
+			SetupBuilder();
+
+			var dataList = new List<TestData>();
+			string letters = "nice"; // 4 groups
+			for (int i = 0; i < letters.Length; i++)
+			{
+				for (int n = 0; n < 10; n++)
+				{
+					dataList.Add(new TestData
+					{
+						Name = $"{letters[i]}_{n + 1}"
+					});
+				}
+			}
+
+			var grouped =
+				  from p in dataList
+				  orderby p.Name
+				  group p by p.Name[0].ToString()
+				  into groups
+				  select
+					   new TestDataGroup(groups.Key, groups.ToList());
+
+			var collectionView = new CollectionView
+			{
+				IsGrouped = true,
+				ItemsSource = grouped.ToList(),
+				ItemTemplate = new DataTemplate(() => 
+				{
+					var name = new Label()
+					{
+						TextColor = Colors.Grey
+					};
+					name.SetBinding(Label.TextProperty, "Name");
+					return name;
+				}),
+				GroupHeaderTemplate = new DataTemplate(() =>
+				{
+					var name = new Label()
+					{
+						TextColor = Colors.White,
+						FontSize = 18,
+						FontAttributes = FontAttributes.Bold
+					};
+					name.SetBinding(Label.TextProperty, "Name");
+					return name;
+				})
+			};
+
+			var lastVisibleItemIndex = -1;
+			collectionView.Scrolled += (s, e) =>
+			{
+				lastVisibleItemIndex = e.LastVisibleItemIndex;
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				collectionView.ScrollTo(index: 4, groupIndex: 3); // Group 'c'
+
+				await Task.Delay(100);
+
+				// each group has 10 items, plus the 3 headers
+				Assert.True(lastVisibleItemIndex == 34);
+			});
 		}
 
 		[Theory]
@@ -225,6 +295,22 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(footerLabel.Width > 0);
 				}
 			});
+		}
+
+		private class TestData
+		{
+			public string Name { get; set; }
+		}
+
+		private class TestDataGroup : List<TestData>
+		{
+			public string Name { get; set; }
+
+			public TestDataGroup(string name, List<TestData> data)
+				 : base(data)
+			{
+				Name = name;
+			}
 		}
 
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
