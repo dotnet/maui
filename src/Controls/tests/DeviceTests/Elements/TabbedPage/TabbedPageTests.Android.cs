@@ -113,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		BottomNavigationView GetBottomNavigationView(TabbedViewHandler tabViewHandler)
 		{
-			var layout = (tabViewHandler.PlatformView as Android.Views.IViewParent).FindParent((view) => view is CoordinatorLayout)
+			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
 				as CoordinatorLayout;
 
 			return layout.GetFirstChildOfType<BottomNavigationView>();

@@ -213,12 +213,10 @@ namespace Microsoft.Maui.Controls
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding)
 			=> SetBinding(targetProperty, binding, SetterSpecificity.FromBinding);
 
-		//FIXME, use specificity
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, SetterSpecificity specificity)
 		{
 			if (targetProperty == null)
 				throw new ArgumentNullException(nameof(targetProperty));
-
 
 			if (targetProperty.IsReadOnly && binding.Mode == BindingMode.OneWay)
 			{
@@ -227,6 +225,14 @@ namespace Microsoft.Maui.Controls
 			}
 
 			var context = GetOrCreateContext(targetProperty);
+
+			//if the value is manually set (has highest specificity than FromBinding), we reassign the specificity so it'll get replaced when the binding is applied
+			if (context.Values.Last().Key.CompareTo(SetterSpecificity.FromBinding) > 0)
+			{
+				var kvp = context.Values.Last();
+				context.Values.Remove(kvp.Key);
+				context.Values.Add(SetterSpecificity.FromBinding, kvp.Value);
+			}
 
 			context.Binding?.Unapply();
 			context.BindingSpecificity = specificity;
@@ -237,8 +243,6 @@ namespace Microsoft.Maui.Controls
 			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
 
 			binding.Apply(BindingContext, this, targetProperty, false, specificity);
-
-
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetInheritedBindingContext']/Docs/*" />

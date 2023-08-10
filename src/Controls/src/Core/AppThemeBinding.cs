@@ -62,7 +62,8 @@ namespace Microsoft.Maui.Controls
 			else
 				Set();
 
-			void Set() {
+			void Set()
+			{
 				var value = GetValue();
 				if (value is DynamicResource dynamicResource)
 					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
