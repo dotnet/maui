@@ -150,7 +150,6 @@ stages:
             steps:
               - template: common/provision.yml
                 parameters:
-                  platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
