@@ -5,13 +5,22 @@ using System.Text;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
 	public partial class Element
 	{
+		/// <summary>
+		/// Maps the abstract <see cref="AutomationProperties.IsInAccessibleTreeProperty"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="element">The associated <see cref="Element"/> instance</param>
 		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
 		{
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="AutomationProperties.ExcludedWithChildrenProperty"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="element">The associated <see cref="Element"/> instance.</param>
 		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element element)
 		{
 		}
