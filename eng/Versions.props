@@ -83,8 +83,8 @@
     <DotNetMonoManifestVersionBand>$(DotNetVersionBand)</DotNetMonoManifestVersionBand>
     <DotNetEmscriptenManifestVersionBand>$(DotNetVersionBand)</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
+    <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
     <!-- NOTE: temporary as we move to RC 1 builds -->
-    <DotNetMaciOSManifestVersionBand>8.0.100-preview.7</DotNetMaciOSManifestVersionBand>
     <DotNetTizenManifestVersionBand>8.0.100-preview.7</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
