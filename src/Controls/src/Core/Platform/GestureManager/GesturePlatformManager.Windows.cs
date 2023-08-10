@@ -476,7 +476,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
-				_fingers.Remove(id);		
+				_fingers.Remove(id);
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
@@ -484,15 +484,18 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerEntered(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerExited(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerMoved(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
