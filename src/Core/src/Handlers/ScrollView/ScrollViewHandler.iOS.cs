@@ -167,6 +167,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			return (rect) =>
 			{
+				var contentSize = internalArrange(rect);
+
+				SetContentSizeForOrientation(platformScrollView, platformScrollView.Bounds.Width, platformScrollView.Bounds.Height, scrollOrientation, contentSize);
+
 				if (container.Superview is UIScrollView scrollView)
 				{
 					// Ensure the container is at least the size of the UIScrollView itself, so that the 
@@ -174,17 +178,13 @@ namespace Microsoft.Maui.Handlers
 					// container. (Everything will look correct if they do, but hit testing won't work properly.)
 
 					var scrollViewBounds = scrollView.Bounds;
-					var containerBounds = container.Bounds;
+					var containerBounds = contentSize;
 
 					container.Bounds = new CGRect(0, 0,
 						Math.Max(containerBounds.Width, scrollViewBounds.Width),
 						Math.Max(containerBounds.Height, scrollViewBounds.Height));
 					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
 				}
-
-				var contentSize = internalArrange(rect);
-
-				SetContentSizeForOrientation(platformScrollView, platformScrollView.Bounds.Width, platformScrollView.Bounds.Height, scrollOrientation, contentSize);
 
 				return contentSize;
 			};
