@@ -224,10 +224,10 @@ namespace Microsoft.Maui.Controls
 			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
 			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
 
-			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent);
-			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent);
+			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
