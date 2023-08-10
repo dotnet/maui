@@ -60,20 +60,7 @@ namespace Microsoft.Maui.AppiumTests
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
 			{
-				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
-
-				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
-
-				if (App is IApp2 app2)
-				{
-					var pageSource = app2.ElementTree;
-					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
-				}
-
-				foreach (var log in Directory.GetFiles(logDir))
-				{
-					TestContext.AddTestAttachment(log, Path.GetFileName(log));
-				}
+				SaveDiagnosticLogs();
 			}
 		}
 
@@ -87,6 +74,15 @@ namespace Microsoft.Maui.AppiumTests
 		[OneTimeTearDown()]
 		public void OneTimeTearDown()
 		{
+			var outcome = TestContext.CurrentContext.Result.Outcome;
+
+			// We only care about setup failures as regular test failures will already do logging
+			if (outcome.Status == ResultState.SetUpFailure.Status &&
+				outcome.Site == ResultState.SetUpFailure.Site)
+			{
+				SaveDiagnosticLogs();
+			}
+
 			FixtureTeardown();
 		}
 
@@ -122,7 +118,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public void VerifyScreenshot(string? name = null)
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac)
+			if (_testDevice == TestDevice.Mac)
 			{
 				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
 				// is of the entire screen, not just the app. Later when xharness relay support is in place to
@@ -132,15 +128,12 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			if (name == null)
-				name = TestContext.CurrentContext.Test.MethodName;
+				name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
-			IApp2? app = App as IApp2;
-			if (app is null)
+			if (App is not IApp2 app)
 				throw new InvalidOperationException("App is not an IApp2");
 
-			byte[] screenshotPngBytes = app.Screenshot();
-			if (screenshotPngBytes is null)
-				throw new InvalidOperationException("Failed to get screenshot");
+			byte[] screenshotPngBytes = app.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
 			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
@@ -173,6 +166,26 @@ namespace Microsoft.Maui.AppiumTests
 			};
 
 			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: platform, testContext: _visualTestContext);
+		}
+
+		private void SaveDiagnosticLogs()
+		{
+			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+			string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+			_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}-ScreenShot"));
+
+			if (App is IApp2 app2)
+			{
+				var pageSource = app2.ElementTree;
+				File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}-PageSource.txt"), pageSource);
+			}
+
+			foreach (var log in Directory.GetFiles(logDir))
+			{
+				TestContext.AddTestAttachment(log, Path.GetFileName(log));
+			}
 		}
 	}
 }

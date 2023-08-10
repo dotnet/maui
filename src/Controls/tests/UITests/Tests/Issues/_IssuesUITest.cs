@@ -9,15 +9,40 @@ namespace Microsoft.Maui.AppiumTests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			NavigateToIssue(Issue);
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+					NavigateToIssue(Issue);
+					break;
+				}
+				catch (Exception)
+				{
+					if (retries++ < 1)
+					{
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 		}
 
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			App.NavigateBack();
-			App.Tap("GoBackToGalleriesButton");
+			try
+			{
+				App.NavigateBack();
+				App.Tap("GoBackToGalleriesButton");
+			}
+			catch (Exception)
+			{ 
+			}
 		}
 
 		public abstract string Issue { get; }
