@@ -250,6 +250,15 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		protected Task AssertColorsAtPoints(IView view, Type handlerType, Color[] colors, Point[] points)
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				await plaformView.AssertColorsAtPointsAsync(colors, points, MauiContext);
+			});
+		}
+
 		public void Dispose()
 		{
 			((IDisposable)_mauiApp)?.Dispose();
