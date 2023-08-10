@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "FlowDirection",
 			   new TypeConverterAttribute(typeof(FlowDirectionDesignTypeConverter)));
 
-			// We need to supersede type converted declared on VisualElement.Background,
+			// We need to supersede type converter declared on VisualElement.Background,
 			// otherwise VS will use generic "all strings allowed" converter which
 			// does not expose color values, i.e. no XAML intellisense popup
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "Background",
