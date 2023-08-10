@@ -67,11 +67,12 @@ namespace Microsoft.Maui.AppiumTests
 			InitialSetup(TestContextSetupFixture.TestContext);
 			try
 			{
+				SaveScreenshotAndPageSource("BeforeFixtureSetup");
 				FixtureSetup();
 			}
 			catch
 			{
-				SaveScreenshotAndPageSource("OneTimeSetup");
+				SaveScreenshotAndPageSource("FixtureSetup");
 				throw;
 			}
 		}
