@@ -1,7 +1,7 @@
 ﻿using System;
+using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using TestUtils.Appium.UITests;
-using Microsoft.Maui.Appium;
 
 namespace Microsoft.Maui.AppiumTests
 {
