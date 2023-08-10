@@ -90,11 +90,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapAspect(IImageHandler handler, IImage image)
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
-
-			if (handler.ContainerView is FrameworkElement element)
-			{
-				handler.PlatformView?.UpdateAspect(image, element);
-			}
+			handler.PlatformView?.UpdateAspect(image);
 		}
 
 		/// <summary>

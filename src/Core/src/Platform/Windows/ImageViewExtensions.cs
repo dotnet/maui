@@ -12,13 +12,11 @@ namespace Microsoft.Maui.Platform
 			imageView.Source = null;
 		}
 
-		public static void UpdateAspect(this WImage imageView, IImage image, FrameworkElement element)
+		public static void UpdateAspect(this WImage imageView, IImage image)
 		{
 			imageView.Stretch = image.Aspect.ToStretch();
 			imageView.VerticalAlignment = VerticalAlignment.Center;
 			imageView.HorizontalAlignment = HorizontalAlignment.Center;
-			element.Height = image.Height;
-			element.Width = image.Width;
 		}
 
 		public static void UpdateIsAnimationPlaying(this WImage imageView, IImageSourcePart image)
