@@ -2122,13 +2122,7 @@ override Microsoft.Maui.Handlers.ContentViewHandler.SetVirtualView(Microsoft.Mau
 override Microsoft.Maui.Handlers.DatePickerHandler.ConnectHandler(Microsoft.Maui.Platform.MauiDatePicker! platformView) -> void
 override Microsoft.Maui.Handlers.DatePickerHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiDatePicker!
 override Microsoft.Maui.Handlers.DatePickerHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiDatePicker! platformView) -> void
-override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
-override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
-override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
-override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
-override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> AndroidX.AppCompat.Widget.AppCompatEditText!
-override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(AndroidX.AppCompat.Widget.AppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EntryHandler.SetVirtualView(Microsoft.Maui.IView! view) -> void
 override Microsoft.Maui.Handlers.FlyoutViewHandler.ConnectHandler(Android.Views.View! platformView) -> void
 override Microsoft.Maui.Handlers.FlyoutViewHandler.CreatePlatformView() -> Android.Views.View!
@@ -2872,8 +2866,6 @@ static Microsoft.Maui.Platform.DrawableExtensions.SetColorFilter(this Android.Gr
 static Microsoft.Maui.Platform.DrawableExtensions.SetColorFilter(this Android.Graphics.Drawables.Drawable! drawable, Android.Graphics.ColorFilter? colorFilter) -> void
 static Microsoft.Maui.Platform.DrawableExtensions.SetColorFilter(this Android.Graphics.Drawables.Drawable! drawable, Microsoft.Maui.Graphics.Color! color, Microsoft.Maui.FilterMode mode) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.SetLengthFilter(this Android.Widget.EditText! editText, int maxLength) -> void
-static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, Android.Graphics.Drawables.Drawable? clearButtonDrawable) -> void
-static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry, System.Func<Android.Graphics.Drawables.Drawable?>? getClearButtonDrawable) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateCursorPosition(this Android.Widget.EditText! editText, Microsoft.Maui.ITextInput! entry) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateHorizontalTextAlignment(this Android.Widget.EditText! editText, Microsoft.Maui.ITextAlignment! textAlignment) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsPassword(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void

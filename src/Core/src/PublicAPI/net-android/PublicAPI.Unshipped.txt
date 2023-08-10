@@ -4,6 +4,10 @@ abstract Microsoft.Maui.PlatformWrapperView.DrawShadow(Android.Graphics.Canvas! 
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.FontSize.Equals(Microsoft.Maui.FontSize other) -> bool
+Microsoft.Maui.Graphics.MauiDrawable.SetEmptyBorderBrush() -> void
+Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.IAccelerator
 Microsoft.Maui.IAccelerator.Key.get -> string!
 Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -31,6 +35,9 @@ Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformLayout.get -> Microsoft.Ma
 Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.set -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText
+Microsoft.Maui.Platform.MauiAppCompatEditText.MauiAppCompatEditText(Android.Content.Context! context) -> void
+Microsoft.Maui.Platform.MauiAppCompatEditText.SelectionChanged -> System.EventHandler?
 Microsoft.Maui.Platform.ShapeExtensions
 Microsoft.Maui.PlatformContentViewGroup
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
@@ -47,12 +54,19 @@ Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(Android.Content.Context? 
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
+override Microsoft.Maui.Handlers.EditorHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EditorHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EditorHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
+override Microsoft.Maui.Handlers.EntryHandler.ConnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
+override Microsoft.Maui.Handlers.EntryHandler.CreatePlatformView() -> Microsoft.Maui.Platform.MauiAppCompatEditText!
+override Microsoft.Maui.Handlers.EntryHandler.DisconnectHandler(Microsoft.Maui.Platform.MauiAppCompatEditText! platformView) -> void
 override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
+override Microsoft.Maui.Platform.MauiAppCompatEditText.OnSelectionChanged(int selStart, int selEnd) -> void
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
@@ -84,8 +98,12 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.EditTextExtensions.GetCursorPosition(this Android.Widget.EditText! editText, int cursorOffset = 0) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.GetSelectedTextLength(this Android.Widget.EditText! editText) -> int
+static Microsoft.Maui.Platform.EditTextExtensions.UpdateClearButtonVisibility(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Platform.ImageButtonExtensions.UpdateBackground(this Google.Android.Material.ImageView.ShapeableImageView! platformButton, Microsoft.Maui.IImageButton! imageButton) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateIsSpellCheckEnabled(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar, Android.Widget.EditText? editText = null) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateKeyboard(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.IWebView.UserAgent.get -> string?

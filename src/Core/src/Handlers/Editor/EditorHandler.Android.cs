@@ -7,14 +7,11 @@ using static Android.Views.View;
 
 namespace Microsoft.Maui.Handlers
 {
-	// TODO: NET8 issoto - Change the TPlatformView generic type to MauiAppCompatEditText
-	// This type adds support to the SelectionChanged event
-	public partial class EditorHandler : ViewHandler<IEditor, AppCompatEditText>
+	public partial class EditorHandler : ViewHandler<IEditor, MauiAppCompatEditText>
 	{
 		bool _set;
 
-		// TODO: NET8 issoto - Change the return type to MauiAppCompatEditText
-		protected override AppCompatEditText CreatePlatformView()
+		protected override MauiAppCompatEditText CreatePlatformView()
 		{
 			var editText = new MauiAppCompatEditText(Context)
 			{
@@ -33,29 +30,25 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (!_set && PlatformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged += OnSelectionChanged;
+			if (!_set)
+				PlatformView.SelectionChanged += OnSelectionChanged;
 
 			_set = true;
 		}
 
-		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
-		protected override void ConnectHandler(AppCompatEditText platformView)
+		protected override void ConnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow += OnPlatformViewAttachedToWindow;
 			platformView.TextChanged += OnTextChanged;
 		}
 
-		// TODO: NET8 issoto - Change the platformView type to MauiAppCompatEditText
-		protected override void DisconnectHandler(AppCompatEditText platformView)
+		protected override void DisconnectHandler(MauiAppCompatEditText platformView)
 		{
 			platformView.ViewAttachedToWindow -= OnPlatformViewAttachedToWindow;
 			platformView.TextChanged -= OnTextChanged;
 
-			// TODO: NET8 issoto - Remove the casting once we can set the TPlatformView generic type as MauiAppCompatEditText
-			if (_set && platformView is MauiAppCompatEditText editText)
-				editText.SelectionChanged -= OnSelectionChanged;
+			if (_set)
+				platformView.SelectionChanged -= OnSelectionChanged;
 
 			_set = false;
 		}

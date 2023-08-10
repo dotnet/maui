@@ -8,8 +8,7 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageButtonExtensions
 	{
-		// TODO: NET8 should this be public?
-		internal static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
+		public static void UpdateBackground(this ShapeableImageView platformButton, IImageButton imageButton)
 		{
 			Paint? paint = imageButton.Background;
 

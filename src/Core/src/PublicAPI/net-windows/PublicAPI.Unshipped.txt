@@ -1,6 +1,9 @@
 #nullable enable
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
+Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.FromPlatform = 1 -> Microsoft.Maui.Handlers.DataFlowDirection
+Microsoft.Maui.Handlers.DataFlowDirection.ToPlatform = 0 -> Microsoft.Maui.Handlers.DataFlowDirection
 Microsoft.Maui.IAccelerator
 Microsoft.Maui.IAccelerator.Key.get -> string!
 Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
@@ -24,6 +27,7 @@ Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, Syste
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
 Microsoft.Maui.IMenuElement.Accelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IAccelerator!>?
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.CalendarDatePickerExtensions
 Microsoft.Maui.Platform.KeyboardAcceleratorExtensions
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
 Microsoft.Maui.Platform.MauiPanel
@@ -52,10 +56,13 @@ static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Mic
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Handlers.TimePickerHandler.MapBackground(Microsoft.Maui.Handlers.ITimePickerHandler! handler, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.CalendarDatePickerExtensions.ToDateFormat(this string! dateFormat) -> string!
+static Microsoft.Maui.Platform.DatePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.CalendarDatePicker! platformDatePicker, Microsoft.Maui.IDatePicker! datePicker) -> void
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.UI.Xaml.Controls.AnimatedIcon! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
@@ -69,7 +76,9 @@ static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewI
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this Microsoft.UI.Xaml.Controls.TextBox! textBox, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextBoxExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.TextBox! textBox, Microsoft.Maui.ITextInput! textInput) -> void
+static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.UI.Xaml.Controls.WebView2! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
 Microsoft.Maui.WeakEventManager.HandleEvent(object? sender, object? args, string! eventName) -> void

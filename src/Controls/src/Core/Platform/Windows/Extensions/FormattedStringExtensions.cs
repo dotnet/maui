@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Platform
 			this TextBlock textBlock,
 			IFontManager fontManager,
 			FormattedString formattedString,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public static IEnumerable<Tuple<Run, Color, Color>> ToRunAndColorsTuples(
 			this FormattedString formattedString,
 			IFontManager fontManager,
-			double defaultLineHeight = 0d, // TODO: NET8 should be -1, but too late to change for net6
+			double defaultLineHeight = -1,
 			TextAlignment defaultHorizontalAlignment = TextAlignment.Start,
 			Font? defaultFont = null,
 			Color? defaultColor = null,
