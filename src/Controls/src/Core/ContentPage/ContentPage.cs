@@ -34,14 +34,6 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HideSoftInputOnTappedProperty, value); }
 		}
 
-		public ContentPage()
-		{
-			this.NavigatedTo += (_, _) =>
-			{
-				UpdateHideSoftInputOnTapped();
-			};
-		}
-
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();

@@ -654,54 +654,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		NavigatedToEventArgs _pendingNavigatedToArgs;
-
-		void ClearPendingNavigatedArgs()
-		{
-			_pendingNavigatedToArgs = null;
-			Loaded -= OnPageLoaded;
-		}
-
 		internal void SendNavigatedTo(NavigatedToEventArgs args) =>
 			SendNavigatedTo(args, false);
 
 		void SendNavigatedTo(NavigatedToEventArgs args, bool ignoreLoaded)
 		{
-			ClearPendingNavigatedArgs();
-
-			if (IsLoaded || ignoreLoaded)
-			{
-				HasNavigatedTo = true;
-				OnNavigatedTo(args);
-				(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
-			}
-			else
-			{
-				_pendingNavigatedToArgs = args;
-				Loaded += OnPageLoaded;
-			}
-		}
-
-		void OnPageLoaded(object sender, EventArgs e)
-		{
-			var args = _pendingNavigatedToArgs;
-			ClearPendingNavigatedArgs();
-			if (args is not null)
-			{
-				SendNavigatedTo(args, true);
-			}
+			HasNavigatedTo = true;
+			OnNavigatedTo(args);
+			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
-			ClearPendingNavigatedArgs();
 			OnNavigatingFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
 
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
-			ClearPendingNavigatedArgs();
 			HasNavigatedTo = false;
 			OnNavigatedFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
