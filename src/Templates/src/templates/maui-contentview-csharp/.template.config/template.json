@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.CSharpContentView",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ContentView (C#)",
+    "description": "A view for displaying content using C#. This is very suitable for creating your own custom and reusable controls.",
     "shortName": "maui-view-csharp",
     "tags": {
       "language": "C#",

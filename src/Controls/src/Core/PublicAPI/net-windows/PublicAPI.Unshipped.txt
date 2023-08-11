@@ -157,3 +157,7 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
+Microsoft.Maui.Controls.PlatformPointerEventArgs
+Microsoft.Maui.Controls.PlatformPointerEventArgs.RoutedEventArgs.get -> Microsoft.UI.Xaml.RoutedEventArgs!
+Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml.FrameworkElement!

@@ -95,10 +95,12 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				AutosizesSubviews = true
 			};
 
-#if MACCATALYST13_3_OR_GREATER || IOS16_4_OR_GREATER
-			// Enable Developer Extras for Catalyst/iOS builds for 16.4+
-			webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
-#endif
+			if (OperatingSystem.IsIOSVersionAtLeast(16, 4) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 3))
+			{
+				// Enable Developer Extras for Catalyst/iOS builds for 16.4+
+				webview.SetValueForKey(NSObject.FromObject(DeveloperTools.Enabled), new NSString("inspectable"));
+			}
+
 			VirtualView.BlazorWebViewInitialized(new BlazorWebViewInitializedEventArgs
 			{
 				WebView = webview

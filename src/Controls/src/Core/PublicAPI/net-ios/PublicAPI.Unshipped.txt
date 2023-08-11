@@ -4,6 +4,10 @@
 Microsoft.Maui.Controls.DragEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
 Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(Microsoft.Maui.Graphics.Point position) -> void
 Microsoft.Maui.Controls.DragStartingEventArgs.Position.get -> Microsoft.Maui.Graphics.Point
+Microsoft.Maui.Controls.PlatformPointerEventArgs
+Microsoft.Maui.Controls.PlatformPointerEventArgs.GestureRecognizer.get -> UIKit.UIGestureRecognizer!
+Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> UIKit.UIView!
+Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
