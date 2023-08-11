@@ -2,7 +2,6 @@
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
-using OpenQA.Selenium;
 using TestUtils.Appium.UITests;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;
@@ -171,15 +170,19 @@ namespace Microsoft.Maui.AppiumTests
 		private void SaveDiagnosticLogs()
 		{
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
-
-			string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-
-			_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}-ScreenShot"));
-
-			if (App is IApp2 app2)
+			
+			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
+			if (App is not null)
 			{
-				var pageSource = app2.ElementTree;
-				File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}-PageSource.txt"), pageSource);
+				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+				_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}-ScreenShot"));
+
+				if (App is IApp2 app2)
+				{
+					var pageSource = app2.ElementTree;
+					File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}-PageSource.txt"), pageSource);
+				}
 			}
 
 			foreach (var log in Directory.GetFiles(logDir))
