@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.XamlContentView",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ContentView (XAML)",
+    "description": "A view for displaying content using XAML. This is very suitable for creating your own custom and reusable controls.",
     "shortName": "maui-view-xaml",
     "tags": {
         "language": "C#",

@@ -12,7 +12,39 @@ using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
+	/// <summary>Provides the base class for all Microsoft.Maui.Controls hierarchal elements.
+	/// This class contains all the methods and properties required to represent an element in the Microsoft.Maui.Controls hierarchy.
+	/// </summary>
+	/// <remarks>
+	///		<para>Important categories of visual elements are noted in the following table:</para>
+	///		<list type = "table" >
+	///			<listheader>
+	///				<term > Class </term >
+	///				<description > Description </description >
+	///			</listheader >
+	///			<item>
+	///				<term><see cref="VisualElement" /></term>
+	///				<description>An <see cref="Element" /> that occupies an area on the screen, has a visual appearance, and can obtain touch input.</description>
+	///			</item>
+	///			<item>
+	///				<term><see cref = "Cell"/></term>
+	///				<description> Cells are elements meant to be added to <see cref="ListView"/> or <see cref="TableView"/>.</description>
+	///			</item>
+	///			<item>
+	///				<term><see cref = "Page"/>
+	///				</term>
+	///				<description> A <see cref= "VisualElement"/> that occupies most or all of the screen and contains a single child.</description>
+	///			</item>
+	///			<item>
+	///			<term><see cref = "Layout"/></term>
+	///			<description><see cref= "Layout"/> have a single child of type <see cref="View" />, while subclasses of <see cref = "Layout"/> have a collection of multiple children views, including other layouts.</description>
+	///			</item>
+	///			<item>
+	///				<term> Controls and specialized <see cref="View" /></term>
+	///				<description>The lower part of the diagram shows the Microsoft.Maui.Controls classes for universally-available controls, such as <see cref = "Button"/> and <see cref="TableView"/>.</description>
+	///			</item>
+	///		</list>
+	///</remarks>
 	public abstract partial class Element : BindableObject, IElementDefinition, INameScope, IElementController, IVisualTreeElement, Maui.IElement, IEffectControlProvider, IToolTipElement, IContextFlyoutElement, IControlsElement
 	{
 		internal static readonly ReadOnlyCollection<Element> EmptyChildren = new ReadOnlyCollection<Element>(Array.Empty<Element>());
@@ -43,7 +75,9 @@ namespace Microsoft.Maui.Controls
 
 		IList<Element> _internalChildren;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='AutomationId']/Docs/*" />
+		/// <summary>Gets or sets a value that allows the automation framework to find and interact with this element.</summary>
+		/// <value>A value that the automation framework can use to find and interact with this element.</value>
+		/// <remarks>This value may only be set once on an element.</remarks>
 		public string AutomationId
 		{
 			get { return (string)GetValue(AutomationIdProperty); }
@@ -56,14 +90,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='ClassId']/Docs/*" />
+		/// <summary>Gets or sets a value used to identify a collection of semantically similar elements.</summary>
+		/// <value>A string that represents the collection the element belongs to.</value>
+		/// <remarks>Use the class id property to collect together elements into semantically similar groups for identification in UI testing and in theme engines.</remarks>
 		public string ClassId
 		{
 			get => (string)GetValue(ClassIdProperty);
 			set => SetValue(ClassIdProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Effects']/Docs/*" />
+		/// <summary>Gets or sets the styles and properties that will be applied to the element during runtime.</summary>
+		/// <value>A collection containing the different <see cref="Effect"/> to be applied to the element.</value>
 		public IList<Effect> Effects
 		{
 			get
@@ -78,7 +115,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Id']/Docs/*" />
+		/// <summary>Gets a value that can be used to uniquely identify an element throughout the run of your application.</summary>
+		/// <value>A <see cref="Guid"/> uniquely identifying the element.</value>
+		/// <remarks>This value is generated at runtime and is not stable across different runs.</remarks>
+		/// <seealso cref="StyleId"/>
 		public Guid Id
 		{
 			get
@@ -89,7 +129,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='StyleId']/Docs/*" />
+		/// <summary>Gets or sets a user defined value to uniquely identify the element.</summary>
+		/// <value>A string uniquely identifying the element.</value>
+		/// <remarks>Use the <see cref="StyleId"/> property to identify individual elements in your application for identification in UI testing and in theme engines.</remarks>
 		public string StyleId
 		{
 			get { return _styleId; }
@@ -139,6 +181,7 @@ namespace Microsoft.Maui.Controls
 		public ReadOnlyCollection<Element> LogicalChildren =>
 			new ReadOnlyCollection<Element>(new TemporaryWrapper(LogicalChildrenInternal));
 
+		/// <inheritdoc/>
 		IReadOnlyList<Element> IElementController.LogicalChildren => LogicalChildrenInternal;
 
 		void SetupChildren()
@@ -209,7 +252,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		///  Removes all <see cref="Element"/>s.
+		///  Removes all child <see cref="Element"/>s.
 		/// </summary>
 		public void ClearLogicalChildren()
 		{
@@ -266,20 +309,22 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// you're not my real dad
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RealParent']/Docs/*" />
+		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Element RealParent { get; private set; }
 
 		Dictionary<BindableProperty, (string, SetterSpecificity)> DynamicResources => _dynamicResources ?? (_dynamicResources = new Dictionary<BindableProperty, (string, SetterSpecificity)>());
 
+		/// <inheritdoc/>
 		void IElementDefinition.AddResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			_changeHandlers = _changeHandlers ?? new List<Action<object, ResourcesChangedEventArgs>>(2);
 			_changeHandlers.Add(onchanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='Parent']/Docs/*" />
+		/// <summary>Gets or sets the parent <see cref="Element"/> of this element.</summary>
+		/// <value>The <see cref="Element"/> which should be the parent of this element.</value>
+		/// <remarks>Most application authors will not need to set the parent element by hand.</remarks>
 		public Element Parent
 		{
 			get { return _parentOverride ?? RealParent; }
@@ -331,6 +376,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool IsTemplateRoot { get; set; }
 
+		/// <inheritdoc/>
 		void IElementDefinition.RemoveResourcesChangedListener(Action<object, ResourcesChangedEventArgs> onchanged)
 		{
 			if (_changeHandlers == null)
@@ -338,7 +384,7 @@ namespace Microsoft.Maui.Controls
 			_changeHandlers.Remove(onchanged);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectControlProvider']/Docs/*" />
+		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public IEffectControlProvider EffectControlProvider
 		{
@@ -364,22 +410,24 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>For internal use by .NET MAUI.</summary>
 		void IElementController.SetValueFromRenderer(BindableProperty property, object value) => SetValueFromRenderer(property, value);
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][1]/Docs/*" />
+
+		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindableProperty property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetValueFromRenderer'][2]/Docs/*" />
+		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueFromRenderer(BindablePropertyKey property, object value)
 		{
 			SetValue(property, value, specificity: SetterSpecificity.FromHandler);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='EffectIsAttached']/Docs/*" />
+		/// <summary>For internal use by .NET MAUI.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool EffectIsAttached(string name)
 		{
@@ -391,7 +439,10 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='FindByName']/Docs/*" />
+		/// <summary>Returns the element that has the specified name.</summary>
+		/// <param name="name">The name of the element to be found.</param>
+		/// <returns>The element that has the specified name.</returns>
+		/// <exception cref="InvalidOperationException">Thrown if the element's namescope couldn't be found.</exception>
 		public object FindByName(string name)
 		{
 			var namescope = GetNameScope();
@@ -400,43 +451,56 @@ namespace Microsoft.Maui.Controls
 			return namescope.FindByName(name);
 		}
 
+		/// <inheritdoc/>
 		void INameScope.RegisterName(string name, object scopedElement)
 		{
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.RegisterName(name, scopedElement);
 		}
 
+		/// <inheritdoc/>
 		void INameScope.UnregisterName(string name)
 		{
 			var namescope = GetNameScope() ?? throw new InvalidOperationException("this element is not in a namescope");
 			namescope.UnregisterName(name);
 		}
 
+		/// <summary>Raised whenever a child element is added to the element.</summary>
 		public event EventHandler<ElementEventArgs> ChildAdded;
 
+		/// <summary>Raised whenever a child element is removed from the element.</summary>
 		public event EventHandler<ElementEventArgs> ChildRemoved;
 
+		/// <summary>Raised whenever a child element is added to the element's subtree.</summary>
 		public event EventHandler<ElementEventArgs> DescendantAdded;
 
+		/// <summary>Raised whenever a child element is removed from the elements subtree.</summary>
 		public event EventHandler<ElementEventArgs> DescendantRemoved;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='RemoveDynamicResource']/Docs/*" />
+		/// <summary>Removes a previously set dynamic resource.</summary>
+		/// <param name="property">The <see cref="BindableProperty"/> from which to remove the DynamicResource.</param>
 		public new void RemoveDynamicResource(BindableProperty property)
 		{
 			base.RemoveDynamicResource(property);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="//Member[@MemberName='SetDynamicResource']/Docs/*" />
+		/// <summary>Sets the <see cref="BindableProperty"/> property of this element to be updated via the DynamicResource with the provided key.</summary>
+		/// <param name="property">The property to be updated.</param>
+		/// <param name="key">The key for the requested resource.</param>
 		public new void SetDynamicResource(BindableProperty property, string key)
 		{
 			base.SetDynamicResource(property, key);
 		}
 
+		/// <inheritdoc/>
 		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
 			=> LogicalChildrenInternal;
 
+		/// <inheritdoc/>
 		IVisualTreeElement IVisualTreeElement.GetVisualParent() => this.Parent;
 
+		/// <summary>Invoked whenever the binding context of the element changes. Implement this method to add class handling for this event.</summary>
+		/// <remarks>Implementors must call the base method.</remarks>
 		protected override void OnBindingContextChanged()
 		{
 			this.PropagateBindingContext(LogicalChildrenInternal, (child, bc) =>
@@ -453,6 +517,9 @@ namespace Microsoft.Maui.Controls
 			base.OnBindingContextChanged();
 		}
 
+		/// <summary>Raises the <see cref="ChildAdded"/> event. Implement this method to add class handling for this event.</summary>
+		/// <remarks>This method has no default implementation. You should still call the base implementation in case an intermediate class has implemented this method.</remarks>
+		/// <param name="child">The element that's been added as a child.</param>
 		protected virtual void OnChildAdded(Element child)
 		{
 			child.SetParent(this);
@@ -468,6 +535,13 @@ namespace Microsoft.Maui.Controls
 				OnDescendantAdded(element);
 		}
 
+		/// <summary> Raises the <see cref="ChildRemoved"/> event. Implement this method to add class handling for this event </summary>
+		/// <remarks>
+		/// This method has no default implementation. You should still call the base implementation in case an intermediate class has implemented this method.
+		/// If not debugging, the logical tree index will not have any effect.
+		/// </remarks>
+		/// <param name="child">The child element that's been removed.</param>
+		/// <param name="oldLogicalIndex">The child's element index in the logical tree.</param>
 		protected virtual void OnChildRemoved(Element child, int oldLogicalIndex)
 		{
 			child.SetParent(null);
@@ -481,6 +555,8 @@ namespace Microsoft.Maui.Controls
 				OnDescendantRemoved(element);
 		}
 
+		/// <summary>Raises the <see cref="ParentSet"/> event. Implement this method in order to add behavior when the element is added to a parent.</summary>
+		/// <remarks>Implementors must call the base method.</remarks>
 		protected virtual void OnParentSet()
 		{
 			ParentSet?.Invoke(this, EventArgs.Empty);
@@ -488,6 +564,8 @@ namespace Microsoft.Maui.Controls
 			(this as IPropertyPropagationController)?.PropagatePropertyChanged(null);
 		}
 
+		/// <summary>Method that is called when a bound property is changed.</summary>
+		/// <param name="propertyName">The name of the bound property that changed.</param>
 		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
 		{
 			base.OnPropertyChanged(propertyName);
@@ -507,6 +585,7 @@ namespace Microsoft.Maui.Controls
 		internal IEnumerable<Element> Descendants() =>
 			Descendants<Element>();
 
+		/// <inheritdoc/>
 		IEnumerable<Element> IElementController.Descendants() =>
 			Descendants<Element>();
 
@@ -735,11 +814,19 @@ namespace Microsoft.Maui.Controls
 		void OnResourceChanged(BindableProperty property, object value, SetterSpecificity specificity)
 			=> SetValueCore(property, value, SetValueFlags.ClearOneWayBindings | SetValueFlags.ClearTwoWayBindings, SetValuePrivateFlags.Default, specificity);
 
+		/// <summary>Raised whenever the element's starts to change.</summary>
 		public event EventHandler<ParentChangingEventArgs> ParentChanging;
+
+		/// <summary>Raised whenever the element's parent has changed.</summary>
 		public event EventHandler ParentChanged;
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanging"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanging"/> event.</remarks>
+		/// <param name="args">Provides data for the <see cref="ParentChanging"/> event.</param>
 		protected virtual void OnParentChanging(ParentChangingEventArgs args) { }
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="ParentChanged"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="ParentChanged"/> event.</remarks>
 		protected virtual void OnParentChanged() { }
 
 		private protected virtual void OnParentChangedCore()
@@ -761,20 +848,34 @@ namespace Microsoft.Maui.Controls
 		IElementHandler _handler;
 		EffectsFactory _effectsFactory;
 
+		/// <inheritdoc/>
 		Maui.IElement Maui.IElement.Parent => Parent;
+
 		EffectsFactory EffectsFactory => _effectsFactory ??= Handler.MauiContext.Services.GetRequiredService<EffectsFactory>();
 
+		/// <summary>Gets or sets the associated handler for this element.</summary>
+		/// <value>An implementation of <see cref="IElementHandler"/>.</value>
+		/// <remarks>Maps the element to platform-specific controls and implementations.</remarks>
+		/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 		public IElementHandler Handler
 		{
 			get => _handler;
 			set => SetHandler(value);
 		}
 
+		/// <summary>Raised whenever the element's handler starts to change.</summary>
 		public event EventHandler<HandlerChangingEventArgs> HandlerChanging;
+
+		/// <summary>Raised whenever the element's handler has changed.</summary>
 		public event EventHandler HandlerChanged;
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanging"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanging"/> event.</remarks>
+		/// <param name="args">Provides data for the <see cref="HandlerChanging"/> event.</param>
 		protected virtual void OnHandlerChanging(HandlerChangingEventArgs args) { }
 
+		/// <summary>When overridden in a derived class, should raise the <see cref="HandlerChanged"/> event.</summary>
+		/// <remarks>It is the implementor's responsibility to raise the <see cref="HandlerChanged"/> event.</remarks>
 		protected virtual void OnHandlerChanged() { }
 
 		private protected virtual void OnHandlerChangedCore()
@@ -827,6 +928,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)
@@ -849,7 +951,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		ToolTip IToolTipElement.ToolTip => ToolTipProperties.GetToolTip(this);
+
+		/// <inheritdoc/>
 		IFlyout IContextFlyoutElement.ContextFlyout => FlyoutBase.GetContextFlyout(this);
 
 		class TemporaryWrapper : IList<Element>
