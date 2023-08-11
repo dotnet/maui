@@ -4,8 +4,6 @@ using Xunit;
 
 #if IOS || MACCATALYST
 
-using UIKit;
-
 namespace Microsoft.Maui.DeviceTests.Memory
 {
 	// Set of tests to verify UIView subclasses do not leak
@@ -51,4 +49,5 @@ namespace Microsoft.Maui.DeviceTests.Memory
 #endif
 	}
 }
+
 #endif
