@@ -63,7 +63,7 @@ steps:
     retryCountOnTaskFailure: 2
   
   - task: PublishTestResults@2
-    displayName: Publish the $(System.PhaseName) test results
+    displayName: Publish the $(Agent.JobName) test results
     condition: always()
     inputs:
       testResultsFormat: VSTest
@@ -72,8 +72,9 @@ steps:
       failTaskOnFailedTests: true
 
   - task: PublishBuildArtifacts@1
+    displayName: Publish Artifacts
     condition: always()
-    displayName: publish artifacts
+    inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
 
