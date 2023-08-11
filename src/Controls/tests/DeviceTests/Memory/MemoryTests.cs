@@ -17,13 +17,17 @@ public class MemoryTests : ControlsHandlerTestBase
 			{
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
+				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<SwipeView, SwipeViewHandler>();
+				handlers.AddHandler<TimePicker, TimePickerHandler>();
 			});
 		});
 	}
@@ -32,15 +36,25 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
+	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(SwipeView))]
+	[InlineData(typeof(TimePicker))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
+
+#if ANDROID
+		// NOTE: skip certain controls on older Android devices
+		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))
+				return;
+#endif
 
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
