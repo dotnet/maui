@@ -115,8 +115,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
+			// The package shouldn't be null here since the UI.Xaml.DragEventArgs have already been initialized
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e));
 
 			dragEventArgs.AcceptedOperation = (DataPackageOperation)((int)dragEventArgs.AcceptedOperation);
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -145,8 +146,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
+			// The package shouldn't be null here since the UI.Xaml.DragEventArgs have already been initialized
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e));
 
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{

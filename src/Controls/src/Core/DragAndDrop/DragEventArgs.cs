@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 using Microsoft.Maui.Graphics;
 
@@ -9,6 +8,7 @@ namespace Microsoft.Maui.Controls
 	/// </summary>
 	public class DragEventArgs : EventArgs
 	{
+		Func<IElement?, Point?>? _getPosition;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DragEventArgs"/> class.
@@ -23,11 +23,11 @@ namespace Microsoft.Maui.Controls
 		/// Initializes a new instance of the <see cref="DragEventArgs"/> class.
 		/// </summary>
 		/// <param name="dataPackage">The data package associated with the drag source.</param>
-		/// <param name="position">The current location in the coordinate system of the drag.</param>
-		public DragEventArgs(DataPackage dataPackage, Point position)
+		/// <param name="getPosition">The current location in the coordinate system of the drag.</param>
+		public DragEventArgs(DataPackage dataPackage, Func<IElement?, Point?>? getPosition)
 		{
 			Data = dataPackage;
-			Position = position;
+			_getPosition = getPosition;
 		}
 
 		/// <summary>
@@ -41,8 +41,12 @@ namespace Microsoft.Maui.Controls
 		public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
 
 		/// <summary>
-		/// Gets the location of the point in coordinate system where dragging is being done.
+		/// Gets the location of the drag relative to the specified element.
 		/// </summary>
-		public Point Position { get; private init; }
+		/// <remarks>If <paramref name="relativeTo"/> is <see langword="null"/> then the position relative to the screen is returned.</remarks>
+		/// <param name="relativeTo">Element whose position is used to calculate the relative position.</param>
+		/// <returns>The point where dragging is occurring relative to <paramref name="relativeTo"/>.</returns>
+		public virtual Point? GetPosition(Element? relativeTo) =>
+			_getPosition?.Invoke(relativeTo);
 	}
 }

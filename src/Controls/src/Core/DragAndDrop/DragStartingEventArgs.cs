@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
 		/// </summary>
-		/// <param name="getPosition"> Something</param>
+		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
 		public DragStartingEventArgs(Func<IElement?, Point?>? getPosition)
 		{
 			_getPosition = getPosition;
@@ -45,7 +45,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the location where dragging started relative to the specified element.
 		/// </summary>
-		/// <remarks>If <paramref name="relativeTo"/> is <see langword="null"/> then the position of where dragging started in the screen is returned.</remarks>
+		/// <remarks>If <paramref name="relativeTo"/> is <see langword="null"/> then the position relative to the screen is returned.</remarks>
 		/// <param name="relativeTo">Element whose position is used to calculate the relative position.</param>
 		/// <returns>The point where dragging started relative to <paramref name="relativeTo"/>.</returns>
 		public virtual Point? GetPosition(Element? relativeTo) =>

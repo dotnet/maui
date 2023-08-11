@@ -226,7 +226,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HandleDragOver(View element, DataPackage dataPackage, Point location)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, location);
+			var dragEventArgs = new DragEventArgs(dataPackage, null); // JDTOD- Fix
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>

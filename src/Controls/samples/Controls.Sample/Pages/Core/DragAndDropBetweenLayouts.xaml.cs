@@ -66,12 +66,16 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragOver(object sender, DragEventArgs e)
 		{
+			var view = (View)sender;
+
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			DragPositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
+			DragPositionLabel.Text = $"Drag Position relative to receiving layout X: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragScreenPositionLabel.Text = $"Drag Position relative to screen X: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragRelativePositionLabel.Text = $"Drag Position relative to this label X: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
@@ -83,12 +87,16 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragLeave(object sender, DragEventArgs e)
 		{
+			var view = (View)sender;
+
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			DragPositionLabel.Text = $"Drag Position X:{e.Position.X}, Y:{e.Position.Y}";
+			DragPositionLabel.Text = $"Drag Position relative to receiving layout: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragScreenPositionLabel.Text = $"Drag Position relative to screen: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragRelativePositionLabel.Text = $"Drag Position relative to this label: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;

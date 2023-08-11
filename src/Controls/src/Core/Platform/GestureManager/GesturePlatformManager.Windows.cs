@@ -529,11 +529,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return result.Value.ToPoint();
 		}
 
-		Point GetPosition(UIElement element, Microsoft.UI.Xaml.DragEventArgs e)
-		{
-			return e.GetPosition(element).ToPoint();
-		}
-
 		void OnTap(object sender, RoutedEventArgs e)
 		{
 			var view = Element as View;
@@ -775,10 +770,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e)
 		{
+			// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
 			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 
-			var point = e.OriginalSource is UIElement element ? GetPosition(element, e) : Point.Zero;
-			return new DragEventArgs(package, point);
+			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e));
 		}
 	}
 }
