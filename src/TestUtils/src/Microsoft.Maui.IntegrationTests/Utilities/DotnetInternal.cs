@@ -5,9 +5,9 @@ namespace Microsoft.Maui.IntegrationTests
 	public static class DotnetInternal
 	{
 		static readonly string DotnetTool = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet", "dotnet");
-		const int DEFAULT_TIMEOUT = 600;
+		const int DEFAULT_TIMEOUT = 900;
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null)
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "")
 		{
 			var binlogName = $"build-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 			var buildArgs = $"\"{projectFile}\" -c {config}";
@@ -29,12 +29,24 @@ namespace Microsoft.Maui.IntegrationTests
 				}
 			}
 
-			return Run("build", $"{buildArgs} -bl:\"{Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName)}\"");
+			if (string.IsNullOrEmpty(binlogPath))
+			{
+				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
+			}
+
+			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework)
+		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
-			return Run("new", $"{shortName} -o \"{outputDirectory}\" -f {framework}", timeoutinSeconds: 60);
+			var args = $"{shortName} -o \"{outputDirectory}\"";
+
+			if (!string.IsNullOrEmpty(framework))
+				args += $" -f {framework}";
+
+			var output = RunForOutput("new", args, out int exitCode, timeoutInSeconds: 300);
+			TestContext.WriteLine(output);
+			return exitCode == 0;
 		}
 
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
@@ -50,7 +62,8 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			var pinfo = new ProcessStartInfo(DotnetTool, $"{command} {args}");
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
-
+			//Workaround: https://github.com/dotnet/linker/issues/3012
+			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}
 

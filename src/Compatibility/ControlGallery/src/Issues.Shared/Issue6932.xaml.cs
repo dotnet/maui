@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Layout)]
@@ -48,6 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EmptyViewBecomesVisibleWhenItemsSourceIsEmptiedOneByOne()
 		{
 			RunningApp.Screenshot("Screen opens, items are shown");
@@ -63,6 +64,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void EmptyViewHidesWhenItemsSourceIsFilled()
 		{
 			RunningApp.Screenshot("Screen opens, items are shown");

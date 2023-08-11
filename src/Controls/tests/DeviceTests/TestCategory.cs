@@ -32,6 +32,7 @@
 		public const string Path = "Path";
 		public const string Picker = "Picker";
 		public const string RadioButton = "RadioButton";
+		public const string RefreshView = "RefreshView";
 		public const string ScrollView = "ScrollView";
 		public const string SearchBar = "SearchBar";
 		public const string Shape = "Shape";
@@ -44,6 +45,7 @@
 		public const string View = "View";
 		public const string VisualElement = "VisualElement";
 		public const string VisualElementTree = "VisualElementTree";
+		public const string WebView = "WebView";
 		public const string Window = "Window";
 	}
 }

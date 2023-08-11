@@ -2,7 +2,7 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2563, "NavigationPage should support queuing of navigation events", PlatformAffected.Android | PlatformAffected.WinPhone | PlatformAffected.iOS)]

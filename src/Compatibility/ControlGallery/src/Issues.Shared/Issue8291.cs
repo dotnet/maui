@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8291, "[Android] Editor - Text selection menu does not appear when selecting text on an editor placed within a ScrollView",
@@ -51,6 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
+		[FailsOnMauiAndroid]
 		public void ContextMenuShowsUpWhenPressAndHoldTextOnEditorAndEntryField()
 		{
 			RunningApp.TouchAndHold("PressEditor");

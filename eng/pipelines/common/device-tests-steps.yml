@@ -1,16 +1,24 @@
 parameters:
-  platform: '' # [ android, ios ]
+  platform: '' # [ android, ios, catalyst, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
+  artifactName: 'nuget'
+  artifactItemPattern: '**/*.nupkg'
+  checkoutDirectory: $(System.DefaultWorkingDirectory)
+  useArtifacts: false
 
 steps:
   - template: provision.yml
     parameters:
-      platform: macos
-      skipXcode: ${{ eq(parameters.platform, 'android') }}
+      ${{ if eq(parameters.platform, 'windows')}}:
+        platform: windows
+      ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
+        platform: macos
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
+      skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -23,26 +31,48 @@ steps:
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
 
-  - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
-    displayName: 'Build the MSBuild Tasks'
+  - ${{ if eq(parameters.useArtifacts, true) }}:
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+    - task: DownloadBuildArtifacts@0
+      displayName: 'Download Packages'
+      inputs:
+        artifactName: ${{ parameters.artifactName }}
+        itemPattern: ${{ parameters.artifactItemPattern }}
+        downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+
+    - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
+      displayName: Move the downloaded artifacts
+
+    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+      displayName: 'Install .NET (Local Workloads)'
+      retryCountOnTaskFailure: 3
+      workingDirectory: ${{ parameters.checkoutDirectory }}
+      env:
+        DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+        PRIVATE_BUILD: $(PrivateBuild)
+
+  - ${{ else }}:
+    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+      displayName: 'Build the MSBuild Tasks'
+
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
+    workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 2
 
   - task: PublishTestResults@2
-    displayName: Publish the $(System.PhaseName) test results
+    displayName: Publish the $(Agent.JobName) test results
     condition: always()
     inputs:
       testResultsFormat: xUnit
-      testResultsFiles: '$(TestResultsDirectory)/**/TestResults.xml'
-      testRunTitle: '$(System.PhaseName)'
+      testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
+      testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
   - task: PublishBuildArtifacts@1
     displayName: Publish Artifacts
     condition: always()
     inputs:
-      artifactName: $(System.PhaseName)
+      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates

@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Issue3884Test()
 		{
 			RunningApp.WaitForElement("TestReady");

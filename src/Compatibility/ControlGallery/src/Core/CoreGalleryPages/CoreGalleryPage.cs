@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class CoreGalleryPage<T> : ContentPage
 		where T : View, new()
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		protected virtual void Build(StackLayout stackLayout)
 		{
 			var isFocusedView = new T();
-			isFocusedView.SetValueCore(IsFocusedPropertyKey, true);
+			isFocusedView.SetValue(IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
 
 			IsEnabledStateViewContainer = new StateViewContainer<T>(Test.VisualElement.IsEnabled, new T { IsEnabled = true });
 			IsEnabledStateViewContainer.StateChangeButton.Command = new Command(() =>
@@ -85,11 +85,11 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 				if ((bool)isFocusedView.GetValue(VisualElement.IsFocusedProperty))
 				{
-					isFocusedView.SetValueCore(IsFocusedPropertyKey, false);
+					isFocusedView.SetValue(IsFocusedPropertyKey, false, specificity: SetterSpecificity.FromHandler);
 				}
 				else
 				{
-					isFocusedView.SetValueCore(IsFocusedPropertyKey, true);
+					isFocusedView.SetValue(IsFocusedPropertyKey, true, specificity: SetterSpecificity.FromHandler);
 				}
 			});
 

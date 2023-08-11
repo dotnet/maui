@@ -278,6 +278,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			Func<MethodDefinition, TypeReference, bool> predicate, ModuleDefinition module)
 		{
 			var typeDef = typeRef.ResolveCached(cache);
+			if (typeDef is null)
+				yield break;
 			foreach (var method in typeDef.Methods.Where(md => predicate(md, typeRef)))
 				yield return new Tuple<MethodDefinition, TypeReference>(method, typeRef);
 			if (typeDef.IsInterface)
@@ -422,5 +424,6 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		}
 
 		public static TypeDefinition ResolveCached(this TypeReference typeReference, XamlCache cache) => cache.Resolve(typeReference);
+
 	}
 }

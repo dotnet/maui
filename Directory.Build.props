@@ -131,6 +131,7 @@
     <_MauiBuildTasksLocation>$(_MauiBuildTasksLocation)</_MauiBuildTasksLocation>
     <_MauiBuildTasksLocation Condition="'$(_MauiBuildTasksLocation)' == ''">$(MSBuildThisFileDirectory).buildtasks\</_MauiBuildTasksLocation>
     <_MauiAOTProfileLocation>$(MauiSrcDirectory)Controls\src\Build.Tasks\nuget\buildTransitive\netstandard2.0\</_MauiAOTProfileLocation>
+    <StrongNamerKeyFile>$(MauiRootDirectory)eng/microsoft.maui.controls.snk</StrongNamerKeyFile>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <DebugType>portable</DebugType>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
@@ -158,6 +159,7 @@
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
     <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
   <Target Name="GitVersion" />
@@ -165,7 +167,7 @@
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.5.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.6.0" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
     <!-- We don't need to be warned that we are using a preview .NET -->

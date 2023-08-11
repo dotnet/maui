@@ -63,21 +63,23 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
 	{
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		bool _hasDoneLayout;
 		Size _lastLayoutSize = new Size(-1, -1);
-
-		ReadOnlyCollection<Element> _logicalChildren;
 
 		protected Layout()
 		{
@@ -118,9 +120,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> InternalChildren;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal => _logicalChildren ?? (_logicalChildren = new ReadOnlyCollection<Element>(InternalChildren));
+		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		public event EventHandler LayoutChanged;
 
@@ -515,6 +518,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			UpdateChildrenLayout();
 
 			return Frame.Size;
+		}
+
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
+			{
+				layout.RefreshInputTransparentProperty();
+			}
 		}
 	}
 }

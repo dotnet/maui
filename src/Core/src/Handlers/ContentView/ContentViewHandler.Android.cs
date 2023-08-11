@@ -13,8 +13,7 @@ namespace Microsoft.Maui.Handlers
 
 			var viewGroup = new ContentViewGroup(Context)
 			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
+				CrossPlatformLayout = VirtualView
 			};
 
 			viewGroup.SetClipChildren(false);
@@ -28,8 +27,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
 		static void UpdateContent(IContentViewHandler handler)
@@ -44,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}
@@ -52,8 +50,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(ContentViewGroup platformView)
 		{
 			// If we're being disconnected from the xplat element, then we should no longer be managing its children
-			platformView.CrossPlatformMeasure = null;
-			platformView.CrossPlatformArrange = null;
+			platformView.CrossPlatformLayout = null;
 			platformView.RemoveAllViews();
 			base.DisconnectHandler(platformView);
 		}

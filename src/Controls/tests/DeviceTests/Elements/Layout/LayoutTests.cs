@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
@@ -12,6 +13,55 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Layout)]
 	public partial class LayoutTests : ControlsHandlerTestBase
 	{
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparentCorrectlyAppliedToPlatformView(bool inputTransparent)
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var control = new Grid() { InputTransparent = inputTransparent, CascadeInputTransparent = false };
+			var child = new Button();
+			control.Add(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				ValidateInputTransparentOnPlatformView(control);
+			});
+		}
+
+		[Theory]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task InputTransparentUpdatesCorrectlyOnPlatformView(bool finalInputTransparent)
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			var control = new Grid() { InputTransparent = !finalInputTransparent, CascadeInputTransparent = false };
+			var child = new Button();
+			control.Add(child);
+
+			await InvokeOnMainThreadAsync(() =>
+			{
+				control.InputTransparent = finalInputTransparent;
+				ValidateInputTransparentOnPlatformView(control);
+			});
+		}
+
 		[Theory]
 		[InlineData(true, true, true)]
 		[InlineData(true, false, false)]
@@ -121,15 +171,15 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				_ = CreateHandler<LabelHandler>(initialLabel);
 				var initialHandler = CreateHandler<LayoutHandler>(initialLayout);
-				var initialBitmap = await initialHandler.PlatformView.ToBitmap();
+				var initialBitmap = await initialHandler.PlatformView.ToBitmap(MauiContext);
 
 				_ = CreateHandler<LabelHandler>(updatingLabel);
 				var updatingHandler = CreateHandler<LayoutHandler>(updatingLayout);
-				var updatingBitmap = await updatingHandler.PlatformView.AttachAndRun(() =>
+				var updatingBitmap = await AttachAndRun(updatingLayout, (handler) =>
 				{
 					updatingLabel.HorizontalOptions = layoutOptions;
 
-					return updatingHandler.PlatformView.ToBitmap();
+					return updatingHandler.PlatformView.ToBitmap(MauiContext);
 				});
 
 				await initialBitmap.AssertEqualAsync(updatingBitmap);
@@ -183,8 +233,49 @@ namespace Microsoft.Maui.DeviceTests
 				// If this can be attached to the hierarchy and make it through a layout 
 				// without crashing, then we're good.
 
-				await root.ToPlatform(MauiContext).AttachAndRun(() => { });
+				await AttachAndRun(root, (handler) => { });
 			});
 		}
+
+		[Fact]
+		public async Task GridCellsHonorMaxWidth()
+		{
+			var grid = new Grid() { MaximumWidthRequest = 50 };
+			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
+
+			grid.Add(label);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAsync<LabelHandler>(label);
+				await CreateHandlerAsync<LayoutHandler>(grid);
+
+				await AttachAndRun(grid, (handler) => { });
+			});
+
+			Assert.True(label.Width <= grid.MaximumWidthRequest);
+			Assert.True(grid.Width <= grid.MaximumWidthRequest);
+		}
+
+		[Fact]
+		public async Task GridCellsHonorMaxHeight()
+		{
+			var grid = new Grid() { MaximumHeightRequest = 20 };
+			var label = new Label() { Text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sodales eros nec massa facilisis venenatis", LineBreakMode = LineBreakMode.WordWrap };
+
+			grid.Add(label);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await CreateHandlerAsync<LabelHandler>(label);
+				await CreateHandlerAsync<LayoutHandler>(grid);
+
+				await AttachAndRun(grid, (handler) => { });
+			});
+
+			Assert.True(label.Height <= grid.MaximumHeightRequest);
+			Assert.True(grid.Height <= grid.MaximumHeightRequest);
+		}
+
 	}
 }

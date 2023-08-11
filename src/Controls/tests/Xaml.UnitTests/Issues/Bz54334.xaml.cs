@@ -67,8 +67,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			}
 
 			[TestCase(true)]
-			[TestCase(false)]
-			public void Foo(bool useCompiledXaml)
+			[TestCase(false, Ignore = "This is failing on CI on macOS: https://github.com/dotnet/maui/issues/15054")]
+			public void FooBz54334(bool useCompiledXaml)
 			{
 				var app = Application.Current = new Bz54334App(useCompiledXaml);
 				var page = app.MainPage as Bz54334;

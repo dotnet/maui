@@ -4,9 +4,9 @@ using Command = System.Action<Microsoft.Maui.IElementHandler, Microsoft.Maui.IEl
 
 namespace Microsoft.Maui
 {
-	public abstract class CommandMapper
+	public abstract class CommandMapper : ICommandMapper
 	{
-		readonly Dictionary<string, Command> _mapper = new();
+		readonly Dictionary<string, Command> _mapper = new(StringComparer.Ordinal);
 
 		CommandMapper? _chained;
 
@@ -43,7 +43,7 @@ namespace Microsoft.Maui
 				return null;
 		}
 
-		internal void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
+		public void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args)
 		{
 			if (virtualView == null)
 				return;
@@ -54,14 +54,27 @@ namespace Microsoft.Maui
 		public CommandMapper? Chained
 		{
 			get => _chained;
-			set
-			{
-				_chained = value;
-			}
+			set => _chained = value;
 		}
 	}
 
-	public class CommandMapper<TVirtualView, TViewHandler> : CommandMapper
+	public interface ICommandMapper
+	{
+		Command? GetCommand(string key);
+
+		void Invoke(IElementHandler viewHandler, IElement? virtualView, string property, object? args);
+	}
+
+	public interface ICommandMapper<out TVirtualView, out TViewHandler> : ICommandMapper
+		where TVirtualView : IElement
+		where TViewHandler : IElementHandler
+	{
+		void Add(string key, Action<TViewHandler, TVirtualView> action);
+
+		void Add(string key, Action<TViewHandler, TVirtualView, object?> action);
+	}
+
+	public class CommandMapper<TVirtualView, TViewHandler> : CommandMapper, ICommandMapper<TVirtualView, TViewHandler>
 		where TVirtualView : IElement
 		where TViewHandler : IElementHandler
 	{
@@ -86,7 +99,7 @@ namespace Microsoft.Maui
 
 
 		public void Add(string key, Action<TViewHandler, TVirtualView> action) =>
-			Add(key, action);
+			SetPropertyCore(key, (h, v, _) => action?.Invoke((TViewHandler)h, (TVirtualView)v));
 
 		public void Add(string key, Action<TViewHandler, TVirtualView, object?> action) =>
 			SetPropertyCore(key, (h, v, o) => action?.Invoke((TViewHandler)h, (TVirtualView)v, o));

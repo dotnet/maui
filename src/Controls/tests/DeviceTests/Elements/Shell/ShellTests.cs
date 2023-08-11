@@ -1,13 +1,15 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -17,6 +19,10 @@ using Xunit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+#endif
+
+#if IOS || MACCATALYST
+using NavigationViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.NavigationRenderer;
 #endif
 
 namespace Microsoft.Maui.DeviceTests
@@ -34,6 +40,9 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
+					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
+					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
 			});
 		}
@@ -439,8 +448,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+			var page1 = new ContentPage()
+				{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+				{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
 
 			var shell = await CreateShellAsync((shell) =>
 			{
@@ -968,22 +979,25 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OnLoadedAsync(shell.CurrentPage);
 
-				var page = new ContentPage { Title = "Page 2", Content = new VerticalStackLayout { new Label() } };
+				var page = new ContentPage
+				{
+					Title = "Page 2",
+					Content = new VerticalStackLayout
+					{
+						new Label(),
+						new Button(),
+						new Controls.ContentView(),
+						new ScrollView(),
+						new CollectionView(),
+					}
+				};
 				pageReference = new WeakReference(page);
 
 				await shell.Navigation.PushAsync(page);
 				await shell.Navigation.PopAsync();
 			});
 
-			// 3 GCs were required in Android API 23, 2 worked otherwise
-			for (int i = 0; i < 3; i++)
-			{
-				await Task.Yield();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-			}
-
-			Assert.NotNull(pageReference);
+			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
@@ -1006,6 +1020,92 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 				await shell.Navigation.PushAsync(reusedPage);
 				await OnLoadedAsync(reusedPage.Content);
+			});
+		}
+
+		[Fact(DisplayName = "Shell add then remove items from selected item")]
+		public async Task ShellAddRemoveItems()
+		{
+			FlyoutItem rootItem = null;
+			ShellItem homeItem = null;
+			int itemCount = 3;
+
+			SetupBuilder();
+			var shell = await CreateShellAsync((shell) =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+				homeItem = new ShellContent()
+				{
+					Title = "Home",
+					Route = "MainPage",
+					Content = new ContentPage()
+				};
+				shell.Items.Add(homeItem);
+
+				rootItem = new FlyoutItem()
+				{
+					Title = "Items",
+					Route = "Items",
+					FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems
+				};
+
+				for (int i = 0; i < itemCount; i++)
+				{
+					var shellContent = new ShellContent
+					{
+						Content = new ContentPage(),
+						Title = $"Item {i}",
+						Route = $"Item{i}"
+					};
+					rootItem.Items.Add(shellContent);
+				}
+				shell.Items.Add(rootItem);
+			});
+
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
+			{
+				rootItem.IsVisible = true;
+
+				shell.CurrentItem = rootItem.Items.Last();
+
+				// Wait for the rootItem to finish loading before we remove items.
+				// If we just start removing items directly after setting the current item
+				// This can cause the platform to crash since we're pulling the
+				// carpet out from under it while it's trying to load.
+				await OnLoadedAsync(shell.CurrentPage);
+
+				// Remove all root child items
+				for (int i = 0; i < itemCount; i++)
+				{
+					rootItem.Items.RemoveAt(0);
+				}
+
+				shell.CurrentItem = homeItem;
+				Assert.True(shell.CurrentSection.Title == "Home");
+			});
+		}
+
+		[Fact(DisplayName = "Can Clear ShellContent")]
+		public async Task CanClearShellContent()
+		{
+			SetupBuilder();
+			var page = new ContentPage();
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ShellContent { Content = page };
+			});
+
+			var appearanceObserversField = shell.GetType().GetField("_appearanceObservers", BindingFlags.Instance | BindingFlags.NonPublic);
+			Assert.NotNull(appearanceObserversField);
+			var appearanceObservers = appearanceObserversField.GetValue(shell) as IList;
+			Assert.NotNull(appearanceObservers);
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, _ =>
+			{
+				int count = appearanceObservers.Count;
+				shell.Items.Clear();
+				shell.CurrentItem = new ShellContent { Content = page };
+				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
 

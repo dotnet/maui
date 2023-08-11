@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class CarouselItemsGallery : ContentPage

@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.AnimatedVisuals;
+using Microsoft.UI.Xaml.Media;
 using WBrush = Microsoft.UI.Xaml.Media.Brush;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
@@ -26,7 +29,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var brush = paint?.ToPlatform();
 
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -50,7 +53,81 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var item in items)
 				{
-					item.Foreground = brush;
+					item.UnselectedTitleColor = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemTextSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea is not null)
+			{
+				if (brush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelected");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPointerOver");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedPressed");
+					navigationView.TopNavArea.Resources.Remove("TopNavigationViewItemForegroundSelectedDisabled");
+				}
+				else
+				{
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelected"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPointerOver"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedPressed"] = brush;
+					navigationView.TopNavArea.Resources["TopNavigationViewItemForegroundSelectedDisabled"] = brush;
+				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.SelectedTitleColor = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemSelectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.TopNavArea is not null)
+			{
+				if (brush is null)
+				{
+					navigationView.TopNavArea.Resources.Remove("NavigationViewSelectionIndicatorForeground");
+				}
+				else
+				{
+					// Use the TabBarForegroundColor to update the Indicator Brush
+					navigationView.TopNavArea.Resources["NavigationViewSelectionIndicatorForeground"] = brush;
+				}
+
+				navigationView.TopNavArea.RefreshThemeResources();
+			}
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.SelectedForeground = brush;
+				}
+			}
+		}
+
+		public static void UpdateTopNavigationViewItemUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
+		{
+			var brush = paint?.ToPlatform();
+
+			if (navigationView.MenuItemsSource is IList<NavigationViewItemViewModel> items)
+			{
+				foreach (var item in items)
+				{
+					item.UnselectedForeground = brush;
 				}
 			}
 		}
@@ -58,7 +135,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTopNavigationViewItemBackgroundUnselectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -88,7 +165,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateTopNavigationViewItemBackgroundSelectedColor(this MauiNavigationView navigationView, Paint? paint)
 		{
 			var brush = paint?.ToPlatform();
-			if (navigationView.TopNavArea != null)
+			if (navigationView.TopNavArea is not null)
 			{
 				if (brush is null)
 				{
@@ -144,7 +221,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateFlyoutVerticalScrollMode(this MauiNavigationView navigationView, ScrollMode scrollMode)
 		{
 			var scrollViewer = navigationView.MenuItemsScrollViewer;
-			if (scrollViewer != null)
+			if (scrollViewer is not null)
 			{
 				switch (scrollMode)
 				{
@@ -195,6 +272,50 @@ namespace Microsoft.Maui.Platform
 				navigationView.OpenPaneLength = 320;
 			// At some point this Template Setting is going to show up with a bump to winui
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
+		}
+
+		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			var togglePaneButton = navigationView.TogglePaneButton;
+
+			if (togglePaneButton is null)
+				return;
+
+			var animatedIcon = togglePaneButton.GetFirstDescendant<AnimatedIcon>();
+
+			if (animatedIcon is null)
+				return;
+
+			await animatedIcon.UpdateFlyoutIconAsync(imageSource, provider);
+		}
+
+		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		{
+			if (platformView is null)
+				return;
+
+			if (provider is not null && imageSource is not null)
+			{
+				// Custom Icon
+				var service = provider.GetRequiredImageSourceService(imageSource);
+				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
+
+				platformView.Source = null;
+
+				var fallbackIconSource = new ImageIconSource { ImageSource = nativeImageSource?.Value };
+
+				platformView.Height = platformView.Width = double.NaN;
+				platformView.FallbackIconSource = fallbackIconSource;
+			}
+			else
+			{
+				// Fallback to the default hamburger icon
+				// https://github.com/microsoft/microsoft-ui-xaml/blob/a7183df20367bc0e2b8c825430597a5c1e6871b6/dev/NavigationView/NavigationView_rs1_themeresources.xaml#L389-L391
+				var fallbackIconSource = new FontIconSource { Glyph = "&#xE700;" };
+				platformView.Height = platformView.Width = 16d;
+				platformView.Source = new AnimatedGlobalNavigationButtonVisualSource();
+				platformView.FallbackIconSource = fallbackIconSource;
+			}
 		}
 	}
 }

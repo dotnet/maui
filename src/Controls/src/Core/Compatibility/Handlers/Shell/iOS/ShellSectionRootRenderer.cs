@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		#endregion IShellSectionRootRenderer
 
-		const int HeaderHeight = 35;
+		internal const int HeaderHeight = 35;
 		IShellContext _shellContext;
 		UIView _blurView;
 		UIView _containerArea;
@@ -36,7 +36,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		int _lastTabThickness = Int32.MinValue;
 		Thickness _lastInset;
 		bool _isDisposed;
+		bool _isRotating;
 		UIViewPropertyAnimator _pageAnimation;
+		UIEdgeInsets _additionalSafeArea = UIEdgeInsets.Zero;
 
 		ShellSection ShellSection
 		{
@@ -63,6 +65,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			LayoutRenderers();
 
 			LayoutHeader();
+			_isRotating = false;
+		}
+
+		public override void ViewWillTransitionToSize(CGSize toSize, IUIViewControllerTransitionCoordinator coordinator)
+		{
+			base.ViewWillTransitionToSize(toSize, coordinator);
+			_isRotating = true;
 		}
 
 		public override void ViewDidLoad()
@@ -128,7 +137,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			base.ViewSafeAreaInsetsDidChange();
 
-			LayoutHeader();
+			if (_didLayoutSubviews && !_isRotating)
+				LayoutHeader();
 		}
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
@@ -217,8 +227,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					var view = renderer.ViewController.View;
 					if (view != null)
+					{
 						view.Frame = new CGRect(0, 0, View.Bounds.Width, View.Bounds.Height);
+						UpdateAdditionalSafeAreaInsets(renderer);
+					}
 				}
+			}
+		}
+
+		void UpdateAdditionalSafeAreaInsets()
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(11))
+			{
+				var items = ShellSectionController.GetItems();
+				for (int i = 0; i < items.Count; i++)
+				{
+					var shellContent = items[i];
+					if (_renderers.TryGetValue(shellContent, out var renderer))
+					{
+						UpdateAdditionalSafeAreaInsets(renderer);
+					}
+				}
+			}
+		}
+
+		void UpdateAdditionalSafeAreaInsets(IPlatformViewHandler pageHandler)
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(11) && pageHandler.ViewController is not null)
+			{
+				if (!pageHandler.ViewController.AdditionalSafeAreaInsets.Equals(_additionalSafeArea))
+					pageHandler.ViewController.AdditionalSafeAreaInsets = _additionalSafeArea;
 			}
 		}
 
@@ -506,7 +544,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var renderer = (IPlatformViewHandler)page.ToHandler(shellContent.FindMauiContext());
 			_renderers[shellContent] = renderer;
-
+			UpdateAdditionalSafeAreaInsets(renderer);
 			return renderer;
 		}
 
@@ -553,6 +591,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				bottom = BottomLayoutGuide.Length;
 			}
 
+			if (tabThickness > 0)
+				_additionalSafeArea = new UIEdgeInsets(tabThickness, 0, 0, 0);
+			else
+				_additionalSafeArea = UIEdgeInsets.Zero;
 
 			if (_didLayoutSubviews)
 			{
@@ -564,6 +606,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					((IShellSectionController)ShellSection).SendInsetChanged(_lastInset, _lastTabThickness);
 				}
 			}
+
+			UpdateAdditionalSafeAreaInsets();
 		}
 	}
 }

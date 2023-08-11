@@ -118,10 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				else
 				{
-					AssertionExtensions.AssertWithMessage(() =>
-						Assert.True(flyoutFrame.Height < 56),
-						$"Expected < 56 Actual: {flyoutFrame.Height}"
-					);
+					Assert.True(flyoutFrame.Height < 56, $"Expected < 56 Actual: {flyoutFrame.Height}");
 				}
 			});
 		}
@@ -158,7 +155,6 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(footerFrame.Y, headerFrame.Height + contentFrame.Height + GetSafeArea().Top);
 			});
 		}
-#endif
 
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
@@ -202,6 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + GetSafeArea().Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
+#endif
 
 #if ANDROID
 		[Fact]
@@ -288,15 +285,9 @@ namespace Microsoft.Maui.DeviceTests
 				else
 					verticalDiff = Math.Abs(Math.Abs(frameWithMargin.Top - (frameWithoutMargin.Top - GetSafeArea().Top)) - 30);
 
-				AssertionExtensions.AssertWithMessage(() =>
-					Assert.True(leftDiff < 0.2),
-					$"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}"
-				);
+				Assert.True(leftDiff < 0.2, $"{partTesting} Left Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 
-				AssertionExtensions.AssertWithMessage(() =>
-					Assert.True(verticalDiff < 0.2),
-					$"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}"
-				);
+				Assert.True(verticalDiff < 0.2, $"{partTesting} Top Margin Incorrect. Frame w/ margin: {frameWithMargin}. Frame w/o margin : {frameWithoutMargin}");
 			});
 		}
 

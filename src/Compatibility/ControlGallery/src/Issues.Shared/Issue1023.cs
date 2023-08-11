@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 1023, "Automate GC checks of picker disposals", PlatformAffected.iOS)]
@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla1023Test()
 		{
 			for (var n = 0; n < 10; n++)

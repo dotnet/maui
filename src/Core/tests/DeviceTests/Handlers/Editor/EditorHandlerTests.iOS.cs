@@ -101,6 +101,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(isHidden);
 		}
 
+		[Fact(DisplayName = "Placeholder CharacterSpacing Initializes Correctly")]
+		public async Task PlaceholderCharacterSpacingInitializesCorrectly()
+		{
+			string originalText = "Test";
+			var xplatCharacterSpacing = 4;
+
+			var editor = new EditorStub()
+			{
+				CharacterSpacing = xplatCharacterSpacing,
+				Placeholder = originalText
+			};
+
+			var values = await GetValueAsync(editor, (handler) =>
+			{
+				return new
+				{
+					ViewValue = editor.CharacterSpacing,
+					PlatformViewValue = GetNativePlaceholderCharacterSpacing(handler)
+				};
+			});
+
+			Assert.Equal(xplatCharacterSpacing, values.ViewValue);
+			Assert.Equal(xplatCharacterSpacing, values.PlatformViewValue);
+		}
+
 		[Fact(DisplayName = "CharacterSpacing Initializes Correctly")]
 		public async Task CharacterSpacingInitializesCorrectly()
 		{
@@ -222,6 +247,11 @@ namespace Microsoft.Maui.DeviceTests
 			return editor.AttributedText.GetCharacterSpacing();
 		}
 
+		double GetNativePlaceholderCharacterSpacing(EditorHandler editorHandler)
+		{
+			return GetNativePlaceholder(editorHandler).AttributedText.GetCharacterSpacing();
+		}
+
 		double GetNativeUnscaledFontSize(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Font.PointSize;
 
@@ -230,6 +260,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
+
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
 
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).TextColor.ToColor();
@@ -264,7 +297,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeEditor.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEditor.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				nativeEditor.SpellCheckingType == UITextSpellCheckingType.No;
+				nativeEditor.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 
 		int GetNativeCursorPosition(EditorHandler editorHandler)

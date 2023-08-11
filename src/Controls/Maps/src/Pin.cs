@@ -7,33 +7,43 @@ namespace Microsoft.Maui.Controls.Maps
 {
 	public partial class Pin : Element
 	{
+		/// <summary>Bindable property for <see cref="Type"/>.</summary>
 		public static readonly BindableProperty TypeProperty = BindableProperty.Create(nameof(Type), typeof(PinType), typeof(Pin), default(PinType));
 
+		/// <summary>Bindable property for <see cref="Location"/>.</summary>
 		public static readonly BindableProperty LocationProperty = BindableProperty.Create(nameof(Location), typeof(Location), typeof(Pin), default(Location));
 
+		/// <summary>Bindable property for <see cref="Address"/>.</summary>
 		public static readonly BindableProperty AddressProperty = BindableProperty.Create(nameof(Address), typeof(string), typeof(Pin), default(string));
 
+		/// <summary>Bindable property for <see cref="Label"/>.</summary>
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
 		private object? _markerId;
 
+		/// <inheritdoc />
 		public string Address
 		{
 			get { return (string)GetValue(AddressProperty); }
 			set { SetValue(AddressProperty, value); }
 		}
 
+		/// <inheritdoc />
 		public string Label
 		{
 			get { return (string)GetValue(LabelProperty); }
 			set { SetValue(LabelProperty, value); }
 		}
 
+		/// <inheritdoc />
 		public Location Location
 		{
 			get { return (Location)GetValue(LocationProperty); }
 			set { SetValue(LocationProperty, value); }
 		}
 
+		/// <summary>
+		/// The kind of pin.
+		/// </summary>
 		public PinType Type
 		{
 			get { return (PinType)GetValue(TypeProperty); }
@@ -49,8 +59,14 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
+		/// <summary>
+		/// Raised when this marker is clicked.
+		/// </summary>
 		public event EventHandler<PinClickedEventArgs>? MarkerClicked;
 
+		/// <summary>
+		/// Raised when the info window for this marker is clicked.
+		/// </summary>
 		public event EventHandler<PinClickedEventArgs>? InfoWindowClicked;
 
 		public override bool Equals(object? obj)

@@ -5,6 +5,35 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     Title="Entry">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+
+            <Style x:Key="EntryVisualStatesStyle" TargetType="Entry">
+                <Setter Property="VisualStateManager.VisualStateGroups">
+                    <VisualStateGroupList>
+                        <VisualStateGroup x:Name="CommonStates">
+                            <VisualState x:Name="Normal">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Pink"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Focused">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Yellow"/>
+                                </VisualState.Setters>
+                            </VisualState>
+                            <VisualState x:Name="Disabled">
+                                <VisualState.Setters>
+                                    <Setter Property="BackgroundColor" Value="Red" />
+                                </VisualState.Setters>
+                            </VisualState>
+                        </VisualStateGroup>
+                    </VisualStateGroupList>
+                </Setter>
+            </Style>
+
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.BindingContext>
         <viewmodels:EntryViewModel />
     </views:BasePage.BindingContext>
@@ -48,11 +77,16 @@
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <HorizontalStackLayout>
-                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
-                    <Label Text="Is Password" VerticalOptions="Center"/>
+                    <CheckBox 
+                        x:Name="chkIsPassword" 
+                        IsChecked="true" />
+                    <Label 
+                        Text="Is Password" 
+                        VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="pwdPassword"
+                    Keyboard="Numeric"
                     IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
                 <Label
                     Text="{Binding Text, Source={Reference pwdPassword}}"
@@ -80,6 +114,34 @@
                 <Entry 
                     Text="I am read only" 
                     IsReadOnly="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="False"/>
                 <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />
@@ -121,6 +183,24 @@
                         </LinearGradientBrush>
                     </Entry.Background>
                 </Entry>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="BackgroundEntry"/>
+                <Button
+                    x:Name="UpdateBackgroundButton"
+                    Text="Update Background"
+                    Clicked="OnUpdateBackgroundButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundButton"
+                    Text="Clear Background"
+                    Clicked="OnClearBackgroundButtonClicked"/>
+                <Label
+                    Text="Updating Background using VisualStates"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Style="{StaticResource EntryVisualStatesStyle}" />
                 <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />

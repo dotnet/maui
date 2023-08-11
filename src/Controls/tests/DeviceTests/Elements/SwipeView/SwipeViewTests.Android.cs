@@ -47,31 +47,35 @@ namespace Microsoft.Maui.DeviceTests
 				Content = content
 			};
 
-			var handler = await CreateHandlerAsync<SwipeViewHandler>(swipeView);
-			var platformView = (MauiSwipeView)handler.PlatformView;
-
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(swipeView, async (handler) =>
 			{
-				await platformView.AttachAndRun(async () =>
-				{
-					var openRequest = new SwipeViewOpenRequest(OpenSwipeItem.LeftItems, false);
-					swipeView.Open(OpenSwipeItem.LeftItems, false);
+				var platformView = ((SwipeViewHandler)handler).PlatformView;
+				var openRequest = new SwipeViewOpenRequest(OpenSwipeItem.LeftItems, false);
+				swipeView.Open(OpenSwipeItem.LeftItems, false);
 
-					// The SwipeView add children dynamically opening it.
-					await AssertionExtensions.Wait(() => platformView.ChildCount > 1);
+				// The SwipeView add children dynamically opening it.
+				await AssertionExtensions.Wait(() => platformView.ChildCount > 1);
 
-					var actionView = platformView.GetChildAt(1) as ViewGroup;
-					Assert.NotNull(actionView);
+				var actionView = platformView.GetChildAt(1) as ViewGroup;
+				Assert.NotNull(actionView);
 
-					await AssertionExtensions.Wait(() => actionView.ChildCount > 0);
+				await AssertionExtensions.Wait(() => actionView.ChildCount > 0);
 
-					var swipeItem = actionView.GetChildAt(0);
-					Assert.NotNull(swipeItem);
+				var swipeItem = actionView.GetChildAt(0);
+				Assert.NotNull(swipeItem);
 
-					await AssertionExtensions.Wait(() => swipeItem.Width > 0);
-					Assert.NotEqual(0, swipeItem.Width);
-				});
+				await AssertionExtensions.Wait(() => swipeItem.Width > 0);
+				Assert.NotEqual(0, swipeItem.Width);
 			});
+		}
+
+		MauiSwipeView GetPlatformControl(SwipeViewHandler handler) =>
+			handler.PlatformView;
+
+		Task<bool> HasChildren(SwipeViewHandler handler)
+		{
+			return InvokeOnMainThreadAsync(()
+				=> GetPlatformControl(handler).ChildCount != 0);
 		}
 	}
 }

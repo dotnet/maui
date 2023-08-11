@@ -51,8 +51,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(oldName, label.Text);
 			Assert.Equal(oldName, group.Person1.FullName);
 
-			label.SetValueCore(Label.TextProperty, $"{oldFirstName.ToUpper()} {oldMiddleName} {oldLastName.ToUpper()}", Internals.SetValueFlags.None);
-			Assert.Equal($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpper()}", group.Person1.FullName);
+			label.SetValueCore(Label.TextProperty, $"{oldFirstName.ToUpperInvariant()} {oldMiddleName} {oldLastName.ToUpperInvariant()}", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.Default, SetterSpecificity.ManualValueSetter);
+			Assert.Equal($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpperInvariant()}", group.Person1.FullName);
 		}
 
 		[Fact]
@@ -79,7 +79,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("Courier New 12 Italic", entry1.Text);
 			// Our unit test's ConvertBack should throw an exception below because the desired
 			// return types aren't all strings
-			Assert.Throws<Exception>(() => entry1.SetValueCore(Entry.TextProperty, "Arial 12 Italic", Internals.SetValueFlags.None));
+			Assert.Throws<Exception>(() => entry1.SetValueCore(Entry.TextProperty, "Arial 12 Italic", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None, SetterSpecificity.ManualValueSetter));
 
 			// FindAncestor and FindAncestorBindingContext
 			// are already tested in TestNestedMultiBindings
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				IsEnabled = true,
 				IsExpanded = true
 			};
-			var cp = expander.Children[0].LogicalChildren[1] as ContentPresenter;
+			var cp = expander.Children[0].LogicalChildrenInternal[1] as ContentPresenter;
 			Assert.True(cp.IsVisible);
 			expander.IsEnabled = false;
 			Assert.False(cp.IsVisible);
@@ -212,22 +212,22 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			var label2 = GenerateNameLabel(nameof(group.Person2), BindingMode.TwoWay);
 			stack.Children.Add(label2);
-			label2.SetValueCore(Label.TextProperty, $"DoNothing {oldMiddleName} {oldLastName.ToUpper()}", Internals.SetValueFlags.None);
-			Assert.Equal($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpper()}", group.Person2.FullName);
-			Assert.Equal($"DoNothing {oldMiddleName} {oldLastName.ToUpper()}", label2.Text);
+			label2.SetValueCore(Label.TextProperty, $"DoNothing {oldMiddleName} {oldLastName.ToUpperInvariant()}", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None, specificity: SetterSpecificity.ManualValueSetter);
+			Assert.Equal($"{oldFirstName} {oldMiddleName} {oldLastName.ToUpperInvariant()}", group.Person2.FullName);
+			Assert.Equal($"DoNothing {oldMiddleName} {oldLastName.ToUpperInvariant()}", label2.Text);
 
 			label2.Text = oldName;
 			Assert.Equal(oldName, group.Person2.FullName);
 			Assert.Equal(oldName, label2.Text);
 			// Any UnsetValue prevents any changes to source but target accepts value
-			label2.SetValueCore(Label.TextProperty, $"{oldFirstName.ToUpper()} UnsetValue {oldLastName}");
-			Assert.Equal($"{oldFirstName.ToUpper()} {oldMiddleName} {oldLastName}", group.Person2.FullName);
-			Assert.Equal($"{oldFirstName.ToUpper()} UnsetValue {oldLastName}", label2.Text);
+			label2.SetValue(Label.TextProperty, $"{oldFirstName.ToUpperInvariant()} UnsetValue {oldLastName}");
+			Assert.Equal($"{oldFirstName.ToUpperInvariant()} {oldMiddleName} {oldLastName}", group.Person2.FullName);
+			Assert.Equal($"{oldFirstName.ToUpperInvariant()} UnsetValue {oldLastName}", label2.Text);
 
 			label2.Text = oldName;
 			Assert.Equal(oldName, group.Person2.FullName);
 			Assert.Equal(oldName, label2.Text);
-			label2.SetValueCore(Label.TextProperty, "null");
+			label2.SetValue(Label.TextProperty, "null");
 			// Returning null prevents changes to source but target accepts value
 			Assert.Equal(oldName, group.Person2.FullName);
 			Assert.Equal("null", label2.Text);
@@ -236,14 +236,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label2.Text = oldName;
 			Assert.Equal(oldName, group.Person2.FullName);
 			Assert.Equal(oldName, label2.Text);
-			label2.SetValueCore(Label.TextProperty, $"Duck Duck", Internals.SetValueFlags.None);
+			label2.SetValueCore(Label.TextProperty, $"Duck Duck", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None, SetterSpecificity.ManualValueSetter);
 			Assert.Equal($"Duck Duck {oldLastName}", group.Person2.FullName);
 			Assert.Equal($"Duck Duck", label2.Text);
 
 			// Too many members are no problem either 
 			label2.Text = oldName;
 			Assert.Equal(oldName, group.Person2.FullName);
-			label2.SetValueCore(Label.TextProperty, oldName + " Extra", Internals.SetValueFlags.None);
+			label2.SetValueCore(Label.TextProperty, oldName + " Extra", Internals.SetValueFlags.None, BindableObject.SetValuePrivateFlags.None, SetterSpecificity.ManualValueSetter);
 			Assert.Equal(oldName, group.Person2.FullName);
 			Assert.Equal(oldName + " Extra", label2.Text);
 		}
@@ -285,7 +285,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		//	Assert.Equal(0, converter.ConvertBacks);
 
 		//	// Source change results in 1 additional Convert, no ConvertBack's
-		//	group.Person1.FirstName = group.Person1.FullName.ToUpper();
+		//	group.Person1.FirstName = group.Person1.FullName.ToUpperInvariant();
 		//	Assert.Equal(3, converter.Converts);
 		//	Assert.Equal(0, converter.ConvertBacks);
 
@@ -315,8 +315,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label2W = GenerateNameLabel(nameof(group.Person2), BindingMode.TwoWay);
 			stack.Children.Add(label2W);
 			Assert.Equal(group.Person2.FullName, label2W.Text);
-			label2W.Text = group.Person2.FullName.ToUpper();
-			Assert.Equal(group.Person2.FullName.ToUpper(), label2W.Text);
+			label2W.Text = group.Person2.FullName.ToUpperInvariant();
+			Assert.Equal(group.Person2.FullName.ToUpperInvariant(), label2W.Text);
 
 			oldName = group.Person3.FullName;
 			var label1WTS = GenerateNameLabel(nameof(group.Person3), BindingMode.OneWayToSource);

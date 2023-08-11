@@ -32,7 +32,7 @@ namespace Microsoft.Maui.DeviceTests
 				var platformView = handler.PlatformView;
 
 				// Setup the view to be displayed/parented and run our tests on it
-				await platformView.AttachAndRun(async () =>
+				await AttachAndRun(webView, async (handler) =>
 				{
 					// Wait for the page to load
 					var tcsLoaded = new TaskCompletionSource<bool>();
@@ -78,14 +78,14 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.NavigationCompleted += (_, _) =>
 				{
 					navigationComplete?.SetResult();
-					navigationComplete = null;
 				};
 
-				await handler.PlatformView.AttachAndRun(async () =>
+				await AttachAndRun(webView, async (handler) =>
 				{
 					await handler.PlatformView.OnLoadedAsync();
 					await navigationComplete.Task;
-				}, MauiContext);
+					navigationComplete = null;
+				});
 			});
 		}
 

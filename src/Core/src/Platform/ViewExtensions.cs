@@ -4,6 +4,7 @@ using Microsoft.Maui.Graphics;
 using System.Threading.Tasks;
 using Microsoft.Maui.Media;
 using System.IO;
+using System.Collections.Generic;
 
 #if (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID)
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
@@ -43,7 +44,13 @@ namespace Microsoft.Maui.Platform
 			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
+			where T : ParentView
+#else
 			where T : class
+#endif
 		{
 			if (view is T t)
 				return t;
@@ -54,36 +61,38 @@ namespace Microsoft.Maui.Platform
 				if (parent != null)
 					return parent;
 
-#if TIZEN
 				view = view?.GetParent() as ParentView;
-#else
-				view = view?.GetParent();
-#endif
 			}
 
 			return default;
 		}
 
-		internal static ParentView? FindParent(this ParentView? view, Func<ParentView?, bool> searchExpression)
+		// Only Windows and Android have different types for the Parent type
+#if WINDOWS || ANDROID
+		internal static ParentView? FindParent(this PlatformView? view, Func<ParentView?, bool> searchExpression)
 		{
-			if (searchExpression(view))
-				return view;
+			if (view?.Parent is ParentView pv)
+			{
+				if (searchExpression(pv))
+					return pv;
 
+				return pv.FindParent(searchExpression);
+			}
+
+			return default;
+		}
+#else
+		internal
+#endif
+		static ParentView? FindParent(this ParentView? view, Func<ParentView?, bool> searchExpression)
+		{
 			while (view != null)
 			{
-#if TIZEN
 				var parent = view?.GetParent() as ParentView;
-#else
-				var parent = view?.GetParent();
-#endif
 				if (searchExpression(parent))
 					return parent;
 
-#if TIZEN
 				view = view?.GetParent() as ParentView;
-#else
-				view = view?.GetParent();
-#endif
 			}
 
 			return default;
@@ -91,7 +100,13 @@ namespace Microsoft.Maui.Platform
 
 #if WINDOWS || ANDROID
 		internal static T? GetParentOfType<T>(this PlatformView view)
+#if ANDROID
+			where T : class, ParentView
+#elif PLATFORM
+			where T : ParentView
+#else
 			where T : class
+#endif
 		{
 			if (view is T t)
 				return t;
@@ -99,6 +114,17 @@ namespace Microsoft.Maui.Platform
 			return view.GetParent()?.GetParentOfType<T>();
 		}
 #endif
+
+		internal static bool IsThisMyPlatformView(this IElement? element, PlatformView platformView)
+		{
+			if (element is not null &&
+				element.Handler is IPlatformViewHandler pvh)
+			{
+				return pvh.PlatformView == platformView || pvh.ContainerView == platformView;
+			}
+
+			return false;
+		}
 
 		internal static IDisposable OnUnloaded(this IElement element, Action action)
 		{
@@ -159,5 +185,39 @@ namespace Microsoft.Maui.Platform
 #endif
 
 		}
+
+
+#if PLATFORM
+		internal static T? FindDescendantView<T>(this PlatformView view, Func<PlatformView, bool> predicate) where T : PlatformView
+		{
+			var queue = new Queue<PlatformView>();
+			queue.Enqueue(view);
+
+			while (queue.Count > 0)
+			{
+				var descendantView = queue.Dequeue();
+
+				if (descendantView is T result && predicate.Invoke(result))
+					return result;
+
+				int i = 0;
+				PlatformView? child;
+				while ((child = descendantView?.GetChildAt<PlatformView>(i)) is not null)
+				{
+#if TIZEN
+					// I had to add this check for Tizen to compile.
+					// I think Tizen isn't accounting for the null check
+					// in the while loop correctly
+					if (child is null)
+						break;
+#endif
+					queue.Enqueue(child);
+					i++;
+				}
+			}
+
+			return null;
+		}
+#endif
 	}
 }

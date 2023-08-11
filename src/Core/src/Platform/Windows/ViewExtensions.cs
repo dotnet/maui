@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this FrameworkElement platformView, FocusRequest request)
 		{
-			request.IsFocused = platformView.Focus(FocusState.Programmatic);
+			request.TrySetResult(platformView.Focus(FocusState.Programmatic));
 		}
 
 		public static void Unfocus(this FrameworkElement platformView, IView view)
@@ -352,6 +352,14 @@ namespace Microsoft.Maui.Platform
 				return pv.Parent;
 
 			return null;
+		}
+
+		internal static T? GetChildAt<T>(this DependencyObject view, int index) where T : DependencyObject
+		{
+			if (VisualTreeHelper.GetChildrenCount(view) >= index)
+				return null;
+
+			return VisualTreeHelper.GetChild(view, index) as T;
 		}
 
 		internal static void UnfocusControl(Control control)

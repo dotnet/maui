@@ -6,7 +6,8 @@
     xmlns:pages="using:Maui.Controls.Sample.Pages"
     xmlns:shellPages="clr-namespace:Maui.Controls.Sample.Pages.ShellGalleries"
     FlyoutBackground="{AppThemeBinding Dark=Black, Light=White}"
-    Title="{Binding ShellTitle}">
+    Title="{Binding ShellTitle}"
+    FlyoutIcon="books.png">
     <Shell.TitleView>
         <Grid
             BackgroundColor="Red"
@@ -43,21 +44,25 @@
         <ShellContent Icon="calculator.png" Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
         <ShellContent Icon="coffee.png" Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
         <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
+        <ShellContent Title = "Window Title Bar"  ContentTemplate="{DataTemplate pages:WindowTitleBar}"></ShellContent>
     </FlyoutItem>
     <FlyoutItem Title = "Flyout Item 2" FlyoutDisplayOptions="AsMultipleItems">
-	  <ShellSection Title = "Tab 1">
-	        <ShellContent  Icon="calculator.png" Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
-      	  <ShellContent  Icon="coffee.png" Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
-	        <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
-	  </ShellSection>
-	  <ShellSection Title = "Tab 2">
-	        <ShellContent Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
-      	  <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
-	        <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
-	  </ShellSection>
+        <ShellSection Title = "Tab 1">
+            <ShellContent  Icon="calculator.png" Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
+            <ShellContent  Icon="coffee.png" Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
+            <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
+        </ShellSection>
+        <ShellSection Title = "Tab 2">
+            <ShellContent Title = "Flyout Gallery" ContentTemplate="{DataTemplate shellPages:ShellChromeGallery}"></ShellContent>
+            <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
+            <ShellContent Title = "Semantics Page"  ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
+        </ShellSection>
     </FlyoutItem>
     <ShellSection Title="Flyout Item 3">
         <ShellContent Title = "Semantics Page" ContentTemplate="{DataTemplate pages:SemanticsPage}"></ShellContent>
         <ShellContent Title = "Button Page" ContentTemplate="{DataTemplate pages:ButtonPage}"></ShellContent>
     </ShellSection>
+    <FlyoutItem Title = "Window Title Bar">
+        <ShellContent ContentTemplate="{DataTemplate pages:WindowTitleBar}"></ShellContent>
+    </FlyoutItem>
 </Shell>

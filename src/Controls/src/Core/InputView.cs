@@ -8,36 +8,39 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="Type[@FullName='Microsoft.Maui.Controls.InputView']/Docs/*" />
 	public class InputView : View, IPlaceholderElement, ITextElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='TextProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(InputView), defaultBindingMode: BindingMode.TwoWay,
 			propertyChanged: (bindable, oldValue, newValue) => ((InputView)bindable).OnTextChanged((string)oldValue, (string)newValue));
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='KeyboardProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Keyboard"/>.</summary>
 		public static readonly BindableProperty KeyboardProperty = BindableProperty.Create(nameof(Keyboard), typeof(Keyboard), typeof(InputView), Keyboard.Default,
 			coerceValue: (o, v) => (Keyboard)v ?? Keyboard.Default);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsSpellCheckEnabledProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsSpellCheckEnabled"/>.</summary>
 		public static readonly BindableProperty IsSpellCheckEnabledProperty = BindableProperty.Create(nameof(IsSpellCheckEnabled), typeof(bool), typeof(InputView), true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='MaxLengthProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsTextPredictionEnabled"/>.</summary>
+		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), true);
+
+		/// <summary>Bindable property for <see cref="MaxLength"/>.</summary>
 		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnlyProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsReadOnly"/>.</summary>
 		public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(InputView), false);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='PlaceholderProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Placeholder"/>.</summary>
 		public static readonly BindableProperty PlaceholderProperty = PlaceholderElement.PlaceholderProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='PlaceholderColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PlaceholderColor"/>.</summary>
 		public static readonly BindableProperty PlaceholderColorProperty = PlaceholderElement.PlaceholderColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='TextColorProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextColor"/>.</summary>
 		public static readonly BindableProperty TextColorProperty = TextElement.TextColorProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='CharacterSpacingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="CharacterSpacing"/>.</summary>
 		public static readonly BindableProperty CharacterSpacingProperty = TextElement.CharacterSpacingProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='TextTransformProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="TextTransform"/>.</summary>
 		public static readonly BindableProperty TextTransformProperty = TextElement.TextTransformProperty;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='MaxLength']/Docs/*" />
@@ -66,11 +69,22 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(KeyboardProperty, value);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsSpellCheckEnabled']/Docs/*" />
+		/// <summary>Gets or sets a value that controls whether spell checking is enabled.</summary>
+		/// <value><see langword = "true" /> if spell checking is enabled. Otherwise <see langword="false" />.</value>
+		/// <remarks>On Windows, spellchecking also turns on auto correction</remarks>
 		public bool IsSpellCheckEnabled
 		{
 			get => (bool)GetValue(IsSpellCheckEnabledProperty);
 			set => SetValue(IsSpellCheckEnabledProperty, value);
+		}
+
+		/// <summary>Gets or sets a value that controls whether text prediction and automatic text correction are enabled.</summary>
+		/// <value><see langword="true" /> if text prediction (auto correction) is enabled. Otherwise <see langword="false" />.</value>
+		/// <remarks>On Windows, text prediction only affects touch keyboards and only affects keyboard word suggestions.</remarks>
+		public bool IsTextPredictionEnabled
+		{
+			get => (bool)GetValue(IsTextPredictionEnabledProperty);
+			set => SetValue(IsTextPredictionEnabledProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/InputView.xml" path="//Member[@MemberName='IsReadOnly']/Docs/*" />

@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 11794, "[Bug] RefreshView with CollectionView child cannot contain GridItemsLayout with Span greater than 1 in combination with EmptyView on UWP",

@@ -5,13 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class RelativeLayoutGallery : ContentPage
 	{
 		public RelativeLayoutGallery()
 		{
-			var layout = new RelativeLayout();
+			var layout = new Compatibility.RelativeLayout();
 
 			var box1 = new ContentView
 			{

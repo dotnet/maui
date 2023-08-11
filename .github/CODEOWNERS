@@ -1,45 +1,9 @@
-# Tizen
-/Xamarin.Forms.ControlGallery.Tizen/ @rookiejava
-/Stubs/Xamarin.Forms.Platform.Tizen/ @rookiejava
-/Xamarin.Forms.Platform.Tizen/ @rookiejava
-/Xamarin.Forms.Maps.Tizen/ @rookiejava
-/EmbeddingTestBeds/Embedding.Tizen/ @rookiejava
-/PagesGallery/PagesGallery.Tizen/ @rookiejava
-/Xamarin.Forms.Core/PlatformConfiguration/TizenSpecific @rookiejava
+*       @dotnet/dotnet-maui-reviewers
 
-# GTK
-/Xamarin.Forms.ControlGallery.GTK/ @jsuarezruiz
-/Stubs/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Platform.GTK/ @jsuarezruiz
-/Xamarin.Forms.Maps.GTK/ @jsuarezruiz
-/EmbeddingTestBeds/Embedding.GTK/ @jsuarezruiz
-/PagesGallery/PagesGallery.GTK/ @jsuarezruiz
-/Xamarin.Forms.Core/PlatformConfiguration/GTKSpecific @jsuarezruiz
-
-# WPF
-/Xamarin.Forms.ControlGallery.WPF/ @mohachouch
-/Stubs/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Platform.WPF/ @mohachouch
-/Xamarin.Forms.Maps.WPF/ @mohachouch
-/EmbeddingTestBeds/Embedding.WPF/ @mohachouch
-/PagesGallery/PagesGallery.WPF/ @mohachouch
-/Xamarin.Forms.Core/PlatformConfiguration/WPFSpecific @mohachouch
-
-# macOS
-/Xamarin.Forms.ControlGallery.macOS/ @rmarinho
-/Stubs/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Platform.macOS/ @rmarinho
-/Xamarin.Forms.Maps.macOS/ @rmarinho
-/EmbeddingTestBeds/Embedding.macOS/ @rmarinho
-/PagesGallery/PagesGallery.macOS/ @rmarinho
-/Xamarin.Forms.Core/PlatformConfiguration/macOSSpecific @rmarinho
-
-# XAML
-/Xamarin.Forms.Xaml/ @StephaneDelcroix
-/Xamarin.Forms.Build.Tasks/ @StephaneDelcroix
-
-# Core
-/Xamarin.Forms.Core/ @StephaneDelcroix
+# Tizen (this probably doesn't work since these do not have write access
+**/Tizen @rookiejava @myroot @shyunmin @sung-su @JoonghyunCho
+*.tizen.cs @rookiejava @myroot @shyunmin @sung-su @JoonghyunCho
+*.Tizen.cs @rookiejava @myroot @shyunmin @sung-su @JoonghyunCho
 
 # Blazor Desktop
 /src/BlazorWebView/                                     @dotnet/dotnet-maui-blazor-eng

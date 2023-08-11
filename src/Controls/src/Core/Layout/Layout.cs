@@ -11,10 +11,8 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="Type[@FullName='Microsoft.Maui.Controls.Layout']/Docs/*" />
 	[ContentProperty(nameof(Children))]
-	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView
+	public abstract partial class Layout : View, Maui.ILayout, IList<IView>, IBindableLayout, IPaddingElement, IVisualTreeElement, ISafeAreaView, IInputTransparentContainerElement
 	{
-		ReadOnlyCastingList<Element, IView> _logicalChildren;
-
 		protected ILayoutManager _layoutManager;
 
 		ILayoutManager LayoutManager
@@ -40,8 +38,8 @@ namespace Microsoft.Maui.Controls
 
 		IList IBindableLayout.Children => _children;
 
-		internal override IReadOnlyList<Element> LogicalChildrenInternal =>
-			_logicalChildren ??= new ReadOnlyCastingList<Element, IView>(_children);
+		private protected override IList<Element> LogicalChildrenInternalBackingStore
+			=> new CastingList<Element, IView>(_children);
 
 		public int Count => _children.Count;
 
@@ -61,23 +59,23 @@ namespace Microsoft.Maui.Controls
 
 				if (old is Element oldElement)
 				{
-					oldElement.Parent = null;
-					VisualDiagnostics.OnChildRemoved(this, oldElement, index);
+					RemoveLogicalChild(oldElement, index);
 				}
-
-				_children[index] = value;
 
 				if (value is Element newElement)
 				{
-					newElement.Parent = this;
-					VisualDiagnostics.OnChildAdded(this, newElement);
+					InsertLogicalChild(index, newElement);
+				}
+				else
+				{
+					_children[index] = value;
 				}
 
 				OnUpdate(index, value, old);
 			}
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='IsClippedToBoundsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
 			BindableProperty.Create(nameof(IsClippedToBounds), typeof(bool), typeof(Layout), false,
 				propertyChanged: IsClippedToBoundsPropertyChanged);
@@ -99,7 +97,7 @@ namespace Microsoft.Maui.Controls
 
 		bool Maui.ILayout.ClipsToBounds => IsClippedToBounds;
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='PaddingProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Layout.xml" path="//Member[@MemberName='Padding']/Docs/*" />
@@ -134,22 +132,18 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var index = _children.Count;
-			_children.Add(child);
+
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else
+				_children.Add(child);
 
 			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
-			for (var index = Count - 1; index >= 0; index--)
-			{
-				if (this[index] is Element element)
-				{
-					OnChildRemoved(element, index);
-				}
-			}
-
-			_children.Clear();
+			ClearLogicalChildren();
 			OnClear();
 		}
 
@@ -173,7 +167,10 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
-			_children.Insert(index, child);
+			if (child is Element element)
+				InsertLogicalChild(index, element);
+			else
+				_children.Insert(index, child);
 
 			OnInsert(index, child);
 		}
@@ -204,7 +201,10 @@ namespace Microsoft.Maui.Controls
 
 			var child = _children[index];
 
-			_children.RemoveAt(index);
+			if (child is Element element)
+				RemoveLogicalChild(element, index);
+			else
+				_children.RemoveAt(index);
 
 			OnRemove(index, child);
 		}
@@ -212,15 +212,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
-
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnClear()
@@ -231,34 +222,16 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemove(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildRemoved(element, index);
-			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
-
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
-
-			// Take care of the Element internal bookkeeping
-			if (view is Element element)
-			{
-				OnChildAdded(element);
-			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Update), index, view);
-
-			// Make sure CascadeInputTransparent is applied, if necessary
-			Handler?.UpdateValue(nameof(CascadeInputTransparent));
 		}
 
 		void NotifyHandler(string action, int index, IView view)
@@ -288,13 +261,9 @@ namespace Microsoft.Maui.Controls
 			return LayoutManager.ArrangeChildren(bounds);
 		}
 
-		internal static new void RemapForControls()
-		{
-			ViewHandler.ViewMapper = ControlsLayoutMapper;
-		}
-
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		public bool CascadeInputTransparent
 		{
@@ -302,27 +271,13 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
-		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper)
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			[nameof(CascadeInputTransparent)] = MapInputTransparent,
-			[nameof(IView.InputTransparent)] = MapInputTransparent,
-		};
-
-		void UpdateDescendantInputTransparent()
-		{
-			if (!InputTransparent || !CascadeInputTransparent)
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
 			{
-				// We only need to propagate values if the layout is InputTransparent AND Cascade is true
-				return;
-			}
-
-			// Set all the child InputTransparent values to match this one
-			for (int n = 0; n < Count; n++)
-			{
-				if (this[n] is VisualElement visualElement)
-				{
-					visualElement.InputTransparent = true;
-				}
+				layout.RefreshInputTransparentProperty();
 			}
 		}
 	}

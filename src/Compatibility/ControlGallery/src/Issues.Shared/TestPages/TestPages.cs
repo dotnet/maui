@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Dispatching;
 using NUnit.Framework.Interfaces;
@@ -18,14 +19,38 @@ using Xamarin.UITest;
 [assembly: Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 #if UITEST
 	using IApp = Xamarin.UITest.IApp;
 #endif
 	internal static class AppPaths
 	{
-		public static string ApkPath = "../../../../../src/Android/bin/Debug/net6.0-android/com.microsoft.mauicompatibilitygallery-Signed.apk";
+		public static string ApkPath
+		{
+			get
+			{
+				var directories = Directory.GetDirectories("../../../../../src/Android/bin/Debug/", "*android*");
+
+				if (directories.Length == 0)
+					throw new Exception("Unable to locate apk path");
+
+				return $"{directories[0]}/com.microsoft.mauicompatibilitygallery-Signed.apk";
+			}
+		}
+
+		public static string iOSPath
+		{
+			get
+			{
+				var directories = Directory.GetDirectories("../../../../../src/iOS/bin/Debug/", "*ios*");
+
+				if (directories.Length == 0)
+					throw new Exception("Unable to locate ios path");
+
+				return $"{directories[0]}/iossimulator-x64/Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.app";
+			}
+		}
 
 		public static string MacOSPath = "../../../../src/MacOS/bin/Debug/Microsoft.Maui.Controls.ControlGallery.MacOS.app";
 
@@ -62,6 +87,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			if (app == null)
 				throw new NullReferenceException("App was not initialized.");
 
+			Application.Current ??= new TestApp(app);
+
 			// Wrap the app in ScreenshotConditional so it only takes screenshots if the SCREENSHOTS symbol is specified
 			return new ScreenshotConditionalApp(app);
 		}
@@ -69,8 +96,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 #if __ANDROID__
 		static IApp InitializeAndroidApp()
 		{
-			var fullApkPath = IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath);
+			var envApkPath = Environment.GetEnvironmentVariable("APP_APK");
 
+
+			var fullApkPath = string.IsNullOrEmpty(envApkPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.ApkPath)
+																: envApkPath;
+
+			System.Diagnostics.Debug.WriteLine($"FullAppPath: {fullApkPath}");
 			var appConfiguration = ConfigureApp.Android.ApkFile(fullApkPath).Debug();
 
 			if (TestContext.Parameters.Exists("IncludeScreenShots") &&
@@ -89,6 +121,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 #if __IOS__
 		static IApp InitializeiOSApp()
 		{
+			/*
 			string UDID = "";
 
 			if (TestContext.Parameters.Exists("UDID"))
@@ -116,14 +149,21 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			if (int.TryParse(app.Invoke("iOSVersion").ToString(), out _iosVersion))
 			{
 				iOSVersion = _iosVersion;
-			}
+			}*/
+
+
+			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
+
+
+			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
+																: enviOSPath;
 
 			// Running on the simulator
-			// var app = ConfigureApp.iOS
-			//				  .PreferIdeSettings()
-			//		  		  .AppBundle("../../../Microsoft.Maui.Controls.ControlGallery.iOS/bin/iPhoneSimulator/Debug/CompatibilityControlGalleryiOS.app")
-			//				  .Debug()
-			//				  .StartApp();
+			var app = ConfigureApp.iOS
+							.PreferIdeSettings()
+							.AppBundle(fullApkPath)
+							.Debug()
+							.StartApp();
 
 			return app;
 		}
@@ -190,10 +230,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 					}
 #endif
 #if __IOS__
-				if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
-				{
-					return;
-				}
+					if (bool.Parse(app.Invoke("navigateToTest:", cellName).ToString()))
+					{
+						return;
+					}
 #endif
 
 #if WINDOWS
@@ -426,38 +466,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		protected abstract void Init();
 	}
 
-	internal abstract class TestCarouselPage : CarouselPage
-	{
-#if UITEST
-		public IApp RunningApp => AppSetup.RunningApp;
-
-		protected virtual bool Isolate => false;
-#endif
-
-		protected TestCarouselPage()
-		{
-#if APP
-			Init();
-#endif
-		}
-
-#if UITEST
-		[SetUp]
-		public void Setup()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestSetup(GetType(), Isolate);
-		}
-
-		[TearDown]
-		public void TearDown()
-		{
-			(RunningApp as ScreenshotConditionalApp).TestTearDown(Isolate);
-		}
-#endif
-
-		protected abstract void Init();
-	}
-
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.FlyoutPage)]
 #endif
@@ -567,11 +575,15 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 #endif
 	public abstract class TestShell : Shell
 	{
+#if ANDROID
+		protected const string FlyoutIconAutomationId = "Open navigation drawer";
+#else
 		protected const string FlyoutIconAutomationId = "OK";
+#endif
 #if __IOS__ || WINDOWS
 		protected const string BackButtonAutomationId = "Back";
 #else
-		protected const string BackButtonAutomationId = "OK";
+		protected const string BackButtonAutomationId = "Navigate up";
 #endif
 
 #if UITEST
@@ -842,7 +854,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			if (makeSureFlyoutStaysOpen)
 			{
 				System.Threading.Thread.Sleep(500);
-				if(RunningApp.Query(text).Count() == 0)
+				if (RunningApp.Query(text).Count() == 0)
 					this.ShowFlyout(flyoutIcon);
 			}
 
@@ -869,15 +881,113 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		protected abstract void Init();
 
 	}
+
+#if UITEST
+	/// <summary>
+	/// All of our tests are nested inside Maui.Controls Types and a few of those types need a 
+	/// dispatcher to be set inside the ctor. 
+	/// So, when the NUnit runner instantiates a `TabbedPage` as the base class for the `TestFixture`
+	/// it'll throw an exception because it can't find a Dispatcher for the BindableObject.
+	/// That dispatcher will never actually be used but this will at least fill in the requirements.
+	/// Nunit doesn't actually used the features of a `TabbedPage` for anything that's just where
+	/// the Xamarin.UITest commands live for running a test.
+	/// </summary>
+	class TestApp : Application
+	{
+		public TestApp(IApp app)
+		{
+			Handler = new TestAppHandler(this, app);
+		}
+
+		class TestAppHandler : IElementHandler
+		{
+			TestApp _testApp;
+			IApp _app;
+			IMauiContext _mauiContext;
+
+			public TestAppHandler(TestApp testApp, IApp app)
+			{
+				_app = app;
+				_testApp = testApp;
+				_mauiContext = new ContextStub();
+			}
+
+			public object PlatformView => _app;
+
+			public IElement VirtualView => _testApp;
+
+			public IMauiContext MauiContext => _mauiContext;
+
+			public void DisconnectHandler()
+			{
+			}
+
+			public void Invoke(string command, object args = null)
+			{
+			}
+
+			public void SetMauiContext(IMauiContext mauiContext)
+			{
+			}
+
+			public void SetVirtualView(IElement view)
+			{
+			}
+
+			public void UpdateValue(string property)
+			{
+			}
+		}
+
+		class ContextStub : IMauiContext, IServiceProvider
+		{
+			public IDispatcher _dispatcher = new TestDispatcher();
+
+			public IServiceProvider Services => this;
+
+			public IMauiHandlersFactory Handlers => throw new NotImplementedException();
+
+			public object GetService(Type serviceType)
+			{
+				if (serviceType == typeof(IDispatcher))
+					return _dispatcher;
+
+				throw new NotImplementedException();
+			}
+
+			class TestDispatcher : IDispatcher
+			{
+				public bool IsDispatchRequired => false;
+
+				public IDispatcherTimer CreateTimer()
+				{
+					throw new NotImplementedException();
+				}
+
+				public bool Dispatch(Action action)
+				{
+					action.Invoke();
+					return true;
+				}
+
+				public bool DispatchDelayed(TimeSpan delay, Action action)
+				{
+					throw new NotImplementedException();
+				}
+			}
+		}
+	}
+
+#endif
 }
 
 #if UITEST
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	using System;
 	using NUnit.Framework;
 
-// Run setup once for all tests in the Microsoft.Maui.Controls.ControlGallery.Issues namespace
+	// Run setup once for all tests in the Microsoft.Maui.Controls.ControlGallery.Issues namespace
 	// (instead of once for each test)
 	[SetUpFixture]
 	public class IssuesSetup

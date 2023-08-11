@@ -40,6 +40,20 @@
                 <Editor 
                     Text="Text"/>
                 <Label
+                    Text="FontSize"
+                    Style="{StaticResource Headline}" />
+                <Editor
+                    FontSize="Large"
+                    Placeholder="FontSize (Large)"
+                    Text="FontSize (Large)"/>
+                <Label
+                    Text="CharacterSpacing"
+                    Style="{StaticResource Headline}" />
+                <Editor
+                    CharacterSpacing="4"
+                    Placeholder="CharacterSpacing (4)"
+                    Text="CharacterSpacing (4)"/>
+                <Label
                     Text="ClearButtonVisibility = Never"
                     Style="{StaticResource Headline}" />
                 <Label
@@ -54,6 +68,34 @@
                 <Editor 
                     IsReadOnly="True" 
                     Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Etiam eget tempus lorem. Sed vitae elit nisi. Donec quis quam sed mi lobortis suscipit vel quis augue. Phasellus risus enim, venenatis id blandit non, vehicula nec dui. Quisque luctus nisi vel ex imperdiet, eget molestie nisl cursus. Cras posuere vulputate lectus, ut sodales augue consequat vel." />
+                <Label
+                    Text="SpellCheck (True), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="False"/>
                 <Label
                     Text="Focus"
                     Style="{StaticResource Headline}" />
@@ -89,6 +131,19 @@
                         </LinearGradientBrush>
                     </Editor.Background>
                 </Editor>
+                <Label
+                    Text="Background"
+                    Style="{StaticResource Headline}" />
+                <Editor 
+                    x:Name="BackgroundEditor"/>
+                <Button
+                    x:Name="UpdateBackgroundButton"
+                    Text="Update Background"
+                    Clicked="OnUpdateBackgroundButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundButton"
+                    Text="Clear Background"
+                    Clicked="OnClearBackgroundButtonClicked"/>
                 <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />

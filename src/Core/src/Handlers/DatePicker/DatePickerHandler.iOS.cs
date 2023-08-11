@@ -1,7 +1,5 @@
 ﻿using System;
-using Foundation;
 using UIKit;
-using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -37,51 +35,52 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(MauiDatePicker platformView)
 		{
 			platformView.MauiDatePickerDelegate = null;
+
 			base.DisconnectHandler(platformView);
 		}
 
-		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var picker = (handler as DatePickerHandler)?.DatePickerDialog;
 			handler.PlatformView?.UpdateFormat(datePicker, picker);
 		}
 
-		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var picker = (handler as DatePickerHandler)?.DatePickerDialog;
 			handler.PlatformView?.UpdateDate(datePicker, picker);
 		}
 
-		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler.DatePickerDialog);
 		}
 
-		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler.DatePickerDialog);
 		}
 
-		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateTextColor(datePicker);
 		}
 
-		public static void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFlowDirection(DatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFlowDirection(datePicker);
 			handler.PlatformView?.UpdateTextAlignment(datePicker);
@@ -130,7 +129,7 @@ namespace Microsoft.Maui.Handlers
 
 		class DatePickerDelegate : MauiDatePickerDelegate
 		{
-			WeakReference<IDatePickerHandler> _handler;
+			readonly WeakReference<IDatePickerHandler> _handler;
 
 			public DatePickerDelegate(IDatePickerHandler handler) =>
 				_handler = new WeakReference<IDatePickerHandler>(handler);

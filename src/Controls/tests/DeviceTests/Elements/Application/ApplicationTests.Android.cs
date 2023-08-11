@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
@@ -17,19 +17,46 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class ApplicationTests : ControlsHandlerTestBase
 	{
 		[Category(TestCategory.Application)]
+		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 		public class SoftInputModeTests : ControlsHandlerTestBase
 		{
 			[Fact]
 			public async Task SoftInputModeDefaultsToAdjustPan()
 			{
-				await InvokeOnMainThreadAsync(() =>
+				await RunTests((_, windowHandler) =>
 				{
-					Assert.Equal(ASoftInput.AdjustPan, GetSoftInput());
+					// Validate that the Soft Input initializes to AdjustPan
+					Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+					return Task.CompletedTask;
 				});
 			}
 
 			[Fact]
 			public async Task SoftInputModeSetOnApplicationPropagatesToWindowHandlers()
+			{
+				await RunTests((app, windowHandler) =>
+				{
+					// Set to Resize
+					Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
+						app,
+						Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
+
+					// Validate the mapper on the window handler is called with correct value
+					Assert.Equal(ASoftInput.AdjustResize, windowHandler.LastASoftInputSet);
+
+					// Set to Pan
+					Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
+						app,
+						Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Pan);
+
+					// Validate the mapper on the window handler is called with correct value
+					Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+					return Task.CompletedTask;
+				});
+			}
+
+
+			async Task RunTests(Func<SoftInputModeApplication, SoftInputWindowHandlerStub, Task> runTests)
 			{
 				EnsureHandlerCreated((builder) =>
 				{
@@ -41,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 					});
 				});
 
-				await InvokeOnMainThreadAsync(() =>
+				await InvokeOnMainThreadAsync(async () =>
 				{
 					var handlers = new List<IElementHandler>();
 
@@ -59,24 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 
 						handlers.Insert(0, app.Window.Handler);
 
-						// Validate that the Soft Input initializes to AdjustPan
-						Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
-
-						// Set to Resize
-						Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
-							app,
-							Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Resize);
-
-						// Validate the mapper on the window handler is called with correct value
-						Assert.Equal(ASoftInput.AdjustResize, windowHandler.LastASoftInputSet);
-
-						// Set to Pan
-						Controls.PlatformConfiguration.AndroidSpecific.Application.SetWindowSoftInputModeAdjust(
-							app,
-							Controls.PlatformConfiguration.AndroidSpecific.WindowSoftInputModeAdjust.Pan);
-
-						// Validate the mapper on the window handler is called with correct value
-						Assert.Equal(ASoftInput.AdjustPan, windowHandler.LastASoftInputSet);
+						await runTests(app, windowHandler);
 					}
 					finally
 					{
@@ -88,15 +98,9 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			}
 
-			ASoftInput GetSoftInput() =>
-				GetSoftInput(MauiContext.Context.GetActivity());
-
-			ASoftInput GetSoftInput(AActivity aActivity) =>
-				aActivity.Window.Attributes.SoftInputMode;
-
 			class SoftInputApplicationHandlerStub : ApplicationHandler
 			{
-				public SoftInputApplicationHandlerStub() : base(Application.ControlsApplicationMapper)
+				public SoftInputApplicationHandlerStub() : base(ApplicationHandler.Mapper)
 				{
 				}
 
@@ -131,7 +135,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			class SoftInputWindowHandlerStub : ElementHandler<IWindow, AActivity>, IWindowHandler
 			{
-				public ASoftInput LastASoftInputSet { get; private set; } = ASoftInput.AdjustUnspecified;
+				public ASoftInput LastASoftInputSet => PlatformView?.Window?.Attributes?.SoftInputMode ??
+					ASoftInput.AdjustUnspecified;
 
 				public static IPropertyMapper<IWindow, SoftInputWindowHandlerStub> StubMapper =
 					new PropertyMapper<IWindow, SoftInputWindowHandlerStub>()
@@ -141,11 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				public static void MapWindowSoftInputModeAdjust(SoftInputWindowHandlerStub arg1, IWindow arg2)
 				{
-					if (arg2.Parent is Application app)
-					{
-						var setting = Controls.PlatformConfiguration.AndroidSpecific.Application.GetWindowSoftInputModeAdjust(app);
-						arg1.LastASoftInputSet = setting.ToPlatform();
-					}
+					Window.MapWindowSoftInputModeAdjust(arg1, arg2);
 				}
 
 				public SoftInputWindowHandlerStub() : base(StubMapper, null)
@@ -155,7 +156,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				protected override AActivity CreatePlatformElement()
 				{
-					return new AActivity();
+					return MauiProgramDefaults.DefaultContext.GetActivity();
 				}
 			}
 		}

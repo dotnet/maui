@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
-using System.ComponentModel;
 
 #if ANDROID
 using Android.Graphics.Drawables;
@@ -62,14 +62,14 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertContainsColor(Colors.Blue.ToPlatform());
+					await platformView.AssertContainsColor(Colors.Blue.ToPlatform(), MauiContext);
 
 					// the second one does not
 					image.Source = new FileImageSourceStub(secondPath);
 					handler.UpdateValue(nameof(IImage.Source));
 					await image.Wait();
 
-					await platformView.AssertContainsColor(expectedColor.ToPlatform());
+					await platformView.AssertContainsColor(expectedColor.ToPlatform(), MauiContext);
 				});
 			});
 		}
@@ -104,7 +104,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var expectedColor = Color.FromArgb(colorHex);
 
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 
 			Assert.Equal(new[] { "LoadingStarted", "LoadingCompleted(True)" }, order);
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.SetMinimumWidth(1);
 #endif
 
-				await handler.PlatformView.AssertContainsColor(color);
+				await handler.PlatformView.AssertContainsColor(color, MauiContext);
 			});
 
 			Assert.Equal(new List<string> { "LoadingStarted", "LoadingFailed" }, order);
@@ -197,7 +197,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
-		public async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrect()
+		public async Task ImageLoadSequenceIsCorrect()
+		{
+			await ImageLoadSequenceIsCorrectImplementation();
+		}
+
+		async Task<List<(string Member, object Value)>> ImageLoadSequenceIsCorrectImplementation()
 		{
 			var image = new TStub
 			{
@@ -248,14 +253,19 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(new[] { "Before Starting", "Starting", "DoWork", "Finishing", "After Finishing" }, order.ToArray());
 
 				// make sure it did actually work
-				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 
 				return handler.ImageEvents;
 			});
 		}
 
 		[Fact]
-		public async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOver()
+		public async Task InterruptingLoadCancelsAndStartsOver()
+		{
+			await InterruptingLoadCancelsAndStartsOverImplementation();
+		}
+
+		async Task<List<(string Member, object Value)>> InterruptingLoadCancelsAndStartsOverImplementation()
 		{
 			var image = new TStub
 			{
@@ -305,7 +315,7 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 
 				// make sure it did actually work
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				return handler.ImageEvents;
 			});
@@ -339,7 +349,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.NotEmpty(handler.ImageEvents);
 				Assert.Null(handler.ImageEvents[0].Value);
 
-				await handler.PlatformView.AssertContainsColor(expectedColor);
+				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
 		}
 
@@ -358,7 +368,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				Assert.Single(handler.ImageEvents);
 				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
@@ -387,7 +397,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				handler.ImageEvents.Clear();
 
@@ -396,7 +406,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Blue);
+				await handler.PlatformView.AssertContainsColor(Colors.Blue, MauiContext);
 
 				Assert.Single(handler.ImageEvents);
 				Assert.Equal(ImageEventAppResourceMemberName, handler.ImageEvents[0].Member);
@@ -413,7 +423,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ImageLoadSequenceIsCorrectWithChecks()
 		{
-			var events = await ImageLoadSequenceIsCorrect();
+			var events = await ImageLoadSequenceIsCorrectImplementation();
 
 			Assert.Single(events);
 			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
@@ -430,7 +440,7 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task InterruptingLoadCancelsAndStartsOverWithChecks()
 		{
-			var events = await InterruptingLoadCancelsAndStartsOver();
+			var events = await InterruptingLoadCancelsAndStartsOverImplementation();
 
 			Assert.Single(events);
 			Assert.Equal(ImageEventCustomMemberName, events[0].Member);
@@ -480,7 +490,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				handler.ImageEvents.Clear();
 
@@ -489,7 +499,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				await image.Wait();
 
-				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}
 
@@ -506,14 +516,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<ImageHandler>(image);
 				await image.Wait();
-				await handler.PlatformView.AssertContainsColor(Colors.Red);
+				await handler.PlatformView.AssertContainsColor(Colors.Red, MauiContext);
 
 				image.Source = new FileImageSourceStub("fail.png");
 				handler.UpdateValue(nameof(IImage.Source));
 				await handler.PlatformView.AttachAndRun(() => { });
 
 				await image.Wait(5000);
-				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red);
+				await handler.PlatformView.AssertDoesNotContainColor(Colors.Red, MauiContext);
 			});
 		}
 	}

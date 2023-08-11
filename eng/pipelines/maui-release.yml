@@ -37,8 +37,6 @@ parameters:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
 
 resources:
@@ -71,10 +69,8 @@ stages:
             vmImage: ${{ PackPlatform.vmImage }}
             ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
               demands:
-                - macOS.Name -equals Monterey
+                - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
           steps:
             - template: common/pack.yml
               parameters:

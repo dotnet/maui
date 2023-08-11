@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             AutomationId="DragAndDropBetweenLayouts"
+             x:Class="Maui.Controls.Sample.DragAndDropBetweenLayouts">
+    <StackLayout>
+        <Grid BackgroundColor="Purple">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <ScrollView AutomationId="AllColorsScrollView" Grid.Column="0">
+                <StackLayout 
+                    AutomationId="AllColorsStack"
+                    x:Name="SLAllColors">
+                    <StackLayout.GestureRecognizers>
+                        <DropGestureRecognizer 
+                            DragOver="OnDragOver"
+                            DragLeave="OnDragLeave"
+                            Drop="OnDrop">
+                        </DropGestureRecognizer>
+                    </StackLayout.GestureRecognizers>
+                    <Label HeightRequest="100" Background="Red" Text="Red" AutomationId="Red">
+                        <Label.GestureRecognizers>
+                            <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label HeightRequest="100" Background="Purple" Text="Purple" AutomationId="Purple">
+                        <Label.GestureRecognizers>
+                            <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label HeightRequest="100" Background="Yellow" Text="Yellow" AutomationId="Yellow">
+                        <Label.GestureRecognizers>
+                            <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                    <Label HeightRequest="100" Background="Blue" Text="Blue" AutomationId="Blue">
+                        <Label.GestureRecognizers>
+                            <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </StackLayout>
+            </ScrollView>
+            <ScrollView AutomationId="RainbowScrollView" Grid.Column="1" Background="Brown">
+                <StackLayout 
+                    AutomationId="RainbowStack"
+                    Background="Blue"
+                    x:Name="SLRainbow">
+                    <StackLayout.GestureRecognizers>
+                        <DropGestureRecognizer 
+                            DragOver="OnDragOver"
+                            DragLeave="OnDragLeave"
+                            Drop="OnDrop">
+                        </DropGestureRecognizer>
+                    </StackLayout.GestureRecognizers>
+                    <Label HeightRequest="100" Background="Green" Text="Green" AutomationId="Green">
+                        <Label.GestureRecognizers>
+                            <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
+                        </Label.GestureRecognizers>
+                    </Label>
+                </StackLayout>
+            </ScrollView>
+        </Grid>
+        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel"/>
+    </StackLayout>
+</ContentView>

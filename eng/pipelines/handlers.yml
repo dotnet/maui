@@ -76,13 +76,11 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
   - name: PackPlatforms
@@ -92,15 +90,32 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
+
+  - name: RunTemplatePlatforms
+    type: object
+    default:
+    - name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOnAndroid
+      artifact: templates-run-android
+    - name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOniOS
+      artifact: templates-run-ios
+
   - name: TestTargetFrameworks
     type: object
     default:
@@ -145,14 +160,11 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
-                - macOS.Name -equals Monterey
+                - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
             steps:
               - template: common/provision.yml
                 parameters:
-                  platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -190,7 +202,7 @@ stages:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Monterey
+              - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
               - Agent.HasDevices -equals False
               - Agent.IsPaired -equals False
@@ -204,65 +216,64 @@ stages:
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - stage: samples_net
-    displayName: Build .NET MAUI Samples
+    displayName: Test .NET MAUI Samples
     dependsOn: pack_net
     jobs:
       - ${{ each BuildPlatform in parameters.BuildPlatforms }}:
-        - ${{ each BuildConfiguration in parameters.BuildConfigurations }}:
-          - job: build_net_${{ BuildPlatform.name }}_${{ BuildConfiguration }}
-            workspace:
-              clean: all
-            displayName: ${{ BuildPlatform.name }} (${{ BuildConfiguration }})
-            timeoutInMinutes: 240
-            condition: or(
-              ${{ parameters.BuildEverything }},
-              ne(variables['Build.Reason'], 'PullRequest'),
-              eq('${{ BuildConfiguration }}', 'Release'))
-            pool:
-              name: ${{ BuildPlatform.poolName }}
-              vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Monterey
-                - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
-            steps:
-              - template: common/provision.yml
-                parameters:
-                  platform: ${{ BuildPlatform.name }}
-                  poolName: ${{ BuildPlatform.poolName }}
-                  
-              - task: DownloadBuildArtifacts@0
-                displayName: 'Download Packages'
-                inputs:
-                  artifactName: nuget
-                  itemPattern: '**/*.nupkg'
-                  downloadPath: $(System.DefaultWorkingDirectory)/artifacts
-              - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
-                displayName: Move the downloaded artifacts
-              - pwsh: ./build.ps1 --target=dotnet-local-workloads --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Install .NET (Local Workloads)'
-                retryCountOnTaskFailure: 3
-                env:
-                  DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
-                  PRIVATE_BUILD: $(PrivateBuild)
-              - pwsh: ./build.ps1 --target=dotnet-samples --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
-                displayName: 'Build .NET MAUI Samples'
-              - task: PublishBuildArtifacts@1
-                condition: always()
-                displayName: publish artifacts
-                inputs:
-                  ArtifactName: ${{ BuildPlatform.artifact }}
+        - job: build_net_${{ BuildPlatform.name }}_samples
+          workspace:
+            clean: all
+          displayName: ${{ BuildPlatform.name }}
+          timeoutInMinutes: 120
+          pool:
+            name: ${{ BuildPlatform.poolName }}
+            vmImage: ${{ BuildPlatform.vmImage }}
+            demands:
+              - macOS.Name -equals Ventura
+              - macOS.Architecture -equals x64
+          steps:
+            - template: common/provision.yml
+              parameters:
+                poolName: ${{ BuildPlatform.poolName }}
+
+            - task: DownloadBuildArtifacts@0
+              displayName: 'Download Packages'
+              inputs:
+                artifactName: nuget
+                itemPattern: '**/*.nupkg'
+                downloadPath: $(System.DefaultWorkingDirectory)/artifacts
+            - pwsh: Move-Item -Path artifacts\nuget\*.nupkg -Destination artifacts -Force
+              displayName: Move the downloaded artifacts
+            - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+              displayName: 'Install .NET (Local Workloads)'
+              retryCountOnTaskFailure: 3
+              env:
+                DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
+                PRIVATE_BUILD: $(PrivateBuild)
+            - task: DotNetCoreCLI@2
+              inputs:
+                projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+              displayName: Build Microsoft.Maui.IntegrationTests
+            - task: DotNetCoreCLI@2
+              inputs:
+                command: test
+                projects: $(Build.SourcesDirectory)/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
+                arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
+                publishTestResults: true
+                testRunTitle: ${{ BuildPlatform.name }} sample build tests
+              displayName: ${{ BuildPlatform.name }} sample build tests
 
   - stage: templates_net
     displayName: Test Templates
     dependsOn: pack_net
     jobs:
     - template: common/maui-templates.yml
-
-  - template: common/security-compliance.yml
+      parameters:
+        RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
+        BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/security-compliance.yml
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

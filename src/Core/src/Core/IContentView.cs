@@ -5,7 +5,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// A View that contains another View.
 	/// </summary>
-	public interface IContentView : IView, IPadding
+	public interface IContentView : IView, IPadding, ICrossPlatformLayout
 	{
 		/// <summary>
 		/// Gets the raw content of this view.
@@ -18,18 +18,20 @@ namespace Microsoft.Maui
 		IView? PresentedContent { get; }
 
 		/// <summary>
-		/// Measures the desired size of the IContentView within the given constraints.
+		/// This interface method is provided for backward compatibility with previous versions. 
+		/// Implementing classes should implement the ICrossPlatformLayout interface rather than directly implementing this method.
 		/// </summary>
-		/// <param name="widthConstraint">The width limit for measuring the IContentView.</param>
-		/// <param name="heightConstraint">The height limit for measuring the IContentView.</param>
-		/// <returns>The desired size of the IContentView.</returns>
-		Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
+		new Size CrossPlatformMeasure(double widthConstraint, double heightConstraint);
 
 		/// <summary>
-		/// Arranges the content of the IContentView within the given bounds.
+		/// This interface method is provided for backward compatibility with previous versions. 
+		/// Implementing classes should implement the ICrossPlatformLayout interface rather than directly implementing this method.
 		/// </summary>
-		/// <param name="bounds">The bounds in which the IContentView's content should be arranged.</param>
-		/// <returns>The actual size of the arranged IContentView.</returns>
-		Size CrossPlatformArrange(Rect bounds);
+		new Size CrossPlatformArrange(Rect bounds);
+
+#if !NETSTANDARD2_0
+		Size ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) => CrossPlatformArrange(bounds);
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) => CrossPlatformMeasure(widthConstraint, heightConstraint);
+#endif
 	}
 }

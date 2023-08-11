@@ -1,8 +1,11 @@
 #nullable disable
+using System.Runtime.CompilerServices;
+using Microsoft.Maui.Graphics;
+
 namespace Microsoft.Maui.Controls.Shapes
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="Type[@FullName='Microsoft.Maui.Controls.Shapes.Line']/Docs/*" />
-	public sealed partial class Line : Shape
+	public sealed partial class Line : Shape, IShape
 	{
 		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Line() : base()
@@ -17,19 +20,19 @@ namespace Microsoft.Maui.Controls.Shapes
 			Y2 = y2;
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="X1"/>.</summary>
 		public static readonly BindableProperty X1Property =
 			BindableProperty.Create(nameof(X1), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y1Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Y1"/>.</summary>
 		public static readonly BindableProperty Y1Property =
 			BindableProperty.Create(nameof(Y1), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='X2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="X2"/>.</summary>
 		public static readonly BindableProperty X2Property =
 			BindableProperty.Create(nameof(X2), typeof(double), typeof(Line), 0.0d);
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls.Shapes/Line.xml" path="//Member[@MemberName='Y2Property']/Docs/*" />
+		/// <summary>Bindable property for <see cref="Y2"/>.</summary>
 		public static readonly BindableProperty Y2Property =
 			BindableProperty.Create(nameof(Y2), typeof(double), typeof(Line), 0.0d);
 
@@ -59,6 +62,28 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			set { SetValue(Y2Property, value); }
 			get { return (double)GetValue(Y2Property); }
+		}
+
+		// TODO this should move to a remapped mapper
+		protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		{
+			base.OnPropertyChanged(propertyName);
+
+			if (propertyName == X1Property.PropertyName ||
+				propertyName == Y1Property.PropertyName ||
+				propertyName == X2Property.PropertyName ||
+				propertyName == Y2Property.PropertyName)
+				Handler?.UpdateValue(nameof(IShapeView.Shape));
+		}
+
+		public override PathF GetPath()
+		{
+			var path = new PathF();
+
+			path.MoveTo((float)X1, (float)Y1);
+			path.LineTo((float)X2, (float)Y2);
+
+			return path;
 		}
 	}
 }

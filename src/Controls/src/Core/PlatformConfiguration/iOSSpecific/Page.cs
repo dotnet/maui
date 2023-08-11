@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 	/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.Page']/Docs/*" />
 	public static class Page
 	{
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PrefersStatusBarHiddenProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PrefersStatusBarHidden"/>.</summary>
 		public static readonly BindableProperty PrefersStatusBarHiddenProperty =
 			BindableProperty.Create("PrefersStatusBarHidden", typeof(StatusBarHiddenMode), typeof(Page), StatusBarHiddenMode.Default);
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PreferredStatusBarUpdateAnimationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PreferredStatusBarUpdateAnimation"/>.</summary>
 		public static readonly BindableProperty PreferredStatusBarUpdateAnimationProperty =
 			BindableProperty.Create("PreferredStatusBarUpdateAnimation", typeof(UIStatusBarAnimation), typeof(Page), UIStatusBarAnimation.None);
 
@@ -71,8 +71,12 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='UseSafeAreaProperty']/Docs/*" />
+		/// <summary>Bindable property for attached property <c>UseSafeArea</c>.</summary>
+#if MACCATALYST
 		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), true);
+#else
+		public static readonly BindableProperty UseSafeAreaProperty = BindableProperty.Create("UseSafeArea", typeof(bool), typeof(Page), false);
+#endif
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetUseSafeArea']/Docs/*" />
 		public static bool GetUseSafeArea(BindableObject element)
@@ -99,7 +103,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return GetUseSafeArea(config.Element);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='LargeTitleDisplayProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="LargeTitleDisplay"/>.</summary>
 		public static readonly BindableProperty LargeTitleDisplayProperty = BindableProperty.Create(nameof(LargeTitleDisplay), typeof(LargeTitleDisplayMode), typeof(Page), LargeTitleDisplayMode.Automatic);
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetLargeTitleDisplay']/Docs/*" />
@@ -129,7 +133,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 
 		static readonly BindablePropertyKey SafeAreaInsetsPropertyKey = BindableProperty.CreateReadOnly(nameof(SafeAreaInsets), typeof(Thickness), typeof(Page), default(Thickness));
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='SafeAreaInsetsProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="SafeAreaInsets"/>.</summary>
 		public static readonly BindableProperty SafeAreaInsetsProperty = SafeAreaInsetsPropertyKey.BindableProperty;
 
 		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='GetSafeAreaInsets']/Docs/*" />
@@ -157,7 +161,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			return config;
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='ModalPresentationStyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="ModalPresentationStyle"/>.</summary>
 		public static readonly BindableProperty ModalPresentationStyleProperty =
 			BindableProperty.Create(nameof(ModalPresentationStyle), typeof(UIModalPresentationStyle), typeof(Page), UIModalPresentationStyle.FullScreen);
 
@@ -185,7 +189,7 @@ namespace Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific
 			element.SetValue(ModalPresentationStyleProperty, value);
 		}
 
-		/// <include file="../../../../docs/Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific/Page.xml" path="//Member[@MemberName='PrefersHomeIndicatorAutoHiddenProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="PrefersHomeIndicatorAutoHidden"/>.</summary>
 		public static readonly BindableProperty PrefersHomeIndicatorAutoHiddenProperty =
 			BindableProperty.Create(nameof(PrefersHomeIndicatorAutoHidden), typeof(bool), typeof(Page), false);
 

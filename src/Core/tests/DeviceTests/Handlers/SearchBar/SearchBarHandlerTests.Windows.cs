@@ -24,39 +24,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			searchBar.Focus();
 
-			await InvokeOnMainThreadAsync(async () =>
+			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				var searchBarHandler = CreateHandler(searchBar);
-				await searchBarHandler.PlatformView.AttachAndRun(async () =>
-				{
-					await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
-				});
+				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
-		}
-
-		[Theory(DisplayName = "Is Text Prediction Enabled")]
-		[InlineData(true)]
-		[InlineData(false)]
-		public async Task IsTextPredictionEnabledCorrectly(bool isEnabled)
-		{
-			var searchBar = new SearchBarStub()
-			{
-				IsTextPredictionEnabled = isEnabled
-			};
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var searchBarHandler = CreateHandler(searchBar);
-				await searchBarHandler.PlatformView.AttachAndRun(async () =>
-				{
-					await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.Width != 0);
-				});
-			});
-
-			var nativeIsTextPredictionEnabled = await GetValueAsync(searchBar, GetNativeIsTextPredictionEnabled);
-			Assert.Equal(isEnabled, nativeIsTextPredictionEnabled);
 		}
 
 		static AutoSuggestBox GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
@@ -64,6 +37,35 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(SearchBarHandler searchBarHandler) =>
 			GetNativeSearchBar(searchBarHandler).Text;
+
+		static string SetNativeText(SearchBarHandler searchBarHandler, string value) =>
+			GetNativeSearchBar(searchBarHandler).Text = value;
+
+		static int GetCursorStartPosition(SearchBarHandler searchBarHandler)
+		{
+			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
+
+			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
+
+			if (textBox is not null)
+			{
+				return textBox.GetCursorPosition();
+			}
+
+			return -1;
+		}
+
+		static void UpdateCursorStartPosition(SearchBarHandler searchBarHandler, int position)
+		{
+			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
+
+			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
+
+			if (textBox is not null)
+			{
+				textBox.SelectionStart = position;
+			}
+		}
 
 		Color GetNativeTextColor(SearchBarHandler searchBarHandler)
 		{
@@ -93,6 +95,20 @@ namespace Microsoft.Maui.DeviceTests
 			if (textBox is not null)
 			{
 				return textBox.IsTextPredictionEnabled;
+			}
+
+			return false;
+		}
+
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var platformSearchBar = GetNativeSearchBar(searchBarHandler);
+
+			var textBox = platformSearchBar.GetFirstDescendant<TextBox>();
+
+			if (textBox is not null)
+			{
+				return textBox.IsSpellCheckEnabled;
 			}
 
 			return false;

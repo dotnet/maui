@@ -29,6 +29,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
+		public bool IsSpellCheckEnabled { get; set; } = true;
+
 		public Keyboard Keyboard { get; set; } = Keyboard.Default;
 
 		public TextAlignment HorizontalTextAlignment { get; set; }
@@ -39,10 +41,10 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public int SelectionLength { get; set; }
 
-		public event EventHandler<StubPropertyChangedEventArgs<string>> TextChanged;
+		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 
 		void OnTextChanged(string oldValue, string newValue) =>
-			TextChanged?.Invoke(this, new StubPropertyChangedEventArgs<string>(oldValue, newValue));
+			TextChanged?.Invoke(this, (oldValue, newValue));
 
 		public event EventHandler Completed;
 

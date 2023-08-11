@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void Focus(this NView platformView, FocusRequest request)
 		{
-			request.IsFocused = Tizen.NUI.FocusManager.Instance.SetCurrentFocusView(platformView);
+			request.TrySetResult(Tizen.NUI.FocusManager.Instance.SetCurrentFocusView(platformView));
 		}
 
 		public static void Unfocus(this NView platformView, IView view)
@@ -340,6 +340,11 @@ namespace Microsoft.Maui.Platform
 				return border?.Shape != null || border?.Stroke != null;
 
 			return false;
+		}
+
+		internal static T? GetChildAt<T>(this NView view, int index) where T : NView
+		{
+			return (T?)view.Children[index];
 		}
 	}
 }

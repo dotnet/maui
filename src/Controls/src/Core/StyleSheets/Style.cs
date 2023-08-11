@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.StyleSheets
 		{
 		}
 
-		public IDictionary<string, string> Declarations { get; set; } = new Dictionary<string, string>();
+		public IDictionary<string, string> Declarations { get; set; } = new Dictionary<string, string>(StringComparer.Ordinal);
 		Dictionary<KeyValuePair<string, string>, object> convertedValues = new Dictionary<KeyValuePair<string, string>, object>();
 
 		public static Style Parse(CssReader reader, char stopChar = '\0')
@@ -71,17 +71,19 @@ namespace Microsoft.Maui.Controls.StyleSheets
 				if (property == null)
 					continue;
 				if (string.Equals(decl.Value, "initial", StringComparison.OrdinalIgnoreCase))
-					styleable.ClearValue(property, fromStyle: true);
+					//FIXME
+					styleable.ClearValue(property, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 				else
 				{
 					object value;
 					if (!convertedValues.TryGetValue(decl, out value))
 						convertedValues[decl] = (value = Convert(styleable, decl.Value, property));
-					styleable.SetValue(property, value, fromStyle: true);
+					//FIXME: compute distance
+					styleable.SetValue(property, value, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 				}
 			}
 
-			foreach (var child in styleable.LogicalChildrenInternal)
+			foreach (var child in ((IVisualTreeElement)styleable).GetVisualChildren())
 			{
 				var ve = child as VisualElement;
 				if (ve == null)
