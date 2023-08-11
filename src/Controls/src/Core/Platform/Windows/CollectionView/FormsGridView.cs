@@ -1,11 +1,15 @@
 #nullable disable
+using System.Collections;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
+using Windows.System;
 using UWPApp = Microsoft.UI.Xaml.Application;
 using UWPControls = Microsoft.UI.Xaml.Controls;
 using WScrollMode = Microsoft.UI.Xaml.Controls.ScrollMode;
 using WVisibility = Microsoft.UI.Xaml.Visibility;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -17,6 +21,8 @@ namespace Microsoft.Maui.Controls.Platform
 		FrameworkElement _emptyView;
 		View _formsEmptyView;
 		Orientation _orientation;
+		ItemTemplateContext _currentFocusedItem;
+		bool _trackingKeyboardInput;
 
 		public FormsGridView()
 		{
@@ -120,6 +126,17 @@ namespace Microsoft.Maui.Controls.Platform
 		void OnLoaded(object sender, RoutedEventArgs e)
 		{
 			FindItemsWrapGrid();
+
+			if (!_trackingKeyboardInput)
+			{
+				// Watch for keyboard events on the GridView
+				((GridView)sender).AddHandler(KeyDownEvent, new KeyEventHandler(CheckForTapActivation), true);
+
+				// Keep track of the focused item as the user clicks/taps/arrows around the GridView
+				GotFocus += TrackFocusedItem;
+			}
+
+			_trackingKeyboardInput = true;
 		}
 
 		public void SetEmptyView(FrameworkElement emptyView, View formsEmptyView)
@@ -171,6 +188,83 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			_emptyViewContentControl.Visibility = visibility;
+		}
+
+		// Find the index of a data item in a CollectionView's items source
+		static int FindIndex(object item, IEnumerable itemsSource)
+		{
+			if (itemsSource is IList<object> list)
+			{
+				// The easy way
+				return list.IndexOf(item);
+			}
+
+			// The hard way, if it comes to that
+			var index = 0;
+			foreach (var o in itemsSource)
+			{
+				if (o == item)
+				{
+					return index;
+				}
+
+				index += 1;
+			}
+
+			// Not Found
+			return -1;
+		}
+
+		void TrackFocusedItem(object sender, RoutedEventArgs args)
+		{
+			if (args.OriginalSource is GridViewItem { Content: ItemTemplateContext itc })
+			{
+				_currentFocusedItem = itc;
+			}
+			else
+			{
+				_currentFocusedItem = null;
+			}
+		}
+
+		void CheckForTapActivation(object sender, KeyRoutedEventArgs args)
+		{
+			if (args.Key != VirtualKey.Enter && args.Key != VirtualKey.Space)
+			{
+				return;
+			}
+
+			if (_currentFocusedItem == null)
+			{
+				return;
+			}
+
+			// Get the bound data item
+			var item = _currentFocusedItem.Item;
+
+			// And the CollectionView this represents
+			var collectionView = (CollectionView)_currentFocusedItem.Container;
+
+			// From there we can retrieve the data source
+			var itemsSource = collectionView.ItemsSource;
+
+			var index = FindIndex(item, itemsSource);
+
+			var element = collectionView.LogicalChildrenInternal[index]; // TODO This index might need to be adjusted to account for the Header
+
+			if (element is not View view)
+			{
+				return;
+			}
+
+			foreach (var gestureRecognizer in view.GestureRecognizers)
+			{
+				// TODO Do we need to add a check for semantic info here? Or is this sufficient?
+				if (gestureRecognizer is TapGestureRecognizer tgr && tgr.NumberOfTapsRequired == 1)
+				{
+					tgr.SendTapped(view);
+				}
+			}
 		}
 	}
 }
