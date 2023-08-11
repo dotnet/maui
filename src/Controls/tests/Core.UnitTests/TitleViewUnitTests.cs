@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				Content = new Label()
 			};
 
-			var title = new Label() { Text = "Failed" };
+			var title = new Label();
 			title.SetBinding(Label.TextProperty, "Title");
 
 			var layout = new StackLayout()

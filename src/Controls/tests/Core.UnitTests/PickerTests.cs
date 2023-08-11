@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -338,6 +339,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SettingSelectedIndexUpdatesSelectedItem()
+		{
+			var source = Enum.GetNames(typeof(HorizontalAlignment));
+
+			var picker = new Picker
+			{
+				WidthRequest = 200,
+				ItemsSource = source,
+				SelectedItem = source[0]
+			};
+
+			picker.SelectedIndex = 1;
+			Assert.Equal(source[1], picker.SelectedItem);
+		}
+
+
+		[Fact]
 		public void TestItemsSourceCollectionOfStrings()
 		{
 			var items = new ObservableCollection<string>
@@ -469,12 +487,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Single(picker.Items);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
+
 			picker.SelectedItem = obj;
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]

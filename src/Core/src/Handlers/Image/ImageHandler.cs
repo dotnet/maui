@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 		public ImageSourcePartLoader SourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
-		public ImageHandler() : base(Mapper)
+		public ImageHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

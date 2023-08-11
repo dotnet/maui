@@ -317,6 +317,8 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.PointerEntered -= OnPgrPointerEntered;
 				_container.PointerExited -= OnPgrPointerExited;
 				_container.PointerMoved -= OnPgrPointerMoved;
+				_container.PointerPressed -= OnPgrPointerPressed;
+				_container.PointerReleased -= OnPgrPointerReleased;
 			}
 		}
 
@@ -482,15 +484,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerEntered(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerExited(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerMoved(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
@@ -711,6 +724,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
+			_container.PointerPressed += OnPgrPointerPressed;
+			_container.PointerReleased += OnPgrPointerReleased;
 
 			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
