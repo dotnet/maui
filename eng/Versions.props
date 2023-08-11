@@ -13,7 +13,7 @@
     <MicrosoftExtensionsPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftExtensionsPackageVersion>
     <SystemCodeDomPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemCodeDomPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-rc.1.407</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-rc.1.414</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>16.4.8741-net8-rc1</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>13.3.8741-net8-rc1</MicrosoftmacOSSdkPackageVersion>
