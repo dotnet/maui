@@ -168,7 +168,7 @@ Task("Test")
 
 	var XCODE_PATH =  Argument("xcode_path", "/Applications/Xcode_14.3.0.app");
 	string xcode_args = "";
-	if (DirectoryExists(XCODE_PATH))
+	if (DirectoryExists(XCODE_PATH) || IsCIBuild())
 	{
 		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
 	}
