@@ -16,6 +16,11 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+		/// <summary>
+		/// Configures <see cref="MauiAppBuilder"/> to add support for the <see cref="Map"/> control.
+		/// </summary>
+		/// <param name="builder">The <see cref="MauiAppBuilder"/> to configure.</param>
+		/// <returns>The configured <see cref="MauiAppBuilder"/>.</returns>
 		public static MauiAppBuilder UseMauiMaps(this MauiAppBuilder builder)
 		{
 			builder

@@ -21,6 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 		public bool OnHover(AView control, MotionEvent e)
 		{
 			var view = GetView();
+			var platformPointerArgs = new PlatformPointerEventArgs(control, e);
 
 			foreach (var gesture in view.GetCompositeGestureRecognizers())
 			{
@@ -30,13 +31,13 @@ namespace Microsoft.Maui.Controls.Platform
 					switch (e.Action)
 					{
 						case MotionEventActions.HoverEnter:
-							pgr.SendPointerEntered(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+							pgr.SendPointerEntered(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
 							break;
 						case MotionEventActions.HoverMove:
-							pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+							pgr.SendPointerMoved(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
 							break;
 						case MotionEventActions.HoverExit:
-							pgr.SendPointerExited(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+							pgr.SendPointerExited(view, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformPointerArgs);
 							break;
 					}
 				}
