@@ -3071,7 +3071,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		[Fact]
 		public void AutoColumnIntersectionWithUnconstrainedMeasure()
 		{
-			var grid = CreateGridLayout(columns: "*, Auto", rows: "*"); 
+			var grid = CreateGridLayout(columns: "*, Auto", rows: "*");
 
 			var view0 = CreateTestView(new Size(20, 40));
 			var view1 = CreateTestView(new Size(20, 20));
@@ -3082,7 +3082,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 
 			// The infinite height means we treat the * Row as Auto
 			_ = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
-			
+
 			// Ensure that the * Row height was updated to include the taller view
 			AssertArranged(view0, new Rect(0, 0, 20, 40));
 		}
