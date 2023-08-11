@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class TextInputExtensions
+	internal static class TextInputExtensions
 	{
 		public static int GetCursorPosition(this IUITextInput platformView, int cursorOffset = 0)
 		{
