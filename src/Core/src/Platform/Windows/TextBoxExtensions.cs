@@ -216,7 +216,7 @@ namespace Microsoft.Maui.Platform
 				textBox.SelectionLength = entry.SelectionLength;
 		}
 
-		public static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
+		internal static int GetCursorPosition(this TextBox textBox, int cursorOffset = 0)
 		{
 			var newCursorPosition = textBox.SelectionStart + cursorOffset;
 			return Math.Max(0, newCursorPosition);

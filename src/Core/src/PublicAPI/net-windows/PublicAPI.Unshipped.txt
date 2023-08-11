@@ -74,7 +74,6 @@ static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewI
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
-static Microsoft.Maui.Platform.TextBoxExtensions.GetCursorPosition(this Microsoft.UI.Xaml.Controls.TextBox! textBox, int cursorOffset = 0) -> int
 static Microsoft.Maui.Platform.TextBoxExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.TextBox! textBox, Microsoft.Maui.ITextInput! textInput) -> void
 static Microsoft.Maui.Platform.TimePickerExtensions.UpdateBackground(this Microsoft.UI.Xaml.Controls.TimePicker! platformTimePicker, Microsoft.Maui.ITimePicker! timePicker) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.UI.Xaml.Controls.WebView2! platformWebView, Microsoft.Maui.IWebView! webView) -> void
