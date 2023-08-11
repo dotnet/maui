@@ -171,7 +171,8 @@ namespace Microsoft.Maui.Controls
 		void ISwipeViewController.SendSwipeChanging(SwipeChangingEventArgs args) => SwipeChanging?.Invoke(this, args);
 
 		void ISwipeViewController.SendSwipeEnded(SwipeEndedEventArgs args) => SwipeEnded?.Invoke(this, args);
-
+	
+		/// <inheritdoc/>
 		protected override void OnBindingContextChanged()
 		{
 			object bc = BindingContext;
