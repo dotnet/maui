@@ -166,14 +166,20 @@ Task("Test")
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
-	var XCODE_PATH = "/Applications/Xcode_14.3.0.app";
+	var XCODE_PATH =  Argument("xcode_path", "/Applications/Xcode_14.3.0.app");
+	string xcode_args = "";
+	if (DirectoryExists(XCODE_PATH))
+	{
+		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
+	}
+
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
-		$"--xcode=\"{XCODE_PATH}\" " +
+		xcode_args +
 		$"--verbosity=\"Debug\" ")
 	};
 
