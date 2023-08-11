@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Extensions.Logging;
 using UIKit;
@@ -7,6 +8,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public class SwipeItemButton : UIButton
 	{
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: SwipeViewTests.ItemsDoNotLeak")]
 		public event EventHandler? FrameChanged;
 
 		public override CGRect Frame
@@ -22,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, UIButton>
 	{
+		readonly SwipeItemButtonProxy _proxy = new();
+
 		protected override UIButton CreatePlatformElement()
 		{
 			var swipeItemButton = new SwipeItemButton
@@ -38,7 +42,7 @@ namespace Microsoft.Maui.Handlers
 			base.ConnectHandler(platformView);
 
 			if (platformView is SwipeItemButton swipeItemButton)
-				swipeItemButton.FrameChanged += OnSwipeItemFrameChanged;
+				_proxy.Connect(this, swipeItemButton);
 		}
 
 		protected override void DisconnectHandler(UIButton platformView)
@@ -46,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 			base.DisconnectHandler(platformView);
 
 			if (platformView is SwipeItemButton swipeItemButton)
-				swipeItemButton.FrameChanged -= OnSwipeItemFrameChanged;
+				_proxy.Disconnect(swipeItemButton);
 		}
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem view)
@@ -88,13 +92,6 @@ namespace Microsoft.Maui.Handlers
 				swipeView.UpdateIsVisibleSwipeItem(view);
 
 			handler.PlatformView.UpdateVisibility(view.Visibility);
-		}
-
-		void OnSwipeItemFrameChanged(object? sender, EventArgs e)
-		{
-			// Adjust the size of the icon in case of changing the size of the SwipeItem.
-			if (this is ISwipeItemMenuItemHandler swipeItemMenuItemHandler)
-				swipeItemMenuItemHandler.UpdateValue(nameof(ISwipeItemMenuItem.Source));
 		}
 
 		void IImageSourcePartSetter.SetImageSource(UIImage? image)
@@ -143,6 +140,29 @@ namespace Microsoft.Maui.Handlers
 			UIGraphics.EndImageContext();
 
 			return resultImage;
+		}
+
+		class SwipeItemButtonProxy
+		{
+			WeakReference<ISwipeItemMenuItemHandler>? _handler;
+
+			public void Connect(ISwipeItemMenuItemHandler handler, SwipeItemButton platformView)
+			{
+				_handler = new(handler);
+				platformView.FrameChanged += OnSwipeItemFrameChanged;
+			}
+
+			public void Disconnect(SwipeItemButton platformView)
+			{
+				platformView.FrameChanged -= OnSwipeItemFrameChanged;
+			}
+
+			void OnSwipeItemFrameChanged(object? sender, EventArgs e)
+			{
+				// Adjust the size of the icon in case of changing the size of the SwipeItem.
+				if (_handler is not null && _handler.TryGetTarget (out var swipeItemMenuItemHandler))
+					swipeItemMenuItemHandler.UpdateValue(nameof(ISwipeItemMenuItem.Source));
+			}
 		}
 	}
 }
