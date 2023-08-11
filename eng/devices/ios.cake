@@ -166,12 +166,18 @@ Task("Test")
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
-	var XCODE_PATH =  Argument("xcode_path", "/Applications/Xcode_14.3.0.app");
+	var XCODE_PATH =  Argument("xcode_path", "");
+
+	if (String.IsNullOrEmpty(XCODE_PATH) && IsCIBuild())
+		XCODE_PATH = "/Applications/Xcode_14.3.0.app";
+		
 	string xcode_args = "";
-	if (DirectoryExists(XCODE_PATH) || IsCIBuild())
+	if (!String.IsNullOrEmpty(XCODE_PATH))
 	{
 		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
 	}
+
+	Information("XCODE PATH: {0}", XCODE_PATH);
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
