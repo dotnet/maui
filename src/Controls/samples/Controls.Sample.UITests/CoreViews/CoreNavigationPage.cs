@@ -14,6 +14,8 @@ namespace Maui.Controls.Sample
 
 			InitNavigationPageStyling(this);
 
+			On<iOS>().SetPrefersLargeTitles(true);
+
 			Navigation.PushAsync(new CoreRootPage(this));
 		}
 
@@ -21,8 +23,6 @@ namespace Maui.Controls.Sample
 		{
 			navigationPage.BarBackgroundColor = Colors.Maroon;
 			navigationPage.BarTextColor = Colors.Yellow;
-
-			navigationPage.On<iOS>().SetPrefersLargeTitles(true);
 		}
 	}
 }
