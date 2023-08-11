@@ -20,7 +20,7 @@ using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 namespace Microsoft.Maui.Platform;
 
 /// <summary>
-/// Extension methods for interacting with a platforms Soft Keyboard Pane
+/// Extension methods for interacting with a platforms Soft Input Pane
 /// </summary>
 public static partial class KeyboardExtensions
 {
