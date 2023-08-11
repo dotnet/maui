@@ -442,6 +442,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			if (ItemsViewAdapter.ItemsSource is IGroupableItemsViewSource groupItemSource &&
+				args.GroupIndex >= 0 &&
 				args.GroupIndex < groupItemSource.Count)
 			{
 				var group = groupItemSource.GetGroupItemsViewSource(args.GroupIndex);
