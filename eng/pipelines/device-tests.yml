@@ -69,11 +69,8 @@ parameters:
   - name: iosPool
     type: object
     default:
-      name: $(iosTestsVmPool)
-      vmImage: $(iosTestsVmImage)
-      demands:
-        - macOS.Name -equals Ventura
-        - macOS.Architecture -equals x64
+      name: $(macosTestsVmPool)
+      vmImage: $(macosTestsVmPool)
 
   - name: catalystPool
     type: object
