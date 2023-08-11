@@ -1,6 +1,20 @@
 #nullable enable
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameter.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> System.Windows.Input.ICommand!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
+Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator
@@ -121,3 +135,5 @@ Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
 *REMOVED*~Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
+Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
+Microsoft.Maui.Controls.PlatformPointerEventArgs
