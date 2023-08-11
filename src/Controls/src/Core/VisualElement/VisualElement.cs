@@ -1059,10 +1059,7 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
-		protected void SizeAllocated(double width, double height)
-		{
-			OnSizeAllocated(width, height);
-		}
+		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<VisualElement>> BatchCommitted;
@@ -1438,7 +1435,7 @@ namespace Microsoft.Maui.Controls
 
 #nullable enable
 		Semantics? _semantics;
-		private protected bool IsLoadedSet { get; private set; }
+		bool _isLoadedFired;
 		EventHandler? _loaded;
 		EventHandler? _unloaded;
 		bool _watchingPlatformLoaded;
@@ -1545,7 +1542,6 @@ namespace Microsoft.Maui.Controls
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
-			UpdatePlatformUnloadedLoadedWiring(Window);
 			Handler?.PlatformArrange(Frame);
 			return Frame.Size;
 		}
@@ -1804,6 +1800,8 @@ namespace Microsoft.Maui.Controls
 			{
 				_loaded += value;
 				UpdatePlatformUnloadedLoadedWiring(Window);
+				if (_isLoadedFired)
+					_loaded?.Invoke(this, EventArgs.Empty);
 
 			}
 			remove
@@ -1842,35 +1840,30 @@ namespace Microsoft.Maui.Controls
 			remove => _platformContainerViewChanged -= value;
 		}
 
-		void OnLoadedCore() => OnLoadedCore(true);
-
-		void OnLoadedCore(bool updateWiring)
+		void OnLoadedCore()
 		{
-			if (IsLoadedSet)
+			if (_isLoadedFired)
 				return;
 
-			IsLoadedSet = true;
+			_isLoadedFired = true;
 			_loaded?.Invoke(this, EventArgs.Empty);
 
 			// If the user is also watching unloaded we need to verify
 			// unloaded is still correctly being watched for.
-			if (updateWiring)
-				UpdatePlatformUnloadedLoadedWiring(Window);
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
-		void OnUnloadedCore() => OnUnloadedCore(true);
-		void OnUnloadedCore(bool updateWiring)
+		void OnUnloadedCore()
 		{
-			if (!IsLoadedSet)
+			if (!_isLoadedFired)
 				return;
 
-			IsLoadedSet = false;
+			_isLoadedFired = false;
 			_unloaded?.Invoke(this, EventArgs.Empty);
 
 			// If the user is also watching loaded we need to verify
 			// loaded is still correctly being watched for.
-			if (updateWiring)
-				UpdatePlatformUnloadedLoadedWiring(Window);
+			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)
@@ -1914,18 +1907,6 @@ namespace Microsoft.Maui.Controls
 #endif
 
 				_watchingPlatformLoaded = false;
-
-				// If no ones watching the events let's still
-				// just update the loaded states if they've changed
-				if (IsLoaded)
-				{
-					OnLoadedCore(false);
-				}
-				else
-				{
-					OnUnloadedCore(false);
-				}
-
 				return;
 			}
 			else if (oldWindow is not null)
