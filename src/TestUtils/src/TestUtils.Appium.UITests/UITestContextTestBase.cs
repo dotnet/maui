@@ -8,15 +8,33 @@ namespace TestUtils.Appium.UITests
 		static IUITestContext? _uiTestContext;
 		private IContext? _context;
 
-		protected static IUITestContext UITestContext
+		protected static IUITestContext? UITestContext
 		{
 			get
 			{
-				return _uiTestContext ?? throw new InvalidOperationException("Call InitialSetup() before accessing the UITestContext");
+				return _uiTestContext;
 			}
 		}
 
-		protected static IApp App { get { return UITestContext.App; } }
+		protected static TestDevice Device 
+		{ 
+			get 
+			{
+				return UITestContext == null
+					? throw new InvalidOperationException("Call InitialSetup before accessing the App")
+					: UITestContext.TestConfig.TestDevice;
+			}
+		}
+
+		protected static IApp App 
+		{
+			get 
+			{
+				return UITestContext == null 
+					? throw new InvalidOperationException("Call InitialSetup before accessing the App") 
+					: UITestContext.App;
+			} 
+		}
 
 		public abstract TestConfig GetTestConfig();
 

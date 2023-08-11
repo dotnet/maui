@@ -172,7 +172,7 @@ namespace Microsoft.Maui.AppiumTests
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 			
 			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
-			if (App is not null)
+			if (UITestContext is not null)
 			{
 				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 

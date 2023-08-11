@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Appium;
+using NUnit.Framework;
 using OpenQA.Selenium.Support.UI;
 
 namespace Microsoft.Maui.AppiumTests
@@ -22,6 +23,7 @@ namespace Microsoft.Maui.AppiumTests
 				{
 					if (retries++ < 1)
 					{
+						TestContext.Error.WriteLine("There was a problem with the FixtureSetup retrying");
 						Reset();
 					}
 					else

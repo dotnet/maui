@@ -26,6 +26,7 @@ namespace Microsoft.Maui.AppiumTests
 				{
 					if (retries++ < 1)
 					{
+						TestContext.Error.WriteLine("There was a problem with the FixtureSetup retrying");
 						Reset();
 					}
 					else
