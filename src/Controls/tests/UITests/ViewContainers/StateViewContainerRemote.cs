@@ -5,7 +5,7 @@ namespace Microsoft.Maui.AppiumTests
 {
 	internal sealed class StateViewContainerRemote : BaseViewContainerRemote
 	{
-		public StateViewContainerRemote(IUITestContext testContext, Enum formsType, string? platformViewType)
+		public StateViewContainerRemote(IUITestContext? testContext, Enum formsType, string? platformViewType)
 			: base(testContext, formsType, platformViewType)
 		{
 		}
