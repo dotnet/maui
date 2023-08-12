@@ -1,4 +1,8 @@
-﻿using DeviceRunners.XHarness;
+﻿using System;
+using Android.App;
+using Android.Runtime;
+using DeviceRunners.XHarness;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 
