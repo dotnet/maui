@@ -114,7 +114,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
-
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
@@ -124,27 +123,19 @@ namespace Microsoft.Maui.DeviceTests
 			border.Stroke = Colors.Blue;
 			border.StrokeThickness = borderThickness;
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var platformView = CreateHandler(border, typeof(BorderHandler)).ToPlatform();
-				await platformView.AttachAndRun<object>(async (window) =>
-				{
-					var bitmap = await border.AsRawBitmapAsync();
-					Assert.Equal(200, bitmap.Width, 1d);
-					Assert.Equal(100, bitmap.Height, 2d);
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler));
+			Assert.Equal(200, bitmap.Width, 1d);
+			Assert.Equal(100, bitmap.Height, 2d);
 
-					// Analyze blue border - we expect it to fill the 200x100 area
-					var blueBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Blue > .5).Single();
-					Assert.Equal(200, blueBlob.Width, 2d);
-					Assert.Equal(100, blueBlob.Height, 2d);
+			// Analyze blue border - we expect it to fill the 200x100 area
+			var blueBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Blue > .5).Single();
+			Assert.Equal(200, blueBlob.Width, 2d);
+			Assert.Equal(100, blueBlob.Height, 2d);
 
-					// Analyze red inside- we expect it to fill the area minus the stroke thickness
-					var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
-					Assert.Equal(180, redBlob.Width, 2d);
-					Assert.Equal(80, redBlob.Height, 2d);
-					return null;
-				}, MauiContext);
-			});
+			// Analyze red inside- we expect it to fill the area minus the stroke thickness
+			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
+			Assert.Equal(180, redBlob.Width, 2d);
+			Assert.Equal(80, redBlob.Height, 2d);
 		}
 	}
 }

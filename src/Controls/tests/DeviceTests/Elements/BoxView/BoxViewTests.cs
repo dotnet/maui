@@ -73,47 +73,37 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<BoxViewHandler>(boxView2);
 			await CreateHandlerAsync<BoxViewHandler>(boxView3);
 			await CreateHandlerAsync<BoxViewHandler>(boxView4);
-			//await CreateHandlerAsync<LayoutHandler>(grid);
 
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				var platformView = CreateHandler(grid, typeof(LayoutHandler)).ToPlatform();
-				await platformView.AttachAndRun<object>(async (window) =>
-				{
-					var bitmap = await grid.AsRawBitmapAsync();
+			var bitmap = await GetRawBitmap(grid, typeof(LayoutHandler));
+			var yellowBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Yellow).Single();
+			Assert.Equal(bitmap.Width / 2, yellowBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, yellowBlob.Height, 2d);
+			Assert.Equal(0, yellowBlob.MinColumn, 2d);
+			Assert.Equal(0, yellowBlob.MinRow, 2d);
 
-					var yellowBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Yellow).Single();
-					Assert.Equal(bitmap.Width / 2, yellowBlob.Width, 2d);
-					Assert.Equal(bitmap.Height / 3, yellowBlob.Height, 2d);
-					Assert.Equal(0, yellowBlob.MinColumn, 2d);
-					Assert.Equal(0, yellowBlob.MinRow, 2d);
+			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Red).Single();
+			Assert.Equal(bitmap.Width / 2, redBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, redBlob.Height, 2d);
+			Assert.Equal(bitmap.Width / 2, redBlob.MinColumn, 2d);
+			Assert.Equal(0, redBlob.MinRow);
 
-					var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Red).Single();
-					Assert.Equal(bitmap.Width / 2, redBlob.Width, 2d);
-					Assert.Equal(bitmap.Height / 3, redBlob.Height, 2d);
-					Assert.Equal(bitmap.Width / 2, redBlob.MinColumn, 2d);
-					Assert.Equal(0, redBlob.MinRow);
+			var limeBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Lime).Single();
+			Assert.Equal(bitmap.Width / 2, limeBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, limeBlob.Height, 2d);
+			Assert.Equal(0, limeBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3, limeBlob.MinRow, 2d);
 
-					var limeBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Lime).Single();
-					Assert.Equal(bitmap.Width / 2, limeBlob.Width, 2d);
-					Assert.Equal(bitmap.Height / 3, limeBlob.Height, 2d);
-					Assert.Equal(0, limeBlob.MinColumn, 2d);
-					Assert.Equal(bitmap.Height / 3, limeBlob.MinRow, 2d);
+			var violetBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Violet).Single();
+			Assert.Equal(bitmap.Width / 2, violetBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3 * 2, violetBlob.Height, 2d);
+			Assert.Equal(bitmap.Width / 2, violetBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3, violetBlob.MinRow, 2d);
 
-					var violetBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Violet).Single();
-					Assert.Equal(bitmap.Width / 2, violetBlob.Width, 2d);
-					Assert.Equal(bitmap.Height / 3 * 2, violetBlob.Height, 2d);
-					Assert.Equal(bitmap.Width / 2, violetBlob.MinColumn, 2d);
-					Assert.Equal(bitmap.Height / 3, violetBlob.MinRow, 2d);
-
-					var cyanBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Cyan).Single();
-					Assert.Equal(bitmap.Width / 2, cyanBlob.Width, 2d);
-					Assert.Equal(bitmap.Height / 3, cyanBlob.Height, 2d);
-					Assert.Equal(0, cyanBlob.MinColumn, 2d);
-					Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
-					return null;
-				}, MauiContext);
-			});
+			var cyanBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, Colors.Cyan).Single();
+			Assert.Equal(bitmap.Width / 2, cyanBlob.Width, 2d);
+			Assert.Equal(bitmap.Height / 3, cyanBlob.Height, 2d);
+			Assert.Equal(0, cyanBlob.MinColumn, 2d);
+			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
 		}
 	}
 }
