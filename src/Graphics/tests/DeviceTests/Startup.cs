@@ -1,5 +1,8 @@
-﻿using Microsoft.Maui.Hosting;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
+﻿using DeviceRunners.UITesting;
+using DeviceRunners.VisualRunners;
+using DeviceRunners.XHarness;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Hosting;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 
@@ -7,21 +10,20 @@ public static class MauiProgram
 {
 	public static MauiApp CreateMauiApp()
 	{
-		var appBuilder = MauiApp.CreateBuilder();
-		appBuilder
-			.ConfigureTests(new TestOptions
-			{
-				Assemblies =
-				{
-					typeof(MauiProgram).Assembly
-				},
-			})
-			.UseHeadlessRunner(new HeadlessRunnerOptions
-			{
-				RequiresUIContext = true,
-			})
-			.UseVisualRunner();
+		var builder = MauiApp.CreateBuilder();
+		builder
+			.ConfigureUITesting()
+			.UseXHarnessTestRunner(conf => conf
+				.AddTestAssembly(typeof(MauiProgram).Assembly)
+				.AddXunit())
+			.UseVisualTestRunner(conf => conf
+				.AddTestAssembly(typeof(MauiProgram).Assembly)
+				.AddXunit());
 
-		return appBuilder.Build();
+#if DEBUG
+		builder.Logging.AddDebug();
+#endif
+
+		return builder.Build();
 	}
 }

@@ -2,21 +2,20 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Storage;
-using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
 
 public class ImageLoadingServiceTests
 {
-	[Fact]
+	[UIFact]
 	public async Task CanLoadImageOnMainThread()
 	{
 		var service = new PlatformImageLoadingService();
 
 		using var stream = await FileSystem.OpenAppPackageFileAsync("dotnet_bot.png");
 
-		using var image = await TestDispatcher.Current.DispatchAsync(() => service.FromStream(stream));
+		using var image = service.FromStream(stream);
 
 		Assert.NotNull(image);
 	}

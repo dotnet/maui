@@ -74,6 +74,13 @@
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>
+    <!-- device runners -->
+    <DeviceRunnersVisualRunnersMauiPackageVersion>0.1.0-preview.1</DeviceRunnersVisualRunnersMauiPackageVersion>
+    <DeviceRunnersVisualRunnersXunitPackageVersion>0.1.0-preview.1</DeviceRunnersVisualRunnersXunitPackageVersion>
+    <DeviceRunnersXHarnessMauiPackageVersion>0.1.0-preview.1</DeviceRunnersXHarnessMauiPackageVersion>
+    <DeviceRunnersXHarnessXunitPackageVersion>0.1.0-preview.1</DeviceRunnersXHarnessXunitPackageVersion>
+    <DeviceRunnersUITestingMauiPackageVersion>0.1.0-preview.1</DeviceRunnersUITestingMauiPackageVersion>
+    <DeviceRunnersUITestingXunitPackageVersion>0.1.0-preview.1</DeviceRunnersUITestingXunitPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <DotNetVersionBand Condition=" '$(DotNetVersionBand)' == '' ">7.0.100</DotNetVersionBand>

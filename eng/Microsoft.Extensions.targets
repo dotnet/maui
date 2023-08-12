@@ -189,5 +189,29 @@
         Update="Fizzler"
         Version="$(FizzlerPackageVersion)"
     />
+    <PackageReference
+        Update="DeviceRunners.VisualRunners.Maui"
+        Version="$(DeviceRunnersVisualRunnersMauiPackageVersion)"
+    />
+    <PackageReference
+        Update="DeviceRunners.VisualRunners.Xunit"
+        Version="$(DeviceRunnersVisualRunnersXunitPackageVersion)"
+    />
+    <PackageReference
+        Update="DeviceRunners.XHarness.Maui"
+        Version="$(DeviceRunnersXHarnessMauiPackageVersion)"
+    />
+    <PackageReference
+        Update="DeviceRunners.XHarness.Xunit"
+        Version="$(DeviceRunnersXHarnessXunitPackageVersion)"
+    />
+    <PackageReference
+        Update="DeviceRunners.UITesting.Maui"
+        Version="$(DeviceRunnersUITestingMauiPackageVersion)"
+    />
+    <PackageReference
+        Update="DeviceRunners.UITesting.Xunit"
+        Version="$(DeviceRunnersUITestingXunitPackageVersion)"
+    />
   </ItemGroup>
 </Project>
