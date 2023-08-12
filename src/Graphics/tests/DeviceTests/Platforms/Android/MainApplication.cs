@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using System;
+using Android.App;
 using Android.Runtime;
 
 namespace Microsoft.Maui.Graphics.DeviceTests;
