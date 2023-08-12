@@ -130,18 +130,18 @@ namespace Microsoft.Maui.DeviceTests
 				await platformView.AttachAndRun<object>(async (window) =>
 				{
 					var bitmap = await border.AsRawBitmapAsync();
-					Assert.Equal(200, bitmap.Width, 1);
-					Assert.Equal(100, bitmap.Height, 2);
+					Assert.Equal(200, bitmap.Width, 1d);
+					Assert.Equal(100, bitmap.Height, 2d);
 
 					// Analyze blue border - we expect it to fill the 200x100 area
 					var blueBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Blue > .5).Single();
-					Assert.Equal(200, blueBlob.Width, 2);
-					Assert.Equal(100, blueBlob.Height, 2);
+					Assert.Equal(200, blueBlob.Width, 2d);
+					Assert.Equal(100, blueBlob.Height, 2d);
 
 					// Analyze red inside- we expect it to fill the area minus the stroke thickness
 					var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
-					Assert.Equal(180, redBlob.Width, 2);
-					Assert.Equal(80, redBlob.Height, 2);
+					Assert.Equal(180, redBlob.Width, 2d);
+					Assert.Equal(80, redBlob.Height, 2d);
 					return null;
 				}, MauiContext);
 			});
