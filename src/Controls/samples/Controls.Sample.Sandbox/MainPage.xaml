@@ -3,4 +3,53 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ScrollView>
+    <VerticalStackLayout>
+        <VerticalStackLayout>
+            <VerticalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="SearchResultsPage_Tapped" NumberOfTapsRequired="1"  />
+            </VerticalStackLayout.GestureRecognizers>
+            <Label Text="Tap me" AutomationProperties.IsInAccessibleTree="True" />
+        </VerticalStackLayout>
+        
+        <CollectionView
+                Margin="10"
+                HorizontalOptions="Fill"
+                VerticalOptions="Fill"
+                ItemsSource="{Binding Monkeys}"
+                x:Name="vListView"
+                SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" Span="2" HorizontalItemSpacing="15" VerticalItemSpacing="15" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid
+                        HeightRequest="220" 
+                        RowDefinitions="*" 
+                        ColumnDefinitions="*">
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="SearchResultsPage_Tapped" NumberOfTapsRequired="1"  />
+                        </Grid.GestureRecognizers>
+
+                        <Grid>
+                            <Label x:Name="recipeName"
+                                           Padding="5"
+                                           HorizontalOptions="Fill" 
+                                           VerticalOptions="End"
+                                           VerticalTextAlignment="Start"
+                                           HorizontalTextAlignment="Center"
+                                           Text="{Binding Name}"
+                                           LineBreakMode="WordWrap" 
+                                           MaxLines="2"
+                                           HeightRequest="80"
+                                           FontSize="16"/>
+                        </Grid>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>
