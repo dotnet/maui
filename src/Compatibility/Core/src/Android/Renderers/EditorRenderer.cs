@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (!e.Focus)
 			{
-				EditText.HideKeyboard();
+				EditText.HideSoftInput();
 			}
 
 			base.OnFocusChangeRequested(sender, e);
