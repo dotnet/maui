@@ -182,7 +182,7 @@ namespace Microsoft.Maui.DeviceTests
 						window.UpdateWindowSoftInputModeAdjust(WindowSoftInputModeAdjust.Resize.ToPlatform());
 
 						if (testEntry?.Handler is IPlatformViewHandler testEntryHandler)
-							KeyboardExtensions.HideSoftInput(testEntryHandler.PlatformView);
+							SoftInputExtensions.HideSoftInput(testEntryHandler.PlatformView);
 					}
 				});
 		}

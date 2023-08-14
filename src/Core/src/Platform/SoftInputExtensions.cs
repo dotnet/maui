@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Platform;
 /// <summary>
 /// Extension methods for interacting with a platforms Soft Input Pane
 /// </summary>
-public static partial class KeyboardExtensions
+public static partial class SoftInputExtensions
 {
 	/// <summary>
 	/// If a soft input device is currently showing, this will attempt to hide it.
@@ -42,7 +42,7 @@ public static partial class KeyboardExtensions
 			return Task.FromResult(false);
 		}
 
-		return Task.FromResult(HideKeyboard(platformView));
+		return Task.FromResult(HideSoftInput(platformView));
 #endif
 	}
 
@@ -77,7 +77,7 @@ public static partial class KeyboardExtensions
 			{
 				try
 				{
-					var result = platformView.ShowKeyboard();
+					var result = platformView.ShowSoftInput();
 					showKeyboardTCS.SetResult(result);
 				}
 				catch (Exception e)
@@ -90,7 +90,7 @@ public static partial class KeyboardExtensions
 		}
 		else
 		{
-			var result = platformView.ShowKeyboard();
+			var result = platformView.ShowSoftInput();
 			return Task.FromResult(result).WaitAsync(token);
 		}
 #endif
@@ -109,7 +109,7 @@ public static partial class KeyboardExtensions
 			return false;
 		}
 
-		return platformView.IsSoftKeyboardShowing();
+		return platformView.IsSoftInputShowing();
 	}
 
 	static bool TryGetPlatformView(this ITextInput textInput,
@@ -145,12 +145,12 @@ public static partial class KeyboardExtensions
 }
 
 #if NETSTANDARD || !PLATFORM
-public static partial class KeyboardExtensions
+public static partial class SoftInputExtensions
 {
-	static bool HideKeyboard(this object _) => throw new NotSupportedException();
+	static bool HideSoftInput(this object _) => throw new NotSupportedException();
 
-	static bool ShowKeyboard(this object _) => throw new NotSupportedException();
+	static bool ShowSoftInput(this object _) => throw new NotSupportedException();
 
-	static bool IsSoftKeyboardShowing(this object _) => throw new NotSupportedException();
+	static bool IsSoftInputShowing(this object _) => throw new NotSupportedException();
 }
 #endif

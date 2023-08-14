@@ -149,27 +149,27 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
 		{
-			if (KeyboardExtensions.IsSoftKeyboardShowing(view))
+			if (SoftInputExtensions.IsSoftInputShowing(view))
 				return;
 
 			try
 			{
 				await view.FocusView(timeout);
 				await Task.Yield();
-				KeyboardExtensions.ShowKeyboard(view);
+				SoftInputExtensions.ShowSoftInput(view);
 				await Task.Yield();
 
 				bool result = await Wait(() =>
 				{
-					if (!KeyboardExtensions.IsSoftKeyboardShowing(view))
-						KeyboardExtensions.ShowKeyboard(view);
+					if (!SoftInputExtensions.IsSoftInputShowing(view))
+						SoftInputExtensions.ShowSoftInput(view);
 
-					return KeyboardExtensions.IsSoftKeyboardShowing(view);
+					return SoftInputExtensions.IsSoftInputShowing(view);
 
 				}, timeout);
 
 				await Task.Delay(100);
-				Assert.True(KeyboardExtensions.IsSoftKeyboardShowing(view));
+				Assert.True(SoftInputExtensions.IsSoftInputShowing(view));
 			}
 			catch (Exception ex)
 			{
@@ -182,24 +182,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
-			if (!KeyboardExtensions.IsSoftKeyboardShowing(view))
+			if (!SoftInputExtensions.IsSoftInputShowing(view))
 				return;
 
 			try
 			{
-				KeyboardExtensions.HideKeyboard(view);
+				SoftInputExtensions.HideSoftInput(view);
 				await Task.Yield();
 				bool result = await Wait(() =>
 				{
-					if (!KeyboardExtensions.IsSoftKeyboardShowing(view))
-						KeyboardExtensions.HideKeyboard(view);
+					if (!SoftInputExtensions.IsSoftInputShowing(view))
+						SoftInputExtensions.HideSoftInput(view);
 
-					return !KeyboardExtensions.IsSoftKeyboardShowing(view);
+					return !SoftInputExtensions.IsSoftInputShowing(view);
 
 				}, timeout);
 
 				await Task.Delay(100);
-				Assert.True(!KeyboardExtensions.IsSoftKeyboardShowing(view));
+				Assert.True(!SoftInputExtensions.IsSoftInputShowing(view));
 			}
 			catch (Exception ex)
 			{
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			try
 			{
-				var result = await Wait(() => KeyboardExtensions.IsSoftKeyboardShowing(view), timeout);
+				var result = await Wait(() => SoftInputExtensions.IsSoftInputShowing(view), timeout);
 				Assert.True(result);
 
 				// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
 		{
-			var result = await Wait(() => !KeyboardExtensions.IsSoftKeyboardShowing(view), timeout);
+			var result = await Wait(() => !SoftInputExtensions.IsSoftInputShowing(view), timeout);
 			Assert.True(result, "Keyboard failed to hide");
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished

@@ -31,6 +31,7 @@ Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.get -> Microsoft.Maui.ICro
 Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiPanel.MauiPanel() -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
+Microsoft.Maui.Platform.SoftInputExtensions
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.MenuFlyout! platformView) -> void
@@ -56,9 +57,6 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.KeyboardExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Platform.KeyboardExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
-static Microsoft.Maui.Platform.KeyboardExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.UI.Xaml.Controls.AnimatedIcon! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
@@ -72,6 +70,9 @@ static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewI
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
+static Microsoft.Maui.Platform.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.Platform.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
+static Microsoft.Maui.Platform.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.TextBoxExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.TextBox! textBox, Microsoft.Maui.ITextInput! textInput) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.UI.Xaml.Controls.WebView2! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void

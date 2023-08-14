@@ -8,7 +8,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (view is VisualElement ve && ve.IsFocused && handler is IPlatformViewHandler platformViewHandler)
 			{
-				KeyboardExtensions.ShowSoftInput(platformViewHandler.PlatformView);
+				SoftInputExtensions.ShowSoftInput(platformViewHandler.PlatformView);
 			}
 		}
 	}

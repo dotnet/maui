@@ -1,10 +1,9 @@
 ﻿using AutoCapital = Tizen.NUI.InputMethod.AutoCapitalType;
 using TKeyboard = Tizen.UIExtensions.Common.Keyboard;
-using PlatformView = Tizen.NUI.BaseComponents.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public static partial class KeyboardExtensions
+	public static class KeyboardExtensions
 	{
 		public static TKeyboard ToPlatform(this Keyboard keyboard)
 		{
@@ -48,22 +47,6 @@ namespace Microsoft.Maui.Platform
 			{
 				return AutoCapital.None;
 			}
-		}
-
-		internal static bool HideKeyboard(this PlatformView view) => SetKeyInputFocus(view, false);
-
-		internal static bool ShowKeyboard(this PlatformView view) => SetKeyInputFocus(view, true);
-
-		internal static bool IsSoftKeyboardShowing(this PlatformView view)
-		{
-			return view.KeyInputFocus;
-		}
-
-		internal static bool SetKeyInputFocus(PlatformView view, bool isShow)
-		{
-			view.KeyInputFocus = isShow;
-
-			return view.KeyInputFocus;
 		}
 	}
 }
