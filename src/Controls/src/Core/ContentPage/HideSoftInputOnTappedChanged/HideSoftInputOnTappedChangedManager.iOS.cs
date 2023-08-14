@@ -7,13 +7,16 @@ namespace Microsoft.Maui.Controls
 {
 	partial class HideSoftInputOnTappedChangedManager
 	{
-		internal IDisposable? SetupHideSoftInputOnTapped(UIView? uIView)
+		internal IDisposable? SetupHideSoftInputOnTapped(UIView uIView)
 		{
-			if (!FeatureEnabled || uIView?.Window is null)
+			if (!FeatureEnabled || uIView.Window is null)
 				return null;
 
-			if (uIView is UISearchBar searchBar)
-				uIView = searchBar.GetSearchTextField();
+			if (uIView is UISearchBar searchBar &&
+				searchBar.GetSearchTextField() is UIView textField)
+			{
+				uIView = textField;
+			}
 
 			if (uIView is null)
 				return null;

@@ -73,19 +73,13 @@ namespace Microsoft.Maui.Controls
 			DisconnectFromPlatform();
 
 			// This view has been set as focused but it's not currently loaded
-			if (!ve.IsLoaded || ve.Window is null)
+			var platformView = (_view.Handler as IPlatformViewHandler)?.PlatformView;
+			if (platformView is null)
 			{
-				ve.Loaded += OnFocusedViewAddedToPlatformTree;
-				_watchingForTaps = new ActionDisposable(() =>
-				{
-					ve.Loaded -= OnFocusedViewAddedToPlatformTree;
-				});
-
-				return _watchingForTaps;
+				return null;
 			}
 
-			IDisposable? platformToken = SetupHideSoftInputOnTapped((_view.Handler as IPlatformViewHandler)?.PlatformView);
-			ve.Unloaded += OnFocusedViewRemovedFromPlatformTree;
+			IDisposable? platformToken = SetupHideSoftInputOnTapped(platformView);
 			
 #if ANDROID
 			var window = ve.Window;
@@ -99,28 +93,10 @@ namespace Microsoft.Maui.Controls
 				window.DispatchTouchEvent -= OnWindowDispatchedTouch;
 				window = null;
 #endif
-				ve.Unloaded -= OnFocusedViewRemovedFromPlatformTree;
-				ve.Loaded -= OnFocusedViewAddedToPlatformTree;
 			});
 
 			return _watchingForTaps;
 		}
-
-		void OnFocusedViewAddedToPlatformTree(object? sender, EventArgs e)
-		{
-			if (sender is VisualElement ve)
-			{
-				ve.Loaded -= OnFocusedViewAddedToPlatformTree;
-			}
-
-			if (sender is IView view)
-			{
-				UpdateFocusForView(view);
-			}
-		}
-
-		void OnFocusedViewRemovedFromPlatformTree(object? sender, EventArgs e) =>
-			DisconnectFromPlatform();
 
 		void DisconnectFromPlatform()
 		{
