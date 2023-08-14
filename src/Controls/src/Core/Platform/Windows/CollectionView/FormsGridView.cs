@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Platform
 		View _formsEmptyView;
 		Orientation _orientation;
 		ItemTemplateContext _currentFocusedItem;
+		bool _trackingKeyboardInput;
 
 		public FormsGridView()
 		{
@@ -126,11 +127,16 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			FindItemsWrapGrid();
 
-			// Watch for keyboard events on the GridView
-			((GridView)sender).AddHandler(KeyDownEvent, new KeyEventHandler(CheckForTapActivation), true);
+			if (!_trackingKeyboardInput)
+			{
+				// Watch for keyboard events on the GridView
+				((GridView)sender).AddHandler(KeyDownEvent, new KeyEventHandler(CheckForTapActivation), true);
 
-			// Keep track of the focused item as the user clicks/taps/arrows around the GridView
-			GotFocus += TrackFocusedItem;
+				// Keep track of the focused item as the user clicks/taps/arrows around the GridView
+				GotFocus += TrackFocusedItem;
+			}
+
+			_trackingKeyboardInput = true;
 		}
 
 		public void SetEmptyView(FrameworkElement emptyView, View formsEmptyView)
