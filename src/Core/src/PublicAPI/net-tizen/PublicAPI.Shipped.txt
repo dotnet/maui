@@ -1679,7 +1679,6 @@ Microsoft.Maui.Platform.ProgressBarExtensions
 Microsoft.Maui.Platform.ScrollViewExtensions
 Microsoft.Maui.Platform.ShapeViewExtensions
 Microsoft.Maui.Platform.SliderExtensions
-Microsoft.Maui.Platform.SoftInputExtensions
 Microsoft.Maui.Platform.StackNavigationManager
 Microsoft.Maui.Platform.StackNavigationManager.MauiContext.get -> Microsoft.Maui.IMauiContext?
 Microsoft.Maui.Platform.StackNavigationManager.MauiContext.set -> void
@@ -2760,8 +2759,6 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Tiz
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
-static Microsoft.Maui.Platform.SoftInputExtensions.ToAutoCapital(this Microsoft.Maui.KeyboardFlags keyboardFlags) -> Tizen.NUI.InputMethod.AutoCapitalType
-static Microsoft.Maui.Platform.SoftInputExtensions.ToPlatform(this Microsoft.Maui.Keyboard! keyboard) -> Tizen.UIExtensions.Common.Keyboard
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStroke(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStrokeDashOffset(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStrokeDashPattern(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
