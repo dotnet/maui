@@ -654,18 +654,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal void SendNavigatedTo(NavigatedToEventArgs args) =>
-			SendNavigatedTo(args, false);
-
-		void SendNavigatedTo(NavigatedToEventArgs args, bool ignoreLoaded)
+		internal void SendNavigatedTo(NavigatedToEventArgs args)
 		{
 			HasNavigatedTo = true;
+			NavigatedTo?.Invoke(this, args);
 			OnNavigatedTo(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedTo(args);
 		}
 
 		internal void SendNavigatingFrom(NavigatingFromEventArgs args)
 		{
+			NavigatingFrom?.Invoke(this, args);
 			OnNavigatingFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatingFrom(args);
 		}
@@ -673,6 +672,7 @@ namespace Microsoft.Maui.Controls
 		internal void SendNavigatedFrom(NavigatedFromEventArgs args)
 		{
 			HasNavigatedTo = false;
+			NavigatedFrom?.Invoke(this, args);
 			OnNavigatedFrom(args);
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
 		}
@@ -681,9 +681,9 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<NavigatingFromEventArgs> NavigatingFrom;
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
 
-		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { NavigatedTo?.Invoke(this, args); }
-		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { NavigatingFrom?.Invoke(this, args); }
-		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { NavigatedFrom?.Invoke(this, args); }
+		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
+		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
+		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
 
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
