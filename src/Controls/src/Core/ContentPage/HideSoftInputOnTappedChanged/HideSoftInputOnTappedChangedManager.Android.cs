@@ -41,13 +41,19 @@ namespace Microsoft.Maui.Controls
 		}
 
 		// This is called from InputViews as they are added to the visual tree
-		IDisposable? SetupHideSoftInputOnTapped(AView? aView)
+		IDisposable? SetupHideSoftInputOnTapped(AView aView)
 		{
-			if (aView is SearchView sv)
-				aView = sv.GetFirstChildOfType<EditText>();
+			if (aView is SearchView sv &&
+				sv.GetFirstChildOfType<EditText>() is EditText editText)
+			{
+				aView = editText;
+			}
 
-			if (aView is AndroidX.AppCompat.Widget.SearchView svX)
-				aView = svX.GetFirstChildOfType<EditText>();
+			if (aView is AndroidX.AppCompat.Widget.SearchView svX &&
+				svX.GetFirstChildOfType<EditText>() is EditText editTextX)
+			{
+				aView = editTextX;
+			}
 
 			if (aView is null)
 				return null;
