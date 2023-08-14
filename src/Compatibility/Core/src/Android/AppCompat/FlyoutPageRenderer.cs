@@ -443,7 +443,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				if (_detailLayout == null || _detailLayout.IsDisposed())
 					return;
 
-				Context.HideSoftInput(this);
+				Context.HideKeyboard(this);
 				_detailLayout.ChildView = Element.Detail;
 			}
 		}

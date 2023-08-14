@@ -869,7 +869,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android.AppCompat
 			else
 				AddTransitionTimer(tcs, fragment, FragmentManager, fragmentsToRemove, 1, true);
 
-			Context.HideSoftInput(this);
+			Context.HideKeyboard(this);
 
 			if (Platform != null)
 			{

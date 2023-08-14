@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.Hint = Element.Placeholder;
 			if (EditText.IsFocused)
 			{
-				EditText.ShowKeyboard();
+				EditText.ShowSoftInput();
 			}
 		}
 
@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (EditText.IsFocused)
 			{
 				EditText.SetSelection(text.Length);
-				EditText.ShowKeyboard();
+				EditText.ShowSoftInput();
 			}
 		}
 	}
