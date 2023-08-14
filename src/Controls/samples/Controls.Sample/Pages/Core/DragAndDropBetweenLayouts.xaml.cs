@@ -13,7 +13,6 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			Console.WriteLine("Some really long text Some really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long textSome really long text");
 			AllColors = new ObservableCollection<Brush>();
 			RainbowColors = new ObservableCollection<Brush>();
 
@@ -37,10 +36,10 @@ namespace Maui.Controls.Sample.Pages
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			var view = (View)sender;
-
-			DragStartingPositionLabel.Text = $"Drag Start relative to self X:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
-			DragStartingScreenPositionLabel.Text = $"Drag Start relative to screen X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragStartingRelativePositionLabel.Text = $"Drag Start relative to this label X:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.Y}";
+			DragStartingTitle.IsVisible = true;
+			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragStartingRelativePositionLabel.Text = $"- This label X:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.Y}";
 
 			var boxView = sender as BoxView;
 			var sl = boxView.Parent as StackLayout;
@@ -71,9 +70,10 @@ namespace Maui.Controls.Sample.Pages
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			DragPositionLabel.Text = $"Drag Position relative to receiving layout X: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
-			DragScreenPositionLabel.Text = $"Drag Position relative to screen X: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragRelativePositionLabel.Text = $"Drag Position relative to this label X: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
+			DragTitle.IsVisible = true;
+			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragScreenPositionLabel.Text = $"- Screen X: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragRelativePositionLabel.Text = $"- This label X: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
 			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
@@ -92,9 +92,10 @@ namespace Maui.Controls.Sample.Pages
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			DragPositionLabel.Text = $"Drag Position relative to receiving layout: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
-			DragScreenPositionLabel.Text = $"Drag Position relative to screen: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragRelativePositionLabel.Text = $"Drag Position relative to this label: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
+			DragTitle.IsVisible = true;
+			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DragRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
 			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)

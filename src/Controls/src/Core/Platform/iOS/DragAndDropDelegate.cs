@@ -1,16 +1,12 @@
 #nullable disable
 #if __MOBILE__
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-
+using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using ObjCRuntime;
-using UIKit;
 using Microsoft.Maui.Graphics;
+using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -40,7 +36,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var originalPoint = session.LocationInView(_viewHandler.PlatformView);
 
-			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, session);
 		}
 
 		[Export("dropInteraction:canHandleSession:")]
@@ -71,9 +67,7 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			if (HandleDragLeave((View)_viewHandler.VirtualView, package))
-			{
-			}
+			HandleDragLeave((View)_viewHandler.VirtualView, package, session.LocalDragSession);
 		}
 
 		[Export("dropInteraction:sessionDidUpdate:")]
@@ -95,7 +89,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var dragLocation = session.LocalDragSession.LocationInView(_viewHandler.PlatformView);
 
-			if (HandleDragOver((View)_viewHandler.VirtualView, package, new Point(dragLocation.X, dragLocation.Y)))
+			if (HandleDragOver((View)_viewHandler.VirtualView, package, session.LocalDragSession))
 			{
 				operation = UIDropOperation.Copy;
 			}
@@ -136,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, IUIDragSession session)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -144,7 +138,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element, null); // JDTODO: Fix ios here
+				var args = rec.SendDragStarting(element, (relativeTo) => CalculatePosition(relativeTo, handler, session));
 
 				if (args.Cancel)
 					return;
@@ -207,9 +201,9 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
-		bool HandleDragLeave(View element, DataPackage dataPackage)
+		bool HandleDragLeave(View element, DataPackage dataPackage, IUIDragSession session)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage);
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, _viewHandler, session));
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -224,9 +218,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(View element, DataPackage dataPackage, Point location)
+		bool HandleDragOver(View element, DataPackage dataPackage, IUIDragSession session)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, null); // JDTOD- Fix
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, _viewHandler, session));
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -258,6 +252,48 @@ namespace Microsoft.Maui.Controls.Platform
 					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
 				}
 			}, (View)element);
+		}
+
+		static internal Point? CalculatePosition(IElement relativeTo, IPlatformViewHandler viewHandler, IUIDragSession session)
+		{
+			var virtualView = viewHandler.VirtualView;
+			var platformView = viewHandler.PlatformView;
+			var relativeView = relativeTo?.Handler?.PlatformView as UIView;
+
+			CGPoint dragLocation;
+
+			if (virtualView is null)
+				return null;
+
+			// If relativeTo is null we get the location on the screen
+			if (relativeTo is null)
+			{
+				var screenLocation = virtualView.GetLocationOnScreen();
+				dragLocation = session.LocationInView(platformView);
+
+				if (!screenLocation.HasValue)
+					return null;
+
+				double x = dragLocation.X + screenLocation.Value.X;
+				double y = dragLocation.Y + screenLocation.Value.Y;
+
+				return new Point(x, y);
+			}
+
+			// If relativeTo is the same as the view sending the event, we get the position relative to itself
+			if (relativeTo == virtualView)
+			{
+				dragLocation = session.LocationInView(platformView);
+				return new Point(dragLocation.X, dragLocation.Y);
+			}
+			else if (relativeView is not null)
+			{
+				dragLocation = session.LocationInView(relativeView);
+				return new Point(dragLocation.X, dragLocation.Y);
+
+			}
+
+			return null;
 		}
 
 		class CustomLocalStateData : NSObject
