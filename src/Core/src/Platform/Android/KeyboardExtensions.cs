@@ -68,8 +68,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static bool HideKeyboard(this AView inputView)
 		{
-			var focusedView = inputView.Context?.GetActivity()?.Window?.CurrentFocus;
-			AView tokenView = focusedView ?? inputView;
+			AView tokenView = inputView;
 
 			using var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService);
 			var windowToken = tokenView.WindowToken;
@@ -82,7 +81,7 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		internal static bool ShowKeyboard(this TextView inputView)
+		internal static bool ShowSoftInput(this TextView inputView)
 		{
 			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
 
@@ -99,7 +98,7 @@ namespace Microsoft.Maui.Platform
 			_ => false,
 		};
 
-		internal static bool IsSoftKeyboardShowing(this AView view)
+		internal static bool IsSoftInputShowing(this AView view)
 		{
 			var insets = ViewCompat.GetRootWindowInsets(view);
 			if (insets is null)
@@ -111,9 +110,9 @@ namespace Microsoft.Maui.Platform
 			return result;
 		}
 
-		internal static void PostShowKeyboard(this AView view)
+		internal static void PostShowSoftInput(this AView view)
 		{
-			void ShowKeyboard()
+			void ShowSoftInput()
 			{
 				// Since we're posting this on the queue, it's possible something else will have disposed of the view
 				// by the time the looper is running this, so we have to verify that the view is still usable
@@ -122,10 +121,10 @@ namespace Microsoft.Maui.Platform
 					return;
 				}
 
-				view.ShowKeyboard();
+				view.ShowSoftInput();
 			};
 
-			view.Post(ShowKeyboard);
+			view.Post(ShowSoftInput);
 		}
 	}
 }

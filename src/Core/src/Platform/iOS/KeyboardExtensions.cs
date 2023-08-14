@@ -3,7 +3,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static partial class KeyboardExtensions
+	public static partial class SoftInputExtensions
 	{
 		public static void ApplyKeyboard(this IUITextInput textInput, Keyboard keyboard)
 		{
@@ -87,10 +87,10 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal static bool HideKeyboard(this UIView inputView) => inputView.ResignFirstResponder();
+		internal static bool HideSoftInput(this UIView inputView) => inputView.ResignFirstResponder();
 
-		internal static bool ShowKeyboard(this UIView inputView) => inputView.BecomeFirstResponder();
+		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
 
-		internal static bool IsSoftKeyboardShowing(this UIView inputView) => inputView.IsFirstResponder;
+		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
 	}
 }
