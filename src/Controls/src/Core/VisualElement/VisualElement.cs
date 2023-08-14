@@ -426,7 +426,7 @@ namespace Microsoft.Maui.Controls
 		IFlowDirectionController FlowController => this;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='FlowDirection']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(FlowDirectionConverter))]
+		[TypeConverter(typeof(FlowDirectionConverter))]
 		public FlowDirection FlowDirection
 		{
 			get { return (FlowDirection)GetValue(FlowDirectionProperty); }
@@ -462,6 +462,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Window"/>.</summary>
 		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
 
+		/// <summary>
+		/// Gets the <see cref="Window"/> that is associated with this <see cref="VisualElement"/>. This is a read-only bindable property.
+		/// </summary>
 		public Window Window => (Window)GetValue(WindowProperty);
 
 		Window IWindowController.Window
@@ -494,6 +497,9 @@ namespace Microsoft.Maui.Controls
 
 		LayoutConstraint _selfConstraint;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="VisualElement"/> class.
+		/// </summary>
 		protected internal VisualElement()
 		{
 		}
@@ -568,14 +574,26 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(HeightRequestProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InputTransparent']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this element should be involved in the user interaction cycle. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is <see langword="false"/>.</para>
+		/// <para>Setting <see cref="InputTransparent"/> is not the same as setting <see cref="IsEnabled"/> to <see langword="false"/>. Setting <see cref="InputTransparent"/> only disables inputs and instead causes them to be passed to the <see cref="VisualElement" /> that is visually behind the element. Usually, this is the parent of the element. The value of the <see cref="InputTransparent" /> property is inherited by a visual element's child elements.</para>
+		/// </remarks>
 		public bool InputTransparent
 		{
 			get { return (bool)GetValue(InputTransparentProperty); }
 			set { SetValue(InputTransparentProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value indicating whether this element is enabled in the user interface. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is <see langword="true"/>.</para>
+		/// <para>Elements that are not enabled do not participate in hit detection, and therefore will not receive focus or emit input events.</para>
+		/// </remarks>
 		public bool IsEnabled
 		{
 			get { return (bool)GetValue(IsEnabledProperty); }
@@ -640,65 +658,118 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocused']/Docs/*" />
+		/// <summary>
+		/// Gets a value indicating whether this element is focused currently. This is a bindable property.
+		/// </summary>
+		/// <remarks>Applications may have multiple focuses depending on the implementation of the underlying platform. Menus and modals in particular may leave multiple items with focus.</remarks>
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsVisible']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(VisibilityConverter))]
+		/// <summary>
+		/// Gets or sets a value that determines whether this elements should be part of the visual tree or not. This is a bindable property.
+		/// </summary>
+		/// <remarks>Setting <see cref="IsVisible"/> to <see langword="false"/> will remove the element from the visual tree. The element will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
 			get { return (bool)GetValue(IsVisibleProperty); }
 			set { SetValue(IsVisibleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumHeightRequest']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value which overrides the minimum height the element will request during layout. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is -1.</para>
+		/// <para><see cref="MinimumHeightRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum height property. This causes overflow handling to shrink this element to its minimum height before elements who do not have a minimum size set.
+		/// </para>
+		/// </remarks>
 		public double MinimumHeightRequest
 		{
 			get { return (double)GetValue(MinimumHeightRequestProperty); }
 			set { SetValue(MinimumHeightRequestProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='MinimumWidthRequest']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value which overrides the minimum width the element will request during layout. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is -1.</para>
+		/// <para><see cref="MinimumWidthRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum width property. This causes overflow handling to shrink this element to its minimum width before elements who do not have a minimum size set.
+		/// </para>
+		/// </remarks>
 		public double MinimumWidthRequest
 		{
 			get { return (double)GetValue(MinimumWidthRequestProperty); }
 			set { SetValue(MinimumWidthRequestProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value which overrides the maximum height the element will request during layout. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
+		/// <para><see cref="MaximumHeightRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the maximum height property. This causes overflow handling to shrink this element to its maximum height before elements who do not have a maximum size set.
+		/// </para>
+		/// </remarks>
 		public double MaximumHeightRequest
 		{
 			get { return (double)GetValue(MaximumHeightRequestProperty); }
 			set { SetValue(MaximumHeightRequestProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets or sets a value which overrides the maximum width the element will request during layout. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
+		/// <para><see cref="MaximumWidthRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the maximum width property. This causes overflow handling to shrink this element to its maximum width before elements who do not have a maximum size set.
+		/// </para>
+		/// </remarks>
 		public double MaximumWidthRequest
 		{
 			get { return (double)GetValue(MaximumWidthRequestProperty); }
 			set { SetValue(MaximumWidthRequestProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Opacity']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the opacity value applied to the element when it is rendered. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is 1.0.</para>
+		/// <para>
+		/// The opacity value has no effect unless <see cref="IsVisible"/> is <see langword = "true" />. Opacity is inherited down the element hierarchy. If a parent has 0.5 opacity, and a child has 0.5 opacity, the child will render with an effective 0.25 opacity. Setting opacity to 0 has undefined behavior with input elements.
+		/// </para>
+		/// </remarks>
 		public double Opacity
 		{
 			get { return (double)GetValue(OpacityProperty); }
 			set { SetValue(OpacityProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Rotation']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation (in degrees) about the Z-axis (affine rotation) when the element is rendered. This is a bindable property.
+		/// </summary>
+		/// <remarks>Rotation is applied relative to <see cref="AnchorX" /> and <see cref="AnchorY" />.</remarks>
 		public double Rotation
 		{
 			get { return (double)GetValue(RotationProperty); }
 			set { SetValue(RotationProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='RotationX']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation (in degrees) about the X-axis (perspective rotation) when the element is rendered. This is a bindable property.
+		/// </summary>
+		/// <remarks>Rotation is applied relative to <see cref="AnchorX" /> and <see cref="AnchorY" />.</remarks>
 		public double RotationX
 		{
 			get { return (double)GetValue(RotationXProperty); }
 			set { SetValue(RotationXProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='RotationY']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the rotation (in degrees) about the Y-axis (perspective rotation) when the element is rendered. This is a bindable property.
+		/// </summary>
+		/// <remarks>Rotation is applied relative to <see cref="AnchorX" /> and <see cref="AnchorY" />.</remarks>
 		public double RotationY
 		{
 			get { return (double)GetValue(RotationYProperty); }
