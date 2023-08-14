@@ -19,11 +19,11 @@ namespace Microsoft.Maui.AppiumTests
 					NavigateToIssue(Issue);
 					break;
 				}
-				catch (Exception)
+				catch (Exception e)
 				{
-					if (retries++ < 1)
+					TestContext.Error.WriteLine($"The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
 					{
-						TestContext.Error.WriteLine("There was a problem with the FixtureSetup retrying");
 						Reset();
 					}
 					else
@@ -42,8 +42,10 @@ namespace Microsoft.Maui.AppiumTests
 				App.NavigateBack();
 				App.Tap("GoBackToGalleriesButton");
 			}
-			catch (Exception)
-			{ 
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($"The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 

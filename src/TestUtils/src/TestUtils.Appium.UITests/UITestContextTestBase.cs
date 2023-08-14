@@ -21,7 +21,7 @@ namespace TestUtils.Appium.UITests
 			get 
 			{
 				return UITestContext == null
-					? throw new InvalidOperationException("Call InitialSetup before accessing the App")
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(Device)} property.")
 					: UITestContext.TestConfig.TestDevice;
 			}
 		}
@@ -31,7 +31,7 @@ namespace TestUtils.Appium.UITests
 			get 
 			{
 				return UITestContext == null 
-					? throw new InvalidOperationException("Call InitialSetup before accessing the App") 
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(App)} property.")
 					: UITestContext.App;
 			} 
 		}
@@ -42,7 +42,7 @@ namespace TestUtils.Appium.UITests
 		{
 			if (_context == null)
 			{
-				throw new InvalidOperationException("Cannot reset if InitialSetup has not been called");
+				throw new InvalidOperationException($"Cannot {nameof(Reset)} if {nameof(InitialSetup)} has not been called.");
 			}
 
 			InitialSetup(_context, true);

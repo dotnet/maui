@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -24,6 +24,7 @@ namespace Microsoft.Maui.AppiumTests
 #endif
 	public class UITestBase : UITestContextTestBase
 	{
+		protected const int SetupMaxRetries = 1;
 		readonly TestDevice _testDevice;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
