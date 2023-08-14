@@ -249,7 +249,15 @@ public static class KeyboardAutoManagerScroll
 		var entranceCount = DebounceCount;
 
 		// allow time to debounce from the observers as well as allow
-		// other external scrolling to finish before we initiate ours
+		// other external scrolling to finish before we initiate ours.
+
+		// For example: with Maui Community Toolkit Popup, the popup viewcontroller
+		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
+		// that cause the viewcontroller to translate in the postive y-axis.
+		// This translation happens at the same time that the Entry and Editors
+		// are focused and our keyboard scrolling begins. Due to this, we are adding
+		// to the delay so that the translation on the y-axis of the viewcontroller can
+		// occur prior to our calculations for scrolling.
 		await Task.Delay(30);
 
 		if (entranceCount == DebounceCount)
@@ -325,18 +333,18 @@ public static class KeyboardAutoManagerScroll
 		bool cursorTooHigh = false;
 		bool cursorTooLow = false;
 
-		// scenario where we go into the next editor, but the cursor location
-		// on the editor is scrolled below the visible section
-		if (cursorRect.Y >= viewRectInWindow.GetMaxY())
+		// scenario where we go into an editor with the "Next" keyboard button,
+		// but the cursor location on the editor is scrolled below the visible section
+		if (View is UITextView && cursorRect.Y >= viewRectInWindow.GetMaxY())
 		{
 			cursorNotInViewScroll = viewRectInWindow.GetMaxY() - cursorRect.GetMaxY();
 			move = cursorRect.Y - keyboardYPosition + cursorNotInViewScroll;
 			cursorTooLow = true;
 		}
 
-		// scenario where we go into the next editor, but the cursor location
-		// on the editor is scrolled higher than the visible section
-		else if (cursorRect.Y < viewRectInWindow.GetMinY())
+		// scenario where we go into an editor with the "Next" keyboard button,
+		// but the cursor location on the editor is scrolled above the visible section
+		else if (View is UITextView && cursorRect.Y < viewRectInWindow.GetMinY())
 		{
 			cursorNotInViewScroll = viewRectInWindow.GetMinY() - cursorRect.Y;
 			move = cursorRect.Y - keyboardYPosition + cursorNotInViewScroll;
