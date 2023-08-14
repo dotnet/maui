@@ -6,7 +6,7 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.MenuBarItems>
         <MenuBarItem Text="Before File">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" Accelerator="b" />
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" KeyboardAccelerator="b" />
             <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
             <MenuFlyoutSeparator />
             <MenuFlyoutItem Text="Cool item 2"></MenuFlyoutItem>
@@ -23,10 +23,10 @@
             </MenuFlyoutItem>
         </MenuBarItem>
         <MenuBarItem Text="Custom Menu">
-            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" Accelerator="ctrl+5" />
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1" KeyboardAccelerator="ctrl+5" />
             <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
-                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" Accelerator="Shift+M" />
-                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2" Accelerator="ALT+C" />
+                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" KeyboardAccelerator="Shift+M" />
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2" KeyboardAccelerator="ALT+C" />
             </MenuFlyoutSubItem>
         </MenuBarItem>
     </views:BasePage.MenuBarItems>

@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 		/// <param name="menuFlyoutItem">The abstract menu flyout item, of type <see cref="IMenuFlyoutItem"/>, with all the necessary information.</param>
 		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
-			var keyboardAccelerators = menuFlyoutItem.Accelerators?.ToPlatform();
+			var keyboardAccelerators = menuFlyoutItem.KeyboardAccelerators?.ToPlatform();
 
 			if (keyboardAccelerators is null)
 				return;

@@ -6,13 +6,13 @@ using System.Globalization;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// Class that the XAML parser uses to convert strings to <see cref="Accelerator" /> objects.
+	/// Class that the XAML parser uses to convert strings to <see cref="KeyboardAccelerator" /> objects.
 	/// </summary>
 	/// <remarks>
 	/// The given string value may contain a combination of "CTRL", "CMD", "ALT", "SHIFT", "FN", or "WIN",
 	/// in any combination of upper or lower case letters, as well as any available keys on the platform.
-	/// The returned <see cref="Accelerator" /> has its <see cref="Accelerator.Modifiers" /> array filled with the specified modifiers,
-	/// and its <see cref="Accelerator.Keys" /> array filled with the remaining keys.</remarks>
+	/// The returned <see cref="KeyboardAccelerator" /> has its <see cref="KeyboardAccelerator.Modifiers" /> array filled with the specified modifiers,
+	/// and its <see cref="KeyboardAccelerator.Key" /> string as the remaining key.</remarks>
 	public class AcceleratorTypeConverter : TypeConverter
 	{
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
@@ -28,12 +28,12 @@ namespace Microsoft.Maui.Controls
 			if (string.IsNullOrEmpty(strValue))
 				return null;
 
-			return Accelerator.FromString(strValue);
+			return KeyboardAccelerator.FromString(strValue);
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
 		{
-			if (value is not Accelerator acc)
+			if (value is not KeyboardAccelerator acc)
 				throw new NotSupportedException();
 
 			return acc.ToString();

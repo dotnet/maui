@@ -13,7 +13,11 @@ namespace Microsoft.Maui.Controls
 	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IMenuElement
 	{
 		/// <summary>Bindable property for <see cref="Accelerator"/>.</summary>
+		[Obsolete]
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
+
+		/// <summary>Bindable property for <see cref="KeyboardAccelerator"/>.</summary>
+		public static readonly BindableProperty KeyboardAcceleratorProperty = BindableProperty.Create(nameof(KeyboardAccelerator), typeof(KeyboardAccelerator), typeof(MenuItem), null);
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
 		public static readonly BindableProperty CommandProperty = BindableProperty.Create(
@@ -41,10 +45,26 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='GetAccelerator']/Docs/*" />
+		[Obsolete] 
 		public static Accelerator GetAccelerator(BindableObject bindable) => (Accelerator)bindable.GetValue(AcceleratorProperty);
 
+		/// <summary>
+		/// Gets the keyboard accelerator for the specified bindable object.
+		/// </summary>
+		/// <param name="bindable"><see cref="BindableObject"/>The bindable object for which to retrieve the accelerator keys.</param>
+		/// <returns><see cref="KeyboardAccelerator"/></returns>
+		public static KeyboardAccelerator GetKeyboardAccelerator(BindableObject bindable) => (KeyboardAccelerator)bindable.GetValue(KeyboardAcceleratorProperty);
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='SetAccelerator']/Docs/*" />
+		[Obsolete] 
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
+
+		/// <summary>
+		/// Sets the keyboard accelerator for the specified bindable object.
+		/// </summary>
+		/// <param name="bindable"><see cref="BindableObject"/>The bindable object for which to retrieve the accelerator keys.</param>
+		/// <param name="value"><see cref="KeyboardAccelerator"/>The new keyboard accelerator for the object.</param>
+		public static void SetKeyboardAccelerator(BindableObject bindable, KeyboardAccelerator value) => bindable.SetValue(KeyboardAcceleratorProperty, value);
 
 		internal readonly MergedStyle _mergedStyle;
 		bool _isEnabledExplicit = (bool)IsEnabledProperty.DefaultValue;
@@ -145,8 +165,12 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
+		[Obsolete]
 		IReadOnlyList<IAccelerator> IMenuElement.Accelerators =>
 			GetAccelerator(this) is Accelerator acc ? new[] { acc } : null;
+
+		IReadOnlyList<IAccelerator> IMenuElement.KeyboardAccelerators =>
+			GetKeyboardAccelerator(this) is KeyboardAccelerator acc ? new[] { acc } : null;
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;
 

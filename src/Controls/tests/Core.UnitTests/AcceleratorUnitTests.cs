@@ -12,13 +12,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void AcceleratorThrowsOnEmptyString()
 		{
-			Assert.Throws<ArgumentNullException>(() => Accelerator.FromString(""));
+			Assert.Throws<ArgumentNullException>(() => KeyboardAccelerator.FromString(""));
 		}
 
 		[Fact]
 		public void AcceleratorThrowsOnNull()
 		{
-			Assert.Throws<ArgumentNullException>(() => Accelerator.FromString(null));
+			Assert.Throws<ArgumentNullException>(() => KeyboardAccelerator.FromString(null));
 		}
 
 		[Theory]
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("A")]
 		public void AcceleratorFromString(string shortCutKeyBinding)
 		{
-			var accelerator = Accelerator.FromString(shortCutKeyBinding);
+			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
 			Assert.Equal(shortCutKeyBinding, accelerator.ToString());
 		}
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("2")]
 		public void AcceleratorFromOnlyLetter(string shortCutKeyBinding)
 		{
-			var accelerator = Accelerator.FromString(shortCutKeyBinding);
+			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
 			Assert.Single(accelerator.Keys);
 			Assert.Equal(accelerator.Keys.ElementAt(0), shortCutKeyBinding);
@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string key = shortcut.Key;
 			Assert.NotNull(key);
 
-			var accelerator = Accelerator.FromString(shortcut.ToString());
+			var accelerator = KeyboardAccelerator.FromString(shortcut.ToString());
 			Assert.Single(accelerator.Keys);
 			Assert.Single(accelerator.Modifiers);
 			Assert.Equal(accelerator.Keys.ElementAt(0), shortcut.Key);
@@ -72,7 +72,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string modifier1Alt = "alt";
 			string key = "A";
 			string shortCutKeyBinding = $"{modifier}+{modifier1Alt}+{key}";
-			var accelerator = Accelerator.FromString(shortCutKeyBinding);
+			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
 			Assert.Single(accelerator.Keys);
 			Assert.Equal(2, accelerator.Modifiers.Count());

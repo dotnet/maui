@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 			var uiImage = virtualView.Source.GetPlatformMenuImage(mauiContext);
 			var selector = new Selector(MenuItemSelectedSelector);
 
-			var accelerator = virtualView.Accelerators?[0];
+			var accelerator = virtualView.KeyboardAccelerators?[0];
 			if (accelerator is null)
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
 

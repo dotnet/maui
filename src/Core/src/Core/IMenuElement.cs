@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Microsoft.Maui
 {
@@ -7,10 +8,20 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Represents a shortcut key for a MenuItem.
 		/// </summary>
+		[Obsolete]
 #if NETSTANDARD2_0
 		IReadOnlyList<IAccelerator>? Accelerators { get; }
 #else
 		IReadOnlyList<IAccelerator>? Accelerators => null;
+#endif
+
+		/// <summary>
+		/// Represents a shortcut key for a MenuItem.
+		/// </summary>
+#if NETSTANDARD2_0
+		IReadOnlyList<IAccelerator>? KeyboardAccelerators { get; }
+#else
+		IReadOnlyList<IAccelerator>? KeyboardAccelerators => null;
 #endif
 
 		/// <summary>

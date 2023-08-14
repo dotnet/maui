@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var converter = new AcceleratorTypeConverter();
 			string shourtCutKeyBinding = "ctrl+A";
-			Assert.Equal(Accelerator.FromString(shourtCutKeyBinding), (Accelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
+			Assert.Equal(KeyboardAccelerator.FromString(shourtCutKeyBinding), (KeyboardAccelerator)converter.ConvertFromInvariantString(shourtCutKeyBinding));
 		}
 	}
 }

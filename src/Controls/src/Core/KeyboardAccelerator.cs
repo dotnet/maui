@@ -5,16 +5,18 @@ using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="Type[@FullName='Microsoft.Maui.Controls.Accelerator']/Docs/*" />
-	[System.ComponentModel.TypeConverter(typeof(AcceleratorTypeConverter))]
-	[Obsolete("Use KeyboardAccelerator instead.")]
-	public class Accelerator : IAccelerator
+
+	/// <summary>
+	/// Represents a shortcut key for a <see cref="MenuItem"/>.
+	/// </summary>
+	[TypeConverter(typeof(AcceleratorTypeConverter))]
+	public class KeyboardAccelerator : IAccelerator
 	{
 		const string Separator = "+";
 		readonly string _text;
 		readonly List<string> _modifiers;
 
-		internal Accelerator(string text, IEnumerable<string> modifiers, string key)
+		internal KeyboardAccelerator(string text, IEnumerable<string> modifiers, string key)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
@@ -25,27 +27,24 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the modifiers for the accelerator.
+		/// Gets the modifiers for the keyboard accelerator.
 		/// </summary>
 		public IEnumerable<string> Modifiers => _modifiers;
 
 		IReadOnlyList<string> IAccelerator.Modifiers => _modifiers;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Keys']/Docs/*" />
-		[EditorBrowsable(EditorBrowsableState.Never)]
-		[Obsolete("Use Key instead.")]
-		public IEnumerable<string> Keys
-		{
-			get => Key is null ? null : new[] { Key };
-		}
-
 		/// <summary>
-		/// Gets the key for the accelerator.
+		/// Gets the key for the keyboard accelerator.
 		/// </summary>
 		public string Key { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='FromString']/Docs/*" />
-		public static Accelerator FromString(string text)
+		/// <summary>
+		/// Returns a new <see cref="KeyboardAccelerator"/> from the text.
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns><see cref="KeyboardAccelerator"/></returns>
+		/// <exception cref="ArgumentNullException"></exception>
+		public static KeyboardAccelerator FromString(string text)
 		{
 			if (string.IsNullOrEmpty(text))
 				throw new ArgumentNullException(nameof(text));
@@ -92,27 +91,37 @@ namespace Microsoft.Maui.Controls
 
 			key = text;
 
-			return new Accelerator(str, modifiers, key);
+			return new KeyboardAccelerator(str, modifiers, key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='ToString']/Docs/*" />
+		/// <summary>
+		/// Returns a text representation of the <see cref="KeyboardAccelerator"/>.
+		/// </summary>
+		/// <returns><see cref="String"/></returns>
 		public override string ToString()
 		{
 			return _text;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='Equals']/Docs/*" />
+		/// <summary>
+		/// Compares `this` accelerator to `obj`.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns><see cref="Boolean"/> Returns `true` if `obj` is of type <see cref="KeyboardAccelerator"/> and is equal to it. Otherwise, returns false.</returns>
 		public override bool Equals(object obj)
 		{
-			return obj is Accelerator && Equals((Accelerator)obj);
+			return obj is KeyboardAccelerator && Equals((KeyboardAccelerator)obj);
 		}
 
-		bool Equals(Accelerator other)
+		bool Equals(KeyboardAccelerator other)
 		{
 			return other.ToString() == ToString();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Accelerator.xml" path="//Member[@MemberName='GetHashCode']/Docs/*" />
+		/// <summary>
+		/// Returns the hash code for the lowercase string that represents the shortcut key.
+		/// </summary>
+		/// <returns><see cref="Int32"/></returns>
 		public override int GetHashCode()
 		{
 #if NETSTANDARD2_0
@@ -122,7 +131,7 @@ namespace Microsoft.Maui.Controls
 #endif
 		}
 
-		public static implicit operator Accelerator(string accelerator)
+		public static implicit operator KeyboardAccelerator(string accelerator)
 		{
 			return FromString(accelerator);
 		}
