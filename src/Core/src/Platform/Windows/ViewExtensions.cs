@@ -354,6 +354,14 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static T? GetChildAt<T>(this DependencyObject view, int index) where T : DependencyObject
+		{
+			if (VisualTreeHelper.GetChildrenCount(view) >= index)
+				return null;
+
+			return VisualTreeHelper.GetChild(view, index) as T;
+		}
+
 		internal static void UnfocusControl(Control control)
 		{
 			if (control == null || !control.IsEnabled)

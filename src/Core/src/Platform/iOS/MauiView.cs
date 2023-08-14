@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		static bool? _respondsToSafeArea;
 
@@ -137,6 +137,24 @@ namespace Microsoft.Maui.Platform
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
+		}
+
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
+		{
+
+			if (View is IVisualTreeElement viewElement &&
+				viewElement.IsThisMyPlatformView(this))
+			{
+				return viewElement;
+			}
+
+			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
+				layoutElement.IsThisMyPlatformView(this))
+			{
+				return layoutElement;
+			}
+
+			return null;
 		}
 	}
 }
