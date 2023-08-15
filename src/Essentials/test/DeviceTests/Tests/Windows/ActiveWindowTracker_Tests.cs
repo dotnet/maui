@@ -11,9 +11,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	[Category("Windows ActiveWindowTracker")]
 	public class Windows_ActiveWindowTracker_Tests : BaseWindowMessageManager_Tests
 	{
-		[Fact]
-		public Task StoppedTrackerDoesNotTrack() =>
-			Utils.OnMainThread(async () =>
+		[UIFact]
+		public async Task StoppedTrackerDoesNotTrack()
 			{
 				var messages = new List<uint>();
 
@@ -35,11 +34,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			});
+			}
 
-		[Fact]
-		public Task ActivatedBeforeStartRecievesMessage() =>
-			Utils.OnMainThread(async () =>
+		[UIFact]
+		public async Task ActivatedBeforeStartRecievesMessage()
 			{
 				var messages = new List<uint>();
 
@@ -62,11 +60,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			});
+			}
 
-		[Fact]
-		public Task StartBeforeActivatedRecievesMessage() =>
-			Utils.OnMainThread(async () =>
+		[UIFact]
+		public async Task StartBeforeActivatedRecievesMessage()
 			{
 				var messages = new List<uint>();
 
@@ -87,11 +84,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			});
+			}
 
-		[Fact]
-		public Task SwitchingWindowsPostsToTheNewWindow() =>
-			Utils.OnMainThread(async () =>
+		[UIFact]
+		public async Task SwitchingWindowsPostsToTheNewWindow()
 			{
 				var messages = new List<(IntPtr, uint)>();
 
@@ -115,11 +111,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add((e.Hwnd, e.MessageId));
 				}
-			});
+			}
 
-		[Fact]
-		public Task SwitchingWindowsDoesNotPostToTheOldWindow() =>
-			Utils.OnMainThread(async () =>
+		[UIFact]
+		public async Task SwitchingWindowsDoesNotPostToTheOldWindow()
 			{
 				var messages = new List<(IntPtr, uint)>();
 
@@ -143,7 +138,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add((e.Hwnd, e.MessageId));
 				}
-			});
+			}
 
 		class TestWindowStateManager : IWindowStateManager
 		{

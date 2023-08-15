@@ -7,13 +7,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("MainThread")]
 	public class MainThread_Tests
 	{
-		[Fact]
-		public Task IsOnMainThread()
+		[UIFact]
+		public void IsOnMainThread()
 		{
-			return Utils.OnMainThread(() =>
-			{
 				Assert.True(MainThread.IsMainThread);
-			});
 		}
 
 		[Fact]
