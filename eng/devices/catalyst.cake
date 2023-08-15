@@ -1,12 +1,13 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
+#load "./uitest-shared.cake"
 
 string TARGET = Argument("target", "Test");
 
 const string dotnetVersion = "net7.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
+FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_APPIUM_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 
 // optional
@@ -15,7 +16,7 @@ var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APPIUM_APPPROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
 
 // other
