@@ -180,7 +180,8 @@ Task("Test")
 	var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
 	var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
 
-	var testResultsFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	var testResultsRoot = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
+	var testResultsFile = $"{testResultsRoot}\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
 
 	Information($"Found MSIX, installing: {msixPath}");
 	Information($"Test Results File: {testResultsFile}");
@@ -200,7 +201,7 @@ Task("Test")
 	// Install the DeviceTests app
 	StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
-	var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
+	var startArgs = $"Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"{PACKAGEID}\").PackageFamilyName)!App -Args \"{testResultsFile} --xharness --output-directory='{testResultsRoot}'\"";
 
 	Information(startArgs);
 
