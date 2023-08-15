@@ -448,8 +448,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+			var page1 = new ContentPage()
+				{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+				{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
 
 			var shell = await CreateShellAsync((shell) =>
 			{
@@ -962,11 +964,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
-		[Fact(DisplayName = "Pages Do Not Leak"
-#if WINDOWS
-			,Skip = "Failing"
-#endif
-			)]
+		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{
 			SetupBuilder();
@@ -999,17 +997,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 			});
 
-			// As we add more controls to this test, more GCs will be required
-			for (int i = 0; i < 16; i++)
-			{
-				if (!pageReference.IsAlive)
-					break;
-				await Task.Yield();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-			}
-
-			Assert.NotNull(pageReference);
+			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
@@ -1074,11 +1062,17 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(rootItem);
 			});
 
-			await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
 				rootItem.IsVisible = true;
 
 				shell.CurrentItem = rootItem.Items.Last();
+
+				// Wait for the rootItem to finish loading before we remove items.
+				// If we just start removing items directly after setting the current item
+				// This can cause the platform to crash since we're pulling the
+				// carpet out from under it while it's trying to load.
+				await OnLoadedAsync(shell.CurrentPage);
 
 				// Remove all root child items
 				for (int i = 0; i < itemCount; i++)
@@ -1088,8 +1082,6 @@ namespace Microsoft.Maui.DeviceTests
 
 				shell.CurrentItem = homeItem;
 				Assert.True(shell.CurrentSection.Title == "Home");
-
-				return Task.CompletedTask;
 			});
 		}
 

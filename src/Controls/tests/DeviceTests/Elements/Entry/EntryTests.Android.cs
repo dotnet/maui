@@ -9,18 +9,18 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class EntryTests
 	{
-		AppCompatEditText GetPlatformControl(EntryHandler handler) =>
+		static AppCompatEditText GetPlatformControl(EntryHandler handler) =>
 			handler.PlatformView;
 
-		Task<string> GetPlatformText(EntryHandler handler)
+		static Task<string> GetPlatformText(EntryHandler handler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Text);
 		}
 
-		void SetPlatformText(EntryHandler entryHandler, string text) =>
+		static void SetPlatformText(EntryHandler entryHandler, string text) =>
 			GetPlatformControl(entryHandler).SetTextKeepState(text);
 
-		int GetPlatformCursorPosition(EntryHandler entryHandler)
+		static int GetPlatformCursorPosition(EntryHandler entryHandler)
 		{
 			var editText = GetPlatformControl(entryHandler);
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 			return -1;
 		}
 
-		int GetPlatformSelectionLength(EntryHandler entryHandler)
+		static int GetPlatformSelectionLength(EntryHandler entryHandler)
 		{
 			var editText = GetPlatformControl(entryHandler);
 

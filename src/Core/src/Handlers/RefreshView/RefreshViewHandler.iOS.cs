@@ -9,6 +9,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class RefreshViewHandler : ViewHandler<IRefreshView, MauiRefreshView>
 	{
+		readonly MauiRefreshViewProxy _proxy = new();
+
 		protected override MauiRefreshView CreatePlatformView()
 		{
 			return new MauiRefreshView();
@@ -16,14 +18,14 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(MauiRefreshView platformView)
 		{
-			platformView.RefreshControl.ValueChanged += OnRefresh;
+			_proxy.Connect(VirtualView, platformView);
 
 			base.ConnectHandler(platformView);
 		}
 
 		protected override void DisconnectHandler(MauiRefreshView platformView)
 		{
-			platformView.RefreshControl.ValueChanged -= OnRefresh;
+			_proxy.Disconnect(platformView);
 
 			base.DisconnectHandler(platformView);
 		}
@@ -43,11 +45,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(IRefreshViewHandler handler, IRefreshView refreshView)
 			=> handler.PlatformView?.UpdateIsEnabled(refreshView.IsEnabled);
 
-		void OnRefresh(object? sender, EventArgs e)
-		{
-			VirtualView.IsRefreshing = true;
-		}
-
 		static void UpdateIsRefreshing(IRefreshViewHandler handler)
 		{
 			handler.PlatformView.IsRefreshing = handler.VirtualView.IsRefreshing;
@@ -62,6 +59,31 @@ namespace Microsoft.Maui.Handlers
 
 			if (color != null)
 				handler.PlatformView.RefreshControl.TintColor = color;
+		}
+
+		class MauiRefreshViewProxy
+		{
+			WeakReference<IRefreshView>? _virtualView;
+
+			IRefreshView? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IRefreshView virtualView, MauiRefreshView platformView)
+			{
+				_virtualView = new(virtualView);
+				platformView.RefreshControl.ValueChanged += OnRefresh;
+			}
+
+			public void Disconnect(MauiRefreshView platformView)
+			{
+				_virtualView = null;
+				platformView.RefreshControl.ValueChanged -= OnRefresh;
+			}
+
+			void OnRefresh(object? sender, EventArgs e)
+			{
+				if (VirtualView is IRefreshView virtualView)
+					virtualView.IsRefreshing = true;
+			}
 		}
 	}
 }
