@@ -20,10 +20,10 @@ namespace Microsoft.Maui.Controls
     /// </remarks>
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='NavigationProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='StyleProperty']/Docs/*" />
+		/// <summary>Bindable property for <see cref="NavigableElement.Style"/>.</summary>
 		public new static readonly BindableProperty StyleProperty = NavigableElement.StyleProperty;
 
 		bool _inputTransparentExplicit = (bool)InputTransparentProperty.DefaultValue;
@@ -168,14 +168,16 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="Visual"/>.</summary>
 		public static readonly BindableProperty VisualProperty =
-			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), Maui.Controls.VisualMarker.MatchParent,
+			BindableProperty.Create(nameof(Visual), typeof(IVisual), typeof(VisualElement), VisualMarker.MatchParent,
 									validateValue: (b, v) => v != null, propertyChanged: OnVisualChanged);
 
-		static IVisual _defaultVisual = Microsoft.Maui.Controls.VisualMarker.Default;
+		static IVisual _defaultVisual = VisualMarker.Default;
 		IVisual _effectiveVisual = _defaultVisual;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Visual']/Docs/*" />
-		[System.ComponentModel.TypeConverter(typeof(VisualTypeConverter))]
+		/// <summary>
+		/// Gets or sets a <see cref="IVisual"/> implementation that overrides the visual appearance of this <see cref="VisualElement"/>. This is a bindable property.
+		/// </summary>
+		[TypeConverter(typeof(VisualTypeConverter))]
 		public IVisual Visual
 		{
 			get { return (IVisual)GetValue(VisualProperty); }
@@ -412,7 +414,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="MaximumHeightRequest"/>.</summary>
 		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsFocusedPropertyKey']/Docs/*" />
+		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
@@ -425,7 +427,9 @@ namespace Microsoft.Maui.Controls
 
 		IFlowDirectionController FlowController => this;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='FlowDirection']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the layout flow direction. This is a bindable property.
+		/// </summary>
 		[TypeConverter(typeof(FlowDirectionConverter))]
 		public FlowDirection FlowDirection
 		{
@@ -455,7 +459,6 @@ namespace Microsoft.Maui.Controls
 
 		EffectiveFlowDirection IVisualElementController.EffectiveFlowDirection => FlowController.EffectiveFlowDirection;
 
-
 		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
 			nameof(Window), typeof(Window), typeof(VisualElement), null, propertyChanged: OnWindowChanged);
 
@@ -473,10 +476,7 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(WindowPropertyKey, value);
 		}
 
-
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
-
-
 
 		int _batched;
 		LayoutConstraint _computedConstraint;
@@ -544,13 +544,18 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(BackgroundProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Behaviors']/Docs/*" />
+		/// <summary>
+		/// Gets the list of <see cref="Behavior"/> objects associated to this element. This is a read-only bindable property.
+		/// </summary>
 		public IList<Behavior> Behaviors
 		{
 			get { return (IList<Behavior>)GetValue(BehaviorsProperty); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Bounds']/Docs/*" />
+		/// <summary>
+		/// Gets the bounds of the element in device-independent units.
+		/// </summary>
+		/// <remarks><see cref="Bounds"/> is assigned during the Layout cycle by a call to <see cref="Layout(Rect)" />.</remarks>
 		public Rect Bounds
 		{
 			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
@@ -560,14 +565,23 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Height']/Docs/*" />
+		/// <summary>
+		/// Gets the current rendered height of this element. This is a read-only bindable property.
+		/// </summary>
+		/// <remarks>The height of an element is set during the Layout phase.</remarks>
 		public double Height
 		{
 			get { return _mockHeight == -1 ? (double)GetValue(HeightProperty) : _mockHeight; }
 			private set { SetValue(HeightPropertyKey, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='HeightRequest']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the desired height override of this element. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>The default value is -1.</para>
+		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of a <see cref="VisualElement"/>, however setting the <see cref="HeightRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
+		/// </remarks>
 		public double HeightRequest
 		{
 			get { return (double)GetValue(HeightRequestProperty); }
@@ -830,7 +844,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the list of triggers associated to this element. This is a read-only bindable property.
+		/// Gets the list of <see cref="TriggerBase"/> objects associated to this element. This is a read-only bindable property.
 		/// </summary>
 		public IList<TriggerBase> Triggers => (IList<TriggerBase>)GetValue(TriggersProperty);
 
@@ -848,8 +862,8 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the desired width override of this element. This is a bindable property.
 		/// </summary>
 		/// <remarks>
+		/// <para>The default value is -1.</para>
 		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of a <see cref="VisualElement"/>, however setting the <see cref="WidthRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
-		/// <para>To revert to the default "auto" behavior of this property, use ClearValue(WidthRequestProperty).</para>
 		/// </remarks>
 		public double WidthRequest
 		{
@@ -887,7 +901,10 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ClipProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Batched']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates there are batched changes done for this element.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool Batched => _batched > 0;
 
@@ -909,10 +926,17 @@ namespace Microsoft.Maui.Controls
 
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='DisableLayout']/Docs/*" />
+		/// <summary>
+		/// Gets a value that indicates that layout for this <see cref="VisualElement"/> is disabled.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool DisableLayout { get; set; }
 
+		/// <summary>
+		/// Gets or sets a value that indicates that this element is currently going through the platform layout cycle.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsInPlatformLayout
 		{
@@ -934,6 +958,10 @@ namespace Microsoft.Maui.Controls
 			set { _isInPlatformLayout = value; }
 		}
 
+		/// <summary>
+		/// Gets or sets a value that indicates that this element is currently consistent with the platform equivalent element state.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsPlatformStateConsistent
 		{
@@ -951,7 +979,10 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		internal event EventHandler PlatformEnabledChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='IsPlatformEnabled']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that indicates whether this elements's platform equivalent element is enabled.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IsPlatformEnabled
 		{
@@ -1011,7 +1042,14 @@ namespace Microsoft.Maui.Controls
 		ResourceDictionary _resources;
 		bool IResourcesProvider.IsResourcesCreated => _resources != null;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Resources']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the local resource dictionary.
+		/// </summary>
+		/// <remarks>
+		/// <para>In XAML, resource dictionaries are filled with key/value pairs that are specified in XAML and consequently created at run time. The keys in the resource dictionary are specified with the <c>x:Key</c> attribute of the XAML tag for the type to create. An object of that type is created, and is initialized with the property and field values that are specified either by additional attributes or by nested tags, both of which, when present are simply string representations of the property or field names. The object is then inserted into the <see cref="ResourceDictionary" /> for the enclosing type at runtime.</para>
+		/// <para>Resource dictionaries and their associated XML provide the application developer with a convenient method to reuse code inside the XAML compile-time and run-time engines.</para>
+		/// <para>For more information, see: <see href="https://learn.microsoft.com/dotnet/maui/fundamentals/resource-dictionaries">Resource Dictionaries (Microsoft Learn)</see>.</para>
+		/// </remarks>
 		public ResourceDictionary Resources
 		{
 			get
@@ -1037,9 +1075,16 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Signals that the platform equivalent element for this element's size has changed and a new layout cycle might be needed.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
+		/// <summary>
+		/// Occurs when children of this element are changed in order.
+		/// </summary>
 		public event EventHandler ChildrenReordered;
 
 		/// <summary>
@@ -1108,7 +1153,14 @@ namespace Microsoft.Maui.Controls
 			return r;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='Measure']/Docs/*" />
+		/// <summary>
+		/// Returns the minimum size that a visual element needs in order to be displayed on the device.
+		/// </summary>
+		/// <param name="widthConstraint">The suggested maximum width constraint for the visual element to render.</param>
+		/// <param name="heightConstraint">The suggested maximum height constraint for the visual element to render.</param>
+		/// <param name="flags">A value that controls whether margins are included in the returned size.</param>
+		/// <returns>The minimum size that a visual element needs in order to be displayed on the device.</returns>
+		/// <remarks>If the minimum size that the visual element needs in order to be displayed on the device is larger than can be accommodated by<paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
 		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
@@ -1133,6 +1185,9 @@ namespace Microsoft.Maui.Controls
 			return result;
 		}
 
+		/// <summary>
+		/// Occurs when the current measure of a <see cref="VisualElement"/> has been invalidated.
+		/// </summary>
 		public event EventHandler MeasureInvalidated;
 
 		/// <summary>
@@ -1159,6 +1214,9 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>This event is not triggered when the element does not currently have focus.</remarks>
 		public event EventHandler<FocusEventArgs> Unfocused;
 
+		/// <summary>
+		/// Marks the current measure of an element as invalidated.
+		/// </summary>
 		protected virtual void InvalidateMeasure() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		protected override void OnBindingContextChanged()
@@ -1188,11 +1246,20 @@ namespace Microsoft.Maui.Controls
 				view.ComputedConstraint = LayoutConstraint.None;
 		}
 
+		/// <summary>
+		/// Causes the <see cref="ChildrenReordered"/> event to be triggered.
+		/// </summary>
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
 
 		IPlatformSizeService _platformSizeService;
 
+		/// <summary>
+		/// Method that is called when a layout measurement happens.
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint to request.</param>
+		/// <param name="heightConstraint">The height constraint to request.</param>
+		/// <returns>The requested size that a visual element wants in order to be displayed on the device.</returns>
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
@@ -1205,12 +1272,27 @@ namespace Microsoft.Maui.Controls
 			return _platformSizeService.GetPlatformSize(this, widthConstraint, heightConstraint);
 		}
 
+		/// <summary>
+		/// This method is called when the size of the element is set during a layout cycle. Implement this method to add class handling for this event.
+		/// </summary>
+		/// <param name="width">The new width of the element.</param>
+		/// <param name="height">The new height of the element.</param>
 		protected virtual void OnSizeAllocated(double width, double height)
 		{
 		}
 
+		/// <summary>
+		/// This method is called during a layout cycle to signal the start of a sub-tree layout.
+		/// </summary>
+		/// <param name="width">The newly allocated width.</param>
+		/// <param name="height">The newly allocated height.</param>
+		/// <remarks>Calling <see cref="SizeAllocated(double, double)"/> will start a new layout cycle on the children of the element. Excessive calls to this method may cause performance problems.</remarks>
 		protected void SizeAllocated(double width, double height) => OnSizeAllocated(width, height);
 
+		/// <summary>
+		/// Occurs when a batch of property changes have been committed by calling <see cref="BatchCommit"/>.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<EventArg<VisualElement>> BatchCommitted;
 
@@ -1232,7 +1314,10 @@ namespace Microsoft.Maui.Controls
 			FocusChangeRequested?.Invoke(this, args);
 		internal bool HasFocusChangeRequestedEvent => FocusChangeRequested is not null;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/VisualElement.xml" path="//Member[@MemberName='InvalidateMeasureNonVirtual']/Docs/*" />
+		/// <summary>
+		/// Invalidates the measure of an element.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void InvalidateMeasureNonVirtual(InvalidationTrigger trigger)
 		{
@@ -1384,7 +1469,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Changes the current visual state based on this <see cref="VisualElement"/>s current property values.
+		/// Changes the current visual state based on this elements current property values.
 		/// </summary>
 		protected internal virtual void ChangeVisualState()
 		{
@@ -1596,6 +1681,9 @@ namespace Microsoft.Maui.Controls
 		event EventHandler? _windowChanged;
 		event EventHandler? _platformContainerViewChanged;
 
+		/// <summary>
+		/// Gets or sets the frame this element resides in on screen.
+		/// </summary>
 		public Rect Frame
 		{
 			get => _frame;
@@ -1608,6 +1696,9 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Gets or sets the <see cref="IViewHandler"/> associated to this element.
+		/// </summary>
 		new public IViewHandler? Handler
 		{
 			get => (IViewHandler?)base.Handler;
@@ -1685,8 +1776,15 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ZIndexProperty, value); }
 		}
 
+		/// <summary>
+		/// Gets the size that this <see cref="VisualElement"/> computed during the measure pass of the layout process.
+		/// </summary>
 		public Size DesiredSize { get; protected set; }
 
+		/// <summary>
+		/// Positions child objects and determines a size for a <see cref="VisualElement"/>. Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.
+		/// </summary>
+		/// <param name="bounds">The final size that the parent computes for the child in layout, provided as a <see cref="Rect"/> value.</param>
 		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
@@ -1740,8 +1838,13 @@ namespace Microsoft.Maui.Controls
 			return MeasureOverride(widthConstraint, heightConstraint);
 		}
 
-		// MeasureOverride provides a way to allow subclasses (e.g., Layout) to override Measure even though
-		// the interface has to be explicitly implemented to avoid conflict with the old Measure method
+		/// <summary>
+		/// MeasureOverride provides a way to allow subclasses (e.g., Layout) to override Measure even though
+		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method
+		/// </summary>
+		/// <param name="widthConstraint">The width constraint to request.</param>
+		/// <param name="heightConstraint">The height constraint to request.</param>
+		/// <returns>The requested size that a visual element wants in order to be displayed on the device.</returns>
 		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
