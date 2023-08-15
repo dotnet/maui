@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -56,6 +56,18 @@ namespace Microsoft.Maui.AppiumTests
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
+			if (App is IApp2 app2)
+			{
+				if (app2.AppState == ApplicationState.Not_Running)
+				{
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we don't want to log diagnostic data as there is nothing to collect from
+					Reset();
+					FixtureSetup();
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
+			}
+
 			var testOutcome = TestContext.CurrentContext.Result.Outcome;
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
@@ -179,7 +191,7 @@ namespace Microsoft.Maui.AppiumTests
 		private void SaveDiagnosticLogs()
 		{
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
-			
+
 			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
 			if (UITestContext is not null)
 			{
