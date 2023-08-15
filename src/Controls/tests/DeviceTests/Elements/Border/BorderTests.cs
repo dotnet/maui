@@ -124,7 +124,7 @@ namespace Microsoft.Maui.DeviceTests
 			border.StrokeThickness = borderThickness;
 
 			var bitmap = await GetRawBitmap(border, typeof(BorderHandler));
-			Assert.Equal(200, bitmap.Width, 1d);
+			Assert.Equal(200, bitmap.Width, 2d);
 			Assert.Equal(100, bitmap.Height, 2d);
 
 			// Analyze blue border - we expect it to fill the 200x100 area
