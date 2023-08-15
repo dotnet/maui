@@ -52,8 +52,16 @@ namespace Microsoft.Maui
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		public IServiceProvider Services
+		{
+			get => MauiContextAccessor.Services;
+			protected set => MauiContextAccessor.Services = value;
+		}
 
-		public IApplication Application { get; protected set; } = null!;
+		public IApplication Application
+		{
+			get => MauiContextAccessor.Application;
+			protected set => MauiContextAccessor.Application = value;
+		}
 	}
 }

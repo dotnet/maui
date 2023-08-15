@@ -75,9 +75,17 @@ namespace Microsoft.Maui
 
 		public static MauiApplication Current { get; private set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		public IServiceProvider Services
+		{
+			get => MauiContextAccessor.Services;
+			protected set => MauiContextAccessor.Services = value;
+		}
 
-		public IApplication Application { get; protected set; } = null!;
+		public IApplication Application
+		{
+			get => MauiContextAccessor.Application;
+			protected set => MauiContextAccessor.Application = value;
+		}
 
 		public class ActivityLifecycleCallbacks : Java.Lang.Object, IActivityLifecycleCallbacks
 		{
