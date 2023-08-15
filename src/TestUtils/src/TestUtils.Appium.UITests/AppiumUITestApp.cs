@@ -897,7 +897,7 @@ namespace TestUtils.Appium.UITests
 
 				// Try to handle the rest of the query string after marked:'{x}', e.g. "* marked:'Tab1Element' child android.webkit.WebView child android.widget.TextView"
 				var match = Regex.Match(query.Raw, "(.*)'((?:\\s)(\\S*))*");
-				if(match.Groups.Count > 3 && match.Groups[3].Captures.Count != 0)
+				if (match.Groups.Count > 3 && match.Groups[3].Captures.Count != 0)
 				{
 					int index = 0;
 					while (index < match.Groups[3].Captures.Count)
