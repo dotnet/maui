@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			_emittedDragOver = false;
-			var label = (sender as Element).Parent as Label;
+			var label = sender as Label;
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
 			e.Data.Properties.Add("Source", sl);
@@ -37,7 +37,7 @@ namespace Maui.Controls.Sample
 
 			AddEvent(nameof(OnDragStarting));
 
-			startLocation.Text = $"{e.Position.X},{e.Position.Y}";
+			startLocation.Text = $"{(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.X}";
 		}
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
@@ -58,7 +58,7 @@ namespace Maui.Controls.Sample
 				return;
 
 			//e.AcceptedOperation = DataPackageOperation.None;
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
@@ -73,7 +73,7 @@ namespace Maui.Controls.Sample
 				_emittedDragOver = true;
 			}
 
-			endLocation.Text = $"{e.Position.X},{e.Position.Y}";
+			endLocation.Text = $"{(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.X}";	
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)
@@ -81,7 +81,7 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
