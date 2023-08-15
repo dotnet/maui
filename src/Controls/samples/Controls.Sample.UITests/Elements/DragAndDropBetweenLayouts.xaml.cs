@@ -37,7 +37,9 @@ namespace Maui.Controls.Sample
 
 			AddEvent(nameof(OnDragStarting));
 
-			startLocation.Text = $"{(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.X}";
+			dragStartRelativeSelf.Text = $"Drag Start relative to self: {(int)e.GetPosition(label).Value.X},{(int)e.GetPosition(label).Value.Y}";
+			dragStartRelativeScreen.Text = $"Drag Start relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dragStartRelativeLabel.Text = $"Drag Start relative to this label: {(int)e.GetPosition(dragStartRelativeLabel).Value.X},{(int)e.GetPosition(dragStartRelativeLabel).Value.Y}";
 		}
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
@@ -73,7 +75,9 @@ namespace Maui.Controls.Sample
 				_emittedDragOver = true;
 			}
 
-			endLocation.Text = $"{(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.X}";	
+			dragRelativeDrop.Text = $"Drag relative to self: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
+			dragRelativeScreen.Text = $"Drag relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dragRelativeLabel.Text = $"Drag relative to receiving layout: {(int)e.GetPosition(dragRelativeLabel).Value.X},{(int)e.GetPosition(dragRelativeLabel).Value.Y}";
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)
