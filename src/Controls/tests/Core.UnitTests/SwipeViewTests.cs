@@ -55,6 +55,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void TestTemplatedContentBindingContextChangedEvent()
+		{
+			var content = new Label();
+			var swipeView = new SwipeView();
+
+			swipeView.ControlTemplate = new ControlTemplate(() => content);
+
+			bool passed = false;
+			content.BindingContextChanged += (sender, args) => passed = true;
+
+			swipeView.BindingContext = new object();
+
+			if (!passed)
+			{
+				throw new XunitException("The BindingContextChanged event was not fired.");
+			}
+		}
+
+		[Fact]
 		public void ClearRemovesLogicalChildren()
 		{
 			var swipeView = new SwipeView();
@@ -106,7 +125,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var swipeView = new SwipeView();
 
-			swipeView.LeftItems = new SwipeItems(new[] { new SwipeItem() }); 
+			swipeView.LeftItems = new SwipeItems(new[] { new SwipeItem() });
 
 			swipeView.BindingContext = new object();
 			Assert.Equal(swipeView.BindingContext, ((BindableObject)swipeView.LeftItems[0]).BindingContext);

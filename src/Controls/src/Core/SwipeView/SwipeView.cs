@@ -18,6 +18,9 @@ namespace Microsoft.Maui.Controls
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
 
+			// This just disables any of the legacy layout code from running
+			DisableLayout = true;
+
 			AddLogicalChild(RightItems);
 			AddLogicalChild(LeftItems);
 			AddLogicalChild(TopItems);
