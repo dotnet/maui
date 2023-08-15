@@ -349,6 +349,7 @@ namespace Maui.Controls.Sample
 			searchBar.TextChanged += (sender, args) => SearchBarOnTextChanged(sender, args, testCaseScreen);
 
 			var page = new NavigationPage(testCasesRoot);
+			CoreNavigationPage.InitNavigationPageStyling(page);
 
 			if (Microsoft.Maui.Devices.DeviceInfo.Platform == Microsoft.Maui.Devices.DevicePlatform.iOS ||
 			   Microsoft.Maui.Devices.DeviceInfo.Platform == Microsoft.Maui.Devices.DevicePlatform.Android)

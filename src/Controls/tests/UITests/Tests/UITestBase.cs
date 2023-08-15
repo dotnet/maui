@@ -146,19 +146,27 @@ namespace Microsoft.Maui.AppiumTests
 
 			// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 			// app itself and contains the time, which always changes
-			int topStatusBarHeight = _testDevice switch
+			int cropFromTop = _testDevice switch
 			{
 				TestDevice.Android => 60,
 				TestDevice.iOS => 90,
-				_ => -1,
+				_ => 0,
 			};
 
-			if (topStatusBarHeight != -1)
+			// For Android also crop the 3 button nav from the bottom, since it's not part of the
+			// app itself and the button color can vary (the buttons change clear briefly when tapped)
+			int cropFromBottom = _testDevice switch
+			{
+				TestDevice.Android => 125,
+				_ => 0,
+			};
+
+			if (cropFromTop > 0 || cropFromBottom > 0)
 			{
 				IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 				(int width, int height) = imageEditor.GetSize();
 
-				imageEditor.Crop(0, topStatusBarHeight, width, height - topStatusBarHeight);
+				imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
 
 				actualImage = imageEditor.GetUpdatedImage();
 			}
