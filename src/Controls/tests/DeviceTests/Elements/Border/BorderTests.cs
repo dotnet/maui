@@ -81,17 +81,17 @@ namespace Microsoft.Maui.DeviceTests
 			var innerXY = xy + (strokeThickness / 2);
 
 			// Verify that the color outside of the rounded corner is the parent's color (White)
-			points[0] = new Point(outerXY, outerXY);
+			points[0] = new Point(outerXY - 0.25, outerXY - 0.25);
 			colors[0] = Colors.White;
 
 			// Verify that the rounded corner stroke is where we expect it to be
-			points[1] = new Point(outerXY + 1, outerXY + 1);
+			points[1] = new Point(outerXY + 1.25, outerXY + 1.25);
 			colors[1] = stroke;
-			points[2] = new Point(innerXY - 1, innerXY - 1);
+			points[2] = new Point(innerXY - 1.25, innerXY - 1.25);
 			colors[2] = stroke;
 
 			// Verify that the background color starts where we'd expect it to start
-			points[3] = new Point(innerXY, innerXY);
+			points[3] = new Point(innerXY + 0.25, innerXY + 0.25);
 			colors[3] = border.BackgroundColor;
 
 			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
