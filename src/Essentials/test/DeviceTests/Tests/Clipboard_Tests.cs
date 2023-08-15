@@ -7,27 +7,33 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Clipboard")]
 	public class Clipboard_Tests
 	{
-		[UITheory]
+		[Theory]
 		[InlineData("text")]
 		[InlineData("some really long test text")]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public async Task Set_Clipboard_Values(string text)
+		public Task Set_Clipboard_Values(string text)
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Clipboard.SetTextAsync(text);
 				Assert.True(Clipboard.HasText);
+			});
 		}
 
-		[UITheory]
+		[Theory]
 		[InlineData("text")]
 		[InlineData("some really long test text")]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public async Task Get_Clipboard_Values(string text)
+		public Task Get_Clipboard_Values(string text)
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Clipboard.SetTextAsync(text);
 				var clipText = await Clipboard.GetTextAsync();
 
 				Assert.NotNull(clipText);
 				Assert.Equal(text, clipText);
+			});
 		}
 	}
 }

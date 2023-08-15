@@ -11,8 +11,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	[Category("Windows WindowMessageManager")]
 	public class Windows_WindowMessageManager_Tests : BaseWindowMessageManager_Tests
 	{
-		[UIFact]
-		public void NewWindowIsNotFound()
+		[Fact]
+		public Task NewWindowIsNotFound() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -21,10 +22,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				var allHandles = allManagers.Select(m => m.WindowHandle).ToArray();
 
 				Assert.DoesNotContain(handle, allHandles);
-			}
+			});
 
-		[UIFact]
-		public void RegisteredWindowIsFound()
+		[Fact]
+		public Task RegisteredWindowIsFound() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -38,10 +40,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				Assert.Contains(handle, allHandles);
 				Assert.Contains(manager, allManagers);
-			}
+			});
 
-		[UIFact]
-		public void RegisteredWindowIsNotAttached()
+		[Fact]
+		public Task RegisteredWindowIsNotAttached() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -53,10 +56,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				manager.Dispose();
 
 				Assert.False(isAttached);
-			}
+			});
 
-		[UIFact]
-		public void SubscribedWindowIsAttached()
+		[Fact]
+		public Task SubscribedWindowIsAttached() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -73,10 +77,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				static void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 				{
 				}
-			}
+			});
 
-		[UIFact]
-		public void UnsubscribedWindowIsNotAttached()
+		[Fact]
+		public Task UnsubscribedWindowIsNotAttached() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -94,10 +99,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				static void OnWindowMessage(object? sender, WindowMessageEventArgs e)
 				{
 				}
-			}
+			});
 
-		[UIFact]
-		public void DisposedManagerIsNotFound()
+		[Fact]
+		public Task DisposedManagerIsNotFound() =>
+			Utils.OnMainThread(() =>
 			{
 				var window = new UI.Xaml.Window();
 				var handle = window.GetWindowHandle();
@@ -111,10 +117,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 
 				Assert.DoesNotContain(handle, allHandles);
 				Assert.DoesNotContain(manager, allManagers);
-			}
+			});
 
-		[UIFact]
-		public async Task PostingMessagesReachesEvent()
+		[Fact]
+		public Task PostingMessagesReachesEvent() =>
+			Utils.OnMainThread(async () =>
 			{
 				var messages = new List<uint>();
 
@@ -133,10 +140,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			}
+			});
 
-		[UIFact]
-		public async Task PostingMessagesToDisposedManagerDoesNotReachEvent()
+		[Fact]
+		public Task PostingMessagesToDisposedManagerDoesNotReachEvent() =>
+			Utils.OnMainThread(async () =>
 			{
 				var messages = new List<uint>();
 
@@ -154,10 +162,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			}
+			});
 
-		[UIFact]
-		public async Task PostingMessagesToUnsubscribedManagerDoesNotReachEvent()
+		[Fact]
+		public Task PostingMessagesToUnsubscribedManagerDoesNotReachEvent() =>
+			Utils.OnMainThread(async () =>
 			{
 				var messages = new List<uint>();
 
@@ -177,10 +186,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			}
+			});
 
-		[UIFact]
-		public async Task PostingMessagesToMultipleSubscribedManagerReachesEvent()
+		[Fact]
+		public Task PostingMessagesToMultipleSubscribedManagerReachesEvent() =>
+			Utils.OnMainThread(async () =>
 			{
 				var messages = new List<uint>();
 
@@ -201,6 +211,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				{
 					messages.Add(e.MessageId);
 				}
-			}
+			});
 	}
 }

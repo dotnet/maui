@@ -9,21 +9,25 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("DeviceDisplay")]
 	public class DeviceDisplay_Tests
 	{
-		[UIFact]
-		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public void Screen_Metrics_Are_Not_Null()
+		[Fact]
+		public Task Screen_Metrics_Are_Not_Null()
 		{
+			return Utils.OnMainThread(() =>
+			{
 				var metrics = DeviceDisplay.MainDisplayInfo;
 
 				Assert.True(metrics.Width > 0);
 				Assert.True(metrics.Height > 0);
 				Assert.True(metrics.Density > 0);
+			});
 		}
 
-		[UIFact]
+		[Fact]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public void ScreenLock_Locks()
+		public Task ScreenLock_Locks()
 		{
+			return Utils.OnMainThread(() =>
+			{
 				Assert.False(DeviceDisplay.KeepScreenOn);
 
 				DeviceDisplay.KeepScreenOn = true;
@@ -31,22 +35,28 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				DeviceDisplay.KeepScreenOn = false;
 				Assert.False(DeviceDisplay.KeepScreenOn);
+			});
 		}
 
-		[UIFact]
+		[Fact]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public void ScreenLock_Unlocks_Without_Locking()
+		public Task ScreenLock_Unlocks_Without_Locking()
 		{
+			return Utils.OnMainThread(() =>
+			{
 				Assert.False(DeviceDisplay.KeepScreenOn);
 
 				DeviceDisplay.KeepScreenOn = false;
 				Assert.False(DeviceDisplay.KeepScreenOn);
+			});
 		}
 
-		[UIFact]
+		[Fact]
 		[Trait(Traits.UI, Traits.FeatureSupport.Supported)]
-		public void ScreenLock_Locks_Only_Once()
+		public Task ScreenLock_Locks_Only_Once()
 		{
+			return Utils.OnMainThread(() =>
+			{
 				Assert.False(DeviceDisplay.KeepScreenOn);
 
 				DeviceDisplay.KeepScreenOn = true;
@@ -56,6 +66,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				DeviceDisplay.KeepScreenOn = false;
 				Assert.False(DeviceDisplay.KeepScreenOn);
+			});
 		}
 	}
 }

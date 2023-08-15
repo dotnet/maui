@@ -10,18 +10,18 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Flashlight")]
 	public class Flashlight_Tests
 	{
-		[UITheory]
+		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
 #if __ANDROID__
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 #endif
 		[Trait(Traits.Hardware.Flash, Traits.FeatureSupport.Supported)]
-		public async Task Turn_On_Off(bool oldCameraApi)
+		public Task Turn_On_Off(bool oldCameraApi)
 		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasFlash)
-				return;
+				return Task.CompletedTask;
 
 #if __ANDROID__
 			(Flashlight.Default as FlashlightImplementation).AlwaysUseCameraApi = oldCameraApi;
@@ -29,8 +29,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Utils.Unused(oldCameraApi);
 #endif
 
+			return Utils.OnMainThread(async () =>
+			{
 				await Flashlight.TurnOnAsync();
 				await Flashlight.TurnOffAsync();
+			});
 		}
 	}
 }

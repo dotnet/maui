@@ -11,9 +11,11 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 	[Category("Windows DeviceDisplay")]
 	public class DeviceDisplay_Windows_Tests
 	{
-		[UIFact]
-		public void Screen_Metrics_Are_Valid_Before_Window_Activated()
+		[Fact]
+		public Task Screen_Metrics_Are_Valid_Before_Window_Activated()
 		{
+			return Utils.OnMainThread(() =>
+			{
 				var oldStateManager = WindowStateManager.Default;
 
 				TestWindowStateManagerImplementation testWindowStateManager = new();
@@ -30,6 +32,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests.Shared
 				Assert.True(metrics.Width > 0);
 				Assert.True(metrics.Height > 0);
 				Assert.True(metrics.Density > 0);
+			});
 		}
 
 		class TestWindowStateManagerImplementation : IWindowStateManager

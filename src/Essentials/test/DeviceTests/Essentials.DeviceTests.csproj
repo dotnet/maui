@@ -45,26 +45,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="DeviceRunners.VisualRunners.Maui" />
-    <PackageReference Include="DeviceRunners.VisualRunners.Xunit" />
-    <PackageReference Include="DeviceRunners.XHarness.Maui" />
-    <PackageReference Include="DeviceRunners.XHarness.Xunit" />
-    <PackageReference Include="DeviceRunners.UITesting.Maui" />
-    <PackageReference Include="DeviceRunners.UITesting.Xunit" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners\TestUtils.DeviceTests.Runners.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests.Runners.SourceGen\TestUtils.DeviceTests.Runners.SourceGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\Essentials\src\Essentials.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AndroidEnvironment Include="Platforms\Android\environment.txt" />
+  </ItemGroup>
+
   <!-- include/exclude the <platform> files -->
   <ItemGroup>
     <None Include="@(Compile)" />
+    <None Include="Traits.cs" />
+    <None Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup Condition="!$(TargetFramework.Contains('-android'))">
     <Compile Remove="**\*.Android.cs" />

@@ -11,31 +11,39 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Screenshot")]
 	public class Screenshot_Tests
 	{
-		[UIFact]
-		public async Task GetPngScreenshot()
+		[Fact]
+		public Task GetPngScreenshot()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Png);
 
 				Assert.True(png.Length > 0);
+			});
 		}
 
-		[UIFact]
-		public async Task GetJpegScreenshot()
+		[Fact]
+		public Task GetJpegScreenshot()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
 				var png = await mediaFile.OpenReadAsync(ScreenshotFormat.Jpeg);
 
 				Assert.True(png.Length > 0);
+			});
 		}
 
-		[UIFact]
-		public async Task CaptureStaticAsync()
+		[Fact]
+		public Task CaptureStaticAsync()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				IScreenshotResult mediaFile = await Screenshot.CaptureAsync();
@@ -45,11 +53,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				using (var stream = await mediaFile.OpenReadAsync())
 					Assert.True(stream.Length > 0);
+			});
 		}
 
-		[UIFact]
-		public async Task CaptureAsync()
+		[Fact]
+		public Task CaptureAsync()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				IScreenshotResult mediaFile = await Screenshot.Default.CaptureAsync();
@@ -59,13 +70,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				using (var stream = await mediaFile.OpenReadAsync())
 					Assert.True(stream.Length > 0);
+			});
 		}
 
 #if IOS || MACCATALYST
 
-		[UIFact]
-		public async Task CaptureWindowAsync()
+		[Fact]
+		public Task CaptureWindowAsync()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				var window = WindowStateManager.Default.GetCurrentUIWindow();
@@ -77,11 +91,14 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				using (var stream = await mediaFile.OpenReadAsync())
 					Assert.True(stream.Length > 0);
+			});
 		}
 
-		[UIFact]
-		public async Task CaptureViewAsync()
+		[Fact]
+		public Task CaptureViewAsync()
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				var window = WindowStateManager.Default.GetCurrentUIWindow();
@@ -94,13 +111,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				using (var stream = await mediaFile.OpenReadAsync())
 					Assert.True(stream.Length > 0);
+			});
 		}
 
-		[UITheory]
+		[Theory]
 		[InlineData(true)]
 		[InlineData(false)]
-		public async Task CaptureLayerAsync(bool skipChildren)
+		public Task CaptureLayerAsync(bool skipChildren)
 		{
+			return Utils.OnMainThread(async () =>
+			{
 				await Task.Delay(100);
 
 				var window = WindowStateManager.Default.GetCurrentUIWindow();
@@ -114,6 +134,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 				using (var stream = await mediaFile.OpenReadAsync())
 					Assert.True(stream.Length > 0);
+			});
 		}
 
 #endif
