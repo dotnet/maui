@@ -444,8 +444,9 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
+				var silent = (privateAttributes & SetValuePrivateFlags.Silent) != 0;
 				context.Attributes |= BindableContextAttributes.IsBeingSet;
-				SetValueActual(property, context, value, currentlyApplying, attributes, specificity);
+				SetValueActual(property, context, value, currentlyApplying, attributes, specificity, silent);
 
 				Queue<SetValueArgs> delayQueue = context.DelayedSetters;
 				if (delayQueue != null)
@@ -453,7 +454,7 @@ namespace Microsoft.Maui.Controls
 					while (delayQueue.Count > 0)
 					{
 						SetValueArgs s = delayQueue.Dequeue();
-						SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity);
+						SetValueActual(s.Property, s.Context, s.Value, s.CurrentlyApplying, s.Attributes, s.Specificity, silent);
 					}
 
 					context.DelayedSetters = null;
