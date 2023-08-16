@@ -101,6 +101,18 @@ namespace TestUtils.Appium.UITests
 
 		public string ElementTree => _driver?.PageSource ?? "";
 
+		public ApplicationState AppState
+		{
+			get
+			{
+				return IsWindows 
+					? GetWindowsAppState() 
+					: IsAndroid 
+						? GetUIAutomator2TestAppState() 
+						: GetXCUITestAppState();
+			}
+		}
+
 		public void ResetApp()
 		{
 			_driver?.ResetApp();
@@ -1160,6 +1172,62 @@ namespace TestUtils.Appium.UITests
 				var scrollAction = new TouchAction(_driver).Press(x, startY).MoveTo(x, endY).Release();
 				scrollAction.Perform();
 			}
+		}
+
+
+		ApplicationState GetXCUITestAppState()
+		{
+			var state = _driver?.ExecuteScript(IsMac ? "macos: queryAppState" : "mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "bundleId", _appId },
+						});
+
+			// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+			return Convert.ToInt32(state) switch
+			{
+				1 => ApplicationState.Not_Running,
+				2 or
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
+		}
+
+		ApplicationState GetWindowsAppState()
+		{
+			try
+			{
+				// WinAppDriver doesn't support QueryAppState
+				_ = _driver?.CurrentWindowHandle;
+				return ApplicationState.Running;
+			}
+			catch (NoSuchWindowException)
+			{
+				return ApplicationState.Not_Running;
+			}
+		}
+
+		ApplicationState GetUIAutomator2TestAppState()
+		{
+			var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "appId", _appId },
+						});
+
+			// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
+			if (state == null)
+			{
+				return ApplicationState.Unknown;
+			}
+
+			return Convert.ToInt32(state) switch
+			{
+				0 => ApplicationState.Not_Installed,
+				1 => ApplicationState.Not_Running,
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
 		}
 	}
 }
