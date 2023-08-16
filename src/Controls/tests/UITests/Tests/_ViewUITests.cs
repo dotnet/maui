@@ -15,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureSetup()
 		{
 			int retries = 0;
-			while(true)
+			while (true)
 			{
 				try
 				{
