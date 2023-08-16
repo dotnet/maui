@@ -24,6 +24,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
+				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
@@ -44,6 +45,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(Label))]
+	[InlineData(typeof(Picker))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SwipeView))]
