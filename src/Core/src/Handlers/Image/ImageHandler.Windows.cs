@@ -20,7 +20,9 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <inheritdoc/>
-		public override bool NeedsContainer => VirtualView.Aspect == Aspect.AspectFill;
+		public override bool NeedsContainer =>
+			VirtualView?.Background != null ||
+			VirtualView?.Aspect == Aspect.AspectFill;
 
 		/// <inheritdoc/>
 		protected override void SetupContainer()
