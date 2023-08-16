@@ -9,37 +9,35 @@ namespace Microsoft.Maui.DeviceTests.Memory;
 
 public class MemoryTests : ControlsHandlerTestBase
 {
-	void SetupBuilder()
-	{
-		EnsureHandlerCreated(builder =>
-		{
-			builder.ConfigureMauiHandlers(handlers =>
+	protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+		base.ConfigureBuilder(mauiAppBuilder)
+			.ConfigureMauiHandlers(handlers =>
 			{
+				handlers.AddHandler<Grid, LayoutHandler>();
+
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
-				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
-				handlers.AddHandler<Label, LabelHandler>();
-				handlers.AddHandler<Picker, PickerHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
-				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<Label, LabelHandler>();
+				handlers.AddHandler<Picker, PickerHandler>();
+				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 			});
-		});
-	}
 
 	[Theory("Handler Does Not Leak")]
 	[InlineData(typeof(Border))]
-	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
+	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(DatePicker))]
-	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(Entry))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(Label))]
@@ -50,8 +48,6 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(TimePicker))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
-		SetupBuilder();
-
 #if ANDROID
 		// NOTE: skip certain controls on older Android devices
 		if (type == typeof (DatePicker) && !OperatingSystem.IsAndroidVersionAtLeast(30))

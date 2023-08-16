@@ -18,8 +18,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(24)]
 		public async Task InnerCornerRadiusInitializesCorrectly(int cornerRadius)
 		{
-			SetupBuilder();
-
 			var expected = Colors.Red;
 
 			var border = new Border()

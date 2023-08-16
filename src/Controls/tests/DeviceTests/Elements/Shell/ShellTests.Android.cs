@@ -69,7 +69,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "FlyoutItems Render When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutItemsRendererWhenFlyoutBehaviorStartsAsLocked()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() }, Title = "Flyout Item" };
@@ -91,7 +90,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell with Flyout Disabled Doesn't Render Flyout")]
 		public async Task ShellWithFlyoutDisabledDoesntRenderFlyout()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -112,7 +110,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "FooterTemplate Measures to Set Flyout Width When Flyout Locked")]
 		public async Task FooterTemplateMeasuresToSetFlyoutWidth()
 		{
-			SetupBuilder();
 			VerticalStackLayout footer = new VerticalStackLayout()
 			{
 				new Label(){ Text = "Hello there"}
@@ -137,7 +134,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Flyout Footer and Default Flyout Items Render")]
 		public async Task FlyoutFooterRenderersWithDefaultFlyoutItems()
 		{
-			SetupBuilder();
 			VerticalStackLayout footer = new VerticalStackLayout()
 			{
 				new Label() { Text = "Hello there"}
@@ -165,7 +161,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FlyoutItemsRenderWhenFlyoutHeaderIsSet()
 		{
-			SetupBuilder();
 			VerticalStackLayout header = new VerticalStackLayout()
 			{
 				new Label() { Text = "Hello there"}
@@ -193,7 +188,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FlyoutHeaderRendersCorrectSizeWithFlyoutContentSet()
 		{
-			SetupBuilder();
 			VerticalStackLayout header = new VerticalStackLayout()
 			{
 				new Label() { Text = "Flyout Header"}
@@ -227,8 +221,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SwappingOutAndroidContextDoesntCrash()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
@@ -261,8 +253,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangingBottomTabAttributesDoesntRecreateBottomTabs()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
@@ -305,8 +295,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task RemovingBottomTabDoesntRecreateMenu()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });
@@ -335,8 +323,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task AddingBottomTabDoesntRecreateMenu()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new Tab() { Items = { new ContentPage() }, Title = "Tab 1", Icon = "red.png" });

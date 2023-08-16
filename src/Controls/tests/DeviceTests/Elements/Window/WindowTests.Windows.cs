@@ -17,8 +17,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]
 		public async Task SwappingMainPageDoesntCrash()
 		{
-			SetupBuilder();
-
 			var mainPage = new ContentPage
 			{
 				BackgroundColor = Colors.Red
@@ -47,8 +45,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task AdornerLayerAdded()
 		{
-			SetupBuilder();
-
 			var mainPage = new NavigationPage(new ContentPage());
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
@@ -69,8 +65,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swapping Root Page Removes Previous Page from WindowRootViewContainer")]
 		public async Task SwappingRootPageRemovesPreviousPageFromWindowRootViewContainer()
 		{
-			SetupBuilder();
-
 			var mainPage = new Shell() { CurrentItem = new ContentPage() };
 			var swappedInMainPage = new NavigationPage(new ContentPage());
 
@@ -94,8 +88,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task HeaderCorrectlyOffsetFromAppTitleBar()
 		{
-			SetupBuilder();
-
 			var mainPage = new NavigationPage(new ContentPage()
 			{
 				Title = "title",
@@ -127,8 +119,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(WindowPageSwapTestCases))]
 		public async Task HeaderCorrectlyOffsetsWhenSwappingMainPage(WindowPageSwapTestCase swapOrder)
 		{
-			SetupBuilder();
-
 			var firstRootPage = swapOrder.GetNextPageType();
 			var window = new Window(firstRootPage);
 

@@ -31,8 +31,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell FlyoutIcon Initializes Correctly")]
 		public async Task ShellFlyoutIconInitializesCorrectly()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
@@ -69,8 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData("#000000")]
 		public async Task ShellFlyoutBackgroundInitializesCorrectly(string colorHex)
 		{
-			SetupBuilder();
-
 			var expectedColor = Color.FromArgb(colorHex);
 
 			var shell = await CreateShellAsync((shell) =>
@@ -112,7 +108,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]
 		public async Task BackButtonEnabledAndDisabled()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -136,7 +131,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell with Single Content Page Has Panes Disabled")]
 		public async Task BasicShellHasPaneDisplayModeDisabled()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -161,7 +155,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell With Only Flyout Items")]
 		public async Task ShellWithOnlyFlyoutItems()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				var shellItem1 = new FlyoutItem();
@@ -193,7 +186,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell With Only Top Tabs")]
 		public async Task ShellWithOnlyTopTabs()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				var shellItem = new TabBar();
@@ -228,7 +220,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Flyout Locked Offset from AppTitleBar")]
 		public async Task FlyoutLockedOffsetFromAppTitleBar()
 		{
-			SetupBuilder();
 			var label = new Controls.StackLayout()
 			{
 				HeightRequest = 10
@@ -260,7 +251,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Flyout Locked Offsets Correctly from Content")]
 		public async Task FlyoutLockedOffsetsCorrectlyFromContent()
 		{
-			SetupBuilder();
 			var flyoutContent = new VerticalStackLayout()
 			{
 				HorizontalOptions = LayoutOptions.Fill
@@ -294,7 +284,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Content Offsets Correctly From App Title Bar")]
 		public async Task ContentOffsetsCorrectlyFromAppTitleBar()
 		{
-			SetupBuilder();
 			var flyoutContent = new VerticalStackLayout()
 			{
 				HorizontalOptions = LayoutOptions.Fill
@@ -329,8 +318,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell Has Correct Item Count")]
 		public async Task ShellContentHasCorrectItemCount()
 		{
-			SetupBuilder();
-
 			var content1 = new ShellContent();
 			content1.Title = "Hello";
 			content1.Route = $"...";
@@ -361,7 +348,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Single Shell Section with Multiple Children")]
 		public async Task SingleShellSectionWithMultipleChildren()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 
@@ -408,7 +394,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Single Tab Bar with Multiple Children")]
 		public async Task SingleTabBarWithMultipleChildren()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 
@@ -458,7 +443,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Selected Item On ShellView Correct With Implict Flyout Item")]
 		public async Task SelectedItemOnShellViewCorrectWithImplictFlyoutItem()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 			var page3 = new ContentPage();
@@ -515,8 +499,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell Toolbar With Only MenuBarItems Is Visible")]
 		public async Task ShellToolbarWithOnlyMenuBarItemsIsVisible()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync((shell) =>
 			{
 				var contentPage = new ContentPage();
@@ -539,8 +521,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell Toolbar With Only ToolbarItems Is Visible")]
 		public async Task ShellToolbarWithOnlyToolbarItemsIsVisible()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync((shell) =>
 			{
 				var contentPage = new ContentPage();
@@ -561,8 +541,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task EmptyShellHasNoTopMargin()
 		{
-			SetupBuilder();
-
 			var mainPage = new ContentPage();
 			var shell = new Shell() { CurrentItem = mainPage };
 
@@ -621,8 +599,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Shell Toolbar not visible when only back button is present")]
 		public async Task ShellToolbarNotVisibleWhenOnlyBackButtonIsPresent()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.CurrentItem = new ContentPage();
@@ -638,8 +614,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SelectingTabUpdatesSelectedFlyoutItem()
 		{
-			SetupBuilder();
-
 			var flyoutItem = new FlyoutItem()
 			{
 				FlyoutDisplayOptions = FlyoutDisplayOptions.AsMultipleItems,

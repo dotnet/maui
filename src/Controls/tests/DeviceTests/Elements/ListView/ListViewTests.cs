@@ -113,7 +113,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task EntryCellBindingCorrectlyUpdates()
 		{
-			SetupBuilder();
 			var vm = new EntryCellBindingCorrectlyUpdatesVM();
 			var data = new[]
 			{

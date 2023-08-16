@@ -16,7 +16,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(SearchBar))]
 		public async Task FocusedTextInputAddsResignFirstResponderGesture(Type controlType)
 		{
-			SetupBuilder();
 			var layout = new VerticalStackLayout();
 			var view = (View)Activator.CreateInstance(controlType);
 			layout.Children.Add(view);
@@ -45,7 +44,6 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(typeof(SearchBar))]
 		public async Task RemovingControlFromWindowRemovesGesture(Type controlType)
 		{
-			SetupBuilder();
 			var layout = new VerticalStackLayout();
 			var view = (View)Activator.CreateInstance(controlType);
 

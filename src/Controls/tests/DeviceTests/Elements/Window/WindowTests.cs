@@ -33,11 +33,9 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.SetupShellHandlers();
 
@@ -56,15 +54,12 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Editor, EditorHandler>();
 					handlers.AddHandler<SearchBar, SearchBarHandler>();
 				});
-			});
-		}
 
 #if !IOS
 		[Theory]
 		[ClassData(typeof(ChangingToNewMauiContextDoesntCrashTestCases))]
 		public async Task ChangingToNewMauiContextDoesntCrash(bool useAppMainPage, Type rootPageType)
 		{
-			SetupBuilder();
 			IWindow window;
 			var rootPage = (Page)Activator.CreateInstance(rootPageType);
 
@@ -118,8 +113,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(WindowPageSwapTestCases))]
 		public async Task MainPageSwapTests(WindowPageSwapTestCase swapOrder)
 		{
-			SetupBuilder();
-
 			var firstRootPage = swapOrder.GetNextPageType();
 			var window = new Window(firstRootPage);
 
@@ -171,7 +164,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Items Update when swapping out Main Page on Handler")]
 		public async Task ToolbarItemsUpdateWhenSwappingOutMainPageOnHandler()
 		{
-			SetupBuilder();
 			var toolbarItem = new ToolbarItem() { Text = "Toolbar Item 1" };
 			var firstPage = new ContentPage();
 

@@ -23,8 +23,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title")]
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
-			SetupBuilder();
-
 			var titleColor = Color.FromArgb("#FFFF0000");
 			var foregroundColor = Color.FromArgb("#FF00FF00");
 			await RunShellTabBarTests(shell =>
@@ -48,8 +46,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public async Task ShellTabBarTitleColorInitializesCorrectly(string colorHex)
 		{
-			SetupBuilder();
-
 			var expectedColor = Color.FromArgb(colorHex);
 			await RunShellTabBarTests(shell => Shell.SetTabBarTitleColor(shell, expectedColor),
 				async (shell) =>
@@ -89,8 +85,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		async Task RunShellTabBarTests(Action<Shell> setup, Func<Shell, Task> runTest)
 		{
-			SetupBuilder();
-
 			var selectedContent = new ShellContent()
 			{
 				Route = "Tab1",

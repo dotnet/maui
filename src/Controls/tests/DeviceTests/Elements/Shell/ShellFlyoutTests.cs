@@ -302,9 +302,9 @@ namespace Microsoft.Maui.DeviceTests
 			return Thickness.Zero;
 #endif
 		}
+
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				action(shell);

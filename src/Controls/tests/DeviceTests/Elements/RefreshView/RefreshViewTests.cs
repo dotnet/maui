@@ -10,16 +10,10 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.RefreshView)]
 	public partial class RefreshViewTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<RefreshView, RefreshViewHandler>();
-				});
-			});
-		}
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<RefreshView, RefreshViewHandler>());
 	}
 }
 

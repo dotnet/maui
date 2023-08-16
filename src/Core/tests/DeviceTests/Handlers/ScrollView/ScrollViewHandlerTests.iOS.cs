@@ -18,7 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ContentInitializesCorrectly()
 		{
-			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<EntryStub, EntryHandler>());
 
 			bool result = await InvokeOnMainThreadAsync(() =>
 			{
@@ -55,7 +57,9 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ScrollViewContentSizeSet()
 		{
-			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<EntryStub, EntryHandler>(); }); });
+			EnsureHandlerCreated(builder =>
+				builder.ConfigureMauiHandlers(handlers =>
+					handlers.AddHandler<EntryStub, EntryHandler>());
 
 			var scrollView = new ScrollViewStub();
 			var entry = new EntryStub() { Text = "In a ScrollView" };

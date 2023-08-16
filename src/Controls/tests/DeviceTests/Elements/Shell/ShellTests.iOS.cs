@@ -27,7 +27,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Page Adjust When Top Tabs Are Present")]
 		public async Task PageAdjustsWhenTopTabsArePresent()
 		{
-			SetupBuilder();
 			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
 			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
 
@@ -76,7 +75,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swiping Away Modal Propagates to Shell")]
 		public async Task SwipingAwayModalPropagatesToShell()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -117,7 +115,6 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Routing.RegisterRoute(nameof(SwipingAwayModalRemovesEntireNavigationPage), typeof(ModalShellPage));
 
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -158,7 +155,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Clicking BackButton Fires Correct Navigation Events")]
 		public async Task ShellWithFlyoutDisabledDoesntRenderFlyout()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -205,7 +201,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Cancel BackButton Navigation")]
 		public async Task CancelBackButtonNavigation()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new ContentPage());
@@ -253,8 +248,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TitleView renders correctly")]
 		public async Task TitleViewRendersCorrectly()
 		{
-			SetupBuilder();
-
 			var expected = Colors.Red;
 
 			var shellTitleView = new VerticalStackLayout { BackgroundColor = expected };
@@ -338,7 +331,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Text Has Correct Default")]
 		public async Task BackButtonTextHasCorrectDefault()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
@@ -358,7 +350,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Behavior Text")]
 		public async Task BackButtonBehaviorText()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage() { Title = "Page 1" };

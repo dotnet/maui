@@ -67,8 +67,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact("Items Do Not Leak")]
 		public async Task ItemsDoNotLeak()
 		{
-			SetupBuilder();
-
 			WeakReference viewReference = null;
 			WeakReference platformViewReference = null;
 			WeakReference handlerReference = null;

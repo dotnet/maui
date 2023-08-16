@@ -31,11 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 	[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
+		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder) =>
+			base.ConfigureBuilder(mauiAppBuilder)
+				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.SetupShellHandlers();
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
@@ -44,14 +42,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
 				});
-			});
-		}
 
 		[Fact]
 		public async Task PageLayoutDoesNotExceedWindowBounds()
 		{
-			SetupBuilder();
-
 			var button = new Button()
 			{
 				Text = "Test me"
@@ -85,8 +79,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task SearchHandlerRendersCorrectly()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
@@ -110,8 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task FlyoutWithAsMultipleItemsRendersWithoutCrashing()
 		{
-			SetupBuilder();
-
 			Shell shell = await CreateShellAsync(shell =>
 			{
 				shell.Items.Add(new FlyoutItem()
@@ -158,7 +148,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
 		public async Task AppearingFiresBeforeNavigatedTo()
 		{
-			SetupBuilder();
 			var contentPage = new ContentPage();
 			int contentPageAppearingFired = 0;
 			int navigatedToFired = 0;
@@ -219,7 +208,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Navigating During Navigated Doesnt ReFire Appearing")]
 		public async Task NavigatingDuringNavigatedDoesntReFireAppearing()
 		{
-			SetupBuilder();
 			var contentPage = new ContentPage();
 			var secondContentPage = new ContentPage();
 			int contentPageAppearingFired = 0;
@@ -282,7 +270,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Swap Shell Root Page for NavigationPage")]
 		public async Task SwapShellRootPageForNavigationPage()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage();
@@ -302,7 +289,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "PopToRootAsync correctly navigates to root page")]
 		public async Task PopToRootAsyncCorrectlyNavigationsBackToRootPage()
 		{
-			SetupBuilder();
 			var rootPage = new ContentPage();
 			var shell = await CreateShellAsync(shell =>
 			{
@@ -323,7 +309,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "FlyoutContent Renderers When FlyoutBehavior Starts As Locked")]
 		public async Task FlyoutContentRenderersWhenFlyoutBehaviorStartsAsLocked()
 		{
-			SetupBuilder();
 			var flyoutContent = new VerticalStackLayout() { Children = { new Label() { Text = "Rendered" } } };
 			var shell = await CreateShellAsync(shell =>
 			{
@@ -346,7 +331,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Flyout Starts as Open correctly")]
 		public async Task FlyoutIsPresented()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new FlyoutItem() { Items = { new ContentPage() } };
@@ -365,7 +349,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Back Button Visibility Changes with push/pop")]
 		public async Task BackButtonVisibilityChangesWithPushPop()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage();
@@ -385,7 +368,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Pushing the Same Page Disconnects Previous Toolbar Items")]
 		public async Task PushingTheSamePageUpdatesToolbar()
 		{
-			SetupBuilder();
 			bool canExecute = false;
 			var command = new Command(() => { }, () => canExecute);
 			var pushedPage = new ContentPage()
@@ -417,8 +399,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Set Has Back Button")]
 		public async Task SetHasBackButton()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage();
@@ -446,8 +426,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Correctly Adjust to Making Currently Visible Shell Page Invisible")]
 		public async Task CorrectlyAdjustToMakingCurrentlyVisibleShellPageInvisible()
 		{
-			SetupBuilder();
-
 			var page1 = new ContentPage()
 				{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
 			var page2 = new ContentPage()
@@ -486,8 +464,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Empty Shell")]
 		public async Task DetailsViewUpdates()
 		{
-			SetupBuilder();
-
 			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
 			{
 				return new Shell()
@@ -507,8 +483,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TitleView Updates to Currently Visible Page")]
 		public async Task TitleViewUpdateToCurrentlyVisiblePage()
 		{
-			SetupBuilder();
-
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 			var page3 = new ContentPage();
@@ -568,8 +542,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "TitleView Set On Shell Works After Navigation")]
 		public async Task TitleViewSetOnShellWorksAfterNavigation()
 		{
-			SetupBuilder();
-
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 			var page3 = new ContentPage();
@@ -635,8 +607,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Handlers not recreated when changing tabs")]
 		public async Task HandlersNotRecreatedWhenChangingTabs()
 		{
-			SetupBuilder();
-
 			var page1 = new ContentPage();
 			var page2 = new ContentPage();
 
@@ -672,8 +642,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Navigation Routes Correctly After Switching Flyout Items")]
 		public async Task NavigatedFiresAfterSwitchingFlyoutItems()
 		{
-			SetupBuilder();
-
 			var shellContent1 = new ShellContent() { Content = new ContentPage() };
 			var shellContent2 = new ShellContent() { Content = new ContentPage() };
 
@@ -711,8 +679,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public async Task ChangingToNewMauiContextDoesntCrash()
 		{
-			SetupBuilder();
-
 			var shell = new Shell();
 			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem1", Items = { new ContentPage() }, Title = "Flyout Item" });
 			shell.Items.Add(new FlyoutItem() { Route = "FlyoutItem2", Items = { new ContentPage() }, Title = "Flyout Item" });
@@ -746,7 +712,6 @@ namespace Microsoft.Maui.DeviceTests
 		[ClassData(typeof(ShellBasicNavigationTestCases))]
 		public async Task BasicShellNavigationStructurePermutations(ShellItem[] shellItems)
 		{
-			SetupBuilder();
 			var shell = await InvokeOnMainThreadAsync<Shell>(() =>
 			{
 				var value = new Shell();
@@ -768,8 +733,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Navigate to Root with BackButtonBehavior no Crash")]
 		public async Task NavigateToRootWithBackButtonBehaviorNoCrash()
 		{
-			SetupBuilder();
-
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage();
@@ -807,8 +770,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "LifeCycleEvents Fire When Navigating Top Tabs")]
 		public async Task LifeCycleEventsFireWhenNavigatingTopTabs()
 		{
-			SetupBuilder();
-
 			var page1 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 1", Background = SolidColorBrush.Purple } };
 			var page2 = new LifeCycleTrackingPage() { Content = new Label() { Padding = 40, Text = "Page 2", Background = SolidColorBrush.Green } };
 
@@ -846,7 +807,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Title")]
 		public async Task ToolbarTitle()
 		{
-			SetupBuilder();
 			var navPage = new Shell()
 			{
 				CurrentItem = new ContentPage()
@@ -866,7 +826,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Title View Updates")]
 		public async Task ToolbarTitleViewUpdates()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage()
 			{
 				Title = "Page 1"
@@ -899,7 +858,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Toolbar Title Updates")]
 		public async Task ToolbarTitleUpdates()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage()
 			{
 				Title = "Page 1"
@@ -929,7 +887,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Title View Measures")]
 		public async Task TitleViewMeasures()
 		{
-			SetupBuilder();
 			var page1 = new ContentPage()
 			{
 				Title = "Page 1"
@@ -967,7 +924,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Pages Do Not Leak")]
 		public async Task PagesDoNotLeak()
 		{
-			SetupBuilder();
 			var shell = await CreateShellAsync(shell =>
 			{
 				shell.CurrentItem = new ContentPage() { Title = "Page 1" };
@@ -1004,7 +960,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Can Reuse Pages")]
 		public async Task CanReusePages()
 		{
-			SetupBuilder();
 			var rootPage = new ContentPage();
 			var shell = await CreateShellAsync(shell =>
 			{
@@ -1030,7 +985,6 @@ namespace Microsoft.Maui.DeviceTests
 			ShellItem homeItem = null;
 			int itemCount = 3;
 
-			SetupBuilder();
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.FlyoutBehavior = FlyoutBehavior.Locked;
@@ -1088,7 +1042,6 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "Can Clear ShellContent")]
 		public async Task CanClearShellContent()
 		{
-			SetupBuilder();
 			var page = new ContentPage();
 			var shell = await CreateShellAsync(shell =>
 			{
