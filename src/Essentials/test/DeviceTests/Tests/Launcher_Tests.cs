@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Launcher")]
 	public class Launcher_Tests
 	{
-		[Theory]
+		[UITheory]
 		[InlineData("http://www.example.com")]
 		[InlineData("http://example.com/?query=blah")]
 		[InlineData("https://example.com/?query=blah")]
@@ -38,9 +38,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #endif
 			)]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
-		public Task Open(string uri)
+		public async Task Open(string uri)
 		{
-			return Utils.OnMainThread(() => Launcher.OpenAsync(uri));
+			await Launcher.OpenAsync(uri);
 		}
 
 		[Theory]

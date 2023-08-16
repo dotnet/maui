@@ -12,19 +12,17 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Email")]
 	public class Email_Tests
 	{
-		[Fact]
+		[UIFact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Compose_Shows_New_Window()
 		{
-			return Utils.OnMainThread(() => Email.ComposeAsync());
+			return Email.ComposeAsync();
 		}
 
-		[Fact]
+		[UIFact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Compose_With_Message_Shows_New_Window()
 		{
-			return Utils.OnMainThread(() =>
-			{
 				var email = new EmailMessage
 				{
 					Subject = "Hello World!",
@@ -33,15 +31,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				};
 
 				return Email.ComposeAsync(email);
-			});
 		}
 
-		[Fact]
+		[UIFact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Compose_With_Message_Shows_New_Window_BlankCC()
 		{
-			return Utils.OnMainThread(() =>
-			{
 				var email = new EmailMessage
 				{
 					Subject = "Hello World!",
@@ -52,10 +47,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				};
 
 				return Email.ComposeAsync(email);
-			});
 		}
 
-		[Fact]
+		[UIFact]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Email_Attachments_are_Sent()
 		{
@@ -63,8 +57,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			var file = Path.Combine(FileSystem.AppDataDirectory, "EmailTest.txt");
 			File.WriteAllText(file, "Attachment contents goes here...");
 
-			return Utils.OnMainThread(() =>
-			{
 				var email = new EmailMessage
 				{
 					Subject = "Hello World!",
@@ -76,7 +68,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				};
 
 				return Email.ComposeAsync(email);
-			});
 		}
 	}
 }
