@@ -8,6 +8,7 @@ namespace TestUtils.Appium.UITests
 		void ActivateApp();
 		void CloseApp();
 		string ElementTree { get; }
+		ApplicationState AppState { get; }
 		bool WaitForTextToBePresentInElement(string automationId, string text);
 		public byte[] Screenshot();
 	}
