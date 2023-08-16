@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder =>
 				builder.ConfigureMauiHandlers(handlers =>
-					handlers.AddHandler<EntryStub, EntryHandler>());
+					handlers.AddHandler<EntryStub, EntryHandler>()));
 
 			bool result = await InvokeOnMainThreadAsync(() =>
 			{
