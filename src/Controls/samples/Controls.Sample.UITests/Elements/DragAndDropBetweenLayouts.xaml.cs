@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			_emittedDragOver = false;
-			var label = sender as Label;
+			var label = (Label)(sender as Element).Parent;
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
 			e.Data.Properties.Add("Source", sl);
@@ -60,7 +60,7 @@ namespace Maui.Controls.Sample
 				return;
 
 			//e.AcceptedOperation = DataPackageOperation.None;
-			var sl = sender as StackLayout;
+			var sl = (StackLayout)(sender as Element).Parent;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = sender as StackLayout;
+			var sl = (StackLayout)(sender as Element).Parent;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;

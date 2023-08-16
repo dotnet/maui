@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -35,13 +36,12 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
-			var view = (View)sender;
+			var boxView = (View)(sender as Element).Parent;
 			DragStartingTitle.IsVisible = true;
-			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(boxView).Value.X}, Y:{(int)e.GetPosition(boxView).Value.Y}";
 			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
 			DragStartingRelativePositionLabel.Text = $"- This label X:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.Y}";
 
-			var boxView = sender as BoxView;
 			var sl = boxView.Parent as StackLayout;
 			e.Data.Properties.Add("Color", boxView.Background);
 			e.Data.Properties.Add("Source", sl);
@@ -65,7 +65,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragOver(object sender, DragEventArgs e)
 		{
-			var view = (View)sender;
+			var view = (View)(sender as Element).Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -87,17 +87,16 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragLeave(object sender, DragEventArgs e)
 		{
-			var view = (View)sender;
+			var sl = (StackLayout)(sender as Element).Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
 			DragTitle.IsVisible = true;
-			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
 			DragScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
 			DragRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
-			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;

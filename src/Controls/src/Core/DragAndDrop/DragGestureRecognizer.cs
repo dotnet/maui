@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls
 			var args = new DragStartingEventArgs(getPosition);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
-			DragStarting?.Invoke(element, args);
+			DragStarting?.Invoke(this, args);
 
 			if (!args.Handled)
 				args.Data.PropertiesInternal.Add("DragSource", element);

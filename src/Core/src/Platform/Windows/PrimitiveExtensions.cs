@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Platform
 		/// Creates a <see cref="Point"/> from a <see cref="WPoint"/>.
 		/// </summary>
 		/// <param name="point">The point whose data will be used.</param>
-		/// <returns>A point object compatible with the rest of MAUI.</returns>
+		/// <returns>A point object compatible with the rest of .NET MAUI.</returns>
 		public static Point ToPoint(this WPoint point) =>
 			new Point(point.X, point.Y);
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 		/// Creates a <see cref="Thickness"/> from a <see cref="WThickness"/>.
 		/// </summary>
 		/// <param name="thickness">The thickness whose data will be used.</param>
-		/// <returns>A thickness object compatible with the rest of MAUI.</returns>
+		/// <returns>A thickness object compatible with the rest of .NET MAUI.</returns>
 		public static Thickness ToThickness(this WThickness thickness) =>
 			new Thickness(
 				thickness.Left,

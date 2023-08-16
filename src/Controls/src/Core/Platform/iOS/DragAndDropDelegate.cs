@@ -138,7 +138,10 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element, (relativeTo) => CalculatePosition(relativeTo, handler, session));
+				var viewHandlerRef = new WeakReference(handler);
+				var sessionRef = new WeakReference(session);
+
+				var args = rec.SendDragStarting(element, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef));
 
 				if (args.Cancel)
 					return;
@@ -203,7 +206,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HandleDragLeave(View element, DataPackage dataPackage, IUIDragSession session)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, _viewHandler, session));
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef));
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -220,7 +226,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HandleDragOver(View element, DataPackage dataPackage, IUIDragSession session)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, _viewHandler, session));
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef));
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -254,10 +263,14 @@ namespace Microsoft.Maui.Controls.Platform
 			}, (View)element);
 		}
 
-		static internal Point? CalculatePosition(IElement relativeTo, IPlatformViewHandler viewHandler, IUIDragSession session)
+		static internal Point? CalculatePosition(IElement relativeTo, WeakReference viewHandlerRef, WeakReference sessionRef)
 		{
-			var virtualView = viewHandler.VirtualView;
-			var platformView = viewHandler.PlatformView;
+
+			var viewHandler = viewHandlerRef.Target as IPlatformViewHandler;
+			var session = sessionRef.Target as IUIDragSession;
+
+			var virtualView = viewHandler?.VirtualView;
+			var platformView = viewHandler?.PlatformView;
 			var relativeView = relativeTo?.Handler?.PlatformView as UIView;
 
 			CGPoint dragLocation;
@@ -290,7 +303,6 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				dragLocation = session.LocationInView(relativeView);
 				return new Point(dragLocation.X, dragLocation.Y);
-
 			}
 
 			return null;

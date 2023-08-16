@@ -94,23 +94,13 @@ namespace Microsoft.Maui.Controls
 		public void SendDragOver(DragEventArgs args)
 		{
 			DragOverCommand?.Execute(DragOverCommandParameter);
-
-			// The parent should be the sender when possible so the DragEventArgs.GetPosition function works properly
-			if (Parent is VisualElement)
-				DragOver?.Invoke(Parent, args);
-			else
-				DragOver?.Invoke(this, args);
+			DragOver?.Invoke(this, args);
 		}
 
 		internal void SendDragLeave(DragEventArgs args)
 		{
 			DragLeaveCommand?.Execute(DragLeaveCommandParameter);
-
-			// The parent should be the sender when possible so the DragEventArgs.GetPosition function works properly
-			if (Parent is VisualElement)
-				DragLeave?.Invoke(Parent, args);
-			else
-				DragLeave?.Invoke(this, args);
+			DragLeave?.Invoke(this, args);
 		}
 
 		internal async Task SendDrop(DropEventArgs args)
