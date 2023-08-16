@@ -27,7 +27,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public async Task CarouselViewSetPosition()
 		{
-			if (UITestContext.TestConfig.TestDevice != TestDevice.Android)
+			if (Device != TestDevice.Android)
 			{
 				Assert.Ignore("For now, running this test only on Android.");
 			}
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void CarouselViewGoToNextCurrentItem()
 		{
-			if (UITestContext.TestConfig.TestDevice != TestDevice.Android)
+			if (Device != TestDevice.Android)
 			{
 				Assert.Ignore("For now, running this test only on Android.");
 			}
