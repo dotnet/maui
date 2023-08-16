@@ -159,3 +159,5 @@ Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Cont
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 Microsoft.Maui.Controls.PlatformPointerEventArgs.RoutedEventArgs.get -> Microsoft.UI.Xaml.RoutedEventArgs!
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml.FrameworkElement!
+*REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
+*REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void

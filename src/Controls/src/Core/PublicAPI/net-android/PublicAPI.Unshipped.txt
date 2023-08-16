@@ -154,3 +154,5 @@ Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Cont
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 Microsoft.Maui.Controls.PlatformPointerEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Android.Views.View!
+*REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
+*REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void
