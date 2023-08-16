@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: ScrollViewTests.DoesNotleak")]
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: ScrollViewTests.HandlerDoesNotleak")]
 		public event EventHandler? LayoutSubviewsChanged;
 
 		public override void LayoutSubviews()
