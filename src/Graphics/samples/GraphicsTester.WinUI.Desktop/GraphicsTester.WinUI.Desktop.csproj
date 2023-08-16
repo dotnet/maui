@@ -7,7 +7,6 @@
     <RootNamespace>GraphicsTester.WinUI.Desktop</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-    <UseRidGraph>true</UseRidGraph>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <WinUISDKReferences>false</WinUISDKReferences>
     <WindowsPackageType>MSIX</WindowsPackageType>

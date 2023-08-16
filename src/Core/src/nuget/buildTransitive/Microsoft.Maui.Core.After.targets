@@ -3,8 +3,6 @@
   <PropertyGroup>
     <!-- TODO: workaround https://github.com/xamarin/xamarin-android/issues/6809#issuecomment-1061115254 -->
     <MSBuildWarningsAsMessages Condition=" '$(TargetPlatformIdentifier)' == 'Android' ">$(MSBuildWarningsAsMessages);XA4218</MSBuildWarningsAsMessages>
-    <!-- Use full RID graph: https://github.com/dotnet/docs/issues/36527 -->
-    <UseRidGraph Condition=" '$(TargetPlatformIdentifier)' == 'Windows' ">true</UseRidGraph>
   </PropertyGroup>
 
   <!--
