@@ -59,7 +59,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			EnsureHandlerCreated(builder =>
 				builder.ConfigureMauiHandlers(handlers =>
-					handlers.AddHandler<EntryStub, EntryHandler>());
+					handlers.AddHandler<EntryStub, EntryHandler>()));
 
 			var scrollView = new ScrollViewStub();
 			var entry = new EntryStub() { Text = "In a ScrollView" };
