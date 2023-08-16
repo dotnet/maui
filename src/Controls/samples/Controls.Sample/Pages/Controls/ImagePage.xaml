@@ -49,6 +49,13 @@
                     </Image.Source>
                 </Image>
                 <Label
+                    Text="Stream Source"
+                    Style="{StaticResource Headline}"/>
+                <Image
+                    x:Name="StreamSourceImage"
+                    IsVisible="False"
+                    Background="Pink" />
+                <Label
                     Text="Opacity (0.5)"
                     Style="{StaticResource Headline}"/>
                 <Image 
