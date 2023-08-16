@@ -46,12 +46,12 @@ steps:
     # retryCountOnTaskFailure: 2
   
   - task: PublishTestResults@2
-    displayName: Publish the $(Agent.JobName) test results
+    displayName: Publish the $(System.PhaseName) test results
     condition: always()
     inputs:
       testResultsFormat: NUnit
       testResultsFiles: '**/TestResult*.xml'
-      testRunTitle: '$(Agent.JobName)'
+      testRunTitle: '$(System.PhaseName)'
       searchFolder: '$(TestResultsDirectory)'
       failTaskOnFailedTests: true
 
