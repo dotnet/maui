@@ -165,7 +165,32 @@ Task("Test")
 
 	var installAndTestScript = MakeAbsolute((FilePath)"windows-install-and-test.ps1").FullPath;
 
-	StartProcess("powershell", $"{installAndTestScript} -App '{MakeAbsolute(msixPath).FullPath}' -OutputDirectory '{testResultsRoot}'");
+	bool testsFailed = true;
+	try
+	{
+		var exitCode = StartProcess("powershell", $"{installAndTestScript} -App '{MakeAbsolute(msixPath).FullPath}' -OutputDirectory '{testResultsRoot}'");
+		testsFailed = exitCode != 0;
+		throw new Exception($"Test run exited with error code: {exitCode}.");
+	}
+	finally
+	{
+		if (testsFailed && IsCIBuild())
+		{
+			var failurePath = $"{TEST_RESULTS}/TestResultsFailures/{Guid.NewGuid()}";
+			EnsureDirectoryExists(failurePath);
+			// The tasks will retry the tests and overwrite the failed results each retry
+			// we want to retain the failed results for diagnostic purposes
+			CopyFiles($"{TEST_RESULTS}/*.*", failurePath);
+
+			// We don't want these to upload
+			MoveFile($"{failurePath}/TestResults.xml", $"{failurePath}/Results.xml");
+		}
+	}
+
+	var failed = XmlPeek($"{TEST_RESULTS}/TestResults.xml", "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+	if (!string.IsNullOrEmpty(failed)) {
+		throw new Exception($"At least {failed} test(s) failed.");
+	}
 });
 
 
