@@ -1,8 +1,5 @@
 ﻿#nullable enable
-using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -49,9 +46,17 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
-			handler.SourceLoader.UpdateImageSourceAsync();
+		public static async Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			await handler.SourceLoader.UpdateImageSourceAsync();
+		
+		void IImageSourcePartSetter.SetImageSource(UIImage? source)
+		{
+			PlatformView.Image = source;
 
+			if (VirtualView.Source is IStreamImageSource)
+				PlatformView.InvalidateMeasure(VirtualView);
+		}
+		
 		void OnSetImageSource(UIImage? obj) =>
 			PlatformView.Image = obj;
 
