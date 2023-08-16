@@ -299,7 +299,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<UIImage> AssertColorsAtPointsAsync(this UIView view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
 		{
-			var density = mauiContext.GetPlatformWindow()?.Screen?.Scale ?? 1.0;
+			var density = (double) (mauiContext.GetPlatformWindow()?.Screen?.Scale ?? UIScreen.MainScreen.Scale);
 			var bitmap = await view.ToBitmap(mauiContext);
 
 			for (int i = 0; i < points.Length; i++)
