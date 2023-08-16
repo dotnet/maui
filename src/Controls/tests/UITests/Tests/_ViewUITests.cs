@@ -1,4 +1,5 @@
-﻿using Maui.Controls.Sample;
+﻿using System;
+using Maui.Controls.Sample;
 using Microsoft.Maui.Appium;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
@@ -13,14 +14,42 @@ namespace Microsoft.Maui.AppiumTests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			NavigateToGallery();
+			int retries = 0;
+			while(true)
+			{
+				try
+				{
+					base.FixtureSetup();
+					NavigateToGallery();
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($"The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 		}
 
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			App.NavigateBack();
+			try
+			{
+				App.NavigateBack();
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($"The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
 
 		protected abstract void NavigateToGallery();
