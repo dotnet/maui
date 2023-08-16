@@ -20,17 +20,17 @@ using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 namespace Microsoft.Maui.Platform;
 
 /// <summary>
-/// Extension methods for interacting with a platforms Soft Input Pane
+/// Extension methods for interacting with a platform's Soft Input Pane
 /// </summary>
 public static partial class SoftInputExtensions
 {
 	/// <summary>
-	/// If a soft input device is currently showing, this will attempt to hide it.
+	/// If a soft input pane is currently showing, this will attempt to hide it.
 	/// </summary>
 	/// <param name="targetView"></param>
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
-	/// Returns <c>true</c> if the platform was able to hide the soft input device.</returns>
+	/// Returns <c>true</c> if the platform was able to hide the soft input pane.</returns>
 	public static Task<bool> HideSoftInputAsync(this ITextInput targetView, CancellationToken token)
 	{
 #if NETSTANDARD
@@ -47,12 +47,12 @@ public static partial class SoftInputExtensions
 	}
 
 	/// <summary>
-	/// If a soft input device is currently hiding, this will attempt to show it.
+	/// If a soft input pane is currently hiding, this will attempt to show it.
 	/// </summary>
 	/// <param name="targetView"></param>
 	/// <param name="token">Cancellation token</param>
 	/// <returns>
-	/// Returns <c>true</c> if the platform was able to show the soft input device.</returns>
+	/// Returns <c>true</c> if the platform was able to show the soft input pane.</returns>
 	public static Task<bool> ShowSoftInputAsync(this ITextInput targetView, CancellationToken token)
 	{
 #if NETSTANDARD
@@ -101,7 +101,7 @@ public static partial class SoftInputExtensions
 	/// </summary>
 	/// <param name="targetView"></param>
 	/// <returns>
-	/// Returns <c>true</c> if the soft input device is currently showing.</returns>
+	/// Returns <c>true</c> if the soft input pane is currently showing.</returns>
 	public static bool IsSoftInputShowing(this ITextInput targetView)
 	{
 		if (!targetView.TryGetPlatformView(out PlatformView? platformView, out _, out _))
