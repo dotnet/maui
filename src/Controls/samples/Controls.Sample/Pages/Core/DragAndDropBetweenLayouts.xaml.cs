@@ -65,17 +65,16 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragOver(object sender, DragEventArgs e)
 		{
-			var view = (View)(sender as Element).Parent;
+			var sl = (StackLayout)(sender as Element).Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
 			DragTitle.IsVisible = true;
-			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(view).Value.X}, Y:{(int)e.GetPosition(view).Value.Y}";
+			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
 			DragScreenPositionLabel.Text = $"- Screen X: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
 			DragRelativePositionLabel.Text = $"- This label X: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
 
-			var sl = sender as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;

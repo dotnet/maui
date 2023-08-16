@@ -75,9 +75,9 @@ namespace Maui.Controls.Sample
 				_emittedDragOver = true;
 			}
 
-			dragRelativeDrop.Text = $"Drag relative to self: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
+			dragRelativeDrop.Text = $"Drag relative to receiving layout: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
 			dragRelativeScreen.Text = $"Drag relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
-			dragRelativeLabel.Text = $"Drag relative to receiving layout: {(int)e.GetPosition(dragRelativeLabel).Value.X},{(int)e.GetPosition(dragRelativeLabel).Value.Y}";
+			dragRelativeLabel.Text = $"Drag relative to this label: {(int)e.GetPosition(dragRelativeLabel).Value.X},{(int)e.GetPosition(dragRelativeLabel).Value.Y}";
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)
