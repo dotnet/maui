@@ -82,7 +82,7 @@ namespace TestUtils.Appium.UITests
 					};
 					break;
 				}
-				catch(WebDriverException)
+				catch (WebDriverException)
 				{
 					// Default command timeout is 60 seconds when executing the NewSessionCommand
 					if (retries++ < 10)

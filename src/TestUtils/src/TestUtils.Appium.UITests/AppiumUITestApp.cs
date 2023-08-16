@@ -105,10 +105,10 @@ namespace TestUtils.Appium.UITests
 		{
 			get
 			{
-				return IsWindows 
-					? GetWindowsAppState() 
-					: IsAndroid 
-						? GetUIAutomator2TestAppState() 
+				return IsWindows
+					? GetWindowsAppState()
+					: IsAndroid
+						? GetUIAutomator2TestAppState()
 						: GetXCUITestAppState();
 			}
 		}
