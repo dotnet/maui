@@ -18,9 +18,9 @@ public class Issue3525 : _IssuesUITest
 	[Test]
 	public void SpanRegionClicking()
 	{
-		if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-			UITestContext.TestConfig.TestDevice == TestDevice.iOS ||
-			UITestContext.TestConfig.TestDevice == TestDevice.Windows)
+		if (Device == TestDevice.Mac ||
+			Device == TestDevice.iOS ||
+			Device == TestDevice.Windows)
 		{
 			Assert.Ignore("This test is failing on iOS/Mac Catalyst/Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
 		}
