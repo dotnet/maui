@@ -12,12 +12,17 @@ namespace Maui.Controls.Sample
 		{
 			AutomationId = "NavigationPageRoot";
 
-			BarBackgroundColor = Colors.Maroon;
-			BarTextColor = Colors.Yellow;
+			InitNavigationPageStyling(this);
 
 			On<iOS>().SetPrefersLargeTitles(true);
 
 			Navigation.PushAsync(new CoreRootPage(this));
+		}
+
+		public static void InitNavigationPageStyling(Microsoft.Maui.Controls.NavigationPage navigationPage)
+		{
+			navigationPage.BarBackgroundColor = Colors.Maroon;
+			navigationPage.BarTextColor = Colors.Yellow;
 		}
 	}
 }
