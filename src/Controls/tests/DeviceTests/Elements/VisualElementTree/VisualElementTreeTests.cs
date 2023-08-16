@@ -6,6 +6,10 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+using System.Collections.Generic;
+using ContentView = Microsoft.Maui.Controls.ContentView;
+using Microsoft.Maui.Controls.Handlers.Items;
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
@@ -37,6 +41,9 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<MenuBarItem, MenuBarItemHandler>();
 					handlers.AddHandler<MenuFlyoutItem, MenuFlyoutItemHandler>();
 					handlers.AddHandler<MenuFlyoutSubItem, MenuFlyoutSubItemHandler>();
+					handlers.AddHandler<NestingView, NestingViewHandler>();
+					handlers.AddHandler<ContentView, ContentViewHandler>();
+					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 #if WINDOWS
 					handlers.AddHandler<ShellItem, ShellItemHandler>();
 					handlers.AddHandler<ShellSection, ShellSectionHandler>();
@@ -84,6 +91,125 @@ namespace Microsoft.Maui.DeviceTests
 						locationOnScreen.Y + labelFrame.Height + 1
 					));
 
+			});
+		}
+
+		[Fact]
+		public async Task FindPlatformViewInsideLayout()
+		{
+			var button = new Button();
+			VerticalStackLayout views = new VerticalStackLayout()
+			{
+				new VerticalStackLayout()
+				{
+					button
+				}
+			};
+
+			await CreateHandlerAndAddToWindow(views, () =>
+			{
+				var platformView = button.ToPlatform();
+				var foundTreeElement = button.ToPlatform().GetVisualTreeElement();
+
+				Assert.Equal(button, foundTreeElement);
+			});
+		}
+
+		[Fact]
+		public async Task FindPlatformViewInsideScrollView()
+		{
+			var button = new Button();
+			ScrollView view = new ScrollView()
+			{
+				Content = button
+			};
+
+			await CreateHandlerAndAddToWindow(view, () =>
+			{
+				var platformView = button.ToPlatform();
+				var foundTreeElement = button.ToPlatform().GetVisualTreeElement();
+
+				Assert.Equal(button, foundTreeElement);
+			});
+		}
+
+		[Fact]
+		public async Task FindPlatformViewViaDefaultContainer()
+		{
+			var button = new Button();
+			NestingView view = new NestingView();
+			view.AddLogicalChild(button);
+
+			await CreateHandlerAndAddToWindow(view, () =>
+			{
+				var platformView = button.ToPlatform();
+				var foundTreeElement = button.ToPlatform().GetVisualTreeElement();
+
+				Assert.Equal(button, foundTreeElement);
+			});
+		}
+
+		[Fact]
+		public async Task FindVisualTreeElementWithArbitraryPlatformViewsAdded()
+		{
+			var button = new Button();
+			NestingView view = new NestingView();
+
+			await CreateHandlerAndAddToWindow<NestingViewHandler>(view, (handler) =>
+			{
+				handler
+					.PlatformView
+					.AddChild()
+					.AddChild()
+					.AddChild()
+					.AddChild(button, view);
+
+				var platformView = button.ToPlatform();
+				var foundTreeElement = button.ToPlatform().GetVisualTreeElement();
+
+				Assert.Equal(button, foundTreeElement);
+			});
+		}
+
+		[Theory]
+		[InlineData(false)]
+		[InlineData(true)]
+		public async Task FindFirstMauiParentElement(bool searchAncestors)
+		{
+			var viewToLocate = new NestingView();
+			NestingView view = new NestingView();
+
+			await CreateHandlerAndAddToWindow<NestingViewHandler>(view, (handler) =>
+			{
+				var nestedChild =
+					handler.PlatformView
+						.AddChild<NestingViewPlatformView>(viewToLocate, view)
+						.AddChild()
+						.AddChild()
+						.AddChild();
+
+				var foundTreeElement = nestedChild.GetVisualTreeElement(searchAncestors);
+
+				if (searchAncestors)
+					Assert.Equal(viewToLocate, foundTreeElement);
+				else
+					Assert.Null(foundTreeElement);
+			});
+		}
+
+		[Theory]
+		[ClassData(typeof(FindVisualTreeElementInsideTestCases))]
+		public async Task FindPlatformViewInsideView(FindVisualTreeElementInsideTestCase testCase)
+		{
+			VisualElement rootView;
+			VisualElement viewToLocate;
+
+			(rootView, viewToLocate) = testCase.CreateVisualElement();
+			await CreateHandlerAndAddToWindow(rootView, () =>
+			{
+				var platformView = viewToLocate.ToPlatform();
+				var foundTreeElement = platformView.GetVisualTreeElement();
+				Assert.Equal(viewToLocate, foundTreeElement);
 			});
 		}
 	}

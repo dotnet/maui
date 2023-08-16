@@ -94,13 +94,30 @@ namespace Microsoft.Maui.DeviceTests
 			return window;
 		}
 
+		protected Task CreateHandlerAndAddToWindow(IElement view, Func<Task> action)
+		{
+			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			{
+				return action();
+			}, MauiContext, null);
+		}
+
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+			where THandler : class, IElementHandler
+		{
+			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
+			{
+				return action(handler);
+			}, MauiContext, null);
+		}
+
 		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
 		{
 			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
 			{
 				action();
 				return Task.CompletedTask;
-			});
+			}, MauiContext, null);
 		}
 
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
@@ -110,7 +127,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				action(handler);
 				return Task.CompletedTask;
-			});
+			}, MauiContext, null);
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
@@ -171,6 +188,11 @@ namespace Microsoft.Maui.DeviceTests
 						}
 
 						await OnLoadedAsync(content as VisualElement);
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+							await OnLoadedAsync(veBeingTested);
 
 #if !WINDOWS
 						if (window is Window controlsWindow)

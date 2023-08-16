@@ -56,6 +56,8 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.UI.Xaml.Controls.AnimatedIcon! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this Microsoft.Maui.IAccelerator! accelerator) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
@@ -79,9 +81,6 @@ static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, M
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapAccelerator(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
 static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapAccelerator(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuFlyoutSubItem! view) -> void
-*REMOVED*Microsoft.Maui.IContentView.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.IContentView.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.ILayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
-*REMOVED*Microsoft.Maui.ILayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 *REMOVED*override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 *REMOVED*override Microsoft.Maui.Platform.LayoutPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
+static Microsoft.Maui.Handlers.DatePickerHandler.MapBackground(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void

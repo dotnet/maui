@@ -13,6 +13,10 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
+	/// <summary>
+	/// Represents the view handler for the abstract <see cref="ICheckBox"/> view and its platform-specific implementation.
+	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class CheckBoxHandler : ICheckBoxHandler
 	{
 		public static IPropertyMapper<ICheckBox, ICheckBoxHandler> Mapper = new PropertyMapper<ICheckBox, ICheckBoxHandler>(ViewHandler.ViewMapper)
@@ -28,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public CheckBoxHandler() : base(Mapper)
+		public CheckBoxHandler() : base(Mapper, CommandMapper)
 		{
 
 		}
@@ -46,5 +50,28 @@ namespace Microsoft.Maui.Handlers
 		ICheckBox ICheckBoxHandler.VirtualView => VirtualView;
 
 		PlatformView ICheckBoxHandler.PlatformView => PlatformView;
+
+#if MONOANDROID
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
+		public static partial void MapBackground(ICheckBoxHandler handler, ICheckBox check);
+#endif
+
+		/// <summary>
+		/// Maps the abstract <see cref="ICheckBox.IsChecked"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
+		public static partial void MapIsChecked(ICheckBoxHandler handler, ICheckBox check);
+
+		/// <summary>
+		/// Maps the abstract <see cref="ICheckBox.Foreground"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="check">The associated <see cref="ICheckBox"/> instance.</param>
+		public static partial void MapForeground(ICheckBoxHandler handler, ICheckBox check);
 	}
 }
