@@ -1,4 +1,4 @@
-﻿using CoreGraphics;
+using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
