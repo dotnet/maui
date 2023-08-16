@@ -27,11 +27,12 @@ namespace Microsoft.Maui.DeviceTests
 				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
 				var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
-				Shell.SetTabBarIsVisible(shell.CurrentPage, true);
-				Assert.True(navView.IsPaneVisible);
-
 				Shell.SetTabBarIsVisible(shell.CurrentPage, false);
 				Assert.False(navView.IsPaneVisible);
+
+				Shell.SetTabBarIsVisible(shell.CurrentPage, true);
+				Assert.True(navView.IsPaneVisible);
+				Assert.True(navView.PaneDisplayMode == UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top);
 
 				return Task.FromResult(true);
 			});
