@@ -284,10 +284,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void SetControllers()
 		{
 			var list = new List<UIViewController>();
-			var logicalChildren = ((IElementController)Element).LogicalChildren;
-			for (var i = 0; i < logicalChildren.Count; i++)
+			var pages = Tabbed.InternalChildren;
+			for (var i = 0; i < pages.Count; i++)
 			{
-				var child = logicalChildren[i];
+				var child = pages[i];
 				var v = child as Page;
 				if (v == null)
 					continue;

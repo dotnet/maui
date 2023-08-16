@@ -420,11 +420,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			// Validate all the parent hierarchies are correct
 			Assert.Equal(app, window.Parent);
 			Assert.Equal(window, window.Page.Parent);
-			Assert.Equal(1, app.Windows.Count);
+			Assert.Single(app.Windows);
 			Assert.Equal(app.LogicalChildrenInternal[0], window);
 			Assert.Equal(window.LogicalChildrenInternal[0], page);
 			Assert.Single(app.LogicalChildrenInternal);
 			Assert.Single(window.LogicalChildrenInternal);
+			Assert.Single(window.LogicalChildrenInternal.OfType<Page>());
 			Assert.Equal(app.NavigationProxy, window.NavigationProxy.Inner);
 			Assert.Equal(window.NavigationProxy, page.NavigationProxy.Inner);
 		}
@@ -433,70 +434,82 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void SettingCoreFrameOnlyFiresEventOnce()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, propertyChanges);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, changingProperties);
+			Assert.Equal(new[] { "X", "Y", "Width", "Height" }, changedProperties);
 		}
 
 		[Fact]
 		public void SettingSameCoreFrameDoesNothing()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			Assert.Equal(0, sizeChangedCount);
-			Assert.Empty(propertyChanges);
+			Assert.Empty(changingProperties);
+			Assert.Empty(changedProperties);
 		}
 
 		[Fact]
 		public void UpdatingSingleCoordinateOnlyFiresSinglePropertyAndFrameEvent()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 250, 300, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Y" }, propertyChanges);
+			Assert.Equal(new[] { "Y" }, changingProperties);
+			Assert.Equal(new[] { "Y" }, changedProperties);
 		}
 
 		[Fact]
 		public void UpdatingSingleBoundOnlyFiresSingleProperty()
 		{
 			var sizeChangedCount = 0;
-			var propertyChanges = new List<string>();
+			var changingProperties = new List<string>();
+			var changedProperties = new List<string>();
 
 			var window = new TestWindow();
 			((IWindow)window).FrameChanged(new Rect(100, 200, 300, 400));
 
 			window.SizeChanged += (sender, e) => sizeChangedCount++;
-			window.PropertyChanged += (sender, e) => propertyChanges.Add(e.PropertyName);
+			window.PropertyChanging += (sender, e) => changingProperties.Add(e.PropertyName);
+			window.PropertyChanged += (sender, e) => changedProperties.Add(e.PropertyName);
 
 			((IWindow)window).FrameChanged(new Rect(100, 200, 350, 400));
 
 			Assert.Equal(1, sizeChangedCount);
-			Assert.Equal(new[] { "Width" }, propertyChanges);
+			Assert.Equal(new[] { "Width" }, changingProperties);
+			Assert.Equal(new[] { "Width" }, changedProperties);
 		}
 
 		[Fact]

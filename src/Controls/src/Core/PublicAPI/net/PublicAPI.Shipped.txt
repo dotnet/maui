@@ -151,7 +151,6 @@
 ~Microsoft.Maui.Controls.BindableObject.SetBinding(Microsoft.Maui.Controls.BindableProperty targetProperty, Microsoft.Maui.Controls.BindingBase binding) -> void
 ~Microsoft.Maui.Controls.BindableObject.SetValue(Microsoft.Maui.Controls.BindableProperty property, object value) -> void
 ~Microsoft.Maui.Controls.BindableObject.SetValue(Microsoft.Maui.Controls.BindablePropertyKey propertyKey, object value) -> void
-~Microsoft.Maui.Controls.BindableObject.SetValueCore(Microsoft.Maui.Controls.BindableProperty property, object value, Microsoft.Maui.Controls.Internals.SetValueFlags attributes = Microsoft.Maui.Controls.Internals.SetValueFlags.None) -> void
 ~Microsoft.Maui.Controls.BindableProperty.DeclaringType.get -> System.Type
 ~Microsoft.Maui.Controls.BindableProperty.DefaultValue.get -> object
 ~Microsoft.Maui.Controls.BindableProperty.PropertyName.get -> string

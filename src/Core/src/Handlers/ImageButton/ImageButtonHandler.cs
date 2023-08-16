@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Handlers
 		public ImageSourcePartLoader SourceLoader =>
 			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
-		public ImageButtonHandler() : base(Mapper)
+		public ImageButtonHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

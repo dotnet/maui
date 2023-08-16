@@ -78,6 +78,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
+		// It calls CreateHandlerAndAddToWindow(), a valid test case.
 		[Fact(DisplayName = "ScrollView Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
@@ -98,19 +100,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			}
 
-			Assert.NotNull(viewReference);
-			Assert.NotNull(platformReference);
-			Assert.NotNull(handlerReference);
-
-			// Android requires an actual 2-second day
-			// iOS requires multiple GCs
-			await AssertionExtensions.Wait(() =>
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				return !viewReference.IsAlive && !handlerReference.IsAlive && !platformReference.IsAlive;
-			}, timeout: 3000);
-
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
 			Assert.False(viewReference.IsAlive, "View should not be alive!");
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
@@ -207,7 +197,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			if (!success)
 			{
-				Assert.False(true, message);
+				Assert.Fail(message);
 			}
 		}
 	}

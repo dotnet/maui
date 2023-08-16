@@ -40,6 +40,20 @@
                 <Editor 
                     Text="Text"/>
                 <Label
+                    Text="FontSize"
+                    Style="{StaticResource Headline}" />
+                <Editor
+                    FontSize="Large"
+                    Placeholder="FontSize (Large)"
+                    Text="FontSize (Large)"/>
+                <Label
+                    Text="CharacterSpacing"
+                    Style="{StaticResource Headline}" />
+                <Editor
+                    CharacterSpacing="4"
+                    Placeholder="CharacterSpacing (4)"
+                    Text="CharacterSpacing (4)"/>
+                <Label
                     Text="ClearButtonVisibility = Never"
                     Style="{StaticResource Headline}" />
                 <Label
