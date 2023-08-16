@@ -25,7 +25,20 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_runnerOptions = runnerOptions;
 			_options = options;
 			_resultsPath = TestResultsFile;
-			_logger = new();
+
+			var logFileName = $"test-output-{DateTime.Now:yyyyMMdd_hhmmss}.log";
+			if (!string.IsNullOrEmpty(_resultsPath))
+			{
+				var dir = Path.GetDirectoryName(_resultsPath);
+				if (!string.IsNullOrEmpty(dir))
+					_logger = new(Path.Combine(dir, logFileName));
+				else
+					_logger = new(logFileName);
+			}
+			else
+			{
+				_logger = new(logFileName);
+			}
 		}
 
 		protected override bool LogExcludedTests => true;
@@ -60,11 +73,19 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 		public async Task<string?> RunTestsAsync()
 		{
+			var dir = Path.GetDirectoryName(TestResultsFile);
+			if (!string.IsNullOrEmpty(dir))
+				Directory.CreateDirectory(dir);
+
 			TestsCompleted += OnTestsCompleted;
 
 			try
 			{
+				_logger.WriteLine("Starting tests...");
+
 				await RunAsync();
+
+				_logger.WriteLine("Tests completed.");
 			}
 			catch (System.Exception ex)
 			{
@@ -86,28 +107,44 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 					$"Failed: {results.FailedTests} " +
 					$"Ignored: {results.SkippedTests}";
 
-				_logger.WriteLine("test-execution-summary" + message);
-				_logger.WriteLine("return-code " + (results.FailedTests == 0 ? 0 : 1));
+				_logger.WriteLine("test-execution-summary => " + message);
+				_logger.WriteLine("return-code => " + (results.FailedTests == 0 ? 0 : 1));
 			}
 		}
 	}
 
 	public class TestLogger : System.IO.TextWriter
 	{
-		public TestLogger()
+		string? _logFile;
+
+		public TestLogger(string? logFile)
 		{
+			_logFile = logFile;
+
+			if (string.IsNullOrEmpty(_logFile))
+			{
+				var dir = Path.GetDirectoryName(_logFile);
+				if (!string.IsNullOrEmpty(dir))
+					Directory.CreateDirectory(dir);
+			}
 		}
 
 		public override void Write(char value)
 		{
 			Console.Write(value);
 			System.Diagnostics.Debug.Write(value);
+
+			if (!string.IsNullOrEmpty(_logFile))
+				File.AppendAllText(_logFile, value.ToString());
 		}
 
 		public override void WriteLine(string? value)
 		{
 			Console.WriteLine(value);
 			System.Diagnostics.Debug.WriteLine(value);
+			
+			if (!string.IsNullOrEmpty(_logFile))
+				File.AppendAllLines(_logFile, new[] { value?.ToString() ?? "" });
 		}
 
 		public override Encoding Encoding => Encoding.Default;

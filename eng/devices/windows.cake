@@ -13,8 +13,6 @@ const string dotnetVersion = "net7.0";
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? "");
 // Not used for Windows. TODO Use this for packaged vs unpackaged?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
-// Package ID of the WinUI Application
-var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_ID") ?? $"");
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
@@ -39,17 +37,7 @@ string certificateThumbprint = "";
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
 
-// Uninstall the deployed app
-var uninstallPS = new Action(() =>
-{
-	try {
-		StartProcess("powershell",
-			"$app = Get-AppxPackage -Name " + PACKAGEID + "; if ($app) { Remove-AppxPackage -Package $app.PackageFullName }");
-	} catch { }
-});
-
 Information("Project File: {0}", PROJECT);
-Information("Application ID: {0}", PACKAGEID);
 Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
@@ -131,27 +119,29 @@ Task("GenerateMsixCert")
 Task("Build")
 	.IsDependentOn("GenerateMsixCert")
 	.WithCriteria(!string.IsNullOrEmpty(PROJECT.FullPath))
-	.WithCriteria(!string.IsNullOrEmpty(PACKAGEID))
 	.Does(() =>
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-windows.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
+	var s = new DotNetPublishSettings();
 
-	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("DOTNET_PATH: {0}", dd);
+	if (localDotnet)
+	{
+		SetDotNetEnvironmentVariables(DOTNET_PATH);
 
-	var toolPath = $"{dd}/dotnet.exe";
+		var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
+		Information("DOTNET_PATH: {0}", dd);
 
-	Information("toolPath: {0}", toolPath);
+		var toolPath = $"{dd}/dotnet.exe";
+		s.ToolPath = toolPath;
+		Information("toolPath: {0}", toolPath);
+	}
 
 	Information("Building and publishing device test app");
 
 	// Build the app in publish mode
 	// Using the certificate thumbprint for the cert we just created
-	var s = new DotNetPublishSettings();
-	s.ToolPath = toolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
@@ -168,62 +158,14 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
-	CleanDirectories(TEST_RESULTS);
-
-	Information("Cleaned directories");
-
-	// Try to uninstall the app if it exists from before
-	uninstallPS();
-
-	Information("Uninstalled previously deployed app");
 	var projectDir = PROJECT.GetDirectory();
-	var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
 	var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
 
 	var testResultsRoot = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
-	var testResultsFile = $"{testResultsRoot}\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
 
-	Information($"Found MSIX, installing: {msixPath}");
-	Information($"Test Results File: {testResultsFile}");
+	var installAndTestScript = MakeAbsolute((FilePath)"windows-install-and-test.ps1").FullPath;
 
-	if (FileExists(testResultsFile))
-	{
-		DeleteFile(testResultsFile);
-	}
-
-	// Install dependencies
-	var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
-	foreach (var dep in dependencies) {
-		Information("Installing Dependency MSIX: {0}", dep);
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
-	}
-
-	// Install the DeviceTests app
-	StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
-
-	var startArgs = $"Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"{PACKAGEID}\").PackageFamilyName)!App -Args \"{testResultsFile} --xharness --output-directory='{testResultsRoot}'\"";
-
-	Information(startArgs);
-
-	// Start the DeviceTests app
-	StartProcess("powershell", startArgs);
-
-	var waited = 0;
-	while (!FileExists(testResultsFile)) {
-		System.Threading.Thread.Sleep(1000);
-		waited++;
-
-		Information($"Waiting {waited} second(s) for tests to finish...");
-		if (waited >= 120)
-			break;
-	}
-
-	if(!FileExists(testResultsFile))
-	{
-		throw new Exception($"Test results file not found after {waited} seconds, process might have crashed or not completed yet.");
-	}
-
-	Information($"Tests Finished");
+	StartProcess("powershell", $"{installAndTestScript} -App '{MakeAbsolute(msixPath).FullPath}' -OutputDirectory '{testResultsRoot}'");
 });
 
 
