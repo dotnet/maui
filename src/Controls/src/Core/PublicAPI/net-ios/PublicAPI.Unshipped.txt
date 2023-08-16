@@ -3,3 +3,5 @@
 override Microsoft.Maui.Controls.Platform.Compatibility.ShellPageRendererTracker.TitleViewContainer.LayoutSubviews() -> void
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 ~override Microsoft.Maui.Controls.Platform.Compatibility.ShellSectionRootRenderer.TraitCollectionDidChange(UIKit.UITraitCollection previousTraitCollection) -> void
+
+override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
