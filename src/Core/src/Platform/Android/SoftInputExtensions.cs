@@ -12,10 +12,8 @@ namespace Microsoft.Maui.Platform
 	{
 		internal static bool HideSoftInput(this AView inputView)
 		{
-			AView tokenView = inputView;
-
-			using var inputMethodManager = (InputMethodManager?)tokenView.Context?.GetSystemService(Context.InputMethodService);
-			var windowToken = tokenView.WindowToken;
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+			var windowToken = inputView.WindowToken;
 
 			if (windowToken is not null && inputMethodManager is not null)
 			{
