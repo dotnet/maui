@@ -263,6 +263,28 @@ namespace Microsoft.Maui.Controls.Platform
 			this.SetAutomationPropertiesAccessibilityView(_visualElement, defaultAccessibilityView);
 		}
 
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override WSize ArrangeOverride(WSize finalSize)
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			if (_renderer == null)
+			{
+				return base.ArrangeOverride(finalSize);
+			}
+
+			var width = finalSize.Width;
+			var height = finalSize.Height;
+
+			if (ItemHeight != default)
+				height = ItemHeight;
+
+			if (ItemWidth != default)
+				width = ItemWidth;
+
+			base.ArrangeOverride(new WSize(width, height));
+			return new WSize(width, height);
+		}
+
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
 			if (_renderer == null)
@@ -271,50 +293,34 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 
 			var frameworkElement = Content as FrameworkElement;
-			var formsElement = _renderer.VirtualView as VisualElement;
 			var margin = _renderer.VirtualView.Margin;
 
-			if (ItemHeight != default || ItemWidth != default)
-			{
-				formsElement.Layout(new Rect(0, 0, ItemWidth, ItemHeight));
-
-				var wsize = new WSize(ItemWidth, ItemHeight);
-
-				frameworkElement.Margin =
-					WinUIHelpers.CreateThickness(
-						margin.Left + ItemSpacing.Left,
-						margin.Top + ItemSpacing.Top,
-						margin.Right + ItemSpacing.Right,
-						margin.Bottom + ItemSpacing.Bottom);
-
-				if (CanMeasureContent(frameworkElement))
-					frameworkElement.Measure(wsize);
-
-				return base.MeasureOverride(wsize);
-			}
-			else
-			{
-				var (width, height) = formsElement.Measure(availableSize.Width, availableSize.Height,
-					MeasureFlags.IncludeMargins).Request;
-
-				width = Max(width, availableSize.Width);
-				height = Max(height, availableSize.Height);
-
-				formsElement.Layout(new Rect(0, 0, width, height));
-
-				var wsize = new WSize(width, height);
-
-				frameworkElement.Margin = WinUIHelpers.CreateThickness(
+			frameworkElement.Margin = WinUIHelpers.CreateThickness(
 					margin.Left,
 					margin.Top,
 					margin.Right,
 					margin.Bottom);
 
-				if (CanMeasureContent(frameworkElement))
-					frameworkElement.Measure(wsize);
+			var width = availableSize.Width;
+			var height = availableSize.Height;
 
-				return base.MeasureOverride(wsize);
-			}
+			if (ItemHeight != default)
+				height = ItemHeight;
+
+			if (ItemWidth != default)
+				width = ItemWidth;
+
+			var measuredSize = base.MeasureOverride(new WSize(width, height));
+			var measuredHeight = measuredSize.Height;
+			var measuredWidth = measuredSize.Width;
+
+			if (ItemHeight != default)
+				measuredHeight = Max(measuredHeight, ItemHeight);
+
+			if (ItemWidth != default)
+				measuredWidth = Max(measuredWidth, ItemWidth);
+
+			return new WSize(measuredWidth, measuredHeight);
 		}
 
 		double Max(double requested, double available)
