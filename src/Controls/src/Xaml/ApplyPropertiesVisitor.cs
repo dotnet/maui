@@ -583,17 +583,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					}
 				};
 			else
-				minforetriever = () =>
-				{
-					try
-					{
-						return property.DeclaringType.GetRuntimeProperty(property.PropertyName);
-					}
-					catch (AmbiguousMatchException e)
-					{
-						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", lineInfo, innerException: e);
-					}
-				};
+				minforetriever = () => property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName);
 			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
 			if (exception != null)
 				return false;
