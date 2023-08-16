@@ -1,5 +1,7 @@
 ﻿using System.Diagnostics;
 using Microsoft.Maui.Appium;
+using NUnit.Framework;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
@@ -60,14 +62,39 @@ namespace TestUtils.Appium.UITests
 			}
 
 			var driverUri = new Uri($"http://localhost:{Port}/wd/hub");
-			AppiumDriver driver = testConfig.TestDevice switch
+
+			AppiumDriver driver;
+			int retries = 0;
+
+			// It has been observed on iOS CI runs that the first launch can take some time (Unclear if simulator, runtime, or test framework is the cause)
+			// So we will try a few times before we give up
+			while (true)
 			{
-				TestDevice.Android => new AndroidDriver(driverUri, _appiumOptions),
-				TestDevice.iOS => new IOSDriver(driverUri, _appiumOptions),
-				TestDevice.Mac => new MacDriver(driverUri, _appiumOptions),
-				TestDevice.Windows => new WindowsDriver(driverUri, _appiumOptions),
-				_ => throw new InvalidOperationException("Unknown test device"),
-			};
+				try
+				{
+					driver = testConfig.TestDevice switch
+					{
+						TestDevice.Android => new AndroidDriver(driverUri, _appiumOptions),
+						TestDevice.iOS => new IOSDriver(driverUri, _appiumOptions),
+						TestDevice.Mac => new MacDriver(driverUri, _appiumOptions),
+						TestDevice.Windows => new WindowsDriver(driverUri, _appiumOptions),
+						_ => throw new InvalidOperationException("Unknown test device"),
+					};
+					break;
+				}
+				catch(WebDriverException)
+				{
+					// Default command timeout is 60 seconds when executing the NewSessionCommand
+					if (retries++ < 10)
+					{
+						TestContext.Error.WriteLine($"Retrying to create the driver, attempt #{retries}");
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 
 			var newContext = new UITestContext(new AppiumUITestApp(testConfig.AppId, driver), testConfig);
 			_contexts.Add(newContext);
