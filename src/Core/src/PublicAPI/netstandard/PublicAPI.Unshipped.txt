@@ -9,9 +9,8 @@ Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
-Microsoft.Maui.IMenuElement.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IAccelerator!>?
+Microsoft.Maui.IMenuElement.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
 Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
-Microsoft.Maui.IMenuElement.Accelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IAccelerator!>?
 Microsoft.Maui.Handlers.IImageSourcePartSetter
 Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(object? obj) -> void
 Microsoft.Maui.ICrossPlatformLayout
@@ -54,6 +53,6 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
-Microsoft.Maui.IAccelerator
-Microsoft.Maui.IAccelerator.Key.get -> string!
-Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Maui.IKeyboardAccelerator
+Microsoft.Maui.IKeyboardAccelerator.Key.get -> string!
+Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!

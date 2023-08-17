@@ -1,11 +1,10 @@
-﻿using System;
-using Foundation;
+﻿using Foundation;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal static class AcceleratorExtensions
+	internal static class KeyboardAcceleratorExtensions
 	{
 		internal const string MenuItemSelectedSelector = "MenuItemSelected:";
 

@@ -6,17 +6,17 @@ using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
 {
-	public class AcceleratorUnitTests : BaseTestFixture
+	public class KeyboardAcceleratorUnitTests : BaseTestFixture
 	{
 
 		[Fact]
-		public void AcceleratorThrowsOnEmptyString()
+		public void KeyboardAcceleratorThrowsOnEmptyString()
 		{
 			Assert.Throws<ArgumentNullException>(() => KeyboardAccelerator.FromString(""));
 		}
 
 		[Fact]
-		public void AcceleratorThrowsOnNull()
+		public void KeyboardAcceleratorThrowsOnNull()
 		{
 			Assert.Throws<ArgumentNullException>(() => KeyboardAccelerator.FromString(null));
 		}
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("ctrl+alt+A")]
 		[InlineData("cmd+alt+A")]
 		[InlineData("A")]
-		public void AcceleratorFromString(string shortCutKeyBinding)
+		public void KeyboardAcceleratorFromString(string shortCutKeyBinding)
 		{
 			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
@@ -41,16 +41,16 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData("B")]
 		[InlineData("1")]
 		[InlineData("2")]
-		public void AcceleratorFromOnlyLetter(string shortCutKeyBinding)
+		public void KeyboardAcceleratorFromOnlyLetter(string shortCutKeyBinding)
 		{
 			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
-			Assert.Single(accelerator.Keys);
-			Assert.Equal(accelerator.Keys.ElementAt(0), shortCutKeyBinding);
+			Assert.Single(accelerator.Key);
+			Assert.Equal(accelerator.Key, shortCutKeyBinding);
 		}
 
 		[Theory, MemberData(nameof(ShortcutTestData))]
-		public void AcceleratorFromLetterAndModifier(TestShortcut shortcut)
+		public void KeyboardAcceleratorFromLetterAndModifier(TestShortcut shortcut)
 		{
 			string modifier = shortcut.Modifier;
 			Assert.NotNull(modifier);
@@ -59,14 +59,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotNull(key);
 
 			var accelerator = KeyboardAccelerator.FromString(shortcut.ToString());
-			Assert.Single(accelerator.Keys);
+			Assert.Single(accelerator.Key);
 			Assert.Single(accelerator.Modifiers);
-			Assert.Equal(accelerator.Keys.ElementAt(0), shortcut.Key);
+			Assert.Equal(accelerator.Key, shortcut.Key);
 			Assert.Equal(accelerator.Modifiers.ElementAt(0), shortcut.Modifier);
 		}
 
 		[Fact]
-		public void AcceleratorFromLetterAnd2Modifier()
+		public void KeyboardAcceleratorFromLetterAnd2Modifier()
 		{
 			string modifier = "ctrl";
 			string modifier1Alt = "alt";
@@ -74,9 +74,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string shortCutKeyBinding = $"{modifier}+{modifier1Alt}+{key}";
 			var accelerator = KeyboardAccelerator.FromString(shortCutKeyBinding);
 
-			Assert.Single(accelerator.Keys);
+			Assert.Single(accelerator.Key);
 			Assert.Equal(2, accelerator.Modifiers.Count());
-			Assert.Equal(accelerator.Keys.ElementAt(0), key);
+			Assert.Equal(accelerator.Key, key);
 			Assert.Equal(accelerator.Modifiers.ElementAt(0), modifier);
 			Assert.Equal(accelerator.Modifiers.ElementAt(1), modifier1Alt);
 		}

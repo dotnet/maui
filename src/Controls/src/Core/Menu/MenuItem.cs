@@ -165,11 +165,7 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		[Obsolete]
-		IReadOnlyList<IAccelerator> IMenuElement.Accelerators =>
-			GetAccelerator(this) is Accelerator acc ? new[] { acc } : null;
-
-		IReadOnlyList<IAccelerator> IMenuElement.KeyboardAccelerators =>
+		IReadOnlyList<IKeyboardAccelerator> IMenuElement.KeyboardAccelerators =>
 			GetKeyboardAccelerator(this) is KeyboardAccelerator acc ? new[] { acc } : null;
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;

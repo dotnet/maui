@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	/// Represents a shortcut key for a <see cref="MenuItem"/>.
 	/// </summary>
 	[TypeConverter(typeof(AcceleratorTypeConverter))]
-	public class KeyboardAccelerator : IAccelerator
+	public class KeyboardAccelerator : IKeyboardAccelerator
 	{
 		const string Separator = "+";
 		readonly string _text;
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public IEnumerable<string> Modifiers => _modifiers;
 
-		IReadOnlyList<string> IAccelerator.Modifiers => _modifiers;
+		IReadOnlyList<string> IKeyboardAccelerator.Modifiers => _modifiers;
 
 		/// <summary>
 		/// Gets the key for the keyboard accelerator.
