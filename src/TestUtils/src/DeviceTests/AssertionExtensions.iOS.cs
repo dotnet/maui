@@ -260,7 +260,7 @@ namespace Microsoft.Maui.DeviceTests
 			var cap = bitmap.ColorAtPoint(x, y);
 
 			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
-				Assert.Equal(expectedColor, cap, new ColorComparison());
+				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
 
 			return bitmap;
 		}
