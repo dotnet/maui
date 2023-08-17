@@ -80,6 +80,23 @@ namespace Microsoft.Maui.DeviceTests
 			// Add half the stroke thickness to find the inner edge of the rounded corner.
 			var innerXY = xy + (strokeThickness / 2);
 
+#if IOS
+			// FIXME: iOS seems to have a white boarder around the Border stroke
+
+			// Verify that the color outside of the rounded corner is the parent's color (White)
+			points[0] = new Point(5, 5);
+			colors[0] = Colors.White;
+
+			// Verify that the rounded corner stroke is where we expect it to be
+			points[1] = new Point(7, 7);
+			colors[1] = stroke;
+			points[2] = new Point(8, 8);
+			colors[2] = stroke;
+
+			// Verify that the background color starts where we'd expect it to start
+			points[3] = new Point(10, 10);
+			colors[3] = border.BackgroundColor;
+#else
 			// Verify that the color outside of the rounded corner is the parent's color (White)
 			points[0] = new Point(outerXY - 0.25, outerXY - 0.25);
 			colors[0] = Colors.White;
@@ -93,11 +110,9 @@ namespace Microsoft.Maui.DeviceTests
 			// Verify that the background color starts where we'd expect it to start
 			points[3] = new Point(innerXY + 0.25, innerXY + 0.25);
 			colors[3] = border.BackgroundColor;
-
-#if !IOS
-			// FIXME: iOS draws a red rectangle without any border.
-			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
 #endif
+
+			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
 		}
 
 		[Fact(DisplayName = "StrokeThickness does not inset stroke path")]
