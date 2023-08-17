@@ -9,8 +9,7 @@
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
     <IsPackable>true</IsPackable>
-    <IsTrimmable Condition=" !$(TargetFramework.StartsWith('netstandard')) ">true</IsTrimmable>
-    <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
+    <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <DefineConstants>$(DefineConstants);COMPATIBILITY</DefineConstants>
