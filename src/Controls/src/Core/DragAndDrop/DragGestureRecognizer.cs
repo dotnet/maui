@@ -35,7 +35,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when a drop gesture is detected.
+		/// Occurs when a drop gesture is completed.
 		/// </summary>
 		public event EventHandler<DropCompletedEventArgs>? DropCompleted;
 

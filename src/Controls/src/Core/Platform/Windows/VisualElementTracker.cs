@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var datapackage = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
 
-			var args = new DropEventArgs(datapackage?.View);
+			var args = new DropEventArgs(datapackage?.View!, (relativeTo) => GetPosition(relativeTo, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)

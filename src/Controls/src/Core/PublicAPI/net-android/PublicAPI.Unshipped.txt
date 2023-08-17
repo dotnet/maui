@@ -16,6 +16,9 @@ Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.get 
 Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set -> void
 Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition) -> void
+Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView!
+Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
+Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition) -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -37,6 +40,7 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
+virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 ~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void

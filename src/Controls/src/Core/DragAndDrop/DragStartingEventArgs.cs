@@ -13,7 +13,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
 		/// </summary>
-		// TODO: JD - Maybe mark this as obsolete? 
 		public DragStartingEventArgs()
 		{
 		}

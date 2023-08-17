@@ -352,8 +352,6 @@
 ~Microsoft.Maui.Controls.DeviceStateTrigger.Device.get -> string
 ~Microsoft.Maui.Controls.DeviceStateTrigger.Device.set -> void
 ~Microsoft.Maui.Controls.DoubleCollection.DoubleCollection(double[] values) -> void
-~Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView
-~Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView view) -> void
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommand.get -> System.Windows.Input.ICommand
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommand.set -> void
 ~Microsoft.Maui.Controls.DropGestureRecognizer.DragLeaveCommandParameter.get -> object

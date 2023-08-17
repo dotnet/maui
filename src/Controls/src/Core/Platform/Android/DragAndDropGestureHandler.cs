@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Platform
 					datapackage.Image = text;
 			}
 
-			var args = new DropEventArgs(datapackage?.View);
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)

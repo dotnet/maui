@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls.Platform
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
 				_viewHandler.VirtualView is View view)
 			{
-				HandleDrop(view, cdi.DataPackage);
+				HandleDrop(view, cdi.DataPackage, session);
 				HandleDropCompleted(cdi.View);
 			}
 		}
@@ -244,9 +244,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		void HandleDrop(View element, DataPackage datapackage)
+		void HandleDrop(View element, DataPackage datapackage, IUIDropSession session)
 		{
-			var args = new DropEventArgs(datapackage?.View);
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -267,7 +270,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 
 			var viewHandler = viewHandlerRef.Target as IPlatformViewHandler;
-			var session = sessionRef.Target as IUIDragSession;
+			var session = sessionRef.Target as IUIDragDropSession;
 
 			var virtualView = viewHandler?.VirtualView;
 			var platformView = viewHandler?.PlatformView;
