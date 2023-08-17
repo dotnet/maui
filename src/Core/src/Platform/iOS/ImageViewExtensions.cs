@@ -43,11 +43,11 @@ namespace Microsoft.Maui.Platform
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this UIImageView imageView,
 			IImageSourcePart image,
-			IImageSourceServiceProvider services,
+			IMauiContext? mauiContext,
 			CancellationToken cancellationToken = default)
 		{
 			imageView.Clear();
-			return image.UpdateSourceAsync(imageView, services, (uiImage) =>
+			return image.UpdateSourceAsync(imageView, mauiContext, (uiImage) =>
 			{
 				imageView.Image = uiImage;
 
