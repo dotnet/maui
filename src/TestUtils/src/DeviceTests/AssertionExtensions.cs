@@ -74,10 +74,10 @@ namespace Microsoft.Maui.DeviceTests
 			// to the Visual Tree
 			var platformViewHandler = (IPlatformViewHandler)view.Handler!;
 			var platformView = platformViewHandler.PlatformView!;
-
-#if WINDOWS
 			var mauiContext = platformViewHandler.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 			var dispatcher = mauiContext.GetDispatcher();
+
+#if WINDOWS
 			return dispatcher.DispatchAsync(async () =>
 			{
 				if (platformView.XamlRoot is null)
@@ -92,8 +92,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			RunAssertions();
-			return Task.CompletedTask;
+			return dispatcher.DispatchAsync(RunAssertions);
 #endif
 			void RunAssertions()
 			{

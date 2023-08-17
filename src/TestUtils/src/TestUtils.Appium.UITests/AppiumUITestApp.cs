@@ -2,29 +2,30 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using OpenQA.Selenium.Appium.Interactions;
-using OpenQA.Selenium.Appium.Interfaces;
-using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.MultiTouch;
-using OpenQA.Selenium.DevTools.V104.Page;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
-using Xamarin.UITest.Shared.Execution;
 
 namespace TestUtils.Appium.UITests
 {
 	public class AppiumUITestApp : IApp2
 	{
-		public bool IsAndroid => _driver != null && Platform.Equals("Android", StringComparison.OrdinalIgnoreCase);
-		public bool IsWindows => _driver != null && Platform.Equals("Windows", StringComparison.OrdinalIgnoreCase);
-		public bool IsiOS => _driver != null && Platform.Equals("iOS", StringComparison.OrdinalIgnoreCase);
-		public bool IsMac => _driver != null && Platform.Equals("mac", StringComparison.OrdinalIgnoreCase);
+		readonly string _appId;
+		AppiumDriver? _driver;
+		AppiumElement? _window;
+
+		public bool IsAndroid => Platform.Equals("Android", StringComparison.OrdinalIgnoreCase);
+		public bool IsWindows => Platform.Equals("Windows", StringComparison.OrdinalIgnoreCase);
+		public bool IsiOS => Platform.Equals("iOS", StringComparison.OrdinalIgnoreCase);
+		public bool IsMac => Platform.Equals("mac", StringComparison.OrdinalIgnoreCase);
 		public string Platform => _driver?.Capabilities.GetCapability(MobileCapabilityType.PlatformName).ToString() ?? "";
 
 		public PointerKind PointerType => IsMac ? PointerKind.Mouse : PointerKind.Touch;
@@ -41,11 +42,6 @@ namespace TestUtils.Appium.UITests
 			{ "getAlpha", "Opacity" },
 			{ "isEnabled", "IsEnabled" },
 		};
-
-		readonly string _appId;
-		AppiumDriver? _driver;
-
-		AppiumElement? _window;
 
 		public AppiumUITestApp(string appId, AppiumDriver? driver)
 		{
@@ -103,6 +99,20 @@ namespace TestUtils.Appium.UITests
 
 		public ITestServer TestServer => throw new NotImplementedException();
 
+		public string ElementTree => _driver?.PageSource ?? "";
+
+		public ApplicationState AppState
+		{
+			get
+			{
+				return IsWindows
+					? GetWindowsAppState()
+					: IsAndroid
+						? GetUIAutomator2TestAppState()
+						: GetXCUITestAppState();
+			}
+		}
+
 		public void ResetApp()
 		{
 			_driver?.ResetApp();
@@ -127,8 +137,6 @@ namespace TestUtils.Appium.UITests
 				_driver = null;
 			}
 		}
-
-		public string ElementTree => _driver?.PageSource ?? "";
 
 		public void Back()
 		{
@@ -208,32 +216,68 @@ namespace TestUtils.Appium.UITests
 			DoubleTap(result);
 		}
 
-		private void DoubleTap(IWebElement element)
+		private void DoubleTap(AppiumElement element)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
-			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_driver?.PerformActions(new List<ActionSequence> { sequence });
-			Thread.Sleep(1000);
+			if (IsiOS)
+			{
+				_driver?.ExecuteScript("mobile: doubleTap", new Dictionary<string, object>
+				{
+					{ "elementId", element.Id },
+				});
+
+			}
+			else if (IsMac)
+			{
+				_driver?.ExecuteScript("macos: doubleClick", new Dictionary<string, object>
+				{
+					{ "elementId", element.Id },
+				});
+			}
+			else
+			{
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				ActionSequence sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_driver?.PerformActions(new List<ActionSequence> { sequence });
+			}
 		}
 
 		public void DoubleTapCoordinates(float x, float y)
 		{
-			OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
-			ActionSequence sequence = new ActionSequence(touchDevice, 0);
-			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
-			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-			_driver?.PerformActions(new List<ActionSequence> { sequence });
-			Thread.Sleep(1000);
+			if (IsiOS)
+			{
+				_driver?.ExecuteScript("mobile: doubleTap", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+
+			}
+			else if (IsMac)
+			{
+				_driver?.ExecuteScript("macos: doubleClick", new Dictionary<string, object>
+				{
+					{ "x", x },
+					{ "y", y }
+				});
+			}
+			else
+			{
+				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				ActionSequence sequence = new ActionSequence(touchDevice, 0);
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
+				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				_driver?.PerformActions(new List<ActionSequence> { sequence });
+			}
 		}
 
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)
@@ -289,12 +333,19 @@ namespace TestUtils.Appium.UITests
 
 		public void DragCoordinates(float fromX, float fromY, float toX, float toY)
 		{
+			DragCoordinates(fromX, fromY, toX, toY, 1);
+		}
+
+		public void DragCoordinates(float fromX, float fromY, float toX, float toY, int duration)
+		{
 			if (IsiOS)
 			{
 				// iOS doesn't seem to work with the action API, so we are using script calls
-				_driver?.ExecuteScript("mobile: dragFromToForDuration", new Dictionary<string, object>
+				_driver?.ExecuteScript("mobile: dragFromToWithVelocity", new Dictionary<string, object>
 				{
-					{ "duration", 1 }, // Length of time to hold after click before start dragging
+					{ "pressDuration", 1 }, // Length of time to hold after click before start dragging
+					{ "holdDuration", .1 }, // Length of time to hold before releasing
+					{ "velocity", CalculateDurationForSwipe((int)fromX,(int)fromY,(int)toX,(int)toY, 500) }, // How fast to drag
 					// from/to are absolute screen coordinates unless 'element' is specified then everything will be relative
 					{ "fromX", fromX},
 					{ "fromY", fromY },
@@ -308,7 +359,7 @@ namespace TestUtils.Appium.UITests
 				{
 					{ "holdDuration", .1 }, // Length of time to hold before releasing
 					{ "duration", 1 }, // Length of time to hold after click before start dragging
-					{ "velocity", 2500 }, // How fast to drag
+					{ "velocity", CalculateDurationForSwipe((int)fromX,(int)fromY,(int)toX,(int)toY, 500) },
 					{ "fromX", fromX},
 					{ "fromY", fromY },
 					{ "endX", toX },
@@ -322,12 +373,10 @@ namespace TestUtils.Appium.UITests
 				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(5)));
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
 				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromSeconds(1))); // Have to pause so the device doesn't think we are scrolling
-				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromSeconds(1)));
+				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)toX, (int)toY, TimeSpan.FromSeconds(duration)));
 				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
 				_driver?.PerformActions(new List<ActionSequence> { sequence });
 			}
-
-			Thread.Sleep(500);
 		}
 
 		public void EnterText(string text)
@@ -398,12 +447,34 @@ namespace TestUtils.Appium.UITests
 
 		public void PinchToZoomIn(Func<AppQuery, AppQuery> query, TimeSpan? duration = null)
 		{
-			throw new NotImplementedException();
+			var element = QueryAppium(query).First();
+			PinchToZoom(element, duration);
 		}
 
 		public void PinchToZoomIn(string marked, TimeSpan? duration = null)
 		{
-			throw new NotImplementedException();
+			var element = QueryAppium(marked, true).First();
+			PinchToZoom(element, duration);
+		}
+
+		private void PinchToZoom(AppiumElement element, TimeSpan? duration)
+		{
+			if (IsiOS)
+			{
+				// mobile: pinch
+				// scale	number	yes	Pinch scale of type float. Use a scale between 0 and 1 to "pinch close" or zoom out and a scale greater than 1 to "pinch open" or zoom in.
+				_driver?.ExecuteScript("mobile: pinch", new Dictionary<string, object>
+				{
+					{ "elementId", element.Id },
+					{ "scale", 2 },
+					{ "velocity", 2.2 }
+				});
+
+			}
+			else
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		public void PinchToZoomInCoordinates(float x, float y, TimeSpan? duration)
@@ -418,7 +489,21 @@ namespace TestUtils.Appium.UITests
 
 		public void PinchToZoomOut(string marked, TimeSpan? duration = null)
 		{
-			throw new NotImplementedException();
+			var element = QueryAppium(marked, true).First();
+
+			if (IsiOS)
+			{
+				_driver?.ExecuteScript("mobile: pinch", new Dictionary<string, object>
+				{
+					{ "elementId", element.Id },
+					{ "scale", 0 }
+				});
+
+			}
+			else
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		public void PinchToZoomOutCoordinates(float x, float y, TimeSpan? duration)
@@ -643,17 +728,87 @@ namespace TestUtils.Appium.UITests
 
 		public void SwipeRightToLeft(string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			throw new NotImplementedException();
+			var element = QueryAppium(AppiumQuery.FromMarked(marked, _appId, Platform)).FirstOrDefault() ?? throw new Exception("Didn't find the element");
+			PerformSwipe(element.Rect, ScrollDirection.Left, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public void SwipeRightToLeft(Func<AppQuery, AppQuery> query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
-			throw new NotImplementedException();
+			var element = QueryAppium(AppiumQuery.FromQuery(query, _appId, Platform)).FirstOrDefault() ?? throw new Exception("Didn't find the element");
+			PerformSwipe(element.Rect, ScrollDirection.Left, swipePercentage, swipeSpeed, withInertia);
 		}
 
 		public void SwipeRightToLeft(Func<AppQuery, AppWebQuery> query, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
 		{
 			throw new NotImplementedException();
+		}
+
+		internal enum ScrollDirection
+		{
+			Up,
+			Down,
+			Left,
+			Right
+		}
+
+		private void PerformSwipe(Rectangle target, ScrollDirection direction, double swipePercentage, int swipeSpeed, bool withInertia)
+		{
+			var centerX = target.X + (target.Width / 2);
+			var centerY = target.Y + (target.Height / 2);
+			var targetWidth = target.Width;
+			var targetHeight = target.Height;
+
+			int startX, endX, startY, endY;
+			startX = endX = centerX;
+			startY = endY = centerY;
+			var xOffset = (int)((swipePercentage / 2.0f) * targetWidth);
+			var yOffset = (int)((swipePercentage / 2.0f) * targetHeight);
+
+			bool percentTooBig;
+			switch (direction)
+			{
+				case ScrollDirection.Right: // left to right
+					startX = (centerX - xOffset);
+					endX = (centerX + xOffset);
+					percentTooBig = (startX <= target.X || endX >= targetWidth + target.X);
+					break;
+				case ScrollDirection.Left: // right to left
+					startX = (centerX + xOffset);
+					endX = (centerX - xOffset);
+					percentTooBig = (endX <= target.X || startX >= targetWidth + target.X);
+					break;
+				case ScrollDirection.Up: // down to up
+					startY = (centerY + yOffset);
+					endY = (centerY - yOffset);
+					percentTooBig = (endY <= target.Y || startY >= targetHeight + target.Y);
+					break;
+				case ScrollDirection.Down: // up to down
+					startY = (centerY - yOffset);
+					endY = (centerY + yOffset);
+					percentTooBig = (startY <= target.Y || endY >= targetHeight + target.Y);
+					break;
+				default:
+					throw new Exception(string.Format("Unable to swipe in direction {0}", direction));
+			}
+
+			if (percentTooBig)
+			{
+				throw new Exception(string.Format(
+					"Invalid swipe coordinates ({0}, {1}) to ({2}, {3}).{4}Try setting swipePercentage smaller than {5}.",
+					startX, startY, endX, endY, Environment.NewLine, swipePercentage));
+			}
+
+			// var duration = CalculateDurationForSwipe(startX, startY, endX, endY, swipeSpeed);
+
+			DragCoordinates(startX, startY, endX, endY);
+			// _gestures.SwipeCoordinates(startX, endX, startY, endY, withInertia, TimeSpan.FromMilliseconds(duration));
+		}
+
+		static int CalculateDurationForSwipe(int startX, int startY, int endX, int endY, int pixelsPerSecond)
+		{
+			var distance = Math.Sqrt(Math.Pow(startX - endX, 2) + Math.Pow(startY - endY, 2));
+
+			return (int)(distance / (pixelsPerSecond / 1000.0));
 		}
 
 		void Tap(AppiumQuery query)
@@ -746,11 +901,30 @@ namespace TestUtils.Appium.UITests
 			{
 				if (_driver == null)
 				{
-					throw new ArgumentNullException(nameof(_driver));
+					throw new InvalidOperationException("Driver should not be null when trying to query the app");
 				}
 
 				By queryBy = IsWindows ? MobileBy.AccessibilityId(query.Marked) : MobileBy.Id(query.Marked);
-				return _driver.FindElements(queryBy);
+				var primaryElement = _driver.FindElements(queryBy);
+
+				// Try to handle the rest of the query string after marked:'{x}', e.g. "* marked:'Tab1Element' child android.webkit.WebView child android.widget.TextView"
+				var match = Regex.Match(query.Raw, "(.*)'((?:\\s)(\\S*))*");
+				if (match.Groups.Count > 3 && match.Groups[3].Captures.Count != 0)
+				{
+					int index = 0;
+					while (index < match.Groups[3].Captures.Count)
+					{
+						switch (match.Groups[3].Captures[index++].Value)
+						{
+							case "child":
+								var parentElement = primaryElement.First();
+								var childElement = (AppiumElement)parentElement.FindElement(By.ClassName(match.Groups[3].Captures[index++].Value));
+								primaryElement = new ReadOnlyCollection<AppiumElement>(new List<AppiumElement>(1) { childElement });
+								break;
+						}
+					}
+				}
+				return primaryElement;
 			}
 			catch (Exception)
 			{
@@ -903,7 +1077,6 @@ namespace TestUtils.Appium.UITests
 			return new PointF(vpx, vpy);
 		}
 
-
 		AppiumElement GetWindow()
 		{
 			if (_window != null)
@@ -999,6 +1172,62 @@ namespace TestUtils.Appium.UITests
 				var scrollAction = new TouchAction(_driver).Press(x, startY).MoveTo(x, endY).Release();
 				scrollAction.Perform();
 			}
+		}
+
+
+		ApplicationState GetXCUITestAppState()
+		{
+			var state = _driver?.ExecuteScript(IsMac ? "macos: queryAppState" : "mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "bundleId", _appId },
+						});
+
+			// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+			return Convert.ToInt32(state) switch
+			{
+				1 => ApplicationState.Not_Running,
+				2 or
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
+		}
+
+		ApplicationState GetWindowsAppState()
+		{
+			try
+			{
+				// WinAppDriver doesn't support QueryAppState
+				_ = _driver?.CurrentWindowHandle;
+				return ApplicationState.Running;
+			}
+			catch (NoSuchWindowException)
+			{
+				return ApplicationState.Not_Running;
+			}
+		}
+
+		ApplicationState GetUIAutomator2TestAppState()
+		{
+			var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "appId", _appId },
+						});
+
+			// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
+			if (state == null)
+			{
+				return ApplicationState.Unknown;
+			}
+
+			return Convert.ToInt32(state) switch
+			{
+				0 => ApplicationState.Not_Installed,
+				1 => ApplicationState.Not_Running,
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
 		}
 	}
 }
