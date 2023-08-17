@@ -33,7 +33,6 @@ Microsoft.Maui.Platform.ContentViewGroup.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.LayoutViewGroup.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.ShapeExtensions
-Microsoft.Maui.Platform.SoftInputExtensions
 Microsoft.Maui.PlatformContentViewGroup
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformContentViewGroup.PlatformContentViewGroup(Android.Content.Context? context, Android.Util.IAttributeSet? attrs) -> void
@@ -47,6 +46,7 @@ Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.PlatformWrapperView
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(Android.Content.Context? context) -> void
 Microsoft.Maui.PlatformWrapperView.PlatformWrapperView(nint javaReference, Android.Runtime.JniHandleOwnership transfer) -> void
+Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.FontSize.Equals(object? obj) -> bool
 override Microsoft.Maui.FontSize.GetHashCode() -> int
 override Microsoft.Maui.Handlers.EditorHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect frame) -> void
@@ -96,9 +96,6 @@ Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateNightMode(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.ShapeExtensions.ToPlatform(this Microsoft.Maui.Graphics.IShape! shape, Microsoft.Maui.Graphics.Rect bounds, float strokeThickness, bool innerPath = false) -> Android.Graphics.Path!
-static Microsoft.Maui.Platform.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Platform.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
-static Microsoft.Maui.Platform.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
@@ -113,5 +110,8 @@ static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, M
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void
+static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
+static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path

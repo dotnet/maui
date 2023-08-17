@@ -346,5 +346,21 @@ namespace Microsoft.Maui.Platform
 		{
 			return (T?)view.Children[index];
 		}
+
+		internal static bool HideSoftInput(this PlatformView view) => SetKeyInputFocus(view, false);
+
+		internal static bool ShowSoftInput(this PlatformView view) => SetKeyInputFocus(view, true);
+
+		internal static bool IsSoftInputShowing(this PlatformView view)
+		{
+			return view.KeyInputFocus;
+		}
+
+		internal static bool SetKeyInputFocus(PlatformView view, bool isShow)
+		{
+			view.KeyInputFocus = isShow;
+
+			return view.KeyInputFocus;
+		}
 	}
 }

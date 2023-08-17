@@ -18,10 +18,10 @@ Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
+Microsoft.Maui.SoftInputExtensions
 Microsoft.Maui.Handlers.IImageSourcePartSetter
 Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(Microsoft.Maui.Platform.MauiImageSource? obj) -> void
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
-Microsoft.Maui.Platform.SoftInputExtensions
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
@@ -43,9 +43,6 @@ static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexB
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
-static Microsoft.Maui.Platform.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Platform.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
-static Microsoft.Maui.Platform.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.Maui.Platform.MauiWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
@@ -56,6 +53,9 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
+static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 Microsoft.Maui.IAccelerator
 Microsoft.Maui.IAccelerator.Key.get -> string!
 Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!

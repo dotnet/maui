@@ -35,10 +35,10 @@ Microsoft.Maui.Platform.KeyboardAutoManagerScroll
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
-Microsoft.Maui.Platform.SoftInputExtensions
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
+Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
@@ -91,9 +91,6 @@ Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateUserInterfaceStyle(this Microsoft.Maui.IApplication! application) -> void
-static Microsoft.Maui.Platform.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Platform.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
-static Microsoft.Maui.Platform.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.TextFieldExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextField! textField, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Platform.TextViewExtensions.UpdateIsSpellCheckEnabled(this UIKit.UITextView! textView, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this WebKit.WKWebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
@@ -105,6 +102,9 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
+static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplication! application, System.Action<UIKit.UIBackgroundFetchResult>! completionHandler) -> void
 Microsoft.Maui.Platform.MauiView.CacheMeasureConstraints(double widthConstraint, double heightConstraint) -> void
 Microsoft.Maui.Platform.MauiView.InvalidateConstraintsCache() -> void

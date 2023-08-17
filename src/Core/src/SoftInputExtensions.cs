@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Dispatching;
+using Microsoft.Maui.Platform;
 using System.Threading.Tasks;
 using System.Threading;
 using System;
@@ -17,7 +18,7 @@ using PlatformView = System.Object;
 using IPlatformViewHandler = Microsoft.Maui.IViewHandler;
 #endif
 
-namespace Microsoft.Maui.Platform;
+namespace Microsoft.Maui;
 
 /// <summary>
 /// Extension methods for interacting with a platform's Soft Input Pane
@@ -42,7 +43,7 @@ public static partial class SoftInputExtensions
 			return Task.FromResult(false);
 		}
 
-		return Task.FromResult(HideSoftInput(platformView));
+		return Task.FromResult(platformView.HideSoftInput());
 #endif
 	}
 

@@ -32,8 +32,8 @@ Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.get -> Microsoft.Maui.ICro
 Microsoft.Maui.Platform.MauiPanel.CrossPlatformLayout.set -> void
 Microsoft.Maui.Platform.MauiPanel.MauiPanel() -> void
 Microsoft.Maui.Platform.MauiWebView.MauiWebView(Microsoft.Maui.Handlers.WebViewHandler! handler) -> void
-Microsoft.Maui.Platform.SoftInputExtensions
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
+Microsoft.Maui.SoftInputExtensions
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentPanel! platformView) -> void
 override Microsoft.Maui.Handlers.MenuFlyoutHandler.DisconnectHandler(Microsoft.UI.Xaml.Controls.MenuFlyout! platformView) -> void
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
@@ -72,9 +72,6 @@ static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewI
 Microsoft.Maui.IWebView.UserAgent.get -> string?
 Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
-static Microsoft.Maui.Platform.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-static Microsoft.Maui.Platform.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
-static Microsoft.Maui.Platform.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.Platform.TextBoxExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.TextBox! textBox, Microsoft.Maui.ITextInput! textInput) -> void
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Microsoft.UI.Xaml.Controls.WebView2! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
@@ -90,3 +87,6 @@ static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapAccelerator(Microsoft
 *REMOVED*override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 *REMOVED*override Microsoft.Maui.Platform.LayoutPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 static Microsoft.Maui.Handlers.DatePickerHandler.MapBackground(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void
+static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
+static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
+static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!

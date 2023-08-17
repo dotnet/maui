@@ -1,5 +1,7 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -12,6 +14,7 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI.ViewManagement;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
 
@@ -409,6 +412,50 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateInputTransparent(this LayoutPanel layoutPanel, ILayoutHandler handler, ILayout layout)
 		{
 			// Nothing to do yet, but we might need to adjust the wrapper view 
+		}
+
+		internal static bool HideSoftInput(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.TryHide();
+			}
+
+			return false;
+		}
+
+		internal static bool ShowSoftInput(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.TryShow();
+			}
+
+			return false;
+		}
+
+		internal static bool IsSoftInputShowing(this FrameworkElement element)
+		{
+			if (TryGetInputPane(out var inputPane))
+			{
+				return inputPane.Visible;
+			}
+
+			return false;
+		}
+
+		internal static bool TryGetInputPane([NotNullWhen(true)] out InputPane? inputPane)
+		{
+			var handleId = Process.GetCurrentProcess().MainWindowHandle;
+			if (handleId == IntPtr.Zero)
+			{
+				inputPane = null;
+
+				return false;
+			}
+
+			inputPane = InputPaneInterop.GetForWindow(handleId);
+			return true;
 		}
 	}
 }
