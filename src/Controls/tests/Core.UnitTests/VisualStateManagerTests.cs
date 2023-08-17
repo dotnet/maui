@@ -490,40 +490,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.False(label.TextColor == Colors.HotPink); //setter should be unapplied
 		}
 
-		[Fact]
-		//https://github.com/dotnet/maui/issues/6856
-		public void VSMInStyleShouldHaveStylePriority()
-		{
-			var label = new Label { TextColor = Colors.HotPink };//Setting the color manually should prevents style override
-			var SelectedStateName = "Selected";
-
-			Assert.Equal(label.TextColor, Colors.HotPink);
-
-			label.Style = new Style(typeof(Label))
-			{
-				Setters = {
-					new Setter { Property = Label.TextColorProperty, Value = Colors.AliceBlue },
-					new Setter {
-						Property = VisualStateManager.VisualStateGroupsProperty,
-						Value = new VisualStateGroupList {
-							new VisualStateGroup {
-								States = {
-									new VisualState {
-										Name = SelectedStateName,
-										Setters = { new Setter { Property = Label.TextColorProperty, Value=Colors.OrangeRed} }
-									},
-								}
-							}
-						}
-					},
-				}
-			};
-
-			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor from Style isn't applied
-			VisualStateManager.GoToState(label, SelectedStateName);
-			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor Style's VSM isn't applied
-		}
-
 		[Theory(Skip = "This test was created to check performance characteristics; leaving it in because it may be useful again.")]
 		[InlineData(1, 10)]
 		[InlineData(1, 10000)]

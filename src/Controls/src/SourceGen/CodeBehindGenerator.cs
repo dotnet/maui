@@ -474,14 +474,14 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
 		{
-				SimplifyOnPlatform(node, targetFramework, nsmgr);
+			SimplifyOnPlatform(node, targetFramework, nsmgr);
 		}
 
 		static void SimplifyOnPlatform(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
 		{
 			//remove OnPlatform nodes if the platform doesn't match, so we don't generate field for x:Name of elements being removed
 			if (targetFramework == null)
-				return;			
+				return;
 
 			string? target = null;
 			targetFramework = targetFramework.Trim();
@@ -500,7 +500,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var onPlatformNodes = node.SelectNodes("//__f__:OnPlatform", nsmgr);
 			foreach (XmlNode onPlatformNode in onPlatformNodes)
 			{
-				var onNodes = onPlatformNode.SelectNodes("__f__:On",nsmgr);
+				var onNodes = onPlatformNode.SelectNodes("__f__:On", nsmgr);
 				foreach (XmlNode onNode in onNodes)
 				{
 					var platforms = onNode.SelectSingleNode("@Platform");

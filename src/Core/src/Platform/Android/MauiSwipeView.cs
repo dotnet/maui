@@ -115,31 +115,36 @@ namespace Microsoft.Maui.Platform
 
 		bool ShouldInterceptScrollChildrenTouch(SwipeDirection swipeDirection)
 		{
-			if (!(_contentView is ViewGroup viewGroup) || _initialPoint == null)
+			if (_contentView is null || _initialPoint is null)
 				return false;
 
-			int x = (int)(_initialPoint.X * _density);
-			int y = (int)(_initialPoint.Y * _density);
+			var viewGroup = _contentView as ViewGroup;
 
-			bool isHorizontal = swipeDirection == SwipeDirection.Left || swipeDirection == SwipeDirection.Right;
-
-			for (int i = 0; i < viewGroup.ChildCount; i++)
+			if (viewGroup is not null)
 			{
-				var child = viewGroup.GetChildAt(i);
+				int x = (int)(_initialPoint.X * _density);
+				int y = (int)(_initialPoint.Y * _density);
 
-				if (child != null && IsViewInBounds(child, x, y))
+				bool isHorizontal = swipeDirection == SwipeDirection.Left || swipeDirection == SwipeDirection.Right;
+
+				for (int i = 0; i < viewGroup.ChildCount; i++)
 				{
-					if (child is AbsListView absListView)
-						return ShouldInterceptScrollChildrenTouch(absListView, isHorizontal);
+					var child = viewGroup.GetChildAt(i);
 
-					if (child is RecyclerView recyclerView)
-						return ShouldInterceptScrollChildrenTouch(recyclerView, isHorizontal);
-
-					if (child is NestedScrollView scrollView)
-						return ShouldInterceptScrollChildrenTouch(scrollView, isHorizontal);
-
-					if (child is AWebView webView)
-						return ShouldInterceptScrollChildrenTouch(webView, isHorizontal);
+					if (child != null && IsViewInBounds(child, x, y))
+					{
+						switch (child)
+						{
+							case AbsListView absListView:
+								return ShouldInterceptScrollChildrenTouch(absListView, isHorizontal);
+							case RecyclerView recyclerView:
+								return ShouldInterceptScrollChildrenTouch(recyclerView, isHorizontal);
+							case NestedScrollView scrollView:
+								return ShouldInterceptScrollChildrenTouch(scrollView, isHorizontal);
+							case AWebView webView:
+								return ShouldInterceptScrollChildrenTouch(webView, isHorizontal);
+						}
+					}
 				}
 			}
 
@@ -209,7 +214,7 @@ namespace Microsoft.Maui.Platform
 
 			AView? itemContentView = null;
 
-			var parentFound = _contentView.Parent.FindParent(parent =>
+			var parentFound = _contentView.FindParent(parent =>
 			{
 				if (parent is RecyclerView)
 					return true;
