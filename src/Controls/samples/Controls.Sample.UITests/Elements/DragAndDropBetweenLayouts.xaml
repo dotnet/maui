@@ -71,5 +71,9 @@
         <Label x:Name="dragRelativeDrop" AutomationId="DragRelativeDrop" Text="Drag relative to receiving layout:"/>
         <Label x:Name="dragRelativeScreen" AutomationId="DragRelativeScreen" Text="Drag relative to screen:"/>
         <Label x:Name="dragRelativeLabel" AutomationId="DragRelativeLabel" Text="Drag relative to this label:"/>
+        <!-- Drop Labels-->
+        <Label x:Name="dropRelativeLayout" AutomationId="DropRelativeLayout" Text="Drop relative to receiving layout:"/>
+        <Label x:Name="dropRelativeScreen" AutomationId="DropRelativeScreen" Text="Drop relative to screen:"/>
+        <Label x:Name="dropRelativeLabel" AutomationId="DropRelativeLabel" Text="Drop relative to this label:"/>
     </StackLayout>
 </ContentView>

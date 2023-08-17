@@ -128,6 +128,50 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.True(dragRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
 		}
 
+		[Test]
+		public void DropEventCoordinates()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
+			App.Tap("GoButton");
+
+			App.WaitForElement("Blue");
+			App.DragAndDrop("Blue", "Green");
+
+			var dropRelativeToLayout = GetCoordinatesFromLabel(App.Query("DropRelativeLayout").First().Text);
+			var dropRelativeToScreen = GetCoordinatesFromLabel(App.Query("DropRelativeScreen").First().Text);
+			var dropRelativeToLabel = GetCoordinatesFromLabel(App.Query("DropRelativeLabel").First().Text);
+			
+			var dragRelativeToLabel = GetCoordinatesFromLabel(App.Query("DragRelativeLabel").First().Text);
+			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.Query("DragStartRelativeScreen").First().Text);
+
+
+			Assert.NotNull(dropRelativeToLayout);
+			Assert.NotNull(dropRelativeToScreen);
+			Assert.NotNull(dropRelativeToLabel);
+
+			Assert.NotNull(dragRelativeToLabel);
+			Assert.NotNull(dragStartRelativeToScreen);
+
+			Assert.True(dropRelativeToLayout!.Value.X > 0 && dropRelativeToLayout!.Value.Y > 0);
+			Assert.True(dropRelativeToScreen!.Value.X > 0 && dropRelativeToScreen!.Value.Y > 0);
+
+			// The position of the drop relative the layout should be less than that relative to the screen
+			// There are other elements in the screen, plus the ContentView of the test has some margin
+			Assert.True(dropRelativeToLayout!.Value.X < dropRelativeToScreen!.Value.X);
+			Assert.True(dropRelativeToLayout!.Value.Y < dropRelativeToScreen!.Value.Y);
+
+			// Since the label is below the the box, the Y position of the drop relative to the label should be negative
+			Assert.True(dropRelativeToLabel!.Value.Y < 0);
+
+			// The drop is executed left to right, so the X value should be higher than where it started
+			Assert.True(dropRelativeToScreen!.Value.X > dragStartRelativeToScreen!.Value.X);
+
+			// The label receiving the coordinates of the drop is below that which receives the coordinates of the drag
+			// Therefore, the label that receives the coordinates of the drop should have a smaller Y value (more negative)
+			Assert.True(dropRelativeToLabel!.Value.Y < dragRelativeToLabel!.Value.Y);
+		}
+
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
 		Point? GetCoordinatesFromLabel(string? labelText)
 		{

@@ -123,6 +123,10 @@ namespace Maui.Controls.Sample
 				AddEvent($"AllColorsAdd:{color.Text}");
 			}
 
+			dropRelativeLayout.Text = $"Drop relative to receiving layout: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
+			dropRelativeScreen.Text = $"Drop relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dropRelativeLabel.Text = $"Drop relative to this label: {(int)e.GetPosition(dropRelativeLabel).Value.X},{(int)e.GetPosition(dropRelativeLabel).Value.Y}";
+
 			SLAllColors.Background = SolidColorBrush.White;
 			SLRainbow.Background = SolidColorBrush.White;
 

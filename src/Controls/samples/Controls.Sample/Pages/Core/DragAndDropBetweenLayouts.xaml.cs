@@ -107,14 +107,20 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDrop(object sender, DropEventArgs e)
 		{
+			var sl = (sender as Element).Parent as StackLayout;
+
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = (sender as Element).Parent as StackLayout;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				return;
 			}
+
+			DropTitle.IsVisible = true;
+			DropPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
+			DropScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
+			DropRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DropRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DropRelativePositionLabel).Value.Y}";
 
 			var color = e.Data.Properties["Color"] as SolidColorBrush;
 

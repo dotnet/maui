@@ -59,6 +59,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <StackLayout Grid.Row="0">
                 <Label x:Name="DragStartingTitle" Text="Drag Start position relative to..." IsVisible="False"/>
@@ -71,6 +72,12 @@
                 <Label x:Name="DragPositionLabel"/>
                 <Label x:Name="DragScreenPositionLabel"/>
                 <Label x:Name="DragRelativePositionLabel"/>
+            </StackLayout>
+            <StackLayout Grid.Row="2">
+                <Label x:Name="DropTitle" Text="Drop position relative to..." IsVisible="False"/>
+                <Label x:Name="DropPositionLabel"/>
+                <Label x:Name="DropScreenPositionLabel"/>
+                <Label x:Name="DropRelativePositionLabel"/>
             </StackLayout>
         </Grid>
     </Grid>
