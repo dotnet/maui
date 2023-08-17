@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Hosting
 			builder.ConfigureLifecycleEvents(life =>
 			{
 #if __ANDROID__
+				// TODO: Refactor this to not require MauiApplication.Current
 				ApplicationModel.Platform.Init(MauiApplication.Current);
 
 				life.AddAndroid(android => android
