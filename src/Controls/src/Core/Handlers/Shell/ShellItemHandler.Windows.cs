@@ -84,6 +84,12 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (_currentSearchHandler != null)
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+
+			if (_shellItem?.Parent is IShellController controller)
+				controller.RemoveAppearanceObserver(this);
+
+			if (_shellItem is IShellItemController shellItemController)
+				shellItemController.ItemsCollectionChanged -= OnItemsChanged;
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -91,19 +97,30 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (view.Parent is IShellController controller)
 			{
 				if (_shellItem != null)
+				{
 					controller.RemoveAppearanceObserver(this);
+					((IShellItemController)_shellItem).ItemsCollectionChanged -= OnItemsChanged;
+				}
 
 				_shellItem = (ShellItem)view;
 
 				base.SetVirtualView(view);
 
 				if (_shellItem != null)
+				{
 					controller.AddAppearanceObserver(this, _shellItem);
+					((IShellItemController)_shellItem).ItemsCollectionChanged += OnItemsChanged;
+				}
 			}
 			else
 			{
 				base.SetVirtualView(view);
 			}
+		}
+
+		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			MapMenuItems();
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
