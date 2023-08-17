@@ -53,7 +53,7 @@
         "type": "parameter",
         "dataType": "string",
         "replaces": "MS_EXT_VERSION",
-        "defaultValue": "MS_EXT_VERSION_VALUE"
+        "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
       },
       "Framework": {
         "type": "parameter",
