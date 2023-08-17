@@ -157,6 +157,8 @@ Task("dotnet-templates")
             { "CustomBeforeMicrosoftCSharpTargets", MakeAbsolute(File("./src/Templates/TemplateTestExtraTargets.targets")).FullPath },
             //Try not restore dependecies of 6.0.10
             { "DisableTransitiveFrameworkReferenceDownloads",  "true" },
+            //do not check for NET6 EOL
+            { "CheckEolWorkloads", "false" },
         };
 
         var templates = new Dictionary<string, Action<DirectoryPath>> {

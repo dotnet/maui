@@ -157,6 +157,7 @@
     <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.3.1" PrivateAssets="all" />
   </ItemGroup>
   <PropertyGroup>
+    <CheckEolWorkloads>false</CheckEolWorkloads>
     <!-- We don't need to be warned that we are using a preview .NET -->
     <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
     <!-- Disables the transitive restore of packages like Microsoft.AspNetCore.App.Ref, Microsoft.WindowsDesktop.App.Ref -->
