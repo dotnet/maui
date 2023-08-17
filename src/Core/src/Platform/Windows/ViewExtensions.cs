@@ -413,49 +413,5 @@ namespace Microsoft.Maui.Platform
 		{
 			// Nothing to do yet, but we might need to adjust the wrapper view 
 		}
-
-		internal static bool HideSoftInput(this FrameworkElement element)
-		{
-			if (TryGetInputPane(out var inputPane))
-			{
-				return inputPane.TryHide();
-			}
-
-			return false;
-		}
-
-		internal static bool ShowSoftInput(this FrameworkElement element)
-		{
-			if (TryGetInputPane(out var inputPane))
-			{
-				return inputPane.TryShow();
-			}
-
-			return false;
-		}
-
-		internal static bool IsSoftInputShowing(this FrameworkElement element)
-		{
-			if (TryGetInputPane(out var inputPane))
-			{
-				return inputPane.Visible;
-			}
-
-			return false;
-		}
-
-		internal static bool TryGetInputPane([NotNullWhen(true)] out InputPane? inputPane)
-		{
-			var handleId = Process.GetCurrentProcess().MainWindowHandle;
-			if (handleId == IntPtr.Zero)
-			{
-				inputPane = null;
-
-				return false;
-			}
-
-			inputPane = InputPaneInterop.GetForWindow(handleId);
-			return true;
-		}
 	}
 }
