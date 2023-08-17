@@ -263,9 +263,8 @@ namespace Microsoft.Maui.Controls.Platform
 			this.SetAutomationPropertiesAccessibilityView(_visualElement, defaultAccessibilityView);
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
+		/// <inheritdoc/>
 		protected override WSize ArrangeOverride(WSize finalSize)
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			if (_renderer == null)
 			{
@@ -281,6 +280,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return size;
 		}
 
+		/// <inheritdoc/>
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
 			if (_renderer == null)
