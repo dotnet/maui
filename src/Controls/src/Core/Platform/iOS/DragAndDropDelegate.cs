@@ -30,14 +30,14 @@ namespace Microsoft.Maui.Controls.Platform
 				session.Items.Length > 0 &&
 				session.Items[0].LocalObject is CustomLocalStateData cdi)
 			{
-				this.HandleDropCompleted(cdi.View);
+				this.HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session, operation));
 			}
 		}
 
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler);
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, new PlatformDragStartingEventArgs(_viewHandler.PlatformView, interaction, session));
 		}
 
 		[Export("dropInteraction:canHandleSession:")]
@@ -68,7 +68,7 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			if (HandleDragLeave((View)_viewHandler.VirtualView, package))
+			if (HandleDragLeave((View)_viewHandler.VirtualView, package, new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session)))
 			{
 			}
 		}
@@ -90,8 +90,12 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			if (HandleDragOver((View)_viewHandler.VirtualView, package))
+			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
+			if (HandleDragOver((View)_viewHandler.VirtualView, package, platformArgs))
 			{
+				if (platformArgs._dropProposal is not null)
+					return platformArgs._dropProposal;
+
 				operation = UIDropOperation.Copy;
 			}
 
@@ -109,8 +113,8 @@ namespace Microsoft.Maui.Controls.Platform
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
 				_viewHandler.VirtualView is View view)
 			{
-				HandleDrop(view, cdi.DataPackage);
-				HandleDropCompleted(cdi.View);
+				HandleDrop(view, cdi.DataPackage, new PlatformDropEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
+				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
 			}
 		}
 
@@ -131,7 +135,7 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler)
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, PlatformDragStartingEventArgs platformArgs)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -139,7 +143,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element);
+				var args = rec.SendDragStarting(element, platformArgs);
 
 				if (args.Cancel)
 					return;
@@ -180,13 +184,15 @@ namespace Microsoft.Maui.Controls.Platform
 						}
 					}
 
-					var dragItem = new UIDragItem(itemProvider);
+					var dragItem = new UIDragItem(args.PlatformArgs._itemProvider ?? itemProvider);
 					dragItem.LocalObject = new CustomLocalStateData()
 					{
 						Handler = handler,
 						View = handler.VirtualView as View,
-						DataPackage = args.Data
+						DataPackage = args.PlatformArgs._dataPackage ?? args.Data
 					};
+					if (args.PlatformArgs._previewProvider is not null)
+						dragItem.PreviewProvider = args.PlatformArgs._previewProvider;
 
 					returnValue = new UIDragItem[] { dragItem };
 				}
@@ -196,15 +202,17 @@ namespace Microsoft.Maui.Controls.Platform
 			return returnValue ?? new UIDragItem[0];
 		}
 
-		void HandleDropCompleted(View element)
+		void HandleDropCompleted(View element, PlatformDropCompletedEventArgs platformArgs)
 		{
 			var args = new DropCompletedEventArgs();
+			args.PlatformArgs = platformArgs;
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
-		bool HandleDragLeave(View element, DataPackage dataPackage)
+		bool HandleDragLeave(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
 		{
 			var dragEventArgs = new DragEventArgs(dataPackage);
+			dragEventArgs.PlatformArgs = platformArgs;
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -219,9 +227,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(View element, DataPackage dataPackage)
+		bool HandleDragOver(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
 		{
 			var dragEventArgs = new DragEventArgs(dataPackage);
+			dragEventArgs.PlatformArgs = platformArgs;
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -236,9 +245,10 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		void HandleDrop(View element, DataPackage datapackage)
+		void HandleDrop(View element, DataPackage datapackage, PlatformDropEventArgs platformArgs)
 		{
 			var args = new DropEventArgs(datapackage?.View);
+			args.PlatformArgs = platformArgs;
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)

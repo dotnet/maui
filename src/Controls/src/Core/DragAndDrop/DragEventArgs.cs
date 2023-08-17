@@ -17,5 +17,13 @@ namespace Microsoft.Maui.Controls
 		public DataPackage Data { get; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='AcceptedOperation']/Docs/*" />
 		public DataPackageOperation AcceptedOperation { get; set; }
+
+		/// <summary>
+		/// Gets the platform-specific arguments associated with the <see cref="DragEventArgs"/>.
+		/// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public PlatformDragEventArgs PlatformArgs { get; internal set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 	}
 }

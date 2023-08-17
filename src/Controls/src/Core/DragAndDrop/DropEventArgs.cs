@@ -17,5 +17,13 @@ namespace Microsoft.Maui.Controls
 		public DataPackageView Data { get; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DropEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
 		public bool Handled { get; set; }
+
+		/// <summary>
+		/// Gets the platform-specific arguments associated with the <see cref="DropEventArgs"/>.
+		/// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public PlatformDropEventArgs PlatformArgs { get; internal set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
+
 	}
 }

@@ -1,4 +1,3 @@
-#nullable disable
 using System;
 
 namespace Microsoft.Maui.Controls
@@ -7,5 +6,12 @@ namespace Microsoft.Maui.Controls
 	public class DropCompletedEventArgs : EventArgs
 	{
 		DataPackageOperation DropResult { get; }
+
+		/// <summary>
+		/// Gets the platform-specific arguments associated with the <see cref="DropCompletedEventArgs"/>.
+		/// </summary>
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public PlatformDropCompletedEventArgs? PlatformArgs { get; internal set; }
+#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }
