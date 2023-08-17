@@ -87,7 +87,9 @@ namespace Microsoft.Maui.Controls.Handlers
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
 
 			if (_shellItem?.Parent is IShellController controller)
+			{
 				controller.RemoveAppearanceObserver(this);
+			}
 
 			if (_shellItem is IShellItemController shellItemController)
 				shellItemController.ItemsCollectionChanged -= OnItemsChanged;
@@ -394,7 +396,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			UpdateSearchHandler();
-			MapMenuItems();
 
 			if (_currentShellSection != null)
 			{
