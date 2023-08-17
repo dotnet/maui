@@ -98,13 +98,13 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 					nextFocus.RequestFocus();
 					if (!nextFocus.OnCheckIsTextEditor())
 					{
-						v.HideKeyboard();
+						v.HideSoftInput();
 					}
 				}
 				else
 				{
 					EditText.ClearFocus();
-					v.HideKeyboard();
+					v.HideSoftInput();
 				}
 
 				((IEntryController)Element).SendCompleted();
@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (!e.Focus)
 			{
-				EditText.HideKeyboard();
+				EditText.HideSoftInput();
 			}
 
 			base.OnFocusChangeRequested(sender, e);
@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
 				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
 				// be displaying the wrong keyboard
-				EditText?.PostShowKeyboard();
+				EditText?.PostShowSoftInput();
 			}
 		}
 
@@ -229,7 +229,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			EditText.Hint = Element.Placeholder;
 			if (EditText.IsFocused)
 			{
-				EditText.ShowKeyboard();
+				EditText.ShowSoftInput();
 			}
 		}
 
@@ -551,7 +551,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 			if (EditText.IsFocused)
 			{
 				EditText.SetSelection(text.Length);
-				EditText.ShowKeyboard();
+				EditText.ShowSoftInput();
 			}
 		}
 	}
