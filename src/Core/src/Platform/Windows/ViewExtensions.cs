@@ -1,7 +1,5 @@
 #nullable enable
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -14,7 +12,6 @@ using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI.ViewManagement;
 using WFlowDirection = Microsoft.UI.Xaml.FlowDirection;
 using WinPoint = Windows.Foundation.Point;
 
