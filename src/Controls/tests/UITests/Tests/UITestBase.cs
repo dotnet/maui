@@ -72,7 +72,7 @@ namespace Microsoft.Maui.AppiumTests
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
 			{
-				SaveDiagnosticLogs();
+				SaveDiagnosticLogs("UITestBaseTearDown");
 			}
 		}
 
@@ -80,10 +80,19 @@ namespace Microsoft.Maui.AppiumTests
 		public void OneTimeSetup()
 		{
 			InitialSetup(TestContextSetupFixture.TestContext);
-			FixtureSetup();
+			try
+			{
+				SaveDiagnosticLogs("BeforeFixtureSetup");
+				FixtureSetup();
+			}
+			catch
+			{
+				SaveDiagnosticLogs("FixtureSetup");
+				throw;
+			}
 		}
 
-		[OneTimeTearDown()]
+		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
 			var outcome = TestContext.CurrentContext.Result.Outcome;
@@ -92,7 +101,7 @@ namespace Microsoft.Maui.AppiumTests
 			if (outcome.Status == ResultState.SetUpFailure.Status &&
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
-				SaveDiagnosticLogs();
+				SaveDiagnosticLogs("OneTimeTearDown");
 			}
 
 			FixtureTeardown();
@@ -188,8 +197,13 @@ namespace Microsoft.Maui.AppiumTests
 			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: platform, testContext: _visualTestContext);
 		}
 
-		private void SaveDiagnosticLogs()
+		void SaveDiagnosticLogs(string? note = null)
 		{
+			if (string.IsNullOrEmpty(note))
+				note = "-";
+			else
+				note = $"-{note}-";
+
 			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
 			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
@@ -197,12 +211,12 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
-				_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}-ScreenShot"));
+				_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot"));
 
 				if (App is IApp2 app2)
 				{
 					var pageSource = app2.ElementTree;
-					File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}-PageSource.txt"), pageSource);
+					File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt"), pageSource);
 				}
 			}
 
