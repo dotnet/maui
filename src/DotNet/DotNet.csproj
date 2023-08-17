@@ -60,7 +60,7 @@
         DestinationFolder="$(_InstallTempDirectory)"
     />
     <ItemGroup>
-      <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_InstallTempDirectory)data/*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
@@ -180,8 +180,8 @@
       We downloaded these to $(_WorkloadManifestDir), so we could move files individually.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/WorkloadManifest.*" />
-      <_WorkloadFiles Include="$(_WorkloadManifestDir)samsung.net.sdk.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)samsung.net.sdk.*/*/data/*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
