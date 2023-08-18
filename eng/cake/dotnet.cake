@@ -446,6 +446,25 @@ Task("dotnet-diff")
         }
     });
 
+Task("VSCode")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet();
+    });
+
 // Tasks for Local Development
 Task("VS")
     .Description("Provisions .NET, and launches an instance of Visual Studio using it.")
@@ -556,6 +575,23 @@ void UseLocalNuGetCacheFolder(bool reset = false)
 
     SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioCodeForDotNet()
+{
+    string workspace = "./maui.code-workspace";
+    if (IsCIBuild())
+    {
+        Error("This target should not run on CI.");
+        return;
+    }
+
+    if(localDotnet)
+    {
+        SetDotNetEnvironmentVariables();
+    }
+
+    StartProcess("code", new ProcessSettings{ Arguments = workspace, EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()
