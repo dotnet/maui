@@ -1,7 +1,7 @@
 ﻿using Android.Content;
 using Android.Text;
-using Android.Views.InputMethods;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.Core.View;
 using AView = Android.Views.View;
