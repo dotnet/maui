@@ -4,6 +4,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting
 {
+	/// <summary>
+	/// A .NET MAUI application with registered services and configuration data.
+	/// </summary>
 	public sealed class MauiApp : IDisposable
 	{
 		private readonly IServiceProvider _services;
