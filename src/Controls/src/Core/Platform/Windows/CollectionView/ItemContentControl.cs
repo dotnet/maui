@@ -275,9 +275,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var height = ItemHeight == default ? finalSize.Height : ItemHeight;
 			var size = new WSize(width, height);
 
-			base.ArrangeOverride(size);
-
-			return size;
+			return base.ArrangeOverride(size);
 		}
 
 		/// <inheritdoc/>
@@ -288,18 +286,25 @@ namespace Microsoft.Maui.Controls.Platform
 				return base.MeasureOverride(availableSize);
 			}
 
-			var frameworkElement = Content as FrameworkElement;
-			var margin = _renderer.VirtualView.Margin;
-
-			frameworkElement.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
-
 			var width = ItemWidth == default ? availableSize.Width : ItemWidth;
 			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
 			var measuredSize = base.MeasureOverride(new WSize(width, height));
 			var finalWidth = Max(measuredSize.Width, ItemWidth);
 			var finalHeight = Max(measuredSize.Height, ItemHeight);
+			var finalSize = new WSize(finalWidth, finalHeight);
+			var frameworkElement = Content as FrameworkElement;
+			var visualElement = _renderer.VirtualView as VisualElement;
+			var margin = _renderer.VirtualView.Margin;
 
-			return new WSize(finalWidth, finalHeight);
+			frameworkElement.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
+			visualElement.Layout(new Rect(0, 0, finalWidth, finalHeight));
+
+			if (CanMeasureContent(frameworkElement))
+			{
+				frameworkElement.Measure(finalSize);
+			}
+
+			return finalSize;
 		}
 
 		double Max(double requested, double available)
