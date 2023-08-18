@@ -28,13 +28,13 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Tap(c => c.Marked("Start"));
 				App.WaitForElement(c => c.Marked("the scrollto button"));
 				App.Screenshot("Element is  on the top");
 			}
+			else
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
@@ -44,8 +44,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Tap(c => c.Marked("Center"));
 				App.WaitForElement(c => c.Marked("the scrollto button"));
@@ -53,6 +52,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.WaitForElement(c => c.Marked("the after"));
 				App.Screenshot("Element is in the center");
 			}
+			else
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
@@ -62,13 +62,13 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Tap(c => c.Marked("End"));
 				App.WaitForElement(c => c.Marked("the scrollto button"));
 				App.Screenshot("Element is in the end");
 			}
+			else
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
