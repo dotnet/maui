@@ -49,7 +49,8 @@ namespace Microsoft.Maui
 				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
 
 #if IOS || MACCATALYST
-			return imageSourceService.GetImageAsync(imageSource);
+			var scale = mauiContext.GetPlatformWindow().Screen.Scale;
+			return imageSourceService.GetImageAsync(imageSource, scale: (float)scale);
 #elif ANDROID
 			return imageSourceService.GetDrawableAsync(imageSource, mauiContext.Context!);
 #elif WINDOWS
