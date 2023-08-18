@@ -67,7 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		{
 			if (!e.Focus)
 			{
-				Control.HideKeyboard();
+				Control.HideSoftInput();
 			}
 
 			base.OnFocusChangeRequested(sender, e);
@@ -77,7 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				// Post this to the main looper queue so it doesn't happen until the other focus stuff has resolved
 				// Otherwise, ShowKeyboard will be called before this control is truly focused, and we will potentially
 				// be displaying the wrong keyboard
-				Control?.PostShowKeyboard();
+				Control?.PostShowSoftInput();
 			}
 		}
 
