@@ -245,7 +245,7 @@ namespace Microsoft.Maui.DeviceTests
 				var dispatcher = Dispatcher.GetForCurrentThread();
 
 				var ticks = 0;
-				
+
 				var timer = dispatcher.CreateTimer();
 				using var disposer = new TimerDisposer(timer);
 
@@ -268,7 +268,7 @@ namespace Microsoft.Maui.DeviceTests
 				// The actual number may vary a bit depending on timing, but 
 				// if the bug is present then ticks will be roughly 2^5, rather than 
 				// the expected value of about 5 
-				Assert.True(10 > ticks); 
+				Assert.True(10 > ticks);
 			});
 		}
 

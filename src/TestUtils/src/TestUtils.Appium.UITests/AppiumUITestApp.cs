@@ -14,6 +14,8 @@ using Xamarin.UITest;
 using Xamarin.UITest.Queries;
 using Xamarin.UITest.Queries.Tokens;
 
+using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevice;
+
 namespace TestUtils.Appium.UITests
 {
 	public class AppiumUITestApp : IApp2
@@ -100,6 +102,18 @@ namespace TestUtils.Appium.UITests
 		public ITestServer TestServer => throw new NotImplementedException();
 
 		public string ElementTree => _driver?.PageSource ?? "";
+
+		public ApplicationState AppState
+		{
+			get
+			{
+				return IsWindows
+					? GetWindowsAppState()
+					: IsAndroid
+						? GetUIAutomator2TestAppState()
+						: GetXCUITestAppState();
+			}
+		}
 
 		public void ResetApp()
 		{
@@ -223,7 +237,7 @@ namespace TestUtils.Appium.UITests
 			}
 			else
 			{
-				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
 				sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
@@ -256,7 +270,7 @@ namespace TestUtils.Appium.UITests
 			}
 			else
 			{
-				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
 				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
@@ -306,7 +320,7 @@ namespace TestUtils.Appium.UITests
 			}
 			else
 			{
-				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
 				sequence.AddAction(touchDevice.CreatePointerMove(source, 0, 0, TimeSpan.FromMilliseconds(5)));
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
@@ -356,7 +370,7 @@ namespace TestUtils.Appium.UITests
 			}
 			else
 			{
-				OpenQA.Selenium.Appium.Interactions.PointerInputDevice touchDevice = new OpenQA.Selenium.Appium.Interactions.PointerInputDevice(PointerType);
+				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
 				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)fromX, (int)fromY, TimeSpan.FromMilliseconds(5)));
 				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
@@ -824,7 +838,13 @@ namespace TestUtils.Appium.UITests
 
 		public void TapCoordinates(float x, float y)
 		{
-			throw new NotImplementedException();
+			PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
+			ActionSequence sequence = new ActionSequence(touchDevice, 0);
+			sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
+			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			_driver?.PerformActions(new List<ActionSequence> { sequence });
+			Thread.Sleep(1000);
 		}
 
 		public void TouchAndHold(Func<AppQuery, AppQuery> query)
@@ -844,7 +864,24 @@ namespace TestUtils.Appium.UITests
 
 		public void WaitFor(Func<bool> predicate, string timeoutMessage = "Timed out waiting...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
 		{
-			throw new NotImplementedException();
+			timeout ??= DefaultTimeout;
+			retryFrequency ??= TimeSpan.FromMilliseconds(500);
+			timeoutMessage ??= "Timed out on query.";
+
+			DateTime start = DateTime.Now;
+
+			while (!predicate())
+			{
+				var elapsed = DateTime.Now.Subtract(start).Ticks;
+				if (elapsed >= timeout.Value.Ticks)
+				{
+					Debug.WriteLine($">>>>> {elapsed} ticks elapsed, timeout value is {timeout.Value.Ticks}");
+
+					throw new TimeoutException(timeoutMessage);
+				}
+
+				Task.Delay(retryFrequency.Value.Milliseconds).Wait();
+			}
 		}
 
 		public AppResult[] WaitForElement(Func<AppQuery, AppQuery> query, string timeoutMessage = "Timed out waiting for element...", TimeSpan? timeout = null, TimeSpan? retryFrequency = null, TimeSpan? postTimeout = null)
@@ -897,7 +934,7 @@ namespace TestUtils.Appium.UITests
 
 				// Try to handle the rest of the query string after marked:'{x}', e.g. "* marked:'Tab1Element' child android.webkit.WebView child android.widget.TextView"
 				var match = Regex.Match(query.Raw, "(.*)'((?:\\s)(\\S*))*");
-				if(match.Groups.Count > 3 && match.Groups[3].Captures.Count != 0)
+				if (match.Groups.Count > 3 && match.Groups[3].Captures.Count != 0)
 				{
 					int index = 0;
 					while (index < match.Groups[3].Captures.Count)
@@ -1160,6 +1197,62 @@ namespace TestUtils.Appium.UITests
 				var scrollAction = new TouchAction(_driver).Press(x, startY).MoveTo(x, endY).Release();
 				scrollAction.Perform();
 			}
+		}
+
+
+		ApplicationState GetXCUITestAppState()
+		{
+			var state = _driver?.ExecuteScript(IsMac ? "macos: queryAppState" : "mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "bundleId", _appId },
+						});
+
+			// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+			return Convert.ToInt32(state) switch
+			{
+				1 => ApplicationState.Not_Running,
+				2 or
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
+		}
+
+		ApplicationState GetWindowsAppState()
+		{
+			try
+			{
+				// WinAppDriver doesn't support QueryAppState
+				_ = _driver?.CurrentWindowHandle;
+				return ApplicationState.Running;
+			}
+			catch (NoSuchWindowException)
+			{
+				return ApplicationState.Not_Running;
+			}
+		}
+
+		ApplicationState GetUIAutomator2TestAppState()
+		{
+			var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+						{
+							{ "appId", _appId },
+						});
+
+			// https://github.com/appium/appium-uiautomator2-driver#mobile-queryappstate
+			if (state == null)
+			{
+				return ApplicationState.Unknown;
+			}
+
+			return Convert.ToInt32(state) switch
+			{
+				0 => ApplicationState.Not_Installed,
+				1 => ApplicationState.Not_Running,
+				3 or
+				4 => ApplicationState.Running,
+				_ => ApplicationState.Unknown,
+			};
 		}
 	}
 }
