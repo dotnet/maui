@@ -38,11 +38,11 @@ This would install or update Appium version 2.0.0-beta.61, the windows driver 2.
 
 param
 (
-    [string] $appiumVersion = '2.0.1',
-    [string] $windowsDriverVersion = '2.9.2',
-    [string] $androidDriverVersion = '2.29.2',
-    [string] $iOSDriverVersion = '4.32.23',
-    [string] $macDriverVersion = '1.6.3'
+    [string] $appiumVersion = '2.1.0',
+    [string] $windowsDriverVersion = '2.10.1',
+    [string] $androidDriverVersion = '2.29.4',
+    [string] $iOSDriverVersion = '4.34.0',
+    [string] $macDriverVersion = '1.7.2'
 )
 
 Write-Output  "Welcome to the Appium installer"
