@@ -6,19 +6,19 @@ namespace Microsoft.Maui
 	public enum WebNavigationResult
 	{
 		/// <summary>
-		/// The navigation was cancelled.
+		/// The navigation succeeded.
 		/// </summary>
 		Success = 1,
 		/// <summary>
-		/// The navigation failed.
+		/// The navigation was cancelled.
 		/// </summary>
 		Cancel = 2,
 		/// <summary>
-		/// The navigation succeeded.
+		/// The navigation timed out.
 		/// </summary>
 		Timeout = 3,
 		/// <summary>
-		/// The navigation timed out.
+		/// The navigation failed.
 		/// </summary>
 		Failure = 4
 	}
