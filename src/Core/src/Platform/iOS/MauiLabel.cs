@@ -9,7 +9,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiLabel : UILabel
+	public class MauiLabel : UILabel, IUIViewLifeCycleEvents
 	{
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
 
@@ -98,5 +98,21 @@ namespace Microsoft.Maui.Platform
 		SizeF AddInsets(SizeF size) => new SizeF(
 			width: size.Width + TextInsets.Left + TextInsets.Right,
 			height: size.Height + TextInsets.Top + TextInsets.Bottom);
+
+
+		EventHandler _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void MovedToWindow()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

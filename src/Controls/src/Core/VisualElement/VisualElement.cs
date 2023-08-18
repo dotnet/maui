@@ -1840,7 +1840,8 @@ namespace Microsoft.Maui.Controls
 			remove => _platformContainerViewChanged -= value;
 		}
 
-		void OnLoadedCore()
+		void SendLoaded() => SendLoaded(true);
+		void SendLoaded(bool updateWiring)
 		{
 			if (_isLoadedFired)
 				return;
@@ -1850,10 +1851,13 @@ namespace Microsoft.Maui.Controls
 
 			// If the user is also watching unloaded we need to verify
 			// unloaded is still correctly being watched for.
-			UpdatePlatformUnloadedLoadedWiring(Window);
+
+			if (updateWiring)
+				UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
-		void OnUnloadedCore()
+		void SendUnloaded() => SendUnloaded(true);
+		void SendUnloaded(bool updateWiring)
 		{
 			if (!_isLoadedFired)
 				return;
@@ -1863,7 +1867,8 @@ namespace Microsoft.Maui.Controls
 
 			// If the user is also watching loaded we need to verify
 			// loaded is still correctly being watched for.
-			UpdatePlatformUnloadedLoadedWiring(Window);
+			if (updateWiring)
+				UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
 		static void OnWindowChanged(BindableObject bindable, object? oldValue, object? newValue)

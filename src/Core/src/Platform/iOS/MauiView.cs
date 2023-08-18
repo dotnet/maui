@@ -6,7 +6,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
 		static bool? _respondsToSafeArea;
 
@@ -155,6 +155,21 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void MovedToWindow()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

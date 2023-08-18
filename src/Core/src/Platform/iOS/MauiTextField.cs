@@ -2,13 +2,14 @@
 using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiTextField : UITextField
+
+	public class MauiTextField : UITextField, IUIViewLifeCycleEvents
 	{
+
 		public MauiTextField(CGRect frame)
 			: base(frame)
 		{
@@ -18,10 +19,17 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
-			ResignFirstResponderTouchGestureRecognizer.Update(this, window);
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
 		public override string? Text
@@ -64,6 +72,14 @@ namespace Microsoft.Maui.Platform
 				if (old?.Start != value?.Start || old?.End != value?.End)
 					SelectionChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		public override void MovedToWindow()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
 		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
