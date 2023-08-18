@@ -81,32 +81,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Does Not Leak")]
-		public async Task DoesNotLeak()
-		{
-			SetupBuilder();
-
-			WeakReference viewReference = null;
-			WeakReference platformViewReference = null;
-			WeakReference handlerReference = null;
-
-			await InvokeOnMainThreadAsync(() =>
-			{
-				var layout = new Grid();
-				var entry = new Entry();
-				layout.Add(entry);
-				var handler = CreateHandler<LayoutHandler>(layout);
-				viewReference = new WeakReference(entry);
-				handlerReference = new WeakReference(entry.Handler);
-				platformViewReference = new WeakReference(entry.Handler.PlatformView);
-			});
-
-			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
-			Assert.False(viewReference.IsAlive, "Entry should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
-		}
-
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered
 		[Fact]

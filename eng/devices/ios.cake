@@ -6,7 +6,7 @@
 
 string TARGET = Argument("target", "Test");
 
-const string defaultVersion = "16.2";
+const string defaultVersion = "16.4";
 const string dotnetVersion = "net7.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?? "");
@@ -166,12 +166,26 @@ Task("Test")
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
 	}
 
+	var XCODE_PATH =  Argument("xcode_path", "");
+
+	if (String.IsNullOrEmpty(XCODE_PATH) && IsCIBuild())
+		XCODE_PATH = "/Applications/Xcode_14.3.0.app";
+		
+	string xcode_args = "";
+	if (!String.IsNullOrEmpty(XCODE_PATH))
+	{
+		xcode_args = $"--xcode=\"{XCODE_PATH}\" ";
+	}
+
+	Information("XCODE PATH: {0}", XCODE_PATH);
+
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
 		$"--output-directory=\"{TEST_RESULTS}\" " +
+		xcode_args +
 		$"--verbosity=\"Debug\" ")
 	};
 

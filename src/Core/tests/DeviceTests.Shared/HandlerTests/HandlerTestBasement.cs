@@ -148,7 +148,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				else
 #endif
-					viewHandler.PlatformArrange(view.Frame);
+				viewHandler.PlatformArrange(view.Frame);
 			}
 		}
 

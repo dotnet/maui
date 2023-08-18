@@ -3,7 +3,7 @@ using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	class CoreApplicationStub : IApplication
+	public class CoreApplicationStub : IApplication
 	{
 		readonly List<IWindow> _windows = new List<IWindow>();
 

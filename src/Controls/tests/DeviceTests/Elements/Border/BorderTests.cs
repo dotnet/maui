@@ -18,8 +18,9 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				builder.ConfigureMauiHandlers(handlers =>
 				{
-					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Border, BorderHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<Label, LabelHandler>();
 				});
 			});
 		}
@@ -84,7 +85,8 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 		}
 
-
+		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
+		// It adds a child to the Border, which is a worthwhile test case.
 		[Fact("Border Does Not Leak")]
 		public async Task DoesNotLeak()
 		{

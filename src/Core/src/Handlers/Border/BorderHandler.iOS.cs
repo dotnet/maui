@@ -52,6 +52,7 @@ namespace Microsoft.Maui.Handlers
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
+
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
@@ -59,7 +60,7 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
-		static void UpdateContent(IBorderHandler handler)
+		static partial void UpdateContent(IBorderHandler handler)
 		{
 			_ = handler.PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = handler.VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
@@ -82,11 +83,6 @@ namespace Microsoft.Maui.Handlers
 
 				handler.PlatformView.ChildMaskLayer = null;
 			}
-		}
-
-		public static void MapContent(IBorderHandler handler, IBorderView border)
-		{
-			UpdateContent(handler);
 		}
 	}
 }
