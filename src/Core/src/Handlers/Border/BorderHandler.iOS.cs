@@ -6,8 +6,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class BorderHandler : ViewHandler<IBorderView, ContentView>
 	{
-		WeakReference<LayoutView>? _container;
-
 		protected override ContentView CreatePlatformView()
 		{
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
@@ -17,24 +15,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				CrossPlatformLayout = VirtualView
 			};
-		}
-
-		internal LayoutView? Container
-		{
-			get
-			{
-				if (_container?.TryGetTarget(out LayoutView? target) == true)
-					return target;
-
-				return null;
-			}
-			set
-			{
-				_container = null;
-
-				if (value != null)
-					_container = new WeakReference<LayoutView>(value);
-			}
 		}
 
 		protected override void ConnectHandler(ContentView platformView)
@@ -74,12 +54,12 @@ namespace Microsoft.Maui.Handlers
 			{
 				var child = view.ToPlatform(handler.MauiContext);
 
-				borderHandler.Container = new LayoutView
+				var container = new LayoutView
 				{
 					CrossPlatformLayout = handler.VirtualView
 				};
-				borderHandler.Container.AddSubview(child);
-				handler.PlatformView.AddSubview(borderHandler.Container);
+				container.AddSubview(child);
+				handler.PlatformView.AddSubview(container);
 
 				handler.PlatformView.ChildMaskLayer = null;
 			}
