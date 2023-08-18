@@ -28,7 +28,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Ignore("Crash navigating to the sample from the test but not launching the sample")]
 		public void NoScrollConflicts()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Android)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WebViewElement");
 				App.SwipeRightToLeft("WebViewElement");
