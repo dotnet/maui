@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using WImage = Microsoft.UI.Xaml.Controls.Image;
 using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			FrameworkElement destinationContext,
-			IImageSourceServiceProvider services,
+			IMauiContext? mauiContext,
 			Action<WImageSource?> setImage,
 			CancellationToken cancellationToken = default)
 		{
@@ -22,6 +23,9 @@ namespace Microsoft.Maui.Platform
 			if (imageSource == null)
 				return null;
 
+			if (mauiContext == null)
+				return null;
+
 			var events = image as IImageSourcePartEvents;
 
 			events?.LoadingStarted();
@@ -29,10 +33,11 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var service = services.GetRequiredImageSourceService(imageSource);
+				var imageSourceServiceProvider = mauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
+				var imageSourceService = imageSourceServiceProvider.GetRequiredImageSourceService(imageSource);
 
 				var scale = destinationContext.XamlRoot?.RasterizationScale ?? 1;
-				var result = await service.GetImageSourceAsync(imageSource, (float)scale, cancellationToken);
+				var result = await imageSourceService.GetImageSourceAsync(imageSource, (float)scale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;
