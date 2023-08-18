@@ -6,10 +6,12 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Util;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
+using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
@@ -683,6 +685,65 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			return (element.ToPlatform())?.GetLocationOnScreenPx();
+		}
+
+		internal static bool HideSoftInput(this AView inputView)
+		{
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+			var windowToken = inputView.WindowToken;
+
+			if (windowToken is not null && inputMethodManager is not null)
+			{
+				return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
+			}
+
+			return false;
+		}
+
+		internal static bool ShowSoftInput(this TextView inputView)
+		{
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+
+			// The zero value for the second parameter comes from 
+			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
+			// Apparently there's no named value for zero in this case
+			return inputMethodManager?.ShowSoftInput(inputView, 0) is true;
+		}
+
+		internal static bool ShowSoftInput(this AView view) => view switch
+		{
+			TextView textView => textView.ShowSoftInput(),
+			ViewGroup viewGroup => viewGroup.GetFirstChildOfType<TextView>()?.ShowSoftInput() is true,
+			_ => false,
+		};
+
+		internal static bool IsSoftInputShowing(this AView view)
+		{
+			var insets = ViewCompat.GetRootWindowInsets(view);
+			if (insets is null)
+			{
+				return false;
+			}
+
+			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+			return result;
+		}
+
+		internal static void PostShowSoftInput(this AView view)
+		{
+			void ShowSoftInput()
+			{
+				// Since we're posting this on the queue, it's possible something else will have disposed of the view
+				// by the time the looper is running this, so we have to verify that the view is still usable
+				if (view.IsDisposed())
+				{
+					return;
+				}
+
+				view.ShowSoftInput();
+			};
+
+			view.Post(ShowSoftInput);
 		}
 	}
 }
