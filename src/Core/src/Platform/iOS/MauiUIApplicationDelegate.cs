@@ -8,6 +8,9 @@ using UIKit;
 
 namespace Microsoft.Maui
 {
+	/// <summary>
+	/// Defines the core behavior of a .NET MAUI application running on iOS and MacCatalyst.
+	/// </summary>
 	public abstract partial class MauiUIApplicationDelegate : UIResponder, IUIApplicationDelegate, IPlatformApplication
 	{
 		internal const string MauiSceneConfigurationKey = "__MAUI_DEFAULT_SCENE_CONFIGURATION__";
@@ -21,6 +24,12 @@ namespace Microsoft.Maui
 			IPlatformApplication.Current = this;
 		}
 
+		/// <summary>
+		/// When overridden in a derived class, creates the <see cref="MauiApp"/> to be used in this application.
+		/// Typically a <see cref="MauiApp"/> is created by calling <see cref="MauiApp.CreateBuilder(bool)"/>, configuring
+		/// the returned <see cref="MauiAppBuilder"/>, and returning the built app by calling <see cref="MauiAppBuilder.Build"/>.
+		/// </summary>
+		/// <returns>The built <see cref="MauiApp"/>.</returns>
 		protected abstract MauiApp CreateMauiApp();
 
 		[Export("application:willFinishLaunchingWithOptions:")]
