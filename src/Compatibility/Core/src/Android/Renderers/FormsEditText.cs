@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 				return base.OnKeyPreIme(keyCode, e);
 			}
 
-			this.HideKeyboard();
+			this.HideSoftInput();
 
 			_onKeyboardBackPressed?.Invoke(this, EventArgs.Empty);
 			return true;

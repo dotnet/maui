@@ -341,5 +341,26 @@ namespace Microsoft.Maui.Platform
 
 			return false;
 		}
+
+		internal static T? GetChildAt<T>(this NView view, int index) where T : NView
+		{
+			return (T?)view.Children[index];
+		}
+
+		internal static bool HideSoftInput(this NView view) => SetKeyInputFocus(view, false);
+
+		internal static bool ShowSoftInput(this NView view) => SetKeyInputFocus(view, true);
+
+		internal static bool IsSoftInputShowing(this NView view)
+		{
+			return view.KeyInputFocus;
+		}
+
+		internal static bool SetKeyInputFocus(NView view, bool isShow)
+		{
+			view.KeyInputFocus = isShow;
+
+			return view.KeyInputFocus;
+		}
 	}
 }
