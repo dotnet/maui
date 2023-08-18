@@ -53,7 +53,8 @@ namespace Maui.Controls.Sample.Issues
 		{
 			await Task.Delay(1000).ContinueWith(t =>
 			{
-				this.Dispatcher.Dispatch(() => {
+				this.Dispatcher.Dispatch(() =>
+				{
 
 					var isSoftInputShowing = input.IsSoftInputShowing();
 
