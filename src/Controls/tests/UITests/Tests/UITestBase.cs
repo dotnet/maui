@@ -2,7 +2,6 @@
 using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
-using OpenQA.Selenium;
 using TestUtils.Appium.UITests;
 using VisualTestUtils;
 using VisualTestUtils.MagickNet;
@@ -25,6 +24,7 @@ namespace Microsoft.Maui.AppiumTests
 #endif
 	public class UITestBase : UITestContextTestBase
 	{
+		protected const int SetupMaxRetries = 1;
 		readonly TestDevice _testDevice;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
@@ -56,24 +56,23 @@ namespace Microsoft.Maui.AppiumTests
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
+			if (App is IApp2 app2)
+			{
+				if (app2.AppState == ApplicationState.Not_Running)
+				{
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we don't want to log diagnostic data as there is nothing to collect from
+					Reset();
+					FixtureSetup();
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
+				}
+			}
+
 			var testOutcome = TestContext.CurrentContext.Result.Outcome;
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
 			{
-				var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
-
-				_ = App.Screenshot(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-ScreenShot"));
-
-				if (App is IApp2 app2)
-				{
-					var pageSource = app2.ElementTree;
-					File.WriteAllText(Path.Combine(logDir, $"{TestContext.CurrentContext.Test.MethodName}-{UITestContext.TestConfig.TestDevice}-PageSource.txt"), pageSource);
-				}
-
-				foreach (var log in Directory.GetFiles(logDir))
-				{
-					TestContext.AddTestAttachment(log, Path.GetFileName(log));
-				}
+				SaveDiagnosticLogs("UITestBaseTearDown");
 			}
 		}
 
@@ -81,12 +80,30 @@ namespace Microsoft.Maui.AppiumTests
 		public void OneTimeSetup()
 		{
 			InitialSetup(TestContextSetupFixture.TestContext);
-			FixtureSetup();
+			try
+			{
+				SaveDiagnosticLogs("BeforeFixtureSetup");
+				FixtureSetup();
+			}
+			catch
+			{
+				SaveDiagnosticLogs("FixtureSetup");
+				throw;
+			}
 		}
 
-		[OneTimeTearDown()]
+		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
+			var outcome = TestContext.CurrentContext.Result.Outcome;
+
+			// We only care about setup failures as regular test failures will already do logging
+			if (outcome.Status == ResultState.SetUpFailure.Status &&
+				outcome.Site == ResultState.SetUpFailure.Site)
+			{
+				SaveDiagnosticLogs("OneTimeTearDown");
+			}
+
 			FixtureTeardown();
 		}
 
@@ -122,7 +139,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public void VerifyScreenshot(string? name = null)
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac)
+			if (_testDevice == TestDevice.Mac)
 			{
 				// For now, ignore visual tests on Mac Catalyst since the Appium screenshot on Mac (unlike Windows)
 				// is of the entire screen, not just the app. Later when xharness relay support is in place to
@@ -132,33 +149,38 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			if (name == null)
-				name = TestContext.CurrentContext.Test.MethodName;
+				name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
-			IApp2? app = App as IApp2;
-			if (app is null)
+			if (App is not IApp2 app)
 				throw new InvalidOperationException("App is not an IApp2");
 
-			byte[] screenshotPngBytes = app.Screenshot();
-			if (screenshotPngBytes is null)
-				throw new InvalidOperationException("Failed to get screenshot");
+			byte[] screenshotPngBytes = app.Screenshot() ?? throw new InvalidOperationException("Failed to get screenshot");
 
 			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
 			// For Android and iOS, crop off the OS status bar at the top since it's not part of the
 			// app itself and contains the time, which always changes
-			int topStatusBarHeight = _testDevice switch
+			int cropFromTop = _testDevice switch
 			{
 				TestDevice.Android => 60,
 				TestDevice.iOS => 90,
-				_ => -1,
+				_ => 0,
 			};
 
-			if (topStatusBarHeight != -1)
+			// For Android also crop the 3 button nav from the bottom, since it's not part of the
+			// app itself and the button color can vary (the buttons change clear briefly when tapped)
+			int cropFromBottom = _testDevice switch
+			{
+				TestDevice.Android => 125,
+				_ => 0,
+			};
+
+			if (cropFromTop > 0 || cropFromBottom > 0)
 			{
 				IImageEditor imageEditor = _imageEditorFactory.CreateImageEditor(actualImage);
 				(int width, int height) = imageEditor.GetSize();
 
-				imageEditor.Crop(0, topStatusBarHeight, width, height - topStatusBarHeight);
+				imageEditor.Crop(0, cropFromTop, width, height - cropFromTop - cropFromBottom);
 
 				actualImage = imageEditor.GetUpdatedImage();
 			}
@@ -173,6 +195,35 @@ namespace Microsoft.Maui.AppiumTests
 			};
 
 			_visualRegressionTester.VerifyMatchesSnapshot(name!, actualImage, environmentName: platform, testContext: _visualTestContext);
+		}
+
+		void SaveDiagnosticLogs(string? note = null)
+		{
+			if (string.IsNullOrEmpty(note))
+				note = "-";
+			else
+				note = $"-{note}-";
+
+			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
+			if (UITestContext is not null)
+			{
+				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+
+				_ = App.Screenshot(Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot"));
+
+				if (App is IApp2 app2)
+				{
+					var pageSource = app2.ElementTree;
+					File.WriteAllText(Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt"), pageSource);
+				}
+			}
+
+			foreach (var log in Directory.GetFiles(logDir))
+			{
+				TestContext.AddTestAttachment(log, Path.GetFileName(log));
+			}
 		}
 	}
 }
