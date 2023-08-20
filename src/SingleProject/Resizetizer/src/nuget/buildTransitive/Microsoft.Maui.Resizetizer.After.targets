@@ -378,7 +378,6 @@
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
-            <_MauiShouldGenerateSplashScreen>false</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
             <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
         </PropertyGroup>
