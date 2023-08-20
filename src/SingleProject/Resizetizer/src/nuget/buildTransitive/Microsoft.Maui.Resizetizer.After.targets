@@ -91,6 +91,11 @@
         <_ResizetizerThrowsErrorOnInvalidFilename Condition="'$(ResizetizerErrorOnInvalidFilename)' == 'false'">false</_ResizetizerThrowsErrorOnInvalidFilename>
         <_ResizetizerThrowsErrorOnDuplicateOutputFilename>true</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
         <_ResizetizerThrowsErrorOnDuplicateOutputFilename Condition="'$(ResizetizerErrorOnDuplicateOutputFilename)' == 'false'">false</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+
+        <EnableMauiAssetProcessing Condition=" '$(EnableMauiAssetProcessing)' == '' ">true</EnableMauiAssetProcessing>
+        <EnableMauiSplashScreenProcessing Condition=" '$(EnableMauiSplashScreenProcessing)' == '' ">true</EnableMauiSplashScreenProcessing>
+        <EnableMauiFontProcessing Condition=" '$(EnableMauiFontProcessing)' == '' ">true</EnableMauiFontProcessing>
+        <EnableMauiImageProcessing Condition=" '$(EnableMauiImageProcessing)' == '' ">true</EnableMauiImageProcessing>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -340,7 +345,7 @@
     </Target>
 
     <Target Name="ProcessMauiAssets"
-        Condition="'$(EnableMauiAssetProcessing)' != 'false'">
+        Condition="'$(EnableMauiAssetProcessing)' == 'true'">
         <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
         </PropertyGroup>
@@ -366,7 +371,7 @@
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
-        Condition="'$(EnableMauiSplashScreenProcessing)' != 'false'"
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
         Outputs="$(_MauiSplashStampFile)">
 
@@ -486,7 +491,7 @@
     </Target>
 
     <Target Name="ProcessMauiFonts"
-        Condition="'$(EnableMauiFontProcessing)' != 'false'"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
         Outputs="$(_MauiFontStampFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
@@ -574,7 +579,7 @@
     </Target>
 
     <Target Name="ResizetizeImages"
-        Condition="'$(EnableMauiImageProcessing)' != 'false'"
+        Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
         Outputs="$(_ResizetizerStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"
