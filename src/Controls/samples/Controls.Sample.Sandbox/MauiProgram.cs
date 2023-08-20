@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample
 			// To test shell scenarios, change this to true
 			bool useShell = false;
 
-			if (! useShell)
+			if (!useShell)
 			{
 				return new Window(new NavigationPage(new MainPage()));
 			}
