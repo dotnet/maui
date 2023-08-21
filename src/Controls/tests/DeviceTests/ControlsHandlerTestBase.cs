@@ -269,11 +269,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		private void Vc_BatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
-		{
-			throw new NotImplementedException();
-		}
-
 		/// <summary>
 		/// This is more complicated as we have different logic depending on the view being focused or not.
 		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
