@@ -4,9 +4,9 @@
       <Uri>https://github.com/dotnet/installer</Uri>
       <Sha>e5bfaee3514192f2a496f8b0bdd00208ac15458d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-rc.1.23414.4" CoherentParentDependency="Microsoft.Android.Sdk.Windows">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>e89794659669cb7bb967db73a7ea6889c3891727</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.0-rc.1.420">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
@@ -28,9 +28,9 @@
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
       <Sha>0c18a67eb79dfbd94ad81a7f498866557aa80b7d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-rc.1.23411.2" CoherentParentDependency="Microsoft.NETCore.App.Ref">
+    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-rc.1.23415.5" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>abfa03c97f4175d4d209435cd0e71f558e36c3fd</Sha>
+      <Sha>66dbaefff04250dc72849f0172e0c53bcfb3ab38</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
@@ -95,49 +95,49 @@
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>480b9159eb7e69b182a87581d5a336e97e0b6dae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
