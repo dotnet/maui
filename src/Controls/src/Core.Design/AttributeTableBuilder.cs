@@ -33,6 +33,12 @@ namespace Microsoft.Maui.Controls.Design
 			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "FlowDirection",
 			   new TypeConverterAttribute(typeof(FlowDirectionDesignTypeConverter)));
 
+			// We need to supersede type converter declared on VisualElement.Background,
+			// otherwise VS will use generic "all strings allowed" converter which
+			// does not expose color values, i.e. no XAML intellisense popup
+			AddMemberAttributes("Microsoft.Maui.Controls.VisualElement", "Background",
+			   new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
+
 			AddMemberAttributes("Microsoft.Maui.Controls.ItemsView", "ItemsLayout",
 			   new TypeConverterAttribute(typeof(ItemsLayoutDesignTypeConverter)));
 
@@ -61,6 +67,7 @@ namespace Microsoft.Maui.Controls.Design
 			//new System.Windows.Markup.MarkupExtensionReturnTypeAttribute (),
 			);
 
+			AddTypeAttributes("Microsoft.Maui.Controls.Brush", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.Graphics.Color", new TypeConverterAttribute(typeof(ColorDesignTypeConverter)));
 			AddTypeAttributes("Microsoft.Maui.GridLength", new TypeConverterAttribute(typeof(GridLengthDesignTypeConverter)));
 

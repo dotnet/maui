@@ -160,10 +160,17 @@ namespace Microsoft.Maui.Controls
 			_reloadRequested?.Invoke(this, EventArgs.Empty);
 		}
 
+		/// <summary>
+		/// Raised after web navigation completes.
+		/// </summary>
 		public event EventHandler<WebNavigatedEventArgs> Navigated;
 
+		/// <summary>
+		/// Raised after web navigation begins.
+		/// </summary>
 		public event EventHandler<WebNavigatingEventArgs> Navigating;
 
+		/// <inheritdoc/>
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
@@ -175,6 +182,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		protected override void OnPropertyChanged(string propertyName)
 		{
 			if (propertyName == "BindingContext")
@@ -193,6 +201,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		event EventHandler<EvalRequested> _evalRequested;
+
+		/// <inheritdoc/>
 		event EventHandler<EvalRequested> IWebViewController.EvalRequested
 		{
 			add { _evalRequested += value; }
@@ -200,6 +210,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		event EvaluateJavaScriptDelegate _evaluateJavaScriptRequested;
+
+		/// <inheritdoc/>
 		event EvaluateJavaScriptDelegate IWebViewController.EvaluateJavaScriptRequested
 		{
 			add { _evaluateJavaScriptRequested += value; }
@@ -207,6 +219,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		event EventHandler _goBackRequested;
+
+		/// <inheritdoc/>
 		event EventHandler IWebViewController.GoBackRequested
 		{
 			add { _goBackRequested += value; }
@@ -214,23 +228,29 @@ namespace Microsoft.Maui.Controls
 		}
 
 		event EventHandler _goForwardRequested;
+
+		/// <inheritdoc/>
 		event EventHandler IWebViewController.GoForwardRequested
 		{
 			add { _goForwardRequested += value; }
 			remove { _goForwardRequested -= value; }
 		}
 
+		/// <inheritdoc/>
 		void IWebViewController.SendNavigated(WebNavigatedEventArgs args)
 		{
 			Navigated?.Invoke(this, args);
 		}
 
+		/// <inheritdoc/>
 		void IWebViewController.SendNavigating(WebNavigatingEventArgs args)
 		{
 			Navigating?.Invoke(this, args);
 		}
 
 		event EventHandler _reloadRequested;
+
+		/// <inheritdoc/>
 		event EventHandler IWebViewController.ReloadRequested
 		{
 			add { _reloadRequested += value; }
