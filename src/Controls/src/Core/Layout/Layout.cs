@@ -215,11 +215,21 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemove(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
+
+			if (view is Element element)
+			{
+				RemoveLogicalChild(element);
+			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
+
+			if (view is Element element)
+			{
+				AddLogicalChild(element);
+			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
