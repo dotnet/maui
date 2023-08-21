@@ -130,21 +130,21 @@ namespace Microsoft.Maui.Platform
 			_borderPath?.UpdateStrokeLineJoin(Border.StrokeLineJoin);
 		}
 
-		async partial void ShadowChanged()
+		partial void ShadowChanged()
 		{
 			if (HasShadow)
-				await UpdateShadowAsync();
+				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 			else
-				await CreateShadowAsync();
+				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
-		async void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
+		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			_shadowHostSize = e.NewSize;
 
 			UpdateClip();
 			UpdateBorder();
-			await UpdateShadowAsync();
+			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
 		void OnChildVisibilityChanged(DependencyObject sender, DependencyProperty dp)
