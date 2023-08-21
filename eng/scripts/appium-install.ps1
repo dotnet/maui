@@ -62,8 +62,12 @@ npm install -g appium@$appiumVersion
 write-Output  "Installed appium"
 appium -v
 
+Write-Output  "Installing appium doctor"
+npm install -g appium-doctor
+Write-Output  "Installed appium doctor"
+
 $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
-Write-Output "List of installed drivers $x"
+Write-Output "List of installed drivers $existingDrivers"
 if ($existingDrivers.windows) {
     Write-Output  "Uninstalling appium driver windows"
     appium driver uninstall windows
@@ -91,7 +95,7 @@ if ($existingDrivers.mac2) {
 $drivers = appium driver list --installed --json  | ConvertFrom-Json
 Write-Output "List of installed drivers after cleaup $drivers"
 
-Write-Output  "Going to install appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
+Write-Output  "We will now install the appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersion"
 
 Write-Output  "Installing appium driver windows $windowsDriverVersion"
 appium driver install --source=npm appium-windows-driver@$windowsDriverVersion
@@ -108,5 +112,8 @@ Write-Output  "Installed appium driver xcuitest"
 Write-Output  "Installing appium driver mac2 $macDriverVersion"
 appium driver install mac2@$macDriverVersion
 Write-Output  "Installed appium driver mac2"
+
+Write-Output  "Check everything is installed correctly with appium doctor"
+appium-doctor
 
 Write-Output  "Done, thanks!"
