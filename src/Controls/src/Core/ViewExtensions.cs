@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown if <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static void CancelAnimations(this VisualElement view)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			view.AbortAnimation(nameof(LayoutTo));
@@ -37,8 +37,7 @@ namespace Microsoft.Maui.Controls
 		static Task<bool> AnimateTo(this VisualElement view, double start, double end, string name,
 			Action<VisualElement, double> updateAction, uint length = 250, Easing? easing = null)
 		{
-			if (easing == null)
-				easing = Easing.Linear;
+			easing ??= Easing.Linear;
 
 			var tcs = new TaskCompletionSource<bool>();
 
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.Opacity, opacity, nameof(FadeTo), (v, value) => v.Opacity = value, length, easing);
@@ -85,7 +84,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			Rect start = view.Bounds;
@@ -112,7 +111,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return view.RotateTo(view.Rotation + drotation, length, easing);
@@ -129,7 +128,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return view.ScaleTo(view.Scale + dscale, length, easing);
@@ -146,7 +145,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.Rotation, rotation, nameof(RotateTo), (v, value) => v.Rotation = value, length, easing);
@@ -163,7 +162,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.RotationX, rotation, nameof(RotateXTo), (v, value) => v.RotationX = value, length, easing);
@@ -180,7 +179,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.RotationY, rotation, nameof(RotateYTo), (v, value) => v.RotationY = value, length, easing);
@@ -196,7 +195,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.Scale, scale, nameof(ScaleTo), (v, value) => v.Scale = value, length, easing);
@@ -213,7 +212,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.ScaleX, scale, nameof(ScaleXTo), (v, value) => v.ScaleX = value, length, easing);
@@ -230,7 +229,7 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
 
 			return AnimateTo(view, view.ScaleY, scale, nameof(ScaleYTo), (v, value) => v.ScaleY = value, length, easing);
@@ -248,8 +247,15 @@ namespace Microsoft.Maui.Controls
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{
-			if (view == null)
+			if (view is null)
 				throw new ArgumentNullException(nameof(view));
+
+			// If translation is only in one dimension => use a simpler more performant translation
+			// We use '.00001' instead of 'double.Epsilon' to permit some floating point calculations errors
+			if (Math.Abs(view.TranslationX - x) <= .00001)
+				return TranslateYTo(view, y, length, easing);
+			if (Math.Abs(view.TranslationY - y) <= .00001)
+				return TranslateXTo(view, x, length, easing);
 
 			easing ??= Easing.Linear;
 
@@ -273,6 +279,40 @@ namespace Microsoft.Maui.Controls
 			}.Commit(view, nameof(TranslateTo), 16, length, null, (f, a) => tcs.SetResult(a));
 
 			return tcs.Task;
+		}
+		/// <summary>
+		/// Animates an elements <see cref="VisualElement.TranslationX"/> property
+		/// from their current value to the new value. This ensures that the input layout is in the same position as the visual layout.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="x">The x component of the final translation vector.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+		public static Task<bool> TranslateXTo(this VisualElement view, double x, uint length = 250, Easing? easing = null)
+		{
+			if (view is null)
+				throw new ArgumentNullException(nameof(view));
+
+			// Note: We use the same param 'name' as 'TranslateTo' stopping previous 'TranslateTo' animations
+			return AnimateTo(view, view.TranslationX, x, nameof(TranslateTo), (v, value) => v.TranslationX = value, length, easing);
+		}
+		/// <summary>
+		/// Animates an elements <see cref="VisualElement.TranslationY"/> property
+		/// from their current value to the new value. This ensures that the input layout is in the same position as the visual layout.
+		/// </summary>
+		/// <param name="view">The view on which this method operates.</param>
+		/// <param name="y">The y component of the final translation vector.</param>
+		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
+		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
+		public static Task<bool> TranslateYTo(this VisualElement view, double y, uint length = 250, Easing? easing = null)
+		{
+			if (view is null)
+				throw new ArgumentNullException(nameof(view));
+
+			// Note: We use the same param 'name' as 'TranslateTo' stopping previous 'TranslateTo' animations
+			return AnimateTo(view, view.TranslationY, y, nameof(TranslateTo), (v, value) => v.TranslationY = value, length, easing);
 		}
 
 		internal static IAnimationManager GetAnimationManager(this IAnimatable animatable)

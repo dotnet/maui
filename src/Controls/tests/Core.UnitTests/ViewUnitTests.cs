@@ -147,6 +147,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task TestTranslateXTo()
+		{
+			// Normal check
+			var view = AnimationReadyHandler.Prepare(new View());
+			await view.TranslateXTo(100);
+			Assert.Equal(100, view.TranslationX);
+
+			// Null parameter check
+			view = null;
+			await Assert.ThrowsAsync<ArgumentNullException>(() => view.TranslateXTo(100));
+		}
+
+		[Fact]
+		public async Task TestTranslateYTo()
+		{
+			// Normal check
+			var view = AnimationReadyHandler.Prepare(new View());
+			await view.TranslateYTo(100);
+			Assert.Equal(100, view.TranslationY);
+
+			// Null parameter check
+			view = null;
+			await Assert.ThrowsAsync<ArgumentNullException>(() => view.TranslateYTo(100));
+		}
+
+		[Fact]
 		public async Task ScaleTo()
 		{
 			var view = AnimationReadyHandler.Prepare(new View());
