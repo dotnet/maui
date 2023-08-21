@@ -1,13 +1,4 @@
-﻿//
-// RawBitmap.cs
-//
-// Author:
-//       Morten Nielsen (https://xaml.dev)
-//       Copyright (c) 2023 Morten Nielsen
-//
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;

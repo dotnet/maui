@@ -1,13 +1,4 @@
-﻿//
-// ConnectedComponentAnalysis.cs
-//
-// Author:
-//       Morten Nielsen (https://xaml.dev)
-//       Copyright (c) 2006-2023 Morten Nielsen
-//
-// Licensed under the MIT License.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
