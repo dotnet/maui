@@ -53,9 +53,7 @@ namespace Microsoft.Maui.Controls.Platform
 				_view = view;
 				_view.MeasureInvalidated += OnMeasureInvalidated;
 
-				// If we don't find the MauiContext and instead return the default, the view won't display
-				// Header and footers of a CollectionView don't have a parent when they're created (which is used to get the context), yet they still need to be displayed
-				FrameworkElement = view.ToPlatform(view.FindMauiContext(true)!);
+				FrameworkElement = view.ToPlatform(view.FindMauiContext()!);
 				Children.Add(FrameworkElement);
 
 				// make sure we re-measure once the template is applied
