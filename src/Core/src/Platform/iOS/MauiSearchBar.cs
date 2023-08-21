@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiSearchBar : UISearchBar
+	public class MauiSearchBar : UISearchBar, IUIViewLifeCycleEvents
 	{
 		public MauiSearchBar() : this(RectangleF.Empty)
 		{
@@ -81,6 +81,20 @@ namespace Microsoft.Maui.Platform
 		void OnEditingChanged(object? sender, EventArgs e)
 		{
 			EditingChanged?.Invoke(this, EventArgs.Empty);
+		}
+
+		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

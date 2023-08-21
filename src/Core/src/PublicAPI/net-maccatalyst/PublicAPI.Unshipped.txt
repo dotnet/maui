@@ -51,10 +51,20 @@ override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKi
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.MauiActivityIndicator.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiBoxView.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiCheckBox.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiLabel.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiPageControl.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.set -> void
+override Microsoft.Maui.Platform.MauiRefreshView.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiScrollView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void
+override Microsoft.Maui.Platform.MauiSearchBar.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiShapeView.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiTextField.MovedToWindow() -> void
+override Microsoft.Maui.Platform.MauiTextView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiView.SafeAreaInsetsDidChange() -> void
 override Microsoft.Maui.Platform.MauiTextView.Font.get -> UIKit.UIFont?
@@ -62,6 +72,7 @@ override Microsoft.Maui.Platform.MauiTextView.Font.set -> void
 override Microsoft.Maui.Platform.MauiView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.MauiView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.MauiView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
+override Microsoft.Maui.Platform.NoCaretField.MovedToWindow() -> void
 override Microsoft.Maui.Platform.WrapperView.MovedToWindow() -> void
 override Microsoft.Maui.SizeRequest.Equals(object? obj) -> bool
 override Microsoft.Maui.SizeRequest.GetHashCode() -> int

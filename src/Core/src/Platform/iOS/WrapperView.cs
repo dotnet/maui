@@ -248,6 +248,7 @@ namespace Microsoft.Maui.Platform
 			return Layer;
 		}
 
+		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{

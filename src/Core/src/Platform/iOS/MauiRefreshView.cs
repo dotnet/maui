@@ -10,7 +10,7 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiRefreshView : UIView
+	public class MauiRefreshView : UIView, IUIViewLifeCycleEvents
 	{
 		bool _isRefreshing;
 		nfloat _originalY;
@@ -198,5 +198,19 @@ namespace Microsoft.Maui.Platform
 		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 #pragma warning restore CA1416
+
+		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
+		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
 		EventHandler? _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{
@@ -74,9 +75,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public override void MovedToWindow()
-#pragma warning restore RS0016 // Add public types and members to the declared API
 		{
 			base.MovedToWindow();
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
