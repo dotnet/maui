@@ -57,58 +57,39 @@ node -v
 Write-Output  "Check if appium is installed"
 npm list -g | grep appium
 
-$modulesFolder = "/Users/builder/azdo/_work/_tool/node/20.3.1/x64/lib/node_modules/appium"
-if (Test-Path -Path $modulesFolder ) {
-    Write-Output  "appium exists!"
-
-    $existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
-    Write-Output "List of installed drivers $x"
-    if($existingDrivers.windows)
-    {
-        Write-Output  "Uninstalling appium driver windows"
-        appium driver uninstall windows
-        Write-Output  "Unistalled appium driver windows"
-    }
-
-    if($existingDrivers.uiautomator2)
-    {
-        Write-Output  "Uninstalling appium driver uiautomator2"
-        appium driver uninstall uiautomator2
-        Write-Output  "Unistalled appium driver uiautomator2"
-    }
-
-    if($existingDrivers.xcuitest)
-    {
-        Write-Output  "Uninstalling appium driver xcuitest"
-        appium driver uninstall xcuitest
-        Write-Output  "Unistalled appium driver xcuitest"
-    }
-
-    if($existingDrivers.mac2)
-    {
-        Write-Output  "Uninstalling appium driver mac2"
-        appium driver uninstall mac2
-        Write-Output  "Unistalled appium driver mac2"
-    }
-
-    Write-Output  "Uninstalling appium"
-    npm uninstall -g appium
-    Write-Output  "Unistalled appium"
-    #rm -rf $modulesFolder
-} else {
-    Write-Output  "node_modules doesn't exist."
-}
-
-Write-Output "Check if appium is installed after uninstall"
-npm list -g | grep appium
-
 Write-Output  "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
 write-Output  "Installed appium"
 appium -v
 
+$existingDrivers = appium driver list --installed --json  | ConvertFrom-Json
+Write-Output "List of installed drivers $x"
+if ($existingDrivers.windows) {
+    Write-Output  "Uninstalling appium driver windows"
+    appium driver uninstall windows
+    Write-Output  "Unistalled appium driver windows"
+}
+
+if ($existingDrivers.uiautomator2) {
+    Write-Output  "Uninstalling appium driver uiautomator2"
+    appium driver uninstall uiautomator2
+    Write-Output  "Unistalled appium driver uiautomator2"
+}
+
+if ($existingDrivers.xcuitest) {
+    Write-Output  "Uninstalling appium driver xcuitest"
+    appium driver uninstall xcuitest
+    Write-Output  "Unistalled appium driver xcuitest"
+}
+
+if ($existingDrivers.mac2) {
+    Write-Output  "Uninstalling appium driver mac2"
+    appium driver uninstall mac2
+    Write-Output  "Unistalled appium driver mac2"
+}
+
 $drivers = appium driver list --installed --json  | ConvertFrom-Json
-Write-Output "List of installed drivers $drivers"
+Write-Output "List of installed drivers after cleaup $drivers"
 
 Write-Output  "Going to install appium drivers windows $windowsDriverVersion, uiautomator2 $androidDriverVersion, xcuitest $iOSDriverVersion and mac2 $macDriverVersio"
 
