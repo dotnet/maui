@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Handlers
 		// This appears to be the padding that Xcode has when "Default" content insets are used
 		public readonly static Thickness DefaultPadding = new Thickness(12, 7);
 
+		// Because we can't inherit from Button we use the container to handle
+		// Life cycle events and things like monitoring focus changed
+		public override bool NeedsContainer => true;
+
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);

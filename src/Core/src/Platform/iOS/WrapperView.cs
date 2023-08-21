@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : UIView, IDisposable
+	public partial class WrapperView : UIView, IDisposable, IUIViewLifeCycleEvents
 	{
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
@@ -246,6 +246,19 @@ namespace Microsoft.Maui.Platform
 					return subLayer;
 
 			return Layer;
+		}
+
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

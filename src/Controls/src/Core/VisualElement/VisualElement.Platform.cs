@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Controls
 					// If SendLoaded caused the unloaded tokens to wire up
 					_loadedUnloadedToken?.Dispose();
 					_loadedUnloadedToken = null;
-					_loadedUnloadedToken = view.OnUnloaded(SendUnloaded);
+					_loadedUnloadedToken = this.OnUnloaded(SendUnloaded);
 				}
 				else
 				{
@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls
 					// If SendUnloaded caused the unloaded tokens to wire up
 					_loadedUnloadedToken?.Dispose();
 					_loadedUnloadedToken = null;
-					_loadedUnloadedToken = view.OnLoaded(SendLoaded);
+					_loadedUnloadedToken = this.OnLoaded(SendLoaded);
 				}
 			}
 			else
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 				if (Handler?.PlatformView is PlatformView detachingView &&
 					detachingView.IsLoaded())
 				{
-					_loadedUnloadedToken = detachingView.OnUnloaded(SendUnloaded);
+					_loadedUnloadedToken = this.OnUnloaded(SendUnloaded);
 				}
 				else
 				{
