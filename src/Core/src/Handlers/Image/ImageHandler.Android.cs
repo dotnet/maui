@@ -74,10 +74,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(Drawable? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not ImageView image)
 					return;
 
-				Handler.PlatformView.SetImageDrawable(platformImage);
+				image.SetImageDrawable(platformImage);
 			}
 		}
 	}

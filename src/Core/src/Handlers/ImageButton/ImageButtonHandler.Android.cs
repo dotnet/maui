@@ -94,10 +94,10 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(Drawable? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not ShapeableImageView button)
 					return;
 
-				Handler.PlatformView.SetImageDrawable(platformImage);
+				button.SetImageDrawable(platformImage);
 			}
 		}
 	}

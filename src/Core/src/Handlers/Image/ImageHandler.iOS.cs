@@ -48,12 +48,12 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(UIImage? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not UIImageView imageView)
 					return;
 
-				Handler.PlatformView.Image = platformImage;
-				if (Handler.VirtualView.Source is IStreamImageSource)
-					Handler.PlatformView.InvalidateMeasure(Handler.VirtualView);
+				imageView.Image = platformImage;
+				if (Handler?.VirtualView is IImage image && image.Source is IStreamImageSource)
+					imageView.InvalidateMeasure(image);
 			}
 		}
 	}

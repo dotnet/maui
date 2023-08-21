@@ -70,13 +70,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(MauiImageSource? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not MauiImageButton button)
 					return;
 
 				if (platformImage is null)
 					return;
 
-				Handler.PlatformView.ResourceUrl = platformImage.ResourceUrl;
+				button.ResourceUrl = platformImage.ResourceUrl;
 			}
 		}
 	}

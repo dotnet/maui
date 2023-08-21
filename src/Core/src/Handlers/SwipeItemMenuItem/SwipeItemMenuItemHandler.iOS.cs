@@ -98,16 +98,16 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(UIImage? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not UIButton button || Handler?.VirtualView is not ISwipeItemMenuItem item)
 					return;
 
-				var frame = Handler.PlatformView.Frame;
+				var frame = button.Frame;
 				if (frame == CGRect.Empty)
 					return;
 
 				if (platformImage == null)
 				{
-					Handler.PlatformView.SetImage(null, UIControlState.Normal);
+					button.SetImage(null, UIControlState.Normal);
 				}
 				else
 				{
@@ -118,11 +118,11 @@ namespace Microsoft.Maui.Handlers
 
 					try
 					{
-						Handler.PlatformView.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
-						var tintColor = Handler.VirtualView.GetTextColor();
+						button.SetImage(resizedImage.ImageWithRenderingMode(UIImageRenderingMode.AlwaysTemplate), UIControlState.Normal);
+						var tintColor = item.GetTextColor();
 
 						if (tintColor != null)
-							Handler.PlatformView.TintColor = tintColor.ToPlatform();
+							button.TintColor = tintColor.ToPlatform();
 					}
 					catch (Exception)
 					{

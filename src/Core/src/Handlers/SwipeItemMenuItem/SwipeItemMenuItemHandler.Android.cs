@@ -147,13 +147,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			public override void SetImageSource(Drawable? platformImage)
 			{
-				if (Handler?.PlatformView is null)
+				if (Handler?.PlatformView is not TextView button || Handler?.VirtualView is not ISwipeItemMenuItem item)
 					return;
 
 				if (platformImage is not null)
 				{
 					var iconSize = GetIconSize(Handler);
-					var textColor = Handler.VirtualView.GetTextColor()?.ToPlatform();
+					var textColor = item.GetTextColor()?.ToPlatform();
 					int drawableWidth = platformImage.IntrinsicWidth;
 					int drawableHeight = platformImage.IntrinsicHeight;
 
@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Handlers
 						platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
 				}
 
-				(Handler.PlatformView as TextView)?.SetCompoundDrawables(null, platformImage, null, null);
+				button.SetCompoundDrawables(null, platformImage, null, null);
 			}
 		}
 	}
