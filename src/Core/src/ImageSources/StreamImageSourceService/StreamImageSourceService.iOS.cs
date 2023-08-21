@@ -30,6 +30,7 @@ namespace Microsoft.Maui
 				if (data == null)
 					throw new InvalidOperationException("Unable to load image stream data.");
 
+				// We do not need to pass the scale in here as the image file is not scaled to the screen scale
 				var image = UIImage.LoadFromData(data);
 
 				if (image == null)

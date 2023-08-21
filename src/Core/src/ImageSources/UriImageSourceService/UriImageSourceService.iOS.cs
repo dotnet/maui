@@ -53,6 +53,7 @@ namespace Microsoft.Maui
 						CacheImage(imageData, pathToImageCache);
 				}
 
+				// We do not need to pass the scale in here as the image file is not scaled to the screen scale
 				var image = UIImage.LoadFromData(imageData);
 
 				if (image == null)
