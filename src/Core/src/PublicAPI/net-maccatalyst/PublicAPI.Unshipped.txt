@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.IImageHandler.OnWindowChanged() -> void
