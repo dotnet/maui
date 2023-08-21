@@ -59,6 +59,8 @@ namespace Microsoft.Maui.Controls
 					RemoveLogicalChild(oldElement);
 				}
 
+				_children[index] = value;
+
 				if (value is Element newElement)
 				{
 					InsertLogicalChild(index, newElement);
@@ -190,9 +192,6 @@ namespace Microsoft.Maui.Controls
 
 			var child = _children[index];
 
-			if (child is Element element)
-				RemoveLogicalChild(element, index);
-			
 			_children.RemoveAt(index);
 
 			OnRemove(index, child);
