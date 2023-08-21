@@ -33,7 +33,6 @@ namespace Microsoft.Maui.DeviceTests.ImageAnalysis
 			if (element.IsLoaded)
 				load.TrySetResult();
 			await load.Task;
-			var size = element.Width;
 			TaskCompletionSource<IViewHandler> tcs = new();
 			element.HandlerChanged += (s, e) => { if (element.Handler != null) tcs.TrySetResult(element.Handler); };
 			if (element.Handler is not null)
