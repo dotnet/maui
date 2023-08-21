@@ -190,7 +190,26 @@ namespace Microsoft.Maui.DeviceTests
 							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
 						}
 
-						await OnLoadedAsync(content as VisualElement);
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource(); 
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									batchTcs.SetResult();
+								}
+							}
+						}
 
 						// Gives time for the measure/layout pass to settle
 						await Task.Yield();
@@ -248,6 +267,11 @@ namespace Microsoft.Maui.DeviceTests
 					_takeOverMainContentSempahore.Release();
 				}
 			});
+		}
+
+		private void Vc_BatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+		{
+			throw new NotImplementedException();
 		}
 
 		/// <summary>

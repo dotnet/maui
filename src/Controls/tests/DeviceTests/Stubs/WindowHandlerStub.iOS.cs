@@ -66,8 +66,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					{
 						_workSpace.AddChildViewController(vc);
 						_workSpace.View.AddSubview(vc.View);
-						if (fireEvents)
-							FireWindowEvent(VirtualView, (window) => !window.IsActivated, () => VirtualView.Activated());
+						if (fireEvents && this is IElementHandler elementHandler && elementHandler.VirtualView is IWindow virtualView)
+							FireWindowEvent(virtualView, (window) => !window.IsActivated, () =>
+							{
+								if (!IsDisconnected)
+									VirtualView.Activated();
+							});
 					});
 			}
 			else

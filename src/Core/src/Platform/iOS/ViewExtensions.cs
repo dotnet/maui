@@ -643,7 +643,7 @@ namespace Microsoft.Maui.Platform
 
 			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
-				if (disposable != null)
+				if (disposable is not null)
 				{
 					if (uiView.IsLoaded())
 					{
