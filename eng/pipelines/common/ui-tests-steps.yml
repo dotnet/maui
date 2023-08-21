@@ -32,7 +32,7 @@ steps:
         defaults write -g NSAutomaticCapitalizationEnabled -bool false
         defaults write -g NSAutomaticTextCompletionEnabled -bool false
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-    dskipAndroidSdksisplayName: "Modify defaults"
+    displayName: "Modify defaults"
     continueOnError: true
 
   - task: NodeTool@0
