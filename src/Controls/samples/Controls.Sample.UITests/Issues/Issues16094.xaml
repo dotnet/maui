@@ -34,28 +34,28 @@
                 HorizontalOptions="Center" />
 
             <Button
-			x:Name="RoundBtn"
-			HorizontalOptions="Center"
-			Text="Shadow"
-			CornerRadius="60"
-			HeightRequest="120"
-			WidthRequest="120">
+                x:Name="RoundBtn"
+                HorizontalOptions="Center"
+                Text="Shadow"
+                CornerRadius="60"
+                HeightRequest="120"
+                WidthRequest="120">
                 <Button.Shadow>
                     <Shadow
-					Brush="Black"
-					Opacity="1"
-					Radius="10"
-					Offset="0,0" />
+                        Brush="Black"
+                        Opacity="1"
+                        Radius="10"
+                        Offset="0,0" />
                 </Button.Shadow>
             </Button>
 
             <Editor Text="All shadow - No text!!!" AutomationId="EditorControl">
                 <Editor.Shadow>
                     <Shadow
-					Brush="Black"
-					Opacity="1"
-					Radius="10"
-					Offset="0,0" />
+                        Brush="Black"
+                        Opacity="1"
+                        Radius="10"
+                        Offset="0,0" />
                 </Editor.Shadow>
             </Editor>
 

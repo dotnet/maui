@@ -276,7 +276,7 @@ namespace Microsoft.Maui.Platform
 				offset = mauiShadow.Offset;
 			}
 
-			dropShadow.BlurRadius = blurRadius; 
+			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
 
 			if (shadowColor != null)
