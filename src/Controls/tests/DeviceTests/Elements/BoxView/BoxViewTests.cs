@@ -26,7 +26,6 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-			
 			await ValidateHasColor(boxView, expected, typeof(ShapeViewHandler));
 		}
 	}
