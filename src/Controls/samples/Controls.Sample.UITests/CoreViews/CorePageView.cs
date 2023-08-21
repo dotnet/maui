@@ -50,6 +50,7 @@ namespace Maui.Controls.Sample
 				new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
+				new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 		};
 
 		public CorePageView(Page rootPage)
