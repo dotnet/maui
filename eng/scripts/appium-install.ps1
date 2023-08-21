@@ -30,19 +30,19 @@ The mac2 driver version to update or install
 
 .EXAMPLE
 
-PS> .\appium-install.ps1 '2.0.0-beta.61' 2.7.2 2.25.1 4.30.2 1.6.1
+PS> .\appium-install.ps1 '2.1.1' 2.7.2 2.25.1 4.30.2 1.6.1
 
-This would install or update Appium version 2.0.0-beta.61, the windows driver 2.7.2, the uiautomator2 driver with 2.25.1, the xcuitest driver with 4.30.2 and mac2 driver with 1.6.1
+This would install or update Appium version 2.1.1, the windows driver 2.7.2, the uiautomator2 driver with 2.25.1, the xcuitest driver with 4.30.2 and mac2 driver with 1.6.1
 #>
 
 
 param
 (
-    [string] $appiumVersion = '2.0.1',
-    [string] $windowsDriverVersion = '2.9.2',
-    [string] $androidDriverVersion = '2.29.2',
-    [string] $iOSDriverVersion = '4.32.23',
-    [string] $macDriverVersion = '1.6.3'
+    [string] $appiumVersion = '2.1.1',
+    [string] $windowsDriverVersion = '2.10.1',
+    [string] $androidDriverVersion = '2.29.4',
+    [string] $iOSDriverVersion = '4.34.0',
+    [string] $macDriverVersion = '1.7.2'
 )
 
 Write-Output  "Welcome to the Appium installer"
