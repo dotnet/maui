@@ -25,13 +25,16 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		[Ignore("Crash navigating to the sample from the test but not launching the sample")]
 		public void NoScrollConflicts()
 		{
 			if (Device == TestDevice.Android)
 			{
-				App.WaitForElement("WebViewElement");
-				App.SwipeRightToLeft("WebViewElement");
+				App.WaitForElement("Tab1Element");
+
+				App.SwipeRightToLeft(e => e.Marked("Tab1Element").Child("android.webkit.WebView").Child("android.widget.TextView"));
+
+				var element = App.Query("Tab1Label").FirstOrDefault();
+				Assert.True(element != null && element.Text.Equals("Passed", StringComparison.OrdinalIgnoreCase));
 			}
 			else
 			{
