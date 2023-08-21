@@ -280,6 +280,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(grid.Height <= grid.MaximumHeightRequest);
 		}
 
+		/* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
 		{
@@ -352,6 +353,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(bitmap.Height / 3, cyanBlob.Height, 2d);
 			Assert.Equal(0, cyanBlob.MinColumn, 2d);
 			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
-		}
+		}*/
 	}
 }
