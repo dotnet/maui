@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
@@ -158,6 +159,7 @@ namespace Microsoft.Maui
 			Services?.InvokeLifecycleEvents<iOSLifecycle.PerformFetch>(del => del(application, completionHandler));
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "There can only be one MauiUIApplicationDelegate.")]
 		public static MauiUIApplicationDelegate Current { get; private set; } = null!;
 
 		[Export("window")]
