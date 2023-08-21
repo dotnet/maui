@@ -39,7 +39,10 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DEVICE: android-emulator-64_${{ api }}
+                    ${{ if eq(api, 27) }}:
+                      DEVICE: android-emulator-32_${{ api }}
+                    ${{ if not(eq(api, 27)) }}:
+                      DEVICE: android-emulator-64_${{ api }}
       steps:
         - template: device-tests-steps.yml
           parameters:
