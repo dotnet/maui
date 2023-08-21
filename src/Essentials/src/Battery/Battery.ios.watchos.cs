@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Foundation;
 using Microsoft.Maui.ApplicationModel;
 #if __IOS__

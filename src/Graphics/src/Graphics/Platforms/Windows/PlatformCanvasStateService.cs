@@ -1,4 +1,7 @@
-﻿#if MAUI_GRAPHICS_WIN2D
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if MAUI_GRAPHICS_WIN2D
 namespace Microsoft.Maui.Graphics.Win2D
 #else
 namespace Microsoft.Maui.Graphics.Platform

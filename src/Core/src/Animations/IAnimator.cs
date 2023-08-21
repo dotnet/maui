@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Maui.Animations
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.Maui.Animations
 {
 	/// <summary>
 	/// Objects implementing the <see cref="IAnimator"/> interface can act as parent objects for <see cref="Animation"/> objects.

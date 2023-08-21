@@ -1,4 +1,7 @@
-﻿using Android.App;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Android.App;
 using AndroidX.Window.Layout;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;

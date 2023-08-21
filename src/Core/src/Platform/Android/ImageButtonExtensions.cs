@@ -1,4 +1,7 @@
-﻿using Android.Graphics.Drawables;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Android.Graphics.Drawables;
 using Android.Widget;
 using Google.Android.Material.ImageView;
 using Google.Android.Material.Shape;

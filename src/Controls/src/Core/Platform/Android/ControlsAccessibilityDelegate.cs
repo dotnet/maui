@@ -1,4 +1,7 @@
-﻿using AndroidX.Core.View;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using AndroidX.Core.View;
 using AndroidX.Core.View.Accessibility;
 using Microsoft.Maui.Controls.Platform;
 using PlatformView = Android.Views.View;

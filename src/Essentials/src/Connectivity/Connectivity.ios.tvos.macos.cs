@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 #if !(MACCATALYST || MACOS)
 using CoreTelephony;
 #endif

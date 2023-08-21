@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 namespace Microsoft.Maui.Devices.Sensors
 {
 	internal static partial class SensorSpeedExtensions

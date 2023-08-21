@@ -1,4 +1,7 @@
-﻿#if __IOS__ || MACCATALYST
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if __IOS__ || MACCATALYST
 using PlatformView = MapKit.IMKAnnotation;
 #elif MONOANDROID
 using PlatformView = Android.Gms.Maps.Model.MarkerOptions;

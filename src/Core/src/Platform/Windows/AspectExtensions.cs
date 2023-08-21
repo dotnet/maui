@@ -1,4 +1,7 @@
-﻿using WStretch = Microsoft.UI.Xaml.Media.Stretch;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using WStretch = Microsoft.UI.Xaml.Media.Stretch;
 
 namespace Microsoft.Maui.Platform
 {

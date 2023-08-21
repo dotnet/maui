@@ -1,4 +1,7 @@
-﻿using Android.Content.Res;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Android.Content.Res;
 using AColor = Android.Graphics.Color;
 
 namespace Microsoft.Maui.Platform

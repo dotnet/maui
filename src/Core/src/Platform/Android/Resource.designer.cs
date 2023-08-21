@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 #pragma warning disable 1591
 //------------------------------------------------------------------------------
 // This file was manually curated so we could avoid 5,310 fields.

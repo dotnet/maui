@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Maui
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.Maui
 {
 	/// <summary>
 	/// Represents a Page that manages two panes of information: A master page that presents data at a high level, 

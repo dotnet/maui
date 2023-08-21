@@ -1,4 +1,7 @@
-﻿#if WINDOWS || ANDROID || IOS || TIZEN
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if WINDOWS || ANDROID || IOS || TIZEN
 
 using System;
 using System.Collections.Generic;

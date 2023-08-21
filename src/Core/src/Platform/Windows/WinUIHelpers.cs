@@ -1,4 +1,7 @@
-﻿using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using UwpGridUnitType = Microsoft.UI.Xaml.GridUnitType;
 using WCornerRadius = Microsoft.UI.Xaml.CornerRadius;
 using WGridLength = Microsoft.UI.Xaml.GridLength;
 using WThickness = Microsoft.UI.Xaml.Thickness;

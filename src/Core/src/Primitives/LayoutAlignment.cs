@@ -1,4 +1,7 @@
-﻿namespace Microsoft.Maui.Primitives
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+namespace Microsoft.Maui.Primitives
 {
 	// We don't use Microsoft.Maui.Controls.LayoutAlignment directly because it has a Flags attribute, which we do not want
 

@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentView (C#)",
+  "description": "A view for displaying content using C#. This is very suitable for creating your own custom and reusable controls.",
   "postActions/openInEditor/description": "Düzenleyicide NewContent1.cs dosyasını açar.",
   "symbols/namespace/description": "Oluşturulan kod için ad alanı."
 }

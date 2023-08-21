@@ -1,4 +1,7 @@
-﻿using CommunityToolkit.Mvvm.Messaging;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using CommunityToolkit.Mvvm.Messaging;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages.SwipeViewGalleries

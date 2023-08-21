@@ -1,3 +1,6 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// Licensed under the MIT License.
+
 using System.Collections.Generic;
 using Microsoft.Maui;
 using Microsoft.Maui.Graphics;
