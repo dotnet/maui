@@ -17,6 +17,10 @@ steps:
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
         skipProvisioning: false
+      ${{ if eq(parameters.platform, 'android') }}:
+        skipAndroidSdks : false
+      ${{ if ne(parameters.platform, 'android') }}:
+        skipAndroidSdks: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
@@ -28,7 +32,7 @@ steps:
         defaults write -g NSAutomaticCapitalizationEnabled -bool false
         defaults write -g NSAutomaticTextCompletionEnabled -bool false
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
-    displayName: "Modify defaults"
+    dskipAndroidSdksisplayName: "Modify defaults"
     continueOnError: true
 
   - task: NodeTool@0
