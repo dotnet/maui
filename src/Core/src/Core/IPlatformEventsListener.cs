@@ -9,7 +9,7 @@ using Android.Views;
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// This let's us wire into areas of a control that are only reachable via
+	/// This lets us wire into areas of a control that are only reachable via
 	/// overriding but we don't want to override those controls.
 	/// TODO: Expose this as a more permanent solution or create a a better one
 	/// </summary>
