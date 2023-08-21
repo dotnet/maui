@@ -3,27 +3,27 @@
   "isRoot": true,
   "tools": {
     "cake.tool": {
-      "version": "2.1.0",
+      "version": "2.3.0",
       "commands": [
         "dotnet-cake"
       ]
     },
     "powershell": {
-      "version": "7.3.4",
+      "version": "7.3.6",
       "commands": [
         "pwsh"
-      ]
-    },
-    "microsoft.dotnet.xharness.cli": {
-      "version": "1.0.0-prerelease.23212.1",
-      "commands": [
-        "xharness"
       ]
     },
     "api-tools": {
       "version": "1.3.5",
       "commands": [
         "api-tools"
+      ]
+    },
+    "microsoft.dotnet.xharness.cli": {
+      "version": "8.0.0-prerelease.23407.2",
+      "commands": [
+        "xharness"
       ]
     }
   }

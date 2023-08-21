@@ -12,8 +12,7 @@ namespace Microsoft.Maui.Handlers
 
 			return new ContentView
 			{
-				CrossPlatformMeasure = VirtualView.CrossPlatformMeasure,
-				CrossPlatformArrange = VirtualView.CrossPlatformArrange
+				CrossPlatformLayout = VirtualView
 			};
 		}
 
@@ -24,8 +23,7 @@ namespace Microsoft.Maui.Handlers
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
 			PlatformView.View = view;
-			PlatformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
-			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
 		static void UpdateContent(IContentViewHandler handler)
@@ -49,15 +47,14 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}
 
 		protected override void DisconnectHandler(ContentView platformView)
 		{
-			platformView.CrossPlatformMeasure = null;
-			platformView.CrossPlatformArrange = null;
+			platformView.CrossPlatformLayout = null;
 			platformView.RemoveFromSuperview();
 			base.DisconnectHandler(platformView);
 		}

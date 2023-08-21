@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using CoreGraphics;
 using Foundation;
@@ -14,10 +15,15 @@ namespace Microsoft.Maui.Platform
 		const float OpenSwipeThresholdPercentage = 0.6f; // 60%
 		const double SwipeAnimationDuration = 0.2;
 
+		readonly SwipeRecognizerProxy _proxy;
 		readonly Dictionary<ISwipeItem, object> _swipeItems;
-		UITapGestureRecognizer _tapGestureRecognizer;
-		UIPanGestureRecognizer _panGestureRecognizer;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
+		readonly UITapGestureRecognizer _tapGestureRecognizer;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
+		readonly UIPanGestureRecognizer _panGestureRecognizer;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		UIView _contentView;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		UIStackView _actionView;
 		SwipeTransitionMode _swipeTransitionMode;
 		SwipeDirection? _swipeDirection;
@@ -33,33 +39,33 @@ namespace Microsoft.Maui.Platform
 		bool _isResettingSwipe;
 		bool _isOpen;
 		OpenSwipeItem _previousOpenSwipeItem;
-		internal ISwipeView? Element { get; set; }
+
+		internal ISwipeView? Element => CrossPlatformLayout as ISwipeView;
 
 		public MauiSwipeView()
 		{
+			_proxy = new(this);
 			_swipeItemsRect = new List<CGRect>();
 			_contentView = new UIView();
 			_actionView = new UIStackView();
 			_swipeItems = new Dictionary<ISwipeItem, object>();
 			_isScrollEnabled = true;
 
-			_tapGestureRecognizer = new UITapGestureRecognizer(HandleTap)
+			_tapGestureRecognizer = new UITapGestureRecognizer(_proxy.HandleTap)
 			{
 				CancelsTouchesInView = false,
 				DelaysTouchesBegan = false,
-				DelaysTouchesEnded = false
+				DelaysTouchesEnded = false,
+				ShouldReceiveTouch = _proxy.OnShouldReceiveTouch,
 			};
 
-			_tapGestureRecognizer.ShouldReceiveTouch = OnShouldReceiveTouch;
-
-			_panGestureRecognizer = new UIPanGestureRecognizer(HandlePan)
+			_panGestureRecognizer = new UIPanGestureRecognizer(_proxy.HandlePan)
 			{
 				CancelsTouchesInView = false,
 				DelaysTouchesBegan = false,
-				DelaysTouchesEnded = false
+				DelaysTouchesEnded = false,
+				ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true,
 			};
-
-			_panGestureRecognizer.ShouldRecognizeSimultaneously = (recognizer, gestureRecognizer) => true;
 
 			AddGestureRecognizer(_tapGestureRecognizer);
 			AddGestureRecognizer(_panGestureRecognizer);
@@ -144,11 +150,6 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
-		{
-			return _swipeOffset != 0;
-		}
-
 		internal void UpdateContent(ISwipeView swipeView, IMauiContext mauiContext)
 		{
 			ClipsToBounds = true;
@@ -171,63 +172,77 @@ namespace Microsoft.Maui.Platform
 				BringSubviewToFront(_contentView);
 		}
 
-		void HandleTap()
+		class SwipeRecognizerProxy
 		{
-			if (_tapGestureRecognizer == null)
-				return;
+			readonly WeakReference<MauiSwipeView> _view;
 
-			if (_isSwiping)
-				return;
+			public SwipeRecognizerProxy(MauiSwipeView view) => _view = new(view);
 
-			var state = _tapGestureRecognizer.State;
-
-			if (state != UIGestureRecognizerState.Cancelled)
+			public bool OnShouldReceiveTouch(UIGestureRecognizer recognizer, UITouch touch)
 			{
-				if (_contentView == null)
+				return _view.TryGetTarget(out var view) && view._swipeOffset != 0;
+			}
+
+			public void HandleTap(UITapGestureRecognizer recognizer)
+			{
+				if (!_view.TryGetTarget(out var view))
 					return;
 
-				var point = _tapGestureRecognizer.LocationInView(this);
+				if (view._isSwiping)
+					return;
 
-				if (_isOpen)
+				var state = recognizer.State;
+				if (state != UIGestureRecognizerState.Cancelled)
 				{
-					if (!TouchInsideContent(point))
-						ProcessTouchSwipeItems(point);
-					else
-						ResetSwipe();
+					if (view._contentView == null)
+						return;
+
+					var point = recognizer.LocationInView(view);
+
+					if (view._isOpen)
+					{
+						if (!view.TouchInsideContent(point))
+							view.ProcessTouchSwipeItems(point);
+						else
+							view.ResetSwipe();
+					}
 				}
 			}
-		}
 
-		void HandlePan(UIPanGestureRecognizer panGestureRecognizer)
-		{
-			if (_isSwipeEnabled && panGestureRecognizer != null)
+			public void HandlePan(UIPanGestureRecognizer panGestureRecognizer)
 			{
-				CGPoint point = panGestureRecognizer.LocationInView(this);
-				var navigationController = GetUINavigationController(GetViewController());
+				if (!_view.TryGetTarget(out var view))
+					return;
 
-				switch (panGestureRecognizer.State)
+				if (view._isSwipeEnabled && panGestureRecognizer != null)
 				{
-					case UIGestureRecognizerState.Began:
-						if (navigationController != null)
-							navigationController.InteractivePopGestureRecognizer.Enabled = false;
+					CGPoint point = panGestureRecognizer.LocationInView(view);
+					var navigationController = view.GetUINavigationController(view.GetViewController());
 
-						HandleTouchInteractions(GestureStatus.Started, point);
-						break;
-					case UIGestureRecognizerState.Changed:
-						HandleTouchInteractions(GestureStatus.Running, point);
-						break;
-					case UIGestureRecognizerState.Ended:
-						if (navigationController != null)
-							navigationController.InteractivePopGestureRecognizer.Enabled = true;
+					switch (panGestureRecognizer.State)
+					{
+						case UIGestureRecognizerState.Began:
+							if (navigationController != null)
+								navigationController.InteractivePopGestureRecognizer.Enabled = false;
 
-						HandleTouchInteractions(GestureStatus.Completed, point);
-						break;
-					case UIGestureRecognizerState.Cancelled:
-						if (navigationController != null)
-							navigationController.InteractivePopGestureRecognizer.Enabled = true;
+							view.HandleTouchInteractions(GestureStatus.Started, point);
+							break;
+						case UIGestureRecognizerState.Changed:
+							view.HandleTouchInteractions(GestureStatus.Running, point);
+							break;
+						case UIGestureRecognizerState.Ended:
+							if (navigationController != null)
+								navigationController.InteractivePopGestureRecognizer.Enabled = true;
 
-						HandleTouchInteractions(GestureStatus.Canceled, point);
-						break;
+							view.HandleTouchInteractions(GestureStatus.Completed, point);
+							break;
+						case UIGestureRecognizerState.Cancelled:
+							if (navigationController != null)
+								navigationController.InteractivePopGestureRecognizer.Enabled = true;
+
+							view.HandleTouchInteractions(GestureStatus.Canceled, point);
+							break;
+					}
 				}
 			}
 		}
@@ -261,7 +276,7 @@ namespace Microsoft.Maui.Platform
 
 		bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
-			return swipeItems != null && swipeItems.Where(s => GetIsVisible(s)).Count() > 0;
+			return swipeItems != null && swipeItems.Any(GetIsVisible);
 		}
 
 		void UpdateSwipeItems()
@@ -854,7 +869,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 		}
-		bool GetIsVisible(ISwipeItem swipeItem)
+		static bool GetIsVisible(ISwipeItem swipeItem)
 		{
 			if (swipeItem is IView view)
 				return view.Visibility == Maui.Visibility.Visible;
@@ -1102,10 +1117,8 @@ namespace Microsoft.Maui.Platform
 			if (Element == null)
 				return;
 
-			Element.IsOpen = true;
+			Element.IsOpen = isOpen;
 		}
-
-
 
 		internal void ProgrammaticallyOpenSwipeItem(OpenSwipeItem openSwipeItem, bool animated)
 		{
@@ -1137,8 +1150,10 @@ namespace Microsoft.Maui.Platform
 
 			var swipeItems = GetSwipeItemsByDirection();
 
-			if (swipeItems == null || swipeItems.Where(s => GetIsVisible(s)).Count() == 0)
+			if (swipeItems is null || !swipeItems.Any(GetIsVisible))
 				return;
+
+			UpdateIsOpen(true);
 
 			var swipeThreshold = GetSwipeThreshold();
 			UpdateOffset(swipeThreshold);

@@ -357,6 +357,32 @@ namespace Microsoft.Maui.ApplicationModel
 				new (string, bool)[] { (Manifest.Permission.RecordAudio, true) };
 		}
 
+		public partial class NearbyWifiDevices : BasePlatformPermission
+		{
+			public override (string androidPermission, bool isRuntime)[] RequiredPermissions
+			{
+				get
+				{
+					var permissions = new List<(string, bool)>();
+					// When targeting Android 12 or lower, AccessFineLocation is required for several WiFi APIs.
+					// For Android 13 and above, it is optional.
+					if (Application.Context.ApplicationInfo.TargetSdkVersion < BuildVersionCodes.Tiramisu || IsDeclaredInManifest(Manifest.Permission.AccessFineLocation))
+						permissions.Add((Manifest.Permission.AccessFineLocation, true));
+
+#if __ANDROID_33__
+					if (OperatingSystem.IsAndroidVersionAtLeast(33) && Application.Context.ApplicationInfo.TargetSdkVersion >= BuildVersionCodes.Tiramisu)
+					{
+						// new runtime permission on Android 13
+						if (IsDeclaredInManifest(Manifest.Permission.NearbyWifiDevices))
+							permissions.Add((Manifest.Permission.NearbyWifiDevices, true));
+					}
+#endif
+
+					return permissions.ToArray();
+				}
+			}
+		}
+
 		public partial class NetworkState : BasePlatformPermission
 		{
 			public override (string androidPermission, bool isRuntime)[] RequiredPermissions

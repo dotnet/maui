@@ -7,7 +7,7 @@
 			 xmlns:win="clr-namespace:Microsoft.UI.Xaml.Controls;assembly=Windows, Version=255.255.255.255, Culture=neutral, PublicKeyToken=null, ContentType=WindowsRuntime;targetPlatform=Windows"
 			 xmlns:formstizen="clr-namespace:Microsoft.Maui.Controls.Platform.Tizen;assembly=Microsoft.Maui.Controls.Platform.Tizen;targetPlatform=Tizen"
 			 xmlns:tizenWidget="clr-namespace:ElmSharp;assembly=ElmSharp;targetPlatform=Tizen"
-       x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.XamlNativeViews">
+       x:Class="Microsoft.Maui.Controls.ControlGallery.XamlNativeViews">
 	<ContentPage.Content>
 		<ios:UILabel Text="{Binding NativeText}" View.HorizontalOptions="Start"/>
 		<androidWidget:TextView Text="{Binding NativeText}" x:Arguments="{x:Static formsandroid:Forms.Context}" />

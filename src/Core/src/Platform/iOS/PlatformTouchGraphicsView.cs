@@ -8,13 +8,15 @@ namespace Microsoft.Maui.Platform
 {
 	public class PlatformTouchGraphicsView : PlatformGraphicsView
 	{
-		IGraphicsView? _graphicsView;
+		readonly UIHoverGestureRecognizerProxy _proxy;
+		WeakReference<IGraphicsView>? _graphicsView;
 		UIHoverGestureRecognizer? _hoverGesture;
 		RectF _rect;
 		bool _pressedContained = false;
 
 		public PlatformTouchGraphicsView()
 		{
+			_proxy = new(this);
 			Opaque = false;
 			BackgroundColor = null;
 		}
@@ -27,10 +29,10 @@ namespace Microsoft.Maui.Platform
 
 		public void Connect(IGraphicsView graphicsView)
 		{
-			_graphicsView = graphicsView;
+			_graphicsView = new(graphicsView);
 
 			if (OperatingSystem.IsIOSVersionAtLeast(13))
-				AddGestureRecognizer(_hoverGesture = new UIHoverGestureRecognizer(OnHover));
+				AddGestureRecognizer(_hoverGesture = new UIHoverGestureRecognizer(_proxy.OnHover));
 		}
 
 		public void Disconnect()
@@ -40,44 +42,69 @@ namespace Microsoft.Maui.Platform
 			_graphicsView = null;
 		}
 
-		void OnHover()
-		{
-			if (_hoverGesture!.State == UIGestureRecognizerState.Began)
-			{
-				var touch = _hoverGesture.LocationInView(this);
-				_graphicsView?.StartHoverInteraction(new[] { (PointF)touch.ToPoint() });
-			}
-			else if (_hoverGesture.State == UIGestureRecognizerState.Changed)
-			{
-				var touch = _hoverGesture.LocationInView(this);
-				_graphicsView?.MoveHoverInteraction(new[] { (PointF)touch.ToPoint() });
-			}
-			else
-				_graphicsView?.EndHoverInteraction();
-		}
-
 		public override void TouchesBegan(NSSet touches, UIEvent? evt)
 		{
+			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+				return;
 			if (!IsFirstResponder)
 				BecomeFirstResponder();
 			var viewPoints = this.GetPointsInView(evt);
-			_graphicsView?.StartInteraction(viewPoints);
+			graphicsView.StartInteraction(viewPoints);
 			_pressedContained = true;
 		}
 
 		public override void TouchesMoved(NSSet touches, UIEvent? evt)
 		{
+			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+				return;
 			var viewPoints = this.GetPointsInView(evt);
 			_pressedContained = _rect.ContainsAny(viewPoints);
-			_graphicsView?.DragInteraction(viewPoints);
+			graphicsView.DragInteraction(viewPoints);
 		}
-		public override void TouchesEnded(NSSet touches, UIEvent? evt) =>
-			_graphicsView?.EndInteraction(this.GetPointsInView(evt), _pressedContained);
+
+		public override void TouchesEnded(NSSet touches, UIEvent? evt)
+		{
+			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+				return;
+			graphicsView.EndInteraction(this.GetPointsInView(evt), _pressedContained);
+		}
 
 		public override void TouchesCancelled(NSSet touches, UIEvent? evt)
 		{
+			if (_graphicsView is null || !_graphicsView.TryGetTarget(out var graphicsView))
+				return;
 			_pressedContained = false;
-			_graphicsView?.CancelInteraction();
+			graphicsView.CancelInteraction();
+		}
+
+		class UIHoverGestureRecognizerProxy
+		{
+			readonly WeakReference<PlatformTouchGraphicsView> _platformView;
+
+			public UIHoverGestureRecognizerProxy(PlatformTouchGraphicsView platformView) => _platformView = new(platformView);
+
+			public void OnHover()
+			{
+				if (!_platformView.TryGetTarget(out var platformView))
+					return;
+
+				if (platformView._graphicsView is null || !platformView._graphicsView.TryGetTarget(out var graphicsView))
+					return;
+
+				var hoverGesture = platformView._hoverGesture;
+				if (hoverGesture!.State == UIGestureRecognizerState.Began)
+				{
+					var touch = hoverGesture.LocationInView(platformView);
+					graphicsView.StartHoverInteraction(new[] { (PointF)touch.ToPoint() });
+				}
+				else if (hoverGesture.State == UIGestureRecognizerState.Changed)
+				{
+					var touch = hoverGesture.LocationInView(platformView);
+					graphicsView.MoveHoverInteraction(new[] { (PointF)touch.ToPoint() });
+				}
+				else
+					graphicsView.EndHoverInteraction();
+			}
 		}
 	}
 }

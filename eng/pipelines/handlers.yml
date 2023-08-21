@@ -76,13 +76,11 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
   - name: PackPlatforms
@@ -92,15 +90,32 @@ parameters:
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
         bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
         bootsAndroid: $(Android.Pkg)
-        bootsiOS: $(iOS.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: nuget-macos
+
+  - name: RunTemplatePlatforms
+    type: object
+    default:
+    - name: $(androidTestsVmPool)
+      vmImage: $(androidTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOnAndroid
+      artifact: templates-run-android
+    - name: $(iosTestsVmPool)
+      vmImage: $(iosTestsVmImage)
+      demands:
+        - macOS.Name -equals Ventura
+        - macOS.Architecture -equals x64
+      testName: RunOniOS
+      artifact: templates-run-ios
+
   - name: TestTargetFrameworks
     type: object
     default:
@@ -145,14 +160,11 @@ stages:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
               demands:
-                - macOS.Name -equals Monterey
+                - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
-                - Agent.HasDevices -equals False
-                - Agent.IsPaired -equals False
             steps:
               - template: common/provision.yml
                 parameters:
-                  platform: ${{ BuildPlatform.name }}
                   poolName: ${{ BuildPlatform.poolName }}
                   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
               - pwsh: ./build.ps1 --target=dotnet --configuration="${{ BuildConfiguration }}" --verbosity=diagnostic
@@ -190,7 +202,7 @@ stages:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Monterey
+              - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
               - Agent.HasDevices -equals False
               - Agent.IsPaired -equals False
@@ -217,14 +229,11 @@ stages:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
             demands:
-              - macOS.Name -equals Monterey
+              - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
-              - Agent.HasDevices -equals False
-              - Agent.IsPaired -equals False
           steps:
             - template: common/provision.yml
               parameters:
-                platform: ${{ BuildPlatform.name }}
                 poolName: ${{ BuildPlatform.poolName }}
 
             - task: DownloadBuildArtifacts@0
@@ -259,10 +268,12 @@ stages:
     dependsOn: pack_net
     jobs:
     - template: common/maui-templates.yml
-
-  - template: common/security-compliance.yml
+      parameters:
+        RunPlatforms: ${{ parameters.RunTemplatePlatforms }}
+        BuildPlatforms: ${{ parameters.BuildPlatforms }}
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - template: common/security-compliance.yml
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]

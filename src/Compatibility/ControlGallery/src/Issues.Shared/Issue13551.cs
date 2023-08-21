@@ -12,7 +12,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 13551, "[Bug] [iOS] CollectionView does not display items if `IsVisible` modified via a binding/trigger", PlatformAffected.iOS)]
 #if UITEST

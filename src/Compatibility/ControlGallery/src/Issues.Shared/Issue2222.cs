@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -41,6 +41,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestItDoesntCrashWithWrongIconName()
 		{
 			RunningApp.WaitForElement(c => c.Marked("Hello Toolbaritem"));

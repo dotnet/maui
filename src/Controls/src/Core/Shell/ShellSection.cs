@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	/// <include file="../../../docs/Microsoft.Maui.Controls/ShellSection.xml" path="Type[@FullName='Microsoft.Maui.Controls.ShellSection']/Docs/*" />
 	[ContentProperty(nameof(Items))]
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement
+	public partial class ShellSection : ShellGroupItem, IShellSectionController, IPropertyPropagationController, IVisualTreeElement, IStackNavigation
 	{
 		#region PropertyKeys
 
@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls
 		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, Items);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 		#endregion
 
@@ -702,7 +702,7 @@ namespace Microsoft.Maui.Controls
 				var contentItems = ShellSectionController.GetItems();
 				if (contentItems.Count == 0)
 				{
-					ClearValue(CurrentItemProperty);
+					ClearValue(CurrentItemProperty, specificity: SetterSpecificity.FromHandler);
 				}
 				else
 				{
@@ -1215,6 +1215,29 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => AllChildren.ToList();
+#nullable enable
+		// This code only runs for shell bits that are running through a proper
+		// ShellHandler
+		TaskCompletionSource<object>? _handlerBasedNavigationCompletionSource;
+		internal Task? PendingNavigationTask => _handlerBasedNavigationCompletionSource?.Task;
+
+		void IStackNavigation.RequestNavigation(NavigationRequest eventArgs)
+		{
+			if (_handlerBasedNavigationCompletionSource != null)
+				throw new InvalidOperationException("Pending Navigations still processing");
+
+			_handlerBasedNavigationCompletionSource = new TaskCompletionSource<object>();
+			Handler.Invoke(nameof(IStackNavigation.RequestNavigation), eventArgs);
+		}
+
+		void IStackNavigation.NavigationFinished(IReadOnlyList<IView> newStack)
+		{
+			_ = _handlerBasedNavigationCompletionSource ?? throw new InvalidOperationException("Mismatched Navigation finished");
+			var source = _handlerBasedNavigationCompletionSource;
+			_handlerBasedNavigationCompletionSource = null;
+			source?.SetResult(true);
+		}
+#nullable disable
+
 	}
 }

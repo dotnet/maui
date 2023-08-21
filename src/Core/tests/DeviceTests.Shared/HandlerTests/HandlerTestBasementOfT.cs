@@ -74,6 +74,26 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		protected Task<TValue> GetValueAsync<TValue, TCustomHandler>(IView view, Func<TCustomHandler, TValue> func)
+			where TCustomHandler : IElementHandler, new()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<TCustomHandler>(view);
+				return func(handler);
+			});
+		}
+
+		protected Task<TValue> GetValueAsync<TValue, TCustomHandler>(IView view, Func<TCustomHandler, Task<TValue>> func)
+			where TCustomHandler : IElementHandler, new()
+		{
+			return InvokeOnMainThreadAsync(() =>
+			{
+				var handler = CreateHandler<TCustomHandler>(view);
+				return func(handler);
+			});
+		}
+
 		protected Task SetValueAsync<TValue>(IView view, TValue value, Action<THandler, TValue> func)
 		{
 			return SetValueAsync<TValue, THandler>(view, value, func);
@@ -98,6 +118,26 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue);
 		}
 
+		async protected Task ValidatePropertyInitValue<TValue, TCustomHandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<TCustomHandler, TValue> GetPlatformValue,
+			TValue expectedValue)
+			where TCustomHandler : IElementHandler, new()
+		{
+			var values = await GetValueAsync(view, (TCustomHandler handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedValue, values.PlatformViewValue);
+		}
+
 		async protected Task ValidatePropertyInitValue<TValue>(
 			IView view,
 			Func<TValue> GetValue,
@@ -106,6 +146,27 @@ namespace Microsoft.Maui.DeviceTests
 			TValue expectedPlatformValue)
 		{
 			var values = await GetValueAsync(view, (handler) =>
+			{
+				return new
+				{
+					ViewValue = GetValue(),
+					PlatformViewValue = GetPlatformValue(handler)
+				};
+			});
+
+			Assert.Equal(expectedValue, values.ViewValue);
+			Assert.Equal(expectedPlatformValue, values.PlatformViewValue);
+		}
+
+		async protected Task ValidatePropertyInitValue<TValue, TCustomHandler>(
+			IView view,
+			Func<TValue> GetValue,
+			Func<TCustomHandler, TValue> GetPlatformValue,
+			TValue expectedValue,
+			TValue expectedPlatformValue)
+			where TCustomHandler : IElementHandler, new()
+		{
+			var values = await GetValueAsync(view, (TCustomHandler handler) =>
 			{
 				return new
 				{
@@ -209,8 +270,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(initialNativeVal, newNativeVal);
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null) =>
-			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue);
+		protected Task ValidateHasColor(IView view, Color color, Action action = null, string updatePropertyValue = null, double? tolerance = null) =>
+			ValidateHasColor(view, color, typeof(THandler), action, updatePropertyValue, tolerance: tolerance);
 
 		protected void MockAccessibilityExpectations(TStub view)
 		{

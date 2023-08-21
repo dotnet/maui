@@ -40,6 +40,8 @@
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Padding="12">
+                <Button Margin="5" x:Name="ShowSoftInputAsyncButton" Clicked="ShowSoftInputAsyncButton_Clicked" Text="Show Soft Input for Placeholder Button" />
+                <Button Margin="5" x:Name="HideSoftInputAsyncButton" Clicked="HideSoftInputAsyncButton_Clicked" Text="Hide Soft Input" />
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -66,6 +68,7 @@
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
+                    x:Name="PlaceholderEntryItem"
                     Placeholder="Placeholder"/>
                 <Label
                     Text="Using PlaceholderColor"
@@ -77,11 +80,16 @@
                     Text="Password"
                     Style="{StaticResource Headline}" />
                 <HorizontalStackLayout>
-                    <CheckBox x:Name="chkIsPassword" IsChecked="true" />
-                    <Label Text="Is Password" VerticalOptions="Center"/>
+                    <CheckBox 
+                        x:Name="chkIsPassword" 
+                        IsChecked="true" />
+                    <Label 
+                        Text="Is Password" 
+                        VerticalOptions="Center"/>
                 </HorizontalStackLayout>
                 <Entry
                     x:Name="pwdPassword"
+                    Keyboard="Numeric"
                     IsPassword="{Binding IsChecked, Source={Reference chkIsPassword}}" />
                 <Label
                     Text="{Binding Text, Source={Reference pwdPassword}}"
@@ -109,6 +117,34 @@
                 <Entry 
                     Text="I am read only" 
                     IsReadOnly="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="False"/>
                 <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />

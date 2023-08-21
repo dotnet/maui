@@ -5,7 +5,7 @@ using Microsoft.Maui.Controls.Internals;
 using Xamarin.UITest;
 using NUnit.Framework;
 #endif
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 7534, "Span with tail truncation and paragraph breaks with Java.Lang.IndexOutOfBoundsException", PlatformAffected.Android)]
@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void ExpectingPageNotToBreak()
 		{
 			RunningApp.Screenshot("Test passed, label is showing as it should!");

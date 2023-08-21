@@ -24,8 +24,18 @@ namespace Microsoft.Maui.Controls.Platform
 		Page CurrentPlatformModalPage =>
 			_platformModalPages.Count > 0 ? _platformModalPages[_platformModalPages.Count - 1] : throw new InvalidOperationException("Modal Stack is Empty");
 
-		Page? CurrentPage =>
-			_modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1].Page : _window.Page;
+		Page? CurrentPage
+		{
+			get
+			{
+				var currentPage = _modalPages.Count > 0 ? _modalPages[_modalPages.Count - 1].Page : _window.Page;
+
+				if (currentPage is Shell shell)
+					currentPage = shell.CurrentPage;
+
+				return currentPage;
+			}
+		}
 
 		// Shell takes care of firing its own Modal life cycle events
 		// With shell you cam remove / add multiple modals at once
@@ -147,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 
 					var page = await PopModalPlatformAsync(animated);
-					page.Parent = null;
+					page.Parent?.RemoveLogicalChild(page);
 					syncAgain = true;
 				}
 
@@ -201,7 +211,21 @@ namespace Microsoft.Maui.Controls.Platform
 			if (FireLifeCycleEvents)
 			{
 				modal.SendNavigatingFrom(new NavigatingFromEventArgs());
-				modal.SendDisappearing();
+			}
+
+			modal.SendDisappearing();
+
+			// With shell we want to make sure to only fire the appearing event
+			// on the final page that will be visible after the pop has completed
+			if (_window.Page is Shell shell)
+			{
+				if (!shell.CurrentItem.CurrentItem.IsPoppingModalStack)
+				{
+					CurrentPage?.SendAppearing();
+				}
+			}
+			else
+			{
 				CurrentPage?.SendAppearing();
 			}
 
@@ -210,7 +234,7 @@ namespace Microsoft.Maui.Controls.Platform
 				(isPlatformReady && !syncing) ? PopModalPlatformAsync(animated) : Task.CompletedTask;
 
 			await popTask;
-			modal.Parent = null;
+			modal.Parent?.RemoveLogicalChild(modal);
 			_window.OnModalPopped(modal);
 
 			if (FireLifeCycleEvents)
@@ -231,11 +255,25 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var previousPage = CurrentPage;
 			_modalPages.Add(new NavigationStepRequest(modal, true, animated));
-			modal.Parent = _window;
+			_window.AddLogicalChild(modal);
 
 			if (FireLifeCycleEvents)
 			{
 				previousPage?.SendNavigatingFrom(new NavigatingFromEventArgs());
+			}
+
+			if (_window.Page is Shell shell)
+			{
+				// With shell we want to make sure to only fire the appearing event
+				// on the final page that will be visible after the pop has completed
+				if (!shell.CurrentItem.CurrentItem.IsPushingModalStack)
+				{
+					previousPage?.SendDisappearing();
+					CurrentPage?.SendAppearing();
+				}
+			}
+			else
+			{
 				previousPage?.SendDisappearing();
 				CurrentPage?.SendAppearing();
 			}
@@ -324,7 +362,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		// Windows and Android have basically the same requirement that
 		// we need to wait for the current page to finish loading before
-		// satsifying Modal requests.
+		// satisfying Modal requests.
 		// This will most likely change once we switch Android to using dialog fragments		
 #if WINDOWS || ANDROID
 		IDisposable? _platformPageWatchingForLoaded;
@@ -338,22 +376,33 @@ namespace Microsoft.Maui.Controls.Platform
 				await SyncPlatformModalStackAsync().ConfigureAwait(false);
 			}
 			else if (_window.IsActivated &&
-				_window?.Page?.Handler is not null)
+					_window?.Page?.Handler is not null)
 			{
 				if (CurrentPlatformPage.Handler is null)
 				{
 					CurrentPlatformPage.HandlerChanged += OnCurrentPlatformPageHandlerChanged;
-					;
+
 					_platformPageWatchingForLoaded = new ActionDisposable(() =>
 					{
 						CurrentPlatformPage.HandlerChanged -= OnCurrentPlatformPageHandlerChanged;
 					});
 				}
-				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
-					CurrentPlatformPage.Handler is not null)
+				// This accounts for cases where we swap the root page out
+				// We want to wait for that to finish loading before processing any modal changes
+#if ANDROID
+				else if (!_window.Page.IsLoadedOnPlatform())
 				{
+					var windowPage = _window.Page;
 					_platformPageWatchingForLoaded =
-						CurrentPlatformPage.OnLoaded(() => OnCurrentPlatformPageLoaded(_platformPageWatchingForLoaded, EventArgs.Empty));
+						windowPage.OnLoaded(() => OnCurrentPlatformPageLoaded(windowPage, EventArgs.Empty));
+				}
+#endif
+				else if (!CurrentPlatformPage.IsLoadedOnPlatform() &&
+						  CurrentPlatformPage.Handler is not null)
+				{
+					var currentPlatformPage = CurrentPlatformPage;
+					_platformPageWatchingForLoaded =
+						currentPlatformPage.OnLoaded(() => OnCurrentPlatformPageLoaded(currentPlatformPage, EventArgs.Empty));
 				}
 			}
 		}
@@ -382,6 +431,9 @@ namespace Microsoft.Maui.Controls.Platform
 				bool result =
 					_window?.Page?.Handler is not null &&
 					_window.IsActivated
+#if ANDROID
+					&& _window.Page.IsLoadedOnPlatform()
+#endif
 					&& CurrentPlatformPage?.Handler is not null
 					&& CurrentPlatformPage.IsLoadedOnPlatform();
 

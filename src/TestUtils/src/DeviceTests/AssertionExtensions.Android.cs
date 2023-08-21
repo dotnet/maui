@@ -149,27 +149,27 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task ShowKeyboardForView(this AView view, int timeout = 1000, string message = "")
 		{
-			if (KeyboardManager.IsSoftKeyboardVisible(view))
+			if (view.IsSoftInputShowing())
 				return;
 
 			try
 			{
 				await view.FocusView(timeout);
 				await Task.Yield();
-				KeyboardManager.ShowKeyboard(view);
+				view.ShowSoftInput();
 				await Task.Yield();
 
 				bool result = await Wait(() =>
 				{
-					if (!KeyboardManager.IsSoftKeyboardVisible(view))
-						KeyboardManager.ShowKeyboard(view);
+					if (!view.IsSoftInputShowing())
+						view.ShowSoftInput();
 
-					return KeyboardManager.IsSoftKeyboardVisible(view);
+					return view.IsSoftInputShowing();
 
 				}, timeout);
 
 				await Task.Delay(100);
-				Assert.True(KeyboardManager.IsSoftKeyboardVisible(view));
+				Assert.True(view.IsSoftInputShowing());
 			}
 			catch (Exception ex)
 			{
@@ -182,24 +182,24 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task HideKeyboardForView(this AView view, int timeout = 1000, string? message = null)
 		{
-			if (!KeyboardManager.IsSoftKeyboardVisible(view))
+			if (!view.IsSoftInputShowing())
 				return;
 
 			try
 			{
-				KeyboardManager.HideKeyboard(view);
+				view.HideSoftInput();
 				await Task.Yield();
 				bool result = await Wait(() =>
 				{
-					if (!KeyboardManager.IsSoftKeyboardVisible(view))
-						KeyboardManager.HideKeyboard(view);
+					if (!view.IsSoftInputShowing())
+						view.HideSoftInput();
 
-					return !KeyboardManager.IsSoftKeyboardVisible(view);
+					return !view.IsSoftInputShowing();
 
 				}, timeout);
 
 				await Task.Delay(100);
-				Assert.True(!KeyboardManager.IsSoftKeyboardVisible(view));
+				Assert.True(!view.IsSoftInputShowing());
 			}
 			catch (Exception ex)
 			{
@@ -214,7 +214,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			try
 			{
-				var result = await Wait(() => KeyboardManager.IsSoftKeyboardVisible(view), timeout);
+				var result = await Wait(() => view.IsSoftInputShowing(), timeout);
 				Assert.True(result);
 
 				// Even if the OS is reporting that the keyboard has opened it seems like the animation hasn't quite finished
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForKeyboardToHide(this AView view, int timeout = 1000)
 		{
-			var result = await Wait(() => !KeyboardManager.IsSoftKeyboardVisible(view), timeout);
+			var result = await Wait(() => !view.IsSoftInputShowing(), timeout);
 			Assert.True(result, "Keyboard failed to hide");
 
 			// Even if the OS is reporting that the keyboard has closed it seems like the animation hasn't quite finished
@@ -283,6 +283,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static string CreateEqualError(this Bitmap bitmap, Bitmap other, string message) =>
 			$"{message} This is what it looked like: <img>{bitmap.ToBase64String()}</img> and <img>{other.ToBase64String()}</img>";
+
+		public static string CreateScreenshotError(this Bitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
 
 		public static AColor ColorAtPoint(this Bitmap bitmap, int x, int y, bool includeAlpha = false)
 		{
@@ -448,13 +451,13 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, bitmap.Width - 1, bitmap.Height - 1);
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
-			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform()));
+		public static Task<Bitmap> AssertContainsColor(this Bitmap bitmap, Graphics.Color expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> Task.FromResult(bitmap.AssertContainsColor(expectedColor.ToPlatform(), tolerance: tolerance));
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this Bitmap bitmap, Graphics.Color unexpectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
 			=> Task.FromResult(bitmap.AssertDoesNotContainColor(unexpectedColor.ToPlatform()));
 
-		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null)
+		public static Bitmap AssertContainsColor(this Bitmap bitmap, AColor expectedColor, Func<Maui.Graphics.RectF, Maui.Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.Width, bitmap.Height);
 
@@ -496,16 +499,16 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap;
 		}
 
-		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext) =>
-			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext);
+		public static Task<Bitmap> AssertContainsColor(this AView view, Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToPlatform(), mauiContext, tolerance: tolerance);
 
 		public static Task<Bitmap> AssertDoesNotContainColor(this AView view, Graphics.Color unexpectedColor, IMauiContext mauiContext) =>
 			AssertDoesNotContainColor(view, unexpectedColor.ToPlatform(), mauiContext);
 
-		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext)
+		public static async Task<Bitmap> AssertContainsColor(this AView view, AColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
-			return AssertContainsColor(bitmap, expectedColor);
+			return AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
 		}
 
 		public static async Task<Bitmap> AssertDoesNotContainColor(this AView view, AColor unexpectedColor, IMauiContext mauiContext)
@@ -592,6 +595,15 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			return Task.CompletedTask;
+		}
+
+		public static async Task ThrowScreenshot(this AView view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			if (ex is null)
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error."));
+			else
+				throw new XunitException(CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
 		}
 
 		public static TextUtils.TruncateAt? ToPlatform(this LineBreakMode mode) =>

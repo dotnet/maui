@@ -109,10 +109,14 @@ namespace Microsoft.Maui.Controls
 				// Windows supports nested tabs so we want the tabs to display
 				// if the current shell section has multiple contents
 				if (ShellItemController.GetItems().Count > 1 ||
-					(CurrentItem as IShellSectionController).GetItems().Count > 1)
+					(CurrentItem as IShellSectionController)?.GetItems()?.Count > 1)
+				{
 					defaultShowTabs = true;
+				}
 				else
+				{
 					defaultShowTabs = false;
+				}
 #else
 
 				if (ShellItemController.GetItems().Count <= 1)
@@ -128,7 +132,7 @@ namespace Microsoft.Maui.Controls
 		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, Items);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 		#endregion
 
@@ -266,7 +270,7 @@ namespace Microsoft.Maui.Controls
 			if (CurrentItem == child)
 			{
 				if (ShellItemController.GetItems().Count == 0)
-					ClearValue(CurrentItemProperty);
+					ClearValue(CurrentItemProperty, specificity: SetterSpecificity.FromHandler);
 				else
 					SetValueFromRenderer(CurrentItemProperty, ShellItemController.GetItems()[0]);
 			}
@@ -329,10 +333,7 @@ namespace Microsoft.Maui.Controls
 		internal override void SendDisappearing()
 		{
 			base.SendDisappearing();
-			if (CurrentItem != null)
-			{
-				CurrentItem.SendDisappearing();
-			}
+			CurrentItem?.SendDisappearing();
 		}
 
 		protected override void OnParentSet()

@@ -10,28 +10,11 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
-		internal event EventHandler? LayoutSubviewsChanged;
 
 		public ContentView()
 		{
-			Layer.CornerCurve = CACornerCurve.Continuous;
-		}
-
-		public override CGSize SizeThatFits(CGSize size)
-		{
-			if (CrossPlatformMeasure == null)
-			{
-				return base.SizeThatFits(size);
-			}
-
-			var widthConstraint = size.Width;
-			var heightConstraint = size.Height;
-
-			var crossPlatformSize = CrossPlatformMeasure(widthConstraint, heightConstraint);
-
-			CacheMeasureConstraints(widthConstraint, heightConstraint);
-
-			return crossPlatformSize.ToCGSize();
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				Layer.CornerCurve = CACornerCurve.Continuous; // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
 		}
 
 		public override void LayoutSubviews()
@@ -39,34 +22,13 @@ namespace Microsoft.Maui.Platform
 			base.LayoutSubviews();
 
 			var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-			var widthConstraint = bounds.Width;
-			var heightConstraint = bounds.Height;
-
-			if (!IsMeasureValid(widthConstraint, heightConstraint))
-			{
-				CrossPlatformMeasure?.Invoke(widthConstraint, heightConstraint);
-				CacheMeasureConstraints(widthConstraint, heightConstraint);
-			}
-
-			CrossPlatformArrange?.Invoke(bounds);
 
 			if (ChildMaskLayer != null)
 				ChildMaskLayer.Frame = bounds;
 
 			SetClip();
-
-			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
+			this.UpdateMauiCALayer();
 		}
-
-		public override void SetNeedsLayout()
-		{
-			InvalidateConstraintsCache();
-			base.SetNeedsLayout();
-			Superview?.SetNeedsLayout();
-		}
-
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
 
 		internal IBorderStroke? Clip
 		{

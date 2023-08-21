@@ -123,6 +123,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		protected MaterialToolbar GetPlatformToolbar(IElementHandler handler)
 		{
+			if (handler.VirtualView is VisualElement e)
+			{
+				handler = e.Window?.Handler ?? handler;
+			}
+
 			if (handler is IWindowHandler wh)
 			{
 				handler = wh.VirtualView.Content.Handler;
@@ -154,15 +159,30 @@ namespace Microsoft.Maui.DeviceTests
 		protected MaterialToolbar GetPlatformToolbar(IMauiContext mauiContext)
 		{
 			var navManager = mauiContext.GetNavigationRootManager();
+			if (navManager?.RootView is null)
+				return null;
+
 			var appbarLayout =
-				navManager?.RootView?.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+				navManager.RootView.FindViewById<AViewGroup>(Resource.Id.navigationlayout_appbar);
+
+			if (appbarLayout is null &&
+				navManager.RootView is ContainerView cv &&
+				cv.CurrentView is Shell shell)
+			{
+				if (shell.Handler is Controls.Platform.Compatibility.IShellContext sr)
+				{
+					var layout = sr.CurrentDrawerLayout;
+					var content = layout?.GetFirstChildOfType<Controls.Platform.Compatibility.CustomFrameLayout>();
+					appbarLayout = content?.GetFirstChildOfType<AppBarLayout>();
+				}
+			}
 
 			var toolBar = appbarLayout?.GetFirstChildOfType<MaterialToolbar>();
 
 			toolBar = toolBar ?? navManager.ToolbarElement?.Toolbar?.Handler?.PlatformView as
 				MaterialToolbar;
 
-			if (toolBar == null)
+			if (toolBar is null)
 			{
 				appbarLayout =
 					(navManager?.RootView as AViewGroup)?.GetFirstChildOfType<AppBarLayout>();

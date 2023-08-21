@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Text;
 using CoreGraphics;
@@ -12,9 +13,11 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, UIScrollView>, ICrossPlatformLayout
 	{
 		const nint ContentPanelTag = 0x845fed;
+
+		readonly ScrollEventProxy _eventProxy = new();
 
 		public override bool NeedsContainer
 		{
@@ -30,6 +33,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
@@ -39,27 +44,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.Scrolled += Scrolled;
-			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			_eventProxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			platformView.Scrolled -= Scrolled;
-			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
-		}
-
-		void ScrollAnimationEnded(object? sender, EventArgs e)
-		{
-			VirtualView.ScrollFinished();
-		}
-
-		void Scrolled(object? sender, EventArgs e)
-		{
-			VirtualView.HorizontalOffset = PlatformView.ContentOffset.X;
-			VirtualView.VerticalOffset = PlatformView.ContentOffset.Y;
+			PendingScrollToRequest = null;
+			_eventProxy.Disconnect(platformView);
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -67,7 +60,14 @@ namespace Microsoft.Maui.Handlers
 			if (handler.PlatformView == null || handler.MauiContext == null)
 				return;
 
-			UpdateContentView(scrollView, handler);
+			if (handler is not ICrossPlatformLayout crossPlatformLayout)
+			{
+				return;
+			}
+
+			// We'll use the local cross-platform layout methods defined in our handler (which wrap the ScrollView's default methods)
+			// so we can normalize the behavior of the scrollview to match the other platforms
+			UpdateContentView(scrollView, handler, crossPlatformLayout);
 		}
 
 		// We don't actually have this mapped because we don't need it, but we can't remove it because it's public
@@ -114,6 +114,15 @@ namespace Microsoft.Maui.Handlers
 			if (args is ScrollToRequest request)
 			{
 				var uiScrollView = handler.PlatformView;
+
+				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+
 				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
 				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
 				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
@@ -144,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 			return null;
 		}
 
-		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler)
+		static void UpdateContentView(IScrollView scrollView, IScrollViewHandler handler, ICrossPlatformLayout crossPlatformLayout)
 		{
 			if (scrollView.PresentedContent == null || handler.MauiContext == null)
 			{
@@ -165,11 +174,11 @@ namespace Microsoft.Maui.Handlers
 			}
 			else
 			{
-				InsertContentView(platformScrollView, scrollView, nativeContent);
+				InsertContentView(platformScrollView, scrollView, nativeContent, crossPlatformLayout);
 			}
 		}
 
-		static void InsertContentView(UIScrollView platformScrollView, IScrollView scrollView, UIView platformContent)
+		static void InsertContentView(UIScrollView platformScrollView, IScrollView scrollView, UIView platformContent, ICrossPlatformLayout crossPlatformLayout)
 		{
 			if (scrollView.PresentedContent == null)
 			{
@@ -179,90 +188,22 @@ namespace Microsoft.Maui.Handlers
 			var contentContainer = new ContentView()
 			{
 				View = scrollView.PresentedContent,
-				CrossPlatformMeasure = ConstrainToScrollView(scrollView.CrossPlatformMeasure, platformScrollView, scrollView),
 				Tag = ContentPanelTag
 			};
 
-			contentContainer.CrossPlatformArrange = ArrangeScrollViewContent(scrollView.CrossPlatformArrange, contentContainer, platformScrollView, scrollView);
+			// This is where we normally would inject the cross-platform ScrollView's layout logic; instead, we're injecting the
+			// methods from this handler so it can make some adjustments for things like Padding before the default logic is invoked
+			contentContainer.CrossPlatformLayout = crossPlatformLayout;
 
 			platformScrollView.ClearSubviews();
 			contentContainer.AddSubview(platformContent);
 			platformScrollView.AddSubview(contentContainer);
 		}
 
-		static Func<Rect, Size> ArrangeScrollViewContent(Func<Rect, Size> internalArrange, ContentView container, UIScrollView platformScrollView, IScrollView scrollView)
-		{
-			return (rect) =>
-			{
-				if (container.Superview is UIScrollView uiScrollView)
-				{
-					// Ensure the container is at least the size of the UIScrollView itself, so that the 
-					// cross-platform layout logic makes sense and the contents don't arrange outside the 
-					// container. (Everything will look correct if they do, but hit testing won't work properly.)
-
-					var scrollViewBounds = uiScrollView.Bounds;
-					var containerBounds = container.Bounds;
-
-					container.Bounds = new CGRect(0, 0,
-						Math.Max(containerBounds.Width, scrollViewBounds.Width),
-						Math.Max(containerBounds.Height, scrollViewBounds.Height));
-					container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
-				}
-
-				var contentSize = internalArrange(rect);
-
-				// The UIScrollView's bounds are available, so we can use them to make sure the ContentSize makes sense
-				// for the ScrollView orientation
-				var viewportBounds = platformScrollView.Bounds;
-				var viewportHeight = viewportBounds.Height;
-				var viewportWidth = viewportBounds.Width;
-				SetContentSizeForOrientation(platformScrollView, viewportWidth, viewportHeight, scrollView.Orientation, contentSize);
-
-				return contentSize;
-			};
-		}
-
-		static Func<double, double, Size> ConstrainToScrollView(Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
-		{
-			return (widthConstraint, heightConstraint) =>
-			{
-				return MeasureScrollViewContent(widthConstraint, heightConstraint, internalMeasure, platformScrollView, scrollView);
-			};
-		}
-
-		static Size MeasureScrollViewContent(double widthConstraint, double heightConstraint, Func<double, double, Size> internalMeasure, UIScrollView platformScrollView, IScrollView scrollView)
-		{
-			var presentedContent = scrollView.PresentedContent;
-			if (presentedContent == null)
-			{
-				return Size.Zero;
-			}
-
-			var scrollViewBounds = platformScrollView.Bounds;
-			var padding = scrollView.Padding;
-
-			if (widthConstraint == 0)
-			{
-				widthConstraint = scrollViewBounds.Width;
-			}
-
-			if (heightConstraint == 0)
-			{
-				heightConstraint = scrollViewBounds.Height;
-			}
-
-			// Account for the ScrollView Padding before measuring the content
-			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
-			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
-
-			var result = internalMeasure.Invoke(widthConstraint, heightConstraint);
-
-			return result.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
-		}
-
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var virtualView = VirtualView;
+			var crossPlatformLayout = virtualView as ICrossPlatformLayout;
 			var platformView = PlatformView;
 
 			if (platformView == null || virtualView == null)
@@ -276,7 +217,7 @@ namespace Microsoft.Maui.Handlers
 			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
 			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
 
-			var crossPlatformContentSize = virtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
+			var crossPlatformContentSize = crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
 
 			// Add the padding back in for the final size
 			crossPlatformContentSize.Width += padding.HorizontalThickness;
@@ -319,6 +260,12 @@ namespace Microsoft.Maui.Handlers
 
 			contentView.Bounds = contentBounds;
 			contentView.Center = new CGPoint(contentBounds.GetMidX(), contentBounds.GetMidY());
+
+			if (PendingScrollToRequest != null)
+			{
+				VirtualView.RequestScrollTo(PendingScrollToRequest.HorizontalOffset, PendingScrollToRequest.VerticalOffset, PendingScrollToRequest.Instant);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		static double AccountForPadding(double constraint, double padding)
@@ -340,6 +287,130 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			uiScrollView.ContentSize = contentSize;
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			var scrollView = VirtualView;
+			var crossPlatformLayout = scrollView as ICrossPlatformLayout;
+			var platformScrollView = PlatformView;
+
+			var presentedContent = scrollView.PresentedContent;
+			if (presentedContent == null)
+			{
+				return Size.Zero;
+			}
+
+			var scrollViewBounds = platformScrollView.Bounds;
+			var padding = scrollView.Padding;
+
+			if (widthConstraint == 0)
+			{
+				widthConstraint = scrollViewBounds.Width;
+			}
+
+			if (heightConstraint == 0)
+			{
+				heightConstraint = scrollViewBounds.Height;
+			}
+
+			// Account for the ScrollView Padding before measuring the content
+			widthConstraint = AccountForPadding(widthConstraint, padding.HorizontalThickness);
+			heightConstraint = AccountForPadding(heightConstraint, padding.VerticalThickness);
+
+			// Now handle the actual cross-platform measurement of the ScrollView's content
+			var result = crossPlatformLayout.CrossPlatformMeasure(widthConstraint, heightConstraint);
+
+			return result.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), presentedContent);
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+		{
+			var scrollView = VirtualView;
+			var crossPlatformLayout = scrollView as ICrossPlatformLayout;
+			var platformScrollView = PlatformView;
+
+			var contentSize = crossPlatformLayout.CrossPlatformArrange(bounds);
+
+			// The UIScrollView's bounds are available, so we can use them to make sure the ContentSize makes sense
+			// for the ScrollView orientation
+			var viewportBounds = platformScrollView.Bounds;
+			var viewportHeight = viewportBounds.Height;
+			var viewportWidth = viewportBounds.Width;
+			SetContentSizeForOrientation(platformScrollView, viewportWidth, viewportHeight, scrollView.Orientation, contentSize);
+
+			var container = GetContentView(platformScrollView);
+
+			if (container?.Superview is UIScrollView uiScrollView)
+			{
+				// Ensure the container is at least the size of the UIScrollView itself, so that the 
+				// cross-platform layout logic makes sense and the contents don't arrange outside the 
+				// container. (Everything will look correct if they do, but hit testing won't work properly.)
+
+				var scrollViewBounds = uiScrollView.Bounds;
+				var containerBounds = contentSize;
+
+				container.Bounds = new CGRect(0, 0,
+					Math.Max(containerBounds.Width, scrollViewBounds.Width),
+					Math.Max(containerBounds.Height, scrollViewBounds.Height));
+
+				container.Center = new CGPoint(container.Bounds.GetMidX(), container.Bounds.GetMidY());
+			}
+
+			return contentSize;
+		}
+
+		class ScrollEventProxy
+		{
+			WeakReference<IScrollView>? _virtualView;
+
+			IScrollView? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IScrollView virtualView, UIScrollView platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.Scrolled += Scrolled;
+				platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			}
+
+			public void Disconnect(UIScrollView platformView)
+			{
+				_virtualView = null;
+
+				platformView.Scrolled -= Scrolled;
+				platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IButton virtualView)
+				{
+					virtualView.Released();
+					virtualView.Clicked();
+				}
+			}
+
+			void ScrollAnimationEnded(object? sender, EventArgs e)
+			{
+				VirtualView?.ScrollFinished();
+			}
+
+			void Scrolled(object? sender, EventArgs e)
+			{
+				if (VirtualView == null)
+				{
+					return;
+				}
+
+				if (sender is not UIScrollView platformView)
+				{
+					return;
+				}
+
+				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
+				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
+			}
 		}
 	}
 }

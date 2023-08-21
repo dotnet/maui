@@ -1,30 +1,16 @@
 ﻿#nullable enable
-using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class ImageHandler : ViewHandler<IImage, UIImageView>
 	{
-		protected override UIImageView CreatePlatformView() => new MauiImageView();
-
-		protected override void ConnectHandler(UIImageView platformView)
-		{
-			base.ConnectHandler(platformView);
-
-			if (PlatformView is MauiImageView imageView)
-				imageView.WindowChanged += OnWindowChanged;
-		}
+		protected override UIImageView CreatePlatformView() => new MauiImageView(this);
 
 		protected override void DisconnectHandler(UIImageView platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			if (platformView is MauiImageView imageView)
-				imageView.WindowChanged -= OnWindowChanged;
 
 			SourceLoader.Reset();
 		}
@@ -49,13 +35,18 @@ namespace Microsoft.Maui.Handlers
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
-		public static Task MapSourceAsync(IImageHandler handler, IImage image) =>
-			handler.SourceLoader.UpdateImageSourceAsync();
+		public static async Task MapSourceAsync(IImageHandler handler, IImage image) =>
+			await handler.SourceLoader.UpdateImageSourceAsync();
 
-		void OnSetImageSource(UIImage? obj) =>
-			PlatformView.Image = obj;
+		void IImageSourcePartSetter.SetImageSource(UIImage? source)
+		{
+			PlatformView.Image = source;
 
-		void OnWindowChanged(object? sender, EventArgs e)
+			if (VirtualView.Source is IStreamImageSource)
+				PlatformView.InvalidateMeasure(VirtualView);
+		}
+
+		public void OnWindowChanged()
 		{
 			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));

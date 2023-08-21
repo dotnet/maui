@@ -36,6 +36,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 						GalleryBuilder.NavButton("Animate Shape Gallery", () => new AnimateShapeGallery(), Navigation),
 						GalleryBuilder.NavButton("Shape AppThemes Gallery", () => new ShapeAppThemeGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip Gallery", () => new ClipGallery(), Navigation),
+						GalleryBuilder.NavButton("Invalidate Clip Gallery", () => new InvalidateClipGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip CornerRadius Gallery", () => new ClipCornerRadiusGallery(), Navigation),
 						GalleryBuilder.NavButton("Clip Views Gallery", () => new ClipViewsGallery(), Navigation),
 						GalleryBuilder.NavButton("Add/Remove Clip Gallery", () => new AddRemoveClipGallery(), Navigation),

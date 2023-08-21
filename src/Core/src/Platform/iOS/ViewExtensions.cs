@@ -2,13 +2,9 @@
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using CoreAnimation;
 using CoreGraphics;
 using Foundation;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Media;
-using ObjCRuntime;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
 
@@ -239,21 +235,10 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border;
 		}
 
-		internal static T? FindDescendantView<T>(this UIView view, Func<T, bool> predicate) where T : UIView
+		internal static T? GetChildAt<T>(this UIView view, int index) where T : UIView
 		{
-			var queue = new Queue<UIView>();
-			queue.Enqueue(view);
-
-			while (queue.Count > 0)
-			{
-				var descendantView = queue.Dequeue();
-
-				if (descendantView is T result && predicate.Invoke(result))
-					return result;
-
-				for (var i = 0; i < descendantView.Subviews?.Length; i++)
-					queue.Enqueue(descendantView.Subviews[i]);
-			}
+			if (index < view.Subviews.Length)
+				return (T?)view.Subviews[index];
 
 			return null;
 		}
@@ -883,5 +868,11 @@ namespace Microsoft.Maui.Platform
 
 		internal static float GetDisplayDensity(this UIView? view) =>
 			view?.Window?.GetDisplayDensity() ?? 1.0f;
+
+		internal static bool HideSoftInput(this UIView inputView) => inputView.ResignFirstResponder();
+
+		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();
+
+		internal static bool IsSoftInputShowing(this UIView inputView) => inputView.IsFirstResponder;
 	}
 }

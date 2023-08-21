@@ -9,8 +9,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	// TODO ezhart At this point, this is almost exactly a clone of LayoutViewGroup; we may be able to drop this class entirely
-	public class ContentViewGroup : PlatformContentViewGroup
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -40,6 +39,21 @@ namespace Microsoft.Maui.Platform
 		public ContentViewGroup(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
 		{
 			_context = context;
+		}
+
+		public ICrossPlatformLayout? CrossPlatformLayout
+		{
+			get; set;
+		}
+
+		Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return CrossPlatformLayout?.CrossPlatformMeasure(widthConstraint, heightConstraint) ?? Graphics.Size.Zero;
+		}
+
+		Graphics.Size CrossPlatformArrange(Graphics.Rect bounds)
+		{
+			return CrossPlatformLayout?.CrossPlatformArrange(bounds) ?? Graphics.Size.Zero;
 		}
 
 		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
@@ -96,9 +110,6 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal Func<double, double, Graphics.Size>? CrossPlatformMeasure { get; set; }
-		internal Func<Graphics.Rect, Graphics.Size>? CrossPlatformArrange { get; set; }
-
 		protected override Path? GetClipPath(int width, int height)
 		{
 			if (Clip is null || Clip?.Shape is null)
@@ -119,6 +130,17 @@ namespace Microsoft.Maui.Platform
 
 			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
 			return platformPath;
+		}
+
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
+		{
+			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
+				layoutElement.IsThisMyPlatformView(this))
+			{
+				return layoutElement;
+			}
+
+			return null;
 		}
 	}
 }

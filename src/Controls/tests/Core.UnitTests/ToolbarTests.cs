@@ -234,5 +234,50 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			await outerNavigationPage.PopAsync();
 			Assert.False(toolbar.BackButtonVisible);
 		}
+
+		[Fact]
+		public async Task ToolbarDoesntSetOnWindowWhenSwappingBackToSameFlyoutPage()
+		{
+			var window = new TestWindow();
+			var navPage = new NavigationPage(new ContentPage()) { Title = "Detail" };
+			var flyoutPage = new FlyoutPage()
+			{
+				Detail = navPage,
+				Flyout = new ContentPage() { Title = "Flyout" }
+			};
+
+			IToolbarElement windowToolbarElement = window;
+
+			window.Page = flyoutPage;
+			window.Page = new ContentPage();
+			window.Page = flyoutPage;
+
+			Assert.Null(windowToolbarElement.Toolbar);
+			Assert.NotNull((flyoutPage as IToolbarElement).Toolbar);
+		}
+
+		[Fact]
+		public async Task ToolbarSetsToCorrectPageWithModal()
+		{
+			var window = new TestWindow();
+			IToolbarElement toolbarElement = window;
+			var startingPage = new TestNavigationPage(true, new ContentPage());
+			window.Page = startingPage;
+
+			await startingPage.NavigatingTask;
+
+			var rootPageToolbar = toolbarElement.Toolbar;
+
+			var modalPage = new TestNavigationPage(true, new ContentPage());
+			await startingPage.Navigation.PushModalAsync(modalPage);
+
+			Assert.Equal(rootPageToolbar, toolbarElement.Toolbar);
+
+			var modalPageToolBar = (modalPage as IToolbarElement).Toolbar;
+
+			Assert.NotNull(modalPageToolBar);
+			Assert.NotEqual(modalPageToolBar, rootPageToolbar);
+
+		}
 	}
 }

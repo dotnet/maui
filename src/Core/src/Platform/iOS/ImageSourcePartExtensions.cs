@@ -5,7 +5,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	internal static class ImageSourcePartExtensions
+	public static class ImageSourcePartExtensions
 	{
 		public static async Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this IImageSourcePart image,

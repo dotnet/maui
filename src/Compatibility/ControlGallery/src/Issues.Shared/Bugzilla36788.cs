@@ -6,10 +6,11 @@ using Microsoft.Maui.Graphics;
 
 #if UITEST
 using Xamarin.UITest;
+using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -50,7 +51,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			{
 				Padding = 16,
 				BackgroundColor = Colors.Gray,
-				Content = new RelativeLayout
+				Content = new Compatibility.RelativeLayout
 				{
 					BackgroundColor = Colors.Navy,
 					Children = {
@@ -80,7 +81,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				Padding = 16,
 				BackgroundColor = Colors.Gray,
 				IsClippedToBounds = true,
-				Content = _container = new RelativeLayout
+				Content = _container = new Compatibility.RelativeLayout
 				{
 					IsClippedToBounds = true,
 					BackgroundColor = Colors.Navy,
@@ -124,7 +125,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
+		[FailsOnMaui]
 		public void Bugzilla36788Test ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Passed"));

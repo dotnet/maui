@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls
 	{
 		const string GetResourcePathUriScheme = "maui://";
 		static ConditionalWeakTable<Type, ResourceDictionary> s_instances = new ConditionalWeakTable<Type, ResourceDictionary>();
-		readonly Dictionary<string, object> _innerDictionary = new Dictionary<string, object>();
+		readonly Dictionary<string, object> _innerDictionary = new(StringComparer.Ordinal);
 		ResourceDictionary _mergedInstance;
 		Uri _source;
 

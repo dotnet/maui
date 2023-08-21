@@ -18,6 +18,8 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		public string LogDirectory => Path.Combine(TestEnvironment.GetLogDirectory(), TestName);
+
 		public string TestDirectory => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), TestName);
 
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
@@ -33,6 +35,8 @@ namespace Microsoft.Maui.IntegrationTests
 			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
 			//Try not restore dependencies of 6.0.10
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
+			// Surface warnings as build errors
+			"TreatWarningsAsErrors=true",
 		};
 
 

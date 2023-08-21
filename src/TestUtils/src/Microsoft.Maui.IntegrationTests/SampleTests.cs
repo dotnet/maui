@@ -28,11 +28,13 @@ namespace Microsoft.Maui.IntegrationTests
 		public void Build(string relativeProj, string config)
 		{
 			var projectFile = Path.GetFullPath(Path.Combine(TestEnvironment.GetMauiDirectory(), relativeProj));
-			var binlog = Path.Combine(TestDirectory, Path.Combine("sample.binlog"));
+			var binlog = Path.Combine(LogDirectory, Path.Combine("sample.binlog"));
 			var sampleProps = new[]
 			{
 				"UseWorkload=true",
 				$"RestoreConfigFile={TestNuGetConfig}",
+				// Surface warnings as build errors
+				"TreatWarningsAsErrors=true",
 			};
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),

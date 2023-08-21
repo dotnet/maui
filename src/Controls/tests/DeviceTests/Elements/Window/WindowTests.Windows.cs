@@ -3,9 +3,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
@@ -14,6 +14,36 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class WindowTests : ControlsHandlerTestBase
 	{
+		[Fact(DisplayName = "Swapping MainPage doesn't Crash")]
+		public async Task SwappingMainPageDoesntCrash()
+		{
+			SetupBuilder();
+
+			var mainPage = new ContentPage
+			{
+				BackgroundColor = Colors.Red
+			};
+
+			var secondaryPage = new ContentPage
+			{
+				BackgroundColor = Colors.Green
+			};
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+			{
+				var mainWindow = handler.VirtualView as Window;
+
+				mainWindow.Page = secondaryPage;
+				Assert.Equal(mainWindow.Page, secondaryPage);
+
+				mainWindow.Page = mainPage;
+				// Without exceptions, the test has passed.
+				Assert.Equal(mainWindow.Page, mainPage);
+
+				Assert.NotNull(mainWindow.Page);
+			});
+		}
+
 		[Fact]
 		public async Task AdornerLayerAdded()
 		{

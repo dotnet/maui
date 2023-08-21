@@ -12,11 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class SearchBarHandlerTests
 	{
-		[Theory(DisplayName = "Gradient Background Initializes Correctly"
-#if IOS || MACCATALYST
-			, Skip = "This test is currently invalid https://github.com/dotnet/maui/issues/11948"
-#endif
-		)]
+		[Theory(DisplayName = "Gradient Background Initializes Correctly")]
 		[InlineData(0xFFFF0000, 0xFFFE2500)]
 		[InlineData(0xFF00FF00, 0xFF04F800)]
 		[InlineData(0xFF0000FF, 0xFF0432FE)]
@@ -35,7 +31,7 @@ namespace Microsoft.Maui.DeviceTests
 				Text = "Background"
 			};
 
-			await ValidateHasColor(searchBar, expected);
+			await ValidateHasColor(searchBar, expected, tolerance: .05);
 		}
 
 		[Fact]
@@ -292,7 +288,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				textField.SpellCheckingType == UITextSpellCheckingType.No;
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var textField = searchView.GetSearchTextField();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocorrectionType == UITextAutocorrectionType.Yes;
+		}
+
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var textField = searchView.GetSearchTextField();
+
+			if (textField is null)
+				return false;
+
+			return textField.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 	}
 }

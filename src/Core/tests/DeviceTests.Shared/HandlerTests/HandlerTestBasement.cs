@@ -11,6 +11,11 @@ using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
 
+#if WINDOWS
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+#endif
+
 namespace Microsoft.Maui.DeviceTests
 {
 	public class HandlerTestBasement : TestBase, IDisposable
@@ -127,6 +132,22 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 				view.Arrange(new Rect(0, 0, w, h));
+
+#if WINDOWS
+				if (viewHandler.PlatformView is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				{
+					void SwipeViewLoaded(object s, RoutedEventArgs e)
+					{
+						swipeControl.Arrange(new global::Windows.Foundation.Rect(0, 0, w, h));
+						swipeControl.Loaded -= SwipeViewLoaded;
+					};
+
+					// Doing the SwipeItems arrange before the view has loaded causes the SwipeControl
+					// to crash on the first layout pass. So we wait until the control has been loaded.
+					swipeControl.Loaded += SwipeViewLoaded;
+				}
+				else
+#endif
 				viewHandler.PlatformArrange(view.Frame);
 			}
 		}
@@ -155,7 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null)
+		protected Task ValidateHasColor(IView view, Color color, Type handlerType, Action action = null, string updatePropertyValue = null, double? tolerance = null)
 		{
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -167,7 +188,7 @@ namespace Microsoft.Maui.DeviceTests
 					handler.UpdateValue(updatePropertyValue);
 				}
 
-				await plaformView.AssertContainsColor(color, MauiContext);
+				await plaformView.AssertContainsColor(color, MauiContext, tolerance: tolerance);
 			});
 		}
 
@@ -210,12 +231,26 @@ namespace Microsoft.Maui.DeviceTests
 				return Task.FromResult(handler);
 			});
 		}
+
 		public Task AttachAndRun<TPlatformHandler>(IView view, Func<TPlatformHandler, Task> action)
 			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
 			=>
 			view.AttachAndRun<bool, TPlatformHandler>(async (handler) =>
 			{
 				await action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
+
+		public Task AttachAndRun<TPlatformHandler>(IView view, Action<TPlatformHandler> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+			view.AttachAndRun<bool, TPlatformHandler>((handler) =>
+			{
+				action(handler);
 				return true;
 			}, MauiContext, async (view) =>
 			{

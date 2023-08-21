@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 
 		public static implicit operator string(FileImageSource file)
 		{
-			return file != null ? file.File : null;
+			return file?.File;
 		}
 
 		protected override void OnPropertyChanged(string propertyName = null)

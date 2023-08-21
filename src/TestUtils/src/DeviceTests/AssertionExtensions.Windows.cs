@@ -44,16 +44,6 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this FrameworkElement view, int timeout = 1000)
 		{
-			if (view is AutoSuggestBox searchView)
-			{
-				var queryEditor = searchView.GetFirstDescendant<TextBox>();
-
-				if (queryEditor is null)
-					throw new Exception("Unable to locate TextBox on AutoSuggestBox");
-
-				view = queryEditor;
-			}
-
 			TaskCompletionSource focusSource = new TaskCompletionSource();
 			view.GotFocus += OnFocused;
 
@@ -87,8 +77,6 @@ namespace Microsoft.Maui.DeviceTests
 				view.LostFocus -= OnUnFocused;
 			}
 
-			await focusSource.Task.WaitAsync(TimeSpan.FromMilliseconds(timeout));
-
 			void OnUnFocused(object? sender, RoutedEventArgs e)
 			{
 				view.LostFocus -= OnUnFocused;
@@ -119,6 +107,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task<string> CreateEqualError(this CanvasBitmap bitmap, CanvasBitmap other, string message) =>
 			$"{message} This is what it looked like: <img>{await bitmap.ToBase64StringAsync()}</img> and <img>{await other.ToBase64StringAsync()}</img>";
+
+		public static async Task<string> CreateScreenshotError(this CanvasBitmap bitmap, string message) =>
+			$"{message} This is what it looked like:<img>{await bitmap.ToBase64StringAsync()}</img>";
 
 		public static async Task<string> ToBase64StringAsync(this CanvasBitmap bitmap)
 		{
@@ -318,10 +309,10 @@ namespace Microsoft.Maui.DeviceTests
 		public static CanvasBitmap AssertColorAtTopRight(this CanvasBitmap bitmap, WColor expectedColor)
 			=> bitmap.AssertColorAtPoint(expectedColor, bitmap.SizeInPixels.Width - 1, bitmap.SizeInPixels.Height - 1);
 
-		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
-			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor(), withinRectModifier);
+		public static Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, Graphics.Color expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
+			=> bitmap.AssertContainsColor(expectedColor.ToWindowsColor(), withinRectModifier, tolerance: tolerance);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
+		public static async Task<CanvasBitmap> AssertContainsColor(this CanvasBitmap bitmap, WColor expectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null, double? tolerance = null)
 		{
 			var imageRect = new Graphics.RectF(0, 0, bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height);
 
@@ -331,7 +322,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -345,17 +336,17 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, await CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			Assert.Fail(await CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
 		}
 
-		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor, IMauiContext mauiContext) =>
-			AssertContainsColor(view, expectedColor.ToWindowsColor(), mauiContext);
+		public static Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, Maui.Graphics.Color expectedColor, IMauiContext mauiContext, double? tolerance = null) =>
+			AssertContainsColor(view, expectedColor.ToWindowsColor(), mauiContext, tolerance: tolerance);
 
-		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
+		public static async Task<CanvasBitmap> AssertContainsColor(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext, double? tolerance = null)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
-			return await AssertContainsColor(bitmap, expectedColor);
+			return await AssertContainsColor(bitmap, expectedColor, tolerance: tolerance);
 		}
 
 		public static Task<CanvasBitmap> AssertDoesNotContainColor(this CanvasBitmap bitmap, Graphics.Color unexpectedColor, Func<Graphics.RectF, Graphics.RectF>? withinRectModifier = null)
@@ -371,7 +362,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -381,7 +372,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (c.IsEquivalent(unexpectedColor))
 				{
-					Assert.True(false, await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
+					Assert.Fail(await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
 				}
 			}
 
@@ -453,6 +444,15 @@ namespace Microsoft.Maui.DeviceTests
 				}
 				return true;
 			}
+		}
+
+		public static async Task ThrowScreenshot(this FrameworkElement view, IMauiContext mauiContext, string? message = null, Exception? ex = null)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+			if (ex is null)
+				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error."));
+			else
+				throw new XunitException(await CreateScreenshotError(bitmap, message ?? "There was an error: " + ex.Message), ex);
 		}
 
 		public static TextTrimming ToPlatform(this LineBreakMode mode) =>

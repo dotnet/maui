@@ -6,7 +6,10 @@
         "Skia",
         "Resizetizer",
         "nugets",
-        "netstandard"
+        "netstandard",
+        "Appium",
+        "XCUI",
+        "Automator"
     ],
     "ignoreWords": [],
     "patterns": [

@@ -228,8 +228,7 @@ namespace Microsoft.Maui.Controls
 			OnAppearing();
 
 			var container = RealParent as ListView;
-			if (container != null)
-				container.SendCellAppearing(this);
+			container?.SendCellAppearing(this);
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/Cell.xml" path="//Member[@MemberName='SendDisappearing']/Docs/*" />
@@ -239,13 +238,12 @@ namespace Microsoft.Maui.Controls
 			OnDisappearing();
 
 			var container = RealParent as ListView;
-			if (container != null)
-				container.SendCellDisappearing(this);
+			container?.SendCellDisappearing(this);
 		}
 
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IElementController)this).LogicalChildren);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 
 		void OnContextActionsChanged(object sender, NotifyCollectionChangedEventArgs e)

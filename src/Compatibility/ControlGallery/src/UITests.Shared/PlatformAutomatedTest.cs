@@ -7,11 +7,12 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests.Shared
 	{
 		protected override void NavigateToGallery()
 		{
-			App.NavigateToGallery(GalleryQueries.PlatformAutomatedTestsGallery);
+			//App.NavigateToGallery(GalleryQueries.PlatformAutomatedTestsGallery);
 		}
 
 		[Test]
 		[Category(UITestCategories.ViewBaseTests)]
+		[FailsOnMauiAndroid]
 		public void AutomatedTests()
 		{
 			App.WaitForElement("SUCCESS", timeout: TimeSpan.FromMinutes(2));

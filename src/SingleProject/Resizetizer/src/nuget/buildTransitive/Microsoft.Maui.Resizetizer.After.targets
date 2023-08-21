@@ -86,6 +86,11 @@
         <ResizetizerIncludeSelfProject Condition="'$(ResizetizerIncludeSelfProject)' == ''">False</ResizetizerIncludeSelfProject>
 
         <_ResizetizerDefaultInvalidFilenamesErrorMessage>One or more invalid file names were detected.  File names must be lowercase, start and end with a letter character, and contain only alphanumeric characters or underscores: </_ResizetizerDefaultInvalidFilenamesErrorMessage>
+        <_ResizetizerDefaultDuplicateFilenamesErrorMessage>One or more duplicate file names were detected.  All image output filenames must be unique: </_ResizetizerDefaultDuplicateFilenamesErrorMessage>
+        <_ResizetizerThrowsErrorOnInvalidFilename>true</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnInvalidFilename Condition="'$(ResizetizerErrorOnInvalidFilename)' == 'false'">false</_ResizetizerThrowsErrorOnInvalidFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename>true</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+        <_ResizetizerThrowsErrorOnDuplicateOutputFilename Condition="'$(ResizetizerErrorOnDuplicateOutputFilename)' == 'false'">false</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -94,7 +99,7 @@
         <_ResizetizerIsiOSApp Condition="( '$(_ResizetizerPlatformIsiOS)' == 'True' OR '$(_ResizetizerPlatformIsMacCatalyst)' == 'True' ) And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSApp>
         <_ResizetizerIsiOSSpecificApp Condition=" '$(_ResizetizerPlatformIsiOS)' == 'True' And ('$(OutputType)' == 'Exe' Or '$(IsAppExtension)' == 'True')">True</_ResizetizerIsiOSSpecificApp>
         <_ResizetizerIsWPFApp Condition="'$(IsApplication)' == 'True' And '$(NuGetRuntimeIdentifier)' == 'win' And '$(_ResizetizerPlatformIsWindows)' == 'True'">True</_ResizetizerIsWPFApp>
-        <_ResizetizerIsWindowsAppSdk Condition="('$(ProjectReunionWinUI)'=='True' Or '$(WindowsAppSDKWinUI)'=='True') And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
+        <_ResizetizerIsWindowsAppSdk Condition="'$(MicrosoftWindowsAppSDKPackageDir)' != '' And '$(_ResizetizerPlatformIsWindows)' == 'True' And ('$(OutputType)' == 'WinExe' Or '$(OutputType)' == 'Exe')">True</_ResizetizerIsWindowsAppSdk>
         <_ResizetizerIsTizenApp Condition="'$(_ResizetizerPlatformIsTizen)' == 'True' And ( '$(OutputType)' == 'Exe' )">True</_ResizetizerIsTizenApp>
     </PropertyGroup>
 
@@ -148,7 +153,7 @@
         <ResizetizerPlatformType>android</ResizetizerPlatformType>
 
         <ResizetizeCollectItemsBeforeTargets>
-            $(ResizetizeCollectItemsAfterTargets);
+            $(ResizetizeCollectItemsBeforeTargets);
             _ComputeAndroidResourcePaths;
         </ResizetizeCollectItemsBeforeTargets>
 
@@ -370,7 +375,7 @@
 
         <DetectInvalidResourceOutputFilenamesTask
             Condition="'$(_MauiHasSplashScreens)' == 'true'"
-            Items="@(MauiSplashScreen->Distinct())"
+            Items="@(MauiSplashScreen)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)"
         />
 
@@ -570,16 +575,19 @@
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage->Distinct())"
+            Items="@(MauiImage)"
+            ThrowsError="$(_ResizetizerThrowsErrorOnInvalidFilename)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
 
         <!-- Resize the images -->
         <ResizetizeImages
+            ThrowsErrorOnDuplicateOutput="$(_ResizetizerThrowsErrorOnDuplicateOutputFilename)"
+            DuplicateOutputErrorMessage="$(_ResizetizerDefaultDuplicateFilenamesErrorMessage)"
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage->Distinct())">
+            Images="@(MauiImage)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
