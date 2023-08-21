@@ -129,18 +129,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
-		void IImageSourcePartSetter.SetImageSource(UIImage? image)
-		{
-			if (image != null)
-			{
-				PlatformView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-			}
-			else
-			{
-				PlatformView.SetImage(null, UIControlState.Normal);
-			}
-		}
-
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
@@ -200,6 +188,19 @@ namespace Microsoft.Maui.Handlers
 			void OnButtonTouchDown(object? sender, EventArgs e)
 			{
 				VirtualView?.Pressed();
+			}
+		}
+
+		partial class ButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(UIImage? platformImage)
+			{
+				if (Handler?.PlatformView is null)
+					return;
+
+				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+				Handler.PlatformView.SetImage(platformImage, UIControlState.Normal);
 			}
 		}
 	}

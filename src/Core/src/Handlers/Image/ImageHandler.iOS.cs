@@ -38,18 +38,23 @@ namespace Microsoft.Maui.Handlers
 		public static async Task MapSourceAsync(IImageHandler handler, IImage image) =>
 			await handler.SourceLoader.UpdateImageSourceAsync();
 
-		void IImageSourcePartSetter.SetImageSource(UIImage? source)
-		{
-			PlatformView.Image = source;
-
-			if (VirtualView.Source is IStreamImageSource)
-				PlatformView.InvalidateMeasure(VirtualView);
-		}
-
 		public void OnWindowChanged()
 		{
 			if (SourceLoader.SourceManager.IsResolutionDependent)
 				UpdateValue(nameof(IImage.Source));
+		}
+
+		partial class ImageImageSourcePartSetter
+		{
+			public override void SetImageSource(UIImage? platformImage)
+			{
+				if (Handler?.PlatformView is null)
+					return;
+
+				Handler.PlatformView.Image = platformImage;
+				if (Handler.VirtualView.Source is IStreamImageSource)
+					Handler.PlatformView.InvalidateMeasure(Handler.VirtualView);
+			}
 		}
 	}
 }

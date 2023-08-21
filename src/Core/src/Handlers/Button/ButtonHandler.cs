@@ -1,3 +1,4 @@
+using System;
 #if __IOS__ || MACCATALYST
 using PlatformView = UIKit.UIButton;
 #elif MONOANDROID
@@ -12,11 +13,12 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
-	public partial class ButtonHandler : IButtonHandler, IImageSourcePartSetter
+	public partial class ButtonHandler : IButtonHandler
 	{
 		ImageSourcePartLoader? _imageSourcePartLoader;
-		public ImageSourcePartLoader ImageSourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
+
+		public virtual ImageSourcePartLoader ImageSourceLoader =>
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(new ButtonImageSourcePartSetter(this));
 
 		public static IPropertyMapper<IImage, IButtonHandler> ImageButtonMapper = new PropertyMapper<IImage, IButtonHandler>()
 		{
@@ -42,7 +44,8 @@ namespace Microsoft.Maui.Handlers
 
 		public static CommandMapper<IButton, IButtonHandler> CommandMapper = new(ViewCommandMapper);
 
-		public ButtonHandler() : base(Mapper, CommandMapper)
+		public ButtonHandler()
+			: base(Mapper, CommandMapper)
 		{
 
 		}
@@ -60,5 +63,13 @@ namespace Microsoft.Maui.Handlers
 		IButton IButtonHandler.VirtualView => VirtualView;
 
 		PlatformView IButtonHandler.PlatformView => PlatformView;
+
+		partial class ButtonImageSourcePartSetter : ImageSourcePartSetter<IButtonHandler>
+		{
+			public ButtonImageSourcePartSetter(IButtonHandler handler)
+				: base(handler)
+			{
+			}
+		}
 	}
 }

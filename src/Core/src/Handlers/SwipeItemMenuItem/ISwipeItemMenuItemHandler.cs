@@ -16,5 +16,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		new ISwipeItemMenuItem VirtualView { get; }
 		new PlatformView PlatformView { get; }
+		ImageSourcePartLoader SourceLoader { get; }
 	}
 }

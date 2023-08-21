@@ -66,12 +66,18 @@ namespace Microsoft.Maui.Handlers
 			VirtualView?.Clicked();
 		}
 
-		void IImageSourcePartSetter.SetImageSource(MauiImageSource? img)
+		partial class ImageButtonImageSourcePartSetter
 		{
-			if (img == null)
-				return;
+			public override void SetImageSource(MauiImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is null)
+					return;
 
-			PlatformView.ResourceUrl = img.ResourceUrl;
+				if (platformImage is null)
+					return;
+
+				Handler.PlatformView.ResourceUrl = platformImage.ResourceUrl;
+			}
 		}
 	}
 }
