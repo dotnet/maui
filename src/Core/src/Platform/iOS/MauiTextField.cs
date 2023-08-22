@@ -19,18 +19,10 @@ namespace Microsoft.Maui.Platform
 		{
 		}
 
-		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
-		EventHandler? _movedToWindow;
-		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
-		{
-			add => _movedToWindow += value;
-			remove => _movedToWindow -= value;
-		}
-
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
-			_movedToWindow?.Invoke(this, EventArgs.Empty);
+			ResignFirstResponderTouchGestureRecognizer.Update(this, window);
 		}
 
 		public override string? Text
@@ -73,6 +65,14 @@ namespace Microsoft.Maui.Platform
 				if (old?.Start != value?.Start || old?.End != value?.End)
 					SelectionChanged?.Invoke(this, EventArgs.Empty);
 			}
+		}
+
+		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
 		}
 
 		public override void MovedToWindow()

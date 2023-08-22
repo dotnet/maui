@@ -704,17 +704,7 @@ namespace Microsoft.Maui.Platform
 					UnLoadedCheck();
 				}
 			}
-			else
-			{
-				var boundKey = new NSString("bounds");
-				var frameKey = new NSString("frame");
-
-				var boundObserver = (NSObject)uiView.Layer.AddObserver(boundKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => UnLoadedCheck());
-				var frameObserver = (NSObject)uiView.Layer.AddObserver(frameKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => UnLoadedCheck());
-
-				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(boundObserver, boundKey)));
-				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(frameObserver, frameKey)));
-			}
+			
 
 			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window

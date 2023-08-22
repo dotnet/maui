@@ -206,6 +206,7 @@ namespace Microsoft.Maui.DeviceTests
 
 								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
 								{
+									vc.BatchCommitted -= OnBatchCommitted;
 									batchTcs.SetResult();
 								}
 							}
