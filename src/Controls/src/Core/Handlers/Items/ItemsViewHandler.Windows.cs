@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected virtual void CleanUpCollectionViewSource()
 		{
-			if (CollectionViewSource != null)
+			if (CollectionViewSource is not null)
 			{
 				if (CollectionViewSource.Source is ObservableItemTemplateCollection observableItemTemplateCollection)
 				{
@@ -176,13 +176,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 
 			// Remove all children inside the ItemsSource
-			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+			if (VirtualView is not null)
 			{
-				var element = item.GetVisualElement();
-				VirtualView?.RemoveLogicalChild(element);
+				foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+				{
+					var element = item.GetVisualElement();
+					VirtualView.RemoveLogicalChild(element);
+				}
 			}
 
-			if (VirtualView?.ItemsSource == null)
+			if (VirtualView?.ItemsSource is null)
 			{
 				ListViewBase.ItemsSource = null;
 				return;
