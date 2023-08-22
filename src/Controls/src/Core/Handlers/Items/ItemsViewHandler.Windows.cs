@@ -174,14 +174,13 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				CollectionViewSource.Source = null;
 				CollectionViewSource = null;
 			}
-			VirtualView?.ClearLogicalChildren();
 
-			// Add back header and footer as logical children. Otherwise they won't render
-			if (ListViewBase?.Header is View header)
-				VirtualView?.AddLogicalChild(header);
-
-			if (ListViewBase?.Footer is View footer)
-				VirtualView?.AddLogicalChild(footer);
+			// Remove all children inside the ItemsSource
+			foreach (var item in ListViewBase.GetChildren<ItemContentControl>())
+			{
+				var element = item.GetVisualElement();
+				VirtualView?.RemoveLogicalChild(element);
+			}
 
 			if (VirtualView?.ItemsSource == null)
 			{
