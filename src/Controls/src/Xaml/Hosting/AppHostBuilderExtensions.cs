@@ -118,9 +118,6 @@ namespace Microsoft.Maui.Controls.Hosting
 	#endif
 			));
 #if !TIZEN
-	#if !WINDOWS
-			handlersCollection.AddHandler<Cell>(_ => new Handlers.Compatibility.CellRenderer());
-	#endif
 			handlersCollection.AddHandler<ImageCell>(_ => new Handlers.Compatibility.ImageCellRenderer());
 			handlersCollection.AddHandler<EntryCell>(_ => new Handlers.Compatibility.EntryCellRenderer());
 			handlersCollection.AddHandler<TextCell>(_ => new Handlers.Compatibility.TextCellRenderer());
