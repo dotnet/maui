@@ -54,9 +54,6 @@ npm install -g npm
 Write-Output  "Node version"
 node -v
 
-Write-Output  "Check if appium is installed"
-npm list -g | grep appium
-
 Write-Output  "Installing appium $appiumVersion"
 npm install -g appium@$appiumVersion
 write-Output  "Installed appium"
