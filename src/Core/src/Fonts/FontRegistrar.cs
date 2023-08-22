@@ -50,7 +50,7 @@ namespace Microsoft.Maui
 		/// <inheritdoc/>
 		public string? GetFont(string font)
 		{
-			if (_fontLookupCache.TryGetValue(font, out var foundResult))
+			if (_fontLookupCache.TryGetValue(font, out var foundResult) && File.Exists(foundResult))
 				return foundResult;
 
 			try

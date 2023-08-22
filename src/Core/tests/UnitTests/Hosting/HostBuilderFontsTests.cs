@@ -60,6 +60,42 @@ namespace Microsoft.Maui.UnitTests.Hosting
 		}
 
 		[Fact]
+		public void FontShouldBeCopiedAgainIfTempFolderIsClearedDuringRuntime()
+		{
+			var root = Path.Combine(Path.GetTempPath(), "Microsoft.Maui.UnitTests", "ConfigureFontsRegistersFonts", Guid.NewGuid().ToString());
+			var filename = "Dokdo-Regular.ttf";
+			var alias = "Dokdo";
+
+			var builder = MauiApp
+				.CreateBuilder()
+				.ConfigureFonts(fonts => fonts.AddEmbeddedResourceFont(GetType().Assembly, filename, alias));
+			builder.Services.AddSingleton<IEmbeddedFontLoader>(_ => new FileSystemEmbeddedFontLoader(root));
+			var mauiApp = builder.Build();
+
+			var registrar = mauiApp.Services.GetRequiredService<IFontRegistrar>();
+
+			var path = registrar.GetFont(filename);
+			Assert.True(File.Exists(path));
+
+			File.Delete(path);
+
+			path = registrar.GetFont(alias);
+			Assert.True(File.Exists(path));
+
+			File.Delete(path);
+
+			path = registrar.GetFont(filename);
+			Assert.True(File.Exists(path));
+
+			File.Delete(path);
+
+			path = registrar.GetFont(alias);
+			Assert.True(File.Exists(path));
+
+			Directory.Delete(root, true);
+		}
+
+		[Fact]
 		public void NullAssemblyForEmbeddedFontThrows()
 		{
 			var builder = MauiApp
