@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	internal class ResignFirstResponderTouchGestureRecognizer : UITapGestureRecognizer
 	{
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "FIXME: https://github.com/dotnet/maui/pull/16530")]
 		UIView? _targetView;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "FIXME: https://github.com/dotnet/maui/pull/16530")]
 		Token? _token;
 
 		public ResignFirstResponderTouchGestureRecognizer(UIView targetView) :

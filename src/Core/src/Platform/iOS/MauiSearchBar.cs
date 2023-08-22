@@ -1,5 +1,5 @@
 ﻿using System;
-using System.ComponentModel.Design;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using CoreGraphics;
 using Foundation;
@@ -33,6 +33,7 @@ namespace Microsoft.Maui.Platform
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "FIXME: https://github.com/dotnet/maui/pull/16383")]
 		public event EventHandler<UISearchBarTextChangedEventArgs>? TextSetOrChanged;
 
 		public override string? Text
@@ -51,7 +52,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "FIXME: https://github.com/dotnet/maui/pull/16383")]
 		internal event EventHandler? OnMovedToWindow;
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "FIXME: https://github.com/dotnet/maui/pull/16383")]
 		internal event EventHandler? EditingChanged;
 
 		public override void WillMoveToWindow(UIWindow? window)
@@ -74,6 +77,7 @@ namespace Microsoft.Maui.Platform
 				OnMovedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MA0003", Justification = "FIXME: https://github.com/dotnet/maui/pull/16383")]
 		void OnEditingChanged(object? sender, EventArgs e)
 		{
 			EditingChanged?.Invoke(this, EventArgs.Empty);
