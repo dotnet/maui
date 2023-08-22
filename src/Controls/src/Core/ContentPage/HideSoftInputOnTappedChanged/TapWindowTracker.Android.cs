@@ -128,8 +128,8 @@ namespace Microsoft.Maui.Controls
 				if (location.Contains(point))
 					return true;
 
-				if (KeyboardManager.IsSoftKeyboardVisible(_platformView))
-					KeyboardManager.HideKeyboard(_platformView);
+				if (_platformView.IsSoftInputShowing())
+					_platformView.HideSoftInput();
 
 				return true;
 			}
