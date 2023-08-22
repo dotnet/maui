@@ -23,5 +23,7 @@ namespace Microsoft.Maui
 
 			throw new FileNotFoundException($"Native font with the name {filename} was not found.");
 		}
+
+		bool IsCachedFontValid(string? fontLoaderResult) => true;
 	}
 }

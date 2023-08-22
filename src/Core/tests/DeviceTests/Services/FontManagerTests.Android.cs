@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Android.App;
 using Android.Graphics;
 using Xunit;
@@ -78,6 +79,33 @@ public partial class FontManagerTests : TestBase
 		Assert.NotEqual(Typeface.Default, expected);
 
 		Assert.False(expected.Equals(actual));
+	}
+
+	[Fact]
+	public void CanLoadEmbeddedFontIfItWasDeletedDuringRuntime()
+	{
+		// skip on older androids for now
+		// https://github.com/dotnet/maui/issues/5903
+		if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+			return;
+
+		var fontName = "FooBarFont";
+		var fontWeight = FontWeight.Regular;
+
+		var registrar = new FontRegistrar(new EmbeddedFontLoader());
+		registrar.Register("dokdo_regular.ttf", fontName, GetType().Assembly);
+		var manager = new FontManager(registrar);
+		manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
+
+		var fontPath = registrar.GetFont(fontName);
+		Assert.True(File.Exists(fontPath));
+
+		File.Delete(fontPath);
+
+		manager.GetTypeface(Font.OfSize(fontName, 12, fontWeight));
+
+		fontPath = registrar.GetFont(fontName);
+		Assert.True(File.Exists(fontPath));
 	}
 
 	[Theory]

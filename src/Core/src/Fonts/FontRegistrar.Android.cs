@@ -8,5 +8,7 @@ namespace Microsoft.Maui
 	{
 		// Return the filename as-is, as we load the font directly in FontManager
 		string? LoadNativeAppFont(string font, string filename, string? alias) => filename;
+
+		bool IsCachedFontValid(string? fontLoaderResult) => fontLoaderResult != null && File.Exists(fontLoaderResult);
 	}
 }
