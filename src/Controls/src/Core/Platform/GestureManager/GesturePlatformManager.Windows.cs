@@ -487,7 +487,7 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			uint id = e.Pointer.PointerId;
 			if (_fingers.Contains(id))
-				_fingers.Remove(id);		
+				_fingers.Remove(id);
 			SwipeComplete(true);
 			PinchComplete(true);
 			PanComplete(true);
