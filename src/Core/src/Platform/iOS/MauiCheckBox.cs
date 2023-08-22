@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -24,7 +25,13 @@ namespace Microsoft.Maui.Platform
 		bool _isEnabled;
 		bool _disposed;
 
-		public EventHandler? CheckedChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		public event EventHandler? CheckedChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		public MauiCheckBox()
 		{
@@ -44,7 +51,7 @@ namespace Microsoft.Maui.Platform
 		void OnTouchUpInside(object? sender, EventArgs e)
 		{
 			IsChecked = !IsChecked;
-			CheckedChanged?.Invoke(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, e, nameof(CheckedChanged));
 		}
 
 		internal float MinimumViewSize { get; set; }

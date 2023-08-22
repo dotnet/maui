@@ -687,6 +687,7 @@
 		{
 			ToStringOverride,
 			Spans,
+			SpanTapped,
 			PropertyChanged
 		}
 
