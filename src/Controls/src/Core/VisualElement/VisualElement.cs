@@ -13,11 +13,11 @@ using Rect = Microsoft.Maui.Graphics.Rect;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// A <see cref="Element" /> that occupies an area on the screen, has a visual appearance, and can obtain touch input.
+	/// An <see cref="Element" /> that occupies an area on the screen, has a visual appearance, and can obtain touch input.
 	/// </summary>
 	/// <remarks>
 	/// The base class for most Microsoft.Maui.Controls on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
-    /// </remarks>
+	/// </remarks>
 	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls
 		IVisual _effectiveVisual = _defaultVisual;
 
 		/// <summary>
-		/// Gets or sets a <see cref="IVisual"/> implementation that overrides the visual appearance of this <see cref="VisualElement"/>. This is a bindable property.
+		/// Gets or sets a <see cref="IVisual"/> implementation that overrides the visual appearance of an element. This is a bindable property.
 		/// </summary>
 		[TypeConverter(typeof(VisualTypeConverter))]
 		public IVisual Visual
@@ -415,6 +415,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty MaximumHeightRequestProperty = BindableProperty.Create(nameof(MaximumHeightRequest), typeof(double), typeof(VisualElement), double.PositiveInfinity, propertyChanged: OnRequestChanged);
 
 		/// <summary>Bindable property for <see cref="IsFocused"/>.</summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static readonly BindablePropertyKey IsFocusedPropertyKey = BindableProperty.CreateReadOnly("IsFocused",
 			typeof(bool), typeof(VisualElement), default(bool), propertyChanged: OnIsFocusedPropertyChanged);
@@ -466,7 +467,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty WindowProperty = WindowPropertyKey.BindableProperty;
 
 		/// <summary>
-		/// Gets the <see cref="Window"/> that is associated with this <see cref="VisualElement"/>. This is a read-only bindable property.
+		/// Gets the <see cref="Window"/> that is associated with an element. This is a read-only bindable property.
 		/// </summary>
 		public Window Window => (Window)GetValue(WindowProperty);
 
@@ -525,9 +526,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="Color"/> which will fill the background of a <see cref="VisualElement"/>. This is a bindable property.
+		/// Gets or sets the <see cref="Color"/> which will fill the background of an element. This is a bindable property.
 		/// </summary>
-		/// <remarks>For background gradients and such use <see cref="Background"/>.</remarks>
+		/// <remarks>For background gradients and such, use <see cref="Background"/>.</remarks>
 		public Color BackgroundColor
 		{
 			get { return (Color)GetValue(BackgroundColorProperty); }
@@ -535,7 +536,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a <see cref="Brush"/> which will be used to fill the background of a <see cref="VisualElement"/>. This is a bindable property.
+		/// Gets or sets the <see cref="Brush"/> which will be used to fill the background of an element. This is a bindable property.
 		/// </summary>
 		[TypeConverter(typeof(BrushTypeConverter))]
 		public Brush Background
@@ -580,7 +581,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is -1.</para>
-		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of a <see cref="VisualElement"/>, however setting the <see cref="HeightRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
+		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="HeightRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
 		/// </remarks>
 		public double HeightRequest
 		{
@@ -593,7 +594,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is <see langword="false"/>.</para>
-		/// <para>Setting <see cref="InputTransparent"/> is not the same as setting <see cref="IsEnabled"/> to <see langword="false"/>. Setting <see cref="InputTransparent"/> only disables inputs and instead causes them to be passed to the <see cref="VisualElement" /> that is visually behind the element. Usually, this is the parent of the element. The value of the <see cref="InputTransparent" /> property is inherited by a visual element's child elements.</para>
+		/// <para>Setting <see cref="InputTransparent"/> is not the same as setting <see cref="IsEnabled"/> to <see langword="false"/>. Setting <see cref="InputTransparent"/> only disables inputs and instead causes them to be passed to the element that is visually behind the element. Usually, this is the parent of the element. The value of the <see cref="InputTransparent" /> property is inherited by an element's child elements.</para>
 		/// </remarks>
 		public bool InputTransparent
 		{
@@ -863,7 +864,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is -1.</para>
-		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of a <see cref="VisualElement"/>, however setting the <see cref="WidthRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
+		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="WidthRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
 		/// </remarks>
 		public double WidthRequest
 		{
@@ -892,8 +893,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Specifies the clipping region for a <see cref="VisualElement"/>. When an element is rendered, only the portion of the element that falls inside the clipping <see cref="Geometry"/> is displayed, while any content that extends outside the clipping region is clipped (that is, not displayed). This is a bindable property.
+		/// Specifies the clipping region for an element. This is a bindable property.
 		/// </summary>
+		/// <remarks>When an element is rendered, only the portion of the element that falls inside the clipping <see cref="Geometry"/> is displayed, while any content that extends outside the clipping region is clipped (that is, not displayed).</remarks>
 		[TypeConverter(typeof(PathGeometryConverter))]
 		public Geometry Clip
 		{
@@ -927,7 +929,7 @@ namespace Microsoft.Maui.Controls
 		internal LayoutConstraint Constraint => ComputedConstraint | SelfConstraint;
 
 		/// <summary>
-		/// Gets a value that indicates that layout for this <see cref="VisualElement"/> is disabled.
+		/// Gets a value that indicates that layout for this element is disabled.
 		/// </summary>
 		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -1021,9 +1023,11 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Signals the start of a batch of changes to the elements properties. This can benefit performance if a bigger number of property values are changed.
-		/// When the operation is done, <see cref="BatchCommit"/> should be called.
 		/// </summary>
-		/// <remarks>Application authors will not generally need to batch updates manually as the animation framework will do this for them.</remarks>
+		/// <remarks>
+		/// <para>Application authors will generally not need to batch updates manually as the animation framework will do this for them.</para>
+		/// <para>When the operation is done, <see cref="BatchCommit"/> should be called.</para>
+		/// </remarks>
 		public void BatchBegin() => _batched++;
 
 		/// <summary>
@@ -1083,7 +1087,7 @@ namespace Microsoft.Maui.Controls
 		public void PlatformSizeChanged() => InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 
 		/// <summary>
-		/// Occurs when children of this element are changed in order.
+		/// Occurs when the order of this element's children changes.
 		/// </summary>
 		public event EventHandler ChildrenReordered;
 
@@ -1154,13 +1158,13 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Returns the minimum size that a visual element needs in order to be displayed on the device.
+		/// Returns the minimum size that an element needs in order to be displayed on the device.
 		/// </summary>
-		/// <param name="widthConstraint">The suggested maximum width constraint for the visual element to render.</param>
-		/// <param name="heightConstraint">The suggested maximum height constraint for the visual element to render.</param>
+		/// <param name="widthConstraint">The suggested maximum width constraint for the element to render.</param>
+		/// <param name="heightConstraint">The suggested maximum height constraint for the element to render.</param>
 		/// <param name="flags">A value that controls whether margins are included in the returned size.</param>
-		/// <returns>The minimum size that a visual element needs in order to be displayed on the device.</returns>
-		/// <remarks>If the minimum size that the visual element needs in order to be displayed on the device is larger than can be accommodated by<paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
+		/// <returns>The minimum size that an element needs in order to be displayed on the device.</returns>
+		/// <remarks>If the minimum size that the element needs in order to be displayed on the device is larger than can be accommodated by <paramref name="widthConstraint" /> and <paramref name="heightConstraint" />, the return value may represent a rectangle that is larger in either one or both of those parameters.</remarks>
 		public virtual SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
 			bool includeMargins = (flags & MeasureFlags.IncludeMargins) != 0;
@@ -1186,17 +1190,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when the current measure of a <see cref="VisualElement"/> has been invalidated.
+		/// Occurs when the current measure of an element has been invalidated.
 		/// </summary>
 		public event EventHandler MeasureInvalidated;
 
 		/// <summary>
-		/// Occurs when the size of a <see cref="VisualElement"/> changed.
+		/// Occurs when the size of an element changed.
 		/// </summary>
 		public event EventHandler SizeChanged;
 
 		/// <summary>
-		/// Unsets focus to this element.
+		/// Unsets keyboard focus on this element.
 		/// </summary>
 		/// <remarks>Element must already have focus for this to have any effect.</remarks>
 		public void Unfocus()
@@ -1247,7 +1251,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Causes the <see cref="ChildrenReordered"/> event to be triggered.
+		/// Raises the <see cref="ChildrenReordered"/> event.
 		/// </summary>
 		protected void OnChildrenReordered()
 			=> ChildrenReordered?.Invoke(this, EventArgs.Empty);
@@ -1259,7 +1263,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
-		/// <returns>The requested size that a visual element wants in order to be displayed on the device.</returns>
+		/// <returns>The requested size that the element requires in order to be displayed on the device.</returns>
 		protected virtual SizeRequest OnMeasure(double widthConstraint, double heightConstraint)
 		{
 			if (!IsPlatformEnabled)
@@ -1273,7 +1277,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// This method is called when the size of the element is set during a layout cycle. Implement this method to add class handling for this event.
+		/// Method that is called when the size of the element is set during a layout cycle. Implement this method to add class handling for this event.
 		/// </summary>
 		/// <param name="width">The new width of the element.</param>
 		/// <param name="height">The new height of the element.</param>
@@ -1282,7 +1286,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// This method is called during a layout cycle to signal the start of a sub-tree layout.
+		/// Method that is called during a layout cycle to signal the start of a sub-tree layout.
 		/// </summary>
 		/// <param name="width">The newly allocated width.</param>
 		/// <param name="height">The newly allocated height.</param>
@@ -1767,7 +1771,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets and sets the front-to-back z-index of a <see cref="VisualElement"/> within a layout. This is a bindable property.
+		/// Gets and sets the front-to-back z-index of an element within a layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>An element with a higher <see cref="ZIndex"/> value will be shown on top of an element with a lower <see cref="ZIndex"/> value.</remarks>
 		public int ZIndex
@@ -1777,14 +1781,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets the size that this <see cref="VisualElement"/> computed during the measure pass of the layout process.
+		/// Gets the size that this element computed during the measure pass of the layout process.
 		/// </summary>
 		public Size DesiredSize { get; protected set; }
 
 		/// <summary>
-		/// Positions child objects and determines a size for a <see cref="VisualElement"/>. Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.
+		/// Positions child objects and determines a size for an element.
 		/// </summary>
 		/// <param name="bounds">The final size that the parent computes for the child in layout, provided as a <see cref="Rect"/> value.</param>
+		/// <remarks>Parent objects that implement custom layout for their child elements should call this method from their layout override implementations to form a recursive layout update.</remarks>
 		public void Arrange(Rect bounds)
 		{
 			Layout(bounds);
@@ -1796,8 +1801,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Provides a way to allow subclasses (e.g., <see cref="ScrollView"/>) to override <see cref="Arrange(Rect)"/> even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old <see cref="Arrange(Rect)"/> method
+		/// Allows subclasses to override <see cref="Arrange(Rect)"/> even though
+		/// the interface has to be explicitly implemented to avoid conflict with the old <see cref="Arrange(Rect)"/> method.
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
 		/// <returns>The resulting size of this elements frame by the platform.</returns>
@@ -1839,12 +1844,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// MeasureOverride provides a way to allow subclasses (e.g., Layout) to override Measure even though
-		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method
+		/// Provides a way to allow subclasses to override <see cref="Measure"/> even though
+		/// the interface has to be explicitly implemented to avoid conflict with the old Measure method.
 		/// </summary>
 		/// <param name="widthConstraint">The width constraint to request.</param>
 		/// <param name="heightConstraint">The height constraint to request.</param>
-		/// <returns>The requested size that a visual element wants in order to be displayed on the device.</returns>
+		/// <returns>The requested size that an element wants in order to be displayed on the device.</returns>
 		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
@@ -2047,7 +2052,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Indicates if a <see cref="VisualElement"/> is connected to the main object tree.
+		/// Indicates if an element is connected to the main object tree.
 		/// </summary>
 		public bool IsLoaded
 		{
@@ -2064,9 +2069,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when a <see cref="VisualElement"/> has been constructed and added to the object tree.
+		/// Occurs when an element has been constructed and added to the object tree.
 		/// </summary>
-		/// <remarks>This event may occur before the <see cref="VisualElement"/> has been measured so should not be relied on for size information.</remarks>
+		/// <remarks>This event may occur before the element has been measured so should not be relied on for size information.</remarks>
 		public event EventHandler? Loaded
 		{
 			add
@@ -2085,7 +2090,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Occurs when a <see cref="VisualElement"/> is no longer connected to the main object tree.
+		/// Occurs when an element is no longer connected to the main object tree.
 		/// </summary>
 		public event EventHandler? Unloaded
 		{
