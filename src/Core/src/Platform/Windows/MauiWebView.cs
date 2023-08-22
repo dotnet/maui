@@ -113,7 +113,8 @@ namespace Microsoft.Maui.Platform
 		{
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
-			if (!uri.IsAbsoluteUri)
+			if (!uri.IsAbsoluteUri ||
+				uri.AbsoluteUri.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
 			{
 				await EnsureCoreWebView2Async();
 
@@ -122,7 +123,8 @@ namespace Microsoft.Maui.Platform
 					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 
-				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				if (!uri.IsAbsoluteUri)
+					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
 			if (_handler?.TryGetTarget(out var handler) ?? false)
