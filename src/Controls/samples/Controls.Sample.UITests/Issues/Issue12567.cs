@@ -120,7 +120,7 @@ namespace Maui.Controls.Sample.Issues
 
 		public void GenerateItems(int itemsCount)
 		{
-			Items = [];
+			Items = new ObservableCollection<CarouselData>();
 
 			for (var i = 1; i <= itemsCount; i++)
 			{
