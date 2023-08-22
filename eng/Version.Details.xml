@@ -95,49 +95,49 @@
       <Uri>https://github.com/dotnet/xharness</Uri>
       <Sha>480b9159eb7e69b182a87581d5a336e97e0b6dae</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-rc.1.23416.26">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="8.0.0-rc.1.23419.3">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>b5a0345e44924bcbba2a29234d77c8f5b96c87ec</Sha>
+      <Sha>034d27f4a9420e10601447d0385c88de9b4a2925</Sha>
     </Dependency>
   </ProductDependencies>
 </Dependencies>
