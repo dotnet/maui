@@ -45,6 +45,8 @@ namespace Maui.Controls.Sample.Pages
 
 			MenuItem.SetKeyboardAccelerator(Increment10MenuFlyoutItem, KeyboardAccelerator.FromString("alt+ctrl+a"));
 			MenuItem.SetKeyboardAccelerator(Increment20MenuFlyoutItem, KeyboardAccelerator.FromString("ctrl+b"));
+			MenuItem.SetKeyboardAccelerator(Increment1000MenuFlyoutItem, KeyboardAccelerator.FromString("alt+t"));
+			MenuItem.SetKeyboardAccelerator(Increment1000000MenuFlyoutItem, KeyboardAccelerator.FromString("alt+m"));
 			MenuItem.SetKeyboardAccelerator(bbb, KeyboardAccelerator.FromString("c"));
 		}
 
