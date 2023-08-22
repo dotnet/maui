@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Handlers
 			void OnSwipeItemFrameChanged(object? sender, EventArgs e)
 			{
 				// Adjust the size of the icon in case of changing the size of the SwipeItem.
-				if (_handler is not null && _handler.TryGetTarget (out var swipeItemMenuItemHandler))
+				if (_handler is not null && _handler.TryGetTarget(out var swipeItemMenuItemHandler))
 					swipeItemMenuItemHandler.UpdateValue(nameof(ISwipeItemMenuItem.Source));
 			}
 		}
