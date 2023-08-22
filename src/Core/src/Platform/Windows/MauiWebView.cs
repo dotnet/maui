@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly WeakReference<WebViewHandler> _handler;
 
+		bool _navigatingToHtmlWithBaseUrl;
+
 		[Obsolete("Constructor is no longer used, please use an overloaded version.")]
 #pragma warning disable CS8618
 		public MauiWebView()
@@ -48,6 +50,8 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadHtml(string? html, string? baseUrl)
 		{
+			_navigatingToHtmlWithBaseUrl = false;
+
 			var mapBaseDirectory = false;
 
 			if (string.IsNullOrEmpty(baseUrl))
@@ -93,6 +97,8 @@ namespace Microsoft.Maui.Platform
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 				}
 
+				_navigatingToHtmlWithBaseUrl = true;
+
 				// Set the HTML for the 'real' WebView to the updated HTML
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
@@ -111,6 +117,8 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadUrl(string? url)
 		{
+			_navigatingToHtmlWithBaseUrl = false;
+
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
 			if (!uri.IsAbsoluteUri ||
@@ -145,12 +153,18 @@ namespace Microsoft.Maui.Platform
 			NavigationStarting += (sender, args) =>
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
-				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				bool isUrlWithLocalScheme = args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true;
+				bool isDataUrl = args?.Uri?.StartsWith("data:text/html") ?? false;
+
+				if (isUrlWithLocalScheme ||
+					(isDataUrl && _navigatingToHtmlWithBaseUrl))
 				{
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
 						ApplicationPath,
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
+
+					_navigatingToHtmlWithBaseUrl = false;
 				}
 				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
 				else
