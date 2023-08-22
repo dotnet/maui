@@ -55,7 +55,6 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests.Elements
 				actualFinalCounterValue = actualFinalCounterValue.Trim('\"'); // some platforms return quoted values, so we trim them
 				Assert.Equal("3", actualFinalCounterValue);
 			});
-
 		}
 
 		public static class TestStaticFilesContents
