@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<FontNamedSizeService>();
 #pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
-
+			builder.Services.AddScoped<HideSoftInputOnTappedChangedManager>();
 			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>
@@ -253,6 +253,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			RefreshView.RemapForControls();
 			Shape.RemapForControls();
 			WebView.RemapForControls();
+			ContentPage.RemapForControls();
 
 			return builder;
 		}
