@@ -35,6 +35,8 @@ namespace Microsoft.Maui.IntegrationTests
 			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
 			//Try not restore dependencies of 6.0.10
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
+			// Surface warnings as build errors
+			"TreatWarningsAsErrors=true",
 		};
 
 
