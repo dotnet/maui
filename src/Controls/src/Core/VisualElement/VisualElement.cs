@@ -1053,8 +1053,8 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the local resource dictionary.
 		/// </summary>
 		/// <remarks>
-		/// <para>In XAML, resource dictionaries are filled with key/value pairs that are specified in XAML and consequently created at run time. The keys in the resource dictionary are specified with the <c>x:Key</c> attribute of the XAML tag for the type to create. An object of that type is created, and is initialized with the property and field values that are specified either by additional attributes or by nested tags, both of which, when present are simply string representations of the property or field names. The object is then inserted into the <see cref="ResourceDictionary" /> for the enclosing type at runtime.</para>
-		/// <para>Resource dictionaries and their associated XML provide the application developer with a convenient method to reuse code inside the XAML compile-time and run-time engines.</para>
+		/// <para>In XAML, resource dictionaries are filled with key/value pairs that are specified in XAML and consequently created at runtime. The keys in the resource dictionary are specified with the <c>x:Key</c> attribute of the XAML tag for the type to create. An object of that type is created, and is initialized with the property and field values that are specified either by additional attributes or by nested tags, both of which, when present, are simply string representations of the property or field names. The object is then inserted into the <see cref="ResourceDictionary" /> for the enclosing type at runtime.</para>
+		/// <para>Resource dictionaries and their associated XML provide the application developer with a convenient method to reuse code inside the XAML compile-time and runtime engines.</para>
 		/// <para>For more information, see: <see href="https://learn.microsoft.com/dotnet/maui/fundamentals/resource-dictionaries">Resource Dictionaries (Microsoft Learn)</see>.</para>
 		/// </remarks>
 		public ResourceDictionary Resources
@@ -1778,7 +1778,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets and sets the front-to-back z-index of an element within a layout. This is a bindable property.
+		/// Gets or sets the front-to-back z-index of an element within a layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>An element with a higher <see cref="ZIndex"/> value will be shown on top of an element with a lower <see cref="ZIndex"/> value.</remarks>
 		public int ZIndex
@@ -1813,7 +1813,7 @@ namespace Microsoft.Maui.Controls
 		/// the interface has to be explicitly implemented to avoid conflict with the old <see cref="Arrange(Rect)"/> method.
 		/// </summary>
 		/// <param name="bounds">The new bounds of the element.</param>
-		/// <returns>The resulting size of this elements frame by the platform.</returns>
+		/// <returns>The resulting size of this element's frame by the platform.</returns>
 		protected virtual Size ArrangeOverride(Rect bounds)
 		{
 			Frame = this.ComputeFrame(bounds);
