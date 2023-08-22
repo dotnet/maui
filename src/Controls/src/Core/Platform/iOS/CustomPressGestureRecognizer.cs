@@ -1,7 +1,5 @@
 ﻿#nullable disable
 using System;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -42,21 +40,18 @@ internal class CustomPressGestureRecognizer : UIGestureRecognizer
 
 	public override void TouchesBegan(NSSet touches, UIEvent evt)
 	{
-		//System.Diagnostics.Debug.WriteLine("TouchesBegan");
 		State = UIGestureRecognizerState.Began;
 		base.TouchesBegan(touches, evt);
 	}
 
 	public override void TouchesEnded(NSSet touches, UIEvent evt)
 	{
-		//System.Diagnostics.Debug.WriteLine("TouchesEnded");
 		State = UIGestureRecognizerState.Ended;
 		base.TouchesEnded(touches, evt);
 	}
 
 	public override void TouchesMoved(NSSet touches, UIEvent evt)
 	{
-		//System.Diagnostics.Debug.WriteLine("TouchesMoved");
 		State = UIGestureRecognizerState.Changed;
 		base.TouchesMoved(touches, evt);
 	}

@@ -249,17 +249,14 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								case UIGestureRecognizerState.Began:
 									pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									System.Diagnostics.Debug.WriteLine("Hover began / pointer entered");
 									break;
 								case UIGestureRecognizerState.Changed:
 									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									System.Diagnostics.Debug.WriteLine("Hover changed / pointer moved");
 									break;
 								case UIGestureRecognizerState.Cancelled:
 								case UIGestureRecognizerState.Failed:
 								case UIGestureRecognizerState.Ended:
 									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									System.Diagnostics.Debug.WriteLine("Hover ended / pointer exited");
 									break;
 							}
 						}
@@ -277,19 +274,15 @@ namespace Microsoft.Maui.Controls.Platform
 							{
 								case UIGestureRecognizerState.Began:
 									pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									//System.Diagnostics.Debug.WriteLine("Press began / pointer pressed");
 									break;
 								case UIGestureRecognizerState.Changed:
 									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									//System.Diagnostics.Debug.WriteLine("Press changed / pointer moved");
 									break;
 								case UIGestureRecognizerState.Cancelled:
 								case UIGestureRecognizerState.Failed:
 								case UIGestureRecognizerState.Ended:
 									pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									//System.Diagnostics.Debug.WriteLine("Press ended / pointer released");
 									pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker));
-									//System.Diagnostics.Debug.WriteLine("Press ended / pointer entered");
 									break;
 							}
 						}
