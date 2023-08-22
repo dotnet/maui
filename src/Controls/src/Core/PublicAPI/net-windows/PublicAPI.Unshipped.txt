@@ -153,3 +153,6 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.RoutedEventArgs.get -> Microsof
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml.FrameworkElement!
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
 *REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void
+~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
