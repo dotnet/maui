@@ -186,6 +186,7 @@ namespace Microsoft.Maui.Controls
 
 		internal static void SetDefaultVisual(IVisual visual) => _defaultVisual = visual;
 
+		/// <inheritdoc/>
 		IVisual IVisualController.EffectiveVisual
 		{
 			get { return _effectiveVisual; }
@@ -458,6 +459,7 @@ namespace Microsoft.Maui.Controls
 
 		}
 
+		/// <inheritdoc/>
 		EffectiveFlowDirection IVisualElementController.EffectiveFlowDirection => FlowController.EffectiveFlowDirection;
 
 		static readonly BindablePropertyKey WindowPropertyKey = BindableProperty.CreateReadOnly(
@@ -471,6 +473,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		public Window Window => (Window)GetValue(WindowProperty);
 
+		/// <inheritdoc/>
 		Window IWindowController.Window
 		{
 			get => (Window)GetValue(WindowProperty);
@@ -580,7 +583,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the desired height override of this element. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1.</para>
+		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
 		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="HeightRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
 		/// </remarks>
 		public double HeightRequest
@@ -694,7 +697,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets a value which overrides the minimum height the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1.</para>
+		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
 		/// <para><see cref="MinimumHeightRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum height property. This causes overflow handling to shrink this element to its minimum height before elements who do not have a minimum size set.
 		/// </para>
 		/// </remarks>
@@ -708,7 +711,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets a value which overrides the minimum width the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1.</para>
+		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
 		/// <para><see cref="MinimumWidthRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum width property. This causes overflow handling to shrink this element to its minimum width before elements who do not have a minimum size set.
 		/// </para>
 		/// </remarks>
@@ -863,7 +866,7 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the desired width override of this element. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1.</para>
+		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
 		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="WidthRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
 		/// </remarks>
 		public double WidthRequest
@@ -1350,6 +1353,7 @@ namespace Microsoft.Maui.Controls
 			MeasureInvalidated?.Invoke(this, new InvalidationEventArgs(trigger));
 		}
 
+		/// <inheritdoc/>
 		void IVisualElementController.InvalidateMeasure(InvalidationTrigger trigger) => InvalidateMeasureInternal(trigger);
 
 		internal void InvalidateStateTriggers(bool attach)
@@ -1717,6 +1721,7 @@ namespace Microsoft.Maui.Controls
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
 
+		/// <inheritdoc/>
 		Paint? IView.Background
 		{
 			get
@@ -1730,8 +1735,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		IShape IView.Clip => Clip;
 
+		/// <inheritdoc/>
 		IShadow IView.Shadow => Shadow;
 
 		/// <summary>Bindable property for <see cref="Shadow"/>.</summary>
@@ -1795,6 +1802,7 @@ namespace Microsoft.Maui.Controls
 			Layout(bounds);
 		}
 
+		/// <inheritdoc/>
 		Size IView.Arrange(Rect bounds)
 		{
 			return ArrangeOverride(bounds);
@@ -1823,6 +1831,7 @@ namespace Microsoft.Maui.Controls
 			Bounds = bounds;
 		}
 
+		/// <inheritdoc/>
 		void IView.InvalidateMeasure()
 		{
 			InvalidateMeasureOverride();
@@ -1834,10 +1843,12 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		protected virtual void InvalidateMeasureOverride() => Handler?.Invoke(nameof(IView.InvalidateMeasure));
 
+		/// <inheritdoc/>
 		void IView.InvalidateArrange()
 		{
 		}
 
+		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
 			return MeasureOverride(widthConstraint, heightConstraint);
@@ -1856,19 +1867,26 @@ namespace Microsoft.Maui.Controls
 			return DesiredSize;
 		}
 
+		/// <inheritdoc/>
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
 			set => SetValue(IsFocusedPropertyKey, value);
 		}
 
+		/// <inheritdoc/>
 		FlowDirection IView.FlowDirection => FlowDirection;
 
+		/// <inheritdoc/>
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => default;
+
+		/// <inheritdoc/>
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => default;
 
+		/// <inheritdoc/>
 		Visibility IView.Visibility => IsVisible.ToVisibility();
 
+		/// <inheritdoc/>
 		Semantics? IView.Semantics => UpdateSemantics();
 
 		private protected virtual Semantics? UpdateSemantics()
@@ -1898,6 +1916,7 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
+		/// <inheritdoc/>
 		double IView.Width
 		{
 			get
@@ -1920,6 +1939,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		double IView.Height
 		{
 			get
@@ -1942,6 +1962,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		double IView.MinimumWidth
 		{
 			get
@@ -1958,6 +1979,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		double IView.MinimumHeight
 		{
 			get
@@ -1974,6 +1996,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		double IView.MaximumWidth
 		{
 			get
@@ -1985,6 +2008,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		double IView.MaximumHeight
 		{
 			get
@@ -1996,9 +2020,11 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		Thickness IView.Margin => Thickness.Zero;
 
-		IElementHandler? Maui.IElement.Handler
+		/// <inheritdoc/>
+		IElementHandler? IElement.Handler
 		{
 			get => base.Handler;
 			set
@@ -2106,12 +2132,14 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		event EventHandler? IControlsVisualElement.WindowChanged
 		{
 			add => _windowChanged += value;
 			remove => _windowChanged -= value;
 		}
 
+		/// <inheritdoc/>
 		event EventHandler? IControlsVisualElement.PlatformContainerViewChanged
 		{
 			add => _platformContainerViewChanged += value;
