@@ -326,6 +326,6 @@ namespace Microsoft.Maui.Controls.Platform
 			return true;
 		}
 
-		internal VisualElement GetVisualElement() => _renderer?.VirtualView as VisualElement;
+		internal VisualElement GetVisualElement() => _visualElement;
 	}
 }
