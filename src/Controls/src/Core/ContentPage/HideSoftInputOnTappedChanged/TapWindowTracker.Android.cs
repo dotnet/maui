@@ -1,6 +1,6 @@
 ﻿using Android.Views;
-using AView = Android.Views.View;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
 {

@@ -1,8 +1,8 @@
-﻿using Android.Views;
+﻿using System;
+using Android.Views;
 using Android.Widget;
-using AView = Android.Views.View;
-using System;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls
 {

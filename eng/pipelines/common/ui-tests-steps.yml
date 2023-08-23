@@ -17,6 +17,10 @@ steps:
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
         skipProvisioning: false
+      ${{ if eq(parameters.platform, 'android') }}:
+        skipAndroidSdks : false
+      ${{ if ne(parameters.platform, 'android') }}:
+        skipAndroidSdks: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
