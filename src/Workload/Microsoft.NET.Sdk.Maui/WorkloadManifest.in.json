@@ -76,7 +76,7 @@
       "description": ".NET MAUI SDK for Windows",
       "extends": [ "maui-blazor" ],
       "packs": [
-          "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+          "Microsoft.Maui.Graphics.Windows"
       ]
     },
     "maui-tizen": {
@@ -123,9 +123,14 @@
       "kind": "library",
       "version": "@VERSION@"
     },
-    "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop": {
+    "Microsoft.Maui.Graphics.Windows": {
       "kind": "library",
-      "version": "@VERSION@"
+      "version": "@VERSION@",
+      "alias-to": {
+        "win-x86": "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop",
+        "win-x64": "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop",
+        "win-arm64": "Microsoft.Maui.Graphics.Win2D.WinUI.Desktop"
+      }
     },
     "Microsoft.Maui.Resizetizer": {
       "kind": "library",
