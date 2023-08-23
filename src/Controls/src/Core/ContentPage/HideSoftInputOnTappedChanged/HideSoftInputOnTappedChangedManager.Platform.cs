@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Controls
 			}
 
 			IDisposable? platformToken = SetupHideSoftInputOnTapped(platformView);
-			
+
 #if ANDROID
 			var window = ve.Window;
 			window.DispatchTouchEvent += OnWindowDispatchedTouch;
