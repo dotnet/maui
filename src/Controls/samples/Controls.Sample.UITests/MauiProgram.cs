@@ -45,7 +45,7 @@ namespace Maui.Controls.Sample
 
 		protected override Window CreateWindow(IActivationState activationState)
 		{
-#if WINDOWS
+#if WINDOWS || MACCATALYST
 			var window = base.CreateWindow(activationState);
 
 			// Use a fixed window size, so that screenshots are deterministic,
