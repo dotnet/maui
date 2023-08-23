@@ -16,5 +16,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IBarElement.BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty =
 			BindableProperty.Create(nameof(IBarElement.BarTextColor), typeof(Color), typeof(IBarElement), default(Color));
+
+		/// <summary>Bindable property for <see cref="IBarElement.BarTabMode"/>.</summary>
+		public static readonly BindableProperty BarTabModeProperty =
+			BindableProperty.Create(nameof(IBarElement.BarTabMode), typeof(BarTabMode), typeof(IBarElement), BarTabMode.Auto);
 	}
 }

@@ -59,6 +59,11 @@ namespace Microsoft.Maui.Controls
 			view._tabbedPageManager?.UpdateBarBackgroundColor();
 		}
 
+		internal static void MapBarTabMode(ITabbedViewHandler handler, TabbedPage view)
+		{
+			view._tabbedPageManager?.UpdateBarTabMode();
+		}
+
 		internal static void MapBarTextColor(ITabbedViewHandler handler, TabbedPage view)
 		{
 			view._tabbedPageManager?.UpdateTabItemStyle();

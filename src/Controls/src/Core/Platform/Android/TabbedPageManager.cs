@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		Color _currentBarItemColor;
 		Color _currentBarTextColor;
 		Color _currentBarSelectedItemColor;
+		BarTabMode _currentTabMode;
 		ColorStateList _currentBarTextColorStateList;
 		bool _tabItemStyleLoaded;
 		TabLayoutMediator _tabLayoutMediator;
@@ -550,6 +551,32 @@ namespace Microsoft.Maui.Controls.Handlers
 				_bottomNavigationView.UpdateBackground(_currentBarBackground);
 			else
 				_tabLayout.UpdateBackground(_currentBarBackground);
+		}
+
+		internal void UpdateBarTabMode()
+		{
+			if (_currentTabMode == Element.BarTabMode)
+				return;
+
+			_currentTabMode = Element.BarTabMode;
+
+			if (!IsBottomTabPlacement)
+			{
+				switch (_currentTabMode)
+				{
+					case BarTabMode.Auto:
+						_tabLayout.TabMode = TabLayout.ModeAuto;
+						break;
+					case BarTabMode.Fixed:
+						_tabLayout.TabMode = TabLayout.ModeFixed;
+						break;
+					case BarTabMode.Scrollable:
+						_tabLayout.TabMode = TabLayout.ModeScrollable;
+                        break;
+					default:
+						throw new ArgumentException($"Unrecongized BarTabMode: {_currentTabMode}");
+				}
+			}
 		}
 
 		protected virtual ColorStateList GetItemTextColorStates()

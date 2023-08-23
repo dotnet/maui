@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
+		/// <summary>Bindable property for <see cref="BarTabMode"/>.</summary>
+		public static readonly BindableProperty BarTabModeProperty = BarElement.BarTabModeProperty;
+
 		/// <summary>Bindable property for <see cref="UnselectedTabColor"/>.</summary>
 		public static readonly BindableProperty UnselectedTabColorProperty = BindableProperty.Create(nameof(UnselectedTabColor), typeof(Color), typeof(TabbedPage), default(Color));
 
@@ -57,6 +60,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Color)GetValue(SelectedTabColorProperty);
 			set => SetValue(SelectedTabColorProperty, value);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarTabMode']/Docs/*" />
+		public BarTabMode BarTabMode
+		{
+			get => (BarTabMode)GetValue(BarTabModeProperty);
+			set => SetValue(BarTabModeProperty, value);
 		}
 
 		protected override Page CreateDefault(object item)
