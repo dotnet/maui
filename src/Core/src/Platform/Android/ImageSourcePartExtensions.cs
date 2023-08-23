@@ -6,7 +6,7 @@ using Android.Views;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class ImageSourcePartExtensions
+	internal static class ImageSourcePartExtensions
 	{
 		public static async Task<IImageSourceServiceResult?> UpdateSourceAsync(
 			this IImageSourcePart image,

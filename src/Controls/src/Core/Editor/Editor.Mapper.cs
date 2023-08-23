@@ -18,8 +18,12 @@ namespace Microsoft.Maui.Controls
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(Text), MapText);
 			EditorHandler.Mapper.ReplaceMapping<Editor, IEditorHandler>(nameof(TextTransform), MapText);
 
+#if IOS || ANDROID
+			EditorHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+#endif
+
 #if ANDROID
-			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), MapFocus);
+			EditorHandler.CommandMapper.PrependToMapping(nameof(IEditor.Focus), InputView.MapFocus);
 #endif
 		}
 	}

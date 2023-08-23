@@ -10,8 +10,9 @@ if (IsMac)
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
+string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 
-if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
+if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
 		.ApiLevel((AndroidApiLevel)21)
@@ -55,7 +56,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 
 	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
 }
-else
+else if(!String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {
 
 	var androidSDK = AndroidSdk();
