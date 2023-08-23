@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 			view.ToPlatform().IsAccessibilityElement();
 
 		public static bool IsExcludedWithChildren(this IView view) =>
-			view.ToPlatform().IsExcludedWithChildren();
+			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsExcludedWithChildren() == true;
 
 		public static IDisposable OnUnloaded(this IElement element, Action action)
 		{
