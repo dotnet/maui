@@ -195,12 +195,22 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var navItems = FlyoutItems.OfType<NavigationViewItemViewModel>();
 
+			// newItem can be null in fringe scenarios where all items are hidden. Do
+			// nothing in that case, to avoid a NullReferenceException
+			if (newItem == null)
+			{
+				SelectedItem = null;
+				return;
+			}
+
 			// Implicit items aren't items that are surfaced to the user 
 			// or data structures. So, we just want to find the element
 			// the user defined on Shell
 			if (Routing.IsImplicit(newItem))
 			{
-				if (Routing.IsImplicit(newItem.CurrentItem))
+				if (newItem.CurrentItem == null)
+					SelectedItem = null;
+				else if (Routing.IsImplicit(newItem.CurrentItem))
 					SelectedItem = navItems.GetWithData(newItem.CurrentItem.CurrentItem);
 				else
 					SelectedItem = navItems.GetWithData(newItem.CurrentItem);
