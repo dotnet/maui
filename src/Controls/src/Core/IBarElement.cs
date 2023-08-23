@@ -8,6 +8,7 @@ namespace Microsoft.Maui.Controls
 		Color BarBackgroundColor { get; }
 		Brush BarBackground { get; }
 		Color BarTextColor { get; }
+		Color BarIndicatorColor { get; }
 		BarTabMode BarTabMode { get; }
 	}
 }

@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		Color _currentBarItemColor;
 		Color _currentBarTextColor;
 		Color _currentBarSelectedItemColor;
+		Color _currentBarIndicatorColor;
 		BarTabMode _currentTabMode;
 		ColorStateList _currentBarTextColorStateList;
 		bool _tabItemStyleLoaded;
@@ -104,6 +105,20 @@ namespace Microsoft.Maui.Controls.Handlers
 				{
 					if (Element.IsSet(TabbedPage.SelectedTabColorProperty))
 						return Element.SelectedTabColor;
+				}
+
+				return null;
+			}
+		}
+
+		public Color BarIndicatorColor
+		{
+			get
+			{
+				if (Element != null)
+				{
+					if (Element.IsSet(TabbedPage.BarIndicatorColorProperty))
+						return Element.BarIndicatorColor;
 				}
 
 				return null;
@@ -711,11 +726,13 @@ namespace Microsoft.Maui.Controls.Handlers
 			Color barItemColor = BarItemColor;
 			Color barTextColor = Element.BarTextColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
+			Color barIndicatorColor = BarIndicatorColor;
 
 			if (_tabItemStyleLoaded &&
 				_currentBarItemColor == barItemColor &&
 				_currentBarTextColor == barTextColor &&
-				_currentBarSelectedItemColor == barSelectedItemColor)
+				_currentBarSelectedItemColor == barSelectedItemColor &&
+				_currentBarIndicatorColor == barIndicatorColor)
 			{
 				return;
 			}
@@ -724,9 +741,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			_currentBarItemColor = BarItemColor;
 			_currentBarTextColor = Element.BarTextColor;
 			_currentBarSelectedItemColor = BarSelectedItemColor;
+			_currentBarIndicatorColor = BarIndicatorColor;
 
 			UpdateBarTextColor();
 			UpdateItemIconColor();
+			UpdateBarIndicatorColor();
 		}
 
 		void UpdateBarTextColor()
@@ -738,6 +757,12 @@ namespace Microsoft.Maui.Controls.Handlers
 				_bottomNavigationView.ItemTextColor = _currentBarTextColorStateList;
 			else
 				_tabLayout.TabTextColors = _currentBarTextColorStateList;
+		}
+
+		void UpdateBarIndicatorColor()
+		{
+			if (!IsBottomTabPlacement)
+				_tabLayout.SetSelectedTabIndicatorColor(_currentBarIndicatorColor.ToInt());
 		}
 
 		void SetIconColorFilter(TabLayout.Tab tab)

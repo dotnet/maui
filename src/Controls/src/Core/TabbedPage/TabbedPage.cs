@@ -17,6 +17,9 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="BarTextColor"/>.</summary>
 		public static readonly BindableProperty BarTextColorProperty = BarElement.BarTextColorProperty;
 
+		/// <summary>Bindable property for <see cref="BarIndicatorColor"/>.</summary>
+		public static readonly BindableProperty BarIndicatorColorProperty = BarElement.BarIndicatorColorProperty;
+
 		/// <summary>Bindable property for <see cref="BarTabMode"/>.</summary>
 		public static readonly BindableProperty BarTabModeProperty = BarElement.BarTabModeProperty;
 
@@ -47,6 +50,13 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Color)GetValue(BarElement.BarTextColorProperty);
 			set => SetValue(BarElement.BarTextColorProperty, value);
+		}
+
+		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarIndicatorColor']/Docs/*" />
+		public Color BarIndicatorColor
+		{
+			get => (Color)GetValue(BarElement.BarIndicatorColorProperty);
+			set => SetValue(BarElement.BarIndicatorColorProperty, value);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='UnselectedTabColor']/Docs/*" />
