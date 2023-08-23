@@ -279,7 +279,53 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(label.Height <= grid.MaximumHeightRequest);
 			Assert.True(grid.Height <= grid.MaximumHeightRequest);
 		}
+    
+		[Fact]
+		public async Task GridAddAndRemoveChildrenViaIndex()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Label), typeof(LabelHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
 
+			var grid = new Grid();
+			var label1 = new Label() { Text = "Lorem ipsum dolor" };
+			var label2 = new Label() { Text = "Hello world" };
+			var label3 = new Label() { Text = "The quick brown fox" };
+
+			grid.Add(label1);
+			grid.Add(label2);
+			grid.Add(label3);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				await AttachAndRun(grid, (handler) => 
+				{
+					Assert.True((grid[1] as Label).Text == "Hello world");
+
+					// Remove middle item
+					grid.Remove(grid[1]);
+					Assert.True((grid[0] as Label).Text == "Lorem ipsum dolor");
+					Assert.True((grid[1] as Label).Text == "The quick brown fox");
+
+					// Insert item at start
+					grid.Insert(0, label2);
+					Assert.True((grid[0] as Label).Text == "Hello world");
+					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
+					Assert.True((grid[2] as Label).Text == "The quick brown fox");
+
+					// Remove another item
+					grid.Remove(grid[2]);
+					Assert.True((grid[0] as Label).Text == "Hello world");
+					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
+				});
+			});
+		}
+    
 		/* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
@@ -354,50 +400,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, cyanBlob.MinColumn, 2d);
 			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
 		}*/
-		[Fact]
-		public async Task GridAddAndRemoveChildrenViaIndex()
-		{
-			EnsureHandlerCreated((builder) =>
-			{
-				builder.ConfigureMauiHandlers(handler =>
-				{
-					handler.AddHandler(typeof(Label), typeof(LabelHandler));
-					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
-				});
-			});
-
-			var grid = new Grid();
-			var label1 = new Label() { Text = "Lorem ipsum dolor" };
-			var label2 = new Label() { Text = "Hello world" };
-			var label3 = new Label() { Text = "The quick brown fox" };
-
-			grid.Add(label1);
-			grid.Add(label2);
-			grid.Add(label3);
-
-			await InvokeOnMainThreadAsync(async () =>
-			{
-				await AttachAndRun(grid, (handler) => 
-				{
-					Assert.True((grid[1] as Label).Text == "Hello world");
-
-					// Remove middle item
-					grid.Remove(grid[1]);
-					Assert.True((grid[0] as Label).Text == "Lorem ipsum dolor");
-					Assert.True((grid[1] as Label).Text == "The quick brown fox");
-
-					// Insert item at start
-					grid.Insert(0, label2);
-					Assert.True((grid[0] as Label).Text == "Hello world");
-					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
-					Assert.True((grid[2] as Label).Text == "The quick brown fox");
-
-					// Remove another item
-					grid.Remove(grid[2]);
-					Assert.True((grid[0] as Label).Text == "Hello world");
-					Assert.True((grid[1] as Label).Text == "Lorem ipsum dolor");
-				});
-			});
-		}
 	}
 }
