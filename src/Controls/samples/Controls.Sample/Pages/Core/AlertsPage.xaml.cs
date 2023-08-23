@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Globalization;
 using Microsoft.Maui;
 
 namespace Maui.Controls.Sample.Pages
@@ -53,24 +52,12 @@ namespace Maui.Controls.Sample.Pages
 
 		async void OnQuestion2ButtonClicked(object sender, EventArgs e)
 		{
-			string result = await DisplayPromptAsync("Question 2", "What's 5 + 5?", initialValue: string.Empty, maxLength: 2, keyboard: Keyboard.Numeric);
+			string result = await DisplayPromptAsync("Question 2", "What's 5 + 5?", initialValue: "10", maxLength: 2, keyboard: Keyboard.Numeric);
 
 			if (!string.IsNullOrWhiteSpace(result))
 			{
 				int number = Convert.ToInt32(result);
 				question2ResultLabel.Text = number == 10 ? "Correct." : "Incorrect.";
-			}
-		}
-
-		async void OnQuestion3ButtonClicked(object sender, EventArgs e)
-		{
-			string result = await DisplayPromptAsync("Question 3", "What's 2.5 + 5?", initialValue: string.Empty, maxLength: 3, keyboard: Keyboard.Numeric);
-
-			if (!string.IsNullOrWhiteSpace(result))
-			{
-				float number = float.Parse(result, CultureInfo.CurrentCulture.NumberFormat);
-
-				question3ResultLabel.Text = number == 7.5f ? "Correct." : "Incorrect.";
 			}
 		}
 	}

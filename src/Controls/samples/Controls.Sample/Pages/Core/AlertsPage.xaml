@@ -6,49 +6,39 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="Alerts">
     <views:BasePage.Content>
-        <ScrollView>
-            <StackLayout
-                Margin="12">
-                <Label
-                    Text="Display Alert"
-                    Style="{StaticResource Headline}"/>
-                <Button 
-                    Text="Alert Simple" 
-                    Clicked="OnAlertSimpleClicked" />
-                <Button 
-                    Text="Alert Yes/No" 
-                    Clicked="OnAlertYesNoClicked" />
-                <Label
-                    Text="Display ActionSheet"
-                    Style="{StaticResource Headline}"/>
-                <Button 
-                    Text="ActionSheet Simple" 
-                    Clicked="OnActionSheetSimpleClicked" />
-                <Button 
-                    Text="ActionSheet Cancel/Delete" 
-                    Clicked="OnActionSheetCancelDeleteClicked" />
-                <Label
-                    Text="Display Prompt"
-                    Style="{StaticResource Headline}"/>
-                <Button 
-                    Text="Question 1"
-                    Clicked="OnQuestion1ButtonClicked" />
-                <Label 
-                    x:Name="question1ResultLabel" />
-                <Button 
-                    Text="Question 2"
-                    Clicked="OnQuestion2ButtonClicked" />
-                <Label 
-                    x:Name="question2ResultLabel" />
-                <Label
-                    Text="Display Prompt (Decimal)"
-                    Style="{StaticResource Headline}"/>
-                <Button 
-                    Text="Question 3"
-                    Clicked="OnQuestion3ButtonClicked" />
-                <Label 
-                    x:Name="question3ResultLabel" />
-            </StackLayout>
-        </ScrollView>
+        <StackLayout
+            Margin="12">
+            <Label
+                Text="Display Alert"
+                Style="{StaticResource Headline}"/>
+            <Button 
+                Text="Alert Simple" 
+                Clicked="OnAlertSimpleClicked" />
+            <Button 
+                Text="Alert Yes/No" 
+                Clicked="OnAlertYesNoClicked" />
+            <Label
+                Text="Display ActionSheet"
+                Style="{StaticResource Headline}"/>
+            <Button 
+                Text="ActionSheet Simple" 
+                Clicked="OnActionSheetSimpleClicked" />
+            <Button 
+                Text="ActionSheet Cancel/Delete" 
+                Clicked="OnActionSheetCancelDeleteClicked" />
+            <Label
+                Text="Display Prompt"
+                Style="{StaticResource Headline}"/>
+            <Button 
+                Text="Question 1"
+                Clicked="OnQuestion1ButtonClicked" />
+            <Label 
+                x:Name="question1ResultLabel" />
+            <Button 
+                Text="Question 2"
+                Clicked="OnQuestion2ButtonClicked" />
+            <Label 
+                x:Name="question2ResultLabel" />
+        </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
