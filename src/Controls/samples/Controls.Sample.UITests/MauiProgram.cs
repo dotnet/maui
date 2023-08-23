@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
@@ -40,6 +41,22 @@ namespace Maui.Controls.Sample
 		protected override void OnAppLinkRequestReceived(Uri uri)
 		{
 			base.OnAppLinkRequestReceived(uri);
+		}
+
+		protected override Window CreateWindow(IActivationState activationState)
+		{
+#if WINDOWS
+			var window = base.CreateWindow(activationState);
+
+			// Use a fixed window size, so that screenshots are deterministic,
+			// matching (as much as possible) between dev machines and CI
+			window.Width = 1920;
+			window.Height = 1080;
+
+			return window;
+#else
+			return base.CreateWindow(activationState);
+#endif
 		}
 	}
 }
