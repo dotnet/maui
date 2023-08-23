@@ -559,7 +559,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the bounds of the element in device-independent units.
 		/// </summary>
-		/// <remarks><see cref="Bounds"/> is assigned during the Layout cycle by a call to <see cref="Layout(Rect)" />.</remarks>
+		/// <remarks><see cref="Bounds"/> is assigned during layout.</remarks>
 		public Rect Bounds
 		{
 			get { return IsMocked() ? new Rect(_mockX, _mockY, _mockWidth, _mockHeight) : _frame; }
@@ -572,7 +572,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the current rendered height of this element. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The height of an element is set during the Layout phase.</remarks>
+		/// <remarks>The height of an element is set during layout.</remarks>
 		public double Height
 		{
 			get { return _mockHeight == -1 ? (double)GetValue(HeightProperty) : _mockHeight; }
@@ -583,8 +583,8 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets the desired height override of this element. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
-		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="HeightRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
+		/// <para>The default value is -1, which means the value is unset; the effective minimum height will be zero.</para>
+		/// <para><see cref="HeightRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="HeightRequest"/> will change the resulting height of the element during the next layout pass.</para>
 		/// </remarks>
 		public double HeightRequest
 		{
@@ -593,11 +593,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value indicating whether this element should be involved in the user interaction cycle. This is a bindable property.
+		/// Gets or sets a value indicating whether this element responds to hit testing during user interaction. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is <see langword="false"/>.</para>
-		/// <para>Setting <see cref="InputTransparent"/> is not the same as setting <see cref="IsEnabled"/> to <see langword="false"/>. Setting <see cref="InputTransparent"/> only disables inputs and instead causes them to be passed to the element that is visually behind the element. Usually, this is the parent of the element. The value of the <see cref="InputTransparent" /> property is inherited by an element's child elements.</para>
+		/// <para>Setting <see cref="InputTransparent"/> to <see langword="true"/> makes the element invisible to touch and pointer input. The input is passed to the first non-input-transparent element that is visually behind the input transparent element. </para>
 		/// </remarks>
 		public bool InputTransparent
 		{
@@ -610,7 +610,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is <see langword="true"/>.</para>
-		/// <para>Elements that are not enabled do not participate in hit detection, and therefore will not receive focus or emit input events.</para>
+		/// <para>Elements that are not enabled will not receive focus or respond to input events.</para>
 		/// </remarks>
 		public bool IsEnabled
 		{
@@ -683,9 +683,9 @@ namespace Microsoft.Maui.Controls
 		public bool IsFocused => (bool)GetValue(IsFocusedProperty);
 
 		/// <summary>
-		/// Gets or sets a value that determines whether this elements should be part of the visual tree or not. This is a bindable property.
+		/// Gets or sets a value that determines whether this element will be visible on screen and take up space in layouts. This is a bindable property.
 		/// </summary>
-		/// <remarks>Setting <see cref="IsVisible"/> to <see langword="false"/> will remove the element from the visual tree. The element will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
+		/// <remarks>When an element has <see cref="IsVisible"/> set to <see langword="false"/> it will no longer take up space in layouts or be eligible to receive any kind of input event.</remarks>
 		[TypeConverter(typeof(VisibilityConverter))]
 		public bool IsVisible
 		{
@@ -694,12 +694,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value which overrides the minimum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum height the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a height will be determined automatically.</para>
-		/// <para><see cref="MinimumHeightRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum height property. This causes overflow handling to shrink this element to its minimum height before elements who do not have a minimum size set.
-		/// </para>
+		/// <para><see cref="MinimumHeightRequest"/> is used to ensure that the element has at least the specified height during layout.</para>
 		/// </remarks>
 		public double MinimumHeightRequest
 		{
@@ -708,12 +707,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value which overrides the minimum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the minimum width the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
-		/// <para><see cref="MinimumWidthRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the minimum width property. This causes overflow handling to shrink this element to its minimum width before elements who do not have a minimum size set.
-		/// </para>
+		/// <para>The default value is -1, which means the value is unset; the effective minimum width will be zero.</para>
+		/// <para><see cref="MinimumWidthRequest"/> is used to ensure that the element has at least the specified width during layout.</para>
 		/// </remarks>
 		public double MinimumWidthRequest
 		{
@@ -722,12 +720,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value which overrides the maximum height the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum height the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
-		/// <para><see cref="MaximumHeightRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the maximum height property. This causes overflow handling to shrink this element to its maximum height before elements who do not have a maximum size set.
-		/// </para>
+		/// <para><see cref="MaximumHeightRequest"/> is used to ensure that the element has no more than the specified height during layout.</para>
 		/// </remarks>
 		public double MaximumHeightRequest
 		{
@@ -736,12 +733,11 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets a value which overrides the maximum width the element will request during layout. This is a bindable property.
+		/// Gets or sets the maximum width the element will request during layout. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is <see cref="double.PositiveInfinity"/>.</para>
-		/// <para><see cref="MaximumWidthRequest"/> is used to override the results of a call to <see cref="GetSizeRequest(double, double)"/> by setting the maximum width property. This causes overflow handling to shrink this element to its maximum width before elements who do not have a maximum size set.
-		/// </para>
+		/// <para><see cref="MaximumWidthRequest"/> is used to ensure the element has no more than the specified width during layout.</para>
 		/// </remarks>
 		public double MaximumWidthRequest
 		{
@@ -750,12 +746,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the opacity value applied to the element when it is rendered. This is a bindable property.
+		/// Gets or sets the opacity value applied to the element when it is rendered. The range of this value is 0 to 1; values outside this range will be set to the nearest valid value. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is 1.0.</para>
 		/// <para>
-		/// The opacity value has no effect unless <see cref="IsVisible"/> is <see langword = "true" />. Opacity is inherited down the element hierarchy. If a parent has 0.5 opacity, and a child has 0.5 opacity, the child will render with an effective 0.25 opacity. Setting opacity to 0 has undefined behavior with input elements.
+		/// The opacity value has no effect unless <see cref="IsVisible"/> is <see langword="true"/>. The effective opacity of an element is the value of <see cref="Opacity"/> multiplied by the opacity of the element's <c>Parent</c>. If a parent has 0.5 opacity, and a child has 0.5 opacity, the child will render with an effective 0.25 opacity.
 		/// </para>
 		/// </remarks>
 		public double Opacity
@@ -867,7 +863,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <remarks>
 		/// <para>The default value is -1, which means the value is unset and a width will be determined automatically.</para>
-		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element, however setting the <see cref="WidthRequest"/> will change the result of calls to <see cref="GetSizeRequest(double, double)"/>, which will in turn modify the final size the element receives during a layout cycle.</para>
+		/// <para><see cref="WidthRequest"/> does not immediately change the <see cref="Bounds"/> of an element; setting the <see cref="WidthRequest"/> will change the resulting width of the element during the next layout pass.</para>
 		/// </remarks>
 		public double WidthRequest
 		{
@@ -878,7 +874,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the current X position of this element. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The x value of an element is set during the layout cycle.</remarks>
+		/// <remarks>The position of an element is set during layout.</remarks>
 		public double X
 		{
 			get { return _mockX == -1 ? (double)GetValue(XProperty) : _mockX; }
@@ -888,7 +884,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the current Y position of this element. This is a read-only bindable property.
 		/// </summary>
-		/// <remarks>The y value of an element is set during the layout cycle.</remarks>
+		/// <remarks>The position of an element is set during layout.</remarks>
 		public double Y
 		{
 			get { return _mockY == -1 ? (double)GetValue(YProperty) : _mockY; }
@@ -1100,7 +1096,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>
 		/// <see langword="true"/> if the keyboard focus was set to this element; <see langword = "false" /> if the call to this method did not force a focus change.
 		/// </returns>
-        /// <remarks>Element must be able to receive focus for this to work. Calling <see cref="Focus"/> on offscreen or unrealized elements has undefined behavior.</remarks>
+		/// <remarks>Element must be able to receive focus for this to work. Calling <see cref="Focus"/> on offscreen or unrealized elements has undefined behavior.</remarks>
 		public bool Focus() =>
 			this.RequestFocus();
 
