@@ -47,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 			WeakReference weakReference = null;
 
 			// Recently discovered that Android CollectionView is leaking when given a header or footer
-			// See: 
+			// See: https://github.com/dotnet/maui/issues/16961
 			var collectionView = new CollectionView
 			{
 #if !ANDROID
