@@ -91,6 +91,11 @@
         <_ResizetizerThrowsErrorOnInvalidFilename Condition="'$(ResizetizerErrorOnInvalidFilename)' == 'false'">false</_ResizetizerThrowsErrorOnInvalidFilename>
         <_ResizetizerThrowsErrorOnDuplicateOutputFilename>true</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
         <_ResizetizerThrowsErrorOnDuplicateOutputFilename Condition="'$(ResizetizerErrorOnDuplicateOutputFilename)' == 'false'">false</_ResizetizerThrowsErrorOnDuplicateOutputFilename>
+
+        <EnableMauiAssetProcessing Condition=" '$(EnableMauiAssetProcessing)' == '' ">true</EnableMauiAssetProcessing>
+        <EnableMauiSplashScreenProcessing Condition=" '$(EnableMauiSplashScreenProcessing)' == '' ">true</EnableMauiSplashScreenProcessing>
+        <EnableMauiFontProcessing Condition=" '$(EnableMauiFontProcessing)' == '' ">true</EnableMauiFontProcessing>
+        <EnableMauiImageProcessing Condition=" '$(EnableMauiImageProcessing)' == '' ">true</EnableMauiImageProcessing>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
@@ -339,7 +344,8 @@
         </ItemGroup>
     </Target>
 
-    <Target Name="ProcessMauiAssets">
+    <Target Name="ProcessMauiAssets"
+        Condition="'$(EnableMauiAssetProcessing)' == 'true'">
         <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
         </PropertyGroup>
@@ -365,12 +371,15 @@
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
+        Condition="'$(EnableMauiSplashScreenProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiSplashInputsFile);@(MauiSplashScreen)"
         Outputs="$(_MauiSplashStampFile)">
 
         <PropertyGroup>
             <_MauiHasSplashScreens>false</_MauiHasSplashScreens>
             <_MauiHasSplashScreens Condition="'@(MauiSplashScreen->Count())' != '0'">true</_MauiHasSplashScreens>
+            <_MauiShouldGenerateSplashScreen Condition="'$(_MauiHasSplashScreens)' == 'true'">true</_MauiShouldGenerateSplashScreen>
+            <_MauiShouldGenerateSplashScreen Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' != 'true' and '$(EnableBlankMauiSplashScreen)' == 'true'">true</_MauiShouldGenerateSplashScreen>
         </PropertyGroup>
 
         <DetectInvalidResourceOutputFilenamesTask
@@ -400,7 +409,7 @@
         </ItemGroup>
 
         <!-- iOS, but not Catalyst -->
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiHasSplashScreens)' == 'true'">
             <!-- Add a Link attribute in the form of '<filename>_<inputshash>.<extension>' -->
           <_MauiSplashScreenWithHashesInFilename
               Include="@(_MauiSplashScreenWithHashes->HasMetadata('Link'))"
@@ -412,22 +421,22 @@
               Link="%(Filename)_%(InputsFileHash)%(Extension)" />
         </ItemGroup>
         <GenerateSplashStoryboard
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             MauiSplashScreen="@(_MauiSplashScreenWithHashesInFilename)"
             InputsFile="$(_MauiSplashInputsFile)"
         />
-        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <PropertyGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
             <_MauiIntermediateStoryboard>$(_MauiIntermediateSplashScreen)MauiSplash.storyboard</_MauiIntermediateStoryboard>
             <_MauiIntermediatePList>$(_MauiIntermediateSplashScreen)MauiInfo.plist</_MauiIntermediatePList>
         </PropertyGroup>
         <CreatePartialInfoPlistTask
-            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'"
+            Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'"
             IntermediateOutputPath="$(_MauiIntermediateSplashScreen)"
             PlistName="MauiInfo.plist"
             Storyboard="$(_MauiIntermediateStoryboard)"
         />
-        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True'">
+        <ItemGroup Condition="'$(_ResizetizerIsiOSSpecificApp)' == 'True' and '$(_MauiShouldGenerateSplashScreen)' == 'true'">
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <_MauiSplashStoryboard Include="$(_MauiIntermediateStoryboard)" />
             <_MauiSplashPList Include="$(_MauiIntermediatePList)" />
@@ -481,6 +490,7 @@
     </Target>
 
     <Target Name="ProcessMauiFonts"
+        Condition="'$(EnableMauiFontProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_MauiFontInputsFile);@(MauiFont)"
         Outputs="$(_MauiFontStampFile)"
         AfterTargets="$(ProcessMauiFontsAfterTargets)"
@@ -568,6 +578,7 @@
     </Target>
 
     <Target Name="ResizetizeImages"
+        Condition="'$(EnableMauiImageProcessing)' == 'true'"
         Inputs="$(MSBuildThisFileFullPath);$(_ResizetizerTaskAssemblyName);$(_ResizetizerInputsFile);@(MauiImage)"
         Outputs="$(_ResizetizerStampFile)"
         AfterTargets="$(ResizetizeAfterTargets)"

@@ -3,6 +3,7 @@ parameters:
   skipXcode: false
   skipVS: true
   skipProvisioning: $(skipProvisionator)
+  skipAndroidSdks: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -34,6 +35,7 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -47,6 +49,8 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+        ${{ if eq(parameters.skipAndroidSdks, 'true') }}:
+          SKIP_ANDROID_API_SDKS: true
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
