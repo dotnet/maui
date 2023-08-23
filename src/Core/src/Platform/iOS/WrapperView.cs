@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Platform
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "_borderView is a SubView")]
 		UIView? _borderView;
 
 		public WrapperView()

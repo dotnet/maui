@@ -20,7 +20,6 @@ Microsoft.Maui.IMenuElement.Accelerators.get -> System.Collections.Generic.IRead
 Microsoft.Maui.Handlers.IImageSourcePartSetter
 Microsoft.Maui.Handlers.IImageSourcePartSetter.SetImageSource(Android.Graphics.Drawables.Drawable? obj) -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
-Microsoft.Maui.Platform.ImageSourcePartExtensions
 Microsoft.Maui.Platform.ImageSourcePartLoader.ImageSourcePartLoader(Microsoft.Maui.Handlers.IImageSourcePartSetter! handler) -> void
 Microsoft.Maui.ICrossPlatformLayout
 Microsoft.Maui.ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -55,6 +54,7 @@ override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthCon
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
 override Microsoft.Maui.Platform.MauiWebView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
@@ -89,7 +89,6 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Micr
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Platform.EditTextExtensions.UpdateIsSpellCheckEnabled(this Android.Widget.EditText! editText, Microsoft.Maui.IEntry! entry) -> void
-static Microsoft.Maui.Platform.ImageSourcePartExtensions.UpdateSourceAsync(this Microsoft.Maui.IImageSourcePart! image, Android.Views.View! destinationContext, Microsoft.Maui.IImageSourceServiceProvider! services, System.Action<Android.Graphics.Drawables.Drawable?>! setImage, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult?>!
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateIsSpellCheckEnabled(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar, Android.Widget.EditText? editText = null) -> void
 static Microsoft.Maui.Platform.SearchViewExtensions.UpdateKeyboard(this AndroidX.AppCompat.Widget.SearchView! searchView, Microsoft.Maui.ISearchBar! searchBar) -> void
 Microsoft.Maui.IWebView.UserAgent.get -> string?
