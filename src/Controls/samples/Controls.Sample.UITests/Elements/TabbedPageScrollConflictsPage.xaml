@@ -1,41 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <TabbedPage 
-    x:Name="ScrollConflicsTabbedPage"
+    x:Name="ScrollConflictsTabbedPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.TabbedPageScrollConflictsPage"
-    AutomationId="TabbedPageElement"
     Title="TabbedPage ScrollConflicts Gallery"
     CurrentPageChanged="OnTabbedPageCurrentPageChanged">
-    <ContentPage 
-        AutomationId="Tab1Element" 
-        Title="Tab1">
-        <StackLayout       
-            Padding="6, 24">
-            <WebView         
-                AutomationId="WebViewElement">
+    <ContentPage AutomationId="Tab1Element" Title="Tab1">
+        <StackLayout Padding="6, 24">
+            <WebView AutomationId="WebViewElement">
                 <WebView.Source>
                     <HtmlWebViewSource>
                         <HtmlWebViewSource.Html>
                             <![CDATA[
-                            <HTML>
-                            <BODY>
-                            <div style="overflow-x: scroll">
-                            <div style="width: 3000px">Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test </div>
-                            </div>
-                            </BODY>
-                            </HTML>
-                            ]]>
+                <HTML>
+                <BODY>
+                <div style="overflow-x: scroll;user-select: none">
+                <div style="width: 3000px">Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test Test </div>
+                </div>
+                </BODY>
+                </HTML>
+                ]]>
                         </HtmlWebViewSource.Html>
                     </HtmlWebViewSource>
                 </WebView.Source>
             </WebView>
+            <Label x:Name="tab1Label" AutomationId="Tab1Label" Text="Passed" />
         </StackLayout>
     </ContentPage>
-    <ContentPage 
-        AutomationId="Tab2Element" 
-        Title="Tab2">
-        <Grid 
-            BackgroundColor="Red"/>
+    <ContentPage Title="Tab2">
+        <StackLayout>
+            <Grid BackgroundColor="Red">
+                <Label x:Name="tab2Label" AutomationId="Tab2Label" Text="Failed" />
+            </Grid>
+        </StackLayout>
     </ContentPage>
 </TabbedPage>

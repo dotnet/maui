@@ -14,7 +14,10 @@ namespace Maui.Controls.Sample
 
 		void OnTabbedPageCurrentPageChanged(object sender, EventArgs e)
 		{
-			ScrollConflicsTabbedPage.Title = "Failed";
+			if (ScrollConflictsTabbedPage != null)
+			{
+				tab1Label.Text = "Failed";
+			}
 		}
 	}
 }
