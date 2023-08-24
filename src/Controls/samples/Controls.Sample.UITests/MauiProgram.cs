@@ -43,6 +43,7 @@ namespace Maui.Controls.Sample
 			base.OnAppLinkRequestReceived(uri);
 		}
 
+#if WINDOWS || MACCATALYST
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = base.CreateWindow(activationState);
@@ -67,10 +68,11 @@ namespace Maui.Controls.Sample
 
 			window.MaximumHeight = desktopWindowHeight;
 			window.MinimumHeight = desktopWindowHeight;
-
 #endif
+
 
 			return window;
 		}
+#endif
 	}
 }
