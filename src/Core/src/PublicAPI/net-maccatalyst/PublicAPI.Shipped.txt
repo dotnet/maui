@@ -2794,6 +2794,7 @@ static Microsoft.Maui.Platform.ImageViewExtensions.Clear(this UIKit.UIImageView!
 static Microsoft.Maui.Platform.ImageViewExtensions.UpdateAspect(this UIKit.UIImageView! imageView, Microsoft.Maui.IImage! image) -> void
 static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> void
 static Microsoft.Maui.Platform.ImageViewExtensions.UpdateSource(this UIKit.UIImageView! imageView, UIKit.UIImage? uIImage, Microsoft.Maui.IImageSourcePart! image) -> void
+static Microsoft.Maui.Platform.ImageViewExtensions.UpdateSourceAsync(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image, Microsoft.Maui.IImageSourceServiceProvider! services, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<UIKit.UIImage!>?>!
 static Microsoft.Maui.Platform.KeyboardExtensions.ApplyKeyboard(this UIKit.IUITextInput! textInput, Microsoft.Maui.Keyboard! keyboard) -> void
 static Microsoft.Maui.Platform.KeyboardExtensions.ApplyKeyboard(this UIKit.IUITextInputTraits! textInput, Microsoft.Maui.Keyboard! keyboard) -> void
 static Microsoft.Maui.Platform.KeyboardExtensions.ToUIReturnKeyType(this Microsoft.Maui.ReturnType returnType) -> UIKit.UIReturnKeyType
