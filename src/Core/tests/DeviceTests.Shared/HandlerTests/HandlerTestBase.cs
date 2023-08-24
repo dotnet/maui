@@ -192,6 +192,73 @@ namespace Microsoft.Maui.DeviceTests
 
 #endif
 
+		public Task AttachAndRun(IView view, Action<IPlatformViewHandler> action) =>
+				AttachAndRun<bool>(view, (handler) =>
+				{
+					action(handler);
+					return Task.FromResult(true);
+				});
+
+		public Task AttachAndRun(IView view, Func<IPlatformViewHandler, Task> action) =>
+				AttachAndRun<bool>(view, async (handler) =>
+				{
+					await action(handler);
+					return true;
+				});
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, T> action)
+		{
+			Func<IPlatformViewHandler, Task<T>> boop = (handler) =>
+			{
+				return Task.FromResult(action.Invoke(handler));
+			};
+
+			return AttachAndRun<T>(view, boop);
+		}
+
+		public Task<T> AttachAndRun<T>(IView view, Func<IPlatformViewHandler, Task<T>> action)
+		{
+			return view.AttachAndRun<T, IPlatformViewHandler>((handler) =>
+			{
+				return action.Invoke((IPlatformViewHandler)handler);
+			}, MauiContext, (view) =>
+			{
+				if (view.Handler is IPlatformViewHandler platformViewHandler)
+					return Task.FromResult(platformViewHandler);
+
+				var handler = view.ToHandler(MauiContext);
+				InitializeViewHandler(view, handler, MauiContext);
+				return Task.FromResult(handler);
+			});
+		}
+
+		public Task AttachAndRun<TPlatformHandler>(IView view, Func<TPlatformHandler, Task> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+
+			view.AttachAndRun<bool, TPlatformHandler>(async (handler) =>
+			{
+				await action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
+
+		public Task AttachAndRun<TPlatformHandler>(IView view, Action<TPlatformHandler> action)
+			where TPlatformHandler : IPlatformViewHandler, IElementHandler, new()
+			=>
+			view.AttachAndRun<bool, TPlatformHandler>((handler) =>
+			{
+				action(handler);
+				return true;
+			}, MauiContext, async (view) =>
+			{
+				var result = await InvokeOnMainThreadAsync(() => CreateHandler<TPlatformHandler>(view));
+				return result;
+			});
+
 		public void Dispose()
 		{
 			((IDisposable)_mauiApp)?.Dispose();

@@ -56,7 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(diff <= epsilon, $"Expected: {expected}. Actual: {actual}. Diff: {diff} Epsilon: {epsilon}.{message}");
 		}
 
-#if !TIZEN && PLATFORM
+
 		public static Task AssertHasContainer(this IView view, bool expectation)
 		{
 			// On Windows the `Parent` of an element only initializes when the view is added
@@ -133,12 +133,10 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsExcludedWithChildren(this IView view) =>
 			view.ToPlatform().IsExcludedWithChildren();
-#endif
 
 
 		public static IDisposable OnUnloaded(this IElement element, Action action)
 		{
-#if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
 				platformViewHandler.PlatformView is not null)
 			{
@@ -146,14 +144,10 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			throw new InvalidOperationException("Handler is not set on element");
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public static IDisposable OnLoaded(this IElement element, Action action)
 		{
-#if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
 				platformViewHandler.PlatformView is not null)
 			{
@@ -161,25 +155,17 @@ namespace Microsoft.Maui.DeviceTests
 			}
 
 			throw new InvalidOperationException("Handler is not set on element");
-#else
-			throw new NotImplementedException();
-#endif
 		}
 
 		public static bool IsLoadedOnPlatform(this IElement element)
 		{
 
-#if PLATFORM
 			if (element.Handler is not IPlatformViewHandler pvh)
 				return false;
 
 			return pvh.PlatformView?.IsLoaded() == true;
-#else
-			return true;
-#endif
 		}
 
-#if PLATFORM
 		public static Task AttachAndRun<THandler>(this IView view, Action<THandler> action, IMauiContext mauiContext, Func<IView, Task<THandler>> createHandler)
 		where THandler : IPlatformViewHandler =>
 			view.AttachAndRun<bool, THandler>((handler) =>
@@ -229,7 +215,5 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			}
 		}
-#endif
-
 	}
 }
