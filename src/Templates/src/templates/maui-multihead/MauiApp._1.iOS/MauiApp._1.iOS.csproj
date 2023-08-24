@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>DOTNET_TFM-ios</TargetFramework>
+		<SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
+		<OutputType>Exe</OutputType>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UseMaui>true</UseMaui>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\MauiApp._1\MauiApp._1.csproj" />
+	</ItemGroup>
+
+	<!-- workaround until https://github.com/dotnet/maui/pull/16845 lands -->
+	<Target Name="RemoveGeneratedSplashScreen" AfterTargets="ProcessMauiSplashScreens">
+		<ItemGroup>
+			<PartialAppManifest Remove="$(_MauiIntermediatePList)" />
+		</ItemGroup>
+	</Target>
+
+</Project>
