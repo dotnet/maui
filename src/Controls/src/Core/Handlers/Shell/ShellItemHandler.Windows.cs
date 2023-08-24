@@ -224,6 +224,8 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (syncSelectedItem && ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
+
+			UpdateTabBarVisibility(shellItemController);
 		}
 
 		void UpdateSearchHandler()
@@ -446,13 +448,17 @@ namespace Microsoft.Maui.Controls.Handlers
 				ShellItemNavigationView.SelectedItem = navigationViewItemViewModel;
 		}
 
+		void UpdateTabBarVisibility(IShellItemController item)
+		{
+			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
+			ShellItemNavigationView.PaneDisplayMode = paneDisplayMode;
+			ShellItemNavigationView.PinPaneDisplayModeTo = paneDisplayMode;
+			ShellItemNavigationView.IsPaneVisible = item.ShowTabs;
+		}
+
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
-			handler.ShellItemNavigationView.IsPaneVisible = ((IShellItemController)item).ShowTabs;
-
-			var paneDisplayMode = handler.GetNavigationViewPaneDisplayMode(item);
-			handler.ShellItemNavigationView.PaneDisplayMode = paneDisplayMode;
-			handler.ShellItemNavigationView.PinPaneDisplayModeTo = paneDisplayMode;
+			handler.UpdateTabBarVisibility(item);
 		}
 
 		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
