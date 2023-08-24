@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Shapes;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -194,5 +196,30 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
+
+		/* Commented out for now until border issues are fixed
+		[Fact("Ensures the border renders the expected size - Issue 15339")]
+		public async Task BorderAndStrokeIsCorrectSize()
+		{
+			double borderThickness = 10;
+			Border border = new Border() { WidthRequest = 200, HeightRequest = 100 };
+			border.BackgroundColor = Colors.Red;
+			border.Stroke = Colors.Blue;
+			border.StrokeThickness = borderThickness;
+
+			var bitmap = await GetRawBitmap(border, typeof(BorderHandler));
+			Assert.Equal(200, bitmap.Width, 2d);
+			Assert.Equal(100, bitmap.Height, 2d);
+
+			// Analyze blue border - we expect it to fill the 200x100 area
+			var blueBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Blue > .5).Single();
+			Assert.Equal(200, blueBlob.Width, 2d);
+			Assert.Equal(100, blueBlob.Height, 2d);
+
+			// Analyze red inside- we expect it to fill the area minus the stroke thickness
+			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
+			Assert.Equal(180, redBlob.Width, 2d);
+			Assert.Equal(80, redBlob.Height, 2d);
+		}*/
 	}
 }

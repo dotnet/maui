@@ -13,13 +13,18 @@ namespace Microsoft.Maui.Controls
 
 		readonly List<ISwipeItem> _swipeItems = new List<ISwipeItem>();
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> new CastingList<Element, ISwipeItem>(_swipeItems);
-
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public SwipeView()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<SwipeView>>(() => new PlatformConfigurationRegistry<SwipeView>(this));
+
+			// This just disables any of the legacy layout code from running
+			DisableLayout = true;
+
+			AddLogicalChild(RightItems);
+			AddLogicalChild(LeftItems);
+			AddLogicalChild(TopItems);
+			AddLogicalChild(BottomItems);
 		}
 
 		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
@@ -92,18 +97,18 @@ namespace Microsoft.Maui.Controls
 			if (bindable is not SwipeView swipeView)
 				return;
 
-			swipeView.UpdateSwipeItemsParent((SwipeItems)newValue);
-
 			if (oldValue is SwipeItems oldItems)
 			{
 				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
 				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
+				swipeView.RemoveLogicalChild(oldItems);
 			}
 
 			if (newValue is SwipeItems newItems)
 			{
 				newItems.CollectionChanged += SwipeItemsCollectionChanged;
 				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+				swipeView.AddLogicalChild(newItems);
 			}
 
 			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -172,48 +177,18 @@ namespace Microsoft.Maui.Controls
 
 		void ISwipeViewController.SendSwipeEnded(SwipeEndedEventArgs args) => SwipeEnded?.Invoke(this, args);
 
-		protected override void OnBindingContextChanged()
-		{
-			base.OnBindingContextChanged();
-
-			object bc = BindingContext;
-
-			if (LeftItems != null)
-				SetInheritedBindingContext(LeftItems, bc);
-
-			if (RightItems != null)
-				SetInheritedBindingContext(RightItems, bc);
-
-			if (TopItems != null)
-				SetInheritedBindingContext(TopItems, bc);
-
-			if (BottomItems != null)
-				SetInheritedBindingContext(BottomItems, bc);
-		}
-
 		SwipeItems SwipeItemsDefaultValueCreator() => new SwipeItems();
 
 		static object SwipeItemsDefaultValueCreator(BindableObject bindable)
 		{
-			return ((SwipeView)bindable).SwipeItemsDefaultValueCreator();
+			var swipeView = ((SwipeView)bindable);
+			return swipeView.SwipeItemsDefaultValueCreator();
 		}
 
 		/// <inheritdoc/>
 		public IPlatformElementConfiguration<T, SwipeView> On<T>() where T : IConfigPlatform
 		{
 			return _platformConfigurationRegistry.Value.On<T>();
-		}
-
-		void UpdateSwipeItemsParent(SwipeItems swipeItems)
-		{
-			if (swipeItems.Parent == null)
-				swipeItems.Parent = this;
-
-			foreach (var item in swipeItems)
-			{
-				if (item is Element swipeItem && swipeItem.Parent == null)
-					swipeItem.Parent = swipeItems;
-			}
 		}
 
 #nullable enable
@@ -241,7 +216,6 @@ namespace Microsoft.Maui.Controls
 				if (_isOpen != value)
 				{
 					_isOpen = value;
-					UpdateLogicalChildren();
 					Handler?.UpdateValue(nameof(ISwipeView.IsOpen));
 				}
 			}
@@ -403,46 +377,6 @@ namespace Microsoft.Maui.Controls
 		void ISwipeView.RequestClose(SwipeViewCloseRequest swipeCloseRequest)
 		{
 			Handler?.Invoke(nameof(ISwipeView.RequestClose), swipeCloseRequest);
-		}
-
-		void UpdateLogicalChildren()
-		{
-			if (!_isOpen)
-			{
-				ClearLogicalChildren();
-				return;
-			}
-
-			var swipeItems = GetSwipeItemsByDirection(_swipeDirection);
-
-			if (swipeItems is null)
-				return;
-
-			foreach (var swipeItem in swipeItems)
-				AddLogicalChild((Element)swipeItem);
-		}
-
-		SwipeItems? GetSwipeItemsByDirection(SwipeDirection? swipeDirection)
-		{
-			SwipeItems? swipeItems = null;
-
-			switch (swipeDirection)
-			{
-				case SwipeDirection.Left:
-					swipeItems = RightItems;
-					break;
-				case SwipeDirection.Right:
-					swipeItems = LeftItems;
-					break;
-				case SwipeDirection.Up:
-					swipeItems = BottomItems;
-					break;
-				case SwipeDirection.Down:
-					swipeItems = TopItems;
-					break;
-			}
-
-			return swipeItems;
 		}
 
 		class HandlerSwipeItems : List<Maui.ISwipeItem>, ISwipeItems

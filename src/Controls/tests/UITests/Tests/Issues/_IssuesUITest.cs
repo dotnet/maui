@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Appium;
+using NUnit.Framework;
 using OpenQA.Selenium.Support.UI;
 
 namespace Microsoft.Maui.AppiumTests
@@ -9,15 +10,43 @@ namespace Microsoft.Maui.AppiumTests
 
 		protected override void FixtureSetup()
 		{
-			base.FixtureSetup();
-			NavigateToIssue(Issue);
+			int retries = 0;
+			while (true)
+			{
+				try
+				{
+					base.FixtureSetup();
+					NavigateToIssue(Issue);
+					break;
+				}
+				catch (Exception e)
+				{
+					TestContext.Error.WriteLine($">>>>> The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					if (retries++ < SetupMaxRetries)
+					{
+						Reset();
+					}
+					else
+					{
+						throw;
+					}
+				}
+			}
 		}
 
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			App.NavigateBack();
-			App.Tap("GoBackToGalleriesButton");
+			try
+			{
+				App.NavigateBack();
+				App.Tap("GoBackToGalleriesButton");
+			}
+			catch (Exception e)
+			{
+				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+				TestContext.Error.WriteLine($">>>>> The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+			}
 		}
 
 		public abstract string Issue { get; }
