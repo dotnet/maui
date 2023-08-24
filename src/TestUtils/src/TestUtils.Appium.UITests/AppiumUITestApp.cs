@@ -181,11 +181,14 @@ namespace TestUtils.Appium.UITests
 			throw new NotImplementedException();
 		}
 
+		public bool IsKeyboardShown() =>
+			!IsWindows && !IsMac && _driver?.IsKeyboardShown() == true;
+
 		public void DismissKeyboard()
 		{
 			if (!IsWindows && !IsMac)
 			{
-				if (_driver != null && _driver.IsKeyboardShown())
+				if (_driver?.IsKeyboardShown() == true)
 				{
 					if (IsiOS)
 					{
