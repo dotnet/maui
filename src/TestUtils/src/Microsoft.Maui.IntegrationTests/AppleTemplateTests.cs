@@ -33,9 +33,15 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "Release", "net6.0")]
 		[TestCase("maui-blazor", "Debug", "net7.0")]
 		[TestCase("maui-blazor", "Release", "net7.0")]
-		public void RunOniOS(string id, string config, string framework)
+		[TestCase("maui-multihead", "Debug", "net6.0", true)]
+		[TestCase("maui-multihead", "Release", "net6.0", true)]
+		[TestCase("maui-multihead", "Debug", "net7.0", true)]
+		[TestCase("maui-multihead", "Release", "net7.0", true)]
+		public void RunOniOS(string id, string config, string framework, bool multihead = false)
 		{
 			var projectDir = TestDirectory;
+			if (multihead)
+				projectDir = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.iOS");
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),

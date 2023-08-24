@@ -55,9 +55,15 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "net6.0", "Release")]
 		[TestCase("maui-blazor", "net7.0", "Debug")]
 		[TestCase("maui-blazor", "net7.0", "Release")]
-		public void RunOnAndroid(string id, string framework, string config)
+		[TestCase("maui-multihead", "net6.0", "Debug", true)]
+		[TestCase("maui-multihead", "net6.0", "Release", true)]
+		[TestCase("maui-multihead", "net7.0", "Debug", true)]
+		[TestCase("maui-multihead", "net7.0", "Release", true)]
+		public void RunOnAndroid(string id, string framework, string config, bool multihead = false)
 		{
 			var projectDir = TestDirectory;
+			if (multihead)
+				projectDir = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.Droid");
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
