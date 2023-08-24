@@ -906,6 +906,9 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
+		internal static float GetDisplayDensity(this UIView? view) =>
+			view?.Window?.GetDisplayDensity() ?? 1.0f;
+
 		internal static bool HideSoftInput(this UIView inputView) => inputView.ResignFirstResponder();
 
 		internal static bool ShowSoftInput(this UIView inputView) => inputView.BecomeFirstResponder();

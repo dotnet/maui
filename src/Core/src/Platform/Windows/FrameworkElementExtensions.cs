@@ -355,6 +355,9 @@ namespace Microsoft.Maui.Platform
 			nativeView.RequestedTheme = previous;
 		}
 
+		internal static float GetDisplayDensity(this UIElement? element) =>
+			(float)(element?.XamlRoot?.RasterizationScale ?? 1.0f);
+
 		internal static bool HideSoftInput(this FrameworkElement element)
 		{
 			if (TryGetInputPane(out var inputPane))
