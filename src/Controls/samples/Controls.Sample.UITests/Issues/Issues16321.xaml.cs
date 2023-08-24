@@ -3,11 +3,11 @@ using Microsoft.Maui.Controls.Xaml;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui;
 using System.Linq;
-using CoreGraphics;
 using System;
 
 #if IOS
 using UIKit;
+using CoreGraphics;
 #endif
 
 namespace Maui.Controls.Sample.Issues
