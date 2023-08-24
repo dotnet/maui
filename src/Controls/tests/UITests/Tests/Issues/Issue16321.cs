@@ -12,6 +12,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void OpenAlertWithModals()
 		{
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
+			});
+
 			App.Tap("OpenAlertWithModals");
 			App.Tap("Cancel");
 		}
@@ -19,6 +24,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void OpenAlertWithNewUIWindow()
 		{
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
+			});
+
 			App.Tap("OpenAlertWithNewUIWindow");
 			App.Tap("Cancel");
 		}
