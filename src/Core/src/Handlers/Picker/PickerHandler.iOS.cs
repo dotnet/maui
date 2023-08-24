@@ -251,7 +251,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (Handler is not PickerHandler handler || handler._pickerView is not UIPickerView pickerView)
 					return;
-	
+
 				PickerSource? model = (PickerSource)pickerView.Model;
 				if (model.SelectedIndex != -1 && model.SelectedIndex != pickerView.SelectedRowInComponent(0))
 				{
