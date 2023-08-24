@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <TargetPlatformMinVersion Condition="$(TargetFramework.Contains('-windows'))">10.0.17763.0</TargetPlatformMinVersion>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.TestUtils.DeviceTests</RootNamespace>

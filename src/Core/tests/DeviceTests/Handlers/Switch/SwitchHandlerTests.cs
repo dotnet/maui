@@ -95,11 +95,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync(switchStub);
 		}
 
-		[Fact(DisplayName = "Thumb Color Updates Correctly"
-#if WINDOWS
-			, Skip = "Failing on Windows"
-#endif
-			)]
+		[Fact(DisplayName = "Thumb Color Updates Correctly")]
 		public async Task ThumbColorUpdatesCorrectly()
 		{
 			var switchStub = new SwitchStub()

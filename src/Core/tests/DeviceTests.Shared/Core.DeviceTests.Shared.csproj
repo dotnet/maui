@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
+    <TargetFrameworks>$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <SingleProject>true</SingleProject>
     <RootNamespace>Microsoft.Maui.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.DeviceTests.Shared</AssemblyName>
