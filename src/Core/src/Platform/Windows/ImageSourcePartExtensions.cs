@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Platform
 				var imageSourceServiceProvider = mauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
 				var imageSourceService = imageSourceServiceProvider.GetRequiredImageSourceService(imageSource);
 
-				var scale = destinationContext.XamlRoot?.RasterizationScale ?? 1;
+				var scale = mauiContext.GetPlatformWindow().GetDisplayDensity();
 				var result = await imageSourceService.GetImageSourceAsync(imageSource, (float)scale, cancellationToken);
 				var uiImage = result?.Value;
 
