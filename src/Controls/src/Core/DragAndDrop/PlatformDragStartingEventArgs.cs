@@ -89,7 +89,7 @@ public class PlatformDragStartingEventArgs
 	/// <param name="dragShadowBuilder">The custom drag shadow builder to use.</param>
 	public void SetDragShadowBuilder(Android.Views.View.DragShadowBuilder dragShadowBuilder)
 	{
-		_dragShadowBuilder = dragShadowBuilder;
+		DragShadowBuilder = dragShadowBuilder;
 	}
 
 	/// <summary>
@@ -98,7 +98,7 @@ public class PlatformDragStartingEventArgs
 	/// <param name="clipData">The custom clip data to use.</param>
 	public void SetClipData(Android.Content.ClipData clipData)
 	{
-		_clipData = clipData;
+		ClipData = clipData;
 	}
 
 #elif WINDOWS
