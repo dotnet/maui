@@ -418,6 +418,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				oldCell.PropertyChanged -= _propertyChangedHandler;
 				oldCell.SendDisappearing();
+				(_listView.Value as ITemplatedItemsView<Cell>)?.UnhookContent(oldCell);
 			}
 
 			if (newCell != null)
@@ -427,7 +428,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				UpdateContent(newCell);
 				UpdateFlowDirection(newCell);
 				SetupContextMenu();
-
+				(_listView.Value as ITemplatedItemsView<Cell>)?.SetupContent(newCell, -1);
 				// 🚀 make sure we do not subscribe twice (OnLoaded!)
 				newCell.PropertyChanged -= _propertyChangedHandler;
 				newCell.PropertyChanged += _propertyChangedHandler;
