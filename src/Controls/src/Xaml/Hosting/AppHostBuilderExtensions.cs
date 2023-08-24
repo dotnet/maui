@@ -113,9 +113,9 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
 			handlersCollection.AddHandler<ListView>(svc => new Handlers.Compatibility.ListViewRenderer(
-	#if ANDROID
+#if ANDROID
 				svc.GetRequiredService<Android.Content.Context>()
-	#endif
+#endif
 			));
 #if !TIZEN
 			handlersCollection.AddHandler<ImageCell>(_ => new Handlers.Compatibility.ImageCellRenderer());
@@ -125,14 +125,14 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<SwitchCell>(_ => new Handlers.Compatibility.SwitchCellRenderer());
 #endif
 			handlersCollection.AddHandler<TableView>(svc => new Handlers.Compatibility.TableViewRenderer(
-	#if ANDROID
+#if ANDROID
 				svc.GetRequiredService<Android.Content.Context>()
-	#endif
+#endif
 			));
 			handlersCollection.AddHandler<Frame>(svc => new Handlers.Compatibility.FrameRenderer(
-	#if ANDROID
+#if ANDROID
 				svc.GetRequiredService<Android.Content.Context>()
-	#endif
+#endif
 			));
 #endif
 
