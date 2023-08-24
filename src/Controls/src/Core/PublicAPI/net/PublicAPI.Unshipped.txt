@@ -9,6 +9,8 @@ Microsoft.Maui.Controls.PlatformDropEventArgs
 ~Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
 ~Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -68,30 +70,9 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler handler, Microsoft.Maui.Controls.RadioButton radioButton) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
+~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Send<TSender>(TSender sender, string message) -> void
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
-*REMOVED*~Microsoft.Maui.Controls.IMessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Instance.get -> Microsoft.Maui.Controls.IMessagingCenter
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
-*REMOVED*Microsoft.Maui.Controls.IMessagingCenter
-*REMOVED*Microsoft.Maui.Controls.MessagingCenter
-*REMOVED*Microsoft.Maui.Controls.MessagingCenter.MessagingCenter() -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender, TArgs>(TSender sender, string message, TArgs args) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Send<TSender>(TSender sender, string message) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender, TArgs>(object subscriber, string message, System.Action<TSender, TArgs> callback, TSender source = null) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Subscribe<TSender>(object subscriber, string message, System.Action<TSender> callback, TSender source = null) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender, TArgs>(object subscriber, string message) -> void
-*REMOVED*~static Microsoft.Maui.Controls.MessagingCenter.Unsubscribe<TSender>(object subscriber, string message) -> void
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.set -> void
@@ -104,14 +85,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Desktop = 3 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Phone = 1 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Tablet = 2 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.TV = 4 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Unsupported = 0 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Watch = 5 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
 Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
@@ -150,3 +123,5 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.PlatformPointerEventArgs
+*REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
+*REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void

@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 		protected override void OnPause()
 		{
-			_layout.HideKeyboard();
+			_layout.HideSoftInput();
 
 			// Stop animations or other ongoing actions that could consume CPU
 			// Commit unsaved changes, build only if users expect such changes to be permanently saved when thy leave such as a draft email
@@ -327,7 +327,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 
 			if (_application != null && CurrentFocus != null && _application.OnThisPlatform().GetShouldPreserveKeyboardOnResume())
 			{
-				CurrentFocus.ShowKeyboard();
+				CurrentFocus.ShowSoftInput();
 			}
 
 			_previousState = _currentState;
