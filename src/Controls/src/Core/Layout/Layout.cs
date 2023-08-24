@@ -134,7 +134,14 @@ namespace Microsoft.Maui.Controls
 
 		public void Clear()
 		{
-			ClearLogicalChildren();
+			for (int i = _children.Count - 1; i >= 0; i--)
+			{
+				if (_children[i] is Element element)
+				{
+					RemoveLogicalChild(element);
+				}
+			}
+			_children.Clear();
 			OnClear();
 		}
 
