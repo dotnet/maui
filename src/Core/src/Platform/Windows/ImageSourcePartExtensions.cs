@@ -7,7 +7,7 @@ using WImageSource = Microsoft.UI.Xaml.Media.ImageSource;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class ImageSourcePartExtensions
+	internal static class ImageSourcePartExtensions
 	{
 		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(
 			this IImageSourcePart image,

@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<CarouselViewHandler>(carouselView, async (handler) =>
 			{
 				await handler.PlatformView.WaitForLayoutOrNonZeroSize();
-	
+
 				var platformPosition = GetPlatformPosition(handler);
 				Assert.True(CheckPosition(platformPosition, position));
 			});
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var linearLayoutManager = recyclerView.GetLayoutManager() as LinearLayoutManager;
 
-			if(linearLayoutManager is not null)
+			if (linearLayoutManager is not null)
 			{
 				return linearLayoutManager.FindFirstCompletelyVisibleItemPosition();
 			}

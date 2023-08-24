@@ -80,5 +80,27 @@ public class MemoryTests : ControlsHandlerTestBase
 		Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 		Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 	}
+
+#if IOS
+	[Fact]
+	public async Task ResignFirstResponderTouchGestureRecognizer()
+	{
+		WeakReference viewReference = null;
+		WeakReference recognizerReference = null;
+
+		await InvokeOnMainThreadAsync(() =>
+		{
+			var view = new UIKit.UIView();
+			var recognizer = new Platform.ResignFirstResponderTouchGestureRecognizer(view);
+			view.AddGestureRecognizer(recognizer);
+			viewReference = new(view);
+			recognizerReference = new(recognizer);
+		});
+
+		await AssertionExtensions.WaitForGC(viewReference, recognizerReference);
+		Assert.False(viewReference.IsAlive, "UIView should not be alive!");
+		Assert.False(recognizerReference.IsAlive, "ResignFirstResponderTouchGestureRecognizer should not be alive!");
+	}
+#endif
 }
 
