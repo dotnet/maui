@@ -34,12 +34,7 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.ge
 *REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> System.Windows.Input.ICommand!
 *REMOVED*Microsoft.Maui.Controls.PointerGestureRecognizer.PointerMovedCommandParameter.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.~StructuredItemsViewHandler() -> void
-<<<<<<< Updated upstream
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, out object! value) -> bool
-=======
-Microsoft.Maui.Controls.TabbedPage.BarTabMode.get -> Microsoft.Maui.BarTabMode
-Microsoft.Maui.Controls.TabbedPage.BarTabMode.set -> void
->>>>>>> Stashed changes
 override Microsoft.Maui.Controls.Handlers.BoxViewHandler.NeedsContainer.get -> bool
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
@@ -86,11 +81,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static Microsoft.Maui.Controls.Handlers.ShellHandler.MapFlyoutIcon(Microsoft.Maui.Controls.Handlers.ShellHandler handler, Microsoft.Maui.Controls.Shell view) -> void
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
-<<<<<<< Updated upstream
-~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
-=======
-~static readonly Microsoft.Maui.Controls.TabbedPage.BarTabModeProperty -> Microsoft.Maui.Controls.BindableProperty
->>>>>>> Stashed changes
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>
