@@ -313,6 +313,7 @@ namespace Microsoft.Maui.Platform
 			// Updating the frame (assuming it's an actual change) will kick off a layout update
 			// Handling of the default width/height will be taken care of by GetDesiredSize
 			var currentFrame = platformView.Frame;
+
 			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
@@ -594,22 +595,46 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			var observers = new List<IDisposable>(2);
 			ActionDisposable? disposable = null;
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
 				foreach (var observer in observers)
 				{
-					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
-					observers.Remove(observer.Key);
+					observer.Dispose();
 				}
+				observers.Clear();
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
-			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc)));
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.
+
+			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
+			{
+				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
+
+				observers.Add(new ActionDisposable(() =>
+				{
+					lifeCycleEvents.MovedToWindow -= OnLifeCycleEventsMovedToWindow;
+				}));
+
+				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
+				{
+					OnLoadedCheck(null);
+				}
+			}
+			else
+			{
+				var boundKey = new NSString("bounds");
+				var frameKey = new NSString("frame");
+
+				var boundObserver = (NSObject)uiView.Layer.AddObserver(boundKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc));
+				var frameObserver = (NSObject)uiView.Layer.AddObserver(frameKey, Foundation.NSKeyValueObservingOptions.OldNew, (oc) => OnLoadedCheck(oc));
+
+				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(boundObserver, boundKey)));
+				observers.Add(new ActionDisposable(() => uiView.Layer.RemoveObserver(frameObserver, frameKey)));
+			}
 
 			// OnLoaded is called at the point in time where the xplat view knows it's going to be attached to the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
@@ -618,7 +643,7 @@ namespace Microsoft.Maui.Platform
 
 			void OnLoadedCheck(NSObservedChange? nSObservedChange = null)
 			{
-				if (disposable != null)
+				if (disposable is not null)
 				{
 					if (uiView.IsLoaded())
 					{
@@ -650,22 +675,36 @@ namespace Microsoft.Maui.Platform
 				return new ActionDisposable(() => { });
 			}
 
-			Dictionary<NSString, NSObject> observers = new Dictionary<NSString, NSObject>();
+			var observers = new List<IDisposable>(2);
 			ActionDisposable? disposable = null;
 			disposable = new ActionDisposable(() =>
 			{
 				disposable = null;
 				foreach (var observer in observers)
 				{
-					uiView.Layer.RemoveObserver(observer.Value, observer.Key);
-					observers.Remove(observer.Key);
+					observer.Dispose();
 				}
+				observers.Clear();
 			});
 
 			// Ideally we could wire into UIView.MovedToWindow but there's no way to do that without just inheriting from every single
-			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.	
-			observers.Add(new NSString("bounds"), (NSObject)uiView.Layer.AddObserver("bounds", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
-			observers.Add(new NSString("frame"), (NSObject)uiView.Layer.AddObserver("frame", Foundation.NSKeyValueObservingOptions.OldNew, (_) => UnLoadedCheck()));
+			// UIView. So we just make our best attempt by observering some properties that are going to fire once UIView is attached to a window.			
+
+			if (uiView is IUIViewLifeCycleEvents lifeCycleEvents)
+			{
+				lifeCycleEvents.MovedToWindow += OnLifeCycleEventsMovedToWindow;
+
+				observers.Add(new ActionDisposable(() =>
+				{
+					lifeCycleEvents.MovedToWindow -= OnLifeCycleEventsMovedToWindow;
+				}));
+
+				void OnLifeCycleEventsMovedToWindow(object? sender, EventArgs e)
+				{
+					UnLoadedCheck();
+				}
+			}
+			
 
 			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
