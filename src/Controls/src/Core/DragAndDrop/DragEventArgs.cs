@@ -21,9 +21,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the platform-specific arguments associated with the <see cref="DragEventArgs"/>.
 		/// </summary>
-#pragma warning disable RS0016 // Add public types and members to the declared API
 		public PlatformDragEventArgs PlatformArgs { get; internal set; }
-#pragma warning restore RS0016 // Add public types and members to the declared API
-
 	}
 }

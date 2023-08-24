@@ -1,7 +1,6 @@
 ﻿using System;
 namespace Microsoft.Maui.Controls;
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
 /// <summary>
 /// Platform-specific arguments associated with the <see cref="DragEventArgs"/>.
 /// </summary>
