@@ -47,5 +47,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			return (PresentedContent ?? (Content as IView))?.Arrange(bounds) ?? Size.Zero;
 		}
 #endif
+
 	}
 }

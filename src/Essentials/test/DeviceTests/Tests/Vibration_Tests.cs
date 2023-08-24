@@ -7,11 +7,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Vibration")]
 	public class Vibration_Tests
 	{
-		[Fact
-#if WINDOWS
-			(Skip = "Not supported on Windows? See Vibration implementation")
-#endif
-			]
+		[Fact]
 		public void Vibrate()
 		{
 #if __ANDROID__
@@ -29,11 +25,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 			Vibration.Vibrate();
 		}
 
-		[Fact
-#if WINDOWS
-			(Skip = "Not supported on Windows? See Vibration implementation")
-#endif
-			]
+		[Fact]
 		public void Vibrate_Cancel()
 		{
 #if __ANDROID__

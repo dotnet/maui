@@ -1,6 +1,4 @@
-// Contains .NET related Cake targets
-
-#addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
+// Contains .NET 6-related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
@@ -728,46 +726,6 @@ void RunTestWithLocalDotNet(string csproj)
             ResultsDirectory = GetTestResultsDirectory(),
             ArgumentCustomization = args => args.Append($"-bl:{binlog}")
         });
-}
-
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
-{
-    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
-    var results = $"{name}-{config}.trx";
-
-    Information("Run Test binlog: {0}", binlog);
-
-    var settings = new DotNetTestSettings
-        {
-            Configuration = config,
-            NoBuild = noBuild,
-            Loggers = { 
-                $"trx;LogFileName={results}"  
-            }, 
-           	ResultsDirectory = GetTestResultsDirectory(),
-            //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
-            ArgumentCustomization = args => 
-            { 
-                args.Append($"-bl:{binlog}");
-               // args.Append($"/tl");
-                if(argsExtra != null)
-                {
-                    foreach(var prop in argsExtra)
-                    {
-                        args.Append($"/p:{prop.Key}={prop.Value}");
-                    }
-                }
-                return args;
-            }
-        };
-    
-    if(!string.IsNullOrEmpty(pathDotnet))
-    {
-        settings.ToolPath = pathDotnet;
-    }
-
-    DotNetTest(csproj, settings);
 }
 
 DirectoryPath PrepareSeparateBuildContext(string dirName, bool generateDirectoryProps = false)

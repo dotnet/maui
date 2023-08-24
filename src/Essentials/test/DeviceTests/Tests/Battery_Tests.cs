@@ -8,11 +8,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 	[Category("Battery")]
 	public class Battery_Tests
 	{
-		[Fact
-#if WINDOWS
-			(Skip = "Somehow reports -1 on the CI test runner")
-#endif
-			]
+		[Fact]
 		[Trait(Traits.Hardware.Battery, Traits.FeatureSupport.Supported)]
 		public void Charge_Level()
 		{
