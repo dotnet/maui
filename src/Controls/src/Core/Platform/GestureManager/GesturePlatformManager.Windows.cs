@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var args = rec.SendDragStarting(handler?.VirtualView as IView, new PlatformDragStartingEventArgs(sender, e));
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
-				if (!args.platformArgs.Handled && handler != null)
+				if (!args.PlatformArgs.Handled && handler != null)
 				{
 					if (handler.PlatformView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)

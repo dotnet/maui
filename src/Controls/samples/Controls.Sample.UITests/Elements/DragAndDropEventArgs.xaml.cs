@@ -39,6 +39,7 @@ public partial class DragAndDropEventArgs : ContentView
 				AddEvent("DragStarting:" + nameof(platformArgs.Sender));
 			if (platformArgs.DragStartingEventArgs is not null)
 				AddEvent("DragStarting:" + nameof(platformArgs.DragStartingEventArgs));
+			AddEvent("DragStarting:" + nameof(platformArgs.Handled));
 #endif
 		}
 	}
@@ -57,8 +58,8 @@ public partial class DragAndDropEventArgs : ContentView
 #elif ANDROID
 			if (platformArgs.Sender is not null)
 				AddEvent("DropCompleted:" + nameof(platformArgs.Sender));
-			if (platformArgs.MotionEvent is not null)
-				AddEvent("DropCompleted:" + nameof(platformArgs.MotionEvent));
+			if (platformArgs.DragEvent is not null)
+				AddEvent("DropCompleted:" + nameof(platformArgs.DragEvent));
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
 				AddEvent("DropCompleted:" + nameof(platformArgs.Sender));
@@ -82,13 +83,14 @@ public partial class DragAndDropEventArgs : ContentView
 #elif ANDROID
 			if (platformArgs.Sender is not null)
 				AddEvent("DragLeave:" + nameof(platformArgs.Sender));
-			if (platformArgs.MotionEvent is not null)
-				AddEvent("DragLeave:" + nameof(platformArgs.MotionEvent));
+			if (platformArgs.DragEvent is not null)
+				AddEvent("DragLeave:" + nameof(platformArgs.DragEvent));
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
 				AddEvent("DragLeave:" + nameof(platformArgs.Sender));
 			if (platformArgs.DragEventArgs is not null)
 				AddEvent("DragLeave:" + nameof(platformArgs.DragEventArgs));
+			AddEvent("DragLeave:" + nameof(platformArgs.Handled));
 #endif
 		}
 	}
@@ -109,8 +111,8 @@ public partial class DragAndDropEventArgs : ContentView
 #elif ANDROID
 				if (platformArgs.Sender is not null)
 					AddEvent("DragOver:" + nameof(platformArgs.Sender));
-				if (platformArgs.MotionEvent is not null)
-					AddEvent("DragOver:" + nameof(platformArgs.MotionEvent));
+				if (platformArgs.DragEvent is not null)
+					AddEvent("DragOver:" + nameof(platformArgs.DragEvent));
 #elif WINDOWS
 				if (platformArgs.Sender is not null)
 					AddEvent("DragOver:" + nameof(platformArgs.Sender));
@@ -136,8 +138,8 @@ public partial class DragAndDropEventArgs : ContentView
 #elif ANDROID
 			if (platformArgs.Sender is not null)
 				AddEvent("Drop:" + nameof(platformArgs.Sender));
-			if (platformArgs.MotionEvent is not null)
-				AddEvent("Drop:" + nameof(platformArgs.MotionEvent));
+			if (platformArgs.DragEvent is not null)
+				AddEvent("Drop:" + nameof(platformArgs.DragEvent));
 #elif WINDOWS
 			if (platformArgs.Sender is not null)
 				AddEvent("Drop:" + nameof(platformArgs.Sender));

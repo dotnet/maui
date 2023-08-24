@@ -74,12 +74,21 @@ public class PlatformDragEventArgs
 	/// </summary>
 	public Microsoft.UI.Xaml.DragEventArgs DragEventArgs { get; }
 
+	/// <summary>
+	/// Gets or sets a value that indicates whether the DragEventArgs are changed.
+	/// </summary>
+	/// <remarks>
+	/// Set this property's value to true when changing the DragEventArgs so the system does not override the changes.
+	/// </remarks>
+	public bool Handled { get; set; }
+
 	internal PlatformDragEventArgs(object sender,
 		Microsoft.UI.Xaml.DragEventArgs dragEventArgs)
 	{
 		Sender = sender;
 		DragEventArgs = dragEventArgs;
 	}
+
 #else
 	internal PlatformDragEventArgs()
 	{
