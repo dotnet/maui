@@ -6,11 +6,11 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	// Uncomment these sections if you hit issues with parallel executions
-	[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
-	public class NonParallelCollectionDefinitionClass
-	{
-	}
+	//// Uncomment these sections if you hit issues with parallel executions
+	//[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+	//public class NonParallelCollectionDefinitionClass
+	//{
+	//}
 
 	[Collection("Non-Parallel Collection")]
 	public partial class TestBase
