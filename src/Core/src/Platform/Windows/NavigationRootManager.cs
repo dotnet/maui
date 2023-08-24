@@ -39,6 +39,27 @@ namespace Microsoft.Maui.Platform
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
 		}
 
+		internal void SetTitleBarVisibility(bool isVisible)
+		{
+			var appbarHeight = isVisible ? 32 : 0;
+			if (isVisible && AppWindowTitleBar.IsCustomizationSupported())
+			{
+				var density = _platformWindow.GetDisplayDensity();
+				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
+			}
+
+			_rootView.UpdateAppTitleBar(
+					appbarHeight,
+					AppWindowTitleBar.IsCustomizationSupported() &&
+					isVisible
+				);
+
+			_platformWindow?
+				.GetWindow()?
+				.Handler?
+				.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
+		}
+
 		void WindowRootViewOnWindowTitleBarContentSizeChanged(object? sender, EventArgs e)
 		{
 			if (_disconnected)

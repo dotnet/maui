@@ -122,7 +122,8 @@ namespace Microsoft.Maui.Platform
 				WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 
-			UpdateRootNavigationViewMargins(topMargin);
+			UpdateRootNavigationViewMargins(appTitleBarHeight);
+			this.RefreshThemeResources();
 		}
 
 		protected override void OnApplyTemplate()

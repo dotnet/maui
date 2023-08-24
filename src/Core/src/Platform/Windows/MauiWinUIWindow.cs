@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
@@ -38,7 +39,7 @@ namespace Microsoft.Maui
 			SubClassingWin32();
 			SetIcon();
 		}
-
+		
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
 		{
 			if (args.WindowActivationState != UI.Xaml.WindowActivationState.Deactivated)
@@ -132,6 +133,21 @@ namespace Microsoft.Maui
 						}
 
 						Marshal.StructureToPtr(rect, e.LParam, true);
+					}
+				}
+				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
+				{
+					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
+					{
+						bool hasTitleBar = (styleChange.styleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+
+						var mauiContext = this.Window?.Handler?.MauiContext;
+						if (mauiContext != null)
+						{
+							var navRootManager = mauiContext.Services.GetRequiredService<NavigationRootManager>();
+							navRootManager?.SetTitleBarVisibility(hasTitleBar);
+						}
 					}
 				}
 
