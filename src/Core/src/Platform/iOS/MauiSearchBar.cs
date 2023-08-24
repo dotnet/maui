@@ -80,7 +80,7 @@ namespace Microsoft.Maui.Platform
 			EditingChanged?.Invoke(this, EventArgs.Empty);
 		}
 
-		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{

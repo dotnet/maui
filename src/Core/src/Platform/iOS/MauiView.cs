@@ -158,7 +158,7 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		[UnconditionalSuppressMessage(IUIViewLifeCycleEvents.UnconditionalSuppressMessage, "MA0002")]
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
