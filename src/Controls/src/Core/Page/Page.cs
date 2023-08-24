@@ -107,9 +107,9 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="ImageSource"/> to be used for the icon associated to this page. This is bindable property.
+		/// Gets or sets the <see cref="ImageSource"/> to be used for the icon associated to this page. This is a bindable property.
 		/// </summary>
-		/// <remarks>This icon might be shown for instance in the flyout menu or a tab bar usually together with <see cref="Title"/>.</remarks>
+		/// <remarks>For example, this icon might be shown in the flyout menu or a tab bar together with <see cref="Title"/>.</remarks>
 		public ImageSource IconImageSource
 		{
 			get { return (ImageSource)GetValue(IconImageSourceProperty); }
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the authors job to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
+		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the author's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
 		/// </remarks>
 		public bool IsBusy
 		{
@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets he space between the content of the page and it's border. This is a bindable property.
+		/// Gets or sets the space between the content of the page and it's border. This is a bindable property.
 		/// </summary>
 		public Thickness Padding
 		{
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets the page's title.
 		/// </summary>
-		/// <remarks>This title might be shown for instance in the flyout menu or a tab bar usually together with <see cref="IconImageSource"/>.</remarks>
+		/// <remarks>For example, this title might be shown in the flyout menu or a tab bar together with <see cref="IconImageSource"/>.</remarks>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
@@ -404,7 +404,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// When overridden, allows application developers to customize behavior immediately prior to the page becoming visible.
+		/// When overridden in a derived class, allows application developers to customize behavior immediately prior to the page becoming visible.
 		/// </summary>
 		protected virtual void OnAppearing()
 		{
@@ -415,8 +415,8 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <returns><see langword="true"/> when the back navigation was handled by the override, otherwise <see langword="false"/>.</returns>
 		/// <remarks>
-		/// <para>If you want to handle or cancel the navigation yourself, you can do so in this method and then return <see langword="true"/>.</para>
-		/// <para>Note that this only works on Android and UWP for the hardware back-button. On iOS, this method will never be called because there is no hardware back button.</para>
+		/// <para>When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
+		/// <para>This only works on Android and UWP for the hardware back-button. On iOS, this method will never be called because there is no hardware back button.</para>
 		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
 		{
@@ -470,7 +470,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// When overridden, allows the application developer to customize behavior as the page disappears.
+		/// When overridden in a derived class, allows the application developer to customize behavior as the page disappears.
 		/// </summary>
 		/// <remarks>
 		/// This method is called when the page disappears due to navigating away from the page within the app. It is <b>not</b> called when the app disappears due to an event external to the app (e.g. user navigates to the home screen or another app, a phone call is received, the device is locked, the device is turned off).
@@ -836,19 +836,19 @@ namespace Microsoft.Maui.Controls
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
 
 		/// <summary>
-		/// When overridden, allows application developers to customize behavior immediately after the page was navigated to.
+		/// When overridden in a derived class, allows application developers to customize behavior immediately after the page was navigated to.
 		/// </summary>
 		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
 
 		/// <summary>
-		/// When overridden, allows application developers to customize behavior immediately prior to the page being navigated away from.
+		/// When overridden in a derived class, allows application developers to customize behavior immediately prior to the page being navigated away from.
 		/// </summary>
 		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
 
 		/// <summary>
-		/// When overridden, allows application developers to customize behavior immediately after the page was being navigated away from.
+		/// When overridden in a derived class, allows application developers to customize behavior immediately after the page was being navigated away from.
 		/// </summary>
 		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
