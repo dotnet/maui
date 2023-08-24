@@ -126,6 +126,14 @@ namespace Microsoft.Maui.DeviceTests
 				throw new InvalidOperationException("Could not attach view - unable to find RootViewController");
 			}
 
+			while (viewController.PresentedViewController is not null)
+			{
+				if (viewController is ModalWrapper || viewController.PresentedViewController is ModalWrapper)
+					throw new InvalidOperationException("Modal Window Is Still Present");
+
+				viewController = viewController.PresentedViewController;
+			}
+
 			if (viewController == null)
 			{
 				throw new InvalidOperationException("Could not attach view - unable to find presented ViewController");
