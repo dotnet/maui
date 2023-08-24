@@ -1,8 +1,4 @@
 #nullable enable
-Microsoft.Maui.BarTabMode
-Microsoft.Maui.BarTabMode.Auto = 0 -> Microsoft.Maui.BarTabMode
-Microsoft.Maui.BarTabMode.Fixed = 1 -> Microsoft.Maui.BarTabMode
-Microsoft.Maui.BarTabMode.Scrollable = 2 -> Microsoft.Maui.BarTabMode
 Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler, Microsoft.Maui.IElement? virtualView, string! property, object? args) -> void
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.IAccelerator
