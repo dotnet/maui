@@ -276,10 +276,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 				// TODO MAUI
 				string clipDescription = String.Empty;//AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
+				ClipData data = null;
 				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
 
-				if (!args.Handled)
+				if (args.PlatformArgs.ClipData is null)
 				{
 					if (args.Data.Image != null)
 					{
@@ -300,34 +301,36 @@ namespace Microsoft.Maui.Controls.Platform
 							mimeTypes.Add(ClipDescription.MimetypeTextPlain);
 						}
 					}
+
+					var dataPackage = args.Data;
+					ClipData.Item userItem = null;
+					if (dataPackage.Image != null)
+						userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
+
+					if (dataPackage.Text != null)
+						userItem = new ClipData.Item(dataPackage.Text);
+
+					if (item == null)
+					{
+						item = userItem;
+						userItem = null;
+					}
+
+					data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
+
+					if (userItem != null)
+						data.AddItem(userItem);
 				}
 
-				var dataPackage = args.Data;
-				ClipData.Item userItem = null;
-				if (dataPackage.Image != null)
-					userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
-
-				if (dataPackage.Text != null)
-					userItem = new ClipData.Item(dataPackage.Text);
-
-				if (item == null)
+				else
 				{
-					item = userItem;
-					userItem = null;
+					data = args.PlatformArgs.ClipData;
 				}
 
-				ClipData data = args.PlatformArgs._clipData ?? new ClipData(clipDescription, mimeTypes.ToArray(), item);
-
-				if (userItem != null && args.PlatformArgs._clipData is null)
-					data.AddItem(userItem);
-
-				var dragShadowBuilder = args.PlatformArgs._dragShadowBuilder ?? new AView.DragShadowBuilder(v);
+				var dragShadowBuilder = args.PlatformArgs.DragShadowBuilder ?? new AView.DragShadowBuilder(v);
 
 				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = element;
-
-				if (args.PlatformArgs._dataPackage is not null)
-					customLocalStateData.DataPackage = args.PlatformArgs._dataPackage;
 
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);

@@ -13,6 +13,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
+		[Obsolete("Use PlatformArgs to handle customization. On Windows, set the PlatformArgs.Handled property to true if changing DragStartingEventArgs.")]
 		public bool Handled { get; set; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Cancel']/Docs/*" />
 		public bool Cancel { get; set; }

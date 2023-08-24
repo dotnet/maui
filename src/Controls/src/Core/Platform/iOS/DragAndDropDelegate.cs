@@ -93,8 +93,8 @@ namespace Microsoft.Maui.Controls.Platform
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
 			if (HandleDragOver((View)_viewHandler.VirtualView, package, platformArgs))
 			{
-				if (platformArgs._dropProposal is not null)
-					return platformArgs._dropProposal;
+				if (platformArgs.DropProposal is not null)
+					return platformArgs.DropProposal;
 
 				operation = UIDropOperation.Copy;
 			}
@@ -148,58 +148,71 @@ namespace Microsoft.Maui.Controls.Platform
 				if (args.Cancel)
 					return;
 
-				if (!args.Handled)
+				if (args.PlatformArgs.DragItems is UIDragItem[] dragItems)
 				{
-					UIImage uIImage = null;
-					string clipDescription = String.Empty;
-					NSItemProvider itemProvider = null;
+					foreach (var item in dragItems)
+						SetLocalObject(item, handler, args.Data);
 
-					if (handler.PlatformView is UIImageView iv)
-						uIImage = iv.Image;
+					returnValue = dragItems;
+					return;
+				}
 
-					if (handler.PlatformView is UIButton b && b.ImageView != null)
-						uIImage = b.ImageView.Image;
+				UIImage uIImage = null;
+				string clipDescription = String.Empty;
+				NSItemProvider itemProvider = null;
 
+				if (handler.PlatformView is UIImageView iv)
+					uIImage = iv.Image;
+
+				if (handler.PlatformView is UIButton b && b.ImageView != null)
+					uIImage = b.ImageView.Image;
+
+				if (uIImage != null)
+				{
 					if (uIImage != null)
-					{
-						if (uIImage != null)
-							itemProvider = new NSItemProvider(uIImage);
-						else
-							itemProvider = new NSItemProvider(new NSString(""));
+						itemProvider = new NSItemProvider(uIImage);
+					else
+						itemProvider = new NSItemProvider(new NSString(""));
 
-						if (args.Data.Image == null && handler.VirtualView is IImageElement imageElement)
-							args.Data.Image = imageElement.Source;
+					if (args.Data.Image == null && handler.VirtualView is IImageElement imageElement)
+						args.Data.Image = imageElement.Source;
+				}
+				else
+				{
+					string text = args.Data.Text ?? clipDescription;
+
+					if (String.IsNullOrWhiteSpace(text))
+					{
+						itemProvider = new NSItemProvider(handler.PlatformView.ConvertToImage());
 					}
 					else
 					{
-						string text = args.Data.Text ?? clipDescription;
-
-						if (String.IsNullOrWhiteSpace(text))
-						{
-							itemProvider = new NSItemProvider(handler.PlatformView.ConvertToImage());
-						}
-						else
-						{
-							itemProvider = new NSItemProvider(new NSString(text));
-						}
+						itemProvider = new NSItemProvider(new NSString(text));
 					}
-
-					var dragItem = new UIDragItem(args.PlatformArgs._itemProvider ?? itemProvider);
-					dragItem.LocalObject = new CustomLocalStateData()
-					{
-						Handler = handler,
-						View = handler.VirtualView as View,
-						DataPackage = args.PlatformArgs._dataPackage ?? args.Data
-					};
-					if (args.PlatformArgs._previewProvider is not null)
-						dragItem.PreviewProvider = args.PlatformArgs._previewProvider;
-
-					returnValue = new UIDragItem[] { dragItem };
 				}
+
+				var dragItem = new UIDragItem(args.PlatformArgs.ItemProvider ?? itemProvider);
+
+				SetLocalObject(dragItem, handler, args.Data);
+
+				if (args.PlatformArgs.PreviewProvider is not null)
+					dragItem.PreviewProvider = args.PlatformArgs.PreviewProvider;
+
+				returnValue = new UIDragItem[] { dragItem };
 			},
 			element);
 
 			return returnValue ?? new UIDragItem[0];
+		}
+
+		void SetLocalObject (UIDragItem dragItem, IPlatformViewHandler handler, DataPackage data)
+		{
+			dragItem.LocalObject = new CustomLocalStateData()
+			{
+				Handler = handler,
+				View = handler.VirtualView as View,
+				DataPackage = data
+			};
 		}
 
 		void HandleDropCompleted(View element, PlatformDropCompletedEventArgs platformArgs)

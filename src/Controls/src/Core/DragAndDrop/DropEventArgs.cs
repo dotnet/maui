@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DropEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public DataPackageView Data { get; }
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DropEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
 		public bool Handled { get; set; }
 

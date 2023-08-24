@@ -23,7 +23,7 @@ public class PlatformDragEventArgs
 	/// </summary>
 	public UIKit.IUIDropSession DropSession { get; }
 
-	internal UIKit.UIDropProposal? _dropProposal;
+	internal UIKit.UIDropProposal? DropProposal { get; private set; }
 
 	internal PlatformDragEventArgs(UIKit.UIView? sender, UIKit.UIDropInteraction dropInteraction,
 		UIKit.IUIDropSession dropSession)
@@ -43,7 +43,7 @@ public class PlatformDragEventArgs
 	/// </remarks>
 	public void SetDropProposal(UIKit.UIDropProposal dropProposal)
 	{
-		_dropProposal = dropProposal;
+		DropProposal = dropProposal;
 	}
 
 #elif ANDROID

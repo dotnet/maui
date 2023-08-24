@@ -98,12 +98,9 @@ namespace Microsoft.Maui.Controls
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);
 
-			if (!args.Handled)
-			{
-				args.Data.PropertiesInternal.Add("DragSource", element);
-			}
+			args.Data.PropertiesInternal.Add("DragSource", element);
 
-			if (args.Cancel || args.Handled)
+			if (args.Cancel)
 				return args;
 
 			_isDragActive = true;

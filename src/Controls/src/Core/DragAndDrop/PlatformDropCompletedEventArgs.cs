@@ -13,8 +13,6 @@ public class PlatformDropCompletedEventArgs
 	/// </summary>
 	public UIKit.UIView? Sender { get; }
 
-	// If coming from SessionWillEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
-
 	/// <summary>
 	/// Gets the interaction used for dragging items.
 	/// </summary>

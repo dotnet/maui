@@ -24,9 +24,9 @@ public class PlatformDragStartingEventArgs
 	/// </summary>
 	public UIKit.IUIDragSession DragSession { get; }
 
-	internal Foundation.NSItemProvider? _itemProvider;
-	internal Func<UIKit.UIDragPreview?>? _previewProvider;
-	internal DataPackage? _dataPackage;
+	internal Foundation.NSItemProvider? ItemProvider { get; private set; }
+	internal Func<UIKit.UIDragPreview?>? PreviewProvider { get; private set; }
+	internal UIKit.UIDragItem[]? DragItems { get; private set; }
 
 	internal PlatformDragStartingEventArgs(UIKit.UIView? sender, UIKit.UIDragInteraction dragInteraction,
 		UIKit.IUIDragSession dragSession)
@@ -42,7 +42,7 @@ public class PlatformDragStartingEventArgs
 	/// <param name="itemProvider">The custom item provider to use.</param>
 	public void SetItemProvider (Foundation.NSItemProvider itemProvider)
 	{
-		_itemProvider = itemProvider;
+		ItemProvider = itemProvider;
 	}
 
 	/// <summary>
@@ -51,16 +51,16 @@ public class PlatformDragStartingEventArgs
 	/// <param name="previewProvider">The custom preview provider to use.</param>
 	public void SetPreviewProvider(Func<UIKit.UIDragPreview?> previewProvider)
 	{
-		_previewProvider = previewProvider;
+		PreviewProvider = previewProvider;
 	}
 
 	/// <summary>
-	/// Sets the data package when dragging begins.
+	/// Sets the drag items when dragging begins.
 	/// </summary>
-	/// <param name="dataPackage">The custom data package to use.</param>
-	public void SetDataPackage(DataPackage dataPackage)
+	/// <param name="dragItems">The custom drag items to use.</param>
+	public void SetUIDragItems(UIKit.UIDragItem[] dragItems)
 	{
-		_dataPackage = dataPackage;
+		DragItems = dragItems;
 	}
 
 #elif ANDROID
@@ -74,23 +74,13 @@ public class PlatformDragStartingEventArgs
 	/// </summary>
 	public Android.Views.MotionEvent MotionEvent { get; }
 
-	internal DataPackage? _dataPackage;
-	internal Android.Views.View.DragShadowBuilder? _dragShadowBuilder;
-	internal Android.Content.ClipData? _clipData;
+	internal Android.Views.View.DragShadowBuilder? DragShadowBuilder { get; private set; }
+	internal Android.Content.ClipData? ClipData { get; private set; }
 
 	internal PlatformDragStartingEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
 	{
 		Sender = sender;
 		MotionEvent = motionEvent;
-	}
-
-	/// <summary>
-	/// Sets the data package when dragging begins.
-	/// </summary>
-	/// <param name="dataPackage">The custom data package to use.</param>
-	public void SetDataPackage(DataPackage dataPackage)
-	{
-		_dataPackage = dataPackage;
 	}
 
 	/// <summary>
@@ -121,6 +111,14 @@ public class PlatformDragStartingEventArgs
 	/// Gets data for the DragStarting event.
 	/// </summary>
 	public Microsoft.UI.Xaml.DragStartingEventArgs DragStartingEventArgs { get; }
+
+	/// <summary>
+	/// Gets or sets a value that indicates whether the DragStartingEventArgs are changed.
+	/// </summary>
+	/// <remarks>
+	/// Set this property's value to true when changing the DragStartingEventArgs so the system does not override the changes.
+	/// </remarks>
+	public bool Handled { get; set; }
 
 	internal PlatformDragStartingEventArgs(Microsoft.UI.Xaml.UIElement sender,
 		Microsoft.UI.Xaml.DragStartingEventArgs dragStartingEventArgs)

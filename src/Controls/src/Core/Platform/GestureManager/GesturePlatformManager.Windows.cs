@@ -157,7 +157,7 @@ namespace Microsoft.Maui.Controls.Platform
 				// e.AcceptedOperation = Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				// Even if AcceptedOperation is already set to Copy it will cause the copy animation
 				// to remain even after the the dragged element has left
-				if (operationPriorToSend != dragEventArgs.AcceptedOperation)
+				if (!dragEventArgs.PlatformArgs.Handled && operationPriorToSend != dragEventArgs.AcceptedOperation)
 				{
 					var result = (int)dragEventArgs.AcceptedOperation;
 					e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
@@ -180,8 +180,11 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				rec.SendDragOver(dragEventArgs);
-				var result = (int)dragEventArgs.AcceptedOperation;
-				e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				if (!dragEventArgs.PlatformArgs.Handled)
+				{
+					var result = (int)dragEventArgs.AcceptedOperation;
+					e.AcceptedOperation = (global::Windows.ApplicationModel.DataTransfer.DataPackageOperation)result;
+				}
 			});
 		}
 
@@ -232,10 +235,10 @@ namespace Microsoft.Maui.Controls.Platform
 				}
 
 				var handler = sender as IViewHandler;
-				var args = rec.SendDragStarting(handler?.VirtualView as IView);
+				var args = rec.SendDragStarting(handler?.VirtualView as IView, new PlatformDragStartingEventArgs(sender, e));
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
-				if (!args.Handled && handler != null)
+				if (!args.platformArgs.Handled && handler != null)
 				{
 					if (handler.PlatformView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
