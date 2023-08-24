@@ -1,10 +1,8 @@
 {
   "profiles": {
-    "MauiApp._1 (Package)": {
-      "commandName": "MsixPackage"
-    },
-    "MauiApp._1 (Unpackaged)": {
-      "commandName": "Project"
+    "Windows Machine": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
     }
   }
 }

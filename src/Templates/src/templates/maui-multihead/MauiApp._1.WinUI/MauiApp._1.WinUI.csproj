@@ -16,11 +16,6 @@
 		<EnableDefaultMauiItems>false</EnableDefaultMauiItems>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<!-- Uncomment the line below to run the "MauiApp._1 (Unpackaged)" launch profile -->
-		<!-- <WindowsPackageType>None</WindowsPackageType> -->
-	</PropertyGroup>
-
 	<ItemGroup>
 		<!-- Make sure all image assets to be in the root of the package to match the other platforms -->
 		<Content Update="Assets\Images\*" TargetPath="%(Filename)%(Extension)" />
