@@ -37,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 			return editText.SelectionStart;
 		}
 
+		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
 		[Fact(DisplayName = "Horizontal text aligned when RTL is not supported")]
 		public async Task HorizontalTextAlignedWhenRtlIsFalse()
 		{
@@ -53,6 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.CenterHorizontal), "Search bar editor should have the CenterHorizontal flag.");
 		}
 
+		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
 		[Fact(DisplayName = "Vertical text aligned when RTL is not supported")]
 		public async Task VerticalTextAlignedWhenRtlIsFalse()
 		{
