@@ -13,11 +13,52 @@
                         <Ellipse />
                     </Setter.Value>
                 </Setter>
-                <Setter Property="WidthRequest" Value="100" />
-                <Setter Property="HeightRequest" Value="100" />
+                <Setter Property="WidthRequest" Value="101" />
+                <Setter Property="HeightRequest" Value="101" />
                 <Setter Property="BackgroundColor" Value="LightBlue" />
-                <Setter Property="StrokeThickness" Value="2" />
-                <Setter Property="Stroke" Value="DarkBlue" />
+                <Setter Property="StrokeThickness" Value="8" />
+                <Setter Property="Stroke" Value="LightGreen" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="BorderStyle2"
+               TargetType="Border">
+            <Style.Setters>
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <RoundRectangle />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="WidthRequest"
+                        Value="101" />
+                <Setter Property="HeightRequest"
+                        Value="101" />
+                <Setter Property="BackgroundColor"
+                        Value="LightBlue" />
+                <Setter Property="StrokeThickness"
+                        Value="8" />
+                <Setter Property="Stroke"
+                        Value="LightGreen" />
+            </Style.Setters>
+        </Style>
+
+        <Style x:Key="BorderStyle3"
+               TargetType="Border">
+            <Style.Setters>
+                <Setter Property="StrokeShape">
+                    <Setter.Value>
+                        <Polygon Points="40,10 70,80 10,50" StrokeThickness="3" />
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="WidthRequest"
+                        Value="101" />
+                <Setter Property="HeightRequest"
+                        Value="101" />
+                <Setter Property="BackgroundColor"
+                        Value="LightBlue" />
+               
+                <Setter Property="Stroke"
+                        Value="LightGreen" />
             </Style.Setters>
         </Style>
 
@@ -32,6 +73,8 @@
             </Style.Setters>
         </Style>
 
+        <!-- TODO create a version of this with a jagged shape (like a star) -->
+        
     </ContentPage.Resources>
     <VerticalStackLayout
         Spacing="10"
@@ -45,6 +88,23 @@
                 Text="{Binding Text, Source={x:Reference TextEntry}}"
                 TextColor="#0088ee"/>
         </Border>
+
+        <Border x:Name="BorderView2"
+                Style="{StaticResource BorderStyle2}">
+            <Label Style="{StaticResource ButtonIconStyle}"
+                   FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                   Text="{Binding Text, Source={x:Reference TextEntry}}"
+                   TextColor="#0088ee" />
+        </Border>
+
+        <Border x:Name="BorderView3"
+                Style="{StaticResource BorderStyle3}">
+            <Label Style="{StaticResource ButtonIconStyle}"
+                   FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                   Text="{Binding Text, Source={x:Reference TextEntry}}"
+                   TextColor="#0088ee" />
+        </Border>
+
         <Label
             Text="Content Text"
             Style="{StaticResource Headline}"/>

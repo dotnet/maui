@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Formats.Asn1;
 using System.Linq;
+using CoreAnimation;
+using Microsoft.Maui.Graphics;
 using PlatformView = UIKit.UIView;
 
 namespace Microsoft.Maui.Handlers
@@ -36,7 +39,7 @@ namespace Microsoft.Maui.Handlers
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			PlatformView.View = view;
+			PlatformView.View = VirtualView;
 			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 
@@ -47,22 +50,26 @@ namespace Microsoft.Maui.Handlers
 			_ = handler.MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 
 			// Cleanup the old view when reused
-			var oldChildren = handler.PlatformView.Subviews.ToList();
-			oldChildren.ForEach(x => x.RemoveFromSuperview());
+			var platformView = handler.PlatformView;
+			platformView.ClearSubviews();
 
-			if (handler.VirtualView.PresentedContent is IView view && handler is BorderHandler borderHandler)
+			if (handler.VirtualView.PresentedContent is IView content)
 			{
-				var child = view.ToPlatform(handler.MauiContext);
-
-				var container = new LayoutView
-				{
-					CrossPlatformLayout = handler.VirtualView
-				};
-				container.AddSubview(child);
-				handler.PlatformView.AddSubview(container);
-
-				handler.PlatformView.ChildMaskLayer = null;
+				var platformContent = content.ToPlatform(handler.MauiContext);
+				platformContent.Tag = ContentView.ContentTag;
+				platformView.AddSubview(platformContent);
 			}
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			// Disable the animation during arrange for the Border; otherwise, all resizing actions
+			// will animate, and it makes the Border lag behind its content.
+			
+			CATransaction.Begin();
+			CATransaction.AnimationDuration = 0;
+			base.PlatformArrange(rect);
+			CATransaction.Commit();
 		}
 	}
 }

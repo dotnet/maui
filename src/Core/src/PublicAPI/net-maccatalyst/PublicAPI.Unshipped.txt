@@ -41,6 +41,7 @@ Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
 Microsoft.Maui.Platform.KeyboardAutoManagerScroll
 Microsoft.Maui.SoftInputExtensions
+override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 override Microsoft.Maui.Handlers.ContentViewHandler.DisconnectHandler(Microsoft.Maui.Platform.ContentView! platformView) -> void
 override Microsoft.Maui.Handlers.ScrollViewHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Handlers.SwipeItemButton.Frame.get -> CoreGraphics.CGRect
@@ -50,6 +51,7 @@ override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKi
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.ContentView.WillRemoveSubview(UIKit.UIView! uiview) -> void
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.get -> CoreGraphics.CGRect
 override Microsoft.Maui.Platform.MauiRefreshView.Bounds.set -> void
 override Microsoft.Maui.Platform.MauiScrollView.ScrollRectToVisible(CoreGraphics.CGRect rect, bool animated) -> void

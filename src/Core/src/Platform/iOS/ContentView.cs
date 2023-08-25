@@ -3,13 +3,18 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
 	public class ContentView : MauiView
 	{
 		WeakReference<IBorderStroke>? _clip;
-		CAShapeLayer? _childMaskLayer;
+		CAShapeLayer? _contentMask;
+
+		// When the BorderHandler sets the content UIView, it tags it with this so we can 
+		// verify we're using the correct subview for masking (and any other purposes)
+		internal const nint ContentTag = 0x63D2A0;
 
 		public ContentView()
 		{
@@ -21,112 +26,114 @@ namespace Microsoft.Maui.Platform
 		{
 			base.LayoutSubviews();
 
-			if (Clip is not null)
-			{
-				var bounds = AdjustForSafeArea(Bounds).ToRectangle();
-
-				if (Subviews.Length != 0)
-				{
-					if (Subviews[0] is LayoutView content && content.Frame != bounds)
-						content.Frame = bounds;
-				}
-
-				if (ChildMaskLayer is not null && ChildMaskLayer.Frame != bounds)
-					ChildMaskLayer.Frame = bounds;
-			}
-
-			SetClip();
+			UpdateClip();
 			this.UpdateMauiCALayer();
 		}
 
 		internal IBorderStroke? Clip
 		{
-			get
-			{
-				if (_clip?.TryGetTarget(out IBorderStroke? target) == true)
-					return target;
-
-				return null;
-			}
+			get => _clip is not null && _clip.TryGetTarget(out var clip) ? clip : null;
 			set
 			{
-				_clip = null;
+				_clip = value is null ? null : new(value);
 
-				if (value != null)
-					_clip = new WeakReference<IBorderStroke>(value);
-
-				SetClip();
+				if (value is not null)
+				{
+					UpdateClip();
+				}
 			}
 		}
 
-		internal CAShapeLayer? ChildMaskLayer
-		{
-			get => _childMaskLayer;
-			set
-			{
-				var layer = GetChildLayer();
+		UIView? PlatformContent 
+		{ 
+			get 
+			{ 
+				// It's a fair bet that Subviews[0] will always be the content for the ContentView
+				// But just in case, we're going to iterate over the views and check the tag
+				foreach (var subview in Subviews) 
+				{
+					if (subview.Tag == ContentTag)
+					{
+						return subview;
+					}
+				}
 
-				if (layer != null && _childMaskLayer != null)
-					layer.Mask = null;
-
-				_childMaskLayer = value;
-
-				if (layer != null)
-					layer.Mask = value;
-			}
-		}
-
-		CALayer? GetChildLayer()
-		{
-			if (Subviews.Length == 0)
 				return null;
-
-			var child = Subviews[0];
-
-			if (child.Layer is null)
-				return null;
-
-			return child.Layer;
+			}
 		}
 
-		void SetClip()
+		void RemoveContentMask()
 		{
-			if (Clip is null || Subviews.Length == 0 || Frame == CGRect.Empty)
-				return;
+			_contentMask?.RemoveFromSuperLayer();
+			_contentMask = null;
+		}
 
-			var maskLayer = ChildMaskLayer;
+		void UpdateClip()
+		{
+			var content = PlatformContent;
 
-			if (maskLayer is null && Clip is null)
-				return;
-
-			maskLayer ??= ChildMaskLayer = new CAShapeLayer();
-
-			var frame = Frame;
-
-			if (frame == CGRect.Empty)
-				return;
-
-			var strokeThickness = (float)(Clip?.StrokeThickness ?? 0);
-
-			// In the MauiCALayer class, the Stroke is inner and we are clipping the outer, for that reason,
-			// we use the double to get the correct value. Here, again, we use the double to get the correct clip shape size values.
-			var strokeWidth = 2 * strokeThickness;
-
-			var bounds = new RectF(strokeWidth / 2, strokeWidth / 2, (float)frame.Width - strokeWidth, (float)frame.Height - strokeWidth);
-
-			var platformClipPath = GetClipPath(bounds, strokeThickness);
-
-			if (!RequireClip(platformClipPath))
+			if (Clip is null || Bounds == CGRect.Empty || content == null || content.Frame == CGRect.Empty)
 			{
-				ResetClip();
+				RemoveContentMask();
 				return;
 			}
 
-			maskLayer.Path = platformClipPath;
-		}
+			_contentMask ??= new CAShapeLayer();
 
-		void ResetClip()
-			=> ChildMaskLayer = null;
+			var bounds = Bounds;
+
+			var strokeThickness = (float)Clip.StrokeThickness;
+
+			// We need to inset the content clipping by the width of the stroke on both sides
+			// (top and bottom, left and right), so we remove it twice from the total width/height 
+			var strokeInset = 2 * strokeThickness;
+			var clipWidth = (float)bounds.Width - strokeInset;
+			var clipHeight = (float)bounds.Height - strokeInset;
+
+			var clipBounds = new RectF(0, 0, clipWidth, clipHeight);
+
+			// See if we need to adjust the clipping path for new bounds
+			if (_contentMask.Bounds != clipBounds)
+			{
+				_contentMask.Path = GetClipPath(clipBounds, strokeThickness);
+			}
+
+			// Set the mask on the content, if it isn't already
+			if (content.Layer.Mask != _contentMask)
+			{
+				content.Layer.Mask = _contentMask;
+			}
+
+			// Since the mask is on the content's CALayer, it's anchored to the content. But we need it to be
+			// relative to _this_ container. So we need to compute an adjusted position for it.
+
+			var contentFrame = content.Frame;
+			var contentOffsetX = contentFrame.X;
+			var contentOffsetY = contentFrame.Y;
+
+			var clipBoundsCenter = clipBounds.Center;
+			var clipCenterX = clipBoundsCenter.X + (strokeThickness);
+			var clipCenterY = clipBoundsCenter.Y + (strokeThickness);
+
+			CGPoint adjustedMaskPosition = new(clipCenterX - contentOffsetX, clipCenterY - contentOffsetY);
+
+			if (_contentMask.Position == adjustedMaskPosition && _contentMask.Bounds == clipBounds)
+			{
+				// Right size, right place, nothing left to do
+				return;
+			}
+
+			// Relocating/resizing a layer is animated by default; the mask will slide around as we do things like
+			// resize the content that's being masked. To prevent his, we need to set the animation duration 
+			// to zero during the operation. We'll do that in its own transaction so as not to change the default
+			// animation durations for everything else.
+
+			CATransaction.Begin();
+			CATransaction.AnimationDuration = 0;
+			_contentMask.Bounds = clipBounds;
+			_contentMask.Position = adjustedMaskPosition;
+			CATransaction.Commit();
+		}
 
 		CGPath? GetClipPath(RectF bounds, float strokeThickness)
 		{
@@ -138,28 +145,18 @@ namespace Microsoft.Maui.Platform
 			else
 				path = clipShape?.PathForBounds(bounds);
 
-			var platformClipPath = path?.AsCGPath();
-
-			return platformClipPath;
+			return path?.AsCGPath();
 		}
 
-		bool RequireClip(CGPath? platformClipPath)
+		public override void WillRemoveSubview(UIView uiview)
 		{
-			if (Clip is null || Subviews.Length == 0 || platformClipPath is null)
-				return false;
-
-			var child = Subviews[0];
-			var childBounds = child.Bounds;
-
-			if (Frame == CGRect.Empty || childBounds == CGRect.Empty)
-				return false;
-
-			var clipPathBoundingBox = platformClipPath.BoundingBox;
-
-			if (childBounds.Height >= clipPathBoundingBox.Height || childBounds.Width >= clipPathBoundingBox.Width)
-				return true;
-
-			return false;
+			// Make sure we're not holding a mask for content we no longer own
+			if (uiview == PlatformContent)
+			{
+				RemoveContentMask();
+			}
+			
+			base.WillRemoveSubview(uiview);
 		}
 	}
 }
