@@ -11,7 +11,7 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiWKWebView : WKWebView, IWebViewDelegate
+	public class MauiWKWebView : WKWebView, IWebViewDelegate, IUIViewLifeCycleEvents
 	{
 		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Used to persist cookies across WebView instances. Not a leak.")]
 		static WKProcessPool? SharedPool;
@@ -72,6 +72,8 @@ namespace Microsoft.Maui.Platform
 						await handler.FirstLoadUrlAsync(closure);
 				});
 			}
+
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
 		[Export("webView:didFinishNavigation:")]
@@ -196,6 +198,14 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return false;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
 		}
 	}
 }
