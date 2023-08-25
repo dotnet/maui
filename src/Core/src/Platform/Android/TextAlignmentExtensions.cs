@@ -5,13 +5,15 @@ namespace Microsoft.Maui.Platform
 {
 	public static class TextAlignmentExtensions
 	{
+		// These mask are used to ignore the previous vertical alignment settings
+		const AGravityFlags HorizontalGravityMask = AGravityFlags.CenterHorizontal | AGravityFlags.End | AGravityFlags.Start;
+		const AGravityFlags VerticalGravityMask = AGravityFlags.Top | AGravityFlags.Bottom | AGravityFlags.CenterVertical;
+
 		internal static void UpdateHorizontalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
 			if (!Rtl.IsSupported)
 			{
-				// The mask is used to ignore the previous horizontal alignment settings
-				var horizontalGravityMask = AGravityFlags.CenterHorizontal | AGravityFlags.End | AGravityFlags.Start;
-				view.Gravity = (view.Gravity & ~horizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
+				view.Gravity = (view.Gravity & ~HorizontalGravityMask) | alignment.ToHorizontalGravityFlags() | orMask;
 			}
 			else
 				view.TextAlignment = alignment.ToTextAlignment();
@@ -19,16 +21,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVerticalAlignment(this EditText view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
-			// The mask is used to ignore the previous vertical alignment settings
-			var verticalGravityMask = AGravityFlags.Top | AGravityFlags.Bottom | AGravityFlags.CenterVertical;
-			view.Gravity = (view.Gravity & ~verticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
+			view.Gravity = (view.Gravity & ~VerticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
 		}
 
 		public static void UpdateVerticalAlignment(this TextView view, TextAlignment alignment, AGravityFlags orMask = AGravityFlags.NoGravity)
 		{
-			// The mask is used to ignore the previous vertical alignment settings
-			var verticalGravityMask = AGravityFlags.Top | AGravityFlags.Bottom | AGravityFlags.CenterVertical;
-			view.Gravity = (view.Gravity & ~verticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
+			view.Gravity = (view.Gravity & ~VerticalGravityMask) | alignment.ToVerticalGravityFlags() | orMask;
 		}
 
 		public static void UpdateTextAlignment(this EditText view, TextAlignment horizontal, TextAlignment vertical)
