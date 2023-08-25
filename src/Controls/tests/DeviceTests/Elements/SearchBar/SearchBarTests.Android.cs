@@ -1,11 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using Android.Views;
 using Android.Widget;
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
-using Xunit;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests

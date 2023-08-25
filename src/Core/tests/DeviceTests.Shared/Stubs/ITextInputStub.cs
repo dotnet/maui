@@ -10,6 +10,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	{
 		public event EventHandler<(string OldValue, string NewValue)> TextChanged;
 
+		// The use of 'new' here was necessary to write generic tests that look at TextAlignment without implementing a TextInput stub
 		new TextAlignment HorizontalTextAlignment { get; set; }
 		
 		new TextAlignment VerticalTextAlignment { get; set; }
