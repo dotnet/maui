@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshing
 		{
 			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
 		}
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
