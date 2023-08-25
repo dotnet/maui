@@ -23,6 +23,8 @@ namespace Microsoft.Maui.Handlers
 #endif
 			[nameof(IImage.Height)] = MapHeight,
 			[nameof(IImage.Width)] = MapWidth,
+			[nameof(IImage.MaximumHeight)] = MapMaximumHeight,
+			[nameof(IImage.MaximumWidth)] = MapMaximumWidth,
 			[nameof(IImage.Aspect)] = MapAspect,
 			[nameof(IImage.IsAnimationPlaying)] = MapIsAnimationPlaying,
 			[nameof(IImage.Source)] = MapSource,

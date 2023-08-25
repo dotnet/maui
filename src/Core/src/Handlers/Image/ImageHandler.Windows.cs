@@ -35,6 +35,8 @@ namespace Microsoft.Maui.Handlers
 
 			MapHeight(this, VirtualView);
 			MapWidth(this, VirtualView);
+			MapMaximumHeight(this, VirtualView);
+			MapMaximumWidth(this, VirtualView);
 		}
 
 		/// <inheritdoc/>
@@ -44,6 +46,8 @@ namespace Microsoft.Maui.Handlers
 
 			MapHeight(this, VirtualView);
 			MapWidth(this, VirtualView);
+			MapMaximumHeight(this, VirtualView);
+			MapMaximumWidth(this, VirtualView);
 		}
 
 		/// <summary>
@@ -71,6 +75,32 @@ namespace Microsoft.Maui.Handlers
 			if (handler.ContainerView is FrameworkElement element)
 			{
 				element.Width = view.Width;
+			}
+		}
+
+		/// <summary>
+		/// Maps the abstract <see cref="IView.MaximumHeight"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="view">The associated <see cref="Image"/> instance.</param>
+		public static void MapMaximumHeight(IImageHandler handler, IImage view)
+		{
+			if (handler.ContainerView is FrameworkElement element)
+			{
+				element.MaxHeight = view.MaximumHeight;
+			}
+		}
+
+		/// <summary>
+		/// Maps the abstract <see cref="IView.MaximumWidth"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="view">The associated <see cref="Image"/> instance.</param>
+		public static void MapMaximumWidth(IImageHandler handler, IImage view)
+		{
+			if (handler.ContainerView is FrameworkElement element)
+			{
+				element.MaxWidth = view.MaximumWidth;
 			}
 		}
 
