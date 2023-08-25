@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Windowing;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -120,6 +121,46 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(appTitleBarHeight > 0);
 				Assert.True(Math.Abs(position.Value.Y - appTitleBarHeight) < 1);
+			});
+		}
+
+		[Fact]
+		public async Task ToggleTitlebarWorks()
+		{
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage()
+			{
+				Title = "title",
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Text = "Item"
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				var mauiToolBar = GetPlatformToolbar(handler);
+				var presenter = handler.PlatformView.AppWindow.Presenter as OverlappedPresenter;
+				var rootView = GetWindowRootView(handler);
+				var defaultTitleBarHeight = rootView.AppTitleBarActualHeight;
+				var startScreenPos = mauiToolBar.GetLocationOnScreen().Value.Y;
+
+				Assert.True(defaultTitleBarHeight > 0);
+				Assert.True(startScreenPos == 32);
+
+				// Disable titlebar, maximize the window
+				presenter.SetBorderAndTitleBar(false, false);
+				presenter.Maximize();
+
+				// Wait for maximize animation to finish
+				await Task.Delay(500);
+
+				var screenPos = mauiToolBar.GetLocationOnScreen().Value.Y;
+				Assert.True(screenPos == 0);
 			});
 		}
 

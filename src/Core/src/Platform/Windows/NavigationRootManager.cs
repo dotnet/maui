@@ -53,11 +53,6 @@ namespace Microsoft.Maui.Platform
 					AppWindowTitleBar.IsCustomizationSupported() &&
 					isVisible
 				);
-
-			_platformWindow?
-				.GetWindow()?
-				.Handler?
-				.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 		}
 
 		void WindowRootViewOnWindowTitleBarContentSizeChanged(object? sender, EventArgs e)
