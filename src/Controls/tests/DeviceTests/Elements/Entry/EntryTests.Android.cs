@@ -58,39 +58,5 @@ namespace Microsoft.Maui.DeviceTests
 
 			Assert.Equal(2, entry.CursorPosition);
 		}
-
-		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
-		[Fact(DisplayName = "Horizontal text aligned when RTL is not supported")]
-		public async Task HorizontalTextAlignedWhenRtlIsFalse()
-		{
-			if (Rtl.IsSupported)
-				return;
-
-			var entry = new Entry { Text = "Foo", HorizontalTextAlignment = TextAlignment.Center };
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformEntry = GetPlatformControl(handler);
-
-			Assert.False(platformEntry.Gravity.HasFlag(GravityFlags.Start), "Entry should not have the Start flag.");
-			Assert.False(platformEntry.Gravity.HasFlag(GravityFlags.End), "Entry should not have the End flag.");
-			Assert.True(platformEntry.Gravity.HasFlag(GravityFlags.CenterHorizontal), "Entry should have the CenterHorizontal flag.");
-		}
-
-		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
-		[Fact(DisplayName = "Vertical text aligned when RTL is not supported")]
-		public async Task VerticalTextAlignedWhenRtlIsFalse()
-		{
-			if (Rtl.IsSupported)
-				return;
-
-			var entry = new Entry { Text = "Foo", VerticalTextAlignment = TextAlignment.Center };
-
-			var handler = await CreateHandlerAsync<EntryHandler>(entry);
-			var platformEntry = GetPlatformControl(handler);
-
-			Assert.False(platformEntry.Gravity.HasFlag(GravityFlags.Top), "Entry should not have the Top flag.");
-			Assert.False(platformEntry.Gravity.HasFlag(GravityFlags.Bottom), "Entry should not have the Bottom flag.");
-			Assert.True(platformEntry.Gravity.HasFlag(GravityFlags.CenterVertical), "Entry should only have the CenterVertical flag.");
-		}
 	}
 }

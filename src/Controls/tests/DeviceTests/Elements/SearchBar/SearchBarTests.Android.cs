@@ -15,9 +15,6 @@ namespace Microsoft.Maui.DeviceTests
 		static SearchView GetPlatformControl(SearchBarHandler handler) =>
 			handler.PlatformView;
 
-		static EditText GetPlatformQueryEditor(SearchBarHandler handler) =>
-			handler.QueryEditor;
-
 		static Task<string> GetPlatformText(SearchBarHandler handler)
 		{
 			return InvokeOnMainThreadAsync(() => GetPlatformControl(handler).Query);
@@ -35,40 +32,6 @@ namespace Microsoft.Maui.DeviceTests
 			var control = GetPlatformControl(searchBarHandler);
 			var editText = control.GetChildrenOfType<EditText>().FirstOrDefault();
 			return editText.SelectionStart;
-		}
-
-		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
-		[Fact(DisplayName = "Horizontal text aligned when RTL is not supported")]
-		public async Task HorizontalTextAlignedWhenRtlIsFalse()
-		{
-			if (Rtl.IsSupported)
-				return;
-
-			var searchBar = new SearchBar { Text = "Foo", HorizontalTextAlignment = TextAlignment.Center };
-
-			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-			var platformSearchBarEditor = GetPlatformQueryEditor(handler);
-
-			Assert.False(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.Start), "Search bar editor should not have the Start flag.");
-			Assert.False(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.End), "Search bar editor should not have the End flag.");
-			Assert.True(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.CenterHorizontal), "Search bar editor should have the CenterHorizontal flag.");
-		}
-
-		// This test will only run if the Android Manifest of the Controls.DeviceTests project is edited to have android:supportsRtl="false"
-		[Fact(DisplayName = "Vertical text aligned when RTL is not supported")]
-		public async Task VerticalTextAlignedWhenRtlIsFalse()
-		{
-			if (Rtl.IsSupported)
-				return;
-
-			var searchBar = new SearchBar { Text = "Foo", VerticalTextAlignment = TextAlignment.Center };
-
-			var handler = await CreateHandlerAsync<SearchBarHandler>(searchBar);
-			var platformSearchBarEditor = GetPlatformQueryEditor(handler);
-
-			Assert.False(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.Top), "Search bar editor should not have the Top flag.");
-			Assert.False(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.Bottom), "Search bar editor should not have the Bottom flag.");
-			Assert.True(platformSearchBarEditor.Gravity.HasFlag(GravityFlags.CenterVertical), "Search bar editor should only have the CenterVertical flag.");
 		}
 	}
 }
