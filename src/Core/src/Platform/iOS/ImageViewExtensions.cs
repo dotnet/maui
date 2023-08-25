@@ -53,5 +53,15 @@ namespace Microsoft.Maui.Platform
 
 			}, cancellationToken);
 		}
+
+		[Obsolete("Use UpdateSourceAsync(this UIImageView imageView, IImageSourcePart image, IMauiContext? mauiContext, CancellationToken cancellationToken = default) instead.", true)]
+		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
+			this UIImageView imageView,
+			IImageSourcePart image,
+			IImageSourceServiceProvider services,
+			CancellationToken cancellationToken = default)
+		{
+			return UpdateSourceAsync(imageView, image, mauiContext: null, cancellationToken);
+		}
 	}
 }
