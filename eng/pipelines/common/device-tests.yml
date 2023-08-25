@@ -146,7 +146,7 @@ stages:
           ${{ each project in parameters.projects }}:
             ${{ if ne(project.windows, '') }}:
               ${{ each version in parameters.windowsVersions }}:
-                ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}:
+                ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_${{ version }}:
                   PROJECT_PATH: ${{ project.windows }}
                   PACKAGE_ID: ${{ project.windowsPackageId }}
                   DEVICE: ${{ version }}
