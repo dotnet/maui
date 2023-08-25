@@ -66,9 +66,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 
 #if ANDROID
-		internal VisualElementRenderer(Android.Content.Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected VisualElementRenderer(Android.Content.Context context, IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #else
-		internal VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
+		protected VisualElementRenderer(IPropertyMapper mapper, CommandMapper? commandMapper = null)
 #endif
 
 #if ANDROID

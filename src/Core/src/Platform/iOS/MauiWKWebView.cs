@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWKWebView : WKWebView, IWebViewDelegate
 	{
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Used to persist cookies across WebView instances. Not a leak.")]
 		static WKProcessPool? SharedPool;
 
 		string? _pendingUrl;
