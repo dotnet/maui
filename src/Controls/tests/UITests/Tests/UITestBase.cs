@@ -159,11 +159,13 @@ namespace Microsoft.Maui.AppiumTests
 			var actualImage = new ImageSnapshot(screenshotPngBytes, ImageSnapshotFormat.PNG);
 
 			// For Android and iOS, crop off the OS status bar at the top since it's not part of the
-			// app itself and contains the time, which always changes
+			// app itself and contains the time, which always changes. For WinUI, crop off the title
+			// bar at the top as it varies slightly based on OS theme and is also not part of the app.
 			int cropFromTop = _testDevice switch
 			{
 				TestDevice.Android => 60,
 				TestDevice.iOS => 90,
+				TestDevice.Windows => 32,
 				_ => 0,
 			};
 

@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiScrollView : UIScrollView
+	public class MauiScrollView : UIScrollView, IUIViewLifeCycleEvents
 	{
 		public MauiScrollView()
 		{
@@ -16,6 +17,20 @@ namespace Microsoft.Maui.Platform
 		{
 			if (!KeyboardAutoManagerScroll.IsKeyboardAutoScrollHandling)
 				base.ScrollRectToVisible(rect, animated);
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

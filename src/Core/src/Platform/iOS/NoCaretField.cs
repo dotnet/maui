@@ -1,10 +1,12 @@
-﻿using ObjCRuntime;
+﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using ObjCRuntime;
 using UIKit;
 using RectangleF = CoreGraphics.CGRect;
 
 namespace Microsoft.Maui.Platform
 {
-	public class NoCaretField : UITextField
+	public class NoCaretField : UITextField, IUIViewLifeCycleEvents
 	{
 		public NoCaretField() : base(new RectangleF())
 		{
@@ -16,6 +18,20 @@ namespace Microsoft.Maui.Platform
 		public override RectangleF GetCaretRectForPosition(UITextPosition? position)
 		{
 			return RectangleF.Empty;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
