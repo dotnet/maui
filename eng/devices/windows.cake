@@ -1,16 +1,15 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
+#load "./devices-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
-string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "10.0.19041";
 const string dotnetVersion = "net7.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? "");
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
 // Not used for Windows. TODO Use this for packaged vs unpackaged?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
@@ -23,7 +22,7 @@ var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
 var DEVICETEST_APP = Argument("devicetestapp", EnvironmentVariable("WINDOWS_DEVICETEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? PROJECT);
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? (!string.IsNullOrEmpty(DEFAULT_APP_PROJECT) ? DEFAULT_APP_PROJECT : PROJECT));
 FilePath DEVICETEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_DEVICETEST_APP_PROJECT") ?? PROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("WINDOWS_TEST_RESULTS") ?? "");
 string CONFIGURATION = Argument("configuration", "Debug");
@@ -240,7 +239,13 @@ Task("SetupTestPaths")
 		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		TEST_APP = apps.First().FullPath;
+		if (apps.Any()) {
+			TEST_APP = apps.First().FullPath;
+		}
+		else {
+			Error("Error: Couldn't find .exe file");
+			throw new Exception("Error: Couldn't find .exe file");
+		}
 	}
 
 	if (string.IsNullOrEmpty(TEST_RESULTS))
