@@ -767,10 +767,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetFlyoutItemIsVisible(menuItem, false);
 			var menuShellItem = new MenuShellItem(menuItem);
 			shell.Items.Add(menuShellItem);
-			
+
 			Shell.SetFlyoutItemIsVisible(menuItem, true);
 			Assert.True(Shell.GetFlyoutItemIsVisible(menuShellItem), "If menuItem visibility changes, menuShellItem visibility should change as well");
-			
+
 			Shell.SetFlyoutItemIsVisible(menuShellItem, false);
 			Assert.False(Shell.GetFlyoutItemIsVisible(menuItem), "If menuShellItem visibility changes, menuItem visibility should change as well");
 		}

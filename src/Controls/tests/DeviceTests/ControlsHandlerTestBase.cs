@@ -196,7 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 
 							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
 							{
-								var batchTcs = new TaskCompletionSource(); 
+								var batchTcs = new TaskCompletionSource();
 								vc.BatchCommitted += OnBatchCommitted;
 								await batchTcs.Task.WaitAsync(timeOut.Value);
 								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)

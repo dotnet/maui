@@ -204,8 +204,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler.HasContainer)
 				((PlatformView?)handler.ContainerView)?.UpdateVisibility(view);
-			else
-				((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
+
+			((PlatformView?)handler.PlatformView)?.UpdateVisibility(view);
 		}
 
 		public static void MapBackground(IViewHandler handler, IView view)
@@ -234,7 +234,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapOpacity(IViewHandler handler, IView view)
 		{
 			if (handler.HasContainer)
+			{
 				((PlatformView?)handler.ContainerView)?.UpdateOpacity(view);
+				//We don't want the control opacity to be reduced by the container one, so we always set 100% to the control if it has a container
+				((PlatformView?)handler.PlatformView)?.UpdateOpacity(1);
+			}
 			else
 				((PlatformView?)handler.PlatformView)?.UpdateOpacity(view);
 		}
