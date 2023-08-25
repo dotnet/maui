@@ -276,10 +276,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateOpacity(this AView platformView, IView view)
-		{
-			platformView.Alpha = (float)view.Opacity;
-		}
+		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
+
+		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
