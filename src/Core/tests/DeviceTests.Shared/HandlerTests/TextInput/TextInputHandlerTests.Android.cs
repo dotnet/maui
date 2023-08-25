@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 		where TStub : IStubBase, ITextInputStub, new()
 	{
 		// This test will only run if the Android Manifest of the Core.DeviceTests project is edited to have android:supportsRtl="false"
-		[Fact(DisplayName = "TextInput horizontal text aligned when RTL is not supported")]
+		[Fact(DisplayName = "Horizontal text aligned when RTL is not supported")]
 		public void HorizontalTextAlignedWhenRtlIsFalse()
 		{
 			if (Rtl.IsSupported)
