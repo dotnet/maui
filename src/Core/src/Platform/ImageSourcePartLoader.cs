@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Platform
 	public partial class ImageSourcePartLoader
 	{
 		readonly IImageSourcePartSetter _setter;
-		readonly WeakReference<IImageSourcePartSetter> _handler;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
 
