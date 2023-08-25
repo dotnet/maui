@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="view">The data package associated with the drop.</param>
 		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
-		public DropEventArgs(DataPackageView view, Func<IElement?, Point?>? getPosition)
+		internal DropEventArgs(DataPackageView view, Func<IElement?, Point?>? getPosition)
 		{
 			_ = view ?? throw new ArgumentNullException(nameof(view));
 			Data = view;

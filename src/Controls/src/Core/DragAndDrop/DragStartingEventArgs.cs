@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
 		/// </summary>
 		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
-		public DragStartingEventArgs(Func<IElement?, Point?>? getPosition)
+		internal DragStartingEventArgs(Func<IElement?, Point?>? getPosition)
 		{
 			_getPosition = getPosition;
 		}
@@ -39,7 +39,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the data package that accompanies the drag source.
 		/// </summary>
-		public DataPackage Data { get; private init; } = new DataPackage();
+		public DataPackage Data { get; } = new DataPackage();
 
 		/// <summary>
 		/// Gets the location where dragging started relative to the specified element.

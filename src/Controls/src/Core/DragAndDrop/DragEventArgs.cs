@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="dataPackage">The data package associated with the drag source.</param>
 		/// <param name="getPosition">The current location in the coordinate system of the drag.</param>
-		public DragEventArgs(DataPackage dataPackage, Func<IElement?, Point?>? getPosition)
+		internal DragEventArgs(DataPackage dataPackage, Func<IElement?, Point?>? getPosition)
 		{
 			Data = dataPackage;
 			_getPosition = getPosition;
