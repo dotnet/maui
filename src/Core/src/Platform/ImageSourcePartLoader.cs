@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{
+#if IOS || ANDROID || WINDOWS || TIZEN
+		IImageSourceServiceProvider? _imageSourceServiceProvider;
+#endif
+
 		readonly IImageSourcePartSetter _setter;
 
 		internal ImageSourceServiceResultManager SourceManager { get; } = new ImageSourceServiceResultManager();
@@ -58,10 +62,18 @@ namespace Microsoft.Maui.Platform
 			if (imageSource?.Source is not null)
 			{
 #if IOS || ANDROID || WINDOWS || TIZEN
-				var result = await imageSource.UpdateSourceAsync(platformView, handler.MauiContext, Setter.SetImageSource, token)
+				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+#endif
+
+#if IOS ||  WINDOWS
+				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
+#elif ANDROID || TIZEN
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
+					.ConfigureAwait(false);
 #else
 				await Task.CompletedTask;
 #endif

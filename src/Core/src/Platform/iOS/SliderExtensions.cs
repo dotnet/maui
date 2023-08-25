@@ -47,14 +47,14 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
-			var mauiContext = slider.Handler?.MauiContext;
 
-			if (thumbImageSource != null && mauiContext != null)
+			uiSlider.GetDisplayDensity();
+
+			if (thumbImageSource != null)
 			{
-				var imageSourceService = provider.GetRequiredImageSourceService(thumbImageSource);
-
-				var scale = mauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1;
-				var result = await imageSourceService.GetImageAsync(thumbImageSource, (float)scale);
+				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var scale = uiSlider.GetDisplayDensity();
+				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);

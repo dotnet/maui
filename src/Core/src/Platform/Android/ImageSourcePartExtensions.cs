@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Android.Views;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task<IImageSourceServiceResult?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			View destinationContext,
-			IMauiContext? mauiContext,
+			IImageSourceServiceProvider services,
 			Action<Drawable?> setImage,
 			CancellationToken cancellationToken = default)
 		{
@@ -20,9 +19,6 @@ namespace Microsoft.Maui.Platform
 
 			var context = destinationContext.Context;
 			if (context == null)
-				return null;
-
-			if (mauiContext == null)
 				return null;
 
 			var destinationImageView = destinationContext as Android.Widget.ImageView;
@@ -41,8 +37,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var imageSourceServiceProvider = mauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var imageSourceService = imageSourceServiceProvider.GetRequiredImageSourceService(imageSource);
+				var service = services.GetRequiredImageSourceService(imageSource);
 
 				var applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 
@@ -52,11 +47,11 @@ namespace Microsoft.Maui.Platform
 				{
 					if (destinationImageView is not null)
 					{
-						result = await imageSourceService.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
+						result = await service.LoadDrawableAsync(imageSource, destinationImageView, cancellationToken);
 					}
 					else
 					{
-						result = await imageSourceService.GetDrawableAsync(imageSource, context, cancellationToken);
+						result = await service.GetDrawableAsync(imageSource, context, cancellationToken);
 						if (setImage is not null && result is IImageSourceServiceResult<Drawable> drawableResult)
 							setImage.Invoke(drawableResult.Value);
 					}

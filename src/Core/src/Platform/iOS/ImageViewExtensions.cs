@@ -43,25 +43,16 @@ namespace Microsoft.Maui.Platform
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this UIImageView imageView,
 			IImageSourcePart image,
-			IMauiContext? mauiContext,
-			CancellationToken cancellationToken = default)
-		{
-			imageView.Clear();
-			return image.UpdateSourceAsync(imageView, mauiContext, (uiImage) =>
-			{
-				imageView.Image = uiImage;
-
-			}, cancellationToken);
-		}
-
-		[Obsolete("Use UpdateSourceAsync(this UIImageView imageView, IImageSourcePart image, IMauiContext? mauiContext, CancellationToken cancellationToken = default) instead.", true)]
-		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
-			this UIImageView imageView,
-			IImageSourcePart image,
 			IImageSourceServiceProvider services,
 			CancellationToken cancellationToken = default)
 		{
-			return UpdateSourceAsync(imageView, image, mauiContext: null, cancellationToken);
+			float scale = imageView.Window?.GetDisplayDensity() ?? 1.0f;
+
+			imageView.Clear();
+			return image.UpdateSourceAsync(imageView, services, (uiImage) =>
+			{
+				imageView.Image = uiImage;
+			}, scale, cancellationToken);
 		}
 	}
 }

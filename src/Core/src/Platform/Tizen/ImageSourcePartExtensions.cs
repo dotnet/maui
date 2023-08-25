@@ -9,20 +9,12 @@ namespace Microsoft.Maui.Platform
 {
 	public static class ImageSourcePartExtensions
 	{
-		public static async Task<IImageSourceServiceResult<MauiImageSource>?> UpdateSourceAsync(
-			this IImageSourcePart image,
-			NView destinationContext,
-			IMauiContext? mauiContext,
-			Action<MauiImageSource?> setImage,
-			CancellationToken cancellationToken = default)
+		public static async Task<IImageSourceServiceResult<MauiImageSource>?> UpdateSourceAsync(this IImageSourcePart image, NView destinationContext, IImageSourceServiceProvider services, Action<MauiImageSource?> setImage, CancellationToken cancellationToken = default)
 		{
 			image.UpdateIsLoading(false);
 
 			var imageSource = image.Source;
 			if (imageSource == null)
-				return null;
-
-			if (mauiContext == null)
 				return null;
 
 			var events = image as IImageSourcePartEvents;
@@ -32,10 +24,8 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var imageSourceServiceProvider = mauiContext.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var imageSourceService = imageSourceServiceProvider.GetRequiredImageSourceService(imageSource);
-
-				var result = await imageSourceService.GetImageAsync(imageSource, cancellationToken);
+				var service = services.GetRequiredImageSourceService(imageSource);
+				var result = await service.GetImageAsync(imageSource, cancellationToken);
 				var tImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && tImage != null && imageSource == image.Source;
