@@ -117,6 +117,10 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
+#else
+		[Fact("Ensures the border renders the expected size - Issue 15339", 
+			Skip = "Current fails on platforms other than iOS; we're working on it.")]
+#endif
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
 			double borderThickness = 10;
@@ -139,6 +143,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(180, redBlob.Width, 2d);
 			Assert.Equal(80, redBlob.Height, 2d);
 		}
-#endif
 	}
 }
