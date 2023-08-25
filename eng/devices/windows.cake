@@ -11,7 +11,7 @@ const string dotnetVersion = "net7.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? "");
-// Not used for Windows. TODO Use this for packaged vs unpackaged?
+// Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
 var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_ID") ?? $"");
@@ -35,6 +35,7 @@ string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
+bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
@@ -75,6 +76,7 @@ void Cleanup()
 Task("Cleanup");
 
 Task("GenerateMsixCert")
+	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
 {
 	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key
@@ -156,9 +158,38 @@ Task("Build")
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
-	s.MSBuildSettings.Properties.Add("PackageCertificateThumbprint", new List<string> { certificateThumbprint });
-	s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
-	s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
+	
+	var launchSettingsNeedle = "Project";
+	var launchSettingsReplacement = "MsixPackage";
+
+	if (!isPackagedTestRun)
+	{
+		launchSettingsNeedle = "MsixPackage";
+		launchSettingsReplacement = "Project";
+	}
+
+	if (isPackagedTestRun)
+	{
+		// Apply correct build properties for packaged builds
+		s.MSBuildSettings.Properties.Add("PackageCertificateThumbprint", new List<string> { certificateThumbprint });
+		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
+		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
+	}
+	else
+	{
+		// Apply correct build properties for unpackaged builds
+		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+	}
+
+	// Set correct launchSettings.json setting for packaged/unpackaged
+	// Get launchSettings.json Path
+	var launchSettingsPath = PROJECT.GetDirectory();
+	launchSettingsPath = launchSettingsPath.Combine("Properties").Combine("launchSettings.json");
+
+	// Replace value in launchSettings.json
+	var launchSettingsContents = System.IO.File.ReadAllText(launchSettingsPath.FullPath);
+	launchSettingsContents = launchSettingsContents.Replace($"\"commandName\": \"{launchSettingsNeedle}\",", $"\"commandName\": \"{launchSettingsReplacement}\",");
+	System.IO.File.WriteAllText(launchSettingsPath.FullPath, launchSettingsContents);
 
 	DotNetPublish(PROJECT.FullPath, s);
 });
@@ -168,21 +199,13 @@ Task("Test")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
+	var waitForResultTimeoutInSeconds = 120;
+
 	CleanDirectories(TEST_RESULTS);
 
 	Information("Cleaned directories");
 
-	// Try to uninstall the app if it exists from before
-	uninstallPS();
-
-	Information("Uninstalled previously deployed app");
-	var projectDir = PROJECT.GetDirectory();
-	var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
-	var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
-
 	var testResultsFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
-
-	Information($"Found MSIX, installing: {msixPath}");
 	Information($"Test Results File: {testResultsFile}");
 
 	if (FileExists(testResultsFile))
@@ -190,22 +213,44 @@ Task("Test")
 		DeleteFile(testResultsFile);
 	}
 
-	// Install dependencies
-	var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
-	foreach (var dep in dependencies) {
-		Information("Installing Dependency MSIX: {0}", dep);
-		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+	if (isPackagedTestRun)
+	{
+		// Try to uninstall the app if it exists from before
+		uninstallPS();
+
+		Information("Uninstalled previously deployed app");
+
+		var projectDir = PROJECT.GetDirectory();
+		var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
+		var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
+
+		Information($"Found MSIX, installing: {msixPath}");
+
+		// Install dependencies
+		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
+		foreach (var dep in dependencies) {
+			Information("Installing Dependency MSIX: {0}", dep);
+			StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+		}
+
+		// Install the DeviceTests app
+		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+
+		var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
+
+		Information(startArgs);
+
+		// Start the DeviceTests app for packaged
+		StartProcess("powershell", startArgs);
 	}
+	else
+	{
+		// Unpackaged process blocks the thread, so we can wait shorter for the results
+		waitForResultTimeoutInSeconds = 30;
 
-	// Install the DeviceTests app
-	StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
-
-	var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
-
-	Information(startArgs);
-
-	// Start the DeviceTests app
-	StartProcess("powershell", startArgs);
+		// Start the DeviceTests app for unpackaged
+		StartProcess(TEST_APP, testResultsFile);
+	}
 
 	var waited = 0;
 	while (!FileExists(testResultsFile)) {
@@ -213,7 +258,7 @@ Task("Test")
 		waited++;
 
 		Information($"Waiting {waited} second(s) for tests to finish...");
-		if (waited >= 120)
+		if (waited >= waitForResultTimeoutInSeconds)
 			break;
 	}
 
