@@ -5781,18 +5781,6 @@ Microsoft.Maui.Controls.Platform.ViewToHandlerConverter.ViewToHandlerConverter()
 Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs
 Microsoft.Maui.Controls.Platform.VisualElementChangedEventArgs.VisualElementChangedEventArgs(Microsoft.Maui.Controls.VisualElement? oldElement, Microsoft.Maui.Controls.VisualElement? newElement) -> void
 Microsoft.Maui.Controls.Platform.VisualElementExtensions
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Container.get -> Microsoft.UI.Xaml.FrameworkElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Container.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Control.get -> TPlatformElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Control.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Dispose() -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Element.get -> TElement?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Element.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.PreventGestureBubbling.get -> bool
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.PreventGestureBubbling.set -> void
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Updated -> System.EventHandler?
-Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.VisualElementTracker() -> void
 Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>
 Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.PlatformBehavior() -> void
 Microsoft.Maui.Controls.PlatformBehavior<TView>
@@ -7453,9 +7441,6 @@ virtual Microsoft.Maui.Controls.Page.LayoutChildren(double x, double y, double w
 virtual Microsoft.Maui.Controls.Page.OnAppearing() -> void
 virtual Microsoft.Maui.Controls.Page.OnBackButtonPressed() -> bool
 virtual Microsoft.Maui.Controls.Page.OnDisappearing() -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.Dispose(bool disposing) -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.OnPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs! e) -> void
-virtual Microsoft.Maui.Controls.Platform.VisualElementTracker<TElement, TPlatformElement>.UpdatePlatformControl() -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnAttachedTo(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PlatformBehavior<TView, TPlatformView>.OnDetachedFrom(TView! bindable, TPlatformView! platformView) -> void
 virtual Microsoft.Maui.Controls.PointerEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
