@@ -703,7 +703,7 @@ namespace Microsoft.Maui.Platform
 					UnLoadedCheck();
 				}
 			}
-			
+
 
 			// OnUnloaded is called at the point in time where the xplat view knows it's going to be detached from the window.
 			// So this just serves as a way to queue a call on the UI Thread to see if that's enough time for the window
