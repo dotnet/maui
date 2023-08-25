@@ -259,7 +259,7 @@ namespace Microsoft.Maui.DeviceTests
 			var cap = bitmap.ColorAtPoint(x, y);
 
 			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
-				Assert.Equal(cap, expectedColor, new ColorComparison());
+				Assert.Equal(expectedColor, cap, new ColorComparison());
 
 			return bitmap;
 		}
@@ -444,6 +444,9 @@ namespace Microsoft.Maui.DeviceTests
 			if (text == null)
 				return 0;
 
+			if (text.Length == 0)
+				return 0;
+
 			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
 			if (value == null)
 				return 0;
@@ -454,6 +457,57 @@ namespace Microsoft.Maui.DeviceTests
 			var kerning = Assert.IsType<NSNumber>(value);
 
 			return kerning.DoubleValue;
+		}
+
+		public static double GetLineHeight(this NSAttributedString text)
+		{
+			if (text == null)
+				return 0;
+
+			if (text.Length == 0)
+				return 0;
+
+			var value = text.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out var range);
+			if (value == null)
+				return 0;
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var paragraphStyle = Assert.IsType<NSMutableParagraphStyle>(value);
+
+			return paragraphStyle.LineHeightMultiple;
+		}
+
+		public static TextDecorations GetTextDecorations(this NSAttributedString text)
+		{
+			var textDecorations = TextDecorations.None;
+
+			if (text == null)
+				return textDecorations;
+
+			if (text.Length == 0)
+				return textDecorations;
+
+			var valueUnderline = text.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var rangeUnderline);
+			var valueStrikethrough = text.GetAttribute(UIStringAttributeKey.StrikethroughStyle, 0, out var rangeStrikethrough);
+
+			Assert.Equal(0, rangeUnderline.Location);
+			Assert.Equal(text.Length, rangeUnderline.Length);
+
+			Assert.Equal(0, rangeStrikethrough.Location);
+			Assert.Equal(text.Length, rangeStrikethrough.Length);
+
+			if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueUnderline)
+			{
+				textDecorations = TextDecorations.Underline;
+			}
+			else if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueStrikethrough)
+			{
+				textDecorations = TextDecorations.Strikethrough;
+			}
+
+			return textDecorations;
 		}
 
 		public static void AssertHasUnderline(this NSAttributedString attributedString)
@@ -613,7 +667,17 @@ namespace Microsoft.Maui.DeviceTests
 			return platformView;
 		}
 
-		static UIView GetBackButton(this UINavigationBar uINavigationBar)
+		public static bool HasBackButton(this UINavigationBar uINavigationBar)
+		{
+			var item = uINavigationBar.FindDescendantView<UIView>(result =>
+			{
+				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
+			});
+
+			return item is not null;
+		}
+
+		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
 		{
 			var item = uINavigationBar.FindDescendantView<UIView>(result =>
 			{

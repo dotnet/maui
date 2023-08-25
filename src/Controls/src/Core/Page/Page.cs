@@ -14,7 +14,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
-	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, IView, ITitledElement, IToolbarElement
+	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 	{
 		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
@@ -156,27 +156,15 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
-		// Todo rework Page to use AddLogical/RemoveLogical.
-		// Rework all the related parts of the code that interact with the `Page` InternalChildren
-		private protected override IList<Element> LogicalChildrenInternalBackingStore =>
-			InternalChildren;
+		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
-		internal override IEnumerable<Element> ChildrenNotDrawnByThisElement
+		Thickness ISafeAreaView2.SafeAreaInsets
 		{
-			get
+			set
 			{
-				var titleviewPart1TheShell = Shell.GetTitleView(this);
-				var titleViewPart2TheNavBar = NavigationPage.GetTitleView(this);
-
-				if (titleviewPart1TheShell != null)
-					yield return titleviewPart1TheShell;
-
-				if (titleViewPart2TheNavBar != null)
-					yield return titleViewPart2TheNavBar;
+				On<PlatformConfiguration.iOS>().SetSafeAreaInsets(value);
 			}
 		}
-
-		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
 		public event EventHandler LayoutChanged;
 
@@ -231,7 +219,7 @@ namespace Microsoft.Maui.Controls
 #pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			if (string.IsNullOrEmpty(cancel))
-				throw new ArgumentNullException("cancel");
+				throw new ArgumentNullException(nameof(cancel));
 
 			var args = new AlertArguments(title, message, accept, cancel);
 			args.FlowDirection = flowDirection;
@@ -301,7 +289,7 @@ namespace Microsoft.Maui.Controls
 				area.Height = Math.Max(0, area.Height);
 			}
 
-			List<Element> elements = ((IElementController)this).LogicalChildren.ToList();
+			IList<Element> elements = this.InternalChildren;
 			foreach (Element element in elements)
 			{
 				var child = element as VisualElement;
@@ -387,7 +375,7 @@ namespace Microsoft.Maui.Controls
 			if (!ShouldLayoutChildren())
 				return;
 
-			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var logicalChildren = this.InternalChildren;
 			var startingLayout = new List<Rect>(logicalChildren.Count);
 			foreach (Element el in logicalChildren)
 			{
@@ -427,7 +415,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				var logicalChildren = ((IElementController)this).LogicalChildren;
+				var logicalChildren = this.InternalChildren;
 				for (var i = 0; i < logicalChildren.Count; i++)
 				{
 					var v = logicalChildren[i] as VisualElement;
@@ -540,28 +528,35 @@ namespace Microsoft.Maui.Controls
 					var item = (Element)e.OldItems[i];
 					if (item is VisualElement visual)
 						visual.MeasureInvalidated -= OnChildMeasureInvalidated;
-					OnChildRemoved(item, e.OldStartingIndex + i);
+
+					RemoveLogicalChild(item);
 				}
 			}
 
 			if (e.NewItems != null)
 			{
+				int index = e.NewStartingIndex;
+
 				foreach (Element item in e.NewItems)
 				{
+					int insertIndex = index;
+					if (insertIndex < 0)
+						insertIndex = InternalChildren.IndexOf(item);
+
 					if (item is VisualElement visual)
-						OnInternalAdded(visual);
+					{
+						visual.MeasureInvalidated += OnChildMeasureInvalidated;
+
+						InsertLogicalChild(insertIndex, visual);
+						InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
+					}
 					else
-						OnChildAdded(item);
+						InsertLogicalChild(insertIndex, item);
+
+					if (index >= 0)
+						index++;
 				}
 			}
-		}
-
-		void OnInternalAdded(VisualElement view)
-		{
-			view.MeasureInvalidated += OnChildMeasureInvalidated;
-
-			OnChildAdded(view);
-			InvalidateMeasureInternal(InvalidationTrigger.MeasureChanged);
 		}
 
 		void OnPageBusyChanged()
@@ -590,7 +585,7 @@ namespace Microsoft.Maui.Controls
 
 		bool ShouldLayoutChildren()
 		{
-			var logicalChildren = ((IElementController)this).LogicalChildren;
+			var logicalChildren = this.InternalChildren;
 			if (logicalChildren.Count == 0 || Width <= 0 || Height <= 0 || !IsPlatformStateConsistent)
 				return false;
 
@@ -623,12 +618,6 @@ namespace Microsoft.Maui.Controls
 
 		internal void SetTitleView(View oldTitleView, View newTitleView)
 		{
-			if (oldTitleView != null)
-				oldTitleView.Parent = null;
-
-			if (newTitleView != null)
-				newTitleView.Parent = this;
-
 			_titleView = newTitleView;
 		}
 

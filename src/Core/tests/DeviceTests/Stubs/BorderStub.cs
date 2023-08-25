@@ -26,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public float StrokeMiterLimit { get; set; }
 
+#if !WINDOWS
 		public Size CrossPlatformArrange(Rect bounds)
 		{
 			return Size.Zero;
@@ -35,5 +36,16 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			return Size.Zero;
 		}
+#else
+		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			return (PresentedContent ?? (Content as IView))?.Measure(widthConstraint, heightConstraint) ?? Size.Zero;
+		}
+
+		public Size CrossPlatformArrange(Rect bounds)
+		{
+			return (PresentedContent ?? (Content as IView))?.Arrange(bounds) ?? Size.Zero;
+		}
+#endif
 	}
 }

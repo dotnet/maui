@@ -16,6 +16,11 @@ namespace Microsoft.Maui.Controls.Hosting
 {
 	public static partial class AppHostBuilderExtensions
 	{
+		/// <summary>
+		/// Configures <see cref="MauiAppBuilder"/> to add support for the <see cref="Map"/> control.
+		/// </summary>
+		/// <param name="builder">The <see cref="MauiAppBuilder"/> to configure.</param>
+		/// <returns>The configured <see cref="MauiAppBuilder"/>.</returns>
 		public static MauiAppBuilder UseMauiMaps(this MauiAppBuilder builder)
 		{
 			builder
@@ -54,9 +59,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
 		{
 #if __ANDROID__ || __IOS__
-			handlersCollection.AddHandler<Map, MapHandler>();
-			handlersCollection.AddHandler<Pin, MapPinHandler>();
-			handlersCollection.AddHandler<MapElement, MapElementHandler>();
+			handlersCollection.AddHandler<Map>(_ => new MapHandler());
+			handlersCollection.AddHandler<Pin>(_ => new MapPinHandler());
+			handlersCollection.AddHandler<MapElement>(_ => new MapElementHandler());
 #endif
 			return handlersCollection;
 		}

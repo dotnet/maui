@@ -10,11 +10,11 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IBorderStroke>? _clip;
 		CAShapeLayer? _childMaskLayer;
-		internal event EventHandler? LayoutSubviewsChanged;
 
 		public ContentView()
 		{
-			Layer.CornerCurve = CACornerCurve.Continuous;
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				Layer.CornerCurve = CACornerCurve.Continuous; // Available from iOS 13. More info: https://developer.apple.com/documentation/quartzcore/calayercornercurve/3152600-continuous
 		}
 
 		public override void LayoutSubviews()
@@ -27,8 +27,7 @@ namespace Microsoft.Maui.Platform
 				ChildMaskLayer.Frame = bounds;
 
 			SetClip();
-
-			LayoutSubviewsChanged?.Invoke(this, EventArgs.Empty);
+			this.UpdateMauiCALayer();
 		}
 
 		internal IBorderStroke? Clip

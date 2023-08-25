@@ -92,8 +92,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this FrameworkElement platformView, IView view)
 		{
-			platformView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+			var opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+
+			platformView.UpdateOpacity(opacity);
 		}
+
+		internal static void UpdateOpacity(this FrameworkElement platformView, double opacity) => platformView.Opacity = (float)opacity;
 
 		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{
@@ -352,6 +356,14 @@ namespace Microsoft.Maui.Platform
 				return pv.Parent;
 
 			return null;
+		}
+
+		internal static T? GetChildAt<T>(this DependencyObject view, int index) where T : DependencyObject
+		{
+			if (VisualTreeHelper.GetChildrenCount(view) >= index)
+				return null;
+
+			return VisualTreeHelper.GetChild(view, index) as T;
 		}
 
 		internal static void UnfocusControl(Control control)

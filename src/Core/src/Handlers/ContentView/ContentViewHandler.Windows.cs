@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Handlers
 			return view;
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			platformView.CrossPlatformLayout = null;
 			platformView.Children?.Clear();
-      
+
 			base.DisconnectHandler(platformView);
 		}
 	}

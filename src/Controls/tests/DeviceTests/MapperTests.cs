@@ -28,8 +28,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			private readonly List<object[]> _data = new()
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				new object[] { VisualElement.ControlsVisualElementMapper, typeof(IView), typeof(IViewHandler) },
 				new object[] { Element.ControlsElementMapper, typeof(IElement), typeof(IElementHandler) },
+#pragma warning restore CS0618 // Type or member is obsolete
 				new object[] { ViewHandler.ViewMapper, typeof(IView), typeof(IViewHandler) },
 				new object[] { ElementHandler.ElementMapper, typeof(IElement), typeof(IElementHandler) },
 			};

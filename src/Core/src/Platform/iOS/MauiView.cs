@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -6,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
 		static bool? _respondsToSafeArea;
 
@@ -58,6 +59,14 @@ namespace Microsoft.Maui.Platform
 		{
 			_lastMeasureWidth = widthConstraint;
 			_lastMeasureHeight = heightConstraint;
+		}
+
+		public override void SafeAreaInsetsDidChange()
+		{
+			base.SafeAreaInsetsDidChange();
+
+			if (View is ISafeAreaView2 isav2)
+				isav2.SafeAreaInsets = this.SafeAreaInsets.ToThickness();
 		}
 
 		public ICrossPlatformLayout? CrossPlatformLayout
@@ -129,6 +138,38 @@ namespace Microsoft.Maui.Platform
 			InvalidateConstraintsCache();
 			base.SetNeedsLayout();
 			Superview?.SetNeedsLayout();
+		}
+
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
+		{
+
+			if (View is IVisualTreeElement viewElement &&
+				viewElement.IsThisMyPlatformView(this))
+			{
+				return viewElement;
+			}
+
+			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
+				layoutElement.IsThisMyPlatformView(this))
+			{
+				return layoutElement;
+			}
+
+			return null;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

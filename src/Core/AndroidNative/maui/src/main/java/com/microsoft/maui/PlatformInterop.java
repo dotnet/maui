@@ -12,11 +12,14 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
 import android.net.Uri;
 import android.os.Build;
+import android.text.Editable;
+import android.text.InputFilter;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -47,6 +50,9 @@ import com.microsoft.maui.glide.font.FontModel;
 
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class PlatformInterop {
     public static void requestLayoutIfNeeded(View view) {
@@ -452,6 +458,55 @@ public class PlatformInterop {
         } else {
             // Implementation from AOSP
             return (value.type >= TypedValue.TYPE_FIRST_COLOR_INT && value.type <= TypedValue.TYPE_LAST_COLOR_INT);
+        }
+    }
+
+    /**
+     * Sets the maxLength of an EditText
+     * @param editText
+     * @param maxLength
+     */
+    public static void updateMaxLength(@NonNull EditText editText, int maxLength)
+    {
+        setLengthFilter(editText, maxLength);
+
+        if (maxLength < 0)
+            return;
+
+        Editable currentText = editText.getText();
+        if (currentText.length() > maxLength) {
+            editText.setText(currentText.subSequence(0, maxLength));
+        }
+    }
+
+    /**
+     * Updates the InputFilter[] of an EditText. Used for Entry and SearchBar.
+     * @param editText
+     * @param maxLength
+     */
+    public static void setLengthFilter(@NonNull EditText editText, int maxLength)
+    {
+        if (maxLength == -1)
+            maxLength = Integer.MAX_VALUE;
+
+        List<InputFilter> currentFilters = new ArrayList<>(Arrays.asList(editText.getFilters()));
+        boolean changed = false;
+        for (int i = 0; i < currentFilters.size(); i++) {
+            InputFilter filter = currentFilters.get(i);
+            if (filter instanceof InputFilter.LengthFilter) {
+                currentFilters.remove(i);
+                changed = true;
+                break;
+            }
+        }
+
+        if (maxLength >= 0) {
+            currentFilters.add(new InputFilter.LengthFilter(maxLength));
+            changed = true;
+        }
+        if (changed) {
+            InputFilter[] newFilter = new InputFilter[currentFilters.size()];
+            editText.setFilters(currentFilters.toArray(newFilter));
         }
     }
 

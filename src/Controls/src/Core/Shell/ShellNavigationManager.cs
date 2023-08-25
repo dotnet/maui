@@ -92,8 +92,7 @@ namespace Microsoft.Maui.Controls
 
 			var uri = navigationRequest.Request.FullUri;
 			var queryString = navigationRequest.Query;
-			var queryData = ParseQueryString(queryString);
-			parameters.Merge(queryData);
+			parameters.SetQueryStringParameters(queryString);
 			ApplyQueryAttributes(_shell, parameters, false, false);
 
 			var shellItem = navigationRequest.Request.Item;
@@ -306,17 +305,7 @@ namespace Microsoft.Maui.Controls
 				baseShellItem = element?.Parent as BaseShellItem;
 
 			//filter the query to only apply the keys with matching prefix
-			var filteredQuery = new ShellRouteParameters(query.Count);
-
-			foreach (var q in query)
-			{
-				if (!q.Key.StartsWith(prefix, StringComparison.Ordinal))
-					continue;
-				var key = q.Key.Substring(prefix.Length);
-				if (key.IndexOf(".", StringComparison.Ordinal) != -1)
-					continue;
-				filteredQuery.Add(key, q.Value);
-			}
+			var filteredQuery = new ShellRouteParameters(query, prefix);
 
 
 			if (baseShellItem is ShellContent)
@@ -486,24 +475,6 @@ namespace Microsoft.Maui.Controls
 				return ShellNavigationSource.Insert;
 
 			return ShellNavigationSource.Push;
-		}
-
-		static Dictionary<string, string> ParseQueryString(string query)
-		{
-			if (query.StartsWith("?", StringComparison.Ordinal))
-				query = query.Substring(1);
-			Dictionary<string, string> lookupDict = new(StringComparer.Ordinal);
-			if (query == null)
-				return lookupDict;
-			foreach (var part in query.Split('&'))
-			{
-				var p = part.Split('=');
-				if (p.Length != 2)
-					continue;
-				lookupDict[p[0]] = p[1];
-			}
-
-			return lookupDict;
 		}
 
 		public static ShellNavigationParameters GetNavigationParameters(

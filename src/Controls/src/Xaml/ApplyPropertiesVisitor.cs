@@ -368,7 +368,7 @@ namespace Microsoft.Maui.Controls.Xaml
 		public static void SetPropertyValue(object xamlelement, XmlName propertyName, object value, object rootElement, INode node, HydrationContext context, IXmlLineInfo lineInfo)
 		{
 			var serviceProvider = new XamlServiceProvider(node, context);
-			var xKey = node is IElementNode && ((IElementNode)node).Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)((IElementNode)node).Properties[XmlName.xKey]).Value as string : null;
+			var xKey = node is IElementNode eNode && eNode.Properties.ContainsKey(XmlName.xKey) ? ((ValueNode)eNode.Properties[XmlName.xKey]).Value as string : null;
 
 			if (TrySetPropertyValue(xamlelement, propertyName, xKey, value, rootElement, lineInfo, serviceProvider, out var xpe))
 				return;
@@ -473,10 +473,14 @@ namespace Microsoft.Maui.Controls.Xaml
 				return false;
 
 			var elementType = element.GetType();
-			var eventInfo = elementType.GetRuntimeEvent(localName);
+			var eventInfo = elementType.GetRuntimeEvent(localName) ?? elementType.GetRuntimeEvents().FirstOrDefault(ei => ei.Name == localName && !(ei.AddMethod.IsPrivate));
 			var stringValue = value as string;
 
 			if (eventInfo == null || IsNullOrEmpty(stringValue))
+				return false;
+
+			var addMethod = eventInfo.GetAddMethod(nonPublic: true);
+			if (addMethod == null)
 				return false;
 
 			foreach (var mi in rootElement.GetType().GetRuntimeMethods())
@@ -485,7 +489,7 @@ namespace Microsoft.Maui.Controls.Xaml
 				{
 					try
 					{
-						eventInfo.AddEventHandler(element, mi.CreateDelegate(eventInfo.EventHandlerType, mi.IsStatic ? null : rootElement));
+						addMethod.Invoke(element, new[] { mi.CreateDelegate(eventInfo.EventHandlerType, mi.IsStatic ? null : rootElement) });
 						return true;
 					}
 					catch (ArgumentException)
@@ -579,17 +583,7 @@ namespace Microsoft.Maui.Controls.Xaml
 					}
 				};
 			else
-				minforetriever = () =>
-				{
-					try
-					{
-						return property.DeclaringType.GetRuntimeProperty(property.PropertyName);
-					}
-					catch (AmbiguousMatchException e)
-					{
-						throw new XamlParseException($"Multiple properties with name '{property.DeclaringType}.{property.PropertyName}' found.", lineInfo, innerException: e);
-					}
-				};
+				minforetriever = () => property.DeclaringType.GetRuntimeProperties().FirstOrDefault(pi => pi.Name == property.PropertyName);
 			var convertedValue = value.ConvertTo(property.ReturnType, minforetriever, serviceProvider, out exception);
 			if (exception != null)
 				return false;

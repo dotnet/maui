@@ -134,10 +134,9 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border.Border;
 		}
 
-		public static void UpdateOpacity(this NView platformView, IView view)
-		{
-			platformView.Opacity = (float)view.Opacity;
-		}
+		public static void UpdateOpacity(this NView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
+
+		internal static void UpdateOpacity(this NView platformView, double opacity) => platformView.Opacity = (float)opacity;
 
 		public static void UpdateClip(this NView platformView, IView view)
 		{
@@ -340,6 +339,27 @@ namespace Microsoft.Maui.Platform
 				return border?.Shape != null || border?.Stroke != null;
 
 			return false;
+		}
+
+		internal static T? GetChildAt<T>(this NView view, int index) where T : NView
+		{
+			return (T?)view.Children[index];
+		}
+
+		internal static bool HideSoftInput(this NView view) => SetKeyInputFocus(view, false);
+
+		internal static bool ShowSoftInput(this NView view) => SetKeyInputFocus(view, true);
+
+		internal static bool IsSoftInputShowing(this NView view)
+		{
+			return view.KeyInputFocus;
+		}
+
+		internal static bool SetKeyInputFocus(NView view, bool isShow)
+		{
+			view.KeyInputFocus = isShow;
+
+			return view.KeyInputFocus;
 		}
 	}
 }

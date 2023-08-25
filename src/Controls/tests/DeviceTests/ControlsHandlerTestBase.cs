@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,13 +18,6 @@ using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRendere
 
 namespace Microsoft.Maui.DeviceTests
 {
-	// Uncomment these sections if you hit issues with parallel executions
-	//[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
-	//public class NonParallelCollectionDefinitionClass
-	//{
-	//}
-
-	//[Collection("Non-Parallel Collection")]
 	public partial class ControlsHandlerTestBase : HandlerTestBase, IDisposable
 	{
 		// In order to run any page level tests android needs to add itself to the decor view inside a new fragment
@@ -103,13 +97,30 @@ namespace Microsoft.Maui.DeviceTests
 			return window;
 		}
 
+		protected Task CreateHandlerAndAddToWindow(IElement view, Func<Task> action)
+		{
+			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
+			{
+				return action();
+			}, MauiContext, null);
+		}
+
+		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Func<THandler, Task> action)
+			where THandler : class, IElementHandler
+		{
+			return CreateHandlerAndAddToWindow<THandler>(view, handler =>
+			{
+				return action(handler);
+			}, MauiContext, null);
+		}
+
 		protected Task CreateHandlerAndAddToWindow(IElement view, Action action)
 		{
 			return CreateHandlerAndAddToWindow<IWindowHandler>(CreateWindowForContent(view), handler =>
 			{
 				action();
 				return Task.CompletedTask;
-			});
+			}, MauiContext, null);
 		}
 
 		protected Task CreateHandlerAndAddToWindow<THandler>(IElement view, Action<THandler> action)
@@ -119,7 +130,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				action(handler);
 				return Task.CompletedTask;
-			});
+			}, MauiContext, null);
 		}
 
 		static SemaphoreSlim _takeOverMainContentSempahore = new SemaphoreSlim(1);
@@ -128,7 +139,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			mauiContext ??= MauiContext;
 
-			timeOut ??= TimeSpan.FromSeconds(15);
+			if (System.Diagnostics.Debugger.IsAttached)
+				timeOut ??= TimeSpan.FromHours(1);
+			else
+				timeOut ??= TimeSpan.FromSeconds(15);
 
 			return InvokeOnMainThreadAsync(async () =>
 			{
@@ -176,7 +190,32 @@ namespace Microsoft.Maui.DeviceTests
 							_ = content ?? throw new InvalidOperationException("Current Page Not Initialized");
 						}
 
-						await OnLoadedAsync(content as VisualElement);
+						if (content is VisualElement vc)
+						{
+							await OnLoadedAsync(vc);
+
+							if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+							{
+								var batchTcs = new TaskCompletionSource(); 
+								vc.BatchCommitted += OnBatchCommitted;
+								await batchTcs.Task.WaitAsync(timeOut.Value);
+								if (vc.Frame.Height < 0 && vc.Frame.Width < 0)
+								{
+									Assert.Fail($"{content} Failed to layout");
+								}
+
+								void OnBatchCommitted(object sender, Controls.Internals.EventArg<VisualElement> e)
+								{
+									vc.BatchCommitted -= OnBatchCommitted;
+									batchTcs.SetResult();
+								}
+							}
+						}
+
+						// Gives time for the measure/layout pass to settle
+						await Task.Yield();
+						if (view is VisualElement veBeingTested)
+							await OnLoadedAsync(veBeingTested);
 
 #if !WINDOWS
 						if (window is Window controlsWindow)
@@ -229,6 +268,53 @@ namespace Microsoft.Maui.DeviceTests
 					_takeOverMainContentSempahore.Release();
 				}
 			});
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Action<THandler> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			Func<THandler, Task> boop = (handler) =>
+			{
+				action.Invoke(handler);
+				return Task.CompletedTask;
+			};
+
+			await AttachAndRunFocusAffectedControl<TType, THandler>(control, boop);
+		}
+
+		/// <summary>
+		/// This is more complicated as we have different logic depending on the view being focused or not.
+		/// When we attach to the UI, there is only a single control so sometimes it cannot unfocus.
+		/// </summary>
+		public async Task AttachAndRunFocusAffectedControl<TType, THandler>(TType control, Func<THandler, Task> action)
+			where TType : IView, new()
+			where THandler : class, IPlatformViewHandler, IElementHandler, new()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler<VerticalStackLayout, LayoutHandler>();
+					handler.AddHandler<TType, THandler>();
+				});
+			});
+
+			var layout = new VerticalStackLayout
+			{
+				WidthRequest = 200,
+				HeightRequest = 200,
+			};
+
+			var placeholder = new TType();
+			layout.Add(placeholder);
+			layout.Add(control);
+
+			await AttachAndRun(layout, handler => action(control.Handler as THandler));
 		}
 
 		async protected Task ValidatePropertyInitValue<TValue, THandler>(
@@ -315,12 +401,13 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedSetValue, nativeVal);
 		}
 
-		protected Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnLoadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform())
 			{
+				await Task.Yield();
 				source.TrySetResult();
 			}
 			else
@@ -338,15 +425,16 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Loaded += loaded;
 			}
 
-			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => frameworkElement.IsLoaded && frameworkElement.IsLoadedOnPlatform());
 		}
 
-		protected Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
+		protected async Task OnUnloadedAsync(VisualElement frameworkElement, TimeSpan? timeOut = null)
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
+				await Task.Yield();
 				source.TrySetResult();
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
@@ -371,7 +459,7 @@ namespace Microsoft.Maui.DeviceTests
 				frameworkElement.Unloaded += unloaded;
 			}
 
-			return HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
+			await HandleLoadedUnloadedIssue(source.Task, timeOut.Value, () => !frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform());
 		}
 
 		// Modal Page's appear to currently not fire loaded/unloaded
