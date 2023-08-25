@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 
@@ -46,11 +47,14 @@ namespace Microsoft.Maui.Platform
 		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
+			var mauiContext = slider.Handler?.MauiContext;
 
-			if (thumbImageSource != null)
+			if (thumbImageSource != null && mauiContext != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetImageAsync(thumbImageSource);
+				var imageSourceService = provider.GetRequiredImageSourceService(thumbImageSource);
+
+				var scale = mauiContext.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1;
+				var result = await imageSourceService.GetImageAsync(thumbImageSource, (float)scale);
 				var thumbImage = result?.Value;
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);

@@ -325,7 +325,9 @@ namespace Microsoft.Maui.Platform
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
-				var result = await service.GetImageAsync(imageSource);
+
+				var scale = platformView.GetDisplayDensity();
+				var result = await service.GetImageAsync(imageSource, scale: scale);
 				var backgroundImage = result?.Value;
 
 				if (backgroundImage == null)
