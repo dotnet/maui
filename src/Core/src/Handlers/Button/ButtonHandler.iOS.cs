@@ -12,6 +12,10 @@ namespace Microsoft.Maui.Handlers
 		// This appears to be the padding that Xcode has when "Default" content insets are used
 		public readonly static Thickness DefaultPadding = new Thickness(12, 7);
 
+		// Because we can't inherit from Button we use the container to handle
+		// Life cycle events and things like monitoring focus changed
+		public override bool NeedsContainer => true;
+
 		protected override UIButton CreatePlatformView()
 		{
 			var button = new UIButton(UIButtonType.System);
@@ -129,18 +133,6 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateCharacterSpacing(button);
 		}
 
-		void IImageSourcePartSetter.SetImageSource(UIImage? image)
-		{
-			if (image != null)
-			{
-				PlatformView.SetImage(image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-			}
-			else
-			{
-				PlatformView.SetImage(null, UIControlState.Normal);
-			}
-		}
-
 		public static void MapImageSource(IButtonHandler handler, IImage image) =>
 			MapImageSourceAsync(handler, image).FireAndForget(handler);
 
@@ -200,6 +192,19 @@ namespace Microsoft.Maui.Handlers
 			void OnButtonTouchDown(object? sender, EventArgs e)
 			{
 				VirtualView?.Pressed();
+			}
+		}
+
+		partial class ButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(UIImage? platformImage)
+			{
+				if (Handler?.PlatformView is not UIButton button)
+					return;
+
+				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+				button.SetImage(platformImage, UIControlState.Normal);
 			}
 		}
 	}

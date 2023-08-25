@@ -33,6 +33,8 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new MauiScrollView();
@@ -49,6 +51,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
+			PendingScrollToRequest = null;
 			_eventProxy.Disconnect(platformView);
 		}
 
@@ -111,6 +114,15 @@ namespace Microsoft.Maui.Handlers
 			if (args is ScrollToRequest request)
 			{
 				var uiScrollView = handler.PlatformView;
+
+				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+
 				var availableScrollHeight = uiScrollView.ContentSize.Height - uiScrollView.Frame.Height;
 				var availableScrollWidth = uiScrollView.ContentSize.Width - uiScrollView.Frame.Width;
 				var minScrollHorizontal = Math.Min(request.HorizontalOffset, availableScrollWidth);
@@ -248,6 +260,12 @@ namespace Microsoft.Maui.Handlers
 
 			contentView.Bounds = contentBounds;
 			contentView.Center = new CGPoint(contentBounds.GetMidX(), contentBounds.GetMidY());
+
+			if (PendingScrollToRequest != null)
+			{
+				VirtualView.RequestScrollTo(PendingScrollToRequest.HorizontalOffset, PendingScrollToRequest.VerticalOffset, PendingScrollToRequest.Instant);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		static double AccountForPadding(double constraint, double padding)

@@ -22,8 +22,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public override void _IsEnabled()
 		{
-			if (UITestContext.TestConfig.TestDevice == TestDevice.Mac ||
-				UITestContext.TestConfig.TestDevice == TestDevice.iOS)
+			if (Device == TestDevice.Mac ||
+				Device == TestDevice.iOS)
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
