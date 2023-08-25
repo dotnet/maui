@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 using NView = Tizen.NUI.BaseComponents.View;
 using TImage = Tizen.NUI.BaseComponents.ImageView;
 
