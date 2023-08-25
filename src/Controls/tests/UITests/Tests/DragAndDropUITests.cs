@@ -74,8 +74,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			var textAfterDrag = App.Query("DragEventsLabel").First().Text;
 
-			if (UITestContext.TestConfig.TestDevice == TestDevice.iOS ||
-				UITestContext.TestConfig.TestDevice == TestDevice.Mac)
+			if (UITestContext?.TestConfig.TestDevice == TestDevice.iOS ||
+				UITestContext?.TestConfig.TestDevice == TestDevice.Mac)
 			{
 				Assert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
 				Assert.True(textAfterDrag.Contains("DragStarting:DragInteraction", StringComparison.OrdinalIgnoreCase));
@@ -98,7 +98,7 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.True(textAfterDrag.Contains("Drop:DropInteraction", StringComparison.OrdinalIgnoreCase));
 				Assert.True(textAfterDrag.Contains("Drop:DropSession", StringComparison.OrdinalIgnoreCase));
 			}
-			else if (UITestContext.TestConfig.TestDevice == TestDevice.Android)
+			else if (UITestContext?.TestConfig.TestDevice == TestDevice.Android)
 			{
 				Assert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
 				Assert.True(textAfterDrag.Contains("DragStarting:MotionEvent", StringComparison.OrdinalIgnoreCase));
@@ -117,7 +117,7 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.True(textAfterDrag.Contains("Drop:DragEvent", StringComparison.OrdinalIgnoreCase));
 
 			}
-			else if (UITestContext.TestConfig.TestDevice == TestDevice.Windows)
+			else if (UITestContext?.TestConfig.TestDevice == TestDevice.Windows)
 			{
 				Assert.True(textAfterDrag.Contains("DragStarting:Sender", StringComparison.OrdinalIgnoreCase));
 				Assert.True(textAfterDrag.Contains("DragStarting:DragStartingEventArgs", StringComparison.OrdinalIgnoreCase));
