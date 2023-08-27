@@ -142,8 +142,9 @@ namespace Microsoft.Maui.Controls
 		{
 			for (int i = _children.Count - 1; i >= 0; i--)
 			{
+				var child = _children[i];
 				_children.RemoveAt(i);
-				if (_children[i] is Element element)
+				if (child is Element element)
 				{
 					RemoveLogicalChild(element);
 				}
