@@ -358,7 +358,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			MapMenuItems();
 		}
-		
+
 		void UpdateCurrentItem()
 		{
 			if (_currentShellSection == VirtualView.CurrentItem)
@@ -444,7 +444,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			handler.UpdateTitle();
 		}
-		
+
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)
 		{
 			handler.UpdateCurrentItem();

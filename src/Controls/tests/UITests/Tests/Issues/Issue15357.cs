@@ -8,7 +8,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		private string buttonId = "ButtonClick";
 
 		public Issue15357(TestDevice device) : base(device)
-		{ 
+		{
 		}
 
 		public override string Issue => "IsVisible binding not showing items again if Shadow is set";

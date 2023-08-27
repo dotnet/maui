@@ -8,7 +8,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		private string buttonId = "ChangeOpacity";
 
 		public Issue12211(TestDevice device) : base(device)
-		{ 
+		{
 		}
 
 		public override string Issue => "[Android] BoxView Opacity not working";
