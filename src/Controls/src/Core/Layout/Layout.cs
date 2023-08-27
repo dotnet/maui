@@ -54,12 +54,13 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+				_children.RemoveAt(index);
 				if (old is Element oldElement)
 				{
 					RemoveLogicalChild(oldElement);
 				}
 
-				_children[index] = value;
+				_children.Insert(index, value);
 
 				if (value is Element newElement)
 				{
@@ -129,11 +130,17 @@ namespace Microsoft.Maui.Controls
 			var index = _children.Count;
 			_children.Add(child);
 
+			if (child is Element element)
+			{
+				AddLogicalChild(element);
+			}
+
 			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
+			_children.Clear();
 			for (int i = _children.Count - 1; i >= 0; i--)
 			{
 				if (_children[i] is Element element)
@@ -141,7 +148,6 @@ namespace Microsoft.Maui.Controls
 					RemoveLogicalChild(element);
 				}
 			}
-			_children.Clear();
 			OnClear();
 		}
 
@@ -165,10 +171,10 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
+			_children.Insert(index, child);
+
 			if (child is Element element)
 				InsertLogicalChild(index, element);
-
-			_children.Insert(index, child);
 
 			OnInsert(index, child);
 		}
@@ -201,17 +207,17 @@ namespace Microsoft.Maui.Controls
 
 			_children.RemoveAt(index);
 
+			if (child is Element element)
+			{
+				RemoveLogicalChild(element);
+			}
+
 			OnRemove(index, child);
 		}
 
 		protected virtual void OnAdd(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Add), index, view);
-
-			if (view is Element element)
-			{
-				AddLogicalChild(element);
-			}
 		}
 
 		protected virtual void OnClear()
@@ -222,21 +228,11 @@ namespace Microsoft.Maui.Controls
 		protected virtual void OnRemove(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Remove), index, view);
-
-			if (view is Element element)
-			{
-				RemoveLogicalChild(element);
-			}
 		}
 
 		protected virtual void OnInsert(int index, IView view)
 		{
 			NotifyHandler(nameof(ILayoutHandler.Insert), index, view);
-
-			if (view is Element element)
-			{
-				AddLogicalChild(element);
-			}
 		}
 
 		protected virtual void OnUpdate(int index, IView view, IView oldView)
@@ -258,8 +254,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return new Thickness(0);
 		}
-
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{
