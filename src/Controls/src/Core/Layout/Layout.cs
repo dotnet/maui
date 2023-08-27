@@ -167,7 +167,7 @@ namespace Microsoft.Maui.Controls
 
 			if (child is Element element)
 				InsertLogicalChild(index, element);
-			
+
 			_children.Insert(index, child);
 
 			OnInsert(index, child);
