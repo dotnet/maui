@@ -906,7 +906,8 @@ namespace Microsoft.Maui.Layouts
 				// But we still need to fill up the rest of the space, so we'll expand them proportionally.
 
 				// Work out the total difference in size between the full star size targets and the 
-				// minimum sizes for all definitions; we'll need that later to distribute available space.
+				// minimum sizes for all definitions where the minimum is less than the full star size
+				// target; we'll need that later to distribute available space.
 				double totaldiff = 0;
 				foreach (var definition in defs)
 				{
