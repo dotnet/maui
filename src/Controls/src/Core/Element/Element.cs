@@ -189,9 +189,6 @@ namespace Microsoft.Maui.Controls
 			_logicalChildrenReadonly ??= new ReadOnlyCollection<Element>(LogicalChildrenInternalBackingStore);
 		}
 
-		internal bool ContainsLogicalChild(Element element) =>
-			LogicalChildrenInternalBackingStore.Contains(element);
-
 		/// <summary>
 		/// Inserts an <see cref="Element"/> to the logical children at the specified index.
 		/// </summary>
