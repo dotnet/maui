@@ -139,7 +139,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				var viewHolder = SimpleViewHolder.FromFormsView(formsView, context, ItemsView);
 
 				// Propagate the binding context, visual, etc. from the ItemsView to the header/footer
-				ItemsView.AddLogicalChild(viewHolder.View);
+				if (viewHolder.View.Parent != ItemsView)
+				{
+					ItemsView.AddLogicalChild(viewHolder.View);
+				}
 
 				return viewHolder;
 			}
