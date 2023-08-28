@@ -19,35 +19,30 @@ namespace Microsoft.Maui.Platform
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
 
 			var key = accelerator.Key;
-			var modifiers = accelerator.Modifiers;
+			var modifiers = accelerator.Modifiers.ToUIKeyModifierFlags();
 
 			// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
+			return virtualView.CreateMenuItemKeyCommand(index, uiImage, selector, modifiers, key);
+		}
+
+		internal static UIKeyModifierFlags ToUIKeyModifierFlags(this KeyboardAcceleratorModifiers modifiers)
+		{
 			UIKeyModifierFlags modifierFlags = 0;
-			if (modifiers is not null && modifiers.Count > 0)
-			{
-				foreach (var modifier in modifiers)
-				{
-					var modifierMask = modifier.ToLowerInvariant();
 
-					switch (modifierMask)
-					{
-						case "ctrl":
-							modifierFlags |= UIKeyModifierFlags.Control;
-							break;
-						case "cmd":
-							modifierFlags |= UIKeyModifierFlags.Command;
-							break;
-						case "alt":
-							modifierFlags |= UIKeyModifierFlags.Alternate;
-							break;
-						case "shift":
-							modifierFlags |= UIKeyModifierFlags.Shift;
-							break;
-					}
-				}
-			}
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Shift))
+				modifierFlags |= UIKeyModifierFlags.Shift;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Ctrl))
+				modifierFlags |= UIKeyModifierFlags.Control;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Alt))
+				modifierFlags |= UIKeyModifierFlags.Alternate;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Cmd))
+				modifierFlags |= UIKeyModifierFlags.Command;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.AlphaShift))
+				modifierFlags |= UIKeyModifierFlags.AlphaShift;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.NumericPad))
+				modifierFlags |= UIKeyModifierFlags.NumericPad;
 
-			return virtualView.CreateMenuItemKeyCommand(index, uiImage, selector, modifierFlags, key);
+			return modifierFlags;
 		}
 
 		static UIMenuElement CreateMenuItemKeyCommand(this IMenuFlyoutItem virtualView, int index, UIImage? uiImage, Selector selector, UIKeyModifierFlags modifierFlags, string key)

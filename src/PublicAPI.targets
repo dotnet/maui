@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <PackageReference Remove="Microsoft.CodeAnalysis.PublicApiAnalyzers" />
-    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" />
+     <!-- <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="All" /> -->
   </ItemGroup>
 
   <!-- for explicit TFMs -->

@@ -59,7 +59,7 @@ override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 ~Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string
-~Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
+
 ~override Microsoft.Maui.Controls.Handlers.Items.CarouselViewController.DetermineCellReuseId(Foundation.NSIndexPath indexPath) -> string
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
 ~override Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.ViewWillTransitionToSize(CoreGraphics.CGSize toSize, UIKit.IUIViewControllerTransitionCoordinator coordinator) -> void
@@ -81,11 +81,11 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~override Microsoft.Maui.Controls.Shapes.Matrix.Equals(object obj) -> bool
 ~static Microsoft.Maui.Controls.KeyboardAccelerator.FromString(string text) -> Microsoft.Maui.Controls.KeyboardAccelerator
 ~static Microsoft.Maui.Controls.KeyboardAccelerator.implicit operator Microsoft.Maui.Controls.KeyboardAccelerator(string accelerator) -> Microsoft.Maui.Controls.KeyboardAccelerator
-~static Microsoft.Maui.Controls.MenuItem.GetKeyboardAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.KeyboardAccelerator
-~static Microsoft.Maui.Controls.MenuItem.SetKeyboardAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.KeyboardAccelerator value) -> void
+
+
 ~static Microsoft.Maui.Controls.Region.FromRectangles(System.Collections.Generic.IEnumerable<Microsoft.Maui.Graphics.Rect> rectangles) -> Microsoft.Maui.Controls.Region
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
-~static readonly Microsoft.Maui.Controls.MenuItem.KeyboardAcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
+
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>

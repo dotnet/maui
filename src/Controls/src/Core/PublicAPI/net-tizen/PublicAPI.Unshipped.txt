@@ -50,14 +50,14 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
 Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
 ~Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string
-~Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IEnumerable<string>
+
 ~override Microsoft.Maui.Controls.KeyboardAccelerator.Equals(object obj) -> bool
 ~override Microsoft.Maui.Controls.KeyboardAccelerator.ToString() -> string
 ~static Microsoft.Maui.Controls.KeyboardAccelerator.FromString(string text) -> Microsoft.Maui.Controls.KeyboardAccelerator
 ~static Microsoft.Maui.Controls.KeyboardAccelerator.implicit operator Microsoft.Maui.Controls.KeyboardAccelerator(string accelerator) -> Microsoft.Maui.Controls.KeyboardAccelerator
-~static Microsoft.Maui.Controls.MenuItem.GetKeyboardAccelerator(Microsoft.Maui.Controls.BindableObject bindable) -> Microsoft.Maui.Controls.KeyboardAccelerator
-~static Microsoft.Maui.Controls.MenuItem.SetKeyboardAccelerator(Microsoft.Maui.Controls.BindableObject bindable, Microsoft.Maui.Controls.KeyboardAccelerator value) -> void
-~static readonly Microsoft.Maui.Controls.MenuItem.KeyboardAcceleratorProperty -> Microsoft.Maui.Controls.BindableProperty
+
+
+
 virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool

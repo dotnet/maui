@@ -42,9 +42,9 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		/// <param name="handler">The handler, of type <see cref="IMenuFlyoutItemHandler"/>.</param>
 		/// <param name="view">The view, of type <see cref="IMenuFlyoutItem"/>.</param>
-		public static void MapKeyboardAccelerator(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		public static void MapKeyboardAccelerators(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
 		{
-			handler.PlatformView.UpdateKeyboardAccelerator(view);
+			handler.PlatformView.UpdateKeyboardAccelerators(view);
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view) =>

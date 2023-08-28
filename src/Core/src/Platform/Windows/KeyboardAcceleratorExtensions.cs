@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="platformView">The platform view, of type <see cref="MenuFlyoutItemBase"/>.</param>
 		/// <param name="menuFlyoutItem">The abstract menu flyout item, of type <see cref="IMenuFlyoutItem"/>, with all the necessary information.</param>
-		public static void UpdateKeyboardAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
+		public static void UpdateKeyboardAccelerators(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
 			var keyboardAccelerators = menuFlyoutItem.KeyboardAccelerators?.ToPlatform();
 
@@ -67,33 +67,27 @@ namespace Microsoft.Maui.Platform
 
 			var accelerator = new KeyboardAccelerator();
 			accelerator.Key = key.ToVirtualKey();
-			if (modifiers is not null)
-			{
-				foreach (var mod in modifiers)
-				{
-					accelerator.Modifiers |= mod.ToVirtualKeyModifiers();
-				}
-			}
+			accelerator.Modifiers = modifiers.ToVirtualKeyModifiers();
+
 			result.Add(accelerator);
 
 			return result;
 		}
 
-		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this string modifierMask)
+		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this KeyboardAcceleratorModifiers modifiers)
 		{
-			switch (modifierMask.ToLowerInvariant())
-			{
-				case "ctrl":
-					return VirtualKeyModifiers.Control;
-				case "alt":
-					return VirtualKeyModifiers.Menu;
-				case "shift":
-					return VirtualKeyModifiers.Shift;
-				case "win":
-					return VirtualKeyModifiers.Windows;
-				default:
-					return VirtualKeyModifiers.None;
-			}
+			VirtualKeyModifiers modifierMask = 0;
+
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Shift))
+				modifierMask |= VirtualKeyModifiers.Shift;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Ctrl))
+				modifierMask |= VirtualKeyModifiers.Control;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Alt))
+				modifierMask |= VirtualKeyModifiers.Menu;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Windows))
+				modifierMask |= VirtualKeyModifiers.Windows;
+
+			return modifierMask;
 		}
 
 		internal static VirtualKey ToVirtualKey(this string key)

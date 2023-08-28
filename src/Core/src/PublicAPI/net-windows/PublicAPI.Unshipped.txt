@@ -7,7 +7,6 @@ Microsoft.Maui.IKeyboardAccelerator.Key.get -> string!
 Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.Maui.IMenuElement.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
 Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
 Microsoft.Maui.ICrossPlatformLayout
 Microsoft.Maui.ICrossPlatformLayout.CrossPlatformArrange(Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
@@ -69,7 +68,7 @@ static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(thi
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this Microsoft.Maui.IKeyboardAccelerator! keyboardAccelerator) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>! keyboardAccelerators) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
-static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.UpdateKeyboardAccelerator(this Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase! platformView, Microsoft.Maui.IMenuFlyoutItem! menuFlyoutItem) -> void
+static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.UpdateKeyboardAccelerators(this Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase! platformView, Microsoft.Maui.IMenuFlyoutItem! menuFlyoutItem) -> void
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemSelectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemTextSelectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemUnselectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
@@ -86,8 +85,8 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
-static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapKeyboardAccelerator(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
-static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapKeyboardAccelerator(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuFlyoutSubItem! view) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutItemHandler.MapKeyboardAccelerators(Microsoft.Maui.Handlers.IMenuFlyoutItemHandler! handler, Microsoft.Maui.IMenuFlyoutItem! view) -> void
+static Microsoft.Maui.Handlers.MenuFlyoutSubItemHandler.MapKeyboardAccelerators(Microsoft.Maui.Handlers.IMenuFlyoutSubItemHandler! handler, Microsoft.Maui.IMenuFlyoutSubItem! view) -> void
 *REMOVED*override Microsoft.Maui.Platform.ContentPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 *REMOVED*override Microsoft.Maui.Platform.LayoutPanel.MeasureOverride(Windows.Foundation.Size availableSize) -> Windows.Foundation.Size
 static Microsoft.Maui.Handlers.DatePickerHandler.MapBackground(Microsoft.Maui.Handlers.IDatePickerHandler! handler, Microsoft.Maui.IDatePicker! datePicker) -> void

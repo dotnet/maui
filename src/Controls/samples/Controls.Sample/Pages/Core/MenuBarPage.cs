@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
 namespace Maui.Controls.Sample.Pages
@@ -11,7 +11,12 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			MenuItem.SetKeyboardAccelerator(CustomFileMenuFlyoutItem, KeyboardAccelerator.FromString("ctrl+shift+f"));
+			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(
+				new KeyboardAccelerator() { 
+					Modifiers = KeyboardAcceleratorModifiers.Ctrl|KeyboardAcceleratorModifiers.Shift,
+					Key = "F" 
+				}
+			);
 		}
 
 		void ItemClicked(object sender, EventArgs e)
