@@ -61,16 +61,4 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="MS_EXT_VERSION" />
 	</ItemGroup>
 
-	<!-- Build Properties must be defined within these property groups to ensure successful publishing
-         to the Mac App Store. See: https://aka.ms/maui-publish-app-store#define-build-properties-in-your-project-file -->
-    <!-- See https://aka.ms/maui-publish-app-store#add-entitlements for more information about adding entitlements.-->
-    <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst'))">
-        <EnableDefaultMacCatalystReleaseEntitlements Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == ''">True</EnableDefaultMacCatalystReleaseEntitlements>
-    </PropertyGroup>
-
-    <ItemGroup Condition="'$(EnableDefaultMacCatalystReleaseEntitlements)' == 'True' and '$(Configuration)' == 'Release'">
-        <CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
-        <CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
-				<UseHardenedRuntime>true</UseHardenedRuntime>
-    </ItemGroup>
 </Project>
