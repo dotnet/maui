@@ -37,10 +37,6 @@ namespace Microsoft.Maui.Platform
 				modifierFlags |= UIKeyModifierFlags.Alternate;
 			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Cmd))
 				modifierFlags |= UIKeyModifierFlags.Command;
-			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.AlphaShift))
-				modifierFlags |= UIKeyModifierFlags.AlphaShift;
-			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.NumericPad))
-				modifierFlags |= UIKeyModifierFlags.NumericPad;
 
 			return modifierFlags;
 		}
