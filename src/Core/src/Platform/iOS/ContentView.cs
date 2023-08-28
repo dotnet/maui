@@ -91,12 +91,7 @@ namespace Microsoft.Maui.Platform
 			var clipHeight = (float)bounds.Height - strokeInset;
 
 			var clipBounds = new RectF(0, 0, clipWidth, clipHeight);
-
-			// See if we need to adjust the clipping path for new bounds
-			if (_contentMask.Bounds != clipBounds)
-			{
-				_contentMask.Path = GetClipPath(clipBounds, strokeThickness);
-			}
+			_contentMask.Path = GetClipPath(clipBounds, strokeThickness);
 
 			// Set the mask on the content, if it isn't already
 			if (content.Layer.Mask != _contentMask)
@@ -116,12 +111,6 @@ namespace Microsoft.Maui.Platform
 			var clipCenterY = clipBoundsCenter.Y + (strokeThickness);
 
 			CGPoint adjustedMaskPosition = new(clipCenterX - contentOffsetX, clipCenterY - contentOffsetY);
-
-			if (_contentMask.Position == adjustedMaskPosition && _contentMask.Bounds == clipBounds)
-			{
-				// Right size, right place, nothing left to do
-				return;
-			}
 
 			// Relocating/resizing a layer is animated by default; the mask will slide around as we do things like
 			// resize the content that's being masked. To prevent his, we need to set the animation duration 
