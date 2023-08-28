@@ -198,7 +198,10 @@ namespace Microsoft.Maui.Controls.Platform
 				element = ve;
 			}
 
-			var args = new DropEventArgs(datapackage?.View!, (relativeTo) => GetPosition(relativeTo, e));
+			if (datapackage is null)
+				return;
+
+			var args = new DropEventArgs(datapackage.View, (relativeTo) => GetPosition(relativeTo, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -221,14 +224,14 @@ namespace Microsoft.Maui.Controls.Platform
 			{
 				var view = Element as View;
 
-				if (!rec.CanDrag | view is null)
+				if (!rec.CanDrag || view is null)
 				{
 					e.Cancel = true;
 					return;
 				}
 
 				var handler = sender as IViewHandler;
-				var args = rec.SendDragStarting(view!, (relativeTo) => GetPosition(relativeTo, e));
+				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e));
 
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
