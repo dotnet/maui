@@ -46,14 +46,10 @@ namespace Microsoft.Maui.DeviceTests
 			IList logicalChildren = null;
 			WeakReference weakReference = null;
 
-			// Recently discovered that Android CollectionView is leaking when given a header or footer
-			// See: https://github.com/dotnet/maui/issues/16961
 			var collectionView = new CollectionView
 			{
-#if !ANDROID
 				Header = new Label { Text = "Header" },
 				Footer = new Label { Text = "Footer" },
-#endif
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
@@ -82,13 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(weakReference);
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
-
-#if !ANDROID
-			var expectedItems = 5;
-#else
-			var expectedItems = 3;
-#endif
-			Assert.True(logicalChildren.Count <= expectedItems, "_logicalChildren should not grow in size!");
+			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 		}
 
 		[Theory]
