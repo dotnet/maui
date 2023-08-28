@@ -25,7 +25,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuElement.Accelerators)] = MapAccelerator,
 			[nameof(IMenuElement.Source)] = MapSource,
 #endif
-#if MACCATALYST || WINDOWS
+#if MACCATALYST || IOS || WINDOWS
 			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
 #endif
 		};
