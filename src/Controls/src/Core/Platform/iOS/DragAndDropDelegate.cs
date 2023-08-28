@@ -1,14 +1,11 @@
 #nullable disable
 #if __MOBILE__
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Versioning;
-using System.Text;
-
+using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using ObjCRuntime;
+using Microsoft.Maui.Graphics;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -37,7 +34,9 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, new PlatformDragStartingEventArgs(_viewHandler.PlatformView, interaction, session));
+			var originalPoint = session.LocationInView(_viewHandler.PlatformView);
+
+			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, session, new PlatformDragStartingEventArgs(_viewHandler.PlatformView, interaction, session));
 		}
 
 		[Export("dropInteraction:canHandleSession:")]
@@ -68,9 +67,8 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			if (HandleDragLeave((View)_viewHandler.VirtualView, package, new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session)))
-			{
-			}
+
+			HandleDragLeave((View)_viewHandler.VirtualView, package, session.LocalDragSession, new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session));
 		}
 
 		[Export("dropInteraction:sessionDidUpdate:")]
@@ -90,8 +88,10 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
+			var dragLocation = session.LocalDragSession.LocationInView(_viewHandler.PlatformView);
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
-			if (HandleDragOver((View)_viewHandler.VirtualView, package, platformArgs))
+
+			if (HandleDragOver((View)_viewHandler.VirtualView, package, session.LocalDragSession, platformArgs))
 			{
 				if (platformArgs.DropProposal is not null)
 					return platformArgs.DropProposal;
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.Controls.Platform
 				session.LocalDragSession.Items[0].LocalObject is CustomLocalStateData cdi &&
 				_viewHandler.VirtualView is View view)
 			{
-				HandleDrop(view, cdi.DataPackage, new PlatformDropEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
+				HandleDrop(view, cdi.DataPackage, session, new PlatformDropEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
 				HandleDropCompleted(cdi.View, new PlatformDropCompletedEventArgs(cdi.View.Handler.PlatformView as UIView, interaction, session));
 			}
 		}
@@ -135,7 +135,8 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 		}
 
-		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, PlatformDragStartingEventArgs platformArgs)
+
+		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, IUIDragSession session, PlatformDragStartingEventArgs platformArgs)
 		{
 			UIDragItem[] returnValue = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
@@ -143,7 +144,10 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!rec.CanDrag)
 					return;
 
-				var args = rec.SendDragStarting(element, platformArgs);
+				var viewHandlerRef = new WeakReference(handler);
+				var sessionRef = new WeakReference(session);
+
+				var args = rec.SendDragStarting(element, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef), platformArgs);
 
 				if (args.Cancel)
 					return;
@@ -221,9 +225,12 @@ namespace Microsoft.Maui.Controls.Platform
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
-		bool HandleDragLeave(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
+		bool HandleDragLeave(View element, DataPackage dataPackage, IUIDragSession session, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, platformArgs);
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef), platformArgs);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -238,9 +245,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
+		bool HandleDragOver(View element, DataPackage dataPackage, IUIDragSession session, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage, platformArgs);
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var dragEventArgs = new DragEventArgs(dataPackage, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef), platformArgs);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -255,9 +265,12 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		void HandleDrop(View element, DataPackage datapackage, PlatformDropEventArgs platformArgs)
+		void HandleDrop(View element, DataPackage datapackage, IUIDropSession session, PlatformDropEventArgs platformArgs)
 		{
-			var args = new DropEventArgs(datapackage?.View, platformArgs);
+			var viewHandlerRef = new WeakReference(_viewHandler);
+			var sessionRef = new WeakReference(session);
+
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => CalculatePosition(relativeTo, viewHandlerRef, sessionRef), platformArgs);
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -272,6 +285,51 @@ namespace Microsoft.Maui.Controls.Platform
 					Application.Current?.FindMauiContext()?.CreateLogger<DropGestureRecognizer>()?.LogWarning(dropExc, "Error sending drop event");
 				}
 			}, (View)element);
+		}
+
+		static internal Point? CalculatePosition(IElement relativeTo, WeakReference viewHandlerRef, WeakReference sessionRef)
+		{
+
+			var viewHandler = viewHandlerRef.Target as IPlatformViewHandler;
+			var session = sessionRef.Target as IUIDragDropSession;
+
+			var virtualView = viewHandler?.VirtualView;
+			var platformView = viewHandler?.PlatformView;
+			var relativeView = relativeTo?.Handler?.PlatformView as UIView;
+
+			CGPoint dragLocation;
+
+			if (virtualView is null)
+				return null;
+
+			// If relativeTo is null we get the location on the screen
+			if (relativeTo is null)
+			{
+				var screenLocation = virtualView.GetLocationOnScreen();
+				dragLocation = session.LocationInView(platformView);
+
+				if (!screenLocation.HasValue)
+					return null;
+
+				double x = dragLocation.X + screenLocation.Value.X;
+				double y = dragLocation.Y + screenLocation.Value.Y;
+
+				return new Point(x, y);
+			}
+
+			// If relativeTo is the same as the view sending the event, we get the position relative to itself
+			if (relativeTo == virtualView)
+			{
+				dragLocation = session.LocationInView(platformView);
+				return new Point(dragLocation.X, dragLocation.Y);
+			}
+			else if (relativeView is not null)
+			{
+				dragLocation = session.LocationInView(relativeView);
+				return new Point(dragLocation.X, dragLocation.Y);
+			}
+
+			return null;
 		}
 
 		class CustomLocalStateData : NSObject

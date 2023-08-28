@@ -36,12 +36,12 @@ namespace Microsoft.Maui.Controls.Handlers
 			return new WFrame();
 		}
 		public static void MapTitle(ShellSectionHandler handler, ShellSection item)
-		{		
+		{
 			var shellItem = item.Parent as ShellItem;
 			var shellItemHandler = shellItem?.Handler as ShellItemHandler;
 			shellItemHandler?.UpdateTitle();
 		}
-		
+
 		public static void MapCurrentItem(ShellSectionHandler handler, ShellSection item)
 		{
 			handler.SyncNavigationStack(false, null);

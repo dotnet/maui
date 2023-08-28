@@ -136,8 +136,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package, new PlatformDragEventArgs(sender, e));
+			var dragEventArgs = ToDragEventArgs(e, new PlatformDragEventArgs(sender, e));
 
 			dragEventArgs.AcceptedOperation = (DataPackageOperation)((int)dragEventArgs.AcceptedOperation);
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -166,8 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package, new PlatformDragEventArgs(sender, e));
+			var dragEventArgs = ToDragEventArgs(e, new PlatformDragEventArgs(sender, e));
 
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
@@ -203,7 +201,10 @@ namespace Microsoft.Maui.Controls.Platform
 				element = ve;
 			}
 
-			var args = new DropEventArgs(datapackage?.View, new PlatformDropEventArgs(sender, e));
+			if (datapackage is null)
+				return;
+
+			var args = new DropEventArgs(datapackage.View, (relativeTo) => GetPosition(relativeTo, e), new PlatformDropEventArgs(sender, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -224,14 +225,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				if (!rec.CanDrag)
+				var view = Element as View;
+
+				if (!rec.CanDrag || view is null)
 				{
 					e.Cancel = true;
 					return;
 				}
 
 				var handler = sender as IViewHandler;
-				var args = rec.SendDragStarting(handler?.VirtualView as IView, new PlatformDragStartingEventArgs(sender, e));
+				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e), new PlatformDragStartingEventArgs(sender, e));
+
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
 				if (!args.PlatformArgs.Handled && handler != null)
@@ -524,10 +528,11 @@ namespace Microsoft.Maui.Controls.Platform
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
 		{
 			var result = e.GetPositionRelativeToElement(relativeTo);
-			if (result == null)
+
+			if (result is null)
 				return null;
 
-			return new Point(result.Value.X, result.Value.Y);
+			return result.Value.ToPoint();
 		}
 
 		void OnTap(object sender, RoutedEventArgs e)
@@ -767,6 +772,14 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
+		}
+
+		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
+		{
+			// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
+			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
+
+			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e), platformArgs);
 		}
 	}
 }

@@ -279,7 +279,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(label.Height <= grid.MaximumHeightRequest);
 			Assert.True(grid.Height <= grid.MaximumHeightRequest);
 		}
-    
+
 		[Fact]
 		public async Task GridAddAndRemoveChildrenViaIndex()
 		{
@@ -303,7 +303,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await AttachAndRun(grid, (handler) => 
+				await AttachAndRun(grid, (handler) =>
 				{
 					Assert.True((grid[1] as Label).Text == "Hello world");
 
@@ -325,7 +325,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-    
+
 		/* Commented out of for now due to inconsistent platform behavior
 		[Fact("Ensures grid rows renders the correct size - Issue 15330")]
 		public async Task Issue15330()
