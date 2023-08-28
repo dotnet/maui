@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Platform
 				var accelerator = keyboardAccelerator.ToPlatform();
 
 				if (accelerator is not null)
-					result.AddRange(accelerator);
+					result.Add(accelerator);
 			}
 
 			return result;
@@ -55,23 +55,22 @@ namespace Microsoft.Maui.Platform
 		// Single key (A, Delete, F2, Spacebar, Esc, Multimedia Key) accelerators and multi-key
 		// accelerators (Ctrl+Shift+M) are supported.
 		// Gamepad virtual keys are not supported.
-		public static IList<KeyboardAccelerator>? ToPlatform(this IKeyboardAccelerator keyboardAccelerator)
+		public static KeyboardAccelerator? ToPlatform(this IKeyboardAccelerator keyboardAccelerator)
 		{
 			if (keyboardAccelerator is null)
 				return null;
 
-			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
-
 			var key = keyboardAccelerator.Key;
 			var modifiers = keyboardAccelerator.Modifiers;
+
+			if (key is null)
+				return null;
 
 			var accelerator = new KeyboardAccelerator();
 			accelerator.Key = key.ToVirtualKey();
 			accelerator.Modifiers = modifiers.ToVirtualKeyModifiers();
 
-			result.Add(accelerator);
-
-			return result;
+			return accelerator;
 		}
 
 		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this KeyboardAcceleratorModifiers modifiers)
