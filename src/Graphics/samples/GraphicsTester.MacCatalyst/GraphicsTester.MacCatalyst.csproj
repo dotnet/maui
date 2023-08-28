@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>GraphicsTester.MacCatalyst</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
-    <LangVersion>10.0</LangVersion>
+    <LangVersion>11.0</LangVersion>
     <SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
     <IsPackable>false</IsPackable>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
