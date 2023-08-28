@@ -57,6 +57,39 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ToolbarTitle_UsesTabbedPageChildTitle()
+		{
+			var window = new Window();
+			IToolbarElement toolbarElement = window;
+			var childPage = new ContentPage { Title = "Child Test Title" };
+			var tabbedPage = new TabbedPage
+			{
+				Children = { childPage },
+			};
+			window.Page = new NavigationPage(tabbedPage);
+
+			var toolbar = (Toolbar)toolbarElement.Toolbar;
+			Assert.Equal(childPage.Title, toolbar.Title);
+		}
+
+
+		[Fact]
+		public void ToolbarTitle_UsesTabbedPageTitleWhenSet()
+		{
+			var window = new Window();
+			IToolbarElement toolbarElement = window;
+			var tabbedPage = new TabbedPage
+			{
+				Title = "Test Title",
+				Children = { new ContentPage { Title = "Child Test Title" } },
+			};
+			window.Page = new NavigationPage(tabbedPage);
+
+			var toolbar = (Toolbar)toolbarElement.Toolbar;
+			Assert.Equal(tabbedPage.Title, toolbar.Title);
+		}
+
+		[Fact]
 		public async Task InsertPageBeforeRootPageShowsBackButton()
 		{
 			var window = new TestWindow();
