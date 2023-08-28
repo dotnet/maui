@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -24,7 +23,7 @@ namespace Microsoft.Maui.Platform
 			// This should always get set by the code after but
 			// we are setting it just in case
 			var appbarHeight = 32;
-			if (AppWindowTitleBar.IsCustomizationSupported())
+			if (UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
 				var density = _platformWindow.GetDisplayDensity();
 				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
@@ -32,11 +31,27 @@ namespace Microsoft.Maui.Platform
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
-					AppWindowTitleBar.IsCustomizationSupported() &&
+					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
 					_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar
 				);
 
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
+		}
+
+		internal void SetTitleBarVisibility(bool isVisible)
+		{
+			var appbarHeight = isVisible ? 32 : 0;
+			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
+			{
+				var density = _platformWindow.GetDisplayDensity();
+				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
+			}
+
+			_rootView.UpdateAppTitleBar(
+					appbarHeight,
+                    UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
+					isVisible
+				);
 		}
 
 		void WindowRootViewOnWindowTitleBarContentSizeChanged(object? sender, EventArgs e)

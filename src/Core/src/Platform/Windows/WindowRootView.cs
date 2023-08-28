@@ -103,14 +103,11 @@ namespace Microsoft.Maui.Platform
 		{
 			_useCustomAppTitleBar = useCustomAppTitleBar;
 			WindowTitleBarContentControlMinHeight = appTitleBarHeight;
-			double topMargin = 0;
+			
+			double topMargin = appTitleBarHeight;
 			if (AppTitleBarContentControl != null)
 			{
-				topMargin = AppTitleBarContentControl.ActualHeight;
-			}
-			else
-			{
-				topMargin = appTitleBarHeight;
+				topMargin = Math.Min(appTitleBarHeight, AppTitleBarContentControl.ActualHeight);
 			}
 
 			if (useCustomAppTitleBar)
@@ -123,6 +120,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			UpdateRootNavigationViewMargins(topMargin);
+			this.RefreshThemeResources();
 		}
 
 		protected override void OnApplyTemplate()
