@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Platform
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		public event EventHandler? CheckedChanged
 		{
 			add => _weakEventManager.AddEventHandler(value);

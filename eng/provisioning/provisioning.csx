@@ -10,8 +10,9 @@ if (IsMac)
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
+string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 
-if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
+if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
 		.ApiLevel((AndroidApiLevel)21)
@@ -28,7 +29,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 		.VirtualDevice("Android_x64_API24",   (AndroidApiLevel)24, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API25",   (AndroidApiLevel)25, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API26",   (AndroidApiLevel)26, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice("Android_x64_API27",   (AndroidApiLevel)27, AndroidSystemImageApi.Default, /*!!*/  AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x86_API27",   (AndroidApiLevel)27, AndroidSystemImageApi.GooglePlayStore,  AndroidSystemImageAbi.x86,       AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API28",   (AndroidApiLevel)28, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API29",   (AndroidApiLevel)29, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API30",   (AndroidApiLevel)30, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
@@ -55,7 +56,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 
 	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
 }
-else
+else if(!String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {
 
 	var androidSDK = AndroidSdk();
