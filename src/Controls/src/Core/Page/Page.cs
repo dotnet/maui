@@ -246,7 +246,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the <see langword="null"/> action.</param>
 		/// <param name="destruction">Text to be displayed in the 'Destruct' button. Can be <see langword="null"/> to hide the destructive option.</param>
 		/// <param name="flowDirection">The flow direction to be used by the action sheet.</param>
-		/// <param name="buttons">Text labels for additional buttons. Must not be <see langword="null"/>.</param>
+		/// <param name="buttons">Text labels for additional buttons.</param>
 		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
 		/// <remarks>Developers should be aware that Windows' line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
@@ -286,9 +286,9 @@ namespace Microsoft.Maui.Controls
 		/// Displays an alert dialog to the application user with a single cancel button.
 		/// </summary>
 		/// <param name="title">The title of the alert dialog. Can be <see langword="null"/> to hide the title.</param>
-		/// <param name="message">The body text of the alert dialog. Must not be <see langword="null"/>.</param>
+		/// <param name="message">The body text of the alert dialog.</param>
 		/// <param name="accept">Text to be displayed on the 'Accept' button. Can be <see langword="null"/> to hide this button.</param>
-		/// <param name="cancel">Text to be displayed on the 'Cancel' button. Must not be <see langword="null"/>.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
 		/// <param name="flowDirection">The flow direction to be used by the alert.</param>
 		/// <returns>A <see cref="Task"/> that contains the user's choice as a <see cref="bool"/> value. <see langword="true"/> indicates that the user accepted the alert. <see langword="false"/> indicates that the user cancelled the alert.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="cancel"/> is <see langword="null"/> or empty.</exception>
@@ -317,7 +317,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="message">The body text of the prompt dialog.</param>
 		/// <param name="accept">Text to be displayed on the 'Accept' button.</param>
 		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
-		/// <param name="placeholder">The placeholder text to display in the prompt.</param>
+		/// <param name="placeholder">The placeholder text to display in the prompt. Can be <see langword="null"/> when no placeholder is desired.</param>
 		/// <param name="maxLength">The maximum length of the user response.</param>
 		/// <param name="keyboard">The keyboard type to use for the user response.</param>
 		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
@@ -411,11 +411,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Application developers can override this method to provide behavior when the back button is pressed.
+		/// Determines the behavior when the back button of the page is pressed.
 		/// </summary>
 		/// <returns><see langword="true"/> when the back navigation was handled by the override, otherwise <see langword="false"/>.</returns>
 		/// <remarks>
-		/// <para>When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
+		/// <para>Application developers can override this method to provide behavior when the back button is pressed. 
+		/// When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
 		/// <para>This only works on Android and UWP for the hardware back-button. On iOS, this method will never be called because there is no hardware back button.</para>
 		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
