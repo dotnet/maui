@@ -1,22 +1,53 @@
-#nullable disable
 using System;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="Type[@FullName='Microsoft.Maui.Controls.DragStartingEventArgs']/Docs/*" />
+	/// <summary>
+	/// Provides data for the <see cref="DragGestureRecognizer.DragStarting"/> event.
+	/// </summary>
 	public class DragStartingEventArgs : EventArgs
 	{
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		Func<IElement?, Point?>? _getPosition;
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
+		/// </summary>
 		public DragStartingEventArgs()
 		{
-			Data = new DataPackage();
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="DragStartingEventArgs"/> class.
+		/// </summary>
+		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
+		internal DragStartingEventArgs(Func<IElement?, Point?>? getPosition)
+		{
+			_getPosition = getPosition;
+		}
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether the event handler has handled the event or whether .NET MAUI should continue its own processing.
+		/// </summary>
 		public bool Handled { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Cancel']/Docs/*" />
+
+		/// <summary>
+		/// Gets or sets a value that indicates whether the event should be canceled.
+		/// </summary>
 		public bool Cancel { get; set; }
-		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
-		public DataPackage Data { get; private set; }
+
+		/// <summary>
+		/// Gets the data package that accompanies the drag source.
+		/// </summary>
+		public DataPackage Data { get; } = new DataPackage();
+
+		/// <summary>
+		/// Gets the location where dragging started relative to the specified element.
+		/// </summary>
+		/// <remarks>If <paramref name="relativeTo"/> is <see langword="null"/> then the position relative to the screen is returned.</remarks>
+		/// <param name="relativeTo">Element whose position is used to calculate the relative position.</param>
+		/// <returns>The point where dragging started relative to <paramref name="relativeTo"/>.</returns>
+		public virtual Point? GetPosition(Element? relativeTo) =>
+			_getPosition?.Invoke(relativeTo);
 	}
 }
