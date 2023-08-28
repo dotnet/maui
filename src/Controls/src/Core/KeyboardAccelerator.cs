@@ -23,9 +23,9 @@
 		/// <summary>
 		/// Gets the key for the keyboard accelerator.
 		/// </summary>
-		public string Key
+		public string? Key
 		{
-			get => (string)GetValue(KeyProperty);
+			get => (string?)GetValue(KeyProperty);
 			set => SetValue(KeyProperty, value);
 		}
 	}

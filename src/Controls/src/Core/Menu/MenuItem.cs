@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls
 	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IMenuElement
 	{
 		/// <summary>Bindable property for <see cref="Accelerator"/>.</summary>
-		[Obsolete]
+		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
 		public static readonly BindableProperty AcceleratorProperty = BindableProperty.CreateAttached(nameof(Accelerator), typeof(Accelerator), typeof(MenuItem), null);
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
@@ -42,11 +42,11 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='GetAccelerator']/Docs/*" />
-		[Obsolete] 
+		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")] 
 		public static Accelerator GetAccelerator(BindableObject bindable) => (Accelerator)bindable.GetValue(AcceleratorProperty);
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="//Member[@MemberName='SetAccelerator']/Docs/*" />
-		[Obsolete] 
+		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")] 
 		public static void SetAccelerator(BindableObject bindable, Accelerator value) => bindable.SetValue(AcceleratorProperty, value);
 
 		internal readonly MergedStyle _mergedStyle;

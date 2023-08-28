@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 
 		public IList<KeyboardAccelerator> KeyboardAccelerators { get; }
 
-        IReadOnlyList<IKeyboardAccelerator>? IMenuFlyoutItem.KeyboardAccelerators => 
+		IReadOnlyList<IKeyboardAccelerator>? IMenuFlyoutItem.KeyboardAccelerators => 
 			new List<IKeyboardAccelerator>(KeyboardAccelerators);
     }
 }

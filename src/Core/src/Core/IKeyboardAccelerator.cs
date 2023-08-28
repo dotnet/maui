@@ -15,6 +15,6 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Specifies the values for the virtual key.
 		/// </summary>
-		public string Key { get; }
+		public string? Key { get; }
 	}
 }
