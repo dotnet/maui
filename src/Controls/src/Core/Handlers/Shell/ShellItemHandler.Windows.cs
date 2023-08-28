@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateTitle()
 		{
-			MapMenuItems();
+			MapMenuItems(true);
 		}
 
 		void UpdateCurrentItem()
