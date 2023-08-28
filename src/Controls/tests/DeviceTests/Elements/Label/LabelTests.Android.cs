@@ -63,7 +63,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (Rtl.IsSupported)
 				return;
 
-			var label = new Label { Text = "Foo", HorizontalTextAlignment = TextAlignment.Center};
+			var label = new Label { Text = "Foo", HorizontalTextAlignment = TextAlignment.Center };
 
 			var handler = await CreateHandlerAsync<LabelHandler>(label);
 			var platformLabel = GetPlatformLabel(handler);
