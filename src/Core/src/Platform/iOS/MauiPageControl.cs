@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using CoreGraphics;
 using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiPageControl : UIPageControl
+	public class MauiPageControl : UIPageControl, IUIViewLifeCycleEvents
 	{
 		const int DefaultIndicatorSize = 6;
 
@@ -143,6 +145,19 @@ namespace Microsoft.Maui.Platform
 			if (IsSquare && !(OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsTvOSVersionAtLeast(14)))
 				LayoutSubviews();
 
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
