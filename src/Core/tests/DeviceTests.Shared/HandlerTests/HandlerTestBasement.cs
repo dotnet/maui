@@ -278,7 +278,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var plaformView = CreateHandler(view, handlerType).ToPlatform();
 				await plaformView.AssertColorsAtPointsAsync(colors, points, MauiContext);
-      });
+			});
 		}
 
 		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, Type handlerType)
