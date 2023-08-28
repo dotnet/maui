@@ -14,12 +14,12 @@ namespace Microsoft.Maui.Platform
 			var uiImage = virtualView.Source.GetPlatformMenuImage(mauiContext);
 			var selector = new Selector(MenuItemSelectedSelector);
 
-			var accelerator = virtualView.KeyboardAccelerators?[0];
-			if (accelerator is null)
+			var accelerators = virtualView.KeyboardAccelerators;
+			if (accelerators is null || accelerators.Count == 0 || accelerators[0] is null)
 				return virtualView.CreateMenuItemCommand(index, uiImage, selector);
 
-			var key = accelerator.Key;
-			var modifiers = accelerator.Modifiers.ToUIKeyModifierFlags();
+			var key = accelerators[0].Key;
+			var modifiers = accelerators[0].Modifiers.ToUIKeyModifierFlags();
 
 			// Single key accelerators (no modifier, i.e. "A") and multi-key accelerators are supported (>=1 modifier and 1 key only, i.e. Ctrl+F, Ctrl+Shift+F)
 			return virtualView.CreateMenuItemKeyCommand(index, uiImage, selector, modifiers, key);
