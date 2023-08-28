@@ -39,6 +39,9 @@ public class PlatformDragStartingEventArgs
 	/// Sets the item provider when dragging begins.
 	/// </summary>
 	/// <param name="itemProvider">The custom item provider to use.</param>
+	/// <remarks>
+	/// This itemProvider will be applied to the MAUI generated dragItem.
+	/// </remarks>
 	public void SetItemProvider (Foundation.NSItemProvider itemProvider)
 	{
 		ItemProvider = itemProvider;
@@ -48,6 +51,9 @@ public class PlatformDragStartingEventArgs
 	/// Sets the preview provider when dragging begins.
 	/// </summary>
 	/// <param name="previewProvider">The custom preview provider to use.</param>
+	/// <remarks>
+	/// This previewProvider will be applied to the MAUI generated dragItem.
+	/// </remarks>
 	public void SetPreviewProvider(Func<UIKit.UIDragPreview?> previewProvider)
 	{
 		PreviewProvider = previewProvider;
@@ -57,8 +63,18 @@ public class PlatformDragStartingEventArgs
 	/// Sets the drag items when dragging begins.
 	/// </summary>
 	/// <param name="dragItems">The custom drag items to use.</param>
+	/// <exception cref="NotSupportedException">UIDragItem.LocalObject is set</exception>
+	/// <remarks>
+	/// These dragItems will be used in place of the MAUI generated dragItem with an exception to the LocalObject.
+	/// Do not set LocalObject as it will be overwritten internally.
+	/// </remarks>
 	public void SetUIDragItems(UIKit.UIDragItem[] dragItems)
 	{
+		foreach (var item in dragItems)
+		{
+			if (item.LocalObject is not null)
+				throw new NotSupportedException("Do not assign the UIDragItem.LocalObject as this property will be overwritten internally.");
+		}
 		DragItems = dragItems;
 	}
 
