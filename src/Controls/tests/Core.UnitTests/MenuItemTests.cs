@@ -51,23 +51,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void KeyboardAccelerator()
 		{
-			var item = new MenuItem();
-			string shourtCutKeyBinding = "ctrl+A";
-			MenuItem.SetAccelerator(item, Microsoft.Maui.Controls.KeyboardAccelerator.FromString(shourtCutKeyBinding));
+			var item = new MenuFlyoutItem();
+			KeyboardAcceleratorModifiers modifiers = KeyboardAcceleratorModifiers.Ctrl;
+			string key = "A";
+			item.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers = modifiers, Key = key });
 
-			Assert.Equal(MenuItem.GetAccelerator(item).ToString(), shourtCutKeyBinding);
-		}
-
-		[Fact]
-		public void AcceleratorPlus()
-		{
-			var item = new MenuItem();
-			string shourtCutKeyLikeSeparator = "+";
-			MenuItem.SetAccelerator(item, Microsoft.Maui.Controls.KeyboardAccelerator.FromString(shourtCutKeyLikeSeparator));
-
-			var accelerator = MenuItem.GetAccelerator(item);
-			Assert.Equal(accelerator.ToString(), shourtCutKeyLikeSeparator);
-			Assert.Equal(accelerator.Keys.FirstOrDefault(), shourtCutKeyLikeSeparator);
+			Assert.Equal(item.KeyboardAccelerators[0].Modifiers, modifiers);
+			Assert.Equal(item.KeyboardAccelerators[0].Key, key);
 		}
 
 		protected override T CreateSource()
