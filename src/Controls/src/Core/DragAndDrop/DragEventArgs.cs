@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Controls
 			AcceptedOperation = DataPackageOperation.Copy;
 		}
 
+		internal DragEventArgs(DataPackage dataPackage, PlatformDragEventArgs platformArgs) : this(dataPackage)
+		{
+			PlatformArgs = platformArgs;
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public DataPackage Data { get; }
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragEventArgs.xml" path="//Member[@MemberName='AcceptedOperation']/Docs/*" />
@@ -21,6 +26,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the platform-specific arguments associated with the <see cref="DragEventArgs"/>.
 		/// </summary>
-		public PlatformDragEventArgs PlatformArgs { get; internal set; }
+		public PlatformDragEventArgs PlatformArgs { get; }
 	}
 }

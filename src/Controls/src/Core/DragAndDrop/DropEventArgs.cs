@@ -13,6 +13,11 @@ namespace Microsoft.Maui.Controls
 			Data = view;
 		}
 
+		internal DropEventArgs(DataPackageView view, PlatformDropEventArgs platformArgs) : this(view)
+		{
+			PlatformArgs = platformArgs;
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DropEventArgs.xml" path="//Member[@MemberName='Data']/Docs/*" />
 		public DataPackageView Data { get; }
 
@@ -22,6 +27,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the platform-specific arguments associated with the <see cref="DropEventArgs"/>.
 		/// </summary>
-		public PlatformDropEventArgs PlatformArgs { get; internal set; }
+		public PlatformDropEventArgs PlatformArgs { get; }
 	}
 }

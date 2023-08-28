@@ -12,6 +12,11 @@ namespace Microsoft.Maui.Controls
 			Data = new DataPackage();
 		}
 
+		internal DragStartingEventArgs(PlatformDragStartingEventArgs platformArgs) : this()
+		{
+			PlatformArgs = platformArgs;
+		}
+
 		/// <include file="../../../docs/Microsoft.Maui.Controls/DragStartingEventArgs.xml" path="//Member[@MemberName='Handled']/Docs/*" />
 		[Obsolete("Use PlatformArgs to handle customization. On Windows, set the PlatformArgs.Handled property to true if changing DragStartingEventArgs.")]
 		public bool Handled { get; set; }
@@ -23,6 +28,6 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets the platform-specific arguments associated with the <see cref="DragStartingEventArgs"/>.
 		/// </summary>
-		public PlatformDragStartingEventArgs PlatformArgs { get; internal set; }
+		public PlatformDragStartingEventArgs PlatformArgs { get; }
 	}
 }

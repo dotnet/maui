@@ -92,8 +92,7 @@ namespace Microsoft.Maui.Controls
 
 		internal DragStartingEventArgs SendDragStarting(IView element, PlatformDragStartingEventArgs platformArgs = null)
 		{
-			var args = new DragStartingEventArgs();
-			args.PlatformArgs = platformArgs;
+			var args = new DragStartingEventArgs(platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);

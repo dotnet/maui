@@ -217,15 +217,13 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDropCompleted(View element, PlatformDropCompletedEventArgs platformArgs)
 		{
-			var args = new DropCompletedEventArgs();
-			args.PlatformArgs = platformArgs;
+			var args = new DropCompletedEventArgs(platformArgs);
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
 		bool HandleDragLeave(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage);
-			dragEventArgs.PlatformArgs = platformArgs;
+			var dragEventArgs = new DragEventArgs(dataPackage, platformArgs);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -242,8 +240,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		bool HandleDragOver(View element, DataPackage dataPackage, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(dataPackage);
-			dragEventArgs.PlatformArgs = platformArgs;
+			var dragEventArgs = new DragEventArgs(dataPackage, platformArgs);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -260,8 +257,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDrop(View element, DataPackage datapackage, PlatformDropEventArgs platformArgs)
 		{
-			var args = new DropEventArgs(datapackage?.View);
-			args.PlatformArgs = platformArgs;
+			var args = new DropEventArgs(datapackage?.View, platformArgs);
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
