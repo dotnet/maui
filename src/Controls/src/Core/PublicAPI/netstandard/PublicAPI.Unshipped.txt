@@ -100,14 +100,6 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.get -> bool
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.HasRenderLoop.set -> void
 *REMOVED*Microsoft.Maui.Controls.OpenGLView.OpenGLView() -> void
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Desktop = 3 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Phone = 1 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Tablet = 2 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.TV = 4 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Unsupported = 0 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*Microsoft.Maui.Controls.TargetIdiom.Watch = 5 -> Microsoft.Maui.Controls.TargetIdiom
-*REMOVED*static Microsoft.Maui.Controls.Device.Idiom.get -> Microsoft.Maui.Controls.TargetIdiom
 *REMOVED*Microsoft.Maui.Controls.Application.SavePropertiesAsync() -> System.Threading.Tasks.Task!
 *REMOVED*Microsoft.Maui.Controls.Application.Properties.get -> System.Collections.Generic.IDictionary<string!, object!>!
 Microsoft.Maui.Controls.IValueConverter.Convert(object? value, System.Type! targetType, object? parameter, System.Globalization.CultureInfo! culture) -> object?
@@ -122,3 +114,6 @@ Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Cont
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
 *REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void
+~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
+Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void

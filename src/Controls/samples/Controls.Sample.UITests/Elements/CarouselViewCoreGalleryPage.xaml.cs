@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample
 		int _count;
 		int _position;
 		ObservableCollection<CarouselItem> _items;
-	
+
 		public CarouselViewModel(bool loop, int initialItems = 5, int startCurrentItem = -1)
 		{
 			IsLoop = loop;
