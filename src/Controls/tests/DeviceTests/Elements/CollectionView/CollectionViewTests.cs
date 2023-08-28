@@ -45,7 +45,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			IList logicalChildren = null;
 			WeakReference weakReference = null;
-
 			var collectionView = new CollectionView
 			{
 				Header = new Label { Text = "Header" },
