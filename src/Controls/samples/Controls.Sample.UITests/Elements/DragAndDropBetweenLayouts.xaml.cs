@@ -132,5 +132,58 @@ namespace Maui.Controls.Sample
 
 			AddEvent(nameof(OnDrop));
 		}
-	}
+
+		private void ResetLayouts(object sender, System.EventArgs e)
+		{
+			SLAllColors.Clear();
+			SLRainbow.Clear();
+
+			var leftLayoutColors = new string[] { "Red", "Purple", "Yellow", "Blue"};
+			foreach (var color in leftLayoutColors)
+			{
+				SLAllColors.Add(RegenerateColorLabel(color));
+			}
+
+			SLRainbow.Add(RegenerateColorLabel("Green"));
+			ResetTestLabels();
+		}
+
+		private Label RegenerateColorLabel(string color)
+		{
+			var label = new Label { Text = color, AutomationId = color, HeightRequest = 75, BackgroundColor = Colors.AliceBlue };
+			label.BackgroundColor = color switch
+			{
+				"Red" => Colors.Red,
+				"Purple" => Colors.Purple,
+				"Yellow" => Colors.Yellow,
+				"Blue" => Colors.Blue,
+				"Green" => Colors.Green,
+				_ => Colors.White
+			};
+
+			var dragRecognizer = new DragGestureRecognizer();
+			dragRecognizer.DragStarting += OnDragStarting;
+			dragRecognizer.DropCompleted += OnDropCompleted;
+			label.GestureRecognizers.Add(dragRecognizer);
+
+			return label;
+		}
+
+		private void ResetTestLabels()
+		{
+			events.Text = "EventsLabel: ";
+
+			dragStartRelativeSelf.Text = "Drag Start relative to self:";
+			dragStartRelativeScreen.Text = "Drag Start relative to screen:";
+			dragStartRelativeLabel.Text = "Drag Start relative to this label:";
+
+			dragRelativeDrop.Text = "Drag relative to receiving layout:";
+			dragRelativeScreen.Text = "Drag relative to screen:";
+			dragRelativeLabel.Text = "Drag relative to this label:";
+
+			dropRelativeLayout.Text = "Drop relative to receiving layout:";
+			dropRelativeScreen.Text = "Drop relative to screen:";
+			dropRelativeLabel.Text = "Drop relative to this label:";
+		}
+    }
 }

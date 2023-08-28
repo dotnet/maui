@@ -51,6 +51,8 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Red");
 			App.DragAndDrop("Red", "Green");
 			App.WaitForElement("DragEventsLabel");
@@ -68,6 +70,8 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
+
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.DragAndDrop("Blue", "Green");
@@ -98,6 +102,8 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
+
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.DragAndDrop("Blue", "Green");
@@ -134,6 +140,8 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
+
+			App.Tap("ResetButton");
 
 			App.WaitForElement("Blue");
 			App.DragAndDrop("Blue", "Green");
