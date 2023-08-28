@@ -26,6 +26,7 @@ Microsoft.Maui.Controls.PlatformDropEventArgs.DropInteraction.get -> UIKit.UIDro
 Microsoft.Maui.Controls.PlatformDropEventArgs.DropSession.get -> UIKit.IUIDropSession!
 Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> UIKit.UIView?
 Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView!
+Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDropEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
@@ -35,6 +36,9 @@ Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> UIKit.UIView!
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
+Microsoft.Maui.Controls.DropCompletedEventArgs.DropCompletedEventArgs(Microsoft.Maui.Controls.PlatformDropCompletedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs) -> void
+Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.set -> void

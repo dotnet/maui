@@ -11,6 +11,7 @@ Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Mau
 Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
+Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommand.set -> void
@@ -24,6 +25,9 @@ Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set 
 Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView!
 Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
+Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDropEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.DropCompletedEventArgs.DropCompletedEventArgs(Microsoft.Maui.Controls.PlatformDropCompletedEventArgs! platformArgs) -> void
+Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs) -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void

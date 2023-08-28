@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
 		/// <param name="platformArgs">The platform-specific data associated with the drag.</param>
-		internal DragStartingEventArgs(Func<IElement?, Point?>? getPosition, PlatformDragStartingEventArgs? platformArgs)
+		public DragStartingEventArgs(Func<IElement?, Point?>? getPosition, PlatformDragStartingEventArgs? platformArgs)
 		{
 			_getPosition = getPosition;
 			PlatformArgs = platformArgs;
