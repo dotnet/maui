@@ -17,6 +17,13 @@ namespace Maui.Controls.Sample.Pages
 					Key = "F" 
 				}
 			);
+			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(
+				new KeyboardAccelerator()
+				{
+					Modifiers = KeyboardAcceleratorModifiers.Shift,
+					Key = "F"
+				}
+			);
 		}
 
 		void ItemClicked(object sender, EventArgs e)
