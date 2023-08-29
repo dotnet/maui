@@ -77,13 +77,13 @@ namespace Microsoft.Maui.DeviceTests
 			var xy = radius - (radius / Math.Sqrt(2));
 
 			// This marks the outside edge of the rounded corner.
-			var outerXY = xy - (strokeThickness / 2);
+			var outerXY = xy;
 
-			// Add half the stroke thickness to find the inner edge of the rounded corner.
-			var innerXY = xy + (strokeThickness / 2);
+			// Add stroke thickness to find the inner edge of the rounded corner.
+			var innerXY = outerXY + strokeThickness;
 
 #if IOS
-			// FIXME: iOS seems to have a white boarder around the Border stroke
+			// FIXME: iOS seems to have a white border around the Border stroke
 
 			// Verify that the color outside of the rounded corner is the parent's color (White)
 			points[0] = new Point(5, 5);
@@ -160,11 +160,11 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 			// Verify that the stroke is where we expect
-			points[0] = new Point(1 + offset, 1 + offset);
+			points[0] = new Point(offset + 1, offset + 1);
 			colors[0] = Colors.Black;
 
 			// Verify that the stroke is only as thick as we expect
-			points[1] = new Point(10 + offset, 10 + offset);
+			points[1] = new Point(offset + border.StrokeThickness + 1, offset + border.StrokeThickness + 1);
 			colors[1] = Colors.Red;
 
 			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);

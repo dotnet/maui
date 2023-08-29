@@ -276,7 +276,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		public static string CreateColorAtPointError(this Bitmap bitmap, AColor expectedColor, int x, int y) =>
-			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in renderered view.");
+			CreateColorError(bitmap, $"Expected {expectedColor} at point {x},{y} in rendered view.");
 
 		public static string CreateColorError(this Bitmap bitmap, string message) =>
 			$"{message} This is what it looked like:<img>{bitmap.ToBase64String()}</img>";
@@ -412,7 +412,7 @@ namespace Microsoft.Maui.DeviceTests
 			var actualColor = bitmap.ColorAtPoint(x, y);
 
 			if (!actualColor.IsEquivalent(expectedColor))
-				Assert.Equal(expectedColor, actualColor);
+				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
 
 			return bitmap;
 		}
