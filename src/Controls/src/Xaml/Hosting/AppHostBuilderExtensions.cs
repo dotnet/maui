@@ -112,13 +112,11 @@ namespace Microsoft.Maui.Controls.Hosting
 #pragma warning restore CA1416
 
 #if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+			handlersCollection.AddHandler<ListView>(svc => new Handlers.Compatibility.ListViewRenderer(
 #if ANDROID
-#pragma warning disable RS0030 // FIXME: Do not use banned APIs, only works due to MissingMethodException
-			handlersCollection.AddHandler(typeof(ListView), typeof(Handlers.Compatibility.ListViewRenderer));
-#pragma warning restore RS0030 // Do not use banned APIs
-#else
-			handlersCollection.AddHandler<ListView>(svc => new Handlers.Compatibility.ListViewRenderer());
+				svc.GetRequiredService<Android.Content.Context>()
 #endif
+			));
 #if !TIZEN
 			handlersCollection.AddHandler<ImageCell>(_ => new Handlers.Compatibility.ImageCellRenderer());
 			handlersCollection.AddHandler<EntryCell>(_ => new Handlers.Compatibility.EntryCellRenderer());
@@ -126,20 +124,16 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ViewCell>(_ => new Handlers.Compatibility.ViewCellRenderer());
 			handlersCollection.AddHandler<SwitchCell>(_ => new Handlers.Compatibility.SwitchCellRenderer());
 #endif
+			handlersCollection.AddHandler<TableView>(svc => new Handlers.Compatibility.TableViewRenderer(
 #if ANDROID
-#pragma warning disable RS0030 // FIXME: Do not use banned APIs, only works due to MissingMethodException
-			handlersCollection.AddHandler(typeof(TableView), typeof(Handlers.Compatibility.TableViewRenderer));
-#pragma warning restore RS0030 // Do not use banned APIs
-#else
-			handlersCollection.AddHandler<TableView>(svc => new Handlers.Compatibility.TableViewRenderer());
+				svc.GetRequiredService<Android.Content.Context>()
 #endif
+			));
+			handlersCollection.AddHandler<Frame>(svc => new Handlers.Compatibility.FrameRenderer(
 #if ANDROID
-#pragma warning disable RS0030 // FIXME: Do not use banned APIs, only works due to MissingMethodException
-			handlersCollection.AddHandler(typeof(Frame), typeof(Handlers.Compatibility.FrameRenderer));
-#pragma warning restore RS0030 // Do not use banned APIs
-#else
-			handlersCollection.AddHandler<Frame>(svc => new Handlers.Compatibility.FrameRenderer());
+				svc.GetRequiredService<Android.Content.Context>()
 #endif
+			));
 #endif
 
 #if WINDOWS || MACCATALYST
