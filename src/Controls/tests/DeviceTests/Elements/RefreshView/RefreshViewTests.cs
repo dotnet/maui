@@ -8,7 +8,6 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
-using Windows.Foundation;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -36,19 +35,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var vm = new RefreshPageViewModel();
 			var refreshView = new RefreshView() { BindingContext = vm };
-			var collectionView = new CollectionView
-			{
-				ItemTemplate = new DataTemplate(() =>
-				{
-					var label = new Label();
-					label.SetBinding(Label.TextProperty, ".");
-					return label;
-				}),
-			};
-			
-			collectionView.SetBinding(CollectionView.ItemsSourceProperty, nameof(vm.Data));
 
-			refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(vm.IsRefreshing));
+			refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(vm.IsRefreshing), BindingMode.TwoWay);
 
 			await CreateHandlerAndAddToWindow<RefreshViewHandler>(refreshView, async handler =>
 			{
@@ -64,7 +52,6 @@ namespace Microsoft.Maui.DeviceTests
 				};
 #endif
 				vm.IsRefreshing = true;
-			
 #if ANDROID
 				platformIsRefreshing = platformControl.Refreshing;
 #elif IOS
@@ -84,6 +71,60 @@ namespace Microsoft.Maui.DeviceTests
 				if(refreshCompletionDeferral != null)
 				{
 					refreshCompletionDeferral.Complete();
+					refreshCompletionDeferral = null;
+					platformIsRefreshing = false;
+				}
+#endif
+				Assert.Equal(vm.IsRefreshing, platformIsRefreshing);
+				await Task.Delay(1000);
+			});
+		}
+
+		[Fact(DisplayName = "IsRefreshing binding works when started on platform")]
+		public async Task IsRefreshingBindingWorksFromPlatform()
+		{
+			SetupBuilder();
+
+			var vm = new RefreshPageViewModel();
+			var refreshView = new RefreshView() { BindingContext = vm };
+
+			refreshView.SetBinding(RefreshView.IsRefreshingProperty, nameof(vm.IsRefreshing), BindingMode.TwoWay);
+
+			await CreateHandlerAndAddToWindow<RefreshViewHandler>(refreshView, async handler =>
+			{
+				var platformControl = handler.PlatformView;
+				Assert.NotNull(platformControl);
+				bool? platformIsRefreshing = null;
+#if WINDOWS
+				Deferral refreshCompletionDeferral = null;
+				platformControl.RefreshRequested += (s, e) =>
+				{
+					refreshCompletionDeferral = e.GetDeferral();
+					platformIsRefreshing = true;
+				};
+				platformControl.RequestRefresh();
+#endif
+
+#if ANDROID
+				platformIsRefreshing = platformControl.Refreshing = true;
+#elif IOS
+				platformIsRefreshing = platformControl.IsRefreshing = true;
+#elif WINDOWS
+
+#endif
+				Assert.NotNull(platformIsRefreshing);
+				Assert.Equal(platformIsRefreshing, vm.IsRefreshing);
+				await Task.Delay(300);
+				vm.IsRefreshing = false;
+#if ANDROID
+				platformIsRefreshing = platformControl.Refreshing;
+#elif IOS
+				platformIsRefreshing = platformControl.IsRefreshing;
+#elif WINDOWS
+				if (refreshCompletionDeferral != null)
+				{
+					refreshCompletionDeferral.Complete();
+					refreshCompletionDeferral = null;
 					platformIsRefreshing = false;
 				}
 #endif
