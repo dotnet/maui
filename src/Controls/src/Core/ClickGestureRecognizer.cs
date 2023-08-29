@@ -6,7 +6,7 @@ using System.Windows.Input;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ClickGestureRecognizer.xml" path="Type[@FullName='Microsoft.Maui.Controls.ClickGestureRecognizer']/Docs/*" />
-	[Obsolete("The ClickGestureRecognizer is deprecated; please use TagGestureRecognizer or PointerGestureHandler instead.")]
+	[Obsolete("The ClickGestureRecognizer is deprecated; please use TagGestureRecognizer or PointerGestureRecognizer instead.")]
 	public sealed class ClickGestureRecognizer : GestureRecognizer
 	{
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
