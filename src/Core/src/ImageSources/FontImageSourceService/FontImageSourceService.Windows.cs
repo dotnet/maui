@@ -26,6 +26,7 @@ namespace Microsoft.Maui
 			{
 				// TODO: The DPI not working as the view is not respecting the
 				//       value, so just reset to 1 to keep the correct size.
+				//       https://github.com/dotnet/maui/issues/1000
 				scale = 1;
 
 				// TODO: use a cached way
@@ -36,6 +37,7 @@ namespace Microsoft.Maui
 
 				// TODO: The DPI not working as the view is not respecting the
 				//       value, so mark this image as non-resolution-dependent.
+				//       https://github.com/dotnet/maui/issues/1000
 				var result = new ImageSourceServiceResult(image, false);
 
 				return FromResult(result);
@@ -54,6 +56,7 @@ namespace Microsoft.Maui
 		{
 			// TODO: The DPI not working as the view is not respecting the
 			//       value, so just reset to 1 to keep the correct size.
+			//       https://github.com/dotnet/maui/issues/1000
 			scale = 1;
 
 			var dpi = scale * DeviceDisplay.BaseLogicalDpi;
