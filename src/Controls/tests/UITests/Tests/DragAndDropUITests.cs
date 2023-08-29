@@ -139,6 +139,8 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.True(textAfterDrag.Contains("Drop:Sender", StringComparison.OrdinalIgnoreCase));
 				Assert.True(textAfterDrag.Contains("Drop:DragEventArgs", StringComparison.OrdinalIgnoreCase));
 			}
+		}
+
 		public void DragStartEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
