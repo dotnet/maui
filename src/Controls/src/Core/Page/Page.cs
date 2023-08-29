@@ -482,7 +482,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Called when the page's <see cref="Element.Parent"/> property has changed.
-		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the page's <see cref="RealParent"/> can't be casted to <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown when the parent is not a (descendant of) <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
 		protected override void OnParentSet()
 		{
