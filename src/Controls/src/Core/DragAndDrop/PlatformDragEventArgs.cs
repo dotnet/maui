@@ -77,7 +77,7 @@ public class PlatformDragEventArgs
 	/// Gets or sets a value that indicates whether the DragEventArgs are changed.
 	/// </summary>
 	/// <remarks>
-	/// Set this property's value to true when changing the DragEventArgs so the system does not override the changes.
+	/// Set the value of this property to true when changing the DragEventArgs so the system does not override the changes.
 	/// </remarks>
 	public bool Handled { get; set; }
 

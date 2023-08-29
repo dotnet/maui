@@ -13,7 +13,7 @@ Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragSession.get -> UIKit.I
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> UIKit.UIView?
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetItemProvider(Foundation.NSItemProvider! itemProvider) -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetPreviewProvider(System.Func<UIKit.UIDragPreview?>! previewProvider) -> void
-Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetUIDragItems(UIKit.UIDragItem![]! dragItems) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragItems(UIKit.UIDragItem![]! dragItems) -> void
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragInteraction.get -> UIKit.UIDragInteraction?
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragSession.get -> UIKit.IUIDragSession?

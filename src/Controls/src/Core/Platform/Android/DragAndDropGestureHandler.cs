@@ -277,7 +277,6 @@ namespace Microsoft.Maui.Controls.Platform
 				// TODO MAUI
 				string clipDescription = String.Empty;//AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
 				ClipData data = null;
-				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -286,6 +285,8 @@ namespace Microsoft.Maui.Controls.Platform
 				{
 					if (args.PlatformArgs.ClipData is null)
 					{
+						ClipData.Item item = null;
+
 						if (args.Data.Image != null)
 						{
 							mimeTypes.Add("image/jpeg");

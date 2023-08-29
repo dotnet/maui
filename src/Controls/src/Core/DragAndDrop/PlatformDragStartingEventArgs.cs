@@ -68,7 +68,7 @@ public class PlatformDragStartingEventArgs
 	/// These dragItems will be used in place of the MAUI generated dragItem with an exception to the LocalObject.
 	/// Do not set LocalObject as it will be overwritten internally.
 	/// </remarks>
-	public void SetUIDragItems(UIKit.UIDragItem[] dragItems)
+	public void SetDragItems(UIKit.UIDragItem[] dragItems)
 	{
 		foreach (var item in dragItems)
 		{

@@ -120,8 +120,10 @@ namespace Microsoft.Maui.Controls
 				args.Data.PropertiesInternal.Add("DragSource", element);
 #pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (args.Cancel || args.Handled)
 				return args;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_isDragActive = true;
 
