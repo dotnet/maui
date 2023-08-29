@@ -18,7 +18,6 @@ Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
-Microsoft.Maui.IMenuElement.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
 Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Alt = 4 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Cmd = 8 -> Microsoft.Maui.KeyboardAcceleratorModifiers
@@ -73,10 +72,6 @@ Microsoft.Maui.IMenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Ge
 static Microsoft.Maui.SoftInputExtensions.HideSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
 static Microsoft.Maui.SoftInputExtensions.IsSoftInputShowing(this Microsoft.Maui.ITextInput! targetView) -> bool
 static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui.ITextInput! targetView, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>!
-Microsoft.Maui.IAccelerator
-Microsoft.Maui.IAccelerator.Key.get -> string!
-Microsoft.Maui.IAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
-Microsoft.Maui.IMenuElement.Accelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IAccelerator!>?
 *REMOVED*Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
