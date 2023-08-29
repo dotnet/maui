@@ -29,6 +29,7 @@ namespace Microsoft.Maui.Controls.Platform
 		bool _isPinching;
 		bool _wasPanGestureStartedSent;
 		bool _wasPinchGestureStartedSent;
+		const string _doNotUsePropertyString = "_XFPropertes_DONTUSE";
 
 		public GesturePlatformManager(IViewHandler handler)
 		{
@@ -192,7 +193,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDrop(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var datapackage = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
+			var datapackage = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
 			VisualElement? element = null;
 
 			if (sender is IViewHandler handler &&
@@ -236,13 +237,13 @@ namespace Microsoft.Maui.Controls.Platform
 				var handler = sender as IViewHandler;
 				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e), new PlatformDragStartingEventArgs(sender, e));
 
-				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
+				e.Data.Properties[_doNotUsePropertyString] = args.Data;
 
 #pragma warning disable CS0618 // Type or member is obsolete
-				if ((!args.Handled || !dragEventArgs.PlatformArgs?.Handled ?? true) && handler != null)
+				if ((!args.Handled || (!args.PlatformArgs?.Handled ?? true)) && handler != null)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
-					if (handler.PlatformView is UI.Xaml.Controls.Image nativeImage &&
+					if (handler?.PlatformView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
 					{
 						e.Data.SetBitmap(RandomAccessStreamReference.CreateFromUri(bi.UriSource));
@@ -262,10 +263,11 @@ namespace Microsoft.Maui.Controls.Platform
 							e.Data.SetText(args.Data.Text);
 						}
 					}
+
+					e.AllowedOperations = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 				}
 
 				e.Cancel = args.Cancel;
-				e.AllowedOperations = global::Windows.ApplicationModel.DataTransfer.DataPackageOperation.Copy;
 			});
 		}
 
@@ -779,7 +781,7 @@ namespace Microsoft.Maui.Controls.Platform
 		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e, PlatformDragEventArgs platformArgs)
 		{
 			// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
-			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
+			var package = e.DataView.Properties[_doNotUsePropertyString] as DataPackage;
 
 			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e), platformArgs);
 		}

@@ -63,18 +63,11 @@ public class PlatformDragStartingEventArgs
 	/// Sets the drag items when dragging begins.
 	/// </summary>
 	/// <param name="dragItems">The custom drag items to use.</param>
-	/// <exception cref="NotSupportedException">UIDragItem.LocalObject is set</exception>
 	/// <remarks>
-	/// These dragItems will be used in place of the MAUI generated dragItem with an exception to the LocalObject.
-	/// Do not set LocalObject as it will be overwritten internally.
+	/// These dragItems will be used in place of the MAUI generated dragItem.
 	/// </remarks>
 	public void SetDragItems(UIKit.UIDragItem[] dragItems)
 	{
-		foreach (var item in dragItems)
-		{
-			if (item.LocalObject is not null)
-				throw new NotSupportedException("Do not assign the UIDragItem.LocalObject as this property will be overwritten internally.");
-		}
 		DragItems = dragItems;
 	}
 
@@ -91,6 +84,8 @@ public class PlatformDragStartingEventArgs
 
 	internal Android.Views.View.DragShadowBuilder? DragShadowBuilder { get; private set; }
 	internal Android.Content.ClipData? ClipData { get; private set; }
+	internal Java.Lang.Object? LocalData { get; private set; }
+	internal Android.Views.DragFlags? DragFlags { get; private set; }
 
 	internal PlatformDragStartingEventArgs(Android.Views.View sender, Android.Views.MotionEvent motionEvent)
 	{
@@ -114,6 +109,24 @@ public class PlatformDragStartingEventArgs
 	public void SetClipData(Android.Content.ClipData clipData)
 	{
 		ClipData = clipData;
+	}
+
+	/// <summary>
+	/// Sets the local data when dragging begins.
+	/// </summary>
+	/// <param name="localData">The custom local data to use.</param>
+	public void SetLocalData(Java.Lang.Object localData)
+	{
+		LocalData = localData;
+	}
+
+	/// <summary>
+	/// Sets the drag flags when dragging begins.
+	/// </summary>
+	/// <param name="dragFlags">The custom drag flags to use.</param>
+	public void SetDragFlags(Android.Views.DragFlags dragFlags)
+	{
+		DragFlags = dragFlags;
 	}
 
 #elif WINDOWS

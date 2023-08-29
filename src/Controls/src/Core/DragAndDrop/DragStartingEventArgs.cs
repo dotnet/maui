@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Gets or sets a value that indicates whether the event handler has handled the event or whether .NET MAUI should continue its own processing.
 		/// </summary>
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		[Obsolete("Use PlatformArgs to handle customization. On Windows, set the PlatformArgs.Handled property to true if changing DragStartingEventArgs.")]
 		public bool Handled { get; set; }
 

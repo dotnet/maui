@@ -6,6 +6,8 @@ Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Android.View
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragShadowBuilder(Android.Views.View.DragShadowBuilder! dragShadowBuilder) -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetClipData(Android.Content.ClipData! clipData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetLocalData(Java.Lang.Object! localData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragFlags(Android.Views.DragFlags dragFlags) -> void
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> Android.Views.View!
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragEvent.get -> Android.Views.DragEvent!

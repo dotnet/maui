@@ -274,7 +274,6 @@ namespace Microsoft.Maui.Controls.Platform
 				CustomLocalStateData customLocalStateData = new CustomLocalStateData();
 				customLocalStateData.DataPackage = args.Data;
 
-
 				// TODO MAUI
 				string clipDescription = String.Empty;//AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
 				ClipData data = null;
@@ -284,7 +283,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!args.Handled)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
-					if (args.PlatformArgs.ClipData is null)
+					if (args.PlatformArgs?.ClipData is null)
 					{
 						ClipData.Item item = null;
 
@@ -334,16 +333,23 @@ namespace Microsoft.Maui.Controls.Platform
 					}
 				}
 
-				var dragShadowBuilder = args.PlatformArgs.DragShadowBuilder ?? new AView.DragShadowBuilder(v);
-
 				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = element;
 
+				var dragShadowBuilder = args.PlatformArgs?.DragShadowBuilder ?? new AView.DragShadowBuilder(v);
+				var localData = args.PlatformArgs?.LocalData ?? customLocalStateData;
+
+				int dragFlags;
+				if (args.PlatformArgs?.DragFlags is ADragFlags d)
+					dragFlags = (int)d;
+				else
+					dragFlags = (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead;
+
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
-					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
 				else
 #pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
-					v.StartDrag(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+					v.StartDrag(data, dragShadowBuilder, localData, dragFlags);
 #pragma warning restore CS0618, CA1416
 			});
 		}
