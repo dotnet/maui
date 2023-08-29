@@ -61,14 +61,14 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/RefreshView.xml" path="//Member[@MemberName='IsRefreshing']/Docs/*" />
 		public bool IsRefreshing
 		{
-			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value); }
+			get => (bool)GetValue(IsRefreshingProperty);
+			set => SetValue(IsRefreshingProperty, value, SetterSpecificity.FromBinding);
 		}
 
 		bool IRefreshView.IsRefreshing
 		{
-			get { return (bool)GetValue(IsRefreshingProperty); }
-			set { SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler); }
+			get => IsRefreshing;
+			set => SetValue(IsRefreshingProperty, value, SetterSpecificity.FromHandler);
 		}
 
 		/// <summary>Bindable property for <see cref="Command"/>.</summary>
