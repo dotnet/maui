@@ -1,5 +1,11 @@
 #nullable enable
 Microsoft.Maui.Controls.KeyboardAccelerator
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string?
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.set -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.KeyboardAccelerator() -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.set -> void
+Microsoft.Maui.Controls.MenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.KeyboardAccelerator!>!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -10,7 +16,8 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
-override Microsoft.Maui.Controls.KeyboardAccelerator.GetHashCode() -> int
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -49,15 +56,6 @@ Microsoft.Maui.Controls.Handlers.BoxViewHandler
 Microsoft.Maui.Controls.Handlers.BoxViewHandler.BoxViewHandler() -> void
 Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
 Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
-~Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string
-
-~override Microsoft.Maui.Controls.KeyboardAccelerator.Equals(object obj) -> bool
-~override Microsoft.Maui.Controls.KeyboardAccelerator.ToString() -> string
-~static Microsoft.Maui.Controls.KeyboardAccelerator.FromString(string text) -> Microsoft.Maui.Controls.KeyboardAccelerator
-~static Microsoft.Maui.Controls.KeyboardAccelerator.implicit operator Microsoft.Maui.Controls.KeyboardAccelerator(string accelerator) -> Microsoft.Maui.Controls.KeyboardAccelerator
-
-
-
 virtual Microsoft.Maui.Controls.VisualElement.IsEnabledCore.get -> bool
 Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool

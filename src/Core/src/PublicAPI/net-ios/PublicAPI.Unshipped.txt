@@ -8,8 +8,9 @@ Microsoft.Maui.Handlers.SwipeItemButton
 Microsoft.Maui.Handlers.SwipeItemButton.FrameChanged -> System.EventHandler?
 Microsoft.Maui.Handlers.SwipeItemButton.SwipeItemButton() -> void
 Microsoft.Maui.IKeyboardAccelerator
-Microsoft.Maui.IKeyboardAccelerator.Key.get -> string!
-Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
+Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.IMenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.ICommandMapper
@@ -25,6 +26,13 @@ Microsoft.Maui.ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint,
 Microsoft.Maui.ICrossPlatformLayoutBacking
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.ICrossPlatformLayoutBacking.CrossPlatformLayout.set -> void
+Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Alt = 4 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Cmd = 8 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Ctrl = 2 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.None = 0 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.LifecycleEvents.iOSLifecycle.PerformFetch
 Microsoft.Maui.Platform.IImageSourcePartSetter

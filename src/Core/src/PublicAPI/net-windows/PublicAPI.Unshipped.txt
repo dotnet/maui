@@ -3,8 +3,9 @@ Microsoft.Maui.CommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler,
 Microsoft.Maui.FocusRequest.FocusRequest() -> void
 Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader?
 Microsoft.Maui.IKeyboardAccelerator
-Microsoft.Maui.IKeyboardAccelerator.Key.get -> string!
-Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Maui.IKeyboardAccelerator.Key.get -> string?
+Microsoft.Maui.IKeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.IMenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>?
 Microsoft.Maui.IApplication.UserAppTheme.get -> Microsoft.Maui.ApplicationModel.AppTheme
 Microsoft.Maui.Hosting.MauiApp.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.Maui.ITextInput.IsSpellCheckEnabled.get -> bool
@@ -21,6 +22,13 @@ Microsoft.Maui.ICommandMapper.Invoke(Microsoft.Maui.IElementHandler! viewHandler
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView, object?>! action) -> void
 Microsoft.Maui.ICommandMapper<TVirtualView, TViewHandler>.Add(string! key, System.Action<TViewHandler, TVirtualView>! action) -> void
+Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Alt = 4 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Cmd = 8 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Ctrl = 2 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.None = 0 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
 Microsoft.Maui.Platform.IImageSourcePartSetter
 Microsoft.Maui.Platform.IImageSourcePartSetter.Handler.get -> Microsoft.Maui.IElementHandler?
@@ -62,11 +70,11 @@ static Microsoft.Maui.Layouts.FlexBasis.operator !=(Microsoft.Maui.Layouts.FlexB
 static Microsoft.Maui.Layouts.FlexBasis.operator ==(Microsoft.Maui.Layouts.FlexBasis left, Microsoft.Maui.Layouts.FlexBasis right) -> bool
 static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Microsoft.Maui.IContentView! contentView, Microsoft.Maui.Graphics.Rect bounds) -> Microsoft.Maui.Graphics.Size
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
+static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this Microsoft.Maui.IKeyboardAccelerator! keyboardAccelerator) -> Microsoft.UI.Xaml.Input.KeyboardAccelerator?
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateFlyoutIconAsync(this Microsoft.UI.Xaml.Controls.AnimatedIcon! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this Microsoft.UI.Xaml.Controls.AutoSuggestBox! platformControl, Microsoft.Maui.ISearchBar! searchBar) -> void
-static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this Microsoft.Maui.IKeyboardAccelerator! keyboardAccelerator) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.ToPlatform(this System.Collections.Generic.IReadOnlyList<Microsoft.Maui.IKeyboardAccelerator!>! keyboardAccelerators) -> System.Collections.Generic.IList<Microsoft.UI.Xaml.Input.KeyboardAccelerator!>?
 static Microsoft.Maui.Platform.KeyboardAcceleratorExtensions.UpdateKeyboardAccelerators(this Microsoft.UI.Xaml.Controls.MenuFlyoutItemBase! platformView, Microsoft.Maui.IMenuFlyoutItem! menuFlyoutItem) -> void
 static Microsoft.Maui.Platform.NavigationViewExtensions.UpdateTopNavigationViewItemSelectedColor(this Microsoft.Maui.Platform.MauiNavigationView! navigationView, Microsoft.Maui.Graphics.Paint? paint) -> void
