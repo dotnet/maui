@@ -62,7 +62,7 @@ namespace Microsoft.Maui.Controls
 		public bool IsRefreshing
 		{
 			get => (bool)GetValue(IsRefreshingProperty);
-			set => SetValue(IsRefreshingProperty, value, SetterSpecificity.FromBinding);
+			set => SetValue(IsRefreshingProperty, value);
 		}
 
 		bool IRefreshView.IsRefreshing
