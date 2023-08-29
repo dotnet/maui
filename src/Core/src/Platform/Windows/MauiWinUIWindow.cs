@@ -34,7 +34,10 @@ namespace Microsoft.Maui
 			// set to false we know the user toggled this to false 
 			// and then we can react accordingly
 			if (AppWindowTitleBar.IsCustomizationSupported())
+			{
 				base.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+				base.AppWindow.TitleBar.IconShowOptions = IconShowOptions.HideIconAndSystemMenu;
+			}
 
 			SubClassingWin32();
 			SetIcon();
