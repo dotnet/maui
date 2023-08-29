@@ -60,7 +60,7 @@
   </ItemGroup>
 
   <!-- These implicit <PackageReference/> pull dependencies from NuGet transitively -->
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="@MicrosoftExtensionsServicingPackageVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
@@ -74,12 +74,12 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Microsoft.Maui.Graphics" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true'  or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'android') ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true'  or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'android') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Xamarin.Android.Glide" Version="@_XamarinAndroidGlideVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
@@ -114,7 +114,7 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true') and ('$(TargetPlatformIdentifier)' == 'tizen') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Tizen.UIExtensions.NUI" Version="@TizenUIExtensionsVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
@@ -122,12 +122,12 @@
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" '$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true' ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' and '$(UsingMicrosoftNETSdkRazor)' == 'true') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') ">
+  <ItemGroup Condition=" ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true') and ('$(TargetPlatformIdentifier)' == 'windows') and ('$(DisableMauiImplicitPackageReferences)' != 'true') ">
     <PackageReference Include="Microsoft.Maui.Graphics.Win2D.WinUI.Desktop" Version="$(MauiVersion)" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' ">all</PrivateAssets>
     </PackageReference>
