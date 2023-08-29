@@ -48,8 +48,6 @@ namespace Microsoft.Maui.Platform
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 
-			uiSlider.GetDisplayDensity();
-
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
