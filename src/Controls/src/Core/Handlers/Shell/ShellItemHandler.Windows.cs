@@ -225,7 +225,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (syncSelectedItem && ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
 
-			UpdateTabBarVisibility(shellItemController);
+			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
 		void UpdateSearchHandler()
@@ -373,7 +373,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateTitle()
 		{
-			MapMenuItems();
+			MapMenuItems(true);
 		}
 
 		void UpdateCurrentItem()
