@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void MenuHierarchyCanBeDisabled() 
+		public void MenuHierarchyCanBeDisabled()
 		{
 			var topMenu = new MenuFlyoutSubItem();
 			var middleMenu = new MenuFlyoutSubItem();

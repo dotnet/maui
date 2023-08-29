@@ -44,13 +44,13 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		UIView? PlatformContent 
-		{ 
-			get 
-			{ 
+		UIView? PlatformContent
+		{
+			get
+			{
 				// It's a fair bet that Subviews[0] will always be the content for the ContentView
 				// But just in case, we're going to iterate over the views and check the tag
-				foreach (var subview in Subviews) 
+				foreach (var subview in Subviews)
 				{
 					if (subview.Tag == ContentTag)
 					{
@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Platform
 			{
 				RemoveContentMask();
 			}
-			
+
 			base.WillRemoveSubview(uiview);
 		}
 	}

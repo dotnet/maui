@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Platform
 				return dt.GetPosition(relativeTo);
 			else if (e is DragStartingEventArgs ds)
 				return ds.GetPosition(relativeTo);
-			else if(e is DragEventArgs d)
+			else if (e is DragEventArgs d)
 				return d.GetPosition(relativeTo);
 			else if (e is PointerRoutedEventArgs p)
 			{
