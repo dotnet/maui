@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			_emittedDragOver = false;
-			var label = (sender as Element).Parent as Label;
+			var label = (Label)(sender as Element).Parent;
 			var sl = label.Parent as StackLayout;
 			e.Data.Properties.Add("Color", label);
 			e.Data.Properties.Add("Source", sl);
@@ -36,6 +36,10 @@ namespace Maui.Controls.Sample
 				SLAllColors.Background = SolidColorBrush.LightBlue;
 
 			AddEvent(nameof(OnDragStarting));
+
+			dragStartRelativeSelf.Text = $"Drag Start relative to self: {(int)e.GetPosition(label).Value.X},{(int)e.GetPosition(label).Value.Y}";
+			dragStartRelativeScreen.Text = $"Drag Start relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dragStartRelativeLabel.Text = $"Drag Start relative to this label: {(int)e.GetPosition(dragStartRelativeLabel).Value.X},{(int)e.GetPosition(dragStartRelativeLabel).Value.Y}";
 		}
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
@@ -56,7 +60,7 @@ namespace Maui.Controls.Sample
 				return;
 
 			//e.AcceptedOperation = DataPackageOperation.None;
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = (StackLayout)(sender as Element).Parent;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
@@ -70,6 +74,10 @@ namespace Maui.Controls.Sample
 				AddEvent(nameof(OnDragOver));
 				_emittedDragOver = true;
 			}
+
+			dragRelativeDrop.Text = $"Drag relative to receiving layout: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
+			dragRelativeScreen.Text = $"Drag relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dragRelativeLabel.Text = $"Drag relative to this label: {(int)e.GetPosition(dragRelativeLabel).Value.X},{(int)e.GetPosition(dragRelativeLabel).Value.Y}";
 		}
 
 		private void OnDragLeave(object sender, DragEventArgs e)
@@ -77,7 +85,7 @@ namespace Maui.Controls.Sample
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = (StackLayout)(sender as Element).Parent;
 			if (e.Data.Properties["Source"] == sl)
 			{
 				e.AcceptedOperation = DataPackageOperation.None;
@@ -114,6 +122,10 @@ namespace Maui.Controls.Sample
 				SLAllColors.Children.Add(color);
 				AddEvent($"AllColorsAdd:{color.Text}");
 			}
+
+			dropRelativeLayout.Text = $"Drop relative to receiving layout: {(int)e.GetPosition(sl).Value.X},{(int)e.GetPosition(sl).Value.Y}";
+			dropRelativeScreen.Text = $"Drop relative to screen: {(int)e.GetPosition(null).Value.X},{(int)e.GetPosition(null).Value.Y}";
+			dropRelativeLabel.Text = $"Drop relative to this label: {(int)e.GetPosition(dropRelativeLabel).Value.X},{(int)e.GetPosition(dropRelativeLabel).Value.Y}";
 
 			SLAllColors.Background = SolidColorBrush.White;
 			SLRainbow.Background = SolidColorBrush.White;

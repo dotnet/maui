@@ -193,12 +193,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
+
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
-		/* Commented out for now until border issues are fixed
+#if IOS
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
+#else
+		[Fact("Ensures the border renders the expected size - Issue 15339", 
+			Skip = "Current fails on platforms other than iOS; we're working on it.")]
+#endif
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
 			double borderThickness = 10;
@@ -220,6 +225,6 @@ namespace Microsoft.Maui.DeviceTests
 			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
 			Assert.Equal(180, redBlob.Width, 2d);
 			Assert.Equal(80, redBlob.Height, 2d);
-		}*/
+		}
 	}
 }
