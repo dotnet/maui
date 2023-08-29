@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Maui.Controls.Sample.Issues.Issue12604"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <ContentPage.Resources>
+        <Style x:Key="ButtonStyle1" TargetType="Button">
+            <Setter Property="FontSize" Value="{OnPlatform iOS=36}" />
+            <Setter Property="TextColor" Value="{OnPlatform iOS=Red}" />
+        </Style>
+        <Style x:Key="ButtonStyle2" TargetType="Button">
+            <Setter Property="FontSize">
+                <OnPlatform x:TypeArguments="x:Double">
+                    <On Platform="iOS">36</On>
+                </OnPlatform>
+            </Setter>
+            <Setter Property="TextColor">
+                <OnPlatform x:TypeArguments="Color">
+                    <On Platform="iOS">Red</On>
+                </OnPlatform>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
+
+    <ScrollView WidthRequest="400">
+        <VerticalStackLayout
+            Padding="10,0"
+            Spacing="15"
+            VerticalOptions="Center">
+            <Label Text="FontSize for all buttons below should be the same: 36 on iOS, default on other platforms"
+                   AutomationId="TestLabel" />
+            <Button Style="{StaticResource ButtonStyle1}" Text="Button label" />
+            <Button Style="{StaticResource ButtonStyle2}" Text="Button label" />
+            <Button FontSize="{OnPlatform iOS=36}" Text="Button label" />
+            <Button Text="Button label">
+                <Button.FontSize>
+                    <OnPlatform x:TypeArguments="x:Double">
+                        <On Platform="iOS">36</On>
+                    </OnPlatform>
+                </Button.FontSize>
+            </Button>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

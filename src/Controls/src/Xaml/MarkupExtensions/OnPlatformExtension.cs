@@ -65,7 +65,13 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (!TryGetValueForPlatform(out var value))
 			{
 				if (bp != null)
-					return bp.GetDefaultValue(valueProvider.TargetObject as BindableObject);
+				{
+					object targetObject = valueProvider.TargetObject;
+
+					if (targetObject is Setter)
+						return null;
+					else return bp.GetDefaultValue(targetObject as BindableObject);
+				}
 				if (propertyType.IsValueType)
 					return Activator.CreateInstance(propertyType);
 				return null;

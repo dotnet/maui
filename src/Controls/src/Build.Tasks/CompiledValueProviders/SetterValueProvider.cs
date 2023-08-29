@@ -23,8 +23,9 @@ namespace Microsoft.Maui.Controls.XamlC
 			if (SetterValueIsCollection(bpRef, module, node, context))
 				yield break;
 
+			// valueNode is null, for example, when OnPlatform doesn't have a match for the current platform, so the property should not be set
 			if (valueNode == null)
-				throw new XamlParseException("Missing Value for Setter", (IXmlLineInfo)node);
+				yield break;
 
 			//if it's an elementNode, there's probably no need to convert it
 			if (valueNode is IElementNode)
