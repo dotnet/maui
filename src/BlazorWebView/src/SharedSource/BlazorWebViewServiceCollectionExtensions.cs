@@ -42,14 +42,14 @@ namespace Microsoft.Extensions.DependencyInjection
 			services.AddBlazorWebView();
 			services.TryAddSingleton(new BlazorWebViewDeveloperTools { Enabled = false });
 #if WEBVIEW2_MAUI
-			services.TryAddSingleton<MauiBlazorMarkerService>();
-			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView, BlazorWebViewHandler>());
+			services.TryAddSingleton(_ => new MauiBlazorMarkerService());
+			services.ConfigureMauiHandlers(static handlers => handlers.AddHandler<IBlazorWebView>(_ => new BlazorWebViewHandler()));
 			return new MauiBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WINFORMS
-			services.TryAddSingleton<WindowsFormsBlazorMarkerService>();
+			services.TryAddSingleton(_ => new WindowsFormsBlazorMarkerService());
 			return new WindowsFormsBlazorWebViewBuilder(services);
 #elif WEBVIEW2_WPF
-			services.TryAddSingleton<WpfBlazorMarkerService>();
+			services.TryAddSingleton(_ => new WpfBlazorMarkerService());
 			return new WpfBlazorWebViewBuilder(services);
 #endif
 		}
