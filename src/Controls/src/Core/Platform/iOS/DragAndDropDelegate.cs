@@ -152,57 +152,63 @@ namespace Microsoft.Maui.Controls.Platform
 				if (args.Cancel)
 					return;
 
-				if (args.PlatformArgs.DragItems is UIDragItem[] dragItems)
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (!args.Handled)
+#pragma warning restore CS0618 // Type or member is obsolete
 				{
-					foreach (var item in dragItems)
-						SetLocalObject(item, handler, args.Data);
 
-					returnValue = dragItems;
-					return;
-				}
+					if (args.PlatformArgs.DragItems is UIDragItem[] dragItems)
+					{
+						foreach (var item in dragItems)
+							SetLocalObject(item, handler, args.Data);
 
-				UIImage uIImage = null;
-				string clipDescription = String.Empty;
-				NSItemProvider itemProvider = null;
+						returnValue = dragItems;
+						return;
+					}
 
-				if (handler.PlatformView is UIImageView iv)
-					uIImage = iv.Image;
+					UIImage uIImage = null;
+					string clipDescription = String.Empty;
+					NSItemProvider itemProvider = null;
 
-				if (handler.PlatformView is UIButton b && b.ImageView != null)
-					uIImage = b.ImageView.Image;
+					if (handler.PlatformView is UIImageView iv)
+						uIImage = iv.Image;
 
-				if (uIImage != null)
-				{
+					if (handler.PlatformView is UIButton b && b.ImageView != null)
+						uIImage = b.ImageView.Image;
+
 					if (uIImage != null)
-						itemProvider = new NSItemProvider(uIImage);
-					else
-						itemProvider = new NSItemProvider(new NSString(""));
-
-					if (args.Data.Image == null && handler.VirtualView is IImageElement imageElement)
-						args.Data.Image = imageElement.Source;
-				}
-				else
-				{
-					string text = args.Data.Text ?? clipDescription;
-
-					if (String.IsNullOrWhiteSpace(text))
 					{
-						itemProvider = new NSItemProvider(handler.PlatformView.ConvertToImage());
+						if (uIImage != null)
+							itemProvider = new NSItemProvider(uIImage);
+						else
+							itemProvider = new NSItemProvider(new NSString(""));
+
+						if (args.Data.Image == null && handler.VirtualView is IImageElement imageElement)
+							args.Data.Image = imageElement.Source;
 					}
 					else
 					{
-						itemProvider = new NSItemProvider(new NSString(text));
+						string text = args.Data.Text ?? clipDescription;
+
+						if (String.IsNullOrWhiteSpace(text))
+						{
+							itemProvider = new NSItemProvider(handler.PlatformView.ConvertToImage());
+						}
+						else
+						{
+							itemProvider = new NSItemProvider(new NSString(text));
+						}
 					}
+
+					var dragItem = new UIDragItem(args.PlatformArgs.ItemProvider ?? itemProvider);
+
+					SetLocalObject(dragItem, handler, args.Data);
+
+					if (args.PlatformArgs.PreviewProvider is not null)
+						dragItem.PreviewProvider = args.PlatformArgs.PreviewProvider;
+
+					returnValue = new UIDragItem[] { dragItem };
 				}
-
-				var dragItem = new UIDragItem(args.PlatformArgs.ItemProvider ?? itemProvider);
-
-				SetLocalObject(dragItem, handler, args.Data);
-
-				if (args.PlatformArgs.PreviewProvider is not null)
-					dragItem.PreviewProvider = args.PlatformArgs.PreviewProvider;
-
-				returnValue = new UIDragItem[] { dragItem };
 			},
 			element);
 

@@ -115,9 +115,12 @@ namespace Microsoft.Maui.Controls
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);
 
-			args.Data.PropertiesInternal.Add("DragSource", element);
+#pragma warning disable CS0618 // Type or member is obsolete
+			if (!args.Handled)
+				args.Data.PropertiesInternal.Add("DragSource", element);
+#pragma warning restore CS0618 // Type or member is obsolete
 
-			if (args.Cancel)
+			if (args.Cancel || args.Handled)
 				return args;
 
 			_isDragActive = true;

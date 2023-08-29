@@ -124,7 +124,6 @@ namespace Microsoft.Maui.Controls.Platform
 				package = new DataPackage();
 				_currentCustomLocalStateData.DataPackage = package;
 			}
-			
 			var position = new Point(e.GetX(), e.GetY());
 
 			switch (e.Action)
@@ -164,7 +163,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var args = new DropCompletedEventArgs(platformArgs);
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
-		
+
 		bool HandleDragLeave(DataPackage package, DragEvent e, PlatformDragEventArgs platformArgs)
 		{
 			var dragEventArgs = new DragEventArgs(package, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformArgs);
@@ -281,51 +280,56 @@ namespace Microsoft.Maui.Controls.Platform
 				ClipData.Item item = null;
 				List<string> mimeTypes = new List<string>();
 
-				if (args.PlatformArgs.ClipData is null)
+#pragma warning disable CS0618 // Type or member is obsolete
+				if (!args.Handled)
+#pragma warning restore CS0618 // Type or member is obsolete
 				{
-					if (args.Data.Image != null)
+					if (args.PlatformArgs.ClipData is null)
 					{
-						mimeTypes.Add("image/jpeg");
-						item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
-					}
-					else
-					{
-						string text = clipDescription ?? args.Data.Text;
-						if (Uri.TryCreate(text, UriKind.Absolute, out _))
+						if (args.Data.Image != null)
 						{
-							item = new ClipData.Item(AUri.Parse(text));
-							mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
+							mimeTypes.Add("image/jpeg");
+							item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
 						}
 						else
 						{
-							item = new ClipData.Item(text);
-							mimeTypes.Add(ClipDescription.MimetypeTextPlain);
+							string text = clipDescription ?? args.Data.Text;
+							if (Uri.TryCreate(text, UriKind.Absolute, out _))
+							{
+								item = new ClipData.Item(AUri.Parse(text));
+								mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
+							}
+							else
+							{
+								item = new ClipData.Item(text);
+								mimeTypes.Add(ClipDescription.MimetypeTextPlain);
+							}
 						}
+
+						var dataPackage = args.Data;
+						ClipData.Item userItem = null;
+						if (dataPackage.Image != null)
+							userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
+
+						if (dataPackage.Text != null)
+							userItem = new ClipData.Item(dataPackage.Text);
+
+						if (item == null)
+						{
+							item = userItem;
+							userItem = null;
+						}
+
+						data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
+
+						if (userItem != null)
+							data.AddItem(userItem);
 					}
 
-					var dataPackage = args.Data;
-					ClipData.Item userItem = null;
-					if (dataPackage.Image != null)
-						userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
-
-					if (dataPackage.Text != null)
-						userItem = new ClipData.Item(dataPackage.Text);
-
-					if (item == null)
+					else
 					{
-						item = userItem;
-						userItem = null;
+						data = args.PlatformArgs.ClipData;
 					}
-
-					data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
-
-					if (userItem != null)
-						data.AddItem(userItem);
-				}
-
-				else
-				{
-					data = args.PlatformArgs.ClipData;
 				}
 
 				var dragShadowBuilder = args.PlatformArgs.DragShadowBuilder ?? new AView.DragShadowBuilder(v);

@@ -238,7 +238,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
-				if (!args.PlatformArgs.Handled && handler != null)
+				if ((!args.Handled || !args.PlatformArgs.Handled) && handler != null)
 				{
 					if (handler.PlatformView is UI.Xaml.Controls.Image nativeImage &&
 						nativeImage.Source is BitmapImage bi && bi.UriSource != null)
