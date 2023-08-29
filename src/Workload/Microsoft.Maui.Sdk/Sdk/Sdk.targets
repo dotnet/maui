@@ -1,6 +1,6 @@
 <Project>
 
-  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' and '$(DisableImplicitFrameworkReferences)' != 'true' ">
+  <ItemGroup Condition=" '$(UseMauiNuGets)' != 'true' and '$(DisableImplicitFrameworkReferences)' != 'true' and '$(DisableMauiImplicitFrameworkReferences)' != 'true' ">
     <FrameworkReference
         Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' "
         Include="Microsoft.Maui.Core"
