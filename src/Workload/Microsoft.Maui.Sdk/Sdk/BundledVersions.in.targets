@@ -86,7 +86,7 @@
     <PackageReference Include="Xamarin.AndroidX.Browser" Version="@_XamarinAndroidXBrowserVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="@_XamarinAndroidXLegacySupportV4Version@" IsImplicitlyDefined="true">
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="@_XamarinAndroidXSwipeRefreshLayoutVersion@" IsImplicitlyDefined="true">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="@_XamarinAndroidXLifecycleLiveDataVersion@" IsImplicitlyDefined="true">
