@@ -54,8 +54,6 @@ namespace Microsoft.Maui.Platform
 				modifierFlags,
 				new NSString(index.ToString()));
 
-			keyCommand.WantsPriorityOverSystemBehavior = true;
-
 			MenuFlyoutItemHandler.menus[index] = virtualView;
 
 			return keyCommand;
