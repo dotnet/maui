@@ -1,4 +1,5 @@
 #nullable enable
+override Microsoft.Maui.Controls.Platform.ItemContentControl.ArrangeOverride(Windows.Foundation.Size finalSize) -> Windows.Foundation.Size
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.View.ChangeVisualState() -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.StructuredItemsViewHandler<TItemsView>.ConnectHandler(Microsoft.UI.Xaml.Controls.ListViewBase platformView) -> void
