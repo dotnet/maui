@@ -24,6 +24,8 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
 			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
 			[nameof(IMenuElement.Source)] = MapSource,
+#endif
+#if MACCATALYST || IOS || WINDOWS
 			[nameof(IMenuElement.IsEnabled)] = MapIsEnabled
 #endif
 		};

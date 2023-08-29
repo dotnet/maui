@@ -34,7 +34,7 @@ namespace Maui.Controls.Sample.Pages
 			}
 		}
 
-		void ToggleMenuBarItem(object sender, EventArgs e)
+		void OnToggleMenuBarItem(object sender, EventArgs e)
 		{
 			MenuBarItem barItem =
 				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");
@@ -49,6 +49,13 @@ namespace Maui.Controls.Sample.Pages
 				barItem.Add(new MenuFlyoutItem()
 				{
 					Text = "Added Flyout Item",
+					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
+				});
+
+				barItem.Add(new MenuFlyoutItem()
+				{
+					Text = "Added Disabled Flyout Item",
+					IsEnabled = false,
 					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
 				});
 

@@ -10,7 +10,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/MenuItem.xml" path="Type[@FullName='Microsoft.Maui.Controls.MenuItem']/Docs/*" />
-	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IMenuElement
+	public partial class MenuItem : BaseMenuItem, IMenuItemController, IStyleSelectable, ICommandElement, IMenuElement, IPropertyPropagationController
 	{
 		/// <summary>Bindable property for <see cref="Accelerator"/>.</summary>
 		[Obsolete("Use MenuFlyoutItem.KeyboardAcceleratorsProperty instead.")]
@@ -36,7 +36,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
 			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true,
-			coerceValue: CoerceIsEnabledProperty);
+			propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
 		public static readonly BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(MenuItem), null);
@@ -138,14 +138,33 @@ namespace Microsoft.Maui.Controls
 
 		static object CoerceIsEnabledProperty(BindableObject bindable, object value)
 		{
-			if (bindable is MenuItem menuitem)
+			if (bindable is not MenuItem menuItem)
 			{
-				menuitem._isEnabledExplicit = (bool)value;
-
-				return menuitem._isEnabledExplicit && CommandElement.GetCanExecute(menuitem);
+				return false;
 			}
 
-			return false;
+			menuItem._isEnabledExplicit = (bool)value;
+
+			if (!menuItem._isEnabledExplicit)
+			{
+				// No need to check GetCanExecute or the Parent's state
+				return false;
+			}
+
+			var canExecute = CommandElement.GetCanExecute(menuItem);
+			if (!canExecute)
+			{
+				return false;
+			}
+
+			// IsEnabled is not explicitly set to false, and the command can be
+			// executed. The only thing left to verify is Parent.IsEnabled
+			if (menuItem.Parent is MenuItem parentMenuItem && !parentMenuItem.IsEnabled)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		IImageSource IImageSourcePart.Source => this.IconImageSource;
@@ -165,6 +184,24 @@ namespace Microsoft.Maui.Controls
 
 		void IImageSourcePart.UpdateIsLoading(bool isLoading)
 		{
+		}
+
+		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
+		{
+			if (propertyName == null || propertyName == IsEnabledProperty.PropertyName)
+				this.RefreshPropertyValue(IsEnabledProperty, _isEnabledExplicit);
+
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
+		}
+
+		static void OnIsEnabledPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (bindable is not MenuItem || bindable is not IPropertyPropagationController ppc)
+			{
+				return;
+			}
+
+			ppc.PropagatePropertyChanged(IsEnabledProperty.PropertyName);
 		}
 	}
 }

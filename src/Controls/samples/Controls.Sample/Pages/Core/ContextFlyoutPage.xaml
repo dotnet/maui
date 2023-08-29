@@ -21,11 +21,6 @@
                                 <MenuFlyoutItem x:Name="Increment1000MenuFlyoutItem" Text="Increment by 1,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000"></MenuFlyoutItem>
                                 <MenuFlyoutItem x:Name="Increment1000000MenuFlyoutItem" Text="Increment by 1,000,000!" Clicked="OnIncrementMenuItemClicked" CommandParameter="1000000"></MenuFlyoutItem>
                             </MenuFlyoutSubItem>
-                            <MenuFlyoutSubItem Text="Increment by 3" Clicked="OnIncrementMenuItemClicked" CommandParameter="3">
-                                <MenuFlyoutSubItem.KeyboardAccelerators>
-                                    <KeyboardAccelerator Modifiers="Alt" Key="p" />
-                                </MenuFlyoutSubItem.KeyboardAccelerators>
-                            </MenuFlyoutSubItem>
                         </MenuFlyout>
                     </FlyoutBase.ContextFlyout>
                 </Button>
