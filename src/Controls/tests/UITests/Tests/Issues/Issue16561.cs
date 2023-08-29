@@ -21,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			if (App is not IApp2 app2 || app2 is null || app2.Driver is null)
 			{
-				throw new InvalidOperationException("Can't run test");
+				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
 			}
 
 			var tapAreaResult = App.WaitForElement(_tapAreaId);
@@ -41,10 +41,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var expectedX1 = point1.X - tapArea.X;
 			var expectedX2 = point2.X - tapArea.X;
 
-			var ta = new TouchAction(app2.Driver);
-			ta.Tap(point1.X, point1.Y).Tap(point2.X, point2.Y);
-			app2.Driver.PerformTouchAction(ta);
+			// Just calling Tap twice will be too slow; we need to queue up the actions so they happen quickly
+			var actionsList = new TouchAction(app2.Driver);
 
+			// Tap the first point, then the second point
+			actionsList.Tap(point1.X, point1.Y).Tap(point2.X, point2.Y);
+			app2.Driver.PerformTouchAction(actionsList);
+
+			// The results for each tap should show up in the labels on the screen; find the text
+			// of each tap result and check to see that it meets the expected values
 			var result = App.WaitForElement("Tap1Label");
 			AssertCorrectTapLocation(result[0].Text, expectedX1, expectedY, "First");
 
