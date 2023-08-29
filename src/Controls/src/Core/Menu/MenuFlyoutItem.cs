@@ -3,15 +3,24 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.Maui.Controls
 {
+	/// <summary>
+	/// Represents a MenuFlyoutItem.
+	/// </summary>
     public partial class MenuFlyoutItem : MenuItem, IMenuFlyoutItem
     {
-        public MenuFlyoutItem()
+		/// <summary>
+		/// Initializes a new MenuFlyoutItem instance.
+		/// </summary>
+		public MenuFlyoutItem()
         {
             var collection = new ObservableCollection<KeyboardAccelerator>();
             collection.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(KeyboardAccelerators));
             KeyboardAccelerators = collection;
         }
 
+		/// <summary>
+		/// Gets the list of KeyboardAccelerators for the MenuFlyoutItem.
+		/// </summary>
 		public IList<KeyboardAccelerator> KeyboardAccelerators { get; }
 
 #if PLATFORM
