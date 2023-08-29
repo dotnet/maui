@@ -22,7 +22,7 @@ namespace Maui.Controls.Sample
 			events.Text += $"{name},";
 		}
 
-		private void OnDragStarting(object sender, DragStartingEventArgs e)
+		void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
 			_emittedDragOver = false;
 			var label = (Label)(sender as Element).Parent;
@@ -42,7 +42,7 @@ namespace Maui.Controls.Sample
 			dragStartRelativeLabel.Text = $"Drag Start relative to this label: {(int)e.GetPosition(dragStartRelativeLabel).Value.X},{(int)e.GetPosition(dragStartRelativeLabel).Value.Y}";
 		}
 
-		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
+		void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
 			var sl = (sender as Element).Parent.Parent as StackLayout;
 
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample
 			AddEvent(nameof(OnDropCompleted));
 		}
 
-		private void OnDragOver(object sender, DragEventArgs e)
+		void OnDragOver(object sender, DragEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample
 			dragRelativeLabel.Text = $"Drag relative to this label: {(int)e.GetPosition(dragRelativeLabel).Value.X},{(int)e.GetPosition(dragRelativeLabel).Value.Y}";
 		}
 
-		private void OnDragLeave(object sender, DragEventArgs e)
+		void OnDragLeave(object sender, DragEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -97,7 +97,7 @@ namespace Maui.Controls.Sample
 			AddEvent(nameof(OnDragLeave));
 		}
 
-		private void OnDrop(object sender, DropEventArgs e)
+		void OnDrop(object sender, DropEventArgs e)
 		{
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -133,7 +133,7 @@ namespace Maui.Controls.Sample
 			AddEvent(nameof(OnDrop));
 		}
 
-		private void ResetLayouts(object sender, System.EventArgs e)
+		void ResetLayouts(object sender, System.EventArgs e)
 		{
 			SLAllColors.Clear();
 			SLRainbow.Clear();
@@ -148,9 +148,9 @@ namespace Maui.Controls.Sample
 			ResetTestLabels();
 		}
 
-		private Label RegenerateColorLabel(string color)
+		Label RegenerateColorLabel(string color)
 		{
-			var label = new Label { Text = color, AutomationId = color, HeightRequest = 75, BackgroundColor = Colors.AliceBlue };
+			var label = new Label { Text = color, AutomationId = color, HeightRequest = 50, BackgroundColor = Colors.AliceBlue };
 			label.BackgroundColor = color switch
 			{
 				"Red" => Colors.Red,
@@ -169,7 +169,7 @@ namespace Maui.Controls.Sample
 			return label;
 		}
 
-		private void ResetTestLabels()
+		void ResetTestLabels()
 		{
 			events.Text = "EventsLabel: ";
 
