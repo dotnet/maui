@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
-			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true, 
+			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true,
 			propertyChanged: OnIsEnabledPropertyChanged, coerceValue: CoerceIsEnabledProperty);
 
 		/// <summary>Bindable property for <see cref="Text"/>.</summary>
