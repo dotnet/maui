@@ -6,10 +6,11 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base">
     <views:BasePage.MenuBarItems>
         <MenuBarItem Text="Before File">
+            <MenuFlyoutItem Text="Cool item 1" />
             <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action" Accelerator="b" />
-            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 1" />
             <MenuFlyoutSeparator />
-            <MenuFlyoutItem Text="Cool item 2"></MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 2 (Disabled)" IsEnabled="False" />
         </MenuBarItem>
         <MenuBarItem Text="File">
             <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File" >
@@ -28,12 +29,13 @@
                 <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1" Accelerator="Shift+M" />
                 <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2" Accelerator="ALT+C" />
             </MenuFlyoutSubItem>
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 2 (Disabled)" IsEnabled="False" />
         </MenuBarItem>
     </views:BasePage.MenuBarItems>
     <views:BasePage.Content>
         <VerticalStackLayout Margin="12">
             <Label x:Name="menuLabel" Text="You clicked on Menu Item:" />
-            <Button Text="Toggle Menu Bar Item" Clicked="ToggleMenuBarItem" />
+            <Button Text="Toggle Menu Bar Item" Clicked="OnToggleMenuBarItem" />
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>

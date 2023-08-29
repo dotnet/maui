@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static PropertyMapper<ShellItem, ShellItemHandler> Mapper =
 				new PropertyMapper<ShellItem, ShellItemHandler>(ElementMapper)
 				{
+					[nameof(ShellItem.Title)] = MapTitle,
 					[nameof(ShellItem.CurrentItem)] = MapCurrentItem,
 					[Shell.TabBarIsVisibleProperty.PropertyName] = MapTabBarIsVisible
 				};
@@ -352,6 +353,12 @@ namespace Microsoft.Maui.Controls.Handlers
 		}
 
 		ShellSection? _currentShellSection;
+
+		internal void UpdateTitle()
+		{
+			MapMenuItems();
+		}
+
 		void UpdateCurrentItem()
 		{
 			if (_currentShellSection == VirtualView.CurrentItem)
@@ -431,6 +438,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			return shellItemController.ShowTabs || _currentSearchHandler is not null ?
 				NavigationViewPaneDisplayMode.Top :
 				NavigationViewPaneDisplayMode.LeftMinimal;
+		}
+
+		public static void MapTitle(ShellItemHandler handler, ShellItem item)
+		{
+			handler.UpdateTitle();
 		}
 
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)
