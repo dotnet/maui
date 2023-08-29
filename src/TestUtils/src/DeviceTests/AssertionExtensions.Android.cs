@@ -523,6 +523,19 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
+		public static async Task<Bitmap> AssertColorsAtPointsAsync(this AView view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
+		{
+			var density = mauiContext.Context.GetDisplayDensity();
+			var bitmap = await view.ToBitmap(mauiContext);
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				bitmap.AssertColorAtPoint(colors[i].ToPlatform(), (int)(points[i].X * density), (int)(points[i].Y * density));
+			}
+
+			return bitmap;
+		}
+
 		public static async Task<Bitmap> AssertColorAtCenterAsync(this AView view, AColor expectedColor, IMauiContext mauiContext)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
