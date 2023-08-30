@@ -51,6 +51,7 @@ override Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.DisconnectHandler(UIKi
 override Microsoft.Maui.Handlers.SwitchHandler.NeedsContainer.get -> bool
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.ContentView.WillRemoveSubview(UIKit.UIView! uiview) -> void
 override Microsoft.Maui.Platform.MauiActivityIndicator.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiBoxView.MovedToWindow() -> void
 override Microsoft.Maui.Platform.MauiCheckBox.MovedToWindow() -> void
@@ -147,3 +148,4 @@ Microsoft.Maui.Platform.MauiView.IsMeasureValid(double widthConstraint, double h
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
+override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void

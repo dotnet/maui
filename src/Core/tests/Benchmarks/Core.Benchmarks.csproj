@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
     <LangVersion>9.0</LangVersion>
-    <IsTestProject>true</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
