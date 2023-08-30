@@ -122,7 +122,7 @@ namespace Microsoft.Maui.Platform
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
 			if (!uri.IsAbsoluteUri ||
-				uri.AbsoluteUri.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				IsUriWithLocalScheme(uri.AbsoluteUri))
 			{
 				await EnsureCoreWebView2Async();
 
@@ -153,10 +153,9 @@ namespace Microsoft.Maui.Platform
 			NavigationStarting += (sender, args) =>
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
-				bool isUrlWithLocalScheme = args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true;
 				bool isDataUrl = args?.Uri?.StartsWith("data:text/html") ?? false;
 
-				if (isUrlWithLocalScheme ||
+				if (IsUriWithLocalScheme(args?.Uri) ||
 					(isDataUrl && _navigatingToHtmlWithBaseUrl))
 				{
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
@@ -172,6 +171,14 @@ namespace Microsoft.Maui.Platform
 					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
 				}
 			};
+		}
+
+		static bool IsUriWithLocalScheme(string? uri)
+		{
+			return uri?
+				.ToLowerInvariant()
+				.StartsWith(
+					LocalScheme.TrimEnd('/').ToLowerInvariant()) == true;
 		}
 	}
 }
