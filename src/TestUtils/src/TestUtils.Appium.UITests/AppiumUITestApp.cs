@@ -34,6 +34,13 @@ namespace TestUtils.Appium.UITests
 
 		public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+		// Using the default value from https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/view/ViewConfiguration.java#129
+		// and shaving off 50ms so we come in under the threshold
+		// iOS and Mac use a different way of simulating double taps, so no need for a variation of this constant for those platforms
+		// The Windows default is 500 ms (https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setdoubleclicktime?redirectedfrom=MSDN#parameters)
+		// so this delay should be short enough to simulate a double-click on that platform.
+		const int DOUBLE_TAP_DELAY_MS = 250;
+
 		readonly Dictionary<string, string> _controlNameToTag = new Dictionary<string, string>
 		{
 			{ "button", "ControlType.Button" }
@@ -245,11 +252,7 @@ namespace TestUtils.Appium.UITests
 				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
 				sequence.AddAction(touchDevice.CreatePointerMove(element, 0, 0, TimeSpan.FromMilliseconds(5)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				AddDoubleTap(touchDevice, sequence);
 				_driver?.PerformActions(new List<ActionSequence> { sequence });
 			}
 		}
@@ -277,14 +280,20 @@ namespace TestUtils.Appium.UITests
 			{
 				PointerInputDevice touchDevice = new PointerInputDevice(PointerType);
 				ActionSequence sequence = new ActionSequence(touchDevice, 0);
-				sequence.AddAction(touchDevice.CreatePointerMove(CoordinateOrigin.Viewport, (int)x, (int)y, TimeSpan.FromMilliseconds(5)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(600)));
-				sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
-				sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+				AddDoubleTap(touchDevice, sequence);
 				_driver?.PerformActions(new List<ActionSequence> { sequence });
 			}
+		}
+
+		static ActionSequence AddDoubleTap(PointerInputDevice touchDevice, ActionSequence sequence)
+		{
+			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePause(TimeSpan.FromMilliseconds(DOUBLE_TAP_DELAY_MS)));
+			sequence.AddAction(touchDevice.CreatePointerDown(PointerButton.TouchContact));
+			sequence.AddAction(touchDevice.CreatePointerUp(PointerButton.TouchContact));
+
+			return sequence;
 		}
 
 		public void DragAndDrop(Func<AppQuery, AppQuery> from, Func<AppQuery, AppQuery> to)

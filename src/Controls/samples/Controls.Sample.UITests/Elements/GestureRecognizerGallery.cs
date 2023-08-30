@@ -1,4 +1,6 @@
-﻿using Microsoft.Maui.Controls.Internals;
+﻿using System.Drawing;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Internals;
 
 namespace Maui.Controls.Sample
 {
@@ -8,6 +10,7 @@ namespace Maui.Controls.Sample
 		public GestureRecognizerGallery()
 		{
 			Add(new PointerGestureRecognizerEvents());
+			Add(new DoubleTapGallery());
 		}
 	}
 }
