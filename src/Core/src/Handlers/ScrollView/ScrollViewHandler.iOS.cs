@@ -15,6 +15,24 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentPanelTag = 0x845fed;
 
+		readonly ScrollEventProxy _eventProxy = new();
+
+		public override bool NeedsContainer
+		{
+			get
+			{
+				//if we are being wrapped by a BorderView we need a container
+				//so we can handle masks and clip shapes
+				if (VirtualView?.Parent is IBorderView)
+				{
+					return true;
+				}
+				return base.NeedsContainer;
+			}
+		}
+
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new UIScrollView();
@@ -32,8 +50,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.DisconnectHandler(platformView);
 
-			platformView.Scrolled -= Scrolled;
-			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			PendingScrollToRequest = null;
+			_eventProxy.Disconnect(platformView);
 		}
 
 		void ScrollAnimationEnded(object? sender, EventArgs e)
@@ -91,6 +109,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
+
+				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+
 				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HorizontalOffset, request.VerticalOffset), !request.Instant);
 
 				if (request.Instant)
@@ -285,6 +312,12 @@ namespace Microsoft.Maui.Handlers
 
 			contentView.Bounds = contentBounds;
 			contentView.Center = new CGPoint(contentBounds.GetMidX(), contentBounds.GetMidY());
+
+			if (PendingScrollToRequest != null)
+			{
+				VirtualView.RequestScrollTo(PendingScrollToRequest.HorizontalOffset, PendingScrollToRequest.VerticalOffset, PendingScrollToRequest.Instant);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		static double AccountForPadding(double constraint, double padding)
