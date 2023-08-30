@@ -51,7 +51,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Red");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
 			App.WaitForElement("DragEventsLabel");
 
@@ -69,7 +72,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
 			var dragStartRelativeToSelf = GetCoordinatesFromLabel(App.Query("DragStartRelativeSelf").First().Text);
@@ -99,7 +105,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
 			var dragRelativeToDrop = GetCoordinatesFromLabel(App.Query("DragRelativeDrop").First().Text);
@@ -111,7 +120,6 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.NotNull(dragRelativeToScreen);
 			Assert.NotNull(dragRelativeToLabel);
 			Assert.NotNull(dragStartRelativeToScreen);
-
 
 			Assert.True(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
 			Assert.True(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
@@ -135,7 +143,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.Query("DropRelativeLayout").First().Text);
@@ -144,7 +155,6 @@ namespace Microsoft.Maui.AppiumTests
 
 			var dragRelativeToLabel = GetCoordinatesFromLabel(App.Query("DragRelativeLabel").First().Text);
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.Query("DragStartRelativeScreen").First().Text);
-
 
 			Assert.NotNull(dropRelativeToLayout);
 			Assert.NotNull(dropRelativeToScreen);
