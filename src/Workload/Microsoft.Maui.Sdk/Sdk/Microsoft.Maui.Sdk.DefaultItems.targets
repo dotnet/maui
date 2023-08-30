@@ -24,4 +24,11 @@
 		<None Remove="**\*.css" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>
 
+	<PropertyGroup>
+		<EnableDefaultMauiBlazorEntitlements Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='' And '$(ProjectCapability)'=='MauiBlazor'">true</EnableDefaultMauiBlazorEntitlements>
+	</PropertyGroup>
+
+	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True' And '$(Configuration)' == 'Release'">
+		<CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
+	</ItemGroup>
 </Project>
