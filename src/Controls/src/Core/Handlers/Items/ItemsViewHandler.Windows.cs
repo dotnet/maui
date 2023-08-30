@@ -100,7 +100,53 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
+			handler.UpdateItemsUpdatingScrollMode();
+		}
 
+		void UpdateItemsUpdatingScrollMode()
+		{
+			if (PlatformView is null || PlatformView.Items is null)
+				return;
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepScrollOffset)
+			{
+				// The scroll position is maintained when new items are added as the default,
+				// so we don't need to watch for data changes
+				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+			}
+			else
+			{
+				PlatformView.Items.VectorChanged -= OnItemsVectorChanged;
+				PlatformView.Items.VectorChanged += OnItemsVectorChanged;
+			}
+		}
+
+		void OnItemsVectorChanged(global::Windows.Foundation.Collections.IObservableVector<object> sender, global::Windows.Foundation.Collections.IVectorChangedEventArgs @event)
+		{
+			if (VirtualView is null)
+				return;
+
+			if (sender is not ItemCollection items)
+				return;
+
+			var itemsCount = items.Count;
+
+			if (itemsCount == 0)
+				return;
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepItemsInView)
+			{
+				var firstItem = items[0];
+				// Keeps the first item in the list displayed when new items are added.
+				ListViewBase.ScrollIntoView(firstItem);
+			}
+
+			if (VirtualView.ItemsUpdatingScrollMode == ItemsUpdatingScrollMode.KeepLastItemInView)
+			{
+				var lastItem = items[itemsCount - 1];
+				// Adjusts the scroll offset to keep the last item in the list displayed when new items are added.
+				ListViewBase.ScrollIntoView(lastItem);
+			}
 		}
 
 		protected abstract ListViewBase SelectListViewBase();
