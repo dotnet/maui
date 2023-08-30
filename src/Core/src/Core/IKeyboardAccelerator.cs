@@ -3,18 +3,18 @@
 namespace Microsoft.Maui
 {
 	/// <summary>
-	/// Represents a shortcut key for a <see cref="T:Microsoft.Maui.Controls.MenuItem" />.
+	/// Represents a shortcut key for a <see cref="T:Microsoft.Maui.Controls.MenuFlyoutItem" />.
 	/// </summary>
-	public interface IAccelerator
+	public interface IKeyboardAccelerator
 	{
 		/// <summary>
 		/// Specifies the virtual key used to modify another keypress. 
 		/// </summary>
-		public IReadOnlyList<string> Modifiers { get; }
+		public KeyboardAcceleratorModifiers Modifiers { get; }
 
 		/// <summary>
 		/// Specifies the values for the virtual key.
 		/// </summary>
-		public string Key { get; }
+		public string? Key { get; }
 	}
 }
