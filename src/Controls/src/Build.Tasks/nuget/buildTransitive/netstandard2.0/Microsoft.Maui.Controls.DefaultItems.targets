@@ -12,8 +12,8 @@
 	how the solution explorer "looks". As a result, we can leave it there for now as it is
 	useful to have in the packages for independent updates - if need be.
 	
-	This is duplicated in the build tasks NuGet in Microsoft.Maui.Controls.DefaultItems.targets
-	because older workloads also need these globs.
+	This is duplicated in the workload Microsoft.Maui.Sdk.DefaultItems.targets for now because .NET MAUI
+	is also consumed via NuGet - machines that have older workloads need to also update these items.
 	-->
 	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
 		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
