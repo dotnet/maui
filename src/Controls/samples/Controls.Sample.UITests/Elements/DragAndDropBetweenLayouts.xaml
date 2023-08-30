@@ -4,6 +4,7 @@
              AutomationId="DragAndDropBetweenLayouts"
              x:Class="Maui.Controls.Sample.DragAndDropBetweenLayouts">
     <StackLayout>
+        <Button AutomationId="ResetButton" Text="Reset View" Clicked="ResetLayouts"/>
         <Grid BackgroundColor="Purple">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -20,22 +21,22 @@
                             Drop="OnDrop">
                         </DropGestureRecognizer>
                     </StackLayout.GestureRecognizers>
-                    <Label HeightRequest="100" Background="Red" Text="Red" AutomationId="Red">
+                    <Label HeightRequest="50" Background="Red" Text="Red" AutomationId="Red">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Purple" Text="Purple" AutomationId="Purple">
+                    <Label HeightRequest="50" Background="Purple" Text="Purple" AutomationId="Purple">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Yellow" Text="Yellow" AutomationId="Yellow">
+                    <Label HeightRequest="50" Background="Yellow" Text="Yellow" AutomationId="Yellow">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Blue" Text="Blue" AutomationId="Blue">
+                    <Label HeightRequest="50" Background="Blue" Text="Blue" AutomationId="Blue">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
@@ -54,7 +55,7 @@
                             Drop="OnDrop">
                         </DropGestureRecognizer>
                     </StackLayout.GestureRecognizers>
-                    <Label HeightRequest="100" Background="Green" Text="Green" AutomationId="Green">
+                    <Label HeightRequest="50" Background="Green" Text="Green" AutomationId="Green">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
@@ -62,6 +63,18 @@
                 </StackLayout>
             </ScrollView>
         </Grid>
-        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel"/>
+        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel: "/>
+        <!-- DragStarting Labels-->
+        <Label x:Name="dragStartRelativeSelf" AutomationId="DragStartRelativeSelf" Text="Drag Start relative to self:"/>
+        <Label x:Name="dragStartRelativeScreen" AutomationId="DragStartRelativeScreen" Text="Drag Start relative to screen:"/>
+        <Label x:Name="dragStartRelativeLabel" AutomationId="DragStartRelativeLabel" Text="Drag Start relative to this label:"/>
+        <!-- Drag Labels-->
+        <Label x:Name="dragRelativeDrop" AutomationId="DragRelativeDrop" Text="Drag relative to receiving layout:"/>
+        <Label x:Name="dragRelativeScreen" AutomationId="DragRelativeScreen" Text="Drag relative to screen:"/>
+        <Label x:Name="dragRelativeLabel" AutomationId="DragRelativeLabel" Text="Drag relative to this label:"/>
+        <!-- Drop Labels-->
+        <Label x:Name="dropRelativeLayout" AutomationId="DropRelativeLayout" Text="Drop relative to receiving layout:"/>
+        <Label x:Name="dropRelativeScreen" AutomationId="DropRelativeScreen" Text="Drop relative to screen:"/>
+        <Label x:Name="dropRelativeLabel" AutomationId="DropRelativeLabel" Text="Drop relative to this label:"/>
     </StackLayout>
 </ContentView>

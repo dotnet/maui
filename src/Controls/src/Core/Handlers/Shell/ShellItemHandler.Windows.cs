@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				PlatformView.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
-			MapMenuItems();
+			MapMenuItems(true);
 		}
 
 		protected override void ConnectHandler(FrameworkElement platformView)
@@ -85,6 +85,14 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (_currentSearchHandler != null)
 				_currentSearchHandler.PropertyChanged -= OnCurrentSearchHandlerPropertyChanged;
+
+			if (_shellItem?.Parent is IShellController controller)
+			{
+				controller.RemoveAppearanceObserver(this);
+			}
+
+			if (_shellItem is IShellItemController shellItemController)
+				shellItemController.ItemsCollectionChanged -= OnItemsChanged;
 		}
 
 		public override void SetVirtualView(Maui.IElement view)
@@ -92,19 +100,32 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (view.Parent is IShellController controller)
 			{
 				if (_shellItem != null)
+				{
 					controller.RemoveAppearanceObserver(this);
+					((IShellItemController)_shellItem).ItemsCollectionChanged -= OnItemsChanged;
+				}
 
 				_shellItem = (ShellItem)view;
 
 				base.SetVirtualView(view);
 
 				if (_shellItem != null)
+				{
 					controller.AddAppearanceObserver(this, _shellItem);
+					((IShellItemController)_shellItem).ItemsCollectionChanged += OnItemsChanged;
+				}
 			}
 			else
 			{
 				base.SetVirtualView(view);
 			}
+		}
+
+		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		{
+			// Flag to sync the selected item only after items changed fired, which will happen after modifications
+			// to the items list is finished
+			MapMenuItems(true);
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -124,21 +145,17 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void MapMenuItems()
+		void MapMenuItems(bool syncSelectedItem)
 		{
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
 
-			// only add items if we should be showing the tabs
-			if (shellItemController.ShowTabs)
+			foreach (var item in shellItemController.GetItems())
 			{
-				foreach (var item in shellItemController.GetItems())
-				{
-					if (Routing.IsImplicit(item))
-						items.Add(item.CurrentItem);
-					else
-						items.Add(item);
-				}
+				if (Routing.IsImplicit(item))
+					items.Add(item.CurrentItem);
+				else
+					items.Add(item);
 			}
 
 			object? selectedItem = null;
@@ -205,10 +222,10 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (ShellItemNavigationView.SelectedItem != selectedItem)
+			if (syncSelectedItem && ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
 
-			ShellItemNavigationView.PinPaneDisplayModeTo = GetNavigationViewPaneDisplayMode(shellItemController);
+			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
 
 		void UpdateSearchHandler()
@@ -356,9 +373,9 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateTitle()
 		{
-			MapMenuItems();
+			MapMenuItems(true);
 		}
-		
+
 		void UpdateCurrentItem()
 		{
 			if (_currentShellSection == VirtualView.CurrentItem)
@@ -383,7 +400,10 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			UpdateSearchHandler();
-			MapMenuItems();
+
+			// Don't sync the selected item as this function can be called multiple times on item removal
+			// before the list has finished fully updating
+			MapMenuItems(false);
 
 			if (_currentShellSection != null)
 			{
@@ -428,9 +448,17 @@ namespace Microsoft.Maui.Controls.Handlers
 				ShellItemNavigationView.SelectedItem = navigationViewItemViewModel;
 		}
 
+		void UpdateTabBarVisibility(IShellItemController item)
+		{
+			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
+			ShellItemNavigationView.PaneDisplayMode = paneDisplayMode;
+			ShellItemNavigationView.PinPaneDisplayModeTo = paneDisplayMode;
+			ShellItemNavigationView.IsPaneVisible = item.ShowTabs;
+		}
+
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
 		{
-			handler.ShellItemNavigationView.PaneDisplayMode = handler.GetNavigationViewPaneDisplayMode(item);
+			handler.UpdateTabBarVisibility(item);
 		}
 
 		NavigationViewPaneDisplayMode GetNavigationViewPaneDisplayMode(IShellItemController shellItemController)
@@ -444,7 +472,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			handler.UpdateTitle();
 		}
-		
+
 		public static void MapCurrentItem(ShellItemHandler handler, ShellItem item)
 		{
 			handler.UpdateCurrentItem();

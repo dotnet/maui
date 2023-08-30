@@ -110,13 +110,17 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
+
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
-		//Only enabled for Windows until border issues are fixed for all other platforms
-#if WINDOWS
+#if IOS || WINDOWS
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
+#else
+		[Fact("Ensures the border renders the expected size - Issue 15339", 
+			Skip = "Currently fails on platforms other than iOS and Windows; we're working on it.")]
+#endif
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
 			double borderThickness = 10;
@@ -139,6 +143,5 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(180, redBlob.Width, 2d);
 			Assert.Equal(80, redBlob.Height, 2d);
 		}
-#endif
 	}
 }

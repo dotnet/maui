@@ -8,7 +8,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		private string buttonId = "Swap";
 
 		public Issue15826(TestDevice device) : base(device)
-		{ 
+		{
 		}
 
 		public override string Issue => "ListView visibility doesn't work well";

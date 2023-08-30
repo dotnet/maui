@@ -59,9 +59,9 @@ namespace Microsoft.Maui.Controls.Hosting
 		public static IMauiHandlersCollection AddMauiMaps(this IMauiHandlersCollection handlersCollection)
 		{
 #if __ANDROID__ || __IOS__
-			handlersCollection.AddHandler<Map>(_ => new MapHandler());
-			handlersCollection.AddHandler<Pin>(_ => new MapPinHandler());
-			handlersCollection.AddHandler<MapElement>(_ => new MapElementHandler());
+			handlersCollection.AddHandler<Map, MapHandler>();
+			handlersCollection.AddHandler<Pin, MapPinHandler>();
+			handlersCollection.AddHandler<MapElement, MapElementHandler>();
 #endif
 			return handlersCollection;
 		}
