@@ -198,11 +198,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}
 
-#if IOS
+#if IOS || ANDROID
 		[Fact("Ensures the border renders the expected size - Issue 15339")]
 #else
 		[Fact("Ensures the border renders the expected size - Issue 15339", 
-			Skip = "Current fails on platforms other than iOS; we're working on it.")]
+			Skip = "Current fails on platforms other than iOS and Android; we're working on it.")]
 #endif
 		public async Task BorderAndStrokeIsCorrectSize()
 		{
