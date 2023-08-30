@@ -211,7 +211,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding)
-			=> SetBinding(targetProperty, binding, SetterSpecificity.FromBinding);
+			=> SetBinding(targetProperty, binding, binding != null && targetProperty != null && binding.GetRealizedMode(targetProperty) == BindingMode.TwoWay ? SetterSpecificity.FromHandler : SetterSpecificity.FromBinding);
 
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, SetterSpecificity specificity)
 		{
