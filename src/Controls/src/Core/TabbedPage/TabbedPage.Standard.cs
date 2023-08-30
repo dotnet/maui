@@ -24,6 +24,14 @@ namespace Microsoft.Maui.Controls
 		{
 		}
 
+		internal static void MapUnselectedTabBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
+		{
+		}
+
+		internal static void MapSelectedTabBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
+		{
+		}
+
 		internal static void MapItemsSource(ITabbedViewHandler handler, TabbedPage view)
 		{
 		}

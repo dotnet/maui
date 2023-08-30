@@ -121,6 +121,14 @@ namespace Microsoft.Maui.Controls
 		internal static void MapSelectedItem(ITabbedViewHandler handler, TabbedPage view)
 		{
 		}
+		internal static void MapSelectedTabBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
+		{
+		}
+		internal static void MapUnselectedTabBackgroundColor(ITabbedViewHandler handler, TabbedPage view)
+		{
+		}
+
+
 		internal static void MapCurrentPage(ITabbedViewHandler handler, TabbedPage view)
 		{
 			if (view.MauiContext == null)
@@ -203,6 +211,8 @@ namespace Microsoft.Maui.Controls
 				SetBinding(BackgroundColorProperty, new Binding("BarBackgroundColor", source: _page));
 				SetBinding(SelectedTabColorProperty, new Binding("SelectedTabColor", source: _page));
 				SetBinding(UnselectedTabColorProperty, new Binding("UnselectedTabColor", source: _page));
+				SetBinding(SelectedTabBackgroundColorProperty, new Binding("SelectedTabBackgroundColor", source: _page));
+				SetBinding(UnselectedTabBackgroundColorProperty, new Binding("UnselectedTabBackgroundColor", source: _page));
 
 				var label = new XLabel
 				{

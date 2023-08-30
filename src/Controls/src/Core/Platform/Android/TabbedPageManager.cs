@@ -697,7 +697,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			_currentBarItemColor = BarItemColor;
 			_currentBarTextColor = Element.BarTextColor;
 			_currentBarSelectedItemColor = BarSelectedItemColor;
-
 			UpdateBarTextColor();
 			UpdateItemIconColor();
 		}

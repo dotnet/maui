@@ -23,6 +23,12 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="SelectedTabColor"/>.</summary>
 		public static readonly BindableProperty SelectedTabColorProperty = BindableProperty.Create(nameof(SelectedTabColor), typeof(Color), typeof(TabbedPage), default(Color));
 
+		/// <summary>Bindable property for <see cref="SelectedTabBackgroundColor"/>.</summary>
+		public static readonly BindableProperty SelectedTabBackgroundColorProperty = BindableProperty.Create(nameof(SelectedTabBackgroundColor), typeof(Color), typeof(TabbedPage), default(Color));
+
+		/// <summary>Bindable property for <see cref="UnselectedTabBackgroundColor"/>.</summary>
+		public static readonly BindableProperty UnselectedTabBackgroundColorProperty = BindableProperty.Create(nameof(UnselectedTabBackgroundColor), typeof(Color), typeof(TabbedPage), default(Color));
+
 		readonly Lazy<PlatformConfigurationRegistry<TabbedPage>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='BarBackgroundColor']/Docs/*" />
@@ -52,11 +58,24 @@ namespace Microsoft.Maui.Controls
 			get => (Color)GetValue(UnselectedTabColorProperty);
 			set => SetValue(UnselectedTabColorProperty, value);
 		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/TabbedPage.xml" path="//Member[@MemberName='SelectedTabColor']/Docs/*" />
 		public Color SelectedTabColor
 		{
 			get => (Color)GetValue(SelectedTabColorProperty);
 			set => SetValue(SelectedTabColorProperty, value);
+		}
+
+		public Color SelectedTabBackgroundColor
+		{
+			get => (Color)GetValue(SelectedTabBackgroundColorProperty);
+			set => SetValue(SelectedTabBackgroundColorProperty, value);
+		}
+
+		public Color UnselectedTabBackgroundColor
+		{
+			get => (Color)GetValue(UnselectedTabBackgroundColorProperty);
+			set => SetValue(UnselectedTabBackgroundColorProperty, value);
 		}
 
 		protected override Page CreateDefault(object item)

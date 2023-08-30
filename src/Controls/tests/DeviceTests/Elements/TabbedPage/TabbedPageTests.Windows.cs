@@ -149,8 +149,8 @@ namespace Microsoft.Maui.DeviceTests
 			var tabbedPage = CreateBasicTabbedPage();
 			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
 
-			tabbedPage.SelectedTabColor = Colors.Red;
-			tabbedPage.UnselectedTabColor = Colors.Purple;
+			tabbedPage.SelectedTabBackgroundColor = Colors.Red;
+			tabbedPage.UnselectedTabBackgroundColor = Colors.Purple;
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
 			{
