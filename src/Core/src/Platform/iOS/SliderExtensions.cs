@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using ObjCRuntime;
 using UIKit;
 
@@ -50,7 +51,8 @@ namespace Microsoft.Maui.Platform
 			if (thumbImageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(thumbImageSource);
-				var result = await service.GetImageAsync(thumbImageSource);
+				var scale = uiSlider.GetDisplayDensity();
+				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;
 
 				uiSlider.SetThumbImage(thumbImage, UIControlState.Normal);

@@ -63,11 +63,17 @@ namespace Microsoft.Maui.Platform
 			{
 #if IOS || ANDROID || WINDOWS || TIZEN
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+#endif
 
-				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
+#if IOS ||  WINDOWS
+				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
+#elif ANDROID || TIZEN
+				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
+					.ConfigureAwait(false);
 #else
 				await Task.CompletedTask;
 #endif
