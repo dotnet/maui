@@ -29,6 +29,7 @@
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True' And '$(Configuration)' == 'Release'">
+        <!-- Essential for MAUI Blazor, as it allows your sandboxed app to connect to a server process on another machine.-->
 		<CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
 	</ItemGroup>
 
