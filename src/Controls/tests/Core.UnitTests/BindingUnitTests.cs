@@ -2326,7 +2326,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		[Fact]
 		//https://github.com/dotnet/maui/issues/16849
-		public void ManualValueDoesntClearWayBinding()
+		public void ManualValueDoesntClearTwoWayBinding()
 		{
 			var vm = new MockViewModel();
 			var entry = new Entry { BindingContext = vm };
