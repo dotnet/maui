@@ -1,4 +1,24 @@
 #nullable enable
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragShadowBuilder(Android.Views.View.DragShadowBuilder! dragShadowBuilder) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetClipData(Android.Content.ClipData! clipData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetLocalData(Java.Lang.Object! localData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragFlags(Android.Views.DragFlags dragFlags) -> void
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.PlatformDragEventArgs
+Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDragEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.PlatformDropEventArgs
+Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDropEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
+Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
+Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
+Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
 Microsoft.Maui.Controls.KeyboardAccelerator
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void

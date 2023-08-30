@@ -1,4 +1,31 @@
 #nullable enable
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragInteraction.get -> UIKit.UIDragInteraction!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragSession.get -> UIKit.IUIDragSession!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> UIKit.UIView?
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetItemProvider(Foundation.NSItemProvider! itemProvider) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetPreviewProvider(System.Func<UIKit.UIDragPreview?>! previewProvider) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragItems(UIKit.UIDragItem![]! dragItems) -> void
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragInteraction.get -> UIKit.UIDragInteraction?
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragSession.get -> UIKit.IUIDragSession?
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropInteraction.get -> UIKit.UIDropInteraction?
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropOperation.get -> UIKit.UIDropOperation?
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropSession.get -> UIKit.IUIDropSession?
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> UIKit.UIView?
+Microsoft.Maui.Controls.PlatformDragEventArgs
+Microsoft.Maui.Controls.PlatformDragEventArgs.DropInteraction.get -> UIKit.UIDropInteraction!
+Microsoft.Maui.Controls.PlatformDragEventArgs.DropSession.get -> UIKit.IUIDropSession!
+Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> UIKit.UIView?
+Microsoft.Maui.Controls.PlatformDragEventArgs.SetDropProposal(UIKit.UIDropProposal! dropProposal) -> void
+Microsoft.Maui.Controls.PlatformDropEventArgs
+Microsoft.Maui.Controls.PlatformDropEventArgs.DropInteraction.get -> UIKit.UIDropInteraction!
+Microsoft.Maui.Controls.PlatformDropEventArgs.DropSession.get -> UIKit.IUIDropSession!
+Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> UIKit.UIView?
+Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
+Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
+Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
+Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
 Microsoft.Maui.Controls.KeyboardAccelerator
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
