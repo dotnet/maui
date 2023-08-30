@@ -905,17 +905,14 @@ namespace Microsoft.Maui.Layouts
 				// We don't have enough room for all the star rows/columns to expand to their full size.
 				// But we still need to fill up the rest of the space, so we'll expand them proportionally.
 
-				// Work out the total difference in size between the full star size targets and the 
-				// minimum sizes for all definitions where the minimum is less than the full star size
-				// target; we'll need that later to distribute available space.
+				// Work out the total difference in size between the largest star definition and all 
+				// the smaller ones; we'll need that later to distribute available space.
 				double totaldiff = 0;
 				foreach (var definition in defs)
 				{
 					if (definition.IsStar)
 					{
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-						if (definition.MinimumSize < fullTargetSize)
-							totaldiff += fullTargetSize - definition.MinimumSize;
+						totaldiff += maxCurrentSize - definition.MinimumSize;
 					}
 				}
 
@@ -923,18 +920,16 @@ namespace Microsoft.Maui.Layouts
 				{
 					if (definition.IsStar)
 					{
-						// Skip the star rows/columns whose minimums are at or higher than the target sizes
-						double fullTargetSize = targetStarSize * definition.GridLength.Value;
-
-						if (definition.MinimumSize < fullTargetSize)
+						// Skip the largest star rows/columns; we want to expand the smaller ones first
+						if (maxCurrentSize > definition.MinimumSize)
 						{
 							// Figure out how small this definition is relative to the total difference,
 							// and use that to determine how much of the available space this definition gets
 
-							// The goal is to have the definitions expand proportionate to their deficit from
-							// their full target sizes
+							// The goal is to have the smaller definitions expand faster than the bigger ones,
+							// so the amount we give to each definition is inversely proportional to its size
 
-							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+							var scale = (maxCurrentSize - definition.MinimumSize) / totaldiff;
 							var portion = scale * availableSpace;
 							definition.Size = definition.MinimumSize + portion;
 						}
