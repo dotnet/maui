@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -9,13 +10,16 @@ using WebKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiRefreshView : UIView
+	public class MauiRefreshView : UIView, IUIViewLifeCycleEvents
 	{
 		bool _isRefreshing;
 		nfloat _originalY;
 		nfloat _refreshControlHeight;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _refreshControlParent;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView? _contentView;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIRefreshControl _refreshControl;
 		public UIRefreshControl RefreshControl => _refreshControl;
 
@@ -194,5 +198,19 @@ namespace Microsoft.Maui.Platform
 		bool CanUseRefreshControlProperty() =>
 			this.GetNavigationController()?.NavigationBar?.PrefersLargeTitles ?? true;
 #pragma warning restore CA1416
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

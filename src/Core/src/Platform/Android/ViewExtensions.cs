@@ -6,10 +6,12 @@ using Android.Graphics.Drawables;
 using Android.OS;
 using Android.Util;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
+using AndroidX.Core.View;
 using AndroidX.Window.Layout;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
@@ -182,7 +184,6 @@ namespace Microsoft.Maui.Platform
 		internal static void UpdateBackground(this TextView platformView, IView view) =>
 			UpdateBackground(platformView, view, true);
 
-		// TODO: NET8 make this public for NET8.0
 		internal static void UpdateBackground(this EditText platformView, IView view)
 		{
 			if (platformView is null || platformView.Context is null)
@@ -275,10 +276,9 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static void UpdateOpacity(this AView platformView, IView view)
-		{
-			platformView.Alpha = (float)view.Opacity;
-		}
+		public static void UpdateOpacity(this AView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
+
+		internal static void UpdateOpacity(this AView platformView, double opacity) => platformView.Alpha = (float)opacity;
 
 		public static void UpdateFlowDirection(this AView platformView, IView view)
 		{
@@ -515,28 +515,43 @@ namespace Microsoft.Maui.Platform
 			return frameworkElement.IsAttachedToWindow;
 		}
 
-		internal static IDisposable OnLoaded(this View frameworkElement, Action action)
+		internal static IDisposable OnLoaded(this View view, Action action)
 		{
-			if (frameworkElement.IsLoaded())
+			if (view.IsLoaded())
 			{
 				action();
 				return new ActionDisposable(() => { });
 			}
 
 			EventHandler<AView.ViewAttachedToWindowEventArgs>? routedEventHandler = null;
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
-					frameworkElement.ViewAttachedToWindow -= routedEventHandler;
+					view.ViewAttachedToWindow -= routedEventHandler;
 			});
 
 			routedEventHandler = (_, __) =>
 			{
-				disposable.Dispose();
+				if (!view.IsLoaded() && Looper.MyLooper() is Looper q)
+				{
+					new Handler(q).Post(() =>
+					{
+						if (disposable is not null)
+							action.Invoke();
+
+						disposable?.Dispose();
+						disposable = null;
+					});
+
+					return;
+				}
+
+				disposable?.Dispose();
+				disposable = null;
 				action();
 			};
 
-			frameworkElement.ViewAttachedToWindow += routedEventHandler;
+			view.ViewAttachedToWindow += routedEventHandler;
 			return disposable;
 		}
 
@@ -549,7 +564,7 @@ namespace Microsoft.Maui.Platform
 			}
 
 			EventHandler<AView.ViewDetachedFromWindowEventArgs>? routedEventHandler = null;
-			ActionDisposable disposable = new ActionDisposable(() =>
+			ActionDisposable? disposable = new ActionDisposable(() =>
 			{
 				if (routedEventHandler != null)
 					view.ViewDetachedFromWindow -= routedEventHandler;
@@ -557,23 +572,24 @@ namespace Microsoft.Maui.Platform
 
 			routedEventHandler = (_, __) =>
 			{
-				disposable.Dispose();
 				// This event seems to fire prior to the view actually being
 				// detached from the window
-				if (view.IsLoaded())
+				if (view.IsLoaded() && Looper.MyLooper() is Looper q)
 				{
-					var q = Looper.MyLooper();
-					if (q != null)
+					new Handler(q).Post(() =>
 					{
-						new Handler(q).Post(() =>
-						{
+						if (disposable is not null)
 							action.Invoke();
-						});
 
-						return;
-					}
+						disposable?.Dispose();
+						disposable = null;
+					});
+
+					return;
 				}
 
+				disposable?.Dispose();
+				disposable = null;
 				action();
 			};
 
@@ -684,6 +700,65 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			return (element.ToPlatform())?.GetLocationOnScreenPx();
+		}
+
+		internal static bool HideSoftInput(this AView inputView)
+		{
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+			var windowToken = inputView.WindowToken;
+
+			if (windowToken is not null && inputMethodManager is not null)
+			{
+				return inputMethodManager.HideSoftInputFromWindow(windowToken, HideSoftInputFlags.None);
+			}
+
+			return false;
+		}
+
+		internal static bool ShowSoftInput(this TextView inputView)
+		{
+			using var inputMethodManager = (InputMethodManager?)inputView.Context?.GetSystemService(Context.InputMethodService);
+
+			// The zero value for the second parameter comes from 
+			// https://developer.android.com/reference/android/view/inputmethod/InputMethodManager#showSoftInput(android.view.View,%20int)
+			// Apparently there's no named value for zero in this case
+			return inputMethodManager?.ShowSoftInput(inputView, 0) is true;
+		}
+
+		internal static bool ShowSoftInput(this AView view) => view switch
+		{
+			TextView textView => textView.ShowSoftInput(),
+			ViewGroup viewGroup => viewGroup.GetFirstChildOfType<TextView>()?.ShowSoftInput() is true,
+			_ => false,
+		};
+
+		internal static bool IsSoftInputShowing(this AView view)
+		{
+			var insets = ViewCompat.GetRootWindowInsets(view);
+			if (insets is null)
+			{
+				return false;
+			}
+
+			var result = insets.IsVisible(WindowInsetsCompat.Type.Ime());
+			return result;
+		}
+
+		internal static void PostShowSoftInput(this AView view)
+		{
+			void ShowSoftInput()
+			{
+				// Since we're posting this on the queue, it's possible something else will have disposed of the view
+				// by the time the looper is running this, so we have to verify that the view is still usable
+				if (view.IsDisposed())
+				{
+					return;
+				}
+
+				view.ShowSoftInput();
+			};
+
+			view.Post(ShowSoftInput);
 		}
 	}
 }

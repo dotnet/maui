@@ -9,7 +9,7 @@ using Microsoft.Maui.Graphics.Platform;
 
 namespace Microsoft.Maui.Platform
 {
-	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking
+	public class ContentViewGroup : PlatformContentViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		IBorderStroke? _clip;
 		readonly Context _context;
@@ -116,20 +116,28 @@ namespace Microsoft.Maui.Platform
 				return null;
 
 			float density = _context.GetDisplayDensity();
-
-			float strokeThickness = (float)(Clip.StrokeThickness * density);
-
-			IShape clipShape = Clip.Shape;
-
+			float strokeThickness = (float)Clip.StrokeThickness;
+			float w = (width / density) - strokeThickness;
+			float h = (height / density) - strokeThickness;
 			float x = strokeThickness / 2;
 			float y = strokeThickness / 2;
-			float w = width - strokeThickness;
-			float h = height - strokeThickness;
+			IShape clipShape = Clip.Shape;
 
 			var bounds = new Graphics.RectF(x, y, w, h);
 
-			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, true);
+			Path? platformPath = clipShape.ToPlatform(bounds, strokeThickness, density, true);
 			return platformPath;
+		}
+
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
+		{
+			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
+				layoutElement.IsThisMyPlatformView(this))
+			{
+				return layoutElement;
+			}
+
+			return null;
 		}
 	}
 }

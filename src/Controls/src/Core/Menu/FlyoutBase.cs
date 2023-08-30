@@ -7,12 +7,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty ContextFlyoutProperty = BindableProperty.CreateAttached("ContextFlyout", typeof(FlyoutBase), typeof(FlyoutBase), null,
 			propertyChanged: (bo, oldV, newV) =>
 			{
-				if (oldV is BindableObject oldMenu)
-					VisualElement.SetInheritedBindingContext(oldMenu, null);
-
-				if (newV is BindableObject newMenu)
-					VisualElement.SetInheritedBindingContext(newMenu, bo.BindingContext);
-
+				bo.AddRemoveLogicalChildren(oldV, newV);
 			});
 
 		public static void SetContextFlyout(BindableObject b, FlyoutBase value)

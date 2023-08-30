@@ -1,17 +1,16 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
+#load "./devices-shared.cake"
 
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-
-string TARGET = Argument("target", "Test");
 
 const string defaultVersion = "10.0.19041";
 const string dotnetVersion = "net7.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? "");
-// Not used for Windows. TODO Use this for packaged vs unpackaged?
+FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
+// Used for Windows to differentiate between packaged and unpackaged
 string TEST_DEVICE = Argument("device", EnvironmentVariable("WINDOWS_TEST_DEVICE") ?? $"");
 // Package ID of the WinUI Application
 var PACKAGEID = Argument("packageid", EnvironmentVariable("WINDOWS_TEST_PACKAGE_ID") ?? $"");
@@ -23,7 +22,7 @@ var BINLOG_ARG = Argument("binlog", EnvironmentVariable("WINDOWS_TEST_BINLOG") ?
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("WINDOWS_TEST_APP") ?? "");
 var DEVICETEST_APP = Argument("devicetestapp", EnvironmentVariable("WINDOWS_DEVICETEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? PROJECT);
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_TEST_APP_PROJECT") ?? (!string.IsNullOrEmpty(DEFAULT_APP_PROJECT) ? DEFAULT_APP_PROJECT : PROJECT));
 FilePath DEVICETEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("WINDOWS_DEVICETEST_APP_PROJECT") ?? PROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("WINDOWS_TEST_RESULTS") ?? "");
 string CONFIGURATION = Argument("configuration", "Debug");
@@ -35,6 +34,7 @@ string PLATFORM = "windows";
 string DOTNET_PLATFORM = $"win10-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
+bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
@@ -75,6 +75,7 @@ void Cleanup()
 Task("Cleanup");
 
 Task("GenerateMsixCert")
+	.WithCriteria(isPackagedTestRun)
 	.Does(() =>
 {
 	// We need the key to be in LocalMachine -> TrustedPeople to install the msix signed with the key
@@ -139,81 +140,133 @@ Task("Build")
 
 	SetDotNetEnvironmentVariables(DOTNET_PATH);
 
+	var dd = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("DOTNET_PATH: {0}", dd);
+
+	var toolPath = $"{dd}/dotnet.exe";
+
+	Information("toolPath: {0}", toolPath);
+
 	Information("Building and publishing device test app");
 
 	// Build the app in publish mode
 	// Using the certificate thumbprint for the cert we just created
 	var s = new DotNetPublishSettings();
+	s.ToolPath = toolPath;
 	s.Configuration = CONFIGURATION;
 	s.Framework = TARGET_FRAMEWORK;
 	s.MSBuildSettings = new DotNetMSBuildSettings();
 	s.MSBuildSettings.Properties.Add("RuntimeIdentifierOverride", new List<string> { "win10-x64" });
-	s.MSBuildSettings.Properties.Add("PackageCertificateThumbprint", new List<string> { certificateThumbprint });
-	s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
 	
+	var launchSettingsNeedle = "Project";
+	var launchSettingsReplacement = "MsixPackage";
+
+	if (!isPackagedTestRun)
+	{
+		launchSettingsNeedle = "MsixPackage";
+		launchSettingsReplacement = "Project";
+	}
+
+	if (isPackagedTestRun)
+	{
+		// Apply correct build properties for packaged builds
+		s.MSBuildSettings.Properties.Add("PackageCertificateThumbprint", new List<string> { certificateThumbprint });
+		s.MSBuildSettings.Properties.Add("AppxPackageSigningEnabled", new List<string> { "True" });
+		s.MSBuildSettings.Properties.Add("SelfContained", new List<string> { "True" });
+	}
+	else
+	{
+		// Apply correct build properties for unpackaged builds
+		s.MSBuildSettings.Properties.Add("WindowsPackageType", new List<string> { "None" });
+	}
+
+	// Set correct launchSettings.json setting for packaged/unpackaged
+	// Get launchSettings.json Path
+	var launchSettingsPath = PROJECT.GetDirectory();
+	launchSettingsPath = launchSettingsPath.Combine("Properties").Combine("launchSettings.json");
+
+	// Replace value in launchSettings.json
+	var launchSettingsContents = System.IO.File.ReadAllText(launchSettingsPath.FullPath);
+	launchSettingsContents = launchSettingsContents.Replace($"\"commandName\": \"{launchSettingsNeedle}\",", $"\"commandName\": \"{launchSettingsReplacement}\",");
+	System.IO.File.WriteAllText(launchSettingsPath.FullPath, launchSettingsContents);
+
 	DotNetPublish(PROJECT.FullPath, s);
 });
 
 Task("Test")
-    .IsDependentOn("Build")
+	.IsDependentOn("Build")
 	.IsDependentOn("SetupTestPaths")
 	.Does(() =>
 {
+	var waitForResultTimeoutInSeconds = 120;
+
 	CleanDirectories(TEST_RESULTS);
 
-    Information("Cleaned directories");
+	Information("Cleaned directories");
 
-	// Try to uninstall the app if it exists from before
-	uninstallPS();
+	var testResultsFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
+	Information($"Test Results File: {testResultsFile}");
 
-    Information("Uninstalled previously deployed app");
-	var projectDir = PROJECT.GetDirectory();
-	var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
-	var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
-
-    var testResultsFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
-
-	Information($"Found MSIX, installing: {msixPath}");
-    Information($"Test Results File: {testResultsFile}");
-
-    if (FileExists(testResultsFile))
+	if (FileExists(testResultsFile))
 	{
-        DeleteFile(testResultsFile);
+		DeleteFile(testResultsFile);
 	}
 
-	// Install dependencies
-	var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
-    foreach (var dep in dependencies) {
-        Information("Installing Dependency MSIX: {0}", dep);
-        StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
-    }
+	if (isPackagedTestRun)
+	{
+		// Try to uninstall the app if it exists from before
+		uninstallPS();
 
-	// Install the DeviceTests app
-	StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
+		Information("Uninstalled previously deployed app");
 
-    var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
+		var projectDir = PROJECT.GetDirectory();
+		var cerPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.cer").First();
+		var msixPath = GetFiles(projectDir.FullPath + "/**/AppPackages/*/*.msix").First();
 
-    Information(startArgs);
+		Information($"Found MSIX, installing: {msixPath}");
 
-	// Start the DeviceTests app
-	StartProcess("powershell", startArgs);
+		// Install dependencies
+		var dependencies = GetFiles(projectDir.FullPath + "/**/AppPackages/**/Dependencies/x64/*.msix");
+		foreach (var dep in dependencies) {
+			Information("Installing Dependency MSIX: {0}", dep);
+			StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
+		}
 
-    var waited = 0;
-    while (!FileExists(testResultsFile)) {
-        System.Threading.Thread.Sleep(1000);
-        waited++;
+		// Install the DeviceTests app
+		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
-        Information($"Waiting {waited} second(s) for tests to finish...");
-        if (waited >= 120)
-            break;
-    }
+		var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -Args \"" + testResultsFile + "\"";
+
+		Information(startArgs);
+
+		// Start the DeviceTests app for packaged
+		StartProcess("powershell", startArgs);
+	}
+	else
+	{
+		// Unpackaged process blocks the thread, so we can wait shorter for the results
+		waitForResultTimeoutInSeconds = 30;
+
+		// Start the DeviceTests app for unpackaged
+		StartProcess(TEST_APP, testResultsFile);
+	}
+
+	var waited = 0;
+	while (!FileExists(testResultsFile)) {
+		System.Threading.Thread.Sleep(1000);
+		waited++;
+
+		Information($"Waiting {waited} second(s) for tests to finish...");
+		if (waited >= waitForResultTimeoutInSeconds)
+			break;
+	}
 
 	if(!FileExists(testResultsFile))
 	{
 		throw new Exception($"Test results file not found after {waited} seconds, process might have crashed or not completed yet.");
 	}
 
-    Information($"Tests Finished");
+	Information($"Tests Finished");
 });
 
 
@@ -231,7 +284,13 @@ Task("SetupTestPaths")
 		var binDir = TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + $"{dotnetVersion}-windows{windowsVersion}").Combine(DOTNET_PLATFORM).FullPath;
 		Information("BinDir: {0}", binDir);
 		var apps = GetFiles(binDir + "/*.exe").Where(c => !c.FullPath.EndsWith("createdump.exe"));
-		TEST_APP = apps.First().FullPath;
+		if (apps.Any()) {
+			TEST_APP = apps.First().FullPath;
+		}
+		else {
+			Error("Error: Couldn't find .exe file");
+			throw new Exception("Error: Couldn't find .exe file");
+		}
 	}
 
 	if (string.IsNullOrEmpty(TEST_RESULTS))
@@ -289,7 +348,7 @@ Task("uitest")
 				.Append("/p:ExtraDefineConstants=WINTEST")
 				.Append("/bl:" + binlog)
 				.Append("/maxcpucount:1")
-				//.Append("/tl")	
+				//.Append("/tl")
 	});
 
 	SetEnvironmentVariable("WINDOWS_APP_PATH", TEST_APP);

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using CoreGraphics;
 using Foundation;
@@ -7,14 +8,16 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiTextView : UITextView
+	public class MauiTextView : UITextView, IUIViewLifeCycleEvents
 	{
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UILabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 
 		public MauiTextView()
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
@@ -22,18 +25,19 @@ namespace Microsoft.Maui.Platform
 			: base(frame)
 		{
 			_placeholderLabel = InitPlaceholderLabel();
+			UpdatePlaceholderLabelFrame();
 			Changed += OnChanged;
 		}
 
 		public override void WillMoveToWindow(UIWindow? window)
 		{
 			base.WillMoveToWindow(window);
-			ResignFirstResponderTouchGestureRecognizer.Update(this, window);
 		}
 
 		// Native Changed doesn't fire when the Text Property is set in code
 		// We use this event as a way to fire changes whenever the Text changes
 		// via code or user interaction.
+		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public event EventHandler? TextSetOrChanged;
 
 		public string? PlaceholderText
@@ -112,6 +116,8 @@ namespace Microsoft.Maui.Platform
 		public override void LayoutSubviews()
 		{
 			base.LayoutSubviews();
+
+			UpdatePlaceholderLabelFrame();
 			ShouldCenterVertically();
 		}
 
@@ -126,13 +132,20 @@ namespace Microsoft.Maui.Platform
 
 			AddSubview(placeholderLabel);
 
-			var edgeInsets = TextContainerInset;
-			var lineFragmentPadding = TextContainer.LineFragmentPadding;
-
-			placeholderLabel.TextInsets = new UIEdgeInsets(edgeInsets.Top, edgeInsets.Left + lineFragmentPadding,
-				edgeInsets.Bottom, edgeInsets.Right + lineFragmentPadding);
-
 			return placeholderLabel;
+		}
+
+		void UpdatePlaceholderLabelFrame()
+		{
+			if (Bounds != CGRect.Empty && _placeholderLabel is not null)
+			{
+				var x = TextContainer.LineFragmentPadding;
+				var y = TextContainerInset.Top;
+				var width = Bounds.Width - (x * 2);
+				var height = Frame.Height - (TextContainerInset.Top + TextContainerInset.Bottom);
+
+				_placeholderLabel.Frame = new CGRect(x, y, width, height);
+			}
 		}
 
 		void HidePlaceholderIfTextIsPresent(string? value)
@@ -166,6 +179,20 @@ namespace Microsoft.Maui.Platform
 			_defaultPlaceholderSize ??= _placeholderLabel.Font.PointSize;
 			_placeholderLabel.Font = _placeholderLabel.Font.WithSize(
 				value?.PointSize ?? _defaultPlaceholderSize.Value);
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

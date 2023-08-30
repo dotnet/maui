@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 		void OnVisualTreeChanged(object? sender, VisualTreeChangeEventArgs e)
 		{
-			Assert.True(e.ChildIndex >= 0, "Visual Tree inaccurate when OnVisualTreeChanged called");
+			Assert.True(e.ChildIndex >= 0, $"Visual Tree inaccurate when OnVisualTreeChanged called. ChildIndex: {e.ChildIndex}");
 			_treeEvents.Add((sender as Element, e));
 			VisualTreeChanged?.Invoke(sender as Element, e);
 		}

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Internals;
@@ -756,6 +757,25 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void FlyoutMenuItemIsVisibleSynchronized()
+		{
+			Shell shell = new Shell();
+			ContentPage page = new ContentPage();
+			shell.Items.Add(CreateShellItem(page));
+
+			var menuItem = new MenuItem();
+			Shell.SetFlyoutItemIsVisible(menuItem, false);
+			var menuShellItem = new MenuShellItem(menuItem);
+			shell.Items.Add(menuShellItem);
+
+			Shell.SetFlyoutItemIsVisible(menuItem, true);
+			Assert.True(Shell.GetFlyoutItemIsVisible(menuShellItem), "If menuItem visibility changes, menuShellItem visibility should change as well");
+
+			Shell.SetFlyoutItemIsVisible(menuShellItem, false);
+			Assert.False(Shell.GetFlyoutItemIsVisible(menuItem), "If menuShellItem visibility changes, menuItem visibility should change as well");
+		}
+
+		[Fact]
 		public async Task TitleViewLogicalChild()
 		{
 			Shell shell = new Shell();
@@ -771,7 +791,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Shell.SetTitleView(page, layout);
 
 
-			Assert.Contains(layout, page.ChildrenNotDrawnByThisElement);
+			Assert.Contains(layout, page.LogicalChildren);
+			Assert.DoesNotContain(layout, page.InternalChildren);
+			Assert.Contains(layout, ((IVisualTreeElement)page).GetVisualChildren());
 		}
 
 		[Fact]
@@ -1559,6 +1581,69 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			TestShell testShell = new TestShell(new ContentPage());
 			var shellToolBar = testShell.Toolbar;
 			Assert.False(shellToolBar.IsVisible);
+		}
+
+		[Fact]
+		public async Task ChangingTextColorAfterSetValueFromRendererDoesntFire()
+		{
+			Button button = new Button()
+			{
+				TextColor = Colors.Green
+			};
+
+			button.SetValue(
+				Button.TextColorProperty, Colors.Purple, specificity: SetterSpecificity.FromHandler);
+
+			bool fired = false;
+			button.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == Button.TextColorProperty.PropertyName)
+				{
+					fired = true;
+				}
+			};
+
+			button.TextColor = Colors.Green; // Won't fire a property Changed event
+			Assert.Equal(Colors.Green, button.TextColor);
+			Assert.True(fired);
+		}
+
+		[Fact]
+		public async Task ShellSectionChangedFires()
+		{
+			var page1 = new ContentPage()
+			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+			{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
+
+			var shell = new Shell();
+			var tabBar = new TabBar()
+			{
+				Items =
+				{
+					new ShellContent(){ Content = page1 },
+					new ShellContent(){ Content = page2 },
+				}
+			};
+
+			shell.Items.Add(tabBar);
+			shell.CurrentItem = page2;
+			page2.IsVisible = false;
+			Assert.Equal(shell.CurrentPage, page1);
+
+			bool fired = false;
+			shell.CurrentItem.PropertyChanged += (x, args) =>
+			{
+				if (args.PropertyName == nameof(ShellItem.CurrentItem))
+				{
+					fired = true;
+				}
+			};
+
+			page2.IsVisible = true;
+			shell.CurrentItem = page2;
+			Assert.Equal(shell.CurrentPage, page2);
+			Assert.True(fired);
 		}
 	}
 }

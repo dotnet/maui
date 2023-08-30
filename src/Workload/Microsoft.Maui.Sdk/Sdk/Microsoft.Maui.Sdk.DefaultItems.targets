@@ -1,0 +1,27 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+	<!--
+	Set up some basic structuring.
+	
+	This file does two things:
+		- Move all the .xaml.cs files under their .xaml files.
+		- Remove the .xaml and .css from the @(None) item group.
+	
+	These are in the workload so they can run when the NuGet packages are not yet restored.
+	The single project system also has various globs and changes, but that does not affect
+	how the solution explorer "looks". As a result, we can leave it there for now as it is
+	useful to have in the packages for independent updates - if need be.
+	
+	This is duplicated in the build tasks NuGet in Microsoft.Maui.Controls.DefaultItems.targets
+	because older workloads also need these globs.
+	-->
+	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
+		<None Remove="**\*.xaml" Condition="'$(EnableDefaultNoneItems)'=='True'" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
+		<None Remove="**\*.css" Condition="'$(EnableDefaultNoneItems)'=='True'" />
+	</ItemGroup>
+
+</Project>

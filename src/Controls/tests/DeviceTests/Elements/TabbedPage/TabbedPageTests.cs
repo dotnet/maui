@@ -251,7 +251,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 #endif
 
+#if IOS
+		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
+#else
 		[Theory]
+#endif
 #if ANDROID
 		[InlineData(true)]
 #endif

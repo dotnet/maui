@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -6,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiCheckBox : UIButton
+	public class MauiCheckBox : UIButton, IUIViewLifeCycleEvents
 	{
 		// All these values were chosen to just match the android drawables that are used
 		const float DefaultSize = 18.0f;
@@ -24,7 +25,13 @@ namespace Microsoft.Maui.Platform
 		bool _isEnabled;
 		bool _disposed;
 
-		public EventHandler? CheckedChanged;
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
+
+		public event EventHandler? CheckedChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		public MauiCheckBox()
 		{
@@ -44,7 +51,7 @@ namespace Microsoft.Maui.Platform
 		void OnTouchUpInside(object? sender, EventArgs e)
 		{
 			IsChecked = !IsChecked;
-			CheckedChanged?.Invoke(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, e, nameof(CheckedChanged));
 		}
 
 		internal float MinimumViewSize { get; set; }
@@ -293,6 +300,20 @@ namespace Microsoft.Maui.Platform
 		{
 			get => (IsChecked) ? "1" : "0";
 			set { }
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

@@ -36,6 +36,13 @@ Before opening the solution in Visual Studio you **MUST** build the build tasks.
    dotnet build ./Microsoft.Maui.BuildTasks.slnf
    ```
 
+- OR do this to build the tasks and open the Visual Studio Code codespace:
+   
+   ```dotnetcli
+   dotnet tool restore
+   dotnet cake --target=VSCode --workloads=global
+   ```
+
 ## Available Solutions
 - Microsoft.Maui.sln
   - Kitchen sink solution. This includes all of the `Compatibility` projects and all of the platforms that we compile for. It is very unlikely you will need to use this solution for development. 
@@ -190,9 +197,11 @@ public static int foo = 2130771968;
 
 # Advanced Scenarios
 
-### Compile using a local `bin\dotnet`
+### Compile using a local `bin\dotnet` via `dotnet-local.*`
 
 This method will use the .NET and workload versions that are specific to the branch you are on, which is a good way to ensure compatibility.
+
+Use `dotnet-local.cmd` on Windows or `dotnet-local.sh` on Unix to ensure that `PATH` is set consistently.
 
 #### Cake
 
@@ -201,6 +210,13 @@ You can run a `Cake` target to bootstrap .NET SDK in `bin\dotnet` and launch Vis
 ```dotnetcli
 dotnet tool restore
 dotnet cake --target=VS
+```
+
+There is also a `VSCode` target for launching Visual Studio Code.
+
+```dotnetcli
+dotnet tool restore
+dotnet cake --target=VSCode
 ```
 
 #### Testing branch against your project

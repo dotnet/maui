@@ -136,8 +136,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragLeave(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = ToDragEventArgs(e);
 
 			dragEventArgs.AcceptedOperation = (DataPackageOperation)((int)dragEventArgs.AcceptedOperation);
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -166,8 +165,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void HandleDragOver(object sender, Microsoft.UI.Xaml.DragEventArgs e)
 		{
-			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
-			var dragEventArgs = new DragEventArgs(package);
+			var dragEventArgs = ToDragEventArgs(e);
 
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
@@ -200,7 +198,10 @@ namespace Microsoft.Maui.Controls.Platform
 				element = ve;
 			}
 
-			var args = new DropEventArgs(datapackage?.View);
+			if (datapackage is null)
+				return;
+
+			var args = new DropEventArgs(datapackage.View, (relativeTo) => GetPosition(relativeTo, e));
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -221,14 +222,17 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
-				if (!rec.CanDrag)
+				var view = Element as View;
+
+				if (!rec.CanDrag || view is null)
 				{
 					e.Cancel = true;
 					return;
 				}
 
 				var handler = sender as IViewHandler;
-				var args = rec.SendDragStarting(handler?.VirtualView as IView);
+				var args = rec.SendDragStarting(view, (relativeTo) => GetPosition(relativeTo, e));
+
 				e.Data.Properties["_XFPropertes_DONTUSE"] = args.Data;
 
 				if (!args.Handled && handler != null)
@@ -317,6 +321,8 @@ namespace Microsoft.Maui.Controls.Platform
 				_container.PointerEntered -= OnPgrPointerEntered;
 				_container.PointerExited -= OnPgrPointerExited;
 				_container.PointerMoved -= OnPgrPointerMoved;
+				_container.PointerPressed -= OnPgrPointerPressed;
+				_container.PointerReleased -= OnPgrPointerReleased;
 			}
 		}
 
@@ -482,15 +488,26 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerEntered(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerEntered(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerEntered(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerExited(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerExited(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerExited(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerMoved(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerMoved(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerMoved(view, (relativeTo)
+					=> GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
+
+		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e)));
+
+		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
+			=> HandlePgrPointerEvent(e, (view, recognizer)
+				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{
@@ -508,10 +525,11 @@ namespace Microsoft.Maui.Controls.Platform
 		Point? GetPosition(IElement? relativeTo, RoutedEventArgs e)
 		{
 			var result = e.GetPositionRelativeToElement(relativeTo);
-			if (result == null)
+
+			if (result is null)
 				return null;
 
-			return new Point(result.Value.X, result.Value.Y);
+			return result.Value.ToPoint();
 		}
 
 		void OnTap(object sender, RoutedEventArgs e)
@@ -711,6 +729,8 @@ namespace Microsoft.Maui.Controls.Platform
 			_container.PointerEntered += OnPgrPointerEntered;
 			_container.PointerExited += OnPgrPointerExited;
 			_container.PointerMoved += OnPgrPointerMoved;
+			_container.PointerPressed += OnPgrPointerPressed;
+			_container.PointerReleased += OnPgrPointerReleased;
 
 			bool hasSwipeGesture = gestures.GetGesturesFor<SwipeGestureRecognizer>().GetEnumerator().MoveNext();
 			bool hasPinchGesture = gestures.GetGesturesFor<PinchGestureRecognizer>().GetEnumerator().MoveNext();
@@ -749,6 +769,14 @@ namespace Microsoft.Maui.Controls.Platform
 		void HandleDoubleTapped(object sender, DoubleTappedRoutedEventArgs doubleTappedRoutedEventArgs)
 		{
 			doubleTappedRoutedEventArgs.Handled = true;
+		}
+
+		DragEventArgs ToDragEventArgs(UI.Xaml.DragEventArgs e)
+		{
+			// The package should never be null here since the UI.Xaml.DragEventArgs have already been initialized
+			var package = e.DataView.Properties["_XFPropertes_DONTUSE"] as DataPackage;
+
+			return new DragEventArgs(package!, (relativeTo) => GetPosition(relativeTo, e));
 		}
 	}
 }

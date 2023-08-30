@@ -69,8 +69,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label1 = new Label();
 			var label2 = new Label();
 
-			x.Apply(label1);
-			x.Apply(label2);
+			x.Apply(label1, new SetterSpecificity());
+			x.Apply(label2, new SetterSpecificity());
 
 			var groups1 = VisualStateManager.GetVisualStateGroups(label1);
 			var groups2 = VisualStateManager.GetVisualStateGroups(label2);
@@ -241,8 +241,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label1 = new Label();
 			var label2 = new Label();
 
-			x.Apply(label1);
-			x.Apply(label2);
+			x.Apply(label1, new SetterSpecificity());
+			x.Apply(label2, new SetterSpecificity());
 
 			Assert.Equal(label1.Margin.Bottom, targetBottomMargin);
 			Assert.Equal(label2.Margin.Bottom, targetBottomMargin);
@@ -488,40 +488,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			label.ClearValue(VisualStateManager.VisualStateGroupsProperty);
 			Assert.Empty(VisualStateManager.GetVisualStateGroups(label)); //default style (created by defaultValueCreator) has no groups
 			Assert.False(label.TextColor == Colors.HotPink); //setter should be unapplied
-		}
-
-		[Fact]
-		//https://github.com/dotnet/maui/issues/6856
-		public void VSMInStyleShouldHaveStylePriority()
-		{
-			var label = new Label { TextColor = Colors.HotPink };//Setting the color manually should prevents style override
-			var SelectedStateName = "Selected";
-
-			Assert.Equal(label.TextColor, Colors.HotPink);
-
-			label.Style = new Style(typeof(Label))
-			{
-				Setters = {
-					new Setter { Property = Label.TextColorProperty, Value = Colors.AliceBlue },
-					new Setter {
-						Property = VisualStateManager.VisualStateGroupsProperty,
-						Value = new VisualStateGroupList {
-							new VisualStateGroup {
-								States = {
-									new VisualState {
-										Name = SelectedStateName,
-										Setters = { new Setter { Property = Label.TextColorProperty, Value=Colors.OrangeRed} }
-									},
-								}
-							}
-						}
-					},
-				}
-			};
-
-			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor from Style isn't applied
-			VisualStateManager.GoToState(label, SelectedStateName);
-			Assert.Equal(label.TextColor, Colors.HotPink); //textcolor Style's VSM isn't applied
 		}
 
 		[Theory(Skip = "This test was created to check performance characteristics; leaving it in because it may be useful again.")]

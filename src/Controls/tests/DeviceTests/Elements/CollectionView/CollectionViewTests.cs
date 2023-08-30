@@ -47,6 +47,8 @@ namespace Microsoft.Maui.DeviceTests
 			WeakReference weakReference = null;
 			var collectionView = new CollectionView
 			{
+				Header = new Label { Text = "Header" },
+				Footer = new Label { Text = "Footer" },
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
@@ -72,14 +74,10 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(100);
 			});
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
-
-			Assert.NotNull(weakReference);
+			await AssertionExtensions.WaitForGC(weakReference);
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
-			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
+			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 		}
 
 		[Theory]
@@ -140,16 +138,17 @@ namespace Microsoft.Maui.DeviceTests
 					GenerateItems(itemsCount, data);
 					collectionView.ItemsSource = data;
 
-					await WaitForUIUpdate(frame, collectionView);
+					if (n == 0)
+					{
+						await AssertionExtensions.Wait(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
+					}
+					else
+					{
+						await WaitForUIUpdate(frame, collectionView);
+					}
+
 					frame = collectionView.Frame;
 
-#if WINDOWS
-					// On Windows, the ListView pops in and changes the frame, then actually
-					// loads in the data, which updates it again. So we need to wait for the second
-					// update before checking the size
-					await WaitForUIUpdate(frame, collectionView);
-					frame = collectionView.Frame;
-#endif
 					double expectedWidth = layoutOptions == LayoutOptions.Fill
 						? containerWidth
 						: Math.Min(itemsCount * templateWidth, containerWidth);

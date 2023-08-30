@@ -91,18 +91,18 @@ namespace Microsoft.Maui.Handlers
 			return swipeButton;
 		}
 
-		int GetIconSize()
+		static int GetIconSize(ISwipeItemMenuItemHandler handler)
 		{
-			if (VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source == null)
+			if (handler.VirtualView is not IImageSourcePart imageSourcePart || imageSourcePart.Source is null)
 				return 0;
 
-			var mauiSwipeView = PlatformView.Parent.GetParentOfType<MauiSwipeView>();
+			var mauiSwipeView = handler.PlatformView.Parent.GetParentOfType<MauiSwipeView>();
 
-			if (mauiSwipeView == null || MauiContext?.Context == null)
+			if (mauiSwipeView is null || handler.MauiContext?.Context is null)
 				return 0;
 
 			int contentHeight = mauiSwipeView.MeasuredHeight;
-			int contentWidth = (int)MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
+			int contentWidth = (int)handler.MauiContext.Context.ToPixels(SwipeViewExtensions.SwipeItemWidth);
 
 			return Math.Min(contentHeight, contentWidth) / 2;
 		}
@@ -133,43 +133,49 @@ namespace Microsoft.Maui.Handlers
 				var icons = textView.GetCompoundDrawables();
 				if (icons.Length > 1 && icons[1] != null)
 				{
-					((IImageSourcePartSetter)this).SetImageSource(icons[1]);
+					SourceLoader.Setter.SetImageSource(icons[1]);
 				}
 			}
 
-			var iconSize = GetIconSize();
+			var iconSize = GetIconSize(this);
 			var textPadding = 2 * density;
 			var buttonPadding = (int)((contentHeight - (iconSize + lineHeight + textPadding)) / 2);
 			PlatformView.SetPadding(0, buttonPadding, 0, buttonPadding);
 		}
 
-		void IImageSourcePartSetter.SetImageSource(Drawable? drawable)
+		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
-			if (drawable != null)
+			public override void SetImageSource(Drawable? platformImage)
 			{
-				var iconSize = GetIconSize();
-				var textColor = VirtualView.GetTextColor()?.ToPlatform();
-				int drawableWidth = drawable.IntrinsicWidth;
-				int drawableHeight = drawable.IntrinsicHeight;
+				if (Handler?.PlatformView is not TextView button || Handler?.VirtualView is not ISwipeItemMenuItem item)
+					return;
 
-				if (drawableWidth > drawableHeight)
+				if (platformImage is not null)
 				{
-					var iconWidth = iconSize;
-					var iconHeight = drawableHeight * iconWidth / drawableWidth;
-					drawable.SetBounds(0, 0, iconWidth, iconHeight);
-				}
-				else
-				{
-					var iconHeight = iconSize;
-					var iconWidth = drawableWidth * iconHeight / drawableHeight;
-					drawable.SetBounds(0, 0, iconWidth, iconHeight);
+					var iconSize = GetIconSize(Handler);
+					var textColor = item.GetTextColor()?.ToPlatform();
+					int drawableWidth = platformImage.IntrinsicWidth;
+					int drawableHeight = platformImage.IntrinsicHeight;
+
+					if (drawableWidth > drawableHeight)
+					{
+						var iconWidth = iconSize;
+						var iconHeight = drawableHeight * iconWidth / drawableWidth;
+						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
+					}
+					else
+					{
+						var iconHeight = iconSize;
+						var iconWidth = drawableWidth * iconHeight / drawableHeight;
+						platformImage.SetBounds(0, 0, iconWidth, iconHeight);
+					}
+
+					if (textColor != null)
+						platformImage.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
 				}
 
-				if (textColor != null)
-					drawable.SetColorFilter(textColor.Value, FilterMode.SrcAtop);
+				button.SetCompoundDrawables(null, platformImage, null, null);
 			}
-
-			(PlatformView as TextView)?.SetCompoundDrawables(null, drawable, null, null);
 		}
 	}
 }
