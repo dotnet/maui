@@ -65,14 +65,14 @@ namespace Microsoft.Maui.Controls
 		public event PropertyChangingEventHandler PropertyChanging;
 
 		/// <summary>
-		/// Occurs when the value of the <see cref="BindingContext"> property changes.
+		/// Occurs when the value of the <see cref="BindingContext"/> property changes.
 		/// </summary>
 		public event EventHandler BindingContextChanged;
 
 		/// <summary>
 		/// Clears any value that is previously set for a bindable property.
 		/// </summary>
-		/// <param name="property">The <see cref="BindableProperty"> to clear the value for.</param>
+		/// <param name="property">The <see cref="BindableProperty"/> to clear the value for.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
 		/// <remarks>When <paramref name="property"/> is read-only, nothing will happen.</remarks>
 		public void ClearValue(BindableProperty property)
@@ -147,8 +147,8 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The value that is contained in the <see cref="BindableProperty" />.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
 		/// <remarks>
-		/// <see cref="GetValue(Microsoft.Maui.Controls.BindableProperty)" /> and <see cref="SetValue*" /> are used to access the values of properties that are implemented by a <see cref="BindableProperty" />.
-		/// That is, application developers typically provide an interface for a bound property by defining a <see langword="public" /> property whose <see langword="get" /> accessor casts the result of <see cref="GetValue(Microsoft.Maui.Controls.BindableProperty)" /> to the appropriate type and returns it, and whose <see langword="set" /> accessor uses <see cref="SetValue*" /> to set the value on the correct property.
+		/// <see cref="GetValue(BindableProperty)" /> and <see cref="SetValue(BindableProperty, object)" /> are used to access the values of properties that are implemented by a <see cref="BindableProperty" />.
+		/// That is, application developers typically provide an interface for a bound property by defining a <see langword="public" /> property whose <see langword="get" /> accessor casts the result of <see cref="GetValue(BindableProperty)" /> to the appropriate type and returns it, and whose <see langword="set" /> accessor uses <see cref="SetValue(BindableProperty, object)" /> to set the value on the correct property.
 		/// Application developers should perform no other steps in the public property that defines the interface of the bound property.
 		/// </remarks>
 		public object GetValue(BindableProperty property)
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="targetProperty">The bindable property to check if a value is currently set.</param>
 		/// <returns><see langword="true"/> if the target property exists and has been set. Otherwise <see langword="false"/>.</returns>
-		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
 		public bool IsSet(BindableProperty targetProperty)
 		{
 			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
@@ -339,7 +339,7 @@ namespace Microsoft.Maui.Controls
 		protected void ApplyBindings() => ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
 
 		/// <summary>
-		/// Raises the <see cref="BindingContextChanged"> event.
+		/// Raises the <see cref="BindingContextChanged"/> event.
 		/// </summary>
 		protected virtual void OnBindingContextChanged()
 		{
@@ -353,14 +353,14 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Raises the <see cref="PropertyChanged"> event.
+		/// Raises the <see cref="PropertyChanged"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that has changed.</param>
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
 		/// <summary>
-		/// Raises the <see cref="PropertyChanging"> event.
+		/// Raises the <see cref="PropertyChanging"/> event.
 		/// </summary>
 		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
@@ -680,23 +680,23 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Coerces the value of the specified bindable property.
-		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate*"/> of the specified bindable property.
+		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate"/> of the specified bindable property.
 		/// </summary>
 		/// <param name="property">The bindable property to coerce the value of.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown when <paramref name="property"/> is read-only.</exception>
-		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate*"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate"/>.</exception>
 		/// <remarks>If <see cref="BindableProperty.CoerceValueDelegate"/> is not assigned to, nothing will happen.</remarks>
 		public void CoerceValue(BindableProperty property) => CoerceValue(property, checkAccess: true);
 
 		/// <summary>
 		/// Coerces the value of the specified bindable property.
-		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate*"/> of the specified bindable property.
+		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate"/> of the specified bindable property.
 		/// </summary>
 		/// <param name="propertyKey">The key that identifies the bindable property to coerce the value of.</param>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyKey"/> is <see langword="null"/>.</exception>
 		/// <exception cref="InvalidOperationException">Thrown when the bindable property identified by <paramref name="propertyKey"/> is read-only.</exception>
-		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate*"/>.</exception>
+		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate"/>.</exception>
 		/// <remarks>If <see cref="BindableProperty.CoerceValueDelegate"/> is not assigned to, nothing will happen.</remarks>
 		public void CoerceValue(BindablePropertyKey propertyKey)
 		{
