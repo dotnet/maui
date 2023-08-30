@@ -4,6 +4,7 @@
              AutomationId="DragAndDropBetweenLayouts"
              x:Class="Maui.Controls.Sample.DragAndDropBetweenLayouts">
     <StackLayout>
+        <Button AutomationId="ResetButton" Text="Reset View" Clicked="ResetLayouts"/>
         <Grid BackgroundColor="Purple">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -20,22 +21,22 @@
                             Drop="OnDrop">
                         </DropGestureRecognizer>
                     </StackLayout.GestureRecognizers>
-                    <Label HeightRequest="100" Background="Red" Text="Red" AutomationId="Red">
+                    <Label HeightRequest="50" Background="Red" Text="Red" AutomationId="Red">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Purple" Text="Purple" AutomationId="Purple">
+                    <Label HeightRequest="50" Background="Purple" Text="Purple" AutomationId="Purple">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Yellow" Text="Yellow" AutomationId="Yellow">
+                    <Label HeightRequest="50" Background="Yellow" Text="Yellow" AutomationId="Yellow">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
                     </Label>
-                    <Label HeightRequest="100" Background="Blue" Text="Blue" AutomationId="Blue">
+                    <Label HeightRequest="50" Background="Blue" Text="Blue" AutomationId="Blue">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
@@ -54,7 +55,7 @@
                             Drop="OnDrop">
                         </DropGestureRecognizer>
                     </StackLayout.GestureRecognizers>
-                    <Label HeightRequest="100" Background="Green" Text="Green" AutomationId="Green">
+                    <Label HeightRequest="50" Background="Green" Text="Green" AutomationId="Green">
                         <Label.GestureRecognizers>
                             <DragGestureRecognizer DropCompleted="OnDropCompleted" DragStarting="OnDragStarting"/>
                         </Label.GestureRecognizers>
@@ -62,7 +63,7 @@
                 </StackLayout>
             </ScrollView>
         </Grid>
-        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel"/>
+        <Label x:Name="events" AutomationId="DragEventsLabel" Text="EventsLabel: "/>
         <!-- DragStarting Labels-->
         <Label x:Name="dragStartRelativeSelf" AutomationId="DragStartRelativeSelf" Text="Drag Start relative to self:"/>
         <Label x:Name="dragStartRelativeScreen" AutomationId="DragStartRelativeScreen" Text="Drag Start relative to screen:"/>

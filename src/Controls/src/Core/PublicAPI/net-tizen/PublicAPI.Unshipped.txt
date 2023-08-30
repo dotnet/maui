@@ -9,6 +9,13 @@ Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Control
 Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
 Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
+Microsoft.Maui.Controls.KeyboardAccelerator
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string?
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.set -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.KeyboardAccelerator() -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.set -> void
+Microsoft.Maui.Controls.MenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.KeyboardAccelerator!>!
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
@@ -24,6 +31,16 @@ Microsoft.Maui.Controls.DragGestureRecognizer.DropCompletedCommandParameter.set 
 Microsoft.Maui.Controls.DragStartingEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackageView!
 Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
+Microsoft.Maui.Controls.InputView.CursorPosition.get -> int
+Microsoft.Maui.Controls.InputView.CursorPosition.set -> void
+Microsoft.Maui.Controls.InputView.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+Microsoft.Maui.Controls.InputView.FontAttributes.set -> void
+Microsoft.Maui.Controls.InputView.FontAutoScalingEnabled.get -> bool
+Microsoft.Maui.Controls.InputView.FontAutoScalingEnabled.set -> void
+Microsoft.Maui.Controls.InputView.FontSize.get -> double
+Microsoft.Maui.Controls.InputView.FontSize.set -> void
+Microsoft.Maui.Controls.InputView.SelectionLength.get -> int
+Microsoft.Maui.Controls.InputView.SelectionLength.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressed -> System.EventHandler<Microsoft.Maui.Controls.PointerEventArgs!>?
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.get -> System.Windows.Input.ICommand!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerPressedCommand.set -> void
@@ -34,6 +51,8 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -46,7 +65,6 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
@@ -86,6 +104,8 @@ Microsoft.Maui.Controls.VisualElement.RefreshIsEnabledProperty() -> void
 override Microsoft.Maui.Controls.Button.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
+~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
+~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
@@ -133,7 +153,13 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, 
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
+~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.FontFamilyProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.FontSizeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
@@ -151,3 +177,42 @@ Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.V
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.get -> bool
 Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTapped.set -> void
+
+*REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
+*REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
+*REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.set -> void
+*REMOVED*Microsoft.Maui.Controls.Editor.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+*REMOVED*Microsoft.Maui.Controls.Editor.FontAttributes.set -> void
+*REMOVED*Microsoft.Maui.Controls.Editor.FontAutoScalingEnabled.get -> bool
+*REMOVED*Microsoft.Maui.Controls.Editor.FontAutoScalingEnabled.set -> void
+*REMOVED*Microsoft.Maui.Controls.Editor.FontSize.get -> double
+*REMOVED*Microsoft.Maui.Controls.Editor.FontSize.set -> void
+*REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.get -> int
+*REMOVED*Microsoft.Maui.Controls.Editor.SelectionLength.set -> void
+
+*REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.get -> string
+*REMOVED*~Microsoft.Maui.Controls.SearchBar.FontFamily.set -> void
+*REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.get -> int
+*REMOVED*Microsoft.Maui.Controls.SearchBar.CursorPosition.set -> void
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAttributes.set -> void
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAutoScalingEnabled.get -> bool
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontAutoScalingEnabled.set -> void
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.get -> double
+*REMOVED*Microsoft.Maui.Controls.SearchBar.FontSize.set -> void
+*REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.get -> int
+*REMOVED*Microsoft.Maui.Controls.SearchBar.SelectionLength.set -> void
+
+*REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.get -> string
+*REMOVED*~Microsoft.Maui.Controls.Entry.FontFamily.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.get -> int
+*REMOVED*Microsoft.Maui.Controls.Entry.CursorPosition.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
+*REMOVED*Microsoft.Maui.Controls.Entry.FontAttributes.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.FontAutoScalingEnabled.get -> bool
+*REMOVED*Microsoft.Maui.Controls.Entry.FontAutoScalingEnabled.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.FontSize.get -> double
+*REMOVED*Microsoft.Maui.Controls.Entry.FontSize.set -> void
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.get -> int
+*REMOVED*Microsoft.Maui.Controls.Entry.SelectionLength.set -> void
