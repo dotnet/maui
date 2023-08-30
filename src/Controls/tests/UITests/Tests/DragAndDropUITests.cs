@@ -51,7 +51,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Red");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Red", "Green");
 			App.WaitForElement("DragEventsLabel");
 
@@ -69,10 +72,13 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
-			var dragStartRelativeToSelf  = GetCoordinatesFromLabel(App.Query("DragStartRelativeSelf").First().Text);
+			var dragStartRelativeToSelf = GetCoordinatesFromLabel(App.Query("DragStartRelativeSelf").First().Text);
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.Query("DragStartRelativeScreen").First().Text);
 			var dragStartRelativeToLabel = GetCoordinatesFromLabel(App.Query("DragStartRelativeLabel").First().Text);
 
@@ -99,7 +105,10 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
 			var dragRelativeToDrop = GetCoordinatesFromLabel(App.Query("DragRelativeDrop").First().Text);
@@ -111,7 +120,6 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.NotNull(dragRelativeToScreen);
 			Assert.NotNull(dragRelativeToLabel);
 			Assert.NotNull(dragStartRelativeToScreen);
-
 
 			Assert.True(dragRelativeToDrop!.Value.X > 0 && dragRelativeToDrop!.Value.Y > 0);
 			Assert.True(dragRelativeToScreen!.Value.X > 0 && dragRelativeToScreen!.Value.Y > 0);
@@ -135,16 +143,18 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Tap("GoButton");
 
+			App.Tap("ResetButton");
+
 			App.WaitForElement("Blue");
+			App.WaitForElement("Green");
 			App.DragAndDrop("Blue", "Green");
 
 			var dropRelativeToLayout = GetCoordinatesFromLabel(App.Query("DropRelativeLayout").First().Text);
 			var dropRelativeToScreen = GetCoordinatesFromLabel(App.Query("DropRelativeScreen").First().Text);
 			var dropRelativeToLabel = GetCoordinatesFromLabel(App.Query("DropRelativeLabel").First().Text);
-			
+
 			var dragRelativeToLabel = GetCoordinatesFromLabel(App.Query("DragRelativeLabel").First().Text);
 			var dragStartRelativeToScreen = GetCoordinatesFromLabel(App.Query("DragStartRelativeScreen").First().Text);
-
 
 			Assert.NotNull(dropRelativeToLayout);
 			Assert.NotNull(dropRelativeToScreen);
@@ -175,7 +185,7 @@ namespace Microsoft.Maui.AppiumTests
 		// Helper function to parse out the X and Y coordinates from text labels 'Drag position: (x),(y)'
 		Point? GetCoordinatesFromLabel(string? labelText)
 		{
-			if (labelText is null) 
+			if (labelText is null)
 				return null;
 
 			var i = labelText.IndexOf(':', StringComparison.Ordinal);

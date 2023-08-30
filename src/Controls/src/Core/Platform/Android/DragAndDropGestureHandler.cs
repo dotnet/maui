@@ -124,7 +124,7 @@ namespace Microsoft.Maui.Controls.Platform
 				package = new DataPackage();
 				_currentCustomLocalStateData.DataPackage = package;
 			}
-			
+
 			var position = new Point(e.GetX(), e.GetY());
 
 			switch (e.Action)

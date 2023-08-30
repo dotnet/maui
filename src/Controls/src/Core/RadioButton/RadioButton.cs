@@ -671,6 +671,12 @@ namespace Microsoft.Maui.Controls
 
 		int IButtonStroke.CornerRadius => (int)GetValue(CornerRadiusProperty);
 
+		bool IRadioButton.IsChecked
+		{
+			get => IsChecked;
+			set => SetValue(IsCheckedProperty, value, SetterSpecificity.FromHandler);
+		}
+
 		private protected override Semantics UpdateSemantics()
 		{
 			var semantics = base.UpdateSemantics();
