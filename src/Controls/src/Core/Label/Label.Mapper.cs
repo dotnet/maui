@@ -32,6 +32,10 @@ namespace Microsoft.Maui.Controls
 #endif
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Label.LineBreakMode), MapLineBreakMode);
 			LabelHandler.Mapper.ReplaceMapping<Label, ILabelHandler>(nameof(Label.MaxLines), MapMaxLines);
+
+#if ANDROID
+			LabelHandler.CommandMapper.AppendToMapping<Label, ILabelHandler>(nameof(Frame), MapFrame);
+#endif
 		}
 	}
 }

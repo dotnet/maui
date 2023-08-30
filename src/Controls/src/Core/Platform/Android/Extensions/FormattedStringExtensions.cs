@@ -13,6 +13,8 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public static class FormattedStringExtensions
 	{
+		readonly static Java.Lang.Class JavaLangObjectClass = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
+
 		public static SpannableString ToSpannableString(this Label label)
 			=> ToSpannableStringNewWay(
 				label.FormattedText,
@@ -47,7 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 				TextDecorations.None);
 
 		internal static SpannableString ToSpannableStringNewWay(
-			this FormattedString formattedString,
+			this FormattedString? formattedString,
 			IFontManager fontManager,
 			Context? context = null,
 			double defaultCharacterSpacing = 0d,
@@ -57,7 +59,7 @@ namespace Microsoft.Maui.Controls.Platform
 			TextTransform defaultTextTransform = TextTransform.Default,
 			TextDecorations defaultTextDecorations = TextDecorations.None)
 		{
-			if (formattedString == null)
+			if (formattedString == null || formattedString.Spans.Count == 0)
 				return new SpannableString(string.Empty);
 
 			var defaultFontSize = defaultFont?.Size ?? fontManager.DefaultFontSize;
@@ -131,38 +133,37 @@ namespace Microsoft.Maui.Controls.Platform
 			return spannable;
 		}
 
-		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize)
+		public static void RecalculateSpanPositions(this TextView textView, Label element, SpannableString spannableString, SizeRequest finalSize) =>
+			RecalculateSpanPositions(textView, element.Padding, element.FormattedText, spannableString);
+
+		internal static void RecalculateSpanPositions(this TextView textView, Thickness padding, FormattedString text) =>
+			RecalculateSpanPositions(textView, padding, text, textView.TextFormatted as SpannableStringInternal);
+
+		internal static void RecalculateSpanPositions(this TextView textView, Thickness padding, FormattedString text, SpannableStringInternal? spannableString)
 		{
-			if (element?.FormattedText?.Spans is null || element.FormattedText.Spans.Count == 0)
+			if (textView.Width <= 0 || textView.Height <= 0)
 				return;
 
-			var labelWidth = finalSize.Request.Width;
-			if (labelWidth <= 0 || finalSize.Request.Height <= 0)
+			if (spannableString is null || spannableString.IsDisposed())
 				return;
 
-			if (spannableString == null || spannableString.IsDisposed())
+			var strlen = spannableString.Length();
+			if (strlen == 0)
 				return;
 
 			var layout = textView.Layout;
-			if (layout == null)
+			if (layout is null)
 				return;
 
 			int next = 0;
 			int count = 0;
 
-			var padding = element.Padding;
 			var padLeft = (int)textView.Context.ToPixels(padding.Left);
 			var padTop = (int)textView.Context.ToPixels(padding.Top);
 
-#pragma warning disable CA1416
-			var strlen = spannableString.Length();
-#pragma warning restore CA1416
-
 			for (int i = 0; i < strlen; i = next)
 			{
-				var type = Java.Lang.Class.FromType(typeof(Java.Lang.Object));
-
-				var span = element.FormattedText.Spans[count];
+				var span = text.Spans[count];
 
 				count++;
 
@@ -170,10 +171,12 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 
 				// Find the next span
-				next = spannableString.NextSpanTransition(i, spannableString.Length(), type);
+				// NOTE: null can be used here for `kind`
+				next = spannableString.NextSpanTransition(i, spannableString.Length(), null);
 
-				// Get all spans in the range - Android can have overlapping spans				
-				var spans = spannableString.GetSpans(i, next, type);
+				// Get all spans in the range - Android can have overlapping spans
+				// NOTE: null is NOT supported for `kind`: https://github.com/xamarin/xamarin-android/issues/8167
+				var spans = spannableString.GetSpans(i, next, JavaLangObjectClass);
 
 				if (spans is null || spans.Length == 0)
 					continue;
@@ -191,7 +194,7 @@ namespace Microsoft.Maui.Controls.Platform
 				List<Graphics.Rect> spanRectangles = new List<Graphics.Rect>();
 				for (var curLine = spanStartLine; curLine <= spanEndLine; curLine++)
 				{
-					global::Android.Graphics.Rect bounds = new global::Android.Graphics.Rect();
+					var bounds = new global::Android.Graphics.Rect();
 					layout.GetLineBounds(curLine, bounds);
 
 					var lineHeight = bounds.Height();
