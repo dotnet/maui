@@ -10,12 +10,12 @@ Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement!
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropCompletedEventArgs.get -> Microsoft.UI.Xaml.DropCompletedEventArgs!
 Microsoft.Maui.Controls.PlatformDragEventArgs
-Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> object!
+Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement?
 Microsoft.Maui.Controls.PlatformDragEventArgs.DragEventArgs.get -> Microsoft.UI.Xaml.DragEventArgs!
 Microsoft.Maui.Controls.PlatformDragEventArgs.Handled.get -> bool
 Microsoft.Maui.Controls.PlatformDragEventArgs.Handled.set -> void
 Microsoft.Maui.Controls.PlatformDropEventArgs
-Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> object!
+Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement?
 Microsoft.Maui.Controls.PlatformDropEventArgs.DragEventArgs.get -> Microsoft.UI.Xaml.DragEventArgs!
 Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
 Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
