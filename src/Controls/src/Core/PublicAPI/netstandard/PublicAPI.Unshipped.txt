@@ -1,11 +1,7 @@
 #nullable enable
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
 *REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
-Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
-Microsoft.Maui.Controls.DragStartingEventArgs.DragStartingEventArgs(System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDragStartingEventArgs? platformArgs) -> void
-Microsoft.Maui.Controls.DropCompletedEventArgs.DropCompletedEventArgs(Microsoft.Maui.Controls.PlatformDropCompletedEventArgs! platformArgs) -> void
-Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView? view, System.Func<Microsoft.Maui.IElement?, Microsoft.Maui.Graphics.Point?>? getPosition, Microsoft.Maui.Controls.PlatformDropEventArgs! platformArgs) -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs

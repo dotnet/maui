@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		/// Initializes a new instance of the <see cref="DropCompletedEventArgs"/> class.
 		/// </summary>
 		/// <param name="platformArgs">The platform-specific data associated with the drag.</param>
-		public DropCompletedEventArgs(PlatformDropCompletedEventArgs platformArgs) : this()
+		internal DropCompletedEventArgs(PlatformDropCompletedEventArgs platformArgs) : this()
 		{
 			PlatformArgs = platformArgs;
 		}
