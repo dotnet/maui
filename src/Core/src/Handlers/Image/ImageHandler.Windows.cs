@@ -63,6 +63,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				element.Height = view.Height;
 			}
+
+			ViewHandler.MapHeight(handler, view);
 		}
 
 		/// <summary>
@@ -76,6 +78,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				element.Width = view.Width;
 			}
+
+			ViewHandler.MapWidth(handler, view);
 		}
 
 		/// <summary>
@@ -89,6 +93,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				element.MaxHeight = view.MaximumHeight;
 			}
+
+			ViewHandler.MapMaximumHeight(handler, view);
 		}
 
 		/// <summary>
@@ -102,6 +108,8 @@ namespace Microsoft.Maui.Handlers
 			{
 				element.MaxWidth = view.MaximumWidth;
 			}
+
+			ViewHandler.MapMaximumWidth(handler, view);
 		}
 
 		/// <summary>
