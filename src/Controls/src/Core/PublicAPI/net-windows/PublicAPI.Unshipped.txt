@@ -1,6 +1,4 @@
 #nullable enable
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragStartingEventArgs.get -> Microsoft.UI.Xaml.DragStartingEventArgs!

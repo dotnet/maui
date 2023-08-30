@@ -1,6 +1,4 @@
 #nullable enable
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
 Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
 Microsoft.Maui.Controls.PlatformDragEventArgs
 Microsoft.Maui.Controls.PlatformDragEventArgs.DropInteraction.get -> UIKit.UIDropInteraction!
