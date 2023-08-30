@@ -46,12 +46,13 @@ namespace Microsoft.Maui.Platform
 			IImageSourceServiceProvider services,
 			CancellationToken cancellationToken = default)
 		{
+			float scale = imageView.Window?.GetDisplayDensity() ?? 1.0f;
+
 			imageView.Clear();
 			return image.UpdateSourceAsync(imageView, services, (uiImage) =>
 			{
 				imageView.Image = uiImage;
-
-			}, cancellationToken);
+			}, scale, cancellationToken);
 		}
 	}
 }

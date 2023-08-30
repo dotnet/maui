@@ -59,5 +59,98 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal("Menu4-b", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)((Microsoft.UI.Xaml.Controls.MenuFlyoutSubItem)contextFlyoutItems[3]).Items[1]).Text);
 			});
 		}
+
+		[Fact(DisplayName = "Context flyout doesn't crash on custom controls")]
+		public async Task FlyoutAddedToCustomGridDoesntCrash()
+		{
+			SetupBuilder();
+			var firstPage = new ContentPage();
+
+			var window = new Window(firstPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				var theGrid = new TestCustomGrid();
+				var contentPage = new ContentPage()
+				{
+					Content = theGrid,
+				};
+
+				window.Page = contentPage;
+
+				await OnLoadedAsync(contentPage);
+
+				var winGrid = ((LayoutHandler)theGrid.Handler).PlatformView;
+				var contextFlyoutItems = ((Microsoft.UI.Xaml.Controls.MenuFlyout)winGrid.ContextFlyout).Items;
+				Assert.Single(contextFlyoutItems);
+				Assert.Equal("Hello", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[0]).Text);
+			});
+		}
+
+		[Fact(DisplayName = "Context flyout adding and remove items")]
+		public async Task FlyoutAddAndRemoveWorks()
+		{
+			SetupBuilder();
+			var firstPage = new ContentPage();
+
+			var window = new Window(firstPage);
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(window, async (handler) =>
+			{
+				var theGrid = new TestCustomGrid();
+				var contentPage = new ContentPage()
+				{
+					Content = theGrid,
+				};
+
+				window.Page = contentPage;
+
+				await OnLoadedAsync(contentPage);
+
+				var winGrid = ((LayoutHandler)theGrid.Handler).PlatformView;
+				var contextFlyoutItems = ((Microsoft.UI.Xaml.Controls.MenuFlyout)winGrid.ContextFlyout).Items;
+				Assert.Single(contextFlyoutItems);
+				Assert.Equal("Hello", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[0]).Text);
+
+				// Add some items
+				theGrid.AddFlyoutItem("Hello World");
+				theGrid.AddFlyoutItem("Hello Maui");
+				Assert.Equal(3, contextFlyoutItems.Count);
+				Assert.Equal("Hello World", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[1]).Text);
+				Assert.Equal("Hello Maui", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[2]).Text);
+
+				// Remove middle item
+				theGrid.RemoveFlyoutItem(1);
+				Assert.Equal(2, contextFlyoutItems.Count);
+				Assert.Equal("Hello", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[0]).Text);
+				Assert.Equal("Hello Maui", ((Microsoft.UI.Xaml.Controls.MenuFlyoutItem)contextFlyoutItems[1]).Text);
+			});
+		}
+
+		private class TestCustomGrid : Grid
+		{
+			private MenuFlyout flyout;
+
+			public TestCustomGrid()
+			{
+				flyout = new MenuFlyout();
+
+				MenuFlyoutItem flyoutItem = new MenuFlyoutItem() { Text = "Hello" };
+				flyout.Add(flyoutItem);
+
+				FlyoutBase.SetContextFlyout(this, flyout);
+			}
+
+			public void AddFlyoutItem(string text)
+			{
+				MenuFlyoutItem flyoutItem = new MenuFlyoutItem() { Text = text };
+				flyout.Add(flyoutItem);
+			}
+
+			public void RemoveFlyoutItem(int index)
+			{
+				flyout.RemoveAt(index);
+			}
+		}
 	}
 }

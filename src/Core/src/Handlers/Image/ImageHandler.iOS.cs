@@ -40,7 +40,7 @@ namespace Microsoft.Maui.Handlers
 
 		public void OnWindowChanged()
 		{
-			if (SourceLoader.SourceManager.IsResolutionDependent)
+			if (SourceLoader.SourceManager.RequiresReload(PlatformView))
 				UpdateValue(nameof(IImage.Source));
 		}
 

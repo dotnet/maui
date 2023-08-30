@@ -1,5 +1,13 @@
 <Project>
 
+  <!--
+  Enable the default css/xaml globs and nesting. Single project globs remain in the NuGet package
+  for now since they only come into play when the compile starts, and this means the packages have
+  been restored.
+
+  This is duplicated in Microsoft.Maui.Controls.Build.Tasks.After.targets for now because .NET MAUI
+  is also consumed via NuGet - machines that have older workloads need these globs to be present.
+  -->
   <PropertyGroup>
     <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
     <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
