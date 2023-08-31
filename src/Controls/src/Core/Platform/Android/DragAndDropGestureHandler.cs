@@ -343,12 +343,12 @@ namespace Microsoft.Maui.Controls.Platform
 				if (args.PlatformArgs?.DragFlags is ADragFlags d)
 					dragFlags = (int)d;
 				else
+#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 					dragFlags = (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead;
 
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
 				else
-#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 					v.StartDrag(data, dragShadowBuilder, localData, dragFlags);
 #pragma warning restore CS0618, CA1416
 			});
