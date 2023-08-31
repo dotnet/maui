@@ -78,7 +78,13 @@ namespace Microsoft.Maui
 			widthConstraint = Math.Min(widthConstraint, virtualView.MaximumWidth);
 			heightConstraint = Math.Min(heightConstraint, virtualView.MaximumHeight);
 
-			var sizeThatFits = platformView.SizeThatFits(new CoreGraphics.CGSize((float)widthConstraint, (float)heightConstraint));
+			CGSize sizeThatFits;
+
+			// Callinsg SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+			if (platformView is UIImageView imageView)
+				sizeThatFits = imageView.SizeThatFitsImage(widthConstraint, heightConstraint);
+			else
+				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,
