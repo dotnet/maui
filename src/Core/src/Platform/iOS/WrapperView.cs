@@ -119,6 +119,9 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
+			if (child is UIImageView imageView)
+				return imageView.SizeThatFitsImage(size);
+
 			return child.SizeThatFits(size);
 		}
 
