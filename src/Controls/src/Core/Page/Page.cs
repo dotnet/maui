@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the space between the content of the page and it's border. This is a bindable property.
+		/// Gets or sets the space between the content of the page and its border. This is a bindable property.
 		/// </summary>
 		public Thickness Padding
 		{
@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="flowDirection">The flow direction to be used by the action sheet.</param>
 		/// <param name="buttons">Text labels for additional buttons.</param>
 		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
-		/// <remarks>Developers should be aware that Windows' line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
+		/// <remarks>Developers should be aware that Windows line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -417,7 +417,7 @@ namespace Microsoft.Maui.Controls
 		/// <remarks>
 		/// <para>Application developers can override this method to provide behavior when the back button is pressed. 
 		/// When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
-		/// <para>This only works on Android and UWP for the hardware back-button. On iOS, this method will never be called because there is no hardware back button.</para>
+		/// <para>This only works on Android and UWP for the hardware back button. On iOS, this method will never be called because there is no hardware back button.</para>
 		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
 		{
