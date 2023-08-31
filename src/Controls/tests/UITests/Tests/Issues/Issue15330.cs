@@ -14,8 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue15330Test()
 		{
-			// TODO: We are looking at assure that row height is 100% correct
-			Assert.Ignore("We are not sure the images are correct, ignoring as we investigate");
+			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
+				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/17125");
 
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
