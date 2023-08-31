@@ -82,7 +82,7 @@ namespace Microsoft.Maui
 
 			// Callinsg SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
 			if (platformView is UIImageView imageView)
-				sizeThatFits = imageView.SizeThatFitsImage(widthConstraint, heightConstraint);
+				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			else
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
 
