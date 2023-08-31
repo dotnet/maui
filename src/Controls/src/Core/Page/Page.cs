@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Controls
 		/// This is a bindable property.
 		/// </summary>
 		/// <remarks>
-		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the author's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
+		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the developer's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
 		/// </remarks>
 		public bool IsBusy
 		{
