@@ -161,36 +161,9 @@ namespace Microsoft.Maui.Platform
 			{
 				nativeImage.Source = nativeImageSource;
 
-				if (nativeImageSource is not null)
-				{
-					// set the base size if we can
-					{
-						var imageSourceSize = nativeImageSource.GetImageSourceSize(platformButton);
-						nativeImage.Width = imageSourceSize.Width;
-						nativeImage.Height = imageSourceSize.Height;
-					}
-
-					// BitmapImage is a special case that has an event when the image is loaded
-					// when this happens, we want to resize the button
-					if (nativeImageSource is BitmapImage bitmapImage)
-					{
-						bitmapImage.ImageOpened += OnImageOpened;
-
-						void OnImageOpened(object sender, RoutedEventArgs e)
-						{
-							bitmapImage.ImageOpened -= OnImageOpened;
-
-							// Check if the image that just loaded is still the current image
-							var actualImageSource = sender as BitmapImage;
-
-							if (actualImageSource is not null && nativeImage.Source == actualImageSource)
-								nativeImage.Height = nativeImage.Width = Primitives.Dimension.Unset;
-
-							if (platformButton.Parent is FrameworkElement frameworkElement)
-								frameworkElement.InvalidateMeasure();
-						};
-					}
-				}
+				// Stretch to the size of the button
+				nativeImage.HorizontalAlignment = UI.Xaml.HorizontalAlignment.Stretch;
+				nativeImage.VerticalAlignment = UI.Xaml.VerticalAlignment.Stretch;
 
 				nativeImage.Visibility = nativeImageSource == null
 					? UI.Xaml.Visibility.Collapsed
