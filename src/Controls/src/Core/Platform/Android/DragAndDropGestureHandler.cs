@@ -134,40 +134,40 @@ namespace Microsoft.Maui.Controls.Platform
 						_currentCustomLocalStateData = null;
 						if (dragSourceElement is View vSource)
 						{
-							HandleDropCompleted(vSource);
+							HandleDropCompleted(vSource, new PlatformDropCompletedEventArgs(v, e));
 						}
 					}
 					break;
 				case DragAction.Started:
 					break;
 				case DragAction.Location:
-					HandleDragOver(package, e);
+					HandleDragOver(package, e, new PlatformDragEventArgs(v, e));
 					break;
 				case DragAction.Drop:
 					{
-						HandleDrop(e, _currentCustomLocalStateData);
+						HandleDrop(e, _currentCustomLocalStateData, new PlatformDropEventArgs(v, e));
 						break;
 					}
 				case DragAction.Entered:
-					HandleDragOver(package, e);
+					HandleDragOver(package, e, new PlatformDragEventArgs(v, e));
 					break;
 				case DragAction.Exited:
-					HandleDragLeave(package, e);
+					HandleDragLeave(package, e, new PlatformDragEventArgs(v, e));
 					break;
 			}
 
 			return true;
 		}
 
-		void HandleDropCompleted(View element)
+		void HandleDropCompleted(View element, PlatformDropCompletedEventArgs platformArgs)
 		{
-			var args = new DropCompletedEventArgs();
+			var args = new DropCompletedEventArgs(platformArgs);
 			SendEventArgs<DragGestureRecognizer>(rec => rec.SendDropCompleted(args), element);
 		}
 
-		bool HandleDragLeave(DataPackage package, DragEvent e)
+		bool HandleDragLeave(DataPackage package, DragEvent e, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(package, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+			var dragEventArgs = new DragEventArgs(package, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformArgs);
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
 			{
@@ -182,9 +182,9 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		bool HandleDragOver(DataPackage package, DragEvent e)
+		bool HandleDragOver(DataPackage package, DragEvent e, PlatformDragEventArgs platformArgs)
 		{
-			var dragEventArgs = new DragEventArgs(package, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+			var dragEventArgs = new DragEventArgs(package, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformArgs);
 
 			bool validTarget = false;
 			SendEventArgs<DropGestureRecognizer>(rec =>
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return validTarget;
 		}
 
-		void HandleDrop(DragEvent e, CustomLocalStateData customLocalStateData)
+		void HandleDrop(DragEvent e, CustomLocalStateData customLocalStateData, PlatformDropEventArgs platformArgs)
 		{
 			if (customLocalStateData.AcceptedOperation == DataPackageOperation.None)
 				return;
@@ -231,7 +231,7 @@ namespace Microsoft.Maui.Controls.Platform
 					datapackage.Image = text;
 			}
 
-			var args = new DropEventArgs(datapackage?.View, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+			var args = new DropEventArgs(datapackage?.View, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), platformArgs);
 			SendEventArgs<DropGestureRecognizer>(async rec =>
 			{
 				if (!rec.AllowDrop)
@@ -266,7 +266,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (v.Handle == IntPtr.Zero)
 					return;
 
-				var args = rec.SendDragStarting(element, (relativeTo) => e.CalculatePosition(GetView(), relativeTo));
+				var args = rec.SendDragStarting(element, (relativeTo) => e.CalculatePosition(GetView(), relativeTo), new PlatformDragStartingEventArgs(v, e));
 
 				if (args.Cancel)
 					return;
@@ -274,64 +274,82 @@ namespace Microsoft.Maui.Controls.Platform
 				CustomLocalStateData customLocalStateData = new CustomLocalStateData();
 				customLocalStateData.DataPackage = args.Data;
 
-
 				// TODO MAUI
 				string clipDescription = String.Empty;//AutomationPropertiesProvider.ConcatenateNameAndHelpText(element) ?? String.Empty;
-				ClipData.Item item = null;
+				ClipData data = null;
 				List<string> mimeTypes = new List<string>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				if (!args.Handled)
+#pragma warning restore CS0618 // Type or member is obsolete
 				{
-					if (args.Data.Image != null)
+					if (args.PlatformArgs?.ClipData is null)
 					{
-						mimeTypes.Add("image/jpeg");
-						item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
-					}
-					else
-					{
-						string text = clipDescription ?? args.Data.Text;
-						if (Uri.TryCreate(text, UriKind.Absolute, out _))
+						ClipData.Item item = null;
+
+						if (args.Data.Image != null)
 						{
-							item = new ClipData.Item(AUri.Parse(text));
-							mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
+							mimeTypes.Add("image/jpeg");
+							item = ConvertToClipDataItem(args.Data.Image, mimeTypes);
 						}
 						else
 						{
-							item = new ClipData.Item(text);
-							mimeTypes.Add(ClipDescription.MimetypeTextPlain);
+							string text = clipDescription ?? args.Data.Text;
+							if (Uri.TryCreate(text, UriKind.Absolute, out _))
+							{
+								item = new ClipData.Item(AUri.Parse(text));
+								mimeTypes.Add(ClipDescription.MimetypeTextUrilist);
+							}
+							else
+							{
+								item = new ClipData.Item(text);
+								mimeTypes.Add(ClipDescription.MimetypeTextPlain);
+							}
 						}
+
+						var dataPackage = args.Data;
+						ClipData.Item userItem = null;
+						if (dataPackage.Image != null)
+							userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
+
+						if (dataPackage.Text != null)
+							userItem = new ClipData.Item(dataPackage.Text);
+
+						if (item == null)
+						{
+							item = userItem;
+							userItem = null;
+						}
+
+						data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
+
+						if (userItem != null)
+							data.AddItem(userItem);
+					}
+
+					else
+					{
+						data = args.PlatformArgs.ClipData;
 					}
 				}
-
-				var dataPackage = args.Data;
-				ClipData.Item userItem = null;
-				if (dataPackage.Image != null)
-					userItem = ConvertToClipDataItem(dataPackage.Image, mimeTypes);
-
-				if (dataPackage.Text != null)
-					userItem = new ClipData.Item(dataPackage.Text);
-
-				if (item == null)
-				{
-					item = userItem;
-					userItem = null;
-				}
-
-				ClipData data = new ClipData(clipDescription, mimeTypes.ToArray(), item);
-
-				if (userItem != null)
-					data.AddItem(userItem);
-
-				var dragShadowBuilder = new AView.DragShadowBuilder(v);
 
 				customLocalStateData.SourcePlatformView = v;
 				customLocalStateData.SourceElement = element;
 
+				var dragShadowBuilder = args.PlatformArgs?.DragShadowBuilder ?? new AView.DragShadowBuilder(v);
+				var localData = args.PlatformArgs?.LocalData ?? customLocalStateData;
+
+				int dragFlags;
+				if (args.PlatformArgs?.DragFlags is ADragFlags d)
+					dragFlags = (int)d;
+				else
+					dragFlags = (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead;
+
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
-					v.StartDragAndDrop(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
 				else
 #pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
-					v.StartDrag(data, dragShadowBuilder, customLocalStateData, (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead);
+					v.StartDrag(data, dragShadowBuilder, localData, dragFlags);
 #pragma warning restore CS0618, CA1416
 			});
 		}
