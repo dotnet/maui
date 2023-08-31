@@ -207,7 +207,7 @@ namespace Microsoft.Maui.Controls.Platform
 			return returnValue ?? new UIDragItem[0];
 		}
 
-		void SetLocalObject (UIDragItem dragItem, IPlatformViewHandler handler, DataPackage data)
+		void SetLocalObject(UIDragItem dragItem, IPlatformViewHandler handler, DataPackage data)
 		{
 			dragItem.LocalObject = new CustomLocalStateData()
 			{
