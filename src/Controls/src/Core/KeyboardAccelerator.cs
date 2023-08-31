@@ -18,7 +18,7 @@
 		/// <summary>
 		/// Identifies the modifiers for the keyboard accelerator.
 		/// </summary>
-		public KeyboardAcceleratorModifiers Modifiers 
+		public KeyboardAcceleratorModifiers Modifiers
 		{
 			get => (KeyboardAcceleratorModifiers)GetValue(ModifiersProperty);
 			set => SetValue(ModifiersProperty, value);

@@ -43,7 +43,7 @@ namespace Maui.Controls.Sample.Pages
 
 			ContextMenuWebView.HandlerChanged += OnWebViewHandlerChanged;
 
-			Increment10MenuFlyoutItem.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers=KeyboardAcceleratorModifiers.Alt|KeyboardAcceleratorModifiers.Ctrl, Key="A" });
+			Increment10MenuFlyoutItem.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers = KeyboardAcceleratorModifiers.Alt | KeyboardAcceleratorModifiers.Ctrl, Key = "A" });
 			Increment20MenuFlyoutItem.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers = KeyboardAcceleratorModifiers.Shift, Key = "B" });
 			Increment1000MenuFlyoutItem.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers = KeyboardAcceleratorModifiers.Ctrl, Key = "t" });
 			Increment1000000MenuFlyoutItem.KeyboardAccelerators.Add(new KeyboardAccelerator() { Modifiers = KeyboardAcceleratorModifiers.Alt, Key = "b" });

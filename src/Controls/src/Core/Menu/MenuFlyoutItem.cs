@@ -6,17 +6,17 @@ namespace Microsoft.Maui.Controls
 	/// <summary>
 	/// Represents a MenuFlyoutItem.
 	/// </summary>
-    public partial class MenuFlyoutItem : MenuItem, IMenuFlyoutItem
-    {
+	public partial class MenuFlyoutItem : MenuItem, IMenuFlyoutItem
+	{
 		/// <summary>
 		/// Initializes a new MenuFlyoutItem instance.
 		/// </summary>
 		public MenuFlyoutItem()
-        {
-            var collection = new ObservableCollection<KeyboardAccelerator>();
-            collection.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(KeyboardAccelerators));
-            KeyboardAccelerators = collection;
-        }
+		{
+			var collection = new ObservableCollection<KeyboardAccelerator>();
+			collection.CollectionChanged += (sender, e) => OnPropertyChanged(nameof(KeyboardAccelerators));
+			KeyboardAccelerators = collection;
+		}
 
 		/// <summary>
 		/// Gets the list of KeyboardAccelerators for the MenuFlyoutItem.
