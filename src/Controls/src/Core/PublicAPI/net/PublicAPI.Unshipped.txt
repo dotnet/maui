@@ -94,6 +94,10 @@ override Microsoft.Maui.Controls.ImageButton.IsEnabledCore.get -> bool
 override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~Microsoft.Maui.Controls.InputView.FontFamily.get -> string
 ~Microsoft.Maui.Controls.InputView.FontFamily.set -> void
+~Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColor.set -> void
+~Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColor.set -> void
 ~Microsoft.Maui.Controls.WebView.UserAgent.get -> string
 ~Microsoft.Maui.Controls.WebView.UserAgent.set -> void
 ~override Microsoft.Maui.Controls.ImageButton.OnPropertyChanged(string propertyName = null) -> void
@@ -111,6 +115,8 @@ override Microsoft.Maui.Controls.SearchBar.IsEnabledCore.get -> bool
 ~static readonly Microsoft.Maui.Controls.InputView.FontSizeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.WebView.UserAgentProperty -> Microsoft.Maui.Controls.BindableProperty
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.On<T>() -> Microsoft.Maui.Controls.IPlatformElementConfiguration<T, Microsoft.Maui.Controls.OpenGLView>
 *REMOVED*~Microsoft.Maui.Controls.OpenGLView.OnDisplay.get -> System.Action<Microsoft.Maui.Graphics.Rect>

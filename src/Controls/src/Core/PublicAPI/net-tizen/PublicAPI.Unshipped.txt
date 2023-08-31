@@ -143,13 +143,19 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.TryGetValue(string! key, 
 Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Collections.Generic.ICollection<object!>!
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, bool animate, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
 ~Microsoft.Maui.Controls.Shell.GoToAsync(Microsoft.Maui.Controls.ShellNavigationState state, Microsoft.Maui.Controls.ShellNavigationQueryParameters shellNavigationQueryParameters) -> System.Threading.Tasks.Task
-~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.InputView.CursorPositionProperty -> Microsoft.Maui.
+~Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColor.set -> void
+~Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColor.get -> Microsoft.Maui.Graphics.Color
+~Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColor.set -> voidControls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAttributesProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontAutoScalingEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontFamilyProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.FontSizeProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.IsTextPredictionEnabledProperty -> Microsoft.Maui.Controls.BindableProperty
 ~static readonly Microsoft.Maui.Controls.InputView.SelectionLengthProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.SelectedTabBackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty
+~static readonly Microsoft.Maui.Controls.TabbedPage.UnselectedTabBackgroundColorProperty -> Microsoft.Maui.Controls.BindableProperty
 ~Microsoft.Maui.Controls.Element.AddLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.InsertLogicalChild(int index, Microsoft.Maui.Controls.Element element) -> void
 ~Microsoft.Maui.Controls.Element.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> bool
