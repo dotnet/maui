@@ -394,6 +394,18 @@ namespace Microsoft.Maui.DeviceTests
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
 		}
 
+		public static async Task<CanvasBitmap> AssertColorsAtPointsAsync(this FrameworkElement view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				bitmap.AssertColorAtPoint(colors[i].ToWindowsColor(), (int)points[i].X, (int)points[i].Y);
+			}
+
+			return bitmap;
+		}
+
 		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
 		{
 			var bitmap = await view.ToBitmap(mauiContext);

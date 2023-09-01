@@ -25,11 +25,12 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="view">The data package associated with the drop.</param>
 		/// <param name="getPosition">Function used to get the position relative a specified <see cref="IElement"/>.</param>
-		internal DropEventArgs(DataPackageView view, Func<IElement?, Point?>? getPosition)
+		/// <param name="platformArgs">The platform-specific data associated with the drag.</param>
+		internal DropEventArgs(DataPackageView? view, Func<IElement?, Point?>? getPosition, PlatformDropEventArgs platformArgs)
 		{
-			_ = view ?? throw new ArgumentNullException(nameof(view));
-			Data = view;
+			Data = view ?? new DataPackageView(new DataPackage());
 			_getPosition = getPosition;
+			PlatformArgs = platformArgs;
 		}
 
 		/// <summary>
@@ -43,6 +44,11 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets a value that indicates whether the event handler has handled the event or whether .NET MAUI should continue its own processing.
 		/// </summary>
 		public bool Handled { get; set; }
+
+		/// <summary>
+		/// Gets the platform-specific arguments associated with the <see cref="DropEventArgs"/>.
+		/// </summary>
+		public PlatformDropEventArgs? PlatformArgs { get; }
 
 		/// <summary>
 		/// Gets the location of the drag relative to the specified element.

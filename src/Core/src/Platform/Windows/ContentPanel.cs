@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 
 		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
-			if (_borderPath == null)
+			if (_borderPath is null)
 				return;
 
 			var width = e.NewSize.Width;
@@ -61,7 +61,6 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
-			UpdateContent();
 			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
@@ -106,7 +105,6 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
-			UpdateContent();
 
 			var width = ActualWidth;
 			var height = ActualHeight;
@@ -124,16 +122,6 @@ namespace Microsoft.Maui.Platform
 
 			if (!Children.Contains(_content))
 				Children.Add(_content);
-		}
-
-		void UpdateContent()
-		{
-			if (Content == null || _borderPath == null)
-				return;
-
-			var strokeThickness = _borderPath.StrokeThickness;
-
-			Content.RenderTransform = new TranslateTransform() { X = -strokeThickness, Y = -strokeThickness };
 		}
 
 		void UpdateClip(IShape? borderShape, double width, double height)
