@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks>
 	/// The base class for most Microsoft.Maui.Controls on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
