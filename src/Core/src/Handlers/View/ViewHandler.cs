@@ -131,20 +131,21 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		/// 
+		/// Constructs the <see cref="ContainerView"/> and adds <see cref="PlatformView"/> to a container.
 		/// </summary>
 		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="true"/>.</remarks>
 		protected abstract void SetupContainer();
 
 		/// <summary>
-		/// 
+		/// Deconstructs the <see cref="ContainerView"/> and removes <see cref="PlatformView"/> from its container. 
 		/// </summary>
 		/// <remarks>This method is called when <see cref="HasContainer"/> is set to <see langword="false"/>.</remarks>
 		protected abstract void RemoveContainer();
 
 		/// <summary>
-		/// Gets the 
+		/// Gets the view that acts as a container for the <see cref="PlatformView"/>.
 		/// </summary>
+		/// <remarks>Note that this can be <see langword="null"/>. Especially when <see cref="HasContainer"/> is set to <see langword="false"/> this value might not be set.</remarks>
 		public PlatformView? ContainerView { get; private protected set; }
 
 		object? IViewHandler.ContainerView => ContainerView;
