@@ -53,15 +53,6 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
-  - task: PowerShell@2
-    condition: eq(variables['PrivateBuild'], 'true')
-    displayName: Setup Private Feeds Credentials
-    inputs:
-      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-    env:
-      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
-      
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
         $env:JAVA_HOME = $env:JAVA_HOME_11_X64
