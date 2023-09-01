@@ -179,7 +179,7 @@ namespace Microsoft.Maui.Platform
 			// This iterates over the new backstack and removes any destinations
 			// that are no longer apart of the back stack
 
-			var iterateNewStack = NavController.Graph.Iterator();
+			var iterateNewStack = navController.Graph.Iterator();
 			int startId = -1;
 
 			navController.IterateBackStack(nvd =>
