@@ -14,7 +14,7 @@
   <Import Project="$(MauiNuSpecDirectory)Microsoft.Maui.Controls.MultiTargeting.targets" />
 
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
-    <PackageReference Include="Xamarin.GooglePlayServices.Maps" Version="$(XamarinGooglePlayServicesMaps)" />
+    <PackageReference Include="Xamarin.GooglePlayServices.Maps" />
   </ItemGroup>
 
   <ItemGroup>

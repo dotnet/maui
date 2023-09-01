@@ -110,6 +110,10 @@
         Version="$(_XamarinGoogleCryptoTinkAndroidVersion)"
     />
     <PackageReference
+        Update="Xamarin.GooglePlayServices.Maps"
+        Version="$(XamarinGooglePlayServicesMapsVersion)"
+    />
+    <PackageReference
         Update="Microsoft.AspNetCore.Authorization"
         Version="$(MicrosoftAspNetCoreAuthorizationPackageVersion)"
     />
