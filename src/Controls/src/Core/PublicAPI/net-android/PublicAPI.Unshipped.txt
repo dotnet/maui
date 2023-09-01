@@ -1,6 +1,25 @@
 #nullable enable
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Modifiers.set -> void
-*REMOVED*~Microsoft.Maui.Controls.Accelerator.Keys.set -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.MotionEvent.get -> Android.Views.MotionEvent!
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragShadowBuilder(Android.Views.View.DragShadowBuilder! dragShadowBuilder) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetClipData(Android.Content.ClipData! clipData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetLocalData(Java.Lang.Object! localData) -> void
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetDragFlags(Android.Views.DragFlags dragFlags) -> void
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.PlatformDragEventArgs
+Microsoft.Maui.Controls.PlatformDragEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDragEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.PlatformDropEventArgs
+Microsoft.Maui.Controls.PlatformDropEventArgs.Sender.get -> Android.Views.View!
+Microsoft.Maui.Controls.PlatformDropEventArgs.DragEvent.get -> Android.Views.DragEvent!
+Microsoft.Maui.Controls.DragEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragEventArgs?
+Microsoft.Maui.Controls.DragStartingEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDragStartingEventArgs?
+Microsoft.Maui.Controls.DropCompletedEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropCompletedEventArgs?
+Microsoft.Maui.Controls.DropEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformDropEventArgs?
+Microsoft.Maui.Controls.KeyboardAccelerator
 Microsoft.Maui.Controls.DragEventArgs.Data.get -> Microsoft.Maui.Controls.DataPackage!
 Microsoft.Maui.Controls.DragEventArgs.DragEventArgs(Microsoft.Maui.Controls.DataPackage! dataPackage) -> void
 Microsoft.Maui.Controls.DragGestureRecognizer.DragStarting -> System.EventHandler<Microsoft.Maui.Controls.DragStartingEventArgs!>?
@@ -18,6 +37,12 @@ Microsoft.Maui.Controls.DropEventArgs.Data.get -> Microsoft.Maui.Controls.DataPa
 Microsoft.Maui.Controls.DropEventArgs.DropEventArgs(Microsoft.Maui.Controls.DataPackageView! view) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Android.Content.Context! context, Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.get -> string?
+Microsoft.Maui.Controls.KeyboardAccelerator.Key.set -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.KeyboardAccelerator() -> void
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.get -> Microsoft.Maui.KeyboardAcceleratorModifiers
+Microsoft.Maui.Controls.KeyboardAccelerator.Modifiers.set -> void
+Microsoft.Maui.Controls.MenuFlyoutItem.KeyboardAccelerators.get -> System.Collections.Generic.IList<Microsoft.Maui.Controls.KeyboardAccelerator!>!
 Microsoft.Maui.Controls.InputView.CursorPosition.get -> int
 Microsoft.Maui.Controls.InputView.CursorPosition.set -> void
 Microsoft.Maui.Controls.InputView.FontAttributes.get -> Microsoft.Maui.Controls.FontAttributes
@@ -38,6 +63,8 @@ Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.get -> S
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommand.set -> void
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleasedCommandParameter.set -> void
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.KeyProperty -> Microsoft.Maui.Controls.BindableProperty!
+static readonly Microsoft.Maui.Controls.KeyboardAccelerator.ModifiersProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.CanDragProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandParameterProperty -> Microsoft.Maui.Controls.BindableProperty!
 static readonly Microsoft.Maui.Controls.DragGestureRecognizer.DragStartingCommandProperty -> Microsoft.Maui.Controls.BindableProperty!
@@ -50,7 +77,6 @@ static readonly Microsoft.Maui.Controls.PointerGestureRecognizer.PointerReleased
 virtual Microsoft.Maui.Controls.DragEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
-~Microsoft.Maui.Controls.Accelerator.Key.get -> string
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
 Microsoft.Maui.Controls.IWindowCreator

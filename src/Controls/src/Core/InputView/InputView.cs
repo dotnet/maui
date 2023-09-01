@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls
 
 		void IFontElement.OnFontAttributesChanged(FontAttributes oldValue, FontAttributes newValue) =>
 			HandleFontChanged();
-	
+
 		void HandleFontChanged()
 		{
 			Handler?.UpdateValue(nameof(ITextStyle.Font));
