@@ -2314,7 +2314,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ValueFromHandlerDoesntClearTwoWayBinding()
 		{
 			var vm = new MockViewModel();
-			var entry = new Entry { BindingContext = vm};
+			var entry = new Entry { BindingContext = vm };
 			entry.SetBinding(Entry.TextProperty, "Text", BindingMode.TwoWay);
 			entry.SetValueFromRenderer(Entry.TextProperty, "foo");
 			Assert.Equal("foo", vm.Text);
