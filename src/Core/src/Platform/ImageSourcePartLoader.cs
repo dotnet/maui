@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Platform
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
 #endif
 
-#if IOS ||  WINDOWS
+#if IOS || WINDOWS
 				var scale = handler.MauiContext?.GetOptionalPlatformWindow()?.GetDisplayDensity() ?? 1.0f;
 				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, scale, token)
 					.ConfigureAwait(false);

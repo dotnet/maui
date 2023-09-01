@@ -16,9 +16,9 @@ namespace Microsoft.Maui.Platform
 		/// </summary>
 		/// <param name="platformView">The platform view, of type <see cref="MenuFlyoutItemBase"/>.</param>
 		/// <param name="menuFlyoutItem">The abstract menu flyout item, of type <see cref="IMenuFlyoutItem"/>, with all the necessary information.</param>
-		public static void UpdateAccelerator(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
+		public static void UpdateKeyboardAccelerators(this MenuFlyoutItemBase platformView, IMenuFlyoutItem menuFlyoutItem)
 		{
-			var keyboardAccelerators = menuFlyoutItem.Accelerators?.ToPlatform();
+			var keyboardAccelerators = menuFlyoutItem.KeyboardAccelerators?.ToPlatform();
 
 			if (keyboardAccelerators is null)
 				return;
@@ -28,25 +28,25 @@ namespace Microsoft.Maui.Platform
 		}
 
 		/// <summary>
-		/// Converts a list of IAccelerator to a list of KeyboardAccelerator.
+		/// Converts a list of IKeyboardAccelerator to a list of KeyboardAccelerator.
 		/// A KeyboardAccelerator represents a keyboard shortcut (or accelerator) that lets a user perform an action using the keyboard instead
 		/// of navigating the app UI (directly or through access keys). 
 		/// </summary>
-		/// <param name="accelerators">List of <see cref="IAccelerator"/></param>
+		/// <param name="keyboardAccelerators">List of <see cref="IKeyboardAccelerator"/></param>
 		/// <returns>List of <see cref="KeyboardAccelerator"/></returns>
-		public static IList<KeyboardAccelerator>? ToPlatform(this IReadOnlyList<IAccelerator> accelerators)
+		public static IList<KeyboardAccelerator>? ToPlatform(this IReadOnlyList<IKeyboardAccelerator> keyboardAccelerators)
 		{
-			if (accelerators is null)
+			if (keyboardAccelerators is null)
 				return null;
 
 			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
 
-			foreach (var accelerator in accelerators)
+			foreach (var keyboardAccelerator in keyboardAccelerators)
 			{
-				var keyboardAccelerators = accelerator.ToPlatform();
+				var accelerator = keyboardAccelerator.ToPlatform();
 
-				if (keyboardAccelerators is not null)
-					result.AddRange(keyboardAccelerators);
+				if (accelerator is not null)
+					result.Add(accelerator);
 			}
 
 			return result;
@@ -55,45 +55,38 @@ namespace Microsoft.Maui.Platform
 		// Single key (A, Delete, F2, Spacebar, Esc, Multimedia Key) accelerators and multi-key
 		// accelerators (Ctrl+Shift+M) are supported.
 		// Gamepad virtual keys are not supported.
-		public static IList<KeyboardAccelerator>? ToPlatform(this IAccelerator accelerator)
+		public static KeyboardAccelerator? ToPlatform(this IKeyboardAccelerator keyboardAccelerator)
 		{
-			if (accelerator is null)
+			if (keyboardAccelerator is null)
 				return null;
 
-			List<KeyboardAccelerator> result = new List<KeyboardAccelerator>();
+			var key = keyboardAccelerator.Key;
+			var modifiers = keyboardAccelerator.Modifiers;
 
-			var key = accelerator.Key;
-			var modifiers = accelerator.Modifiers;
+			if (key is null)
+				return null;
 
-			var keyboardAccelerator = new KeyboardAccelerator();
-			keyboardAccelerator.Key = key.ToVirtualKey();
-			if (modifiers is not null)
-			{
-				foreach (var mod in modifiers)
-				{
-					keyboardAccelerator.Modifiers |= mod.ToVirtualKeyModifiers();
-				}
-			}
-			result.Add(keyboardAccelerator);
+			var accelerator = new KeyboardAccelerator();
+			accelerator.Key = key.ToVirtualKey();
+			accelerator.Modifiers = modifiers.ToVirtualKeyModifiers();
 
-			return result;
+			return accelerator;
 		}
 
-		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this string modifierMask)
+		internal static VirtualKeyModifiers ToVirtualKeyModifiers(this KeyboardAcceleratorModifiers modifiers)
 		{
-			switch (modifierMask.ToLowerInvariant())
-			{
-				case "ctrl":
-					return VirtualKeyModifiers.Control;
-				case "alt":
-					return VirtualKeyModifiers.Menu;
-				case "shift":
-					return VirtualKeyModifiers.Shift;
-				case "win":
-					return VirtualKeyModifiers.Windows;
-				default:
-					return VirtualKeyModifiers.None;
-			}
+			VirtualKeyModifiers modifierMask = 0;
+
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Shift))
+				modifierMask |= VirtualKeyModifiers.Shift;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Ctrl))
+				modifierMask |= VirtualKeyModifiers.Control;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Alt))
+				modifierMask |= VirtualKeyModifiers.Menu;
+			if (modifiers.HasFlag(KeyboardAcceleratorModifiers.Windows))
+				modifierMask |= VirtualKeyModifiers.Windows;
+
+			return modifierMask;
 		}
 
 		internal static VirtualKey ToVirtualKey(this string key)
