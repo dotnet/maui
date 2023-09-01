@@ -12,16 +12,16 @@ using Microsoft.Maui.Dispatching;
 namespace Microsoft.Maui.Controls
 {
 	/// <summary>
-	/// Provides a mechanism by which application developers can propagate changes that are made to data in one object to another, by enabling validation, type coercion, and an event system.
+	/// Provides a mechanism to propagate data changes from one object to another. Enables validation, type coercion, and an event system.
 	/// </summary>
-	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface elements to View Models that are supplied by the application developer.</remarks>
+	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface.</remarks>
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
 
 		/// <summary>
-		/// Gets the dispatcher that was available when this was created,
-		/// otherwise tries to find the nearest available dispatcher (probably the Window/App one).
+		/// Gets the dispatcher that was available when this bindable object was created,
+		/// otherwise tries to find the nearest available dispatcher (probably the window's/app's).
 		/// </summary>
 		public IDispatcher Dispatcher =>
 			_dispatcher ??= this.FindDispatcher();
@@ -367,7 +367,7 @@ namespace Microsoft.Maui.Controls
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
 
 		/// <summary>
-		/// This method removes all current bindings from the current context.
+		/// Removes all current bindings from the current context.
 		/// </summary>
 		protected void UnapplyBindings()
 		{
