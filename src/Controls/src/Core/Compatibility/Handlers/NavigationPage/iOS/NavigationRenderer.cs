@@ -174,7 +174,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			var toolbarY = NavigationBarHidden || NavigationBar.Translucent || !_hasNavigationBar ? 0 : navBarFrameBottom;
 			toolbar.Frame = new RectangleF(0, toolbarY, View.Frame.Width, toolbar.Frame.Height);
 
-			(Element as IView).Arrange(View.Bounds.ToRectangle());
+			(Current as IView)?.Measure(View.Bounds.Width, View.Bounds.Height - navBarFrameBottom);
 		}
 
 		public override void ViewDidLoad()
