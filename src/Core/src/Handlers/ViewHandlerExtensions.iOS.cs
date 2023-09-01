@@ -81,10 +81,19 @@ namespace Microsoft.Maui
 			CGSize sizeThatFits;
 
 			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+			// This also affects ImageButtons
 			if (platformView is UIImageView imageView)
+			{
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
+			}
+			else if (platformView is UIButton imageButton && imageButton.ImageView is not null)
+			{
+				sizeThatFits = imageButton.ImageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
+			}
 			else
+			{
 				sizeThatFits = platformView.SizeThatFits(new CGSize((float)widthConstraint, (float)heightConstraint));
+			}
 
 			var size = new Size(
 				sizeThatFits.Width == float.PositiveInfinity ? double.PositiveInfinity : sizeThatFits.Width,

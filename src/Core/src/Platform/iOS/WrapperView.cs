@@ -119,8 +119,16 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
+			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+			// This also affects ImageButtons
 			if (child is UIImageView imageView)
+			{
 				return imageView.SizeThatFitsImage(size);
+			}
+			else if (child is UIButton imageButton && imageButton.ImageView is not null)
+			{
+				return imageButton.ImageView.SizeThatFitsImage(size);
+			}
 
 			return child.SizeThatFits(size);
 		}
