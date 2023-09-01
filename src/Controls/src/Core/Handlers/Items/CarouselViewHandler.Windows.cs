@@ -5,6 +5,7 @@ using Microsoft.Maui.Controls.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Windows.Foundation;
 using WApp = Microsoft.UI.Xaml.Application;
 using WDataTemplate = Microsoft.UI.Xaml.DataTemplate;
 using WScrollBarVisibility = Microsoft.UI.Xaml.Controls.ScrollBarVisibility;
@@ -20,6 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		ScrollViewer _scrollViewer;
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
+		Size _currentSize;
 
 		protected override IItemsLayout Layout { get; }
 
@@ -29,7 +31,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		protected override void ConnectHandler(ListViewBase platformView)
 		{
 			ItemsView.Scrolled += CarouselScrolled;
-			ListViewBase.SizeChanged += InitialSetup;
+			ListViewBase.SizeChanged += OnListViewSizeChanged;
 
 			UpdateScrollBarVisibilityForLoop();
 
@@ -43,7 +45,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			if (ListViewBase != null)
 			{
-				ListViewBase.SizeChanged -= InitialSetup;
+				ListViewBase.SizeChanged -= OnListViewSizeChanged;
 
 				if (CollectionViewSource?.Source is ObservableItemTemplateCollection observableItemsSource)
 					observableItemsSource.CollectionChanged -= OnCollectionItemsSourceChanged;
@@ -53,7 +55,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			{
 				_scrollViewer.ViewChanging -= OnScrollViewChanging;
 				_scrollViewer.ViewChanged -= OnScrollViewChanged;
-				_scrollViewer.SizeChanged -= InitialSetup;
+				_scrollViewer.SizeChanged -= OnScrollViewSizeChanged;
 			}
 
 			base.DisconnectHandler(platformView);
@@ -61,12 +63,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void UpdateItemsSource()
 		{
-			var itemsSource = ItemsView.ItemsSource;
+			var itemsSource = ItemsView?.ItemsSource;
 
 			if (itemsSource == null)
 				return;
 
-			var itemTemplate = ItemsView.ItemTemplate;
+			var itemTemplate = ItemsView?.ItemTemplate;
 
 			if (itemTemplate == null)
 				return;
@@ -89,7 +91,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			_scrollViewer = scrollViewer;
 			_scrollViewer.ViewChanging += OnScrollViewChanging;
 			_scrollViewer.ViewChanged += OnScrollViewChanged;
-			_scrollViewer.SizeChanged += InitialSetup;
+			_scrollViewer.SizeChanged += OnScrollViewSizeChanged;
 
 			UpdateScrollBarVisibilityForLoop();
 		}
@@ -330,6 +332,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateCarouselViewInitialPosition()
 		{
+			if (ListViewBase == null)
+			{
+				return;
+			}
+
 			if (ListViewBase.Items.Count > 0)
 			{
 				if (Element.Loop)
@@ -405,7 +412,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateSnapPointsType()
 		{
-			if (_scrollViewer == null)
+			if (_scrollViewer == null || CarouselItemsLayout == null)
 				return;
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
@@ -417,7 +424,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void UpdateSnapPointsAlignment()
 		{
-			if (_scrollViewer == null)
+			if (_scrollViewer == null || CarouselItemsLayout == null)
 				return;
 
 			if (CarouselItemsLayout.Orientation == ItemsLayoutOrientation.Horizontal)
@@ -520,14 +527,20 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			SetCarouselViewPosition(carouselPosition);
 		}
 
-		void InitialSetup(object sender, SizeChangedEventArgs e)
-		{
-			if (e.NewSize.Width > 0 && e.NewSize.Height > 0)
-			{
-				ListViewBase.SizeChanged -= InitialSetup;
+		void OnListViewSizeChanged(object sender, SizeChangedEventArgs e) => Resize(e.NewSize);
 
-				if (_scrollViewer != null)
-					_scrollViewer.SizeChanged -= InitialSetup;
+		void OnScrollViewSizeChanged(object sender, SizeChangedEventArgs e)
+		{
+			//If there's a scroll viewer, it's enough to resize based on its size changed event, so we can avoid two event handlers doing the same
+			ListViewBase.SizeChanged -= OnListViewSizeChanged;
+			Resize(e.NewSize);
+		}
+
+		void Resize(Size newSize)
+		{
+			if (newSize != _currentSize && newSize.Width > 0 && newSize.Height > 0)
+			{
+				_currentSize = newSize;
 
 				UpdateItemsSource();
 				UpdateSnapPointsType();
