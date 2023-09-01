@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Gets the dispatcher that was available when this bindable object was created,
-		/// otherwise tries to find the nearest available dispatcher (probably the window's/app's one).
+		/// otherwise tries to find the nearest available dispatcher (probably the window's/app's).
 		/// </summary>
 		public IDispatcher Dispatcher =>
 			_dispatcher ??= this.FindDispatcher();
