@@ -959,7 +959,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>
 		/// <see langword="true"/> if the keyboard focus was set to this element; <see langword = "false" /> if the call to this method did not force a focus change.
 		/// </returns>
-        /// <remarks>Element must be able to receive focus for this to work. Calling <see cref="Focus"/> on offscreen or unrealized elements has undefined behavior.</remarks>
+		/// <remarks>Element must be able to receive focus for this to work. Calling <see cref="Focus"/> on offscreen or unrealized elements has undefined behavior.</remarks>
 		public bool Focus()
 		{
 			if (IsFocused)
