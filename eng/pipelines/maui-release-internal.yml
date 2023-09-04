@@ -58,7 +58,7 @@ stages:
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}

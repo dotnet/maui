@@ -1,6 +1,6 @@
 stages:
   - stage: nuget_signing
-    dependsOn: pack_net6
+    dependsOn: pack_net
     displayName: Sign Nuget
     jobs:
       - template: yaml-templates/sign-artifacts/jobs/v2.yml
