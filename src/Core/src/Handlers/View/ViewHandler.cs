@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		/// Gets or sets whether the <see cref="PlatformView"/> has a view that it is contained in.
+		/// Gets or sets a value that indicates whether the <see cref="PlatformView"/> is contained within a view.
 		/// </summary>
 		/// <remarks>When set to <see langword="true"/>, <see cref="SetupContainer"/> is called to setup the container view.
 		/// When set to <see langword="false"/>, <see cref="RemoveContainer"/> is called to remove the current container view.</remarks>
@@ -123,7 +123,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		/// Gets a value that specifies whether or not <see cref="VirtualView"/> needs a container view.
+		/// Gets a value that indicates whether or not the <see cref="VirtualView"/> needs a container view.
 		/// </summary>
 		public virtual bool NeedsContainer
 		{

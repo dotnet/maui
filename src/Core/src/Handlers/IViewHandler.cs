@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 	public interface IViewHandler : IElementHandler
 	{
 		/// <summary>
-		/// Gets or sets whether the <see cref="IElementHandler.PlatformView"/> has a view that it is contained in.
+		/// Gets or sets a value that indicates whether the <see cref="IElementHandler.PlatformView"/> is contained within a view.
 		/// </summary>
 		bool HasContainer { get; set; }
 
@@ -33,7 +33,7 @@ namespace Microsoft.Maui
 		/// <summary>
 		/// Positions child elements and determines a size for a view.
 		/// </summary>
-		/// <param name="frame">The size that the parent computes for the child views.</param>
+		/// <param name="frame">The size that the parent determines for the child views.</param>
 		void PlatformArrange(Rect frame);
 	}
 }
