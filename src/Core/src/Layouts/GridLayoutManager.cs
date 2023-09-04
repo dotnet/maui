@@ -869,28 +869,28 @@ namespace Microsoft.Maui.Layouts
 					return;
 				}
 
-				// Figure out which is the biggest star definition in this dimension (absolute value and star scale)
-				var maxCurrentSize = 0.0;
-				var maxCurrentStarSize = 0.0;
+				// Check if all the star rows/columns fit within the full target sizes.
+				bool allStarsFit = true;
 				foreach (var definition in defs)
 				{
 					if (definition.IsStar)
 					{
-						double definitionSize = definition.MinimumSize;
-						maxCurrentSize = Math.Max(maxCurrentSize, definitionSize);
-						maxCurrentStarSize = Math.Max(maxCurrentStarSize, definitionSize / definition.GridLength.Value);
+						// The targetStarSize is the size that star values would have to have in order for all
+						// the star rows/columns to fit in the targetSize.
+						double fullTargetSize = targetStarSize * definition.GridLength.Value;
+
+						if (definition.MinimumSize > fullTargetSize)
+						{
+							allStarsFit = false;
+							break;
+						}
 					}
 				}
-
-				// The targetStarSize is the size that star values would have to have in order for all
-				// the star rows/columns to fit in the targetSize. 
-
-				if (maxCurrentStarSize <= targetStarSize)
+				
+				if (allStarsFit)
 				{
-					// If the biggest current star size we have in the definitions is less than the
-					// targetStarSize, that means we have enough room to expand all of our star rows/columns
-					// to their full size.
-
+					// If all of the stars fit, that means we have enough room to expand all of our star
+					// rows/columns to their full size.
 					foreach (var definition in defs)
 					{
 						if (definition.IsStar)
