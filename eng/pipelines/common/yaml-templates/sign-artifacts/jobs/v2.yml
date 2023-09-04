@@ -1,0 +1,112 @@
+####################################################################################################
+# SIGN AZURE DEVOPS ARTIFACTS
+#
+# This template will sign the artifacts in the specified published artifact and place the signed 
+# versions in the target folder. 
+# This task can also be used to sign ANY artifacts on ANY pipeline, as long as there is access to 
+# the published artifacts.
+#
+# Currently, the prerequisites are:
+#  1. run "PublishBuildArtifacts" with some known artifact name.
+#
+# Typical usage is:
+#
+#  resources:
+#    repositories:
+#      - repository: xamarin-templates
+#        type: github
+#        name: xamarin/yaml-templates
+#        endpoint: <name of service connection to use to access github.com>
+#
+#  ...
+#
+#  jobs:
+#    - template: sign-artifacts/jobs/v2.yml@xamarin-templates
+#      parameters:
+#        artifactName: nuget
+#        targetFolder: $(Build.ArtifactStagingDirectory)/signed
+#
+####################################################################################################
+
+parameters:
+  # job parameters
+  name: 'signing'                                                   # The name of the job
+  displayName: 'Sign Archives'                                      # The human name
+  poolName: VSEngSS-MicroBuild2019-1ES                              # The name of the agent pool to use
+  dependsOn: []                                                     # The dependencies
+  preSignSteps: []                                                  # Any steps to run before the signing
+  postSignSteps: []                                                 # Any additional steps to run after the signing
+  timeoutInMinutes: 60                                              # The timeout
+  condition: true                                                   # Any conditions to determine if this should actually run
+  templateBranch: 'main'
+  usePipelineArtifactTasks: false                                   # Use the DownloadPipelineArtifact@2 yaml task over DownloadBuildArtifacts@0. Set to 'true' if your pipeline uses the UploadPipelineArtifact task.
+  nugetVersionSpec: 6.x                                             # NuGet version to use for repacking and verifying nupkgs
+
+  # signing parameters
+  workingDirectory: '$(Agent.TempDirectory)\artifact-signing'       # The folder to download scripts and extract files in               # eg: '$(Agent.TempDirectory)\artifact-signing' OR 'output\working'
+  signType: ''                                                      # The type of signing to perform                                    # eg: [ 'Test', 'Real', '' (detect) ]
+  teamName: 'Xamarin'                                               # The team name to use when signing                                 # eg: 'Xamarin' OR 'Maui'
+  artifactsProject: '$(System.TeamProjectId)'                       # The ID of the project with the artifacts                          # eg: '$(System.TeamProjectId)' OR '<DevDiv's ID>'
+  artifactsPipeline: '$(System.DefinitionId)'                       # The ID of the pipeline definition with the artifacts              # eg: '$(System.DefinitionId)' OR '<Android X's ID>'
+  artifactsBuildId: '$(Build.BuildId)'                              # The ID of the actual build with the artifacts                     # eg: '$(Build.BuildId)' OR '<some previous build ID>'
+  artifactName: 'nuget'                                             # The name of the artifact to download and sign                     # eg: 'nuget' OR 'unsigned-nugets'
+  artifactPath: ''                                                  # The path in the artifact to sign
+  targetFolder: '$(Build.ArtifactStagingDirectory)\signed'          # The folder to download the signed artifacts to                    # eg: '$(Build.ArtifactStagingDirectory)/signed' OR 'output\nugets-signed'
+  signedArtifactName: 'nuget-signed'                                # The name of the artifact to use when signed                       # eg: 'nuget-signed' OR 'signed-nugets'
+  signedArtifactPath: ''                                            # The path in the artifact to use when uploading signed files
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }} 
+    variables:
+      skipComponentGovernanceDetection: true
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: and(succeeded(), ${{ parameters.condition }})
+    pool:
+      name: ${{ parameters.poolName }}
+      demands: 
+        - msbuild
+    steps:
+      - checkout: none
+      - ${{ if ne(parameters.usePipelineArtifactTasks, true) }}:
+        - task: DownloadBuildArtifacts@0
+          displayName: 'Download Unsigned Artifacts'
+          inputs:
+            project: ${{ parameters.artifactsProject }}
+            pipeline: ${{ parameters.artifactsPipeline }}
+            buildId: ${{ parameters.artifactsBuildId }}
+            downloadPath: '${{ parameters.workingDirectory }}\unsigned'
+            artifactName: ${{ parameters.artifactName }}
+            buildType: specific
+            buildVersionToDownload: specific
+            downloadType: single
+      - ${{ if eq(parameters.usePipelineArtifactTasks, true) }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download Unsigned Artifacts
+          inputs:
+            artifactName: ${{ parameters.artifactName }}
+            downloadPath: ${{ parameters.workingDirectory }}\unsigned\${{ parameters.artifactName }}
+      - ${{ parameters.preSignSteps }}
+      - template: ../steps/v2.yml
+        parameters:
+          sourceFolder: '${{ parameters.workingDirectory }}\unsigned\${{ parameters.artifactName }}\${{ parameters.artifactPath }}'
+          targetFolder: '${{ parameters.targetFolder }}\${{ parameters.signedArtifactPath }}'
+          workingDirectory: '${{ parameters.workingDirectory }}'
+          signType: '${{ parameters.signType }}'
+          teamName: '${{ parameters.teamName }}'
+          templateBranch: ${{ parameters.templateBranch }}
+          nugetVersionSpec: ${{ parameters.nugetVersionSpec }}
+      - ${{ parameters.postSignSteps }}
+      - ${{ if ne(parameters.usePipelineArtifactTasks, true) }}:
+        - task: PublishBuildArtifacts@1
+          displayName: 'Publish the nuget-signed artifacts'
+          inputs:
+            artifactName: ${{ parameters.signedArtifactName }}
+            pathToPublish: ${{ parameters.targetFolder }}
+      - ${{ if eq(parameters.usePipelineArtifactTasks, true) }}:
+        - task: PublishPipelineArtifact@1
+          displayName: Publish the nuget-signed artifacts
+          inputs:
+            artifactName: ${{ parameters.signedArtifactName }}
+            targetPath: ${{ parameters.targetFolder }}

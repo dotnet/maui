@@ -1,0 +1,92 @@
+####################################################################################################
+# SIGN AZURE DEVOPS ARTIFACTS
+#
+# This template will request that a signing server sign a specified published artifact and place 
+# the signed versions in the target folder. 
+#
+# Currently, the prerequisites are:
+#  1. run "PublishBuildArtifacts" with some known artifact name.
+#
+# Typical usage is:
+#
+#  resources:
+#    repositories:
+#      - repository: xamarin-templates
+#        type: github
+#        name: xamarin/yaml-templates
+#        endpoint: <name of service connection to use to access github.com>
+#
+#  ...
+#
+#  jobs:
+#    - template: sign-artifacts/jobs/v2-request.yml@xamarin-templates
+#      parameters:
+#        artifactName: nuget
+#        targetFolder: $(Build.ArtifactStagingDirectory)/signed
+#
+####################################################################################################
+
+parameters:
+  # job parameters
+  name: 'signing'                                                   # The name of the job
+  displayName: 'Sign NuGets'                                        # The human name
+  dependsOn: []                                                     # The dependencies
+  preSignSteps: []                                                  # Any steps to run before the signing
+  postSignSteps: []                                                 # Any additional steps to run after the signing
+  timeoutInMinutes: 60                                              # The timeout
+  condition: true                                                   # Any conditions to determine if this should actually run
+  templateBranch: 'main'
+
+  # signing parameters
+  signingDefinition: 'Xamarin Signing MicroBuild'                   # The name of the signing pipeline                                  # eg: 'Xamarin Signing MicroBuild'
+  workingDirectory: '$(Agent.TempDirectory)\artifact-signing'       # The folder to download scripts and extract files in               # eg: '$(Agent.TempDirectory)\artifact-signing' OR 'output\working'
+  signType: 'Real'                                                  # The type of signing to perform                                    # eg: [ 'Test', 'Real' ]
+  teamName: 'Xamarin'                                               # The team name to use when signing                                 # eg: 'Xamarin' OR 'Maui'
+  artifactsProject: '$(System.TeamProjectId)'                       # The ID of the project with the artifacts                          # eg: '$(System.TeamProjectId)' OR '<DevDiv's ID>'
+  artifactsPipeline: '$(System.DefinitionId)'                       # The ID of the pipeline definition with the artifacts              # eg: '$(System.DefinitionId)' OR '<Android X's ID>'
+  artifactsBuildId: '$(Build.BuildId)'                              # The ID of the actual build with the artifacts                     # eg: '$(Build.BuildId)' OR '<some previous build ID>'
+  artifactName: 'nuget'                                             # The name of the artifact to download and sign                     # eg: 'nuget' OR 'unsigned-nugets'
+  targetFolder: '$(Build.ArtifactStagingDirectory)\signed'          # The folder to download the signed artifacts to                    # eg: '$(Build.ArtifactStagingDirectory)/signed' OR 'output\nugets-signed'
+  signedArtifactName: 'nuget-signed'                                # The name of the artifact to use when signed                       # eg: 'nuget-signed' OR 'signed-nugets'
+
+jobs:
+  - job: ${{ parameters.name }}
+    displayName: ${{ parameters.displayName }}
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }} 
+    variables:
+      skipComponentGovernanceDetection: true
+    dependsOn: ${{ parameters.dependsOn }}
+    condition: ${{ parameters.condition }}
+    pool:
+      vmImage: windows-latest
+    steps:
+      - checkout: none
+      - ${{ parameters.preSignSteps }}
+      - task: TriggerBuild@3
+        inputs:
+          buildDefinition: '${{ parameters.signingDefinition }}'
+          password: '$(System.AccessToken)'
+          branchToUse: '${{ parameters.templateBranch }}'
+          useSameBranch: false
+          waitForQueuedBuildsToFinish: true
+          downloadBuildArtifacts: true
+          buildParameters: |
+            {
+              "ARTIFACTS_PROJECT_ID": "${{ parameters.artifactsProject }}",
+              "ARTIFACTS_PIPELINE_ID": "${{ parameters.artifactsPipeline }}",
+              "ARTIFACTS_BUILD_ID": "${{ parameters.artifactsBuildId }}",
+              "ARTIFACT_NAME": "${{ parameters.artifactName }}",
+              "SIGN_TYPE": "${{ parameters.signType }}",
+              "TEAM_NAME": "${{ parameters.teamName }}",
+            }
+          dropDirectory: '${{ parameters.workingDirectory }}\download-signed'
+      - task: ExtractFiles@1
+        inputs:
+          archiveFilePatterns: '${{ parameters.workingDirectory }}\download-signed\signed.zip'
+          destinationFolder: '${{ parameters.targetFolder }}'
+      - ${{ parameters.postSignSteps }}
+      - task: PublishBuildArtifacts@1
+        displayName: 'Publish Signed Artifacts'
+        inputs:
+          artifactName: ${{ parameters.signedArtifactName }}
+          pathToPublish: ${{ parameters.targetFolder }}
