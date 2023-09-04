@@ -755,43 +755,68 @@ namespace Microsoft.Maui.Layouts
 
 			static void DetermineMinimumStarSizesInSpan(double spaceNeeded, Definition[] definitions, int start, int end)
 			{
-				// Remove the parts of spaceNeeded which are already covered by explicit and auto columns in the span
+				double spaceUsed = 0;
+				double starsInSpan = 0;
+
 				for (int n = start; n < end; n++)
 				{
-					if (definitions[n].IsAbsolute || definitions[n].IsAuto)
+					var definition = definitions[n];
+					if (definition.IsStar)
 					{
-						spaceNeeded -= definitions[n].Size;
+						// Determine how much space the star sizes in the span are already requesting
+						// (because of other overlapping cells, parts of this span may have already been processed
+						starsInSpan += definition.GridLength.Value;
+						spaceUsed += definition.MinimumSize;
+					}
+					else
+					{
+						// Remove the parts of spaceNeeded which are already covered by rows/columns in the span
+						spaceNeeded -= definition.Size;
 					}
 				}
 
-				// Determine how much space the star sizes in the span are already requesting
-				// (because of other overlapping cells, parts of this span may have already been processed)
+				// If previous inflations from other cells have given us enough room, we're done.
+				if (spaceUsed >= spaceNeeded)
+					return;
 
-				double spaceAvailable = 0;
-				int starsInSpan = 0;
+				var targetStarSize = spaceNeeded / starsInSpan;
+				var totalDiff = 0.0;
+
+				// Work out the total difference in size between the full star size targets and the 
+				// minimum sizes for all definitions where the minimum is less than the full star size
+				// target; we'll need that later to distribute available space.
 				for (int n = start; n < end; n++)
 				{
-					if (definitions[n].IsStar)
+					var definition = definitions[n];
+					if (definition.IsStar)
 					{
-						starsInSpan += 1;
-						spaceAvailable += definitions[n].MinimumSize;
+						double fullTargetSize = targetStarSize * definition.GridLength.Value;
+						if (definition.MinimumSize < fullTargetSize)
+							totalDiff += fullTargetSize - definition.MinimumSize;
 					}
 				}
 
 				// If previous inflations from other cells haven't given us enough room,
-				// distribute the amount of space we still need evenly across the stars in the span
-				if (spaceAvailable < spaceNeeded)
+				// distribute the amount of space we still need evenly across the stars in the span				
+				var toDistribute = spaceNeeded - spaceUsed;
+
+				for (int n = start; n < end; n++)
 				{
-					var toAdd = (spaceNeeded - spaceAvailable) / starsInSpan;
-					for (int n = start; n < end; n++)
+					var definition = definitions[n];
+					if (definition.IsStar)
 					{
-						if (definitions[n].IsStar)
+						// Figure out how small this definition is relative to the total difference,
+						// and use that to determine how much of the available space this definition gets.
+						// The goal is to have the definitions expand proportionate to their deficit from
+						// their full target sizes
+						double fullTargetSize = targetStarSize * definition.GridLength.Value;
+						var scale = (fullTargetSize - definition.MinimumSize) / totalDiff;
+						var portion = scale * toDistribute;
+
+						definition.MinimumSize += portion;
+						if (definition.MinimumSize > definition.Size)
 						{
-							definitions[n].MinimumSize += toAdd;
-							if (definitions[n].MinimumSize > definitions[n].Size)
-							{
-								definitions[n].MinimumSize = definitions[n].Size;
-							}
+							definition.MinimumSize = definition.Size;
 						}
 					}
 				}
@@ -908,14 +933,14 @@ namespace Microsoft.Maui.Layouts
 				// Work out the total difference in size between the full star size targets and the 
 				// minimum sizes for all definitions where the minimum is less than the full star size
 				// target; we'll need that later to distribute available space.
-				double totaldiff = 0;
+				double totalDiff = 0;
 				foreach (var definition in defs)
 				{
 					if (definition.IsStar)
 					{
 						double fullTargetSize = targetStarSize * definition.GridLength.Value;
 						if (definition.MinimumSize < fullTargetSize)
-							totaldiff += fullTargetSize - definition.MinimumSize;
+							totalDiff += fullTargetSize - definition.MinimumSize;
 					}
 				}
 
@@ -929,12 +954,11 @@ namespace Microsoft.Maui.Layouts
 						if (definition.MinimumSize < fullTargetSize)
 						{
 							// Figure out how small this definition is relative to the total difference,
-							// and use that to determine how much of the available space this definition gets
-
+							// and use that to determine how much of the available space this definition gets.
 							// The goal is to have the definitions expand proportionate to their deficit from
 							// their full target sizes
 
-							var scale = (fullTargetSize - definition.MinimumSize) / totaldiff;
+							var scale = (fullTargetSize - definition.MinimumSize) / totalDiff;
 							var portion = scale * availableSpace;
 							definition.Size = definition.MinimumSize + portion;
 						}
