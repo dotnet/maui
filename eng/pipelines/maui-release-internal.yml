@@ -78,9 +78,9 @@ stages:
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
 
-  # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
-  #   - template: common/sign.yml                                     # Sign only using the private server
-  #   - template: common/insertion.yml                                # Insert on VS and SDK
-  #     parameters:
-  #       poolName: $(windowsNet6VmPool)
-  #       vmImage: $(windowsNet6VmImage)
+  - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+    - template: common/sign.yml                                     # Sign only using the private server
+    # - template: common/insertion.yml                                # Insert on VS and SDK
+    #   parameters:
+    #     poolName: $(windowsNet6VmPool)
+    #     vmImage: $(windowsNet6VmImage)
