@@ -46,6 +46,15 @@ steps:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
 
+  - task: PowerShell@2
+    condition: eq(variables['PrivateBuild'], 'true')
+    displayName: Setup Private Feeds Credentials
+    inputs:
+      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+    env:
+      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
