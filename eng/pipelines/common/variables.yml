@@ -61,7 +61,7 @@ variables:
   - name: PrivateBuild
     value: false
 # Variable groups required for private builds
-- ${{ if eq(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+- ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['System.TeamProject'], 'dnceng')) }}:
   - name: PrivateBuild
     value: true
   # For eng/common/SetupNugetSources.ps1
