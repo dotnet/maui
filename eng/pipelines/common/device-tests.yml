@@ -39,7 +39,10 @@ stages:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DEVICE: android-emulator-64_${{ api }}
+                    ${{ if eq(api, 27) }}:
+                      DEVICE: android-emulator-32_${{ api }}
+                    ${{ if not(eq(api, 27)) }}:
+                      DEVICE: android-emulator-64_${{ api }}
       steps:
         - template: device-tests-steps.yml
           parameters:
@@ -142,16 +145,18 @@ stages:
           # create all the variables used for the matrix
           ${{ each project in parameters.projects }}:
             ${{ if ne(project.windows, '') }}:
-              ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}:
-                PROJECT_PATH: ${{ project.windows }}
-                PACKAGE_ID: ${{ project.windowsPackageId }}
+              ${{ each version in parameters.windowsVersions }}:
+                ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_${{ version }}:
+                  PROJECT_PATH: ${{ project.windows }}
+                  PACKAGE_ID: ${{ project.windowsPackageId }}
+                  DEVICE: ${{ version }}
       steps:
         - template: device-tests-steps.yml
           parameters:
             platform: windows
             path: $(PROJECT_PATH)
             windowsPackageId: $(PACKAGE_ID)
-            device: windows
+            device: $(DEVICE) # For Windows this switches between packaged and unpackaged
             provisionatorChannel: ${{ parameters.provisionatorChannel }}
             agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
             artifactName: ${{ parameters.artifactName }}

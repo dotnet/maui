@@ -32,6 +32,16 @@ namespace Microsoft.Maui.AppiumTests
 			throw new InvalidOperationException("Not supported on IApp");
 		}
 
+		public static bool IsKeyboardShown(this IApp app)
+		{
+			if (app is IApp2 app2)
+			{
+				return app2.IsKeyboardShown();
+			}
+
+			throw new InvalidOperationException("Not supported on IApp");
+		}
+
 		public static void NavigateToGallery(this IApp app, string page)
 		{
 			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));

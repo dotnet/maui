@@ -44,13 +44,13 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		/// <summary>
-		///	Maps accelerator to the Windows platform control.
+		///	Maps keyboard accelerator to the Windows platform control.
 		/// </summary>
 		/// <param name="handler">The handler, of type IMenuFlyoutSubItemHandler.</param>
 		/// <param name="view">The view, of type IMenuFlyoutSubItem.</param>
-		public static void MapAccelerator(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
+		public static void MapKeyboardAccelerators(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view)
 		{
-			handler.PlatformView.UpdateAccelerator(view);
+			handler.PlatformView.UpdateKeyboardAccelerators(view);
 		}
 
 		public static void MapIsEnabled(IMenuFlyoutSubItemHandler handler, IMenuFlyoutSubItem view) =>

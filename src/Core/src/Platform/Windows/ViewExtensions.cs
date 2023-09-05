@@ -92,8 +92,12 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this FrameworkElement platformView, IView view)
 		{
-			platformView.Opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+			var opacity = view.Visibility == Visibility.Hidden ? 0 : view.Opacity;
+
+			platformView.UpdateOpacity(opacity);
 		}
+
+		internal static void UpdateOpacity(this FrameworkElement platformView, double opacity) => platformView.Opacity = (float)opacity;
 
 		public static void UpdateBackground(this ContentPanel platformView, IBorderStroke border)
 		{

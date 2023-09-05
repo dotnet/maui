@@ -2,6 +2,7 @@
 using Android.Graphics.Drawables;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using Google.Android.Material.Button;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -55,9 +56,6 @@ namespace Microsoft.Maui.Handlers
 				.ContinueWith((action) => handler.UpdateValue(nameof(IImage.IsAnimationPlaying)));
 		}
 
-		void IImageSourcePartSetter.SetImageSource(Drawable? obj) =>
-			PlatformView.SetImageDrawable(obj);
-
 		public override void PlatformArrange(Graphics.Rect frame)
 		{
 			if (PlatformView.GetScaleType() == ImageView.ScaleType.CenterCrop)
@@ -75,6 +73,17 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			base.PlatformArrange(frame);
+		}
+
+		partial class ImageImageSourcePartSetter
+		{
+			public override void SetImageSource(Drawable? platformImage)
+			{
+				if (Handler?.PlatformView is not ImageView image)
+					return;
+
+				image.SetImageDrawable(platformImage);
+			}
 		}
 	}
 }

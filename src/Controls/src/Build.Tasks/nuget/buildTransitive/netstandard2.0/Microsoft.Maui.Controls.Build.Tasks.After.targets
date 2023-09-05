@@ -1,5 +1,9 @@
 <Project>
 
+  <!--
+  This is duplicated in the workload Microsoft.Maui.Sdk.After.targets for now because .NET MAUI
+  is also consumed via NuGet - machines that have older workloads need these globs to be present.
+  -->
   <PropertyGroup>
     <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
     <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
@@ -14,5 +18,6 @@
 
   <Import Project="Microsoft.Maui.Controls.targets" />
   <Import Project="Microsoft.Maui.Controls.DefaultItems.targets" />
+  <Import Project="Microsoft.Maui.Controls.SingleProject.targets" />
 
 </Project>
