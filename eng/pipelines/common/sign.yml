@@ -3,7 +3,17 @@ stages:
     dependsOn: pack_net
     displayName: Sign Nuget
     jobs:
-
+      - template: sign-artifacts/jobs/v2.yml@yaml-templates
+        parameters:
+          signType: Real
+          teamName: $(TeamName)
+          usePipelineArtifactTasks: false
+          targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
+          signedArtifactName: nuget
+          signedArtifactPath: signed
+          displayName: Sign Phase
+          condition: and(succeeded(), eq(variables.signingCondition, true))
+      
       - template: nuget-msi-convert/job/v3.yml@yaml-templates
         parameters:
           yamlResourceName: yaml-templates
