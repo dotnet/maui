@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 		{
 #if WINDOWS
 			[nameof(IMenuFlyoutSubItem.Text)] = MapText,
-			[nameof(IMenuElement.Accelerators)] = MapAccelerator,
+			[nameof(IMenuFlyoutItem.KeyboardAccelerators)] = MapKeyboardAccelerators,
 			[nameof(IMenuElement.Source)] = MapSource,
 #endif
 #if MACCATALYST || IOS || WINDOWS

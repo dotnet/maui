@@ -73,7 +73,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <inheritdoc cref="InputView.IsTextPredictionEnabledProperty"/>
 		public static new readonly BindableProperty IsTextPredictionEnabledProperty = InputView.IsTextPredictionEnabledProperty;
-		
+
 		/// <inheritdoc cref="InputView.CursorPositionProperty"/>
 		public new static readonly BindableProperty CursorPositionProperty = InputView.CursorPositionProperty;
 
