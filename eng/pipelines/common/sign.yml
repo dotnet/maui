@@ -3,39 +3,29 @@ stages:
     dependsOn: pack_net
     displayName: Sign Nuget
     jobs:
-      - template: yaml-templates/sign-artifacts/jobs/v2.yml
+
+      - template: nuget-msi-convert/job/v3.yml@yaml-templates
         parameters:
+          yamlResourceName: yaml-templates
+          artifactName: nuget
+          artifactPatterns: |
+            **/signed/*.nupkg
+          artifactPath: signed
+          propsArtifactName: nuget
           signType: Real
-          teamName: $(TeamName)
-          usePipelineArtifactTasks: false
-          targetFolder: $(Build.ArtifactStagingDirectory)/nuget/signed
-          signedArtifactName: nuget
-          signedArtifactPath: signed
-          displayName: Sign Phase
-          condition: and(succeeded(), eq(variables.signingCondition, true))
+          postConvertSteps:
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: nuget
+              downloadPath: $(Build.ArtifactStagingDirectory)\sign-verify
+              patterns: |
+                **/SignVerifyIgnore.txt
 
-      # - template: nuget-msi-convert/job/v3.yml@yaml-templates
-      #   parameters:
-      #     yamlResourceName: yaml-templates
-      #     artifactName: nuget
-      #     artifactPatterns: |
-      #       **/signed/*.nupkg
-      #     artifactPath: signed
-      #     propsArtifactName: nuget
-      #     signType: Real
-      #     postConvertSteps:
-      #     - task: DownloadPipelineArtifact@2
-      #       inputs:
-      #         artifactName: nuget
-      #         downloadPath: $(Build.ArtifactStagingDirectory)\sign-verify
-      #         patterns: |
-      #           **/SignVerifyIgnore.txt
-
-      #     - task: MicroBuildCodesignVerify@3
-      #       displayName: verify signed msi content
-      #       inputs:
-      #         TargetFolders: |
-      #           $(Build.ArtifactStagingDirectory)\bin\manifests
-      #           $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
-      #         ExcludeSNVerify: true
-      #         ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt
+          - task: MicroBuildCodesignVerify@3
+            displayName: verify signed msi content
+            inputs:
+              TargetFolders: |
+                $(Build.ArtifactStagingDirectory)\bin\manifests
+                $(Build.ArtifactStagingDirectory)\bin\manifests-multitarget
+              ExcludeSNVerify: true
+              ApprovalListPathForCerts: $(Build.ArtifactStagingDirectory)\sign-verify\SignVerifyIgnore.txt
