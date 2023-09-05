@@ -78,7 +78,6 @@ namespace Microsoft.Maui.DeviceTests
 
 			layout.Add(image);
 
-			// With ApsectFit, it should resize to 100x50px in a layout whose height is constrained to 50px
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
