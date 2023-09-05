@@ -58,6 +58,7 @@
                     Source="animated_heart.gif"
                     WidthRequest="200"
                     IsAnimationPlaying="{Binding Source={x:Reference IsAnimationPlayingSwitch},Path=IsToggled}" />
+                <Label
                     Text="Stream Source"
                     Style="{StaticResource Headline}"/>
                 <Image
