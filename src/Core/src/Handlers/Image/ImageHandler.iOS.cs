@@ -1,5 +1,4 @@
-﻿#nullable enable
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using UIKit;
 
 namespace Microsoft.Maui.Handlers
@@ -30,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
-			handler.PlatformView?.UpdateIsAnimationPlaying(image);
+			handler.PlatformView?.UpdateIsAnimationPlaying(image).FireAndForget(handler);
 
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);

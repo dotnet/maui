@@ -34,6 +34,12 @@ Microsoft.Maui.KeyboardAcceleratorModifiers.None = 0 -> Microsoft.Maui.KeyboardA
 Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.MauiCAKeyFrameAnimation() -> void
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Width.get -> int
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Width.set -> void
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Height.get -> int
+Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Height.set -> void
 Microsoft.Maui.Platform.IImageSourcePartSetter
 Microsoft.Maui.Platform.IImageSourcePartSetter.Handler.get -> Microsoft.Maui.IElementHandler?
 Microsoft.Maui.Platform.IImageSourcePartSetter.ImageSourcePart.get -> Microsoft.Maui.IImageSourcePart?
@@ -158,3 +164,5 @@ virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplicatio
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
+static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> System.Threading.Tasks.Task!
+*REMOVED*static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> void

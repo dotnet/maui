@@ -1,9 +1,7 @@
-﻿#nullable enable
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CoreGraphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -12,6 +10,9 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void Clear(this UIImageView imageView)
 		{
+			// stop the animation if there is one
+			imageView.StopAnimating();
+			imageView.AnimationImages = null;
 			imageView.Image = null;
 		}
 
@@ -21,24 +22,41 @@ namespace Microsoft.Maui.Platform
 			imageView.ClipsToBounds = imageView.ContentMode == UIViewContentMode.ScaleAspectFill || imageView.ContentMode == UIViewContentMode.Center;
 		}
 
-		public static void UpdateIsAnimationPlaying(this UIImageView imageView, IImageSourcePart image)
+		public static async Task UpdateIsAnimationPlaying(this UIImageView imageView, IImageSourcePart image)
 		{
-			if (image.IsAnimationPlaying)
+			if (imageView is MauiImageView mauiImageView)
 			{
-				if (!imageView.IsAnimating)
-					imageView.StartAnimating();
-			}
-			else
-			{
-				if (imageView.IsAnimating)
-					imageView.StopAnimating();
+				// IsAnimationPlaying set to true in the incoming imagesource
+				// indicates it's an animated image.
+				if (image.IsAnimationPlaying)
+				{
+					if (mauiImageView.IsAnimating)
+					{
+						mauiImageView.StopAnimating();
+					}
+					
+					if (!imageView.IsAnimating)
+					{
+						var animatedImage = await ImageAnimationHelper.CreateAnimationFromImageSource(image.Source);
+						mauiImageView.AnimationImages = animatedImage.GetValuesAs<UIImage>();
+						mauiImageView.AnimationDuration = animatedImage.Duration;
+						mauiImageView.StartAnimating();
+					}
+				}
+				else
+				{
+					if (imageView.IsAnimating)
+					{
+						mauiImageView.StopAnimating();
+					}
+				}
 			}
 		}
 
 		public static void UpdateSource(this UIImageView imageView, UIImage? uIImage, IImageSourcePart image)
 		{
 			imageView.Image = uIImage;
-			imageView.UpdateIsAnimationPlaying(image);
+			imageView.UpdateIsAnimationPlaying(image).FireAndForget();
 		}
 
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(

@@ -40,7 +40,9 @@ namespace Microsoft.Maui.Platform
 				{
 					setImage.Invoke(uiImage);
 					if (destinationContext is UIImageView imageView)
-						imageView.UpdateIsAnimationPlaying(image);
+					{
+						await imageView.UpdateIsAnimationPlaying(image);
+					}
 				}
 
 				events?.LoadingCompleted(applied);
