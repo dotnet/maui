@@ -53,7 +53,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task BarBackgroundColor()
 		{
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage();
+			var tabbedPage = CreateBasicTabbedPage(true);
 			tabbedPage.BarBackground = SolidColorBrush.Purple;
 
 			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task BarTextColor()
 		{
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage();
+			var tabbedPage = CreateBasicTabbedPage(true);
 			tabbedPage.BarTextColor = Colors.Red;
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task SelectedAndUnselectedTabColor()
 		{
 			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage();
+			var tabbedPage = CreateBasicTabbedPage(true);
 			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
 
 			tabbedPage.SelectedTabColor = Colors.Red;
