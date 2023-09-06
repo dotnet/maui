@@ -140,19 +140,20 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
 
-
-			var pathSize = new Graphics.Rect(0, 0, width, height);
+			// We need to inset the content clipping by the width of the stroke on both sides
+			// (top and bottom, left and right), so we remove it twice from the total width/height
+			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+			var clipBounds = new RectF(0, 0, (float)width - 2 * strokeThickness, (float)height - 2 * strokeThickness);
 			PathF? clipPath;
 
 			if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
-				float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
-				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				clipPath = roundedRectangle.InnerPathForBounds(clipBounds, strokeThickness);
 				IsInnerPath = true;
 			}
 			else
 			{
-				clipPath = clipGeometry.PathForBounds(pathSize);
+				clipPath = clipGeometry.PathForBounds(clipBounds);
 				IsInnerPath = false;
 			}
 
