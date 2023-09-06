@@ -11,7 +11,7 @@ using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public class LayoutViewGroup : ViewGroup, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, ITouchInterceptingView, IInputTransparentCapable
 	{
 		readonly ARect _clipRect = new();
 		readonly Context _context;
@@ -122,15 +122,24 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public override bool OnTouchEvent(MotionEvent? e)
-		{
-			if (InputTransparent)
-			{
-				return false;
-			}
+		WeakReference<IOnTouchListener>? _touchListener;
 
-			return base.OnTouchEvent(e);
+		public override void SetOnTouchListener(IOnTouchListener? l)
+		{
+			_touchListener = l is null ? null : new(l);
+			base.SetOnTouchListener(l);
 		}
+
+		bool ITouchInterceptingView.TouchEventNotReallyHandled { get; set; }
+
+		public override bool OnTouchEvent(MotionEvent? e) =>
+			base.OnTouchEvent(e) ||
+			TouchEventInterceptor.OnTouchEvent(this, e);
+
+		public override bool DispatchTouchEvent(MotionEvent? e) =>
+			TouchEventInterceptor.DispatchingTouchEvent(this, e) &&
+			base.DispatchTouchEvent(e) &&
+			TouchEventInterceptor.DispatchedTouchEvent(this, e, _touchListener?.GetTargetOrDefault());
 
 		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
 		{

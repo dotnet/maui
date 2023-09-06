@@ -10,7 +10,7 @@ using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Platform
 {
-	public partial class WrapperView : PlatformWrapperView
+	public partial class WrapperView : PlatformWrapperView, ITouchInterceptingView, IInputTransparentCapable
 	{
 		const int MaximumRadius = 100;
 
@@ -24,6 +24,10 @@ namespace Microsoft.Maui.Platform
 		bool _invalidateShadow;
 
 		AView _borderView;
+
+		IOnTouchListener _touchListener;
+
+		bool ITouchInterceptingView.TouchEventNotReallyHandled { get; set; }
 
 		public bool InputTransparent { get; set; }
 
@@ -68,14 +72,19 @@ namespace Microsoft.Maui.Platform
 			base.RequestLayout();
 		}
 
-		public override bool DispatchTouchEvent(MotionEvent e)
-		{
-			if (InputTransparent)
-			{
-				return false;
-			}
+		public override bool OnTouchEvent(MotionEvent e) =>
+			base.OnTouchEvent(e) ||
+			TouchEventInterceptor.OnTouchEvent(this, e);
 
-			return base.DispatchTouchEvent(e);
+		public override bool DispatchTouchEvent(MotionEvent e) =>
+			TouchEventInterceptor.DispatchingTouchEvent(this, e) &&
+			base.DispatchTouchEvent(e) &&
+			TouchEventInterceptor.DispatchedTouchEvent(this, e, _touchListener);
+
+		public override void SetOnTouchListener(IOnTouchListener l)
+		{
+			_touchListener = l;
+			base.SetOnTouchListener(l);
 		}
 
 		partial void ClipChanged()

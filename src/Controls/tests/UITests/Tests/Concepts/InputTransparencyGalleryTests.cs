@@ -20,7 +20,8 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void Simple([Values] Test.InputTransparency test) => RunTest(test.ToString());
+		public void Simple([Values] Test.InputTransparency test) =>
+			RunTest(test.ToString(), !test.ToString().EndsWith("InputBlocked"));
 
 		[Test]
 		[Combinatorial]
@@ -29,10 +30,10 @@ namespace Microsoft.Maui.AppiumTests
 			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
 			var key = Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
 
-			RunTest(key, clickable, passthru);
+			RunTest(key, clickable || passthru);
 		}
 
-		void RunTest(string test, bool? clickable = null, bool? passthru = null)
+		static void RunTest(string test, bool updatable)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
 			remote.GoTo(test.ToString());
@@ -44,21 +45,9 @@ namespace Microsoft.Maui.AppiumTests
 
 			var textAfterClick = remote.GetEventLabel().GetText();
 
-			if (clickable is null || passthru is null)
-			{
-				// some tests are really basic so have no need for fancy checks
-				Assert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
-			}
-			else if (clickable == true || passthru == true)
+			if (updatable)
 			{
 				// if the button is clickable or taps pass through to the base button
-				Assert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
-			}
-			else if (Device == TestDevice.Android)
-			{
-				// TODO: Android is broken with everything passing through so we just use that
-				// to test the bottom button was clickable
-				// https://github.com/dotnet/maui/issues/10252
 				Assert.AreEqual($"Event: {test} (SUCCESS 1)", textAfterClick);
 			}
 			else

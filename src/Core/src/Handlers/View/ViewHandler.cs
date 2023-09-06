@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Handlers
 		/// </summary>
 		public virtual bool NeedsContainer
 		{
-			get => VirtualView.NeedsContainer();
+			get => VirtualView.NeedsContainer(this);
 		}
 
 		/// <summary>
@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Handlers
 			if (handler is ViewHandler viewHandler)
 				handler.HasContainer = viewHandler.NeedsContainer;
 			else
-				handler.HasContainer = view.NeedsContainer();
+				handler.HasContainer = view.NeedsContainer(handler);
 		}
 
 		/// <summary>
@@ -481,20 +481,14 @@ namespace Microsoft.Maui.Handlers
 		{
 #if ANDROID
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+#endif
 
-			if (handler.ContainerView is WrapperView wrapper)
-				wrapper.InputTransparent = view.InputTransparent;
-#else
-
-#if IOS || MACCATALYST
-			// Containers on iOS/Mac Catalyst may be hit testable, so we need to
+			// Containers may also need to be hit testable, so we need to
 			// propagate the the view's values to its container view.
 			if (handler.ContainerView is WrapperView wrapper)
 				wrapper.UpdateInputTransparent(handler, view);
-#endif
 
 			((PlatformView?)handler.PlatformView)?.UpdateInputTransparent(handler, view);
-#endif
 		}
 
 		/// <summary>

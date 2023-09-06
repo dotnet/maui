@@ -61,11 +61,10 @@
 
                 <Grid Margin="10" HeightRequest="100" BackgroundColor="LightBlue">
 
-                    <Button Text="Bottom Button" IsVisible="{Binding InputTransparent, Source={Reference testButton}}" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
-                    <Button Text="Bottom Button" IsVisible="{Binding InputTransparent, Source={Reference testButton}, Converter={StaticResource NegativeConverter}}" Clicked="ClickFail" HorizontalOptions="Center" VerticalOptions="Center" />
+                    <Button Text="Bottom Button" Clicked="ClickBottom" HorizontalOptions="Center" VerticalOptions="Center" Background="Red" />
 
                     <Grid x:Name="rootLayout">
-                        <Grid x:Name="nestedLayout">
+                        <Grid x:Name="nestedLayout" ColumnDefinitions="2*,1*">
                             <Button x:Name="testButton" Text="Test Button" Clicked="ClickSuccess" HorizontalOptions="Center" VerticalOptions="Center" />
                         </Grid>
                     </Grid>

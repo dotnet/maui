@@ -49,13 +49,16 @@ namespace Microsoft.Maui
 #endif
 
 #if !TIZEN
-		internal static bool NeedsContainer(this IView? view)
+		internal static bool NeedsContainer(this IView? view, IViewHandler handler)
 		{
-			if (view?.Clip != null || view?.Shadow != null)
+			if (view is null)
+				return false;
+
+			if (view.Clip is not null || view.Shadow is not null)
 				return true;
 
 #if ANDROID
-			if (view?.InputTransparent == true)
+			if (TouchEventInterceptor.NeedsContainer(view, handler))
 				return true;
 #endif
 
@@ -64,11 +67,10 @@ namespace Microsoft.Maui
 				return true;
 #elif WINDOWS
 			if (view is IBorderView border)
-				return border?.Shape != null || border?.Stroke != null;
+				return border.Shape is not null || border.Stroke is not null;
 #endif
 			return false;
 		}
 #endif
-
 	}
 }

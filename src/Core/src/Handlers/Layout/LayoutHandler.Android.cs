@@ -153,12 +153,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateBackground(layout);
 		}
 
-		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout)
-		{
-			if (handler.PlatformView is LayoutViewGroup layoutViewGroup)
-			{
-				layoutViewGroup.InputTransparent = layout.InputTransparent;
-			}
-		}
+		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout) =>
+			ViewHandler.MapInputTransparent(handler, layout);
 	}
 }

@@ -164,7 +164,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			var handler = await CreateHandlerAsync(view);
 
-			if (handler is ViewHandler vh)
+			if (handler is LayoutHandler lh)
+				Assert.False(lh.NeedsContainer);
+			else if (handler is ViewHandler vh)
 				Assert.True(vh.NeedsContainer);
 		}
 	}
