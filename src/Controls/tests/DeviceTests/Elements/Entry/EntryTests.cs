@@ -140,11 +140,19 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await Task.Run(() =>
 				{
+					entry.Focused += (s, e) =>
+					{
+						_focused.Set();
+					};
+
 					InvokeOnMainThreadAsync(() =>
 					{
-						entry.Focused += (s, e) => _focused.Set();
-						entry.Focus();
+						if (!entry.IsFocused)
+							entry.Focus();
+						else
+							_focused.Set();
 					});
+
 					_focused.WaitOne();
 					_focused.Reset();
 					InvokeOnMainThreadAsync(async () =>
