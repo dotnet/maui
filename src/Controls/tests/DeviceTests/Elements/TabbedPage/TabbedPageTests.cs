@@ -314,7 +314,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
+#if !WINDOWS && !MACCATALYST
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
