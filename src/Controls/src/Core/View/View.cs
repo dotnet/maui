@@ -203,14 +203,14 @@ namespace Microsoft.Maui.Controls
 		/// Gets the child elements that are visually beneath the specified <paramref name="point" />.
 		/// </summary>
 		/// <param name="point">The point under which to search for child elements.</param>
-		/// <returns> All child elements visually beneath <paramref name="point"/>.</returns>
+		/// <returns>All child elements visually beneath <paramref name="point"/>.</returns>
 		public virtual IList<GestureElement> GetChildElements(Point point)
 		{
 			return null;
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid in a layout cycle. This is a bindable property.
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// Assigning <see cref="HorizontalOptions"/> modifies how the element is laid out when there is excess space available along the X axis from the parent layout.
@@ -232,7 +232,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>
-		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid in a layout cycle. This is a bindable property.
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
 		/// </summary>
 		/// <remarks>
 		/// Assigning <see cref="VerticalOptions"/> modifies how the element is laid out when there is excess space available along the Y axis from the parent layout.
