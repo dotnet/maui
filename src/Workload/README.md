@@ -214,3 +214,57 @@ These folders are all .NET 6 specific, so they won't affect .NET 5 or
 older versions.
 
 After this you can install .NET 6 with a fresh install of your choice.
+
+## NuGet Central Package Management
+
+You can leverage [NuGet's central package management (CPM)][cpm] to manage all
+of your dependencies from a single location.
+
+To do this, you will need a `Directory.Packages.props` file with:
+
+```xml
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <MauiVersion>8.0.0</MauiVersion>
+    <MicrosoftExtensionsVersion>8.0.0</MicrosoftExtensionsVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Maui.Core" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Core" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Build.Tasks" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Controls.Xaml" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsVersion)" />
+  </ItemGroup>
+</Project>
+```
+
+For the correct value for `$(MauiVersion)` and `$(MicrosoftExtensionsVersion)`
+you will need to find a valid version number from one of:
+
+* NuGet, such as: https://www.nuget.org/packages/Microsoft.Maui.Sdk
+
+* GitHub releases, such as: https://github.com/dotnet/maui/releases
+
+Using properties like `$(MauiVersion)` and `$(MicrosoftExtensionsVersion)` are
+also completely optional, you can put the version numbers directly in the
+`%(PackageVersion.Version)` item metadata.
+
+Then in your .NET MAUI application's `.csproj` file:
+
+```xml
+<PackageReference Include="Microsoft.Maui.Core" />
+<PackageReference Include="Microsoft.Maui.Controls" />
+<PackageReference Include="Microsoft.Maui.Essentials" />
+<PackageReference Include="Microsoft.Maui.Resizetizer" />
+<PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+```
+
+Note that `%(PackageReference.Version)` is intentionally left blank. See the
+documentation on [NuGet Central Package Management][cpm] for more information
+about this feature.
+
+[cpm]: https://learn.microsoft.com/nuget/consume-packages/Central-Package-Management
