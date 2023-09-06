@@ -107,6 +107,14 @@ namespace Microsoft.Maui.DeviceTests
 				Icon = "white.png"
 			};
 
+			var unselectedContent_2 = new ShellContent()
+			{
+				Route = "Tab3",
+				Title = "Tab3",
+				Content = new ContentPage(),
+				Icon = "white.png"
+			};
+
 			var shell = await CreateShellAsync((shell) =>
 			{
 				shell.Items.Add(new TabBar()
@@ -115,6 +123,7 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						selectedContent,
 						unselectedContent,
+						unselectedContent_2
 					}
 				});
 			});
