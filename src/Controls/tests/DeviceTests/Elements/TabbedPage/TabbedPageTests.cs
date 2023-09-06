@@ -15,6 +15,9 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+#if IOS
+using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
