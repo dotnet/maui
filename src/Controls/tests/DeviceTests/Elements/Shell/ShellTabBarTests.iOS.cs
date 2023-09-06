@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		UIView GetTabItemView(ShellSection item)
+		UITabBar GetTabBar(ShellSection item)
 		{
 			var shellItem = item.Parent as ShellItem;
 			var shell = shellItem.Parent as Shell;
@@ -20,13 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 			var pagerParent = (shell.CurrentPage.Handler as IPlatformViewHandler)
 				.PlatformView.FindParent(x => x.NextResponder is UITabBarController);
 
-			var tabBar = pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
-
-			Assert.NotNull(tabBar);
-
-			var tabBarItem = tabBar.Items.Single(t => string.Equals(t.Title, item.Title, StringComparison.OrdinalIgnoreCase));
-			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
-			return tabBarItemView;
+			return pagerParent.Subviews.FirstOrDefault(v => v.GetType() == typeof(UITabBar)) as UITabBar;
 		}
 
 		async Task ValidateTabBarIconColor(
@@ -34,17 +28,15 @@ namespace Microsoft.Maui.DeviceTests
 			Color iconColor,
 			bool hasColor)
 		{
-			var tabBarItemView = GetTabItemView(item);
-			Assert.NotNull(tabBarItemView);
-
 			if (hasColor)
 			{
-				await tabBarItemView.FindDescendantView<UIImageView>().AssertContainsColor(iconColor, MauiContext);
+				await AssertionExtensions.AssertTabItemIconContainsColor(GetTabBar(item),
+					item.Title, iconColor, MauiContext);
 			}
 			else
 			{
-				await tabBarItemView.FindDescendantView<UIImageView>()
-					.AssertDoesNotContainColor(iconColor, MauiContext);
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(GetTabBar(item),
+					item.Title, iconColor, MauiContext);
 			}
 		}
 
@@ -53,18 +45,15 @@ namespace Microsoft.Maui.DeviceTests
 				Color textColor,
 				bool hasColor)
 		{
-			var tabBarItemView = GetTabItemView(item);
-			Assert.NotNull(tabBarItemView);
-
 			if (hasColor)
 			{
-				await tabBarItemView.FindDescendantView<UILabel>()
-					.AssertContainsColor(textColor, MauiContext, 0.1);
+				await AssertionExtensions.AssertTabItemTextContainsColor(GetTabBar(item),
+					item.Title, textColor, MauiContext);
 			}
 			else
 			{
-				await tabBarItemView.FindDescendantView<UILabel>()
-					.AssertDoesNotContainColor(textColor, MauiContext);
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTabBar(item),
+					item.Title, textColor, MauiContext);
 			}
 		}
 	}

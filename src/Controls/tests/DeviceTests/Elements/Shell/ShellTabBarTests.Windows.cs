@@ -59,39 +59,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		List<WNavigationViewItem> GetTabBarItems(Shell shell)
+		NavigationView GetTabBarItems(ShellSection section)
 		{
-			var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+			var shellItemHandler = section.FindParentOfType<Shell>().CurrentItem.Handler as ShellItemHandler;
 			var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
-			return navView.TopNavArea.GetChildren<WNavigationViewItem>().ToList();
+			return navView;
 		}
 
-		async Task ValidateTabBarTextColor(ShellSection item, Color expectedColor, bool hasColor)
+		async Task ValidateTabBarIconColor(
+			ShellSection item,
+			Color iconColor,
+			bool hasColor)
 		{
-			var items = GetTabBarItems(item.FindParentOfType<Shell>());
-			var platformItem =
-				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase))
-				.GetDescendantByName<UI.Xaml.Controls.Grid>("ContentGrid")
-				.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("ContentPresenter");
-
 			if (hasColor)
-				await AssertionExtensions.AssertContainsColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconContainsColor(GetTabBarItems(item),
+					item.Title, iconColor, MauiContext);
+			}
 			else
-				await AssertionExtensions.AssertDoesNotContainColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(GetTabBarItems(item),
+					item.Title, iconColor, MauiContext);
+			}
 		}
 
-		async Task ValidateTabBarIconColor(ShellSection item, Color expectedColor, bool hasColor)
+		async Task ValidateTabBarTextColor(
+				ShellSection item,
+				Color textColor,
+				bool hasColor)
 		{
-			var items = GetTabBarItems(item.FindParentOfType<Shell>());
-			var platformItem =
-				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase))
-				.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("Icon");
-
 			if (hasColor)
-				await AssertionExtensions.AssertContainsColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemTextContainsColor(GetTabBarItems(item),
+					item.Title, textColor, MauiContext);
+			}
 			else
-				await AssertionExtensions.AssertDoesNotContainColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTabBarItems(item),
+					item.Title, textColor, MauiContext);
+			}
 		}
 	}
 }

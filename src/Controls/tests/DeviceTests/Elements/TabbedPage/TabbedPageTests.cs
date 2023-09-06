@@ -47,6 +47,62 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+
+#if WINDOWS
+		[Fact(DisplayName = "BarBackground Color")]
+		public async Task BarBackgroundColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarBackground = SolidColorBrush.Purple;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
+			{
+				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
+				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToPlatform();
+				Assert.Equal(platformBrush.Color, ((WSolidColorBrush)navView.TopNavArea.Background).Color);
+				return Task.CompletedTask;
+			});
+		}
+#endif
+
+
+		[Fact(DisplayName = "Bar Text Color")]
+		public async Task BarTextColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.BarTextColor = Colors.Red;
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
+				tabbedPage.BarTextColor = Colors.Blue;
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
+			});
+		}
+
+		[Fact(DisplayName = "Selected/Unselected Color")]
+		public async Task SelectedAndUnselectedTabColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage();
+			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
+
+			tabbedPage.SelectedTabColor = Colors.Red;
+			tabbedPage.UnselectedTabColor = Colors.Purple;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
+
+				tabbedPage.CurrentPage = tabbedPage.Children[1];
+
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
+			});
+		}
+
 #if !IOS && !MACCATALYST
 		// iOS currently can't handle recreating a handler if it's disconnecting
 		// This is left over behavior from Forms and will be fixed by a different PR
