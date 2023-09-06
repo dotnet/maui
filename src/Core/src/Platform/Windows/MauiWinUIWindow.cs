@@ -142,11 +142,10 @@ namespace Microsoft.Maui
 					{
 						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
 
-						var mauiContext = Window?.Handler?.MauiContext;
-						if (mauiContext != null)
+						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
+						if (rootManager != null)
 						{
-							var navRootManager = mauiContext.Services.GetRequiredService<NavigationRootManager>();
-							navRootManager?.SetTitleBarVisibility(hasTitleBar);
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
 						}
 					}
 				}

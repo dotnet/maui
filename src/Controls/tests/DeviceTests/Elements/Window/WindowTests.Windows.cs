@@ -147,26 +147,22 @@ namespace Microsoft.Maui.DeviceTests
 				var presenter = handler.PlatformView.AppWindow.Presenter as OverlappedPresenter;
 				var rootView = GetWindowRootView(handler);
 				var defaultTitleBarHeight = rootView.AppTitleBarActualHeight;
-				var screenPos = mauiToolBar.GetLocationOnScreen().Value.Y;
 				Assert.True(defaultTitleBarHeight > 0);
-				Assert.True(screenPos == 32);
+				Assert.True(mauiToolBar.GetLocationOnScreen().Value.Y == 32);
 
 				// Disable titlebar, maximize the window
 				presenter.SetBorderAndTitleBar(false, false);
 				presenter.Maximize();
 
 				// Wait for maximize animation to finish
-				await Task.Delay(350);
-				screenPos = mauiToolBar.GetLocationOnScreen().Value.Y;
-				Assert.True(screenPos == 0);
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 0));
 
 				// Now restore the window
 				presenter.SetBorderAndTitleBar(true, true);
 				presenter.Restore();
 				await Task.Delay(350);
 
-				screenPos = mauiToolBar.GetLocationOnScreen().Value.Y;
-				Assert.True(screenPos == 32);
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 32));
 			});
 		}
 
