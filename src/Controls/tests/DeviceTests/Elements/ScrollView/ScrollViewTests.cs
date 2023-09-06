@@ -110,6 +110,22 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
 		}
 
+		[Fact(DisplayName = "ScrollView inside layouts do not grow")]
+		public async Task DoesNotGrow()
+		{
+			var label = new Label() { Text = "Text inside a ScrollView" };
+			var scrollView = new ScrollView() { MaximumHeightRequest = 500, Content = label };
+			var parentLayout = new VerticalStackLayout { scrollView };
+
+			await CreateHandlerAsync<LabelHandler>(label);
+			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
+			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
+
+			await AttachAndRun(parentLayout, (layoutHandler) => {});
+			Assert.True(parentLayout.Height > 0, "Parent layout should have non-zero height!");
+			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!"); 
+		}
+
 		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
