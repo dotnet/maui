@@ -174,15 +174,17 @@ namespace Microsoft.Maui.Platform
 		static bool IsUriWithLocalScheme(string? uri)
 		{
 			return uri?
-				.ToLowerInvariant()
 				.StartsWith(
-					LocalScheme.TrimEnd('/').ToLowerInvariant()) == true;
+					LocalScheme.TrimEnd('/'),
+					StringComparison.OrdinalIgnoreCase) == true;
 		}
 
 		static bool IsDataUri(string? uri)
 		{
 			return uri?
-				.StartsWith("data:text/html") ?? false;
+				.StartsWith(
+					"data:text/html",
+					StringComparison.OrdinalIgnoreCase) ?? false;
 		}
 	}
 }
