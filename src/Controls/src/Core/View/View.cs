@@ -161,7 +161,10 @@ namespace Microsoft.Maui.Controls
 		/// <summary>The collection of gesture recognizers associated with this view.</summary>
 		/// <remarks>
 		/// Adding items to this collection will associate gesture events with this element.
-		/// This is not necessary for elements that natively support certain gestures. For example, <see cref="Button"/> already supports taps.
+		/// It is not recommended to add gesture recognizers for gestures that elements already natively support.
+		/// <para>
+		/// For example, adding a <see cref="TapGestureRecognizer"/> to a <see cref="Button"/> may lead to unexpected results.
+		/// </para>
 		/// </remarks>
 		public IList<IGestureRecognizer> GestureRecognizers
 		{
