@@ -67,11 +67,26 @@ namespace Microsoft.Maui.DeviceTests
 			return navView.TopNavArea.GetChildren<WNavigationViewItem>().ToList();
 		}
 
-		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		async Task ValidateTabBarTextColor(ShellSection item, Color expectedColor, bool hasColor)
 		{
 			var items = GetTabBarItems(item.FindParentOfType<Shell>());
 			var platformItem =
-				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase));
+				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase))
+				.GetDescendantByName<UI.Xaml.Controls.Grid>("ContentGrid")
+				.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("ContentPresenter");
+
+			if (hasColor)
+				await AssertionExtensions.AssertContainsColor(platformItem, expectedColor, item.FindMauiContext());
+			else
+				await AssertionExtensions.AssertDoesNotContainColor(platformItem, expectedColor, item.FindMauiContext());
+		}
+
+		async Task ValidateTabBarIconColor(ShellSection item, Color expectedColor, bool hasColor)
+		{
+			var items = GetTabBarItems(item.FindParentOfType<Shell>());
+			var platformItem =
+				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase))
+				.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("Icon");
 
 			if (hasColor)
 				await AssertionExtensions.AssertContainsColor(platformItem, expectedColor, item.FindMauiContext());

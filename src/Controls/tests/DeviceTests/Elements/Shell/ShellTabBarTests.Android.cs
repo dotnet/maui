@@ -12,6 +12,7 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
+using AView = Android.Views.View;
 
 
 namespace Microsoft.Maui.DeviceTests
@@ -19,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		BottomNavigationItemView GetTab(ShellSection item)
 		{
 			var shell = item.FindParentOfType<Shell>();
 			var renderer = (ShellRenderer)shell.Handler;
@@ -43,6 +44,23 @@ namespace Microsoft.Maui.DeviceTests
 						.Where(tv => String.Equals(tv.Text, item.Title, StringComparison.OrdinalIgnoreCase))
 						.Count() > 0;
 				});
+
+			return navItemView;
+		}
+
+		async Task ValidateTabBarIconColor(ShellSection item, Color expectedColor, bool hasColor)
+		{
+			var navItemView = (AView)GetTab(item).GetFirstChildOfType<ImageView>().Parent;
+
+			if (hasColor)
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), item.FindMauiContext());
+			else
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), item.FindMauiContext());
+		}
+
+		async Task ValidateTabBarTextColor(ShellSection item, Color expectedColor, bool hasColor)
+		{
+			var navItemView = (AView)GetTab(item).GetFirstChildOfType<TextView>().Parent;
 
 			if (hasColor)
 				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), item.FindMauiContext());

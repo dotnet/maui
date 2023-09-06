@@ -18,12 +18,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-#if IOS || MACCATALYST || WINDOWS || ANDROID
-		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title"
-#if IOS || MACCATALYST
-			, Skip = "On iOS if we set the TitleBar, is used instead the ForegroundColor."
-#endif
-			)]
+		[Fact(DisplayName = "ForegroundColor sets icon and title color sets title")]
 		public async Task ForegroundColorSetsIconAndTitleColorSetsTitle()
 		{
 			SetupBuilder();
@@ -37,10 +32,11 @@ namespace Microsoft.Maui.DeviceTests
 			},
 			async (shell) =>
 			{
-				await ValidateTabBarItemColor(shell.CurrentSection, titleColor, true);
-				await ValidateTabBarItemColor(shell.CurrentSection, foregroundColor, true);
-				await ValidateTabBarItemColor(shell.Items[0].Items[1], titleColor, false);
-				await ValidateTabBarItemColor(shell.Items[0].Items[1], foregroundColor, false);
+				await ValidateTabBarIconColor(shell.CurrentSection, foregroundColor, true);
+				await ValidateTabBarTextColor(shell.CurrentSection, titleColor, true);
+
+				await ValidateTabBarIconColor(shell.Items[0].Items[1], titleColor, false);
+				await ValidateTabBarTextColor(shell.Items[0].Items[1], foregroundColor, false);
 			});
 		}
 
@@ -56,8 +52,10 @@ namespace Microsoft.Maui.DeviceTests
 			await RunShellTabBarTests(shell => Shell.SetTabBarTitleColor(shell, expectedColor),
 				async (shell) =>
 				{
-					await ValidateTabBarItemColor(shell.CurrentSection, expectedColor, true);
-					await ValidateTabBarItemColor(shell.Items[0].Items[1], expectedColor, false);
+					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, true);
+					await ValidateTabBarIconColor(shell.CurrentSection, expectedColor, true);
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], expectedColor, false);
+					await ValidateTabBarIconColor(shell.Items[0].Items[1], expectedColor, false);
 				});
 		}
 
@@ -70,22 +68,26 @@ namespace Microsoft.Maui.DeviceTests
 			await RunShellTabBarTests(shell => Shell.SetTabBarForegroundColor(shell, expectedColor),
 				async (shell) =>
 				{
-					await ValidateTabBarItemColor(shell.CurrentSection, expectedColor, true);
-					await ValidateTabBarItemColor(shell.Items[0].Items[1], expectedColor, false);
+					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, true);
+					await ValidateTabBarIconColor(shell.CurrentSection, expectedColor, true);
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], expectedColor, false);
+					await ValidateTabBarIconColor(shell.Items[0].Items[1], expectedColor, false);
 				});
 		}
 
 		[Theory(DisplayName = "Shell TabBar UnselectedColor Initializes Correctly")]
 		[InlineData("#FF0000")]
-		[InlineData("#0000FF")]
+		[InlineData("#00FF00")]
 		public async Task ShellTabBarUnselectedColorInitializesCorrectly(string colorHex)
 		{
 			var expectedColor = Color.FromArgb(colorHex);
 			await RunShellTabBarTests(shell => Shell.SetTabBarUnselectedColor(shell, expectedColor),
 				async (shell) =>
 				{
-					await ValidateTabBarItemColor(shell.CurrentSection, expectedColor, false);
-					await ValidateTabBarItemColor(shell.Items[0].Items[1], expectedColor, true);
+					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, false);
+					await ValidateTabBarIconColor(shell.CurrentSection, expectedColor, false);
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], expectedColor, true);
+					await ValidateTabBarIconColor(shell.Items[0].Items[1], expectedColor, true);
 				});
 		}
 
@@ -127,6 +129,5 @@ namespace Microsoft.Maui.DeviceTests
 				await runTest(shell);
 			});
 		}
-#endif
 	}
 }

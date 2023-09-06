@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		UIView GetTabItemView(ShellSection item)
 		{
 			var shellItem = item.Parent as ShellItem;
 			var shell = shellItem.Parent as Shell;
@@ -26,11 +26,46 @@ namespace Microsoft.Maui.DeviceTests
 
 			var tabBarItem = tabBar.Items.Single(t => string.Equals(t.Title, item.Title, StringComparison.OrdinalIgnoreCase));
 			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
+			return tabBarItemView;
+		}
 
+		async Task ValidateTabBarIconColor(
+			ShellSection item,
+			Color iconColor,
+			bool hasColor)
+		{
+			var tabBarItemView = GetTabItemView(item);
 			Assert.NotNull(tabBarItemView);
 
 			if (hasColor)
-				await tabBar.AssertContainsColor(expectedColor, MauiContext);
+			{
+				await tabBarItemView.FindDescendantView<UIImageView>().AssertContainsColor(iconColor, MauiContext);
+			}
+			else
+			{
+				await tabBarItemView.FindDescendantView<UIImageView>()
+					.AssertDoesNotContainColor(iconColor, MauiContext);
+			}
+		}
+
+		async Task ValidateTabBarTextColor(
+				ShellSection item,
+				Color textColor,
+				bool hasColor)
+		{
+			var tabBarItemView = GetTabItemView(item);
+			Assert.NotNull(tabBarItemView);
+
+			if (hasColor)
+			{
+				await tabBarItemView.FindDescendantView<UILabel>()
+					.AssertContainsColor(textColor, MauiContext, 0.1);
+			}
+			else
+			{
+				await tabBarItemView.FindDescendantView<UILabel>()
+					.AssertDoesNotContainColor(textColor, MauiContext);
+			}
 		}
 	}
 }
