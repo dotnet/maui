@@ -12,14 +12,22 @@ namespace Microsoft.Maui.Controls
 		bool _attached;
 		SetterSpecificity specificity;
 
-		internal override BindingBase Clone() => new AppThemeBinding
+		internal override BindingBase Clone()
 		{
-			Light = Light,
-			_isLightSet = _isLightSet,
-			Dark = Dark,
-			_isDarkSet = _isDarkSet,
-			Default = Default
-		};
+			var clone =  new AppThemeBinding
+			{
+				Light = Light,
+				_isLightSet = _isLightSet,
+				Dark = Dark,
+				_isDarkSet = _isDarkSet,
+				Default = Default
+			};
+
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
+			return clone;
+		}
 
 		internal override void Apply(bool fromTarget)
 		{

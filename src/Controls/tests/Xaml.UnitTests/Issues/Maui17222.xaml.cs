@@ -67,28 +67,6 @@ public partial class Maui17222 : ContentPage
 			Assert.AreEqual(new Uri("Issues/Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(5, info.LineNumber);
 			Assert.AreEqual(6, info.LinePosition);
-
-			//while (style != null)
-			//{
-			//	// Requirement #3 Getting SourceInfo for Style Object
-			//	info = VisualDiagnostics.GetSourceInfo(style);
-			//	Debug.WriteLine($"Style Name:{style.BaseResourceKey} SourceUri:{info.SourceUri}, Line:{info.LineNumber}, Column:{info.LinePosition}");
-			//	// Output: Error!!!, Wrong Source URI Style Name: SourceUri:MainPage.xaml;assembly=MAUI, Line:18, Column:17
-
-			//	IEnumerable<Setter> setters = style.Setters.Reverse();
-			//	// Requirement #3 Walking the setters
-			//	foreach (Setter setter in setters)
-			//	{
-			//		Debug.WriteLine($"Setter Property:{setter.Property.PropertyName}, Setter Value:{setter.Value.ToString()}");
-
-			//		// Output: OK! Setter Property:TextColor, Setter Value:[Color: Red=1, Green=0, Blue=0, Alpha=1] (MainStyle.xaml)
-			//		// Output: OK! Setter Property:WidthRequest, Setter Value:100 (BaseStyle.xaml)
-			//		// Output: OK! Setter Property:HeightRequest, Setter Value:100 (BaseStyle.xaml)
-			//		// Output: OK! Setter Property:TextColor, Setter Value:[Color: Red=0, Green=0, Blue=1, Alpha=1]
-			//	}
-
-			//	// Requirement #4, Walking the Style Parent Chain
-			//	style = style.BasedOn;
 		}
 	}
 }
