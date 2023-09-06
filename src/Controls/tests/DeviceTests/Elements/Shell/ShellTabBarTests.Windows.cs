@@ -47,11 +47,14 @@ namespace Microsoft.Maui.DeviceTests
 				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
 				var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
+				// Set page to have the tabbar be hidden, then switch to it
 				Shell.SetTabBarIsVisible(shell.Items[0].Items[1], false);
 				shell.CurrentItem = shell.Items[0].Items[1];
 
 				Assert.False(navView.IsPaneVisible);
 
+				// Tabbar should now be hidden, remove the current page which should cause
+				// us to switch to another page where the tabbar is not hidden (default)
 				shell.Items[0].Items.RemoveAt(1);
 
 				Assert.True(navView.IsPaneVisible);

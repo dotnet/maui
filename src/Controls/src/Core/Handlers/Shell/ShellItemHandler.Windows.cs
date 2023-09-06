@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				PlatformView.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		protected override void ConnectHandler(FrameworkElement platformView)
@@ -123,9 +123,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			// Flag to sync the selected item only after items changed fired, which will happen after modifications
-			// to the items list is finished
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -145,7 +143,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void MapMenuItems(bool syncSelectedItem)
+		void MapMenuItems()
 		{
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
@@ -222,7 +220,7 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (syncSelectedItem && ShellItemNavigationView.SelectedItem != selectedItem)
+			if (ShellItemNavigationView.SelectedItem != selectedItem)
 				ShellItemNavigationView.SelectedItem = selectedItem;
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
@@ -373,7 +371,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateTitle()
 		{
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		void UpdateCurrentItem()
@@ -401,9 +399,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateSearchHandler();
 
-			// Don't sync the selected item as this function can be called multiple times on item removal
-			// before the list has finished fully updating
-			MapMenuItems(false);
+			MapMenuItems();
 
 			if (_currentShellSection != null)
 			{
