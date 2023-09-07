@@ -151,6 +151,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		MauiNavigationView GetMauiNavigationView(TabbedPage tabbedPage)
+		{
+			return (tabbedPage.Handler as IPlatformViewHandler)
+				.PlatformView
+				.GetParentOfType<MauiNavigationView>();
+		}
 
 		async Task ValidateTabBarIconColor(
 			TabbedPage tabbedPage,
@@ -161,14 +167,14 @@ namespace Microsoft.Maui.DeviceTests
 			if (hasColor)
 			{
 				await AssertionExtensions.AssertTabItemIconContainsColor(
-					GetMauiNavigationView(MauiContext),
-					tabText, iconColor, MauiContext);
+					GetMauiNavigationView(tabbedPage),
+					tabText, iconColor, tabbedPage.FindMauiContext());
 			}
 			else
 			{
 				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(
-					GetMauiNavigationView(MauiContext),
-					tabText, iconColor, MauiContext);
+					GetMauiNavigationView(tabbedPage),
+					tabText, iconColor, tabbedPage.FindMauiContext());
 			}
 		}
 
@@ -181,14 +187,14 @@ namespace Microsoft.Maui.DeviceTests
 			if (hasColor)
 			{
 				await AssertionExtensions.AssertTabItemTextContainsColor(
-					GetMauiNavigationView(MauiContext),
-					tabText, iconColor, MauiContext);
+					GetMauiNavigationView(tabbedPage),
+					tabText, iconColor, tabbedPage.FindMauiContext());
 			}
 			else
 			{
 				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(
-					GetMauiNavigationView(MauiContext),
-					tabText, iconColor, MauiContext);
+					GetMauiNavigationView(tabbedPage),
+					tabText, iconColor, tabbedPage.FindMauiContext());
 			}
 		}
 	}

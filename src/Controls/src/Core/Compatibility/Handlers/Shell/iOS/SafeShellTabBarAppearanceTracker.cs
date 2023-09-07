@@ -101,14 +101,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (backgroundColor is not null && backgroundColor.IsNotDefault())
 				tabBar.BarTintColor = backgroundColor.ToPlatform();
 
-			if (unselectedColor.IsDefault != null && unselectedColor.IsNotDefault())
+			if (unselectedColor is not null && unselectedColor.IsNotDefault())
 			{
 				tabBar.UnselectedItemTintColor = unselectedColor.ToPlatform();
 				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = unselectedColor.ToPlatform() }, UIControlState.Normal);
 			}
 
-			if (titleColor.IsDefault != null && titleColor.IsNotDefault() ||
-				foregroundColor.IsDefault != null && foregroundColor.IsNotDefault())
+			if (titleColor is not null && titleColor.IsNotDefault() ||
+				foregroundColor is not null && foregroundColor.IsNotDefault())
 			{
 				tabBar.TintColor = (foregroundColor ?? titleColor).ToPlatform();
 				UITabBarItem.Appearance.SetTitleTextAttributes(new UIStringAttributes { ForegroundColor = (titleColor ?? foregroundColor).ToPlatform() }, UIControlState.Selected);

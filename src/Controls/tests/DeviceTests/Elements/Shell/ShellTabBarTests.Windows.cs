@@ -75,12 +75,12 @@ namespace Microsoft.Maui.DeviceTests
 			if (hasColor)
 			{
 				await AssertionExtensions.AssertTabItemIconContainsColor(GetTabBarItems(item),
-					item.Title, iconColor, MauiContext);
+					item.Title, iconColor, item.FindMauiContext());
 			}
 			else
 			{
 				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(GetTabBarItems(item),
-					item.Title, iconColor, MauiContext);
+					item.Title, iconColor, item.FindMauiContext());
 			}
 		}
 
@@ -92,12 +92,12 @@ namespace Microsoft.Maui.DeviceTests
 			if (hasColor)
 			{
 				await AssertionExtensions.AssertTabItemTextContainsColor(GetTabBarItems(item),
-					item.Title, textColor, MauiContext);
+					item.Title, textColor, item.FindMauiContext());
 			}
 			else
 			{
 				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTabBarItems(item),
-					item.Title, textColor, MauiContext);
+					item.Title, textColor, item.FindMauiContext());
 			}
 		}
 	}
