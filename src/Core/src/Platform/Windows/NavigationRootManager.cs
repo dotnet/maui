@@ -17,29 +17,17 @@ namespace Microsoft.Maui.Platform
 			_platformWindow = platformWindow;
 			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
-
-			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
-			// Standard title bar height is 32px
-			// This should always get set by the code after but
-			// we are setting it just in case
-			var appbarHeight = 32;
-			if (UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
-			{
-				var density = _platformWindow.GetDisplayDensity();
-				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
-			}
-
-			_rootView.UpdateAppTitleBar(
-					appbarHeight,
-					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
-					_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar
-				);
-
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
+			
+			SetTitleBarVisibility(_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar);
 		}
 
 		internal void SetTitleBarVisibility(bool isVisible)
 		{
+			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
+			// Standard title bar height is 32px
+			// This should always get set by the code after but
+			// we are setting it just in case
 			var appbarHeight = isVisible ? 32 : 0;
 			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{

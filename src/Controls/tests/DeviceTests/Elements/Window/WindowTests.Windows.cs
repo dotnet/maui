@@ -160,7 +160,6 @@ namespace Microsoft.Maui.DeviceTests
 				// Now restore the window
 				presenter.SetBorderAndTitleBar(true, true);
 				presenter.Restore();
-				await Task.Delay(350);
 
 				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 32));
 			});
