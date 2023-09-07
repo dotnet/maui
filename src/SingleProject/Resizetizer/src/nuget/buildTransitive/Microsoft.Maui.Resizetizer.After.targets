@@ -462,6 +462,7 @@
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
                 <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
         </ItemGroup>
 
@@ -548,6 +549,7 @@
 
             <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
                 <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
         </ItemGroup>
@@ -654,6 +656,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
