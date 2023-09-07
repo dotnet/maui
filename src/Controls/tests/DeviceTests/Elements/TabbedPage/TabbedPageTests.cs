@@ -18,6 +18,9 @@ using Xunit;
 #if IOS
 using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
 #endif
+#if WINDOWS
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
