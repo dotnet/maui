@@ -414,7 +414,15 @@ namespace Microsoft.Maui.Controls.Platform
 								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 							break;
 						case UIGestureRecognizerState.Changed:
-							pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							if (hoverGesture is UIHoverGestureRecognizer)
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							else
+							{
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								// maybe we need to add code here to see if the pointer has moved outside the view bounds?
+								// like if it moved outside the bounds then we call "SendPointerExited"
+								// and then find a good way to not trigger the "SenderPointerExited" from ended
+							}
 							break;
 						case UIGestureRecognizerState.Cancelled:
 						case UIGestureRecognizerState.Failed:
