@@ -69,7 +69,7 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task AspectFitResizesOnSmallestDimensions(int widthRequest, int heightRequest, int expectedWidth, int expectedHeight)
 		{
 			SetupBuilder();
-			var layout = new Grid { MaximumHeightRequest = widthRequest, MaximumWidthRequest = heightRequest };
+			var layout = new Grid { MaximumHeightRequest = heightRequest, MaximumWidthRequest = widthRequest };
 			var image = new Image
 			{
 				Source = "big_white_horizontal.png",
@@ -87,11 +87,11 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});
 
-			Assert.True(image.Height == expectedHeight, "Image should have expected height!");
-			Assert.True(image.Width == expectedWidth, "Image should have expected width!");
+			Assert.True(image.Height == expectedHeight, $"Image should have expected height! Expected: {expectedHeight}, was: {image.Height}");
+			Assert.True(image.Width == expectedWidth, $"Image should have expected width! Expected: {expectedWidth}, was: {image.Width}");
 
-			Assert.True(layout.Height == expectedHeight, "Layout should have expected height!");
-			Assert.True(layout.Width == expectedWidth, "Layout should have expected width!");
+			Assert.True(layout.Height == expectedHeight, $"Layout should have expected height! Expected: {expectedHeight}, was: {layout.Height}");
+			Assert.True(layout.Width == expectedWidth, $"Layout should have expected width! Expected: {expectedWidth}, was: {layout.Width}");
 		}
 	}
 }
