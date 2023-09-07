@@ -1,8 +1,8 @@
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.5.230903000-experimental">
+    <Dependency Name="Microsoft.WindowsAppSDK" Version="1.5.230906000-experimental">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/WindowsAppSDKAggregator</Uri>
-      <Sha>25a31bba870a6410334887ff84b3dc3fbddc3261</Sha>
+      <Sha>625e1f23bf21c107ed270f3e66ef6655b75f880c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Authorization" Version="7.0.0">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
