@@ -159,6 +159,15 @@ steps:
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
 
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - task: PowerShell@2
+      condition: eq(variables['PrivateBuild'], 'true')
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
   # Prepare for Reunion packages
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - task: NuGetAuthenticate@0
@@ -171,11 +180,4 @@ steps:
   #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
   #       $xml.Save($path)
   #     displayName: 'Add "wasdk-internal" to NuGet.config'
-  #  - task: PowerShell@2
-  #    condition: eq(variables['PrivateBuild'], 'true')
-  #    displayName: Setup Private Feeds Credentials
-  #    inputs:
-  #      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-  #      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-  #    env:
-  #      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+

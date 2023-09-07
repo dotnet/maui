@@ -23,8 +23,7 @@ trigger:
 
 variables:
   - template: /eng/pipelines/common/variables.yml
-  - template: templates/common/vs-release-vars.yml@sdk-insertions
-
+  
 parameters:
   - name: provisionatorChannel
     displayName: 'Provisionator channel'
@@ -39,18 +38,18 @@ parameters:
         vmImage: $(windowsNet6VmImage)
         artifact: nuget
 
-resources:
-  repositories:
-    - repository: yaml-templates
-      type: github
-      name: xamarin/yaml-templates
-      endpoint: xamarin
-      ref: refs/heads/main
-    - repository: sdk-insertions
-      type: github
-      name: xamarin/sdk-insertions
-      ref: refs/heads/main
-      endpoint: xamarin
+# resources:
+#   repositories:
+#     - repository: yaml-templates
+#       type: github
+#       name: xamarin/yaml-templates
+#       endpoint: xamarin
+#       ref: refs/heads/main
+#     - repository: sdk-insertions
+#       type: github
+#       name: xamarin/sdk-insertions
+#       ref: refs/heads/main
+#       endpoint: xamarin
 
 stages:
 
@@ -79,9 +78,9 @@ stages:
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
 
-  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+  - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
     - template: common/sign.yml                                     # Sign only using the private server
-    - template: common/insertion.yml                                # Insert on VS and SDK
-      parameters:
-        poolName: $(windowsNet6VmPool)
-        vmImage: $(windowsNet6VmImage)
+    # - template: common/insertion.yml                                # Insert on VS and SDK
+    #   parameters:
+    #     poolName: $(windowsNet6VmPool)
+    #     vmImage: $(windowsNet6VmImage)
