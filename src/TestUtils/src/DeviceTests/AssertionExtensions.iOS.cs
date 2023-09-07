@@ -582,6 +582,14 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						foreach (var window in windowScene.Windows)
 						{
+#if MACCATALYST
+							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+							// Added an env variable to accommodate for this and just return the first window found.
+							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+							{	
+								return window;
+							}
+#endif
 							if (window.IsKeyWindow)
 							{
 								return window;
