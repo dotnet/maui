@@ -249,6 +249,7 @@ namespace Microsoft.Maui.Controls.Platform
 							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 						{
 							var originPoint = hoverGesture.LocationInView(eventTracker?.PlatformView);
+							var platformPointerArgs = new PlatformPointerEventArgs(hoverGesture.View, hoverGesture);
 
 							switch (hoverGesture.State)
 							{
@@ -274,6 +275,7 @@ namespace Microsoft.Maui.Controls.Platform
 							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
 						{
 							var originPoint = pressGesture.LocationInView(eventTracker?.PlatformView);
+							var platformPointerArgs = new PlatformPointerEventArgs(pressGesture.View, pressGesture);
 
 							switch (pressGesture.State)
 							{
