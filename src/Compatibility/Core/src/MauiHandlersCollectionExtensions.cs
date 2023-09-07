@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
 #if PLATFORM
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, RS0030 // Type or member is obsolete
 			handlersCollection.TryAddHandler(controlType, typeof(RendererToHandlerShim));
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, RS0030 // Type or member is obsolete
 #endif
 
 			return handlersCollection;
@@ -28,9 +28,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			Internals.Registrar.Registered.Register(controlType, rendererType);
 
 #if PLATFORM
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, RS0030 // Type or member is obsolete
 			handlersCollection.AddHandler(controlType, typeof(RendererToHandlerShim));
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, RS0030 // Type or member is obsolete
 #endif
 
 			return handlersCollection;
@@ -44,9 +44,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			Internals.Registrar.Registered.Register(typeof(TControlType), typeof(TRenderer));
 
 #if PLATFORM
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, RS0030 // Type or member is obsolete
 			handlersCollection.AddHandler<TMauiType, RendererToHandlerShim>();
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, RS0030 // Type or member is obsolete
 #endif
 			return handlersCollection;
 		}
@@ -76,9 +76,9 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 				}, default(InitializationFlags),
 				(result) =>
 				{
-#pragma warning disable CS0612 // Type or member is obsolete
+#pragma warning disable CS0612, RS0030 // Type or member is obsolete
 					handlersCollection?.TryAddHandler(result.target, typeof(RendererToHandlerShim));
-#pragma warning restore CS0612 // Type or member is obsolete
+#pragma warning restore CS0612, RS0030 // Type or member is obsolete
 				});
 #endif
 
