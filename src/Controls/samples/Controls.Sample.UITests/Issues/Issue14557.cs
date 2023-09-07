@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 			var headerLabel = new Label { AutomationId = "headerLabel", Text = "Foo", };
 			var footerLabel = new Label { AutomationId = "footerLabel", Text = "Bar" };
 
-			var collectionView = new CollectionView { Header = headerLabel, Footer = footerLabel, AutomationId = "collectionView"};
+			var collectionView = new CollectionView { Header = headerLabel, Footer = footerLabel, AutomationId = "collectionView" };
 
 			scrollView.Content = collectionView;
 
