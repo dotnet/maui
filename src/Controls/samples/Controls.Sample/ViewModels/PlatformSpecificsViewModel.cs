@@ -60,6 +60,9 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(iOSFlyoutPage), "FlyoutPage Shadow",
 					"This platform-specific controls whether the detail page of a FlyoutPage has shadow applied to it, when revealing the flyout page."),
 
+				new SectionModel(typeof(iOSDragAndDropRequestFullSize), "Drag and Drop Gesture Recognizer Platform-Specific",
+					"This iOS platform-specific controls whether to request full-sized drag shadows and the UIDropProposal types."),
+
 				new SectionModel(typeof(iOSHideHomeIndicatorPage), "Hide Home Indicator",
 					"This iOS platform-specific sets the visibility of the home indicator on a Page."),
 
