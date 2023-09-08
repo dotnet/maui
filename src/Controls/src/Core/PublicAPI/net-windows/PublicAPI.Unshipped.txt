@@ -203,7 +203,7 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 *REMOVED*~Microsoft.Maui.Controls.Shell.RemoveLogicalChild(Microsoft.Maui.Controls.Element element) -> void
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.PlatformPointerEventArgs
-Microsoft.Maui.Controls.PlatformPointerEventArgs.RoutedEventArgs.get -> Microsoft.UI.Xaml.PointerRoutedEventArgs!
+Microsoft.Maui.Controls.PlatformPointerEventArgs.PointerRoutedEventArgs.get -> Microsoft.UI.Xaml.Input.PointerRoutedEventArgs!
 Microsoft.Maui.Controls.PlatformPointerEventArgs.Sender.get -> Microsoft.UI.Xaml.FrameworkElement!
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
 *REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void

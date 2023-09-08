@@ -49,12 +49,12 @@ public class PlatformPointerEventArgs
 	/// <summary>
 	/// Gets the native event or handler attached to the view.
 	/// </summary>
-	public Microsoft.UI.Xaml.PointerRoutedEventArgs RoutedEventArgs { get; }
+	public Microsoft.UI.Xaml.Input.PointerRoutedEventArgs PointerRoutedEventArgs { get; }
 
-	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.PointerRoutedEventArgs routedEventArgs)
+	internal PlatformPointerEventArgs(Microsoft.UI.Xaml.FrameworkElement sender, Microsoft.UI.Xaml.Input.PointerRoutedEventArgs pointerRoutedEventArgs)
 	{
 		Sender = sender;
-		RoutedEventArgs = routedEventArgs;
+		PointerRoutedEventArgs = pointerRoutedEventArgs;
 	}
 
 #else
