@@ -3,6 +3,7 @@ using CoreGraphics;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
+using System;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
@@ -20,7 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			var measure = PlatformHandler.VirtualView.Measure(double.PositiveInfinity, ConstrainedDimension);
 
-			return new CGSize(measure.Width, ConstrainedDimension);
+			return new CGSize(measure.Width, Math.Min(measure.Height, ConstrainedDimension));
 		}
 
 		protected override bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes)
