@@ -3,4 +3,22 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.MainPage"
     xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <ContentView Unloaded="ContentView_Unloaded">
+        <VerticalStackLayout>
+            <Label Text="test me">
+                <Label.GestureRecognizers>
+                    <PointerGestureRecognizer PointerReleased="PointerGestureRecognizer_PointerReleased"
+                                              PointerEntered="PointerGestureRecognizer_PointerEntered"
+                                              PointerExited="PointerGestureRecognizer_PointerExited"
+                                              PointerMoved="PointerGestureRecognizer_PointerMoved"
+                                              PointerPressed="PointerGestureRecognizer_PointerPressed"
+                                              ></PointerGestureRecognizer>
+
+                </Label.GestureRecognizers>
+
+            </Label>
+
+        </VerticalStackLayout>
+    </ContentView>
 </ContentPage>
