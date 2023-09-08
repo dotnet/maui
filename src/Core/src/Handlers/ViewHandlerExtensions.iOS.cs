@@ -86,7 +86,7 @@ namespace Microsoft.Maui
 			{
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
-			else if (platformView is UIButton imageButton && imageButton.ImageView is not null)
+			else if (platformView is UIButton imageButton && imageButton.ImageView?.Image is not null)
 			{
 				sizeThatFits = imageButton.ImageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
