@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Hosting.Internal
 {
@@ -39,17 +40,37 @@ namespace Microsoft.Maui.Hosting.Internal
 				return default;
 
 			if (single != null)
-				return single.ImplementationType;
+				return GetImplementationType(single);
 
 			if (enumerable != null)
 			{
 				foreach (var descriptor in enumerable)
 				{
-					return descriptor.ImplementationType;
+					return GetImplementationType(descriptor);
 				}
 			}
 
 			return default;
+		}
+
+		// Based on: https://github.com/dotnet/runtime/blob/7d399f6deed60ce90292d2551c288d137e2278e6/src/libraries/Microsoft.Extensions.DependencyInjection.Abstractions/src/ServiceDescriptor.cs#L296-L311
+		Type? GetImplementationType(ServiceDescriptor descriptor)
+		{
+			if (descriptor.ImplementationType != null)
+			{
+				return descriptor.ImplementationType;
+			}
+			else if (descriptor.ImplementationInstance != null)
+			{
+				return descriptor.ImplementationInstance.GetType();
+			}
+			else if (descriptor.ImplementationFactory != null)
+			{
+				Type[]? typeArguments = descriptor.ImplementationFactory.GetType().GenericTypeArguments;
+				if (typeArguments.Length == 2)
+					return typeArguments[1];
+			}
+			return null;
 		}
 
 		public IMauiHandlersCollection GetCollection() => (IMauiHandlersCollection)InternalCollection;
