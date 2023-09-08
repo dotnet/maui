@@ -510,19 +510,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
 			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e)));
-
-		void OnPgrPointerPressed(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerPressed(view, (relativeTo) => GetPosition(relativeTo, e)));
-
-		void OnPgrPointerReleased(object sender, PointerRoutedEventArgs e)
-			=> HandlePgrPointerEvent(e, (view, recognizer)
-				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e)));
+				=> recognizer.SendPointerReleased(view, (relativeTo) => GetPosition(relativeTo, e), _control is null ? null : new PlatformPointerEventArgs(_control, e)));
 
 		private void HandlePgrPointerEvent(PointerRoutedEventArgs e, Action<View, PointerGestureRecognizer> SendPointerEvent)
 		{

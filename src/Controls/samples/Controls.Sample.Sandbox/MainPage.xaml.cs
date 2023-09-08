@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.UI.Xaml.Input;
 
 namespace Maui.Controls.Sample
 {
@@ -17,6 +18,10 @@ namespace Maui.Controls.Sample
 
 		void PointerGestureRecognizer_PointerReleased(System.Object sender, Microsoft.Maui.Controls.PointerEventArgs e)
 		{
+#if WINDOWS
+			if (e.PlatformArgs.Sender is not null)
+				e.PlatformArgs.Sender.ReleasePointerCaptures();
+#endif
 			System.Diagnostics.Debug.WriteLine("PointerGestureRecognizer_PointerReleased");
 		}
 
@@ -37,6 +42,10 @@ namespace Maui.Controls.Sample
 
 		void PointerGestureRecognizer_PointerPressed(System.Object sender, Microsoft.Maui.Controls.PointerEventArgs e)
 		{
+#if WINDOWS
+			if (e.PlatformArgs.Sender is not null)
+				e.PlatformArgs.Sender.CapturePointer((e.PlatformArgs.RoutedEventArgs as PointerRoutedEventArgs).Pointer);
+#endif
 			System.Diagnostics.Debug.WriteLine("PointerGestureRecognizer_PointerPressed");
 		}
 
