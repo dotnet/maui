@@ -43,6 +43,11 @@ namespace Microsoft.Maui.Handlers
 			return VirtualView.CreateMenuItem(MauiContext!);
 		}
 
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView?.UpdateIsEnabled(view);
+		}
+
 		internal static void Execute(UICommand uICommand)
 		{
 			if (uICommand.PropertyList is NSString nsString &&

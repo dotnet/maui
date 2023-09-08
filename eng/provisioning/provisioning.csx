@@ -2,7 +2,7 @@ if (IsMac)
 {
 	ForceJavaCleanup();
 	MicrosoftOpenJdk ("11.0.13.8.1");
-	Item ("Mono", "6.12.0.199");
+	Item("https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.199.macos10.xamarin.universal.pkg");
 	AppleCodesignIdentity("Apple Development: Jonathan Dick (FJL7285DY2)", "https://dl.internalx.com/qa/code-signing-entitlements/components-mac-ios-certificate.p12");
 	AppleCodesignProfile("https://dl.internalx.com/qa/code-signing-entitlements/components-ios-provisioning.mobileprovision");
 	AppleCodesignProfile("https://dl.internalx.com/qa/code-signing-entitlements/components-mac-provisioning.mobileprovision");
@@ -10,8 +10,9 @@ if (IsMac)
 }
 
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
+string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 
-if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
+if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
 		.ApiLevel((AndroidApiLevel)21)
@@ -55,7 +56,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 
 	AndroidSdk().SdkManagerPackage ("build-tools;33.0.0");
 }
-else
+else if(!String.IsNullOrWhiteSpace(ANDROID_API_SDKS))
 {
 
 	var androidSDK = AndroidSdk();

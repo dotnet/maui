@@ -1,12 +1,11 @@
 #load "../cake/helpers.cake"
 #load "../cake/dotnet.cake"
-
-string TARGET = Argument("target", "Test");
+#load "./devices-shared.cake"
 
 const string dotnetVersion = "net7.0";
 
 // required
-FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? "");
+FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?? "maccatalyst");
 
 // optional
@@ -15,7 +14,7 @@ var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("MAC_TEST_APP") ?? "");
-FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? "");
+FilePath TEST_APP_PROJECT = Argument("appproject", EnvironmentVariable("MAC_TEST_APP_PROJECT") ?? DEFAULT_APP_PROJECT);
 var TEST_RESULTS = Argument("results", EnvironmentVariable("MAC_TEST_RESULTS") ?? "");
 
 // other
@@ -79,7 +78,13 @@ Task("Test")
 			throw new Exception("If no app was specified, an app must be provided.");
 		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(RUNTIME_IDENTIFIER).FullPath;
 		var apps = GetDirectories(binDir + "/*.app");
-		TEST_APP = apps.First().FullPath;
+		if (apps.Any()) {
+			TEST_APP = apps.First().FullPath;
+		}
+		else {
+			Error("Error: Couldn't find .app file");
+			throw new Exception("Error: Couldn't find .app file");
+		}
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS = TEST_APP + "-results";

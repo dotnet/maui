@@ -121,11 +121,6 @@ namespace Microsoft.Maui.Handlers
 			return handler.ImageSourceLoader.UpdateImageSourceAsync();
 		}
 
-		void IImageSourcePartSetter.SetImageSource(Drawable? obj)
-		{
-			PlatformView.Icon = obj;
-		}
-
 		public override void PlatformArrange(Rect frame)
 		{
 			this.PrepareForTextViewArrange(frame);
@@ -181,6 +176,17 @@ namespace Microsoft.Maui.Handlers
 
 			public bool OnTouch(AView? v, global::Android.Views.MotionEvent? e) =>
 				Handler?.OnTouch(Handler?.VirtualView, v, e) ?? false;
+		}
+
+		partial class ButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(Drawable? platformImage)
+			{
+				if (Handler?.PlatformView is not MaterialButton button)
+					return;
+
+				button.Icon = platformImage;
+			}
 		}
 	}
 }

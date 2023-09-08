@@ -4,6 +4,7 @@ namespace TestUtils.Appium.UITests
 {
 	public interface IApp2 : IApp, IDisposable
 	{
+		bool IsKeyboardShown();
 		void ActivateApp();
 		void CloseApp();
 		string ElementTree { get; }

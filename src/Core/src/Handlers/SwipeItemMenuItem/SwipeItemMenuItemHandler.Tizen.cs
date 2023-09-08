@@ -55,13 +55,20 @@ namespace Microsoft.Maui.Handlers
 			var swipeView = handler.PlatformView.GetParentOfType<MauiSwipeView>();
 			if (swipeView != null)
 				swipeView.UpdateIsVisibleSwipeItem(view);
-
 		}
 
-		void IImageSourcePartSetter.SetImageSource(MauiImageSource? obj)
+		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
-			if (obj != null)
-				PlatformView.Icon.ResourceUrl = obj.ResourceUrl;
+			public override void SetImageSource(MauiImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is not Button item)
+					return;
+
+				if (platformImage is null)
+					return;
+
+				item.Icon.ResourceUrl = platformImage.ResourceUrl;
+			}
 		}
 	}
 }

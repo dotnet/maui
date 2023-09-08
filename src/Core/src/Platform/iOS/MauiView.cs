@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
@@ -6,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
+	public abstract class MauiView : UIView, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable, IUIViewLifeCycleEvents
 	{
 		static bool? _respondsToSafeArea;
 
@@ -155,6 +156,20 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return null;
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }
