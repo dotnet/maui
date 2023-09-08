@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls
 	/// A <see cref="VisualElement" /> that occupies the entire screen.
 	/// </summary>
 	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
-    /// </remarks>
+	/// </remarks>
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 	{
 		/// <summary>
@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Controls
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
 			set { SetValue(PaddingElement.PaddingProperty, value); }
 		}
-		
+
 		/// <inheritdoc/>
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
 		{
@@ -483,7 +483,7 @@ namespace Microsoft.Maui.Controls
 		/// <summary>
 		/// Called when the page's <see cref="Element.Parent"/> property has changed.
 		/// <exception cref="InvalidOperationException">Thrown when the page's <see cref="Element.RealParent"/> can't be casted to <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
-        /// </summary>
+		/// </summary>
 		protected override void OnParentSet()
 		{
 			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
