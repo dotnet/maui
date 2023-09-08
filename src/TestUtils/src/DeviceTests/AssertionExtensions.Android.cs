@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -8,6 +9,7 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
@@ -15,10 +17,8 @@ using Xunit;
 using Xunit.Sdk;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
-using SearchView = AndroidX.AppCompat.Widget.SearchView;
 using MColor = Microsoft.Maui.Graphics.Color;
-using Google.Android.Material.BottomNavigation;
-using System.Linq;
+using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
 {
