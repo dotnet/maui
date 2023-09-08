@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return imageView.SizeThatFitsImage(size);
 			}
-			else if (child is UIButton imageButton && imageButton.ImageView is not null)
+			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null)
 			{
 				return imageButton.ImageView.SizeThatFitsImage(size);
 			}
