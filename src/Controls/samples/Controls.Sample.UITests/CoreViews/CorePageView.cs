@@ -52,6 +52,7 @@ namespace Maui.Controls.Sample
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 				new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
+				new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
 		};
 
 		public CorePageView(Page rootPage)
