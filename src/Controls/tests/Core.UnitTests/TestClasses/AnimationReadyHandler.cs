@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Animations;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -33,10 +34,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public static AnimationReadyHandler<TTicker> Prepare<T>(params T[] views)
 			where T : View
 		{
-			var handler = new AnimationReadyHandler<TTicker>(new TestAnimationManager(new TTicker()));
+			AnimationReadyHandler<TTicker> handler = null;
+
+			var ticker = new TestAnimationManager(new TTicker());
 
 			foreach (var view in views)
+			{
+				handler = new AnimationReadyHandler<TTicker>(ticker);
 				view.Handler = handler;
+			}
 
 			return handler;
 		}
@@ -83,7 +89,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (serviceType == typeof(IAnimationManager))
 					return _animationManager;
 
-				throw new NotSupportedException();
+				if (serviceType == typeof(IDispatcherProvider))
+				{
+					return DispatcherProvider.Current;
+				}
+
+				throw new NotSupportedException($"Attempting to get service type {serviceType}");
 			}
 		}
 	}
