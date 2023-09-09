@@ -183,6 +183,17 @@ namespace Microsoft.Maui.Controls.Hosting
 					handlers.AddMauiControlsHandlers();
 				});
 
+			builder.Services.TryAddTransient(sp =>
+			{
+				// Ideally sp here would be WrappedServiceProvider but I don't know how to do that
+				return new LabelHandler();
+			});
+
+			builder.Services.TryAddScoped(sp =>
+			{
+				// Ideally sp here would be WrappedServiceProvider but I don't know how to do that
+				return new WindowHandler();
+			});
 #if WINDOWS
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
 #endif

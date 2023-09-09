@@ -34,7 +34,10 @@ namespace Microsoft.Maui.Platform
 	{
 		static HashSet<Type> handlersWithConstructors = new HashSet<Type>();
 
-		static IElementHandler? CreateTypeWithInjection(this Type viewType, IMauiContext mauiContext)
+		static IElementHandler? CreateTypeWithInjection(
+			this Type viewType, 
+			IMauiContext mauiContext,
+			bool passInAndroidContext)
 		{
 			var handlerType = mauiContext.Handlers.GetHandlerType(viewType);
 
@@ -44,8 +47,13 @@ namespace Microsoft.Maui.Platform
 #if ANDROID
 			if(mauiContext.Context != null)
 			{
-				return (IElementHandler)Extensions.DependencyInjection.
-					ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+				if (passInAndroidContext)
+					return (IElementHandler)Extensions.DependencyInjection.
+						ActivatorUtilities.CreateInstance(mauiContext.Services, handlerType, mauiContext.Context);
+				else
+
+					return (IElementHandler)Extensions.DependencyInjection.
+						ActivatorUtilities.GetServiceOrCreateInstance(mauiContext.Services, handlerType);
 			}
 #endif
 
@@ -76,13 +84,13 @@ namespace Microsoft.Maui.Platform
 				try
 				{
 					if (handlersWithConstructors.Contains(viewType))
-						handler = viewType.CreateTypeWithInjection(context);
+						handler = viewType.CreateTypeWithInjection(context, true);
 					else
-						handler = context.Handlers.GetHandler(viewType);
+						handler = viewType.CreateTypeWithInjection(context, false);
 				}
 				catch (MissingMethodException)
 				{
-					handler = viewType.CreateTypeWithInjection(context);
+					handler = viewType.CreateTypeWithInjection(context, true);
 					if (handler != null)
 						handlersWithConstructors.Add(view.GetType());
 				}

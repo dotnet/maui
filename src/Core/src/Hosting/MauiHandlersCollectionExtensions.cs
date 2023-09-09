@@ -39,6 +39,7 @@ namespace Microsoft.Maui.Hosting
 		{
 #pragma warning disable RS0030 // Do not use banned APIs, the current method is also banned
 			handlersCollection.AddTransient(typeof(TType), typeof(TTypeRender));
+			
 #pragma warning restore RS0030 // Do not use banned APIs
 			return handlersCollection;
 		}

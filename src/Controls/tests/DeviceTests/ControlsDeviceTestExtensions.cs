@@ -44,12 +44,12 @@ namespace Microsoft.Maui.DeviceTests
 					})
 					.ConfigureMauiHandlers(handlers =>
 					{
-						handlers.AddHandler(typeof(Editor), typeof(EditorHandler));
-						handlers.AddHandler(typeof(VerticalStackLayout), typeof(LayoutHandler));
-						handlers.AddHandler(typeof(Controls.Window), typeof(WindowHandlerStub));
-						handlers.AddHandler(typeof(Controls.ContentPage), typeof(PageHandler));
+						handlers.AddHandler<Editor>(_ => new EditorHandler());
+						handlers.AddHandler<VerticalStackLayout>(_ => new LayoutHandler());
+						handlers.AddHandler<Controls.Window>(_ => new WindowHandlerStub());
+						handlers.AddHandler<Controls.ContentPage>(_ => new PageHandler());
 #if WINDOWS
-						handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
+						handlers.AddHandler<MauiAppNewWindowStub>(_ => new ApplicationHandler());
 #endif
 					});
 		}
