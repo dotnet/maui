@@ -29,7 +29,6 @@ namespace Microsoft.Maui.Controls.Handlers
 		ShellItem? _shellItem;
 		SearchHandler? _currentSearchHandler;
 		IShellAppearanceElement? _shellAppearanceElement;
-		MauiNavigationView ShellItemNavigationView => (PlatformView as MauiNavigationView)!;
 
 		public ShellItemHandler() : base(Mapper, CommandMapper)
 		{
@@ -47,37 +46,46 @@ namespace Microsoft.Maui.Controls.Handlers
 				PlatformView.Loaded -= OnNavigationViewLoaded;
 
 			UpdateSearchHandler();
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		protected override void ConnectHandler(FrameworkElement platformView)
 		{
-			ShellItemNavigationView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
-			ShellItemNavigationView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
-			ShellItemNavigationView.IsSettingsVisible = false;
-			ShellItemNavigationView.IsPaneToggleButtonVisible = false;
-			ShellItemNavigationView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
-			ShellItemNavigationView.MenuItemsSource = _mainLevelTabs;
+			var mauiNavView = platformView as MauiNavigationView;
 
-			platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
-			platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
-			platformView.SetApplicationResource("NavigationViewContentMargin", null);
-			platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
+			if (mauiNavView is not null)
+			{
+				mauiNavView.PaneDisplayMode = NavigationViewPaneDisplayMode.Top;
+				mauiNavView.IsBackButtonVisible = NavigationViewBackButtonVisible.Collapsed;
+				mauiNavView.IsSettingsVisible = false;
+				mauiNavView.IsPaneToggleButtonVisible = false;
+				mauiNavView.MenuItemTemplate = (UI.Xaml.DataTemplate)WApp.Current.Resources["TabBarNavigationViewMenuItem"];
+				mauiNavView.MenuItemsSource = _mainLevelTabs;
+
+				platformView.SetApplicationResource("NavigationViewMinimalHeaderMargin", null);
+				platformView.SetApplicationResource("NavigationViewHeaderMargin", null);
+				platformView.SetApplicationResource("NavigationViewContentMargin", null);
+				platformView.SetApplicationResource("NavigationViewMinimalContentMargin", null);
+			}
 
 			if (platformView.IsLoaded)
-				OnNavigationViewLoaded(ShellItemNavigationView, new RoutedEventArgs());
+				OnNavigationViewLoaded(platformView, new RoutedEventArgs());
 			else
 				platformView.Loaded += OnNavigationViewLoaded;
 
 			base.ConnectHandler(platformView);
-			ShellItemNavigationView.SelectionChanged += OnNavigationTabChanged;
+
+			if (mauiNavView is not null)
+				mauiNavView.SelectionChanged += OnNavigationTabChanged;
 		}
 
 		protected override void DisconnectHandler(FrameworkElement platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			ShellItemNavigationView.SelectionChanged -= OnNavigationTabChanged;
+			if (platformView is MauiNavigationView mnv)
+				mnv.SelectionChanged -= OnNavigationTabChanged;
+
 			platformView.Loaded -= OnNavigationViewLoaded;
 
 			if (_currentShellSection != null)
@@ -123,9 +131,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
-			// Flag to sync the selected item only after items changed fired, which will happen after modifications
-			// to the items list is finished
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
@@ -145,7 +151,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 		}
 
-		void MapMenuItems(bool syncSelectedItem)
+		void MapMenuItems()
 		{
 			IShellItemController shellItemController = VirtualView;
 			var items = new List<BaseShellItem>();
@@ -222,8 +228,8 @@ namespace Microsoft.Maui.Controls.Handlers
 				}
 			});
 
-			if (syncSelectedItem && ShellItemNavigationView.SelectedItem != selectedItem)
-				ShellItemNavigationView.SelectedItem = selectedItem;
+			if (PlatformView is NavigationView navView && navView.SelectedItem != selectedItem)
+				navView.SelectedItem = selectedItem;
 
 			UpdateValue(Shell.TabBarIsVisibleProperty.PropertyName);
 		}
@@ -231,6 +237,9 @@ namespace Microsoft.Maui.Controls.Handlers
 		void UpdateSearchHandler()
 		{
 			if (VirtualView.Parent is not Shell shell)
+				return;
+
+			if (PlatformView is not NavigationView mauiNavView)
 				return;
 
 			var newSearchHandler = shell.GetEffectiveValue<SearchHandler?>(Shell.SearchHandlerProperty, null);
@@ -243,7 +252,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 				_currentSearchHandler = newSearchHandler;
 
-				var autoSuggestBox = ShellItemNavigationView.AutoSuggestBox;
+				var autoSuggestBox = mauiNavView.AutoSuggestBox;
 				if (_currentSearchHandler is not null)
 				{
 					if (autoSuggestBox == null)
@@ -252,7 +261,7 @@ namespace Microsoft.Maui.Controls.Handlers
 						autoSuggestBox.TextChanged += OnSearchBoxTextChanged;
 						autoSuggestBox.QuerySubmitted += OnSearchBoxQuerySubmitted;
 						autoSuggestBox.SuggestionChosen += OnSearchBoxSuggestionChosen;
-						ShellItemNavigationView.AutoSuggestBox = autoSuggestBox;
+						mauiNavView.AutoSuggestBox = autoSuggestBox;
 					}
 
 					autoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
@@ -341,31 +350,37 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_currentSearchHandler is null)
 				return;
 
+			if (PlatformView is not NavigationView mauiNavView)
+				return;
+
 			switch (e.PropertyName)
 			{
 				case nameof(SearchHandler.Placeholder):
-					ShellItemNavigationView.AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
+					mauiNavView.AutoSuggestBox.PlaceholderText = _currentSearchHandler.Placeholder;
 					break;
 				case nameof(SearchHandler.IsSearchEnabled):
-					ShellItemNavigationView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
+					mauiNavView.AutoSuggestBox.IsEnabled = _currentSearchHandler.IsSearchEnabled;
 					break;
 				case nameof(SearchHandler.ItemsSource):
-					ShellItemNavigationView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
+					mauiNavView.AutoSuggestBox.ItemsSource = CreateSearchHandlerItemsSource();
 					break;
 				case nameof(SearchHandler.Query):
-					ShellItemNavigationView.AutoSuggestBox.Text = _currentSearchHandler.Query;
+					mauiNavView.AutoSuggestBox.Text = _currentSearchHandler.Query;
 					break;
 			}
 		}
 
 		void UpdateQueryIcon()
 		{
+			if (PlatformView is not NavigationView mauiNavView)
+				return;
+
 			if (_currentSearchHandler != null)
 			{
 				if (_currentSearchHandler.QueryIcon is FileImageSource fis)
-					ShellItemNavigationView.AutoSuggestBox.QueryIcon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fis.File) };
+					mauiNavView.AutoSuggestBox.QueryIcon = new BitmapIcon() { UriSource = new Uri("ms-appx:///" + fis.File) };
 				else
-					ShellItemNavigationView.AutoSuggestBox.QueryIcon = new SymbolIcon(Symbol.Find);
+					mauiNavView.AutoSuggestBox.QueryIcon = new SymbolIcon(Symbol.Find);
 			}
 		}
 
@@ -373,7 +388,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		internal void UpdateTitle()
 		{
-			MapMenuItems(true);
+			MapMenuItems();
 		}
 
 		void UpdateCurrentItem()
@@ -392,8 +407,11 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				_shellSectionHandler ??= (ShellSectionHandler)VirtualView.CurrentItem.ToHandler(MauiContext!);
 
-				if (PlatformView != (FrameworkElement)ShellItemNavigationView.Content)
-					ShellItemNavigationView.Content = _shellSectionHandler.PlatformView;
+				if (PlatformView is NavigationView navView &&
+					_shellSectionHandler.PlatformView != (FrameworkElement)navView.Content)
+				{
+					navView.Content = _shellSectionHandler.PlatformView;
+				}
 
 				if (_shellSectionHandler.VirtualView != VirtualView.CurrentItem)
 					_shellSectionHandler.SetVirtualView(VirtualView.CurrentItem);
@@ -401,9 +419,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			UpdateSearchHandler();
 
-			// Don't sync the selected item as this function can be called multiple times on item removal
-			// before the list has finished fully updating
-			MapMenuItems(false);
+			MapMenuItems();
 
 			if (_currentShellSection != null)
 			{
@@ -444,16 +460,23 @@ namespace Microsoft.Maui.Controls.Handlers
 					break;
 			}
 
-			if (navigationViewItemViewModel != null && ShellItemNavigationView.SelectedItem != navigationViewItemViewModel)
-				ShellItemNavigationView.SelectedItem = navigationViewItemViewModel;
+			if (navigationViewItemViewModel != null &&
+				PlatformView is NavigationView navView &&
+				navView.SelectedItem != navigationViewItemViewModel)
+			{
+				navView.SelectedItem = navigationViewItemViewModel;
+			}
 		}
 
 		void UpdateTabBarVisibility(IShellItemController item)
 		{
+			if (PlatformView is not MauiNavigationView mauiNavView)
+				return;
+
 			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
-			ShellItemNavigationView.PaneDisplayMode = paneDisplayMode;
-			ShellItemNavigationView.PinPaneDisplayModeTo = paneDisplayMode;
-			ShellItemNavigationView.IsPaneVisible = item.ShowTabs;
+			mauiNavView.PaneDisplayMode = paneDisplayMode;
+			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
+			mauiNavView.IsPaneVisible = item.ShowTabs;
 		}
 
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
@@ -484,9 +507,9 @@ namespace Microsoft.Maui.Controls.Handlers
 			{
 				_shellAppearanceElement = a;
 				// This means the template hasn't been applied yet
-				if (ShellItemNavigationView.TopNavArea is null)
+				if (PlatformView is MauiNavigationView mauiNavView && mauiNavView.TopNavArea is null)
 				{
-					ShellItemNavigationView.OnApplyTemplateFinished += OnApplyTemplateFinished;
+					mauiNavView.OnApplyTemplateFinished += OnApplyTemplateFinished;
 				}
 
 				UpdateAppearance(_shellAppearanceElement);
@@ -498,21 +521,25 @@ namespace Microsoft.Maui.Controls.Handlers
 			if (_shellAppearanceElement is null)
 				return;
 
+			if (PlatformView is not MauiNavigationView mauiNavView)
+				return;
+
 			var backgroundColor = _shellAppearanceElement.EffectiveTabBarBackgroundColor?.AsPaint();
 			var foregroundColor = _shellAppearanceElement.EffectiveTabBarForegroundColor?.AsPaint();
 			var unselectedColor = _shellAppearanceElement.EffectiveTabBarUnselectedColor?.AsPaint();
 			var titleColor = _shellAppearanceElement.EffectiveTabBarTitleColor?.AsPaint();
 
-			ShellItemNavigationView.UpdateTopNavAreaBackground(backgroundColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemTextColor(unselectedColor);
-			ShellItemNavigationView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
+			mauiNavView.UpdateTopNavAreaBackground(backgroundColor);
+			mauiNavView.UpdateTopNavigationViewItemUnselectedColor(unselectedColor);
+			mauiNavView.UpdateTopNavigationViewItemTextSelectedColor(titleColor ?? foregroundColor);
+			mauiNavView.UpdateTopNavigationViewItemTextColor(unselectedColor);
+			mauiNavView.UpdateTopNavigationViewItemSelectedColor(foregroundColor ?? titleColor);
 		}
 
 		void OnApplyTemplateFinished(object? sender, EventArgs e)
 		{
-			ShellItemNavigationView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
+			if (PlatformView is MauiNavigationView mauiNavView)
+				mauiNavView.OnApplyTemplateFinished -= OnApplyTemplateFinished;
 
 			if (_shellAppearanceElement is not null)
 				UpdateAppearance(_shellAppearanceElement);

@@ -69,50 +69,54 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<BorderHandler>(border);
 			await CreateHandlerAsync<LayoutHandler>(grid);
 
-			var points = new Point[4];
-			var colors = new Color[4];
+			Point[] corners = new Point[4]
+			{
+				new Point(0, 0),    // upper-left corner
+				new Point(100, 0),  // upper-right corner
+				new Point(0, 100),  // lower-left corner
+				new Point(100, 100) // lower-right corner
+			};
+
+			var points = new Point[16];
+			var colors = new Color[16];
+			int index = 0;
 
 			// To calculate the x and y offsets (from the center) for a 45-45-90 triangle, we can use the radius as the hypotenuse
 			// which means that the x and y offsets would be radius / sqrt(2).
 			var xy = radius - (radius / Math.Sqrt(2));
 
-			// This marks the outside edge of the rounded corner.
-			var outerXY = xy;
+			for (int i = 0; i < corners.Length; i++)
+			{
+				int xdir = i == 0 || i == 2 ? 1 : -1;
+				int ydir = i == 0 || i == 1 ? 1 : -1;
 
-			// Add stroke thickness to find the inner edge of the rounded corner.
-			var innerXY = outerXY + strokeThickness;
+				// This marks the outside edge of the rounded corner.
+				var outerX = corners[i].X + (xdir * xy);
+				var outerY = corners[i].Y + (ydir * xy);
 
-#if IOS
-			// FIXME: iOS seems to have a white border around the Border stroke
+				// Add stroke thickness to find the inner edge of the rounded corner.
+				var innerX = outerX + (xdir * strokeThickness);
+				var innerY = outerY + (ydir * strokeThickness);
 
-			// Verify that the color outside of the rounded corner is the parent's color (White)
-			points[0] = new Point(5, 5);
-			colors[0] = Colors.White;
+				// Verify that the color outside of the rounded corner is the parent's color (White)
+				points[index] = new Point(outerX - (xdir * 0.25), outerY - (ydir * 0.25));
+				colors[index] = Colors.White;
+				index++;
 
-			// Verify that the rounded corner stroke is where we expect it to be
-			points[1] = new Point(7, 7);
-			colors[1] = stroke;
-			points[2] = new Point(8, 8);
-			colors[2] = stroke;
+				// Verify that the rounded corner stroke is where we expect it to be
+				points[index] = new Point(outerX + (xdir * 1.25), outerY + (ydir * 1.25));
+				colors[index] = stroke;
+				index++;
 
-			// Verify that the background color starts where we'd expect it to start
-			points[3] = new Point(10, 10);
-			colors[3] = border.BackgroundColor;
-#else
-			// Verify that the color outside of the rounded corner is the parent's color (White)
-			points[0] = new Point(outerXY - 0.25, outerXY - 0.25);
-			colors[0] = Colors.White;
+				points[index] = new Point(innerX - (xdir * 1.25), innerY - (ydir * 1.25));
+				colors[index] = stroke;
+				index++;
 
-			// Verify that the rounded corner stroke is where we expect it to be
-			points[1] = new Point(outerXY + 1.25, outerXY + 1.25);
-			colors[1] = stroke;
-			points[2] = new Point(innerXY - 1.25, innerXY - 1.25);
-			colors[2] = stroke;
-
-			// Verify that the background color starts where we'd expect it to start
-			points[3] = new Point(innerXY + 0.25, innerXY + 0.25);
-			colors[3] = border.BackgroundColor;
-#endif
+				// Verify that the background color starts where we'd expect it to start
+				points[index] = new Point(innerX + (xdir * 0.25), innerY + (ydir * 0.25));
+				colors[index] = border.BackgroundColor;
+				index++;
+			}
 
 			await AssertColorsAtPoints(grid, typeof(LayoutHandler), colors, points);
 		}

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,11 +46,14 @@ namespace Microsoft.Maui.DeviceTests
 				var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
 				var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
+				// Set page to have the tabbar be hidden, then switch to it
 				Shell.SetTabBarIsVisible(shell.Items[0].Items[1], false);
 				shell.CurrentItem = shell.Items[0].Items[1];
 
 				Assert.False(navView.IsPaneVisible);
 
+				// Tabbar should now be hidden, remove the current page which should cause
+				// us to switch to another page where the tabbar is not hidden (default)
 				shell.Items[0].Items.RemoveAt(1);
 
 				Assert.True(navView.IsPaneVisible);
@@ -60,24 +62,46 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		List<WNavigationViewItem> GetTabBarItems(Shell shell)
+		NavigationView GetTabBarItems(ShellSection section)
 		{
-			var shellItemHandler = shell.CurrentItem.Handler as ShellItemHandler;
+			var shellItemHandler = section.FindParentOfType<Shell>().CurrentItem.Handler as ShellItemHandler;
 			var navView = shellItemHandler.PlatformView as MauiNavigationView;
 
-			return navView.TopNavArea.GetChildren<WNavigationViewItem>().ToList();
+			return navView;
 		}
 
-		async Task ValidateTabBarItemColor(ShellSection item, Color expectedColor, bool hasColor)
+		async Task ValidateTabBarIconColor(
+			ShellSection item,
+			Color iconColor,
+			bool hasColor)
 		{
-			var items = GetTabBarItems(item.FindParentOfType<Shell>());
-			var platformItem =
-				items.FirstOrDefault(x => x.Content.ToString().Equals(item.Title, StringComparison.OrdinalIgnoreCase));
-
 			if (hasColor)
-				await AssertionExtensions.AssertContainsColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconContainsColor(GetTabBarItems(item),
+					item.Title, iconColor, item.FindMauiContext());
+			}
 			else
-				await AssertionExtensions.AssertDoesNotContainColor(platformItem, expectedColor, item.FindMauiContext());
+			{
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(GetTabBarItems(item),
+					item.Title, iconColor, item.FindMauiContext());
+			}
+		}
+
+		async Task ValidateTabBarTextColor(
+				ShellSection item,
+				Color textColor,
+				bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemTextContainsColor(GetTabBarItems(item),
+					item.Title, textColor, item.FindMauiContext());
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(GetTabBarItems(item),
+					item.Title, textColor, item.FindMauiContext());
+			}
 		}
 	}
 }
