@@ -1,4 +1,5 @@
-﻿using Xamarin.UITest;
+﻿using OpenQA.Selenium.Appium;
+using Xamarin.UITest;
 
 namespace TestUtils.Appium.UITests
 {
@@ -11,5 +12,6 @@ namespace TestUtils.Appium.UITests
 		ApplicationState AppState { get; }
 		bool WaitForTextToBePresentInElement(string automationId, string text);
 		public byte[] Screenshot();
+		public AppiumDriver? Driver { get; }
 	}
 }
