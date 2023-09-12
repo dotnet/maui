@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -182,28 +182,6 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
-		List<string> SearchForExpectedEntitlements(string entitlementsPath, string appLocation, List<string> expectedEntitlements)
-		{
-			List<string> foundEntitlements = new();
-			string procOutput = ToolRunner.Run(new ProcessStartInfo()
-			{
-				FileName = "/usr/bin/codesign",
-				Arguments = $"-d --entitlements {entitlementsPath} --xml {appLocation}"
-			}, out int errorCode);
-
-			Assert.AreEqual(errorCode, 0, procOutput);
-			Assert.IsTrue(File.Exists(entitlementsPath));
-
-			string fileContent = File.ReadAllText(entitlementsPath);
-			foreach (string entitlement in expectedEntitlements)
-			{
-				if (fileContent.Contains(entitlement, StringComparison.OrdinalIgnoreCase))
-					foundEntitlements.Add(entitlement);
-			}
-
-			return foundEntitlements;
-		}
-
 		[Test]
 		[TestCase("maui-blazor", "Debug", "net8.0")]
 		[TestCase("maui-blazor", "Release", "net8.0")]
@@ -229,7 +207,7 @@ namespace Microsoft.Maui.IntegrationTests
 			List<string> expectedEntitlements = config == "Release" ?
 				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
 				new() { "com.apple.security.get-task-allow" };
-			List<string> foundEntitlements = SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
+			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
 		}
