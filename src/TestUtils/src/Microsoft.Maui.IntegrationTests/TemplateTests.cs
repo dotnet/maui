@@ -1,3 +1,4 @@
+using System.Diagnostics;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -179,6 +180,58 @@ namespace Microsoft.Maui.IntegrationTests
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		List<string> SearchForExpectedEntitlements(string entitlementsPath, string appLocation, List<string> expectedEntitlements)
+		{
+			List<string> foundEntitlements = new();
+			string procOutput = ToolRunner.Run(new ProcessStartInfo()
+			{
+				FileName = "/usr/bin/codesign",
+				Arguments = $"-d --entitlements {entitlementsPath} --xml {appLocation}"
+			}, out int errorCode);
+
+			Assert.AreEqual(errorCode, 0, procOutput);
+			Assert.IsTrue(File.Exists(entitlementsPath));
+
+			string fileContent = File.ReadAllText(entitlementsPath);
+			foreach (string entitlement in expectedEntitlements)
+			{
+				if (fileContent.Contains(entitlement, StringComparison.OrdinalIgnoreCase))
+					foundEntitlements.Add(entitlement);
+			}
+
+			return foundEntitlements;
+		}
+
+		[Test]
+		[TestCase("maui-blazor", "Debug", "net8.0")]
+		[TestCase("maui-blazor", "Release", "net8.0")]
+		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
+		{
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
+			string appLocation = config == "Release" ?
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", "maccatalyst-x64", $"{Path.GetFileName(projectDir)}.app");
+			string entitlementsPath = Path.Combine(projectDir, "x.xml");
+
+			List<string> buildWithCodeSignProps = new List<string>(BuildProps)
+			{
+				"EnableCodeSigning=true"
+			};
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			List<string> expectedEntitlements = config == "Release" ?
+				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
+				new() { "com.apple.security.get-task-allow" };
+			List<string> foundEntitlements = SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
+
+			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
 		}
 
 		void EnableTizen(string projectFile)
