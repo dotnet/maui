@@ -325,5 +325,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			return true;
 		}
+
+		internal VisualElement GetVisualElement() => _visualElement;
 	}
 }

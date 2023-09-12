@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateOpacity(this object platformView, IView view) { }
 
+		internal static void UpdateOpacity(this object platformView, double opacity) { }
+
 		public static void UpdateSemantics(this object platformView, IView view) { }
 
 		public static void UpdateFlowDirection(this object platformView, IView view) { }

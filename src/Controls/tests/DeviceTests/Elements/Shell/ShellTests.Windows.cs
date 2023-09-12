@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
@@ -26,6 +27,40 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			Assert.Equal(desiredState, handler.PlatformView.IsPaneOpen);
 			return Task.CompletedTask;
+		}
+
+		[Fact(DisplayName = "Shell Title Updates Correctly")]
+		public async Task ShellTitleUpdatesCorrectly()
+		{
+			SetupBuilder();
+
+			var page1 = new ContentPage()
+			{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+			{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
+
+			var shell = await CreateShellAsync((shell) =>
+			{
+				var tabBar = new TabBar()
+				{
+					Items =
+					{
+						new ShellContent(){ Content = page1 },
+						new ShellContent(){ Content = page2 },
+					}
+				};
+
+				shell.Items.Add(tabBar);
+			});
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Controls.Window(shell), (handler) =>
+			{
+				Assert.Equal("Page 1", GetToolbarTitle(handler));
+
+				string newTitle = "New Page 1";
+				page1.Title = newTitle;
+				Assert.Equal(newTitle, GetToolbarTitle(handler));
+			});
 		}
 
 		[Fact(DisplayName = "Shell FlyoutIcon Initializes Correctly")]

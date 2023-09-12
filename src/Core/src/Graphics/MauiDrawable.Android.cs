@@ -16,7 +16,7 @@ namespace Microsoft.Maui.Graphics
 	public class MauiDrawable : PaintDrawable
 	{
 		readonly AContext? _context;
-		readonly double _density;
+		readonly float _density;
 
 		bool _invalidatePath;
 
@@ -407,8 +407,14 @@ namespace Microsoft.Maui.Graphics
 
 					if (_shape != null)
 					{
-						var bounds = new Graphics.Rect(0, 0, _width, _height);
-						var clipPath = _shape?.ToPlatform(bounds, _strokeThickness);
+						float strokeThickness = _strokeThickness / _density;
+						float w = (_width / _density) - strokeThickness;
+						float h = (_height / _density) - strokeThickness;
+						float x = strokeThickness / 2;
+						float y = strokeThickness / 2;
+
+						var bounds = new Graphics.Rect(x, y, w, h);
+						var clipPath = _shape?.ToPlatform(bounds, strokeThickness, _density);
 
 						if (clipPath == null)
 							return;

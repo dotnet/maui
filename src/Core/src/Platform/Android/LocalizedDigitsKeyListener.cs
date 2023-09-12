@@ -215,7 +215,7 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
-			return stripped ?? filterFormatted ?? new String("");
+			return stripped ?? filterFormatted;
 		}
 #pragma warning restore CS8602 // Dereference of a possibly null reference.
 	}

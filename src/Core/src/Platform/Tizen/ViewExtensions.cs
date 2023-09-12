@@ -134,10 +134,9 @@ namespace Microsoft.Maui.Platform
 				wrapperView.Border = border.Border;
 		}
 
-		public static void UpdateOpacity(this NView platformView, IView view)
-		{
-			platformView.Opacity = (float)view.Opacity;
-		}
+		public static void UpdateOpacity(this NView platformView, IView view) => platformView.UpdateOpacity(view.Opacity);
+
+		internal static void UpdateOpacity(this NView platformView, double opacity) => platformView.Opacity = (float)opacity;
 
 		public static void UpdateClip(this NView platformView, IView view)
 		{

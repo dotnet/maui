@@ -60,7 +60,16 @@ namespace Microsoft.Maui.Controls.Shapes
 			float cornerRadius = (float)Math.Max(RadiusX, RadiusY);
 
 			// TODO: Create specific Path taking into account RadiusX and RadiusY
-			path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
+			if (cornerRadius == 0)
+			{
+				// AppendRoundedRectangle will slash the corners even for cornerRadius = 0
+				// so in that case we use AppendRectangle instead
+				path.AppendRectangle(x, y, w, h);
+			}
+			else
+			{
+				path.AppendRoundedRectangle(x, y, w, h, cornerRadius);
+			}
 
 			return path;
 		}

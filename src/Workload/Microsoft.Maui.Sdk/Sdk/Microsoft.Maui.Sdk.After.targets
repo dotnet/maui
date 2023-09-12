@@ -1,28 +1,21 @@
 <Project>
 
   <!--
-    The IDE uses the @(ProjectCapability) items to activate various features.
+  Enable the default css/xaml globs and nesting. Single project globs remain in the NuGet package
+  for now since they only come into play when the compile starts, and this means the packages have
+  been restored.
+
+  This is duplicated in Microsoft.Maui.Controls.Build.Tasks.After.targets for now because .NET MAUI
+  is also consumed via NuGet - machines that have older workloads need these globs to be present.
   -->
+  <PropertyGroup>
+    <EnableDefaultMauiItems Condition=" '$(EnableDefaultMauiItems)' == '' ">$(EnableDefaultItems)</EnableDefaultMauiItems>
+    <EnableDefaultXamlItems Condition=" '$(EnableDefaultXamlItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultXamlItems>
+    <EnableDefaultCssItems  Condition=" '$(EnableDefaultCssItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultCssItems>
+    <EnableDefaultEmbeddedResourceItems Condition=" '$(EnableDefaultEmbeddedResourceItems)' == '' ">$(EnableDefaultMauiItems)</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
 
-  <!-- .NET MAUI features -->
-  <ItemGroup>
-    <ProjectCapability Include="Maui"           Condition=" '$(UseMaui)' == 'true' " />
-    <ProjectCapability Include="MauiAssets"     Condition=" '$(UseMaui)' == 'true' or '$(UseMauiAssets)' == 'true' " />
-    <ProjectCapability Include="MauiBlazor"     Condition=" '$(UsingMicrosoftNETSdkRazor)' == 'true' " />
-    <ProjectCapability Include="MauiCore"       Condition=" '$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' " />
-    <ProjectCapability Include="MauiEssentials" Condition=" '$(UseMaui)' == 'true' or '$(UseMauiEssentials)' == 'true' " />
-  </ItemGroup>
-
-  <!-- SingleProject-specific features -->
-  <ItemGroup Condition=" '$(SingleProject)' == 'true' ">
-    <ProjectCapability Include="Msix" />
-    <ProjectCapability Include="MauiSingleProject" />
-    <ProjectCapability Include="LaunchProfiles" />
-    <!-- If VS is older than Dev17 -->
-    <ProjectCapability Include="XamarinStaticLaunchProfiles" Condition=" '$(VisualStudioVersion)' != '' and '$(VisualStudioVersion)' &lt; '17.0' " />
-    <!-- Otherwise define LaunchProfilesGroupByPlatformFilters by default -->
-    <ProjectCapability Include="LaunchProfilesGroupByPlatformFilters" Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &gt;= '17.0' " />
-    <ProjectCapability Include="SingleTargetBuildForStartupProjects" Condition=" '$(EnableSingleTargetBuildForStartupProjects)' != 'false' " />
-  </ItemGroup>
+  <Import Project="Microsoft.Maui.Sdk.ProjectCapabilities.targets" />
+  <Import Project="Microsoft.Maui.Sdk.DefaultItems.targets" />
 
 </Project>

@@ -175,7 +175,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			DependencyService.Register<FontNamedSizeService>();
 #pragma warning restore CS0612, CA1416 // Type or member is obsolete
 #endif
-			builder.Services.AddScoped<HideSoftInputOnTappedChangedManager>();
+			builder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 			builder.ConfigureImageSourceHandlers();
 			builder
 				.ConfigureMauiHandlers(handlers =>

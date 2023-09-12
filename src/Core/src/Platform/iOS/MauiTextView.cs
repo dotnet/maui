@@ -8,7 +8,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiTextView : UITextView
+	public class MauiTextView : UITextView, IUIViewLifeCycleEvents
 	{
 		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		readonly UILabel _placeholderLabel;
@@ -179,6 +179,20 @@ namespace Microsoft.Maui.Platform
 			_defaultPlaceholderSize ??= _placeholderLabel.Font.PointSize;
 			_placeholderLabel.Font = _placeholderLabel.Font.WithSize(
 				value?.PointSize ?? _defaultPlaceholderSize.Value);
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

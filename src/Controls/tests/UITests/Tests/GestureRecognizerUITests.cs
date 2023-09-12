@@ -44,6 +44,20 @@ namespace Microsoft.Maui.AppiumTests
 			var secondaryLabelText = App.Query("secondaryLabel").First().Text;
 			Assert.IsNotEmpty(secondaryLabelText);
 		}
+
+		[Test]
+		public void DoubleTap()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "DoubleTapGallery");
+			App.Tap("GoButton");
+
+			App.WaitForElement("DoubleTapSurface");
+			App.DoubleTap("DoubleTapSurface");
+
+			var result = App.Query("DoubleTapResults").First().Text;
+			Assert.AreEqual("Success", result);
+		}
 	}
 }
 
