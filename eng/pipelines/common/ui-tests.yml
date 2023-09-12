@@ -48,7 +48,10 @@ stages:
                       version: ${{ api }}
                       path: ${{ project.android }}
                       app: ${{ project.app }}
-                      device: android-emulator-64_${{ api }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
                       provisionatorChannel: ${{ parameters.provisionatorChannel }}
                       agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 
@@ -160,7 +163,10 @@ stages:
                         path: ${{ project.compatibilityAndroidTestProject }}
                         app: ${{ project.compatibilityAndroidApp }}
                         targetSample: "dotnet-legacy-controlgallery-android"
-                        device: android-emulator-64_${{ api }}
+                        ${{ if eq(api, 27) }}:
+                          DEVICE: android-emulator-32_${{ api }}
+                        ${{ if not(eq(api, 27)) }}:
+                          DEVICE: android-emulator-64_${{ api }}
                         provisionatorChannel: ${{ parameters.provisionatorChannel }}
                         agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
 

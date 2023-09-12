@@ -90,11 +90,6 @@ namespace Microsoft.Maui.Handlers
 			(handler.PlatformView as Button)?.UpdatePadding(imageButton);
 		}
 
-		void IImageSourcePartSetter.SetImageSource(ImageSource? nativeImageSource)
-		{
-			PlatformView.UpdateImageSource(nativeImageSource);
-		}
-
 		void OnClick(object sender, RoutedEventArgs e)
 		{
 			VirtualView?.Clicked();
@@ -115,6 +110,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			MauiContext?.CreateLogger<ImageButtonHandler>()?.LogWarning("Image failed to load: {exceptionRoutedEventArgs.ErrorMessage}", exceptionRoutedEventArgs.ErrorMessage);
 			VirtualView?.UpdateIsLoading(false);
+		}
+
+		partial class ImageButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(ImageSource? platformImage)
+			{
+				if (Handler?.PlatformView is not Button button)
+					return;
+
+				button.UpdateImageSource(platformImage);
+			}
 		}
 	}
 }

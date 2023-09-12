@@ -153,7 +153,7 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 				WidthRequest = alignmentTestsWidthRequest,
 				BackgroundColor = Colors.Pink
 			};
-			var yAlignEndContainer = new ViewContainer<Label>(Test.Label.VerticalTextAlignmentEnd,label);
+			var yAlignEndContainer = new ViewContainer<Label>(Test.Label.VerticalTextAlignmentEnd, label);
 			Add(yAlignEndContainer);
 		}
 
@@ -176,7 +176,7 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 				Text = longText,
 				MaxLines = 2
 			};
-			var maxlinesContainer = new ViewContainer<Label>(Test.Label.MaxLines,label);
+			var maxlinesContainer = new ViewContainer<Label>(Test.Label.MaxLines, label);
 			Add(maxlinesContainer);
 		}
 

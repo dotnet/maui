@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.HotReload;
 using ObjCRuntime;
 using UIKit;
@@ -8,11 +9,13 @@ namespace Microsoft.Maui.Platform
 	public class ContainerViewController : UIViewController, IReloadHandler
 	{
 		IElement? _view;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: NavigationPageTests.DoesNotLeak")]
 		UIView? currentPlatformView;
 
 		// The handler needs this view before LoadView is called on the controller
 		// So this is used to create the first view that the handler will use
 		// without forcing the VC to call LoadView
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: NavigationPageTests.DoesNotLeak")]
 		UIView? _pendingLoadedView;
 
 		public IElement? CurrentView

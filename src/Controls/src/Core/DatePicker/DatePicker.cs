@@ -227,5 +227,17 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Font ITextStyle.Font => this.ToFont();
+
+		DateTime IDatePicker.Date
+		{
+			get => Date;
+			set => SetValue(DateProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		string IDatePicker.Format
+		{
+			get => Format;
+			set => SetValue(FormatProperty, value, SetterSpecificity.FromHandler);
+		}
 	}
 }

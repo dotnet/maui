@@ -5,13 +5,14 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public static class ImageSourcePartExtensions
+	internal static class ImageSourcePartExtensions
 	{
 		public static async Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			UIView destinationContext,
 			IImageSourceServiceProvider services,
 			Action<UIImage?> setImage,
+			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default)
 		{
 			image.UpdateIsLoading(false);
@@ -29,8 +30,7 @@ namespace Microsoft.Maui.Platform
 			{
 				var service = services.GetRequiredImageSourceService(imageSource);
 
-				var scale = destinationContext.Window?.Screen?.Scale ?? 1;
-				var result = await service.GetImageAsync(imageSource, (float)scale, cancellationToken);
+				var result = await service.GetImageAsync(imageSource, imageScale, cancellationToken);
 				var uiImage = result?.Value;
 
 				var applied = !cancellationToken.IsCancellationRequested && imageSource == image.Source;

@@ -33,16 +33,62 @@ parameters:
   default: $(System.DefaultWorkingDirectory)
 
 steps:
-  - template: provision.yml
-    parameters:
-      checkoutDirectory: ${{ parameters.checkoutDirectory }}
-      poolName: ${{ parameters.poolName }}
-      provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      gitHubToken: ${{ parameters.gitHubToken }}
+
+  - ${{ if ne(variables['Build.DefinitionName'], 'dotnet-maui') }}:
+    - template: provision.yml
+      parameters:
+        checkoutDirectory: ${{ parameters.checkoutDirectory }}
+        poolName: ${{ parameters.poolName }}
+        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+        gitHubToken: ${{ parameters.gitHubToken }}
 
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
         ${{ pair.key }}: ${{ pair.value }}
+
+  - task: PowerShell@2
+    condition: eq(variables['PrivateBuild'], 'true')
+    displayName: Setup Private Feeds Credentials
+    inputs:
+      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+    env:
+      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+      
+  - pwsh: |
+      if ($env:JAVA_HOME_11_X64) {
+        $env:JAVA_HOME = $env:JAVA_HOME_11_X64
+      } else {
+        $path = (Get-ChildItem $env:ProgramFiles\Microsoft\jdk-11.*\bin\java.exe) | Select-Object -First 1
+        if ($path -and (Test-Path $path)) {
+          $env:JAVA_HOME = $path.Directory.Parent.FullName
+        }
+      }
+      if ($env:JAVA_HOME) {
+        echo "##vso[task.setvariable variable=JAVA_HOME]$env:JAVA_HOME"
+        echo "JAVA_HOME set to '$env:JAVA_HOME'"
+      } else {
+        echo "Unable to set JAVA_HOME"
+      }
+    displayName: 'Setup JDK Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+  - pwsh: |
+      if ($env:ANDROID_SDK_ROOT) {
+        echo "ANDROID_SDK_ROOT already set to '$env:ANDROID_SDK_ROOT'"
+      } else {
+        if ((Test-Path "${env:ProgramFiles(x86)}\Android\android-sdk")) {
+          $env:ANDROID_SDK_ROOT = "${env:ProgramFiles(x86)}\Android\android-sdk"
+        }
+        if ($env:ANDROID_SDK_ROOT) {
+          echo "##vso[task.setvariable variable=ANDROID_SDK_ROOT]$env:ANDROID_SDK_ROOT"
+          echo "ANDROID_SDK_ROOT set to '$env:ANDROID_SDK_ROOT'"
+        } else {
+          echo "Unable to set ANDROID_SDK_ROOT"
+        }
+      }
+    displayName: 'Setup ANDROID_SDK_ROOT Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic --nugetsource="${{ parameters.nugetFolder }}"
     displayName: 'Install .NET'
@@ -75,6 +121,7 @@ steps:
         ${{ parameters.checkoutDirectory }}/artifacts/**/*.zip
         ${{ parameters.checkoutDirectory }}/artifacts/vs-workload.props
         ${{ parameters.checkoutDirectory }}/eng/automation/SignList.xml
+        ${{ parameters.checkoutDirectory }}/eng/automation/SignVerifyIgnore.txt
         !${{ parameters.checkoutDirectory}}/artifacts/docs-packs/**
       TargetFolder: $(build.artifactstagingdirectory)
       flattenFolders: true

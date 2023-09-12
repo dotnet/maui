@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
@@ -267,6 +268,28 @@ namespace Microsoft.Maui.DeviceTests
 				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y, MauiContext);
 #else
 				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y, MauiContext);
+#endif
+			});
+		}
+
+		protected Task AssertColorsAtPoints(IView view, Type handlerType, Color[] colors, Point[] points)
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				await plaformView.AssertColorsAtPointsAsync(colors, points, MauiContext);
+			});
+		}
+
+		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, Type handlerType)
+		{
+			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
+			{
+				var platformView = CreateHandler(view, handlerType).ToPlatform();
+#if WINDOWS
+				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
+#else
+				return await platformView.AttachAndRun<RawBitmap>(async () => await view.AsRawBitmapAsync());
 #endif
 			});
 		}

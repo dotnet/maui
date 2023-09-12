@@ -38,9 +38,6 @@ namespace Microsoft.Maui.Controls
 
 		IList IBindableLayout.Children => _children;
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> new CastingList<Element, IView>(_children);
-
 		public int Count => _children.Count;
 
 		public bool IsReadOnly => ((ICollection<IView>)_children).IsReadOnly;
@@ -57,18 +54,17 @@ namespace Microsoft.Maui.Controls
 					return;
 				}
 
+				_children.RemoveAt(index);
 				if (old is Element oldElement)
 				{
-					RemoveLogicalChild(oldElement, index);
+					RemoveLogicalChild(oldElement);
 				}
+
+				_children.Insert(index, value);
 
 				if (value is Element newElement)
 				{
 					InsertLogicalChild(index, newElement);
-				}
-				else
-				{
-					_children[index] = value;
 				}
 
 				OnUpdate(index, value, old);
@@ -132,18 +128,27 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var index = _children.Count;
+			_children.Add(child);
 
 			if (child is Element element)
-				InsertLogicalChild(index, element);
-			else
-				_children.Add(child);
+			{
+				AddLogicalChild(element);
+			}
 
 			OnAdd(index, child);
 		}
 
 		public void Clear()
 		{
-			ClearLogicalChildren();
+			for (int i = _children.Count - 1; i >= 0; i--)
+			{
+				var child = _children[i];
+				_children.RemoveAt(i);
+				if (child is Element element)
+				{
+					RemoveLogicalChild(element);
+				}
+			}
 			OnClear();
 		}
 
@@ -167,10 +172,10 @@ namespace Microsoft.Maui.Controls
 			if (child == null)
 				return;
 
+			_children.Insert(index, child);
+
 			if (child is Element element)
 				InsertLogicalChild(index, element);
-			else
-				_children.Insert(index, child);
 
 			OnInsert(index, child);
 		}
@@ -201,10 +206,12 @@ namespace Microsoft.Maui.Controls
 
 			var child = _children[index];
 
+			_children.RemoveAt(index);
+
 			if (child is Element element)
-				RemoveLogicalChild(element, index);
-			else
-				_children.RemoveAt(index);
+			{
+				RemoveLogicalChild(element);
+			}
 
 			OnRemove(index, child);
 		}
@@ -248,8 +255,6 @@ namespace Microsoft.Maui.Controls
 		{
 			return new Thickness(0);
 		}
-
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.Cast<IVisualTreeElement>().ToList().AsReadOnly();
 
 		public Graphics.Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
 		{

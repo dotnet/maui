@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Devices.Sensors
 		}
 
 		/// <summary>
-		/// Gets a value indicating whether reading the accelerometer is supported on this device.
+		/// Gets a value indicating whether reading the barometer is supported on this device.
 		/// </summary>
 		public static bool IsSupported => Default.IsSupported;
 

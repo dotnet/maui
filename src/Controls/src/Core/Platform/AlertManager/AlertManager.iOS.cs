@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform
@@ -88,7 +86,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!PageIsInThisWindow(sender))
 					return;
 
-				PresentAlert(arguments);
+				PresentAlert(sender, arguments);
 			}
 
 			void OnPromptRequested(Page sender, PromptArguments arguments)
@@ -96,7 +94,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!PageIsInThisWindow(sender))
 					return;
 
-				PresentPrompt(arguments);
+				PresentPrompt(sender, arguments);
 			}
 
 			void OnActionSheetRequested(Page sender, ActionSheetArguments arguments)
@@ -104,10 +102,10 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!PageIsInThisWindow(sender))
 					return;
 
-				PresentActionSheet(arguments);
+				PresentActionSheet(sender, arguments);
 			}
 
-			void PresentAlert(AlertArguments arguments)
+			void PresentAlert(Page sender, AlertArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				var oldFrame = alert.View.Frame;
@@ -125,10 +123,10 @@ namespace Microsoft.Maui.Controls.Platform
 						_ => arguments.SetResult(true)));
 				}
 
-				PresentPopUp(VirtualView, PlatformView, alert);
+				PresentPopUp(sender, VirtualView, PlatformView, alert);
 			}
 
-			void PresentPrompt(PromptArguments arguments)
+			void PresentPrompt(Page sender, PromptArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, arguments.Message, UIAlertControllerStyle.Alert);
 				alert.AddTextField(uiTextField =>
@@ -145,11 +143,11 @@ namespace Microsoft.Maui.Controls.Platform
 				alert.AddAction(UIAlertAction.Create(arguments.Cancel, UIAlertActionStyle.Cancel, _ => arguments.SetResult(null)));
 				alert.AddAction(UIAlertAction.Create(arguments.Accept, UIAlertActionStyle.Default, _ => arguments.SetResult(alert.TextFields[0].Text)));
 
-				PresentPopUp(VirtualView, PlatformView, alert);
+				PresentPopUp(sender, VirtualView, PlatformView, alert);
 			}
 
 
-			void PresentActionSheet(ActionSheetArguments arguments)
+			void PresentActionSheet(Page sender, ActionSheetArguments arguments)
 			{
 				var alert = UIAlertController.Create(arguments.Title, null, UIAlertControllerStyle.ActionSheet);
 
@@ -174,10 +172,10 @@ namespace Microsoft.Maui.Controls.Platform
 					alert.AddAction(UIAlertAction.Create(blabel, UIAlertActionStyle.Default, _ => arguments.SetResult(blabel)));
 				}
 
-				PresentPopUp(VirtualView, PlatformView, alert, arguments);
+				PresentPopUp(sender, VirtualView, PlatformView, alert, arguments);
 			}
 
-			static void PresentPopUp(Window virtualView, UIWindow platformView, UIAlertController alert, ActionSheetArguments arguments = null)
+			static void PresentPopUp(Page sender, Window virtualView, UIWindow platformView, UIAlertController alert, ActionSheetArguments arguments = null)
 			{
 				if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad && arguments != null)
 				{
@@ -196,27 +194,32 @@ namespace Microsoft.Maui.Controls.Platform
 					alert.PopoverPresentationController.PermittedArrowDirections = 0; // No arrow
 				}
 
-				var modalStack = virtualView?.Navigation?.ModalStack;
-
-				if (modalStack != null && modalStack.Count > 0)
+				UIWindow presentingWindow = platformView;
+				if (sender.Handler is IPlatformViewHandler pvh &&
+					pvh.PlatformView?.Window is UIWindow senderPageWindow &&
+					senderPageWindow != platformView &&
+					senderPageWindow.RootViewController is not null)
 				{
-					var topPage = modalStack[modalStack.Count - 1];
-					var pageController = topPage.ToUIViewController(topPage.RequireMauiContext());
-
-					if (pageController != null)
-					{
-						platformView.BeginInvokeOnMainThread(() =>
-						{
-							pageController.PresentViewControllerAsync(alert, true);
-						});
-						return;
-					}
+					presentingWindow = senderPageWindow;
 				}
 
-				platformView.BeginInvokeOnMainThread(() =>
+				presentingWindow.BeginInvokeOnMainThread(() =>
 				{
-					_ = platformView.RootViewController.PresentViewControllerAsync(alert, true);
+					GetTopUIViewController(presentingWindow)
+						.PresentViewControllerAsync(alert, true)
+						.FireAndForget(virtualView?.Handler?.MauiContext?.CreateLogger<AlertManager>());
 				});
+			}
+
+			static UIViewController GetTopUIViewController(UIWindow platformWindow)
+			{
+				var topUIViewController = platformWindow.RootViewController;
+				while (topUIViewController.PresentedViewController is not null)
+				{
+					topUIViewController = topUIViewController.PresentedViewController;
+				}
+
+				return topUIViewController;
 			}
 
 			bool PageIsInThisWindow(Page page) =>

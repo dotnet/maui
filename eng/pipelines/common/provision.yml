@@ -3,6 +3,7 @@ parameters:
   skipXcode: false
   skipVS: true
   skipProvisioning: $(skipProvisionator)
+  skipAndroidSdks: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -34,6 +35,7 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -47,6 +49,8 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
+        ${{ if eq(parameters.skipAndroidSdks, 'true') }}:
+          SKIP_ANDROID_API_SDKS: true
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
@@ -145,6 +149,15 @@ steps:
   - pwsh: dotnet nuget locals all --clear
     displayName: 'Clear all NuGet caches'
 
+  - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
+    - task: PowerShell@2
+      condition: eq(variables['PrivateBuild'], 'true')
+      displayName: Setup Private Feeds Credentials
+      inputs:
+        filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+        arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
+      env:
+        Token: $(dn-bot-dnceng-artifact-feeds-rw) 
   # Prepare for Reunion packages
   # - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
   #   - task: NuGetAuthenticate@0
@@ -157,11 +170,4 @@ steps:
   #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
   #       $xml.Save($path)
   #     displayName: 'Add "wasdk-internal" to NuGet.config'
-  #  - task: PowerShell@2
-  #    condition: eq(variables['PrivateBuild'], 'true')
-  #    displayName: Setup Private Feeds Credentials
-  #    inputs:
-  #      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
-  #      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
-  #    env:
-  #      Token: $(dn-bot-dnceng-artifact-feeds-rw) 
+

@@ -11,7 +11,7 @@
 		/// </summary>  
 		/// <param name="mauiContext">The .NET MAUI context to set.</param>  
 		void SetMauiContext(IMauiContext mauiContext);
-		
+
 		/// <summary>  
 		/// Sets the cross-platform virtual view associated with the handler.  
 		/// </summary>  

@@ -202,10 +202,10 @@ namespace Microsoft.Maui.DeviceTests
 			view.ToPlatform().FocusView(timeout);
 
 		public static bool IsAccessibilityElement(this IView view) =>
-			view.ToPlatform().IsAccessibilityElement();
+			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsAccessibilityElement() == true;
 
 		public static bool IsExcludedWithChildren(this IView view) =>
-			view.ToPlatform().IsExcludedWithChildren();
+			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsExcludedWithChildren() == true;
 
 		public static IDisposable OnUnloaded(this IElement element, Action action)
 		{
