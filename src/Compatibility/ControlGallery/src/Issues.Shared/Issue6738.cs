@@ -94,6 +94,7 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST && __SHELL__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FlyoutNavigationBetweenItemsWithNavigationStacks()
 		{
 			RunningApp.WaitForElement(pushAutomationId);

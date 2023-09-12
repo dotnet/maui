@@ -20,24 +20,30 @@ namespace Microsoft.Maui.Controls.Maps
 		public static readonly BindableProperty LabelProperty = BindableProperty.Create(nameof(Label), typeof(string), typeof(Pin), default(string));
 		private object? _markerId;
 
+		/// <inheritdoc />
 		public string Address
 		{
 			get { return (string)GetValue(AddressProperty); }
 			set { SetValue(AddressProperty, value); }
 		}
 
+		/// <inheritdoc />
 		public string Label
 		{
 			get { return (string)GetValue(LabelProperty); }
 			set { SetValue(LabelProperty, value); }
 		}
 
+		/// <inheritdoc />
 		public Location Location
 		{
 			get { return (Location)GetValue(LocationProperty); }
 			set { SetValue(LocationProperty, value); }
 		}
 
+		/// <summary>
+		/// The kind of pin.
+		/// </summary>
 		public PinType Type
 		{
 			get { return (PinType)GetValue(TypeProperty); }
@@ -53,8 +59,14 @@ namespace Microsoft.Maui.Controls.Maps
 			}
 		}
 
+		/// <summary>
+		/// Raised when this marker is clicked.
+		/// </summary>
 		public event EventHandler<PinClickedEventArgs>? MarkerClicked;
 
+		/// <summary>
+		/// Raised when the info window for this marker is clicked.
+		/// </summary>
 		public event EventHandler<PinClickedEventArgs>? InfoWindowClicked;
 
 		public override bool Equals(object? obj)

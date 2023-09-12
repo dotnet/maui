@@ -9,6 +9,11 @@
     <IsPackable>false</IsPackable>
     <NoWarn>$(NoWarn);NU5128;</NoWarn>
   </PropertyGroup>
+  <PropertyGroup>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    <CompilerGeneratedFilesOutputPath>Generated</CompilerGeneratedFilesOutputPath>
+    <IsRoslynComponent>true</IsRoslynComponent>
+  </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="..\Core\Internals\INameScope.cs" Link="INameScope.cs" />

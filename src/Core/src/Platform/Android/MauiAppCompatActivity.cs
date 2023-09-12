@@ -1,4 +1,5 @@
 using Android.OS;
+using Android.Views;
 using AndroidX.AppCompat.App;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.Platform;
@@ -30,6 +31,22 @@ namespace Microsoft.Maui
 			base.OnCreate(savedInstanceState);
 
 			this.CreatePlatformWindow(MauiApplication.Current.Application, savedInstanceState);
+		}
+
+		public override bool DispatchTouchEvent(MotionEvent? e)
+		{
+			// For current purposes this needs to get called before we propagate
+			// this message out. In Controls this dispatch call will unfocus the 
+			// current focused element which is important for timing if we should
+			// hide/show the softkeyboard.
+			// If you move this to after the xplat call then the keyboard will show up
+			// then close
+			bool handled = base.DispatchTouchEvent(e);
+
+			bool implHandled =
+				(this.GetWindow() as IPlatformEventsListener)?.DispatchTouchEvent(e) == true;
+
+			return handled || implHandled;
 		}
 	}
 }

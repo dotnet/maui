@@ -3060,5 +3060,50 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var args = view.ReceivedCalls().Single(c => c.GetMethodInfo().Name == nameof(IView.Arrange)).GetArguments();
 			return (Rect)args[0];
 		}
+
+		// The next two tests look at a corner case where the Grid is measured in one dimension without constraint
+		// (for instance, inside of a StackLayout); the Star in the unconstrained dimension should be treated
+		// as an Auto value. The explicit Auto value in the constrained dimension forces us to make a second measure
+		// pass to resolve all the measurements; we have to ensure that this second measure pass is updating
+		// the measurement of the unconstrained Star if the Views measured during the second pass are larger
+		// in that dimension.
+
+		[Fact]
+		public void AutoColumnIntersectionWithUnconstrainedMeasure()
+		{
+			var grid = CreateGridLayout(columns: "*, Auto", rows: "*");
+
+			var view0 = CreateTestView(new Size(20, 40));
+			var view1 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+
+			// The infinite height means we treat the * Row as Auto
+			_ = MeasureAndArrange(grid, widthConstraint: 200, heightConstraint: double.PositiveInfinity);
+
+			// Ensure that the * Row height was updated to include the taller view
+			AssertArranged(view0, new Rect(0, 0, 20, 40));
+		}
+
+		[Fact]
+		public void AutoRowIntersectionWithUnconstrainedMeasure()
+		{
+			var grid = CreateGridLayout(rows: "*, Auto", columns: "*");
+
+			var view0 = CreateTestView(new Size(40, 20));
+			var view1 = CreateTestView(new Size(20, 20));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+
+			// The infinite width means we treat the * Column as Auto
+			_ = MeasureAndArrange(grid, widthConstraint: double.PositiveInfinity, heightConstraint: 200);
+
+			// Ensure that the * Column width was updated to include the wider view
+			AssertArranged(view0, new Rect(0, 0, 40, 20));
+		}
 	}
 }

@@ -51,8 +51,6 @@ namespace Microsoft.Maui
 			platformWindow.RootViewController.View.AddSubview(_passthroughView);
 			platformWindow.RootViewController.View.BringSubviewToFront(_passthroughView);
 
-			// Any time the passthrough view is touched, handle it.
-			_passthroughView.OnTouch += UIViewOnTouch;
 			IsPlatformViewInitialized = true;
 			return IsPlatformViewInitialized;
 		}
@@ -75,9 +73,6 @@ namespace Microsoft.Maui
 			IsPlatformViewInitialized = false;
 		}
 
-		void UIViewOnTouch(object? sender, CGPoint e) =>
-			OnTappedInternal(new Point(e.X, e.Y));
-
 		void FrameAction(Foundation.NSObservedChange obj)
 		{
 			HandleUIChange();
@@ -86,12 +81,7 @@ namespace Microsoft.Maui
 
 		class PassthroughView : UIView
 		{
-			/// <summary>
-			/// Event Handler for handling on touch events on the Passthrough View.
-			/// </summary>
-			public event EventHandler<CGPoint>? OnTouch;
-
-			WindowOverlay overlay;
+			readonly WeakReference<WindowOverlay> _overlay;
 
 			/// <summary>
 			/// Initializes a new instance of the <see cref="PassthroughView"/> class.
@@ -101,7 +91,7 @@ namespace Microsoft.Maui
 			public PassthroughView(WindowOverlay windowOverlay, CGRect frame)
 				: base(frame)
 			{
-				overlay = windowOverlay;
+				_overlay = new(windowOverlay);
 			}
 
 			public override bool PointInside(CGPoint point, UIEvent? uievent)
@@ -119,12 +109,16 @@ namespace Microsoft.Maui
 
 				var disableTouchEvent = false;
 
-				if (overlay.DisableUITouchEventPassthrough)
-					disableTouchEvent = true;
-				else if (overlay.EnableDrawableTouchHandling)
-					disableTouchEvent = overlay.WindowElements.Any(n => n.Contains(new Point(point.X, point.Y)));
+				if (_overlay.TryGetTarget(out var overlay))
+				{
+					if (overlay.DisableUITouchEventPassthrough)
+						disableTouchEvent = true;
+					else if (overlay.EnableDrawableTouchHandling)
+						disableTouchEvent = overlay.WindowElements.Any(n => n.Contains(new Point(point.X, point.Y)));
 
-				OnTouch?.Invoke(this, point);
+					overlay.OnTappedInternal(new Point(point.X, point.Y));
+				}
+
 				return disableTouchEvent;
 			}
 		}

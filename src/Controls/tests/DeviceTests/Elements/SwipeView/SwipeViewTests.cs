@@ -71,6 +71,39 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
+
+		[Fact("Items Do Not Leak")]
+		public async Task ItemsDoNotLeak()
+		{
+			SetupBuilder();
+
+			WeakReference viewReference = null;
+			WeakReference platformViewReference = null;
+			WeakReference handlerReference = null;
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var item = new SwipeItem();
+				var swipeView = new SwipeView()
+				{
+					LeftItems = { item },
+					Content = new Grid(),
+				};
+				var handler = CreateHandler<SwipeViewHandler>(swipeView);
+				await handler.PlatformView.AttachAndRun(() =>
+				{
+					swipeView.Open(OpenSwipeItem.LeftItems, false);
+					viewReference = new WeakReference(item);
+					handlerReference = new WeakReference(item.Handler);
+					platformViewReference = new WeakReference(item.Handler.PlatformView);
+				});
+			});
+
+			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformViewReference);
+			Assert.False(viewReference.IsAlive, "SwipeItem should not be alive!");
+			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
+			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
+		}
 #endif
 	}
 }

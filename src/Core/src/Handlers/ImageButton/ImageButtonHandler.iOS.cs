@@ -15,13 +15,6 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		void IImageSourcePartSetter.SetImageSource(UIImage? obj)
-		{
-			PlatformView.SetImage(obj?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal), UIControlState.Normal);
-			PlatformView.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
-			PlatformView.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
-		}
-
 		protected override void ConnectHandler(UIButton platformView)
 		{
 			platformView.TouchUpInside += OnButtonTouchUpInside;
@@ -76,6 +69,21 @@ namespace Microsoft.Maui.Handlers
 		void OnButtonTouchDown(object? sender, EventArgs e)
 		{
 			VirtualView?.Pressed();
+		}
+
+		partial class ImageButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(UIImage? platformImage)
+			{
+				if (Handler?.PlatformView is not UIButton button)
+					return;
+
+				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+				button.SetImage(platformImage, UIControlState.Normal);
+				button.HorizontalAlignment = UIControlContentHorizontalAlignment.Fill;
+				button.VerticalAlignment = UIControlContentVerticalAlignment.Fill;
+			}
 		}
 	}
 }

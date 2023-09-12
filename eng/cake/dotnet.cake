@@ -240,20 +240,24 @@ Task("dotnet-pack-maui")
     .WithCriteria(RunPackTarget())
     .Does(() =>
     {
-        //We are passing a nuget folder with nuget locations
-        if(!string.IsNullOrEmpty(nugetSource))
+        // We are passing a nuget folder with nuget locations
+        if (!string.IsNullOrEmpty(nugetSource))
         {
             EnsureDirectoryExists(nugetSource);
             var originalNuget = File("./NuGet.config");
             ReplaceTextInFiles(
                 originalNuget,
-                 $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
+                $"<!-- <add key=\"local\" value=\"artifacts\" /> -->",
                 $"<add key=\"local\" value=\"{nugetSource}\" />");
         }
-        DotNetTool("pwsh", new DotNetToolSettings
+
+        var sln = "./Microsoft.Maui.Packages.slnf";
+        if (!IsRunningOnWindows())
+            sln = "./Microsoft.Maui.Packages-mac.slnf";
+
+        RunMSBuildWithDotNet(sln, target: "Pack", properties: new Dictionary<string, string>
         {
-            DiagnosticOutput = true,
-            ArgumentCustomization = args => args.Append($"-NoProfile ./eng/package.ps1 -configuration \"{configuration}\"")
+            { "SymbolPackageFormat", "snupkg" }
         });
     });
 
@@ -385,7 +389,6 @@ Task("dotnet-diff")
                         .AppendQuoted(nupkg.FullPath)
                         .Append("--latest")
                         // .Append("--verbose")
-                        .Append("--prerelease")
                         .Append("--group-ids")
                         .Append("--ignore-unchanged")
                         .AppendSwitchQuoted("--output", GetDiffDirectory().FullPath)
@@ -440,6 +443,25 @@ Task("dotnet-diff")
                 }
             }
         }
+    });
+
+Task("VSCode")
+    .Description("Provisions .NET, and launches an instance of Visual Studio Code using it.")
+    .IsDependentOn("Clean")
+    .IsDependentOn("dotnet")
+    .IsDependentOn("dotnet-buildtasks")
+    .IsDependentOn("dotnet-pack") // Run conditionally
+    .Does(() =>
+    {
+        if (pendingException != null)
+        {
+            Error($"{pendingException}");
+            Error("!!!!BUILD TASKS FAILED: !!!!!");
+        }
+
+        UseLocalNuGetCacheFolder();
+
+        StartVisualStudioCodeForDotNet();
     });
 
 // Tasks for Local Development
@@ -552,6 +574,23 @@ void UseLocalNuGetCacheFolder(bool reset = false)
 
     SetEnvironmentVariable("RestorePackagesPath", packages.FullPath);
     SetEnvironmentVariable("NUGET_PACKAGES", packages.FullPath);
+}
+
+void StartVisualStudioCodeForDotNet()
+{
+    string workspace = "./maui.code-workspace";
+    if (IsCIBuild())
+    {
+        Error("This target should not run on CI.");
+        return;
+    }
+
+    if(localDotnet)
+    {
+        SetDotNetEnvironmentVariables();
+    }
+
+    StartProcess("code", new ProcessSettings{ Arguments = workspace, EnvironmentVariables = GetDotNetEnvironmentVariables() });
 }
 
 void StartVisualStudioForDotNet()

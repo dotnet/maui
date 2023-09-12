@@ -6,6 +6,7 @@
     "groupIdentity": "Microsoft.Maui.XamlResourceDictionary",
     "precedence": "DOTNET_TFM_VERSION_MAJOR_VALUE",
     "name": ".NET MAUI ResourceDictionary (XAML)",
+    "description": "A repository for resources that are used by a .NET MAUI app. Typical resources that are stored in a ResourceDictionary include styles, control templates, data templates, converters, and colors.",
     "shortName": "maui-dict-xaml",
     "tags": {
         "language": "C#",

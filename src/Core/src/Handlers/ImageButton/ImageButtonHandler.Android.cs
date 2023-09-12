@@ -18,11 +18,6 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		void IImageSourcePartSetter.SetImageSource(Drawable? obj)
-		{
-			PlatformView.SetImageDrawable(obj);
-		}
-
 		protected override void DisconnectHandler(ShapeableImageView platformView)
 		{
 			platformView.FocusChange -= OnFocusChange;
@@ -93,6 +88,17 @@ namespace Microsoft.Maui.Handlers
 		void OnClick(object? sender, EventArgs e)
 		{
 			VirtualView?.Clicked();
+		}
+
+		partial class ImageButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(Drawable? platformImage)
+			{
+				if (Handler?.PlatformView is not ShapeableImageView button)
+					return;
+
+				button.SetImageDrawable(platformImage);
+			}
 		}
 	}
 }

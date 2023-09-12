@@ -44,10 +44,14 @@ namespace Maui.Controls.Sample
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
 				new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
+		new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
 				new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Core Gallery"),
 				new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
+				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
+				new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
+				new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
 		};
 
 		public CorePageView(Page rootPage)

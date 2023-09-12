@@ -233,6 +233,45 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task TimerCannotDoubleItself()
+		{
+			// This is a test specifically for the situation in https://github.com/dotnet/maui/issues/10257
+			// where the user is calling the timer's Stop/Start methods from the Tick handler, and thus
+			// exponentially increasing the number of handlers.
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var dispatcher = Dispatcher.GetForCurrentThread();
+
+				var ticks = 0;
+
+				var timer = dispatcher.CreateTimer();
+				using var disposer = new TimerDisposer(timer);
+
+				Assert.False(timer.IsRunning);
+
+				timer.Interval = TimeSpan.FromMilliseconds(200);
+				timer.IsRepeating = true;
+
+				timer.Tick += (_, _) =>
+				{
+					ticks += 1;
+					timer.Stop();
+					timer.Start();
+				};
+
+				timer.Start();
+
+				await Task.Delay(TimeSpan.FromSeconds(1.1));
+
+				// The actual number may vary a bit depending on timing, but 
+				// if the bug is present then ticks will be roughly 2^5, rather than 
+				// the expected value of about 5 
+				Assert.True(10 > ticks);
+			});
+		}
+
 		class TimerDisposer : IDisposable
 		{
 			IDispatcherTimer _timer;

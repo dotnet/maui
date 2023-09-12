@@ -42,7 +42,16 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 
 			if (!domLoaded)
 			{
-				throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete.");
+				// It's possible that the DOMContentLoaded event won't fire because it's already loaded by the time we got here. To check
+				// for that, we inspect an arbitrary custom HTML element attribute to see if we can find it. If we can find it, then surely
+				// the DOM content is loaded, so we can continue with the test.
+				var testHtmlLoadedAttributeValue = await wv2.CoreWebView2.ExecuteScriptAsync("(document.head.attributes['testhtmlloaded']?.value === 'true')");
+
+				if (testHtmlLoadedAttributeValue != "true")
+				{
+					// If the event didn't fire, AND we couldn't find the custom HTML element attribute, then the test content didn't load
+					throw new Exception($"Waited {MaxWaitTimes * WaitTimeInMS}ms but couldn't get CoreWebView2.DOMContentLoaded to complete.");
+				}
 			}
 			return;
 		}

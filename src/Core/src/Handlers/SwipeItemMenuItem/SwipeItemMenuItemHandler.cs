@@ -15,9 +15,6 @@ using System.Threading.Tasks;
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ISwipeItemMenuItemHandler
-#if !WINDOWS
-		, IImageSourcePartSetter
-#endif
 	{
 		public static IPropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler> Mapper =
 			new PropertyMapper<ISwipeItemMenuItem, ISwipeItemMenuItemHandler>(ViewHandler.ElementMapper)
@@ -56,22 +53,32 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView ISwipeItemMenuItemHandler.PlatformView => PlatformView;
 
-#if !WINDOWS
 		ImageSourcePartLoader? _imageSourcePartLoader;
-		public ImageSourcePartLoader SourceLoader =>
-			_imageSourcePartLoader ??= new ImageSourcePartLoader(this);
 
+		public virtual ImageSourcePartLoader SourceLoader =>
+			_imageSourcePartLoader ??= new ImageSourcePartLoader(new SwipeItemMenuItemImageSourcePartSetter(this));
 
 		public static void MapSource(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
 
 		public static Task MapSourceAsync(ISwipeItemMenuItemHandler handler, ISwipeItemMenuItem image)
 		{
-			if (handler is SwipeItemMenuItemHandler platformHandler)
-				return platformHandler.SourceLoader.UpdateImageSourceAsync();
+#if WINDOWS
+			// TODO: make the mapper use the loader and the image if this is a stream source
+			handler.PlatformView.IconSource = image.Source?.ToIconSource(handler.MauiContext!);
+#else
+			if (handler.SourceLoader is ImageSourcePartLoader loader)
+				return loader.UpdateImageSourceAsync();
+#endif
 			return Task.CompletedTask;
 		}
 
-#endif
+		partial class SwipeItemMenuItemImageSourcePartSetter : ImageSourcePartSetter<ISwipeItemMenuItemHandler>
+		{
+			public SwipeItemMenuItemImageSourcePartSetter(ISwipeItemMenuItemHandler handler)
+				: base(handler)
+			{
+			}
+		}
 	}
 }

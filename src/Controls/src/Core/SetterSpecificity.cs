@@ -66,6 +66,10 @@ namespace Microsoft.Maui.Controls
 
 		public int CompareTo(SetterSpecificity other)
 		{
+			//VSM setters somehow supersedes Styles
+			if (Vsm != other.Vsm)
+				return Vsm.CompareTo(other.Vsm);
+
 			//everything coming from Style has lower priority than something that does not
 			if (Style != other.Style && Style == 0)
 				return 1;
@@ -74,8 +78,6 @@ namespace Microsoft.Maui.Controls
 			if (Style != other.Style)
 				return Style.CompareTo(other.Style);
 
-			if (Vsm != other.Vsm)
-				return Vsm.CompareTo(other.Vsm);
 			if (Manual != other.Manual)
 				return Manual.CompareTo(other.Manual);
 			if (DynamicResource != other.DynamicResource)

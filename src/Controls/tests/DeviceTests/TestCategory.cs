@@ -47,5 +47,6 @@
 		public const string VisualElementTree = "VisualElementTree";
 		public const string WebView = "WebView";
 		public const string Window = "Window";
+		public const string WindowOverlay = "WindowOverlay";
 	}
 }

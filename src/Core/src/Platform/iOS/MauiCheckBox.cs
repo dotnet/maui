@@ -7,7 +7,7 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiCheckBox : UIButton
+	public class MauiCheckBox : UIButton, IUIViewLifeCycleEvents
 	{
 		// All these values were chosen to just match the android drawables that are used
 		const float DefaultSize = 18.0f;
@@ -27,7 +27,6 @@ namespace Microsoft.Maui.Platform
 
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.DoesNotLeak")]
 		public event EventHandler? CheckedChanged
 		{
 			add => _weakEventManager.AddEventHandler(value);
@@ -301,6 +300,20 @@ namespace Microsoft.Maui.Platform
 		{
 			get => (IsChecked) ? "1" : "0";
 			set { }
+		}
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler? _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 	}
 }

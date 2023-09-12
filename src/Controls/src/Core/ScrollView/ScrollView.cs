@@ -1,4 +1,4 @@
-#nullable disable
+﻿#nullable disable
 using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -31,6 +31,19 @@ namespace Microsoft.Maui.Controls
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<ScrollToRequestedEventArgs> ScrollToRequested;
+
+		ScrollToRequestedEventArgs _pendingScrollToRequested;
+
+		private protected override void OnHandlerChangedCore()
+		{
+			base.OnHandlerChangedCore();
+
+			if (Handler is not null && _pendingScrollToRequested is not null)
+			{
+				OnScrollToRequested(_pendingScrollToRequested);
+				_pendingScrollToRequested = null;
+			}
+		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='GetScrollPositionForElement']/Docs/*" />
 		[EditorBrowsable(EditorBrowsableState.Never)]
@@ -373,7 +386,10 @@ namespace Microsoft.Maui.Controls
 			CheckTaskCompletionSource();
 			ScrollToRequested?.Invoke(this, e);
 
-			Handler?.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
+			if (Handler is null)
+				_pendingScrollToRequested = e;
+			else
+				Handler.Invoke(nameof(IScrollView.RequestScrollTo), ConvertRequestMode(e).ToRequest());
 		}
 
 		ScrollToRequestedEventArgs ConvertRequestMode(ScrollToRequestedEventArgs args)
