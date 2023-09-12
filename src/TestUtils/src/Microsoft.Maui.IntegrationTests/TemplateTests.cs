@@ -96,6 +96,7 @@ namespace Microsoft.Maui.IntegrationTests
 			AssetExists("appiconLogo.scale-100.png");
 			AssetExists("OpenSans-Regular.ttf");
 			AssetExists("splashSplashScreen.scale-100.png");
+			AssetExists("AboutAssets.txt");
 
 			void AssetExists(string filename)
 			{
