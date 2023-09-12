@@ -4,7 +4,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>$(_MauiDotNetTfm)-macos</TargetFramework>
     <RootNamespace>GraphicsTester.Skia.Mac</RootNamespace>
-    <LangVersion>10.0</LangVersion>
     <SupportedOSPlatformVersion>10.14</SupportedOSPlatformVersion>
     <EnableCodeSigning>false</EnableCodeSigning>
     <UseSGen>false</UseSGen>
