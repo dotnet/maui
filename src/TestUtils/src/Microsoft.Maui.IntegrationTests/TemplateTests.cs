@@ -73,6 +73,39 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", "net7.0", "Release")]
+		public void PublishUnpackaged(string id, string framework, string config)
+		{
+			if (!TestEnvironment.IsWindows)
+				Assert.Ignore("Running Windows templates is only supported on Windows.");
+
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			BuildProps.Add("WindowsPackageType=None");
+
+			Assert.IsTrue(DotnetInternal.Publish(projectFile, config, framework: $"{framework}-windows10.0.19041.0", properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			var assetsRoot = Path.Combine(projectDir, $"bin/{config}/{framework}-windows10.0.19041.0/win10-x64/publish");
+
+			AssetExists("dotnet_bot.scale-100.png");
+			AssetExists("appiconLogo.scale-100.png");
+			AssetExists("OpenSans-Regular.ttf");
+			AssetExists("splashSplashScreen.scale-100.png");
+
+			void AssetExists(string filename)
+			{
+				var fullpath = Path.Combine(assetsRoot!, filename);
+				Assert.IsTrue(File.Exists(fullpath),
+					$"Unable to find expected asset: {fullpath}");
+			}
+		}
+
+		[Test]
 		[TestCase("mauilib", "net6.0", "Debug")]
 		[TestCase("mauilib", "net6.0", "Release")]
 		[TestCase("mauilib", "net7.0", "Debug")]

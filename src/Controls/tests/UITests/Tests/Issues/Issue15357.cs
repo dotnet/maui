@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Appium;
+﻿using System.Reflection;
+using Microsoft.Maui.Appium;
 using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests.Issues

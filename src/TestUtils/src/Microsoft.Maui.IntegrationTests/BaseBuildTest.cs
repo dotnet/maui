@@ -25,7 +25,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected string[] BuildProps => new[]
+		protected List<string> BuildProps => new()
 		{
 			"RestoreNoCache=true",
 			//"GenerateAppxPackageOnBuild=true",
