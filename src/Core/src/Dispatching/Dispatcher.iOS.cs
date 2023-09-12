@@ -91,8 +91,17 @@ namespace Microsoft.Maui.Dispatching
 
 			Tick?.Invoke(this, EventArgs.Empty);
 
-			if (IsRepeating && _dispatchBlock is not null)
-				_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
+			if (IsRepeating)
+			{
+				if (_dispatchBlock is not null)
+				{
+					_dispatchQueue.DispatchAfter(new DispatchTime(DispatchTime.Now, Interval), _dispatchBlock);
+				}
+			}
+			else
+			{
+				Stop();
+			}
 		}
 	}
 

@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			elt.Parent = parent;
 
-			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) => throw new XunitException());
+			((IElementDefinition)elt).AddResourcesChangedListener((sender, e) => throw new XunitException("Changing the value in the dictionary should not fire the changed event."));
 			parent.Resources["bar"] = "BAZ";
 		}
 
@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -255,7 +255,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -304,7 +304,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			if (!passed)
 			{
-				throw new XunitException();
+				throw new XunitException("Changing the value in the dictionary did not fire the changed event.");
 			}
 		}
 
@@ -397,7 +397,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			rd.MergedDictionaries.Clear();
 
-			Assert.Equal(0, rd.MergedDictionaries.Count);
+			Assert.Empty(rd.MergedDictionaries);
 		}
 
 		[Fact]

@@ -118,6 +118,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).IsTextPredictionEnabled;
 
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).IsSpellCheckEnabled;
+
 		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).IsReadOnly;
 

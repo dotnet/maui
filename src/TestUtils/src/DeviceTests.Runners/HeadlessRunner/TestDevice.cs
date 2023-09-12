@@ -22,5 +22,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 		public string SystemVersion => DeviceInfo.VersionString;
 
 		public string Locale => CultureInfo.CurrentCulture.Name;
+
+		public static bool RunHeadless = false;
 	}
 }

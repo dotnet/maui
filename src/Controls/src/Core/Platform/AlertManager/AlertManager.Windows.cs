@@ -24,7 +24,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Unsubscribe(Window window)
 		{
-			var platformWindow = window.MauiContext.GetPlatformWindow();
+			IMauiContext? mauiContext = window?.Handler?.MauiContext;
+			var platformWindow = mauiContext?.GetPlatformWindow();
+			if (platformWindow == null)
+				return;
 
 			var toRemove = Subscriptions.Where(s => s.PlatformView == platformWindow).ToList();
 

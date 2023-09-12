@@ -9,58 +9,57 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 	public class LayoutStub : StubBase, ILayout
 	{
 		ILayoutManager _layoutManager;
-		IList<IView> _children = new List<IView>();
 
 		public ILayoutHandler LayoutHandler => Handler as ILayoutHandler;
 
 		public void Add(IView child)
 		{
-			_children.Add(child);
+			Children.Add(child);
 		}
 
 		public bool Remove(IView child)
 		{
-			return _children.Remove(child);
+			return Children.Remove(child);
 		}
 
 		public int IndexOf(IView item)
 		{
-			return _children.IndexOf(item);
+			return Children.IndexOf(item);
 		}
 
 		public void Insert(int index, IView item)
 		{
-			_children.Insert(index, item);
+			Children.Insert(index, item);
 		}
 
 		public void RemoveAt(int index)
 		{
-			_children.RemoveAt(index);
+			Children.RemoveAt(index);
 		}
 
 		public void Clear()
 		{
-			_children.Clear();
+			Children.Clear();
 		}
 
 		public bool Contains(IView item)
 		{
-			return _children.Contains(item);
+			return Children.Contains(item);
 		}
 
 		public void CopyTo(IView[] array, int arrayIndex)
 		{
-			_children.CopyTo(array, arrayIndex);
+			Children.CopyTo(array, arrayIndex);
 		}
 
 		public IEnumerator<IView> GetEnumerator()
 		{
-			return _children.GetEnumerator();
+			return Children.GetEnumerator();
 		}
 
 		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return _children.GetEnumerator();
+			return Children.GetEnumerator();
 		}
 
 		public Size CrossPlatformMeasure(double widthConstraint, double heightConstraint)
@@ -74,8 +73,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		}
 
 		public Thickness Padding { get; set; }
-		public int Count => _children.Count;
-		public bool IsReadOnly => _children.IsReadOnly;
+		public int Count => Children.Count;
+		public bool IsReadOnly => Children.IsReadOnly;
 
 		ILayoutManager LayoutManager => _layoutManager ??= CreateLayoutManager();
 
@@ -85,6 +84,6 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool ClipsToBounds { get; set; }
 
-		public IView this[int index] { get => _children[index]; set => _children[index] = value; }
+		public IView this[int index] { get => Children[index]; set => Children[index] = value; }
 	}
 }

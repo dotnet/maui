@@ -36,14 +36,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.Build.Download" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-    <PackageReference Include="Xamarin.AndroidX.Browser" />
-    <PackageReference Include="Xamarin.AndroidX.Palette" />
-    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.Build.Download" Version="0.11.4" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.3" />
+    <PackageReference Include="Xamarin.AndroidX.Browser" Version="1.5.0.3" />
+    <PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.19" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.2" />
   </ItemGroup>
 
   <ItemGroup>

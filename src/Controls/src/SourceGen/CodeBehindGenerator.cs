@@ -33,10 +33,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		public void Initialize(IncrementalGeneratorInitializationContext initContext)
 		{
-			//#if DEBUG
-			//			if (!System.Diagnostics.Debugger.IsAttached)
-			//				System.Diagnostics.Debugger.Launch();
-			//#endif
+#if DEBUG
+			//if (!System.Diagnostics.Debugger.IsAttached)
+			//	System.Diagnostics.Debugger.Launch();
+#endif
 			var projectItemProvider = initContext.AdditionalTextsProvider
 				.Combine(initContext.AnalyzerConfigOptionsProvider)
 				.Select(ComputeProjectItem);
@@ -76,14 +76,16 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 		static ProjectItem? ComputeProjectItem((AdditionalText, AnalyzerConfigOptionsProvider) tuple, CancellationToken cancellationToken)
 		{
-			var (additionalText, globalOptions) = tuple;
-			var options = globalOptions.GetOptions(additionalText);
-			if (!options.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
+			var (additionalText, optionsProvider) = tuple;
+			var fileOptions = optionsProvider.GetOptions(additionalText);
+			var globalOptions = optionsProvider.GlobalOptions;
+			if (!fileOptions.TryGetValue("build_metadata.additionalfiles.GenKind", out string? kind) || kind is null)
 				return null;
-			options.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
-			options.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
-			options.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
-			return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.TargetPath", out var targetPath);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.ManifestResourceName", out var manifestResourceName);
+			fileOptions.TryGetValue("build_metadata.additionalfiles.RelativePath", out var relativePath);
+			fileOptions.TryGetValue("build_property.targetframework", out var targetFramework);
+			return new ProjectItem(additionalText, targetPath: targetPath, relativePath: relativePath, manifestResourceName: manifestResourceName, kind: kind, targetFramework: targetFramework);
 		}
 
 		static AssemblyCaches GetAssemblyAttributes(Compilation compilation, CancellationToken cancellationToken)
@@ -147,7 +149,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return;
 			var uid = Crc64.ComputeHashString($"{compilation.AssemblyName}.{itemName}");
 
-			if (!TryParseXaml(text, uid, compilation, caches, context.CancellationToken, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
+			if (!TryParseXaml(text, uid, compilation, caches, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
 					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, parseException.Message));
@@ -232,7 +234,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			context.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
 		}
 
-		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
+		static bool TryParseXaml(SourceText text, string uid, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken, string? targetFramework, out string? accessModifier, out string? rootType, out string? rootClrNamespace, out bool generateDefaultCtor, out bool addXamlCompilationAttribute, out bool hideFromIntellisense, out bool xamlResourceIdOnly, out string? baseType, out IEnumerable<(string, string, string)>? namedFields, out Exception? exception)
 		{
 			cancellationToken.ThrowIfCancellationRequested();
 
@@ -273,6 +275,9 @@ namespace Microsoft.Maui.Controls.SourceGen
 			var root = xmlDoc.SelectSingleNode("/*", nsmgr);
 			if (root == null)
 				return false;
+
+			ApplyTransforms(root, targetFramework, nsmgr);
+			cancellationToken.ThrowIfCancellationRequested();
 
 			foreach (XmlAttribute attr in root.Attributes)
 			{
@@ -407,8 +412,15 @@ namespace Microsoft.Maui.Controls.SourceGen
 						if (type.ContainingAssembly.Identity.Name != typeInfo.assemblyName)
 							continue;
 
-						if (IsPublicOrVisibleInternal(type, caches.InternalsVisible))
-							return fullName;
+						if (!IsPublicOrVisibleInternal(type, caches.InternalsVisible))
+							continue;
+
+						int i = fullName.IndexOf('`');
+						if (i > 0)
+						{
+							fullName = fullName.Substring(0, i);
+						}
+						return fullName;
 					}
 
 					return null;
@@ -458,18 +470,69 @@ namespace Microsoft.Maui.Controls.SourceGen
 				sb.AppendLine($"[assembly: global::Microsoft.Maui.Controls.Xaml.XamlResourceId(\"{projItem.ManifestResourceName}\", \"{projItem.TargetPath.Replace('\\', '/')}\", null)]");
 
 			sourceProductionContext.AddSource(hintName, SourceText.From(sb.ToString(), Encoding.UTF8));
+		}
 
+		static void ApplyTransforms(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
+		{
+			SimplifyOnPlatform(node, targetFramework, nsmgr);
+		}
+
+		static void SimplifyOnPlatform(XmlNode node, string? targetFramework, XmlNamespaceManager nsmgr)
+		{
+			//remove OnPlatform nodes if the platform doesn't match, so we don't generate field for x:Name of elements being removed
+			if (targetFramework == null)
+				return;
+
+			string? target = null;
+			targetFramework = targetFramework.Trim();
+			if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
+				target = "Android";
+			if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
+				target = "iOS";
+			if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
+				target = "macOS";
+			if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
+				target = "MacCatalyst";
+			if (target == null)
+				return;
+
+			//no need to handle {OnPlatform} markup extension, as you can't x:Name there
+			var onPlatformNodes = node.SelectNodes("//__f__:OnPlatform", nsmgr);
+			foreach (XmlNode onPlatformNode in onPlatformNodes)
+			{
+				var onNodes = onPlatformNode.SelectNodes("__f__:On", nsmgr);
+				foreach (XmlNode onNode in onNodes)
+				{
+					var platforms = onNode.SelectSingleNode("@Platform");
+					var plats = platforms.Value.Split(',');
+					var match = false;
+
+					foreach (var plat in plats)
+					{
+						if (string.IsNullOrWhiteSpace(plat))
+							continue;
+						if (plat.Trim() == target)
+						{
+							match = true;
+							break;
+						}
+					}
+					if (!match)
+						onNode.ParentNode.RemoveChild(onNode);
+				}
+			}
 		}
 
 		class ProjectItem
 		{
-			public ProjectItem(AdditionalText additionalText, string? targetPath, string? relativePath, string? manifestResourceName, string kind)
+			public ProjectItem(AdditionalText additionalText, string? targetPath, string? relativePath, string? manifestResourceName, string kind, string? targetFramework)
 			{
 				AdditionalText = additionalText;
 				TargetPath = targetPath ?? additionalText.Path;
 				RelativePath = relativePath;
 				ManifestResourceName = manifestResourceName;
 				Kind = kind;
+				TargetFramework = targetFramework;
 			}
 
 			public AdditionalText AdditionalText { get; }
@@ -477,6 +540,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 			public string? RelativePath { get; }
 			public string? ManifestResourceName { get; }
 			public string Kind { get; }
+			public string? TargetFramework { get; }
 		}
 
 		class AssemblyCaches

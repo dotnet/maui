@@ -18,16 +18,14 @@ namespace Microsoft.Maui.Platform
 			textInput.SetSpellCheckingType(UITextSpellCheckingType.No);
 			textInput.SetKeyboardType(UIKeyboardType.Default);
 
-			if (keyboard == Keyboard.Default)
+			if (keyboard == Keyboard.Chat || keyboard == Keyboard.Default || keyboard == Keyboard.Text)
 			{
-				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
-				textInput.SetAutocorrectionType(UITextAutocorrectionType.Default);
-				textInput.SetSpellCheckingType(UITextSpellCheckingType.Default);
-			}
-			else if (keyboard == Keyboard.Chat)
-			{
+				// Since IsSpellCheckEnabled and IsTextPredictionEnabled are true by default
+				// Autocorrection and Spellchecking will be forced to be true
+				// This makes chat, default, and text keyboards the same thing on iOS
 				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
 				textInput.SetAutocorrectionType(UITextAutocorrectionType.Yes);
+				textInput.SetSpellCheckingType(UITextSpellCheckingType.Yes);
 			}
 			else if (keyboard == Keyboard.Email)
 				textInput.SetKeyboardType(UIKeyboardType.EmailAddress);
@@ -35,12 +33,6 @@ namespace Microsoft.Maui.Platform
 				textInput.SetKeyboardType(UIKeyboardType.DecimalPad);
 			else if (keyboard == Keyboard.Telephone)
 				textInput.SetKeyboardType(UIKeyboardType.PhonePad);
-			else if (keyboard == Keyboard.Text)
-			{
-				textInput.SetAutocapitalizationType(UITextAutocapitalizationType.Sentences);
-				textInput.SetAutocorrectionType(UITextAutocorrectionType.Yes);
-				textInput.SetSpellCheckingType(UITextSpellCheckingType.Yes);
-			}
 			else if (keyboard == Keyboard.Url)
 				textInput.SetKeyboardType(UIKeyboardType.Url);
 			else if (keyboard is CustomKeyboard)

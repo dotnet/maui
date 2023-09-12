@@ -6,37 +6,62 @@ namespace TestUtils.Appium.UITests
 	public abstract class UITestContextTestBase
 	{
 		static IUITestContext? _uiTestContext;
+		private IContext? _context;
 
-		protected static IUITestContext UITestContext
+		protected static IUITestContext? UITestContext
 		{
 			get
 			{
-				return _uiTestContext ?? throw new InvalidOperationException("Call InitialSetup() before accessing the UITestContext");
+				return _uiTestContext;
 			}
 		}
 
-		protected static IApp App { get { return UITestContext.App; } }
+		protected static TestDevice Device
+		{
+			get
+			{
+				return UITestContext == null
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(Device)} property.")
+					: UITestContext.TestConfig.TestDevice;
+			}
+		}
+
+		protected static IApp App
+		{
+			get
+			{
+				return UITestContext == null
+					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(App)} property.")
+					: UITestContext.App;
+			}
+		}
 
 		public abstract TestConfig GetTestConfig();
 
-		public void InitialSetup(IContext uiTestContext)
+		public void Reset()
 		{
-			if (uiTestContext == null)
+			if (_context == null)
 			{
-				throw new ArgumentNullException(nameof(uiTestContext));
+				throw new InvalidOperationException($"Cannot {nameof(Reset)} if {nameof(InitialSetup)} has not been called.");
 			}
 
+			InitialSetup(_context, true);
+		}
+
+		public void InitialSetup(IContext context)
+		{
+			_context = context ?? throw new ArgumentNullException(nameof(context));
+			InitialSetup(context, false);
+		}
+
+		private void InitialSetup(IContext context, bool reset)
+		{
 			var testConfig = GetTestConfig();
 			// Check to see if we have a context already from a previous test and if the configuration matches, re-use it
-			if (_uiTestContext == null || !_uiTestContext.TestConfig.Equals(testConfig))
+			if (reset || _uiTestContext == null || !_uiTestContext.TestConfig.Equals(testConfig))
 			{
-				// Since the configuration doesn't match, we try to dispose of the old driver before creating a new one
-				if (_uiTestContext != null && _uiTestContext.App is IApp2 oldApp2)
-				{
-					oldApp2.Dispose();
-				}
-
-				_uiTestContext = uiTestContext?.CreateUITestContext(testConfig); // Creating the driver can be expensive
+				_uiTestContext?.Dispose();
+				_uiTestContext = context.CreateUITestContext(testConfig); // Creating the driver can be expensive
 
 				if (App is IApp2 app2)
 				{

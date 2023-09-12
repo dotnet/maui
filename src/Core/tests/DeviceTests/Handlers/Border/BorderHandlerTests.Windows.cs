@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-
-namespace Microsoft.Maui.DeviceTests
+﻿namespace Microsoft.Maui.DeviceTests
 {
 	public partial class BorderHandlerTests
 	{

@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEditor.Font)] = MapFont,
 			[nameof(IEditor.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEditor.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
+			[nameof(IEditor.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(IEditor.MaxLength)] = MapMaxLength,
 			[nameof(IEditor.Placeholder)] = MapPlaceholder,
 			[nameof(IEditor.PlaceholderColor)] = MapPlaceholderColor,

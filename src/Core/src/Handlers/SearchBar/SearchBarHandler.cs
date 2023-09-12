@@ -27,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(ITextAlignment.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(ISearchBar.IsReadOnly)] = MapIsReadOnly,
 			[nameof(ISearchBar.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
+			[nameof(ISearchBar.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(ISearchBar.MaxLength)] = MapMaxLength,
 			[nameof(ISearchBar.Placeholder)] = MapPlaceholder,
 			[nameof(ISearchBar.PlaceholderColor)] = MapPlaceholderColor,

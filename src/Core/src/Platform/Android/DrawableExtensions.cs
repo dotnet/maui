@@ -25,22 +25,6 @@ namespace Microsoft.Maui.Platform
 			throw new Exception("Invalid Mode");
 		}
 
-		[Obsolete]
-		static PorterDuff.Mode? GetFilterModePre29(FilterMode mode)
-		{
-			switch (mode)
-			{
-				case FilterMode.SrcIn:
-					return PorterDuff.Mode.SrcIn;
-				case FilterMode.Multiply:
-					return PorterDuff.Mode.Multiply;
-				case FilterMode.SrcAtop:
-					return PorterDuff.Mode.SrcAtop;
-			}
-
-			throw new Exception("Invalid Mode");
-		}
-
 		public static AColorFilter? GetColorFilter(this ADrawable drawable)
 		{
 			if (drawable == null)
@@ -71,27 +55,8 @@ namespace Microsoft.Maui.Platform
 
 		public static void SetColorFilter(this ADrawable drawable, AColor color, FilterMode mode)
 		{
-			if (drawable == null)
-				return;
-
-			if (OperatingSystem.IsAndroidVersionAtLeast(29))
-			{
-				BlendMode? filterMode29 = GetFilterMode(mode);
-
-				if (filterMode29 != null)
-					drawable.SetColorFilter(new BlendModeColorFilter(color, filterMode29));
-			}
-			else
-			{
-#pragma warning disable CS0612 // Type or member is obsolete
-				PorterDuff.Mode? filterModePre29 = GetFilterModePre29(mode);
-#pragma warning restore CS0612 // Type or member is obsolete
-
-				if (filterModePre29 != null)
-#pragma warning disable CS0618 // Type or member is obsolete
-					drawable.SetColorFilter(color, filterModePre29);
-#pragma warning restore CS0618 // Type or member is obsolete
-			}
+			if (drawable is not null)
+				PlatformInterop.SetColorFilter(drawable, color, (int)mode);
 		}
 	}
 }

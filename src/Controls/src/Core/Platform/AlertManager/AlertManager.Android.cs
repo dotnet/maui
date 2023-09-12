@@ -39,9 +39,11 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void Unsubscribe(Window window)
 		{
-			IMauiContext mauiContext = window?.MauiContext;
+			IMauiContext mauiContext = window?.Handler?.MauiContext;
 			Context context = mauiContext?.Context;
-			Activity activity = context.GetActivity();
+			Activity activity = context?.GetActivity();
+			if (activity == null)
+				return;
 
 			var toRemove = Subscriptions.Where(s => s.Activity == activity).ToList();
 

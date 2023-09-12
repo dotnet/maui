@@ -154,6 +154,11 @@ namespace Microsoft.Maui.Platform
 			textBox.UpdateInputScope(textInput);
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this TextBox textBox, ITextInput textInput)
+		{
+			textBox.UpdateInputScope(textInput);
+		}
+
 		public static void UpdateKeyboard(this TextBox textBox, ITextInput textInput)
 		{
 			textBox.UpdateInputScope(textInput);
@@ -169,7 +174,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				textBox.IsTextPredictionEnabled = textInput.IsTextPredictionEnabled;
-				textBox.IsSpellCheckEnabled = textInput.IsTextPredictionEnabled;
+				textBox.IsSpellCheckEnabled = textInput.IsSpellCheckEnabled;
 			}
 
 			var inputScope = new InputScope();

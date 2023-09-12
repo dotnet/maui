@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			map.Pins.Add(home);
 
-			Assert.Equal(1, map.Pins.Count);
+			Assert.Single(map.Pins);
 			Assert.Equal("Home", map.Pins[0].Label);
 			var mall = new Pin
 			{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			map.Pins.Add(noAddressPin);
-			Assert.Equal(1, map.Pins.Count);
+			Assert.Single(map.Pins);
 			Assert.Equal("I have no address", map.Pins[0].Label);
 			Assert.Null(map.Pins[0].Address);
 		}
@@ -97,13 +97,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 
 			map.Pins.Add(genericPlace);
-			Assert.Equal(1, map.Pins.Count);
+			Assert.Single(map.Pins);
 
 			map.Pins.Add(mall);
 			Assert.Equal(2, map.Pins.Count);
 
 			map.Pins.Remove(genericPlace);
-			Assert.Equal(1, map.Pins.Count);
+			Assert.Single(map.Pins);
 
 			Assert.True(map.Pins.Contains(mall));
 			Assert.False(map.Pins.Contains(genericPlace));

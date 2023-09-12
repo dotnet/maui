@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -160,11 +161,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				ItemsSource = list
 			};
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 			var newList = new ObservableCollection<string>();
 			picker.ItemsSource = newList;
 			list.Add("item");
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -182,7 +183,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.Equal(3, picker.Items.Count);
 			picker.ItemsSource = new ObservableCollection<string>();
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -262,7 +263,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			Assert.Equal(3, picker.Items.Count);
 			items.Clear();
-			Assert.Equal(0, picker.Items.Count);
+			Assert.Empty(picker.Items);
 		}
 
 		[Fact]
@@ -338,6 +339,23 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void SettingSelectedIndexUpdatesSelectedItem()
+		{
+			var source = Enum.GetNames(typeof(HorizontalAlignment));
+
+			var picker = new Picker
+			{
+				WidthRequest = 200,
+				ItemsSource = source,
+				SelectedItem = source[0]
+			};
+
+			picker.SelectedIndex = 1;
+			Assert.Equal(source[1], picker.SelectedItem);
+		}
+
+
+		[Fact]
 		public void TestItemsSourceCollectionOfStrings()
 		{
 			var items = new ObservableCollection<string>
@@ -371,7 +389,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Equal(bindingContext.SelectedItem, picker.SelectedItem);
 		}
@@ -443,7 +461,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
 		}
@@ -466,15 +484,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			};
 			picker.SetBinding(Picker.ItemsSourceProperty, "Items");
 			picker.SetBinding(Picker.SelectedItemProperty, "SelectedItem");
-			Assert.Equal(1, picker.Items.Count);
+			Assert.Single(picker.Items);
 			Assert.Equal(-1, picker.SelectedIndex);
 			Assert.Null(picker.SelectedItem);
+
 			picker.SelectedItem = obj;
 			Assert.Equal(0, picker.SelectedIndex);
 			Assert.Equal(obj, picker.SelectedItem);
-			picker.SelectedIndex = -1;
-			Assert.Equal(-1, picker.SelectedIndex);
-			Assert.Null(picker.SelectedItem);
 		}
 
 		[Fact]

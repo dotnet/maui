@@ -92,7 +92,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.Android
 		void OnTextChanged(string text)
 		{
 			var entryCell = (EntryCell)Cell;
-			entryCell.Text = text;
+			entryCell
+				.SetValue(EntryCell.TextProperty, text, specificity: SetterSpecificity.FromHandler);
 		}
 
 		void UpdateHeight()

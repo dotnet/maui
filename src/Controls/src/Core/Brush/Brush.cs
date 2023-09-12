@@ -4,7 +4,10 @@ using GraphicsGradientStop = Microsoft.Maui.Graphics.PaintGradientStop;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="Type[@FullName='Microsoft.Maui.Controls.Brush']/Docs/*" />
+	/// <summary>
+	/// Defines the core behavior and built-in colors for painting an area.
+	/// </summary>
+	/// <remarks>Derived classes describe different ways of painting an area.</remarks>
 	[System.ComponentModel.TypeConverter(typeof(BrushTypeConverter))]
 	public abstract partial class Brush : Element
 	{
@@ -89,442 +92,451 @@ namespace Microsoft.Maui.Controls
 		}
 
 		static ImmutableBrush defaultBrush;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Default']/Docs/*" />
+
+		/// <summary>
+		/// Represents the default (empty) brush.
+		/// </summary>
 		public static Brush Default => defaultBrush ??= new(null);
 
 		public static implicit operator Brush(Color color) => new SolidColorBrush(color);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IsEmpty']/Docs/*" />
+		/// <summary>
+		/// When overridden in a derived class, indicates whether the given brush represents the empty brush.
+		/// </summary>
 		public abstract bool IsEmpty { get; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IsNullOrEmpty']/Docs/*" />
+		/// <summary>
+		/// Indicates whether the specified <see cref="Brush"/> is <see langword="null"/> or empty.
+		/// </summary>
+		/// <returns><see langword="true"/> if the brush is null or empty; <see langword="false"/> otherwise.</returns>
 		public static bool IsNullOrEmpty(Brush brush)
 		{
 			return brush == null || brush.IsEmpty;
 		}
 
 		static ImmutableBrush aliceBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='AliceBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.AliceBlue"/>.</summary>
 		public static SolidColorBrush AliceBlue => aliceBlue ??= new(Colors.AliceBlue);
 		static ImmutableBrush antiqueWhite;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='AntiqueWhite']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.AntiqueWhite"/>.</summary>
 		public static SolidColorBrush AntiqueWhite => antiqueWhite ??= new(Colors.AntiqueWhite);
 		static ImmutableBrush aqua;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Aqua']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Aqua"/>.</summary>
 		public static SolidColorBrush Aqua => aqua ??= new(Colors.Aqua);
 		static ImmutableBrush aquamarine;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Aquamarine']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Aquamarine"/>.</summary>
 		public static SolidColorBrush Aquamarine => aquamarine ??= new(Colors.Aquamarine);
 		static ImmutableBrush azure;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Azure']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Azure"/>.</summary>
 		public static SolidColorBrush Azure => azure ??= new(Colors.Azure);
 		static ImmutableBrush beige;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Beige']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Beige"/>.</summary>
 		public static SolidColorBrush Beige => beige ??= new(Colors.Beige);
 		static ImmutableBrush bisque;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Bisque']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Bisque"/>.</summary>
 		public static SolidColorBrush Bisque => bisque ??= new(Colors.Bisque);
 		static ImmutableBrush black;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Black']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Black"/>.</summary>
 		public static SolidColorBrush Black => black ??= new(Colors.Black);
 		static ImmutableBrush blanchedAlmond;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BlanchedAlmond']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.BlanchedAlmond"/>.</summary>
 		public static SolidColorBrush BlanchedAlmond => blanchedAlmond ??= new(Colors.BlanchedAlmond);
 		static ImmutableBrush blue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Blue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Blue"/>.</summary>
 		public static SolidColorBrush Blue => blue ??= new(Colors.Blue);
 		static ImmutableBrush blueViolet;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BlueViolet']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.BlueViolet"/>.</summary>
 		public static SolidColorBrush BlueViolet => blueViolet ??= new(Colors.BlueViolet);
 		static ImmutableBrush brown;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Brown']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Brown"/>.</summary>
 		public static SolidColorBrush Brown => brown ??= new(Colors.Brown);
 		static ImmutableBrush burlyWood;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='BurlyWood']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.BurlyWood"/>.</summary>
 		public static SolidColorBrush BurlyWood => burlyWood ??= new(Colors.BurlyWood);
 		static ImmutableBrush cadetBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='CadetBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.CadetBlue"/>.</summary>
 		public static SolidColorBrush CadetBlue => cadetBlue ??= new(Colors.CadetBlue);
 		static ImmutableBrush chartreuse;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Chartreuse']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Chartreuse"/>.</summary>
 		public static SolidColorBrush Chartreuse => chartreuse ??= new(Colors.Chartreuse);
 		static ImmutableBrush chocolate;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Chocolate']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Chocolate"/>.</summary>
 		public static SolidColorBrush Chocolate => chocolate ??= new(Colors.Chocolate);
 		static ImmutableBrush coral;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Coral']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Coral"/>.</summary>
 		public static SolidColorBrush Coral => coral ??= new(Colors.Coral);
 		static ImmutableBrush cornflowerBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='CornflowerBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.CornflowerBlue"/>.</summary>
 		public static SolidColorBrush CornflowerBlue => cornflowerBlue ??= new(Colors.CornflowerBlue);
 		static ImmutableBrush cornsilk;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Cornsilk']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Cornsilk"/>.</summary>
 		public static SolidColorBrush Cornsilk => cornsilk ??= new(Colors.Cornsilk);
 		static ImmutableBrush crimson;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Crimson']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Crimson"/>.</summary>
 		public static SolidColorBrush Crimson => crimson ??= new(Colors.Crimson);
 		static ImmutableBrush cyan;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Cyan']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Cyan"/>.</summary>
 		public static SolidColorBrush Cyan => cyan ??= new(Colors.Cyan);
 		static ImmutableBrush darkBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkBlue"/>.</summary>
 		public static SolidColorBrush DarkBlue => darkBlue ??= new(Colors.DarkBlue);
 		static ImmutableBrush darkCyan;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkCyan']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkCyan"/>.</summary>
 		public static SolidColorBrush DarkCyan => darkCyan ??= new(Colors.DarkCyan);
 		static ImmutableBrush darkGoldenrod;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGoldenrod']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGoldenrod"/>.</summary>
 		public static SolidColorBrush DarkGoldenrod => darkGoldenrod ??= new(Colors.DarkGoldenrod);
 		static ImmutableBrush darkGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGray"/>.</summary>
 		public static SolidColorBrush DarkGray => darkGray ??= new(Colors.DarkGray);
 		static ImmutableBrush darkGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkGreen"/>.</summary>
 		public static SolidColorBrush DarkGreen => darkGreen ??= new(Colors.DarkGreen);
 		static ImmutableBrush darkKhaki;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkKhaki']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkKhaki"/>.</summary>
 		public static SolidColorBrush DarkKhaki => darkKhaki ??= new(Colors.DarkKhaki);
 		static ImmutableBrush darkMagenta;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkMagenta']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkMagenta"/>.</summary>
 		public static SolidColorBrush DarkMagenta => darkMagenta ??= new(Colors.DarkMagenta);
 		static ImmutableBrush darkOliveGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOliveGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkOliveGreen"/>.</summary>
 		public static SolidColorBrush DarkOliveGreen => darkOliveGreen ??= new(Colors.DarkOliveGreen);
 		static ImmutableBrush darkOrange;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOrange']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkOrange"/>.</summary>
 		public static SolidColorBrush DarkOrange => darkOrange ??= new(Colors.DarkOrange);
 		static ImmutableBrush darkOrchid;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkOrchid']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkOrchid"/>.</summary>
 		public static SolidColorBrush DarkOrchid => darkOrchid ??= new(Colors.DarkOrchid);
 		static ImmutableBrush darkRed;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkRed']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkRed"/>.</summary>
 		public static SolidColorBrush DarkRed => darkRed ??= new(Colors.DarkRed);
 		static ImmutableBrush darkSalmon;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSalmon']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSalmon"/>.</summary>
 		public static SolidColorBrush DarkSalmon => darkSalmon ??= new(Colors.DarkSalmon);
 		static ImmutableBrush darkSeaGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSeaGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSeaGreen"/>.</summary>
 		public static SolidColorBrush DarkSeaGreen => darkSeaGreen ??= new(Colors.DarkSeaGreen);
 		static ImmutableBrush darkSlateBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSlateBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSlateBlue"/>.</summary>
 		public static SolidColorBrush DarkSlateBlue => darkSlateBlue ??= new(Colors.DarkSlateBlue);
 		static ImmutableBrush darkSlateGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkSlateGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkSlateGray"/>.</summary>
 		public static SolidColorBrush DarkSlateGray => darkSlateGray ??= new(Colors.DarkSlateGray);
 		static ImmutableBrush darkTurquoise;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkTurquoise']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkTurquoise"/>.</summary>
 		public static SolidColorBrush DarkTurquoise => darkTurquoise ??= new(Colors.DarkTurquoise);
 		static ImmutableBrush darkViolet;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DarkViolet']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DarkViolet"/>.</summary>
 		public static SolidColorBrush DarkViolet => darkViolet ??= new(Colors.DarkViolet);
 		static ImmutableBrush deepPink;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DeepPink']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DeepPink"/>.</summary>
 		public static SolidColorBrush DeepPink => deepPink ??= new(Colors.DeepPink);
 		static ImmutableBrush deepSkyBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DeepSkyBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DeepSkyBlue"/>.</summary>
 		public static SolidColorBrush DeepSkyBlue => deepSkyBlue ??= new(Colors.DeepSkyBlue);
 		static ImmutableBrush dimGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DimGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DimGray"/>.</summary>
 		public static SolidColorBrush DimGray => dimGray ??= new(Colors.DimGray);
 		static ImmutableBrush dodgerBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='DodgerBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.DodgerBlue"/>.</summary>
 		public static SolidColorBrush DodgerBlue => dodgerBlue ??= new(Colors.DodgerBlue);
 		static ImmutableBrush firebrick;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Firebrick']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Firebrick"/>.</summary>
 		public static SolidColorBrush Firebrick => firebrick ??= new(Colors.Firebrick);
 		static ImmutableBrush floralWhite;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='FloralWhite']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.FloralWhite"/>.</summary>
 		public static SolidColorBrush FloralWhite => floralWhite ??= new(Colors.FloralWhite);
 		static ImmutableBrush forestGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='ForestGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.ForestGreen"/>.</summary>
 		public static SolidColorBrush ForestGreen => forestGreen ??= new(Colors.ForestGreen);
 		static ImmutableBrush fuschia;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Fuchsia']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Fuchsia"/>.</summary>
 		public static SolidColorBrush Fuchsia => fuschia ??= new(Colors.Fuchsia);
 		static ImmutableBrush gainsboro;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gainsboro']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gainsboro"/>.</summary>
 		public static SolidColorBrush Gainsboro => gainsboro ??= new(Colors.Gainsboro);
 		static ImmutableBrush ghostWhite;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='GhostWhite']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.GhostWhite"/>.</summary>
 		public static SolidColorBrush GhostWhite => ghostWhite ??= new(Colors.GhostWhite);
 		static ImmutableBrush gold;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gold']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gold"/>.</summary>
 		public static SolidColorBrush Gold => gold ??= new(Colors.Gold);
 		static ImmutableBrush goldenrod;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Goldenrod']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Goldenrod"/>.</summary>
 		public static SolidColorBrush Goldenrod => goldenrod ??= new(Colors.Goldenrod);
 		static ImmutableBrush gray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Gray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Gray"/>.</summary>
 		public static SolidColorBrush Gray => gray ??= new(Colors.Gray);
 		static ImmutableBrush green;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Green']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Green"/>.</summary>
 		public static SolidColorBrush Green => green ??= new(Colors.Green);
 		static ImmutableBrush greenYellow;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='GreenYellow']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.GreenYellow"/>.</summary>
 		public static SolidColorBrush GreenYellow => greenYellow ??= new(Colors.GreenYellow);
 		static ImmutableBrush honeydew;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Honeydew']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Honeydew"/>.</summary>
 		public static SolidColorBrush Honeydew => honeydew ??= new(Colors.Honeydew);
 		static ImmutableBrush hotPink;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='HotPink']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.HotPink"/>.</summary>
 		public static SolidColorBrush HotPink => hotPink ??= new(Colors.HotPink);
 		static ImmutableBrush indianRed;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='IndianRed']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.IndianRed"/>.</summary>
 		public static SolidColorBrush IndianRed => indianRed ??= new(Colors.IndianRed);
 		static ImmutableBrush indigo;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Indigo']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Indigo"/>.</summary>
 		public static SolidColorBrush Indigo => indigo ??= new(Colors.Indigo);
 		static ImmutableBrush ivory;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Ivory']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Ivory"/>.</summary>
 		public static SolidColorBrush Ivory => ivory ??= new(Colors.Ivory);
 		static ImmutableBrush khaki;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Khaki']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Khaki"/>.</summary>
 		public static SolidColorBrush Khaki => khaki ??= new(Colors.Khaki);
 		static ImmutableBrush lavender;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Lavender']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Lavender"/>.</summary>
 		public static SolidColorBrush Lavender => lavender ??= new(Colors.Lavender);
 		static ImmutableBrush lavenderBlush;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LavenderBlush']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LavenderBlush"/>.</summary>
 		public static SolidColorBrush LavenderBlush => lavenderBlush ??= new(Colors.LavenderBlush);
 		static ImmutableBrush lawnGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LawnGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LawnGreen"/>.</summary>
 		public static SolidColorBrush LawnGreen => lawnGreen ??= new(Colors.LawnGreen);
 		static ImmutableBrush lemonChiffon;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LemonChiffon']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LemonChiffon"/>.</summary>
 		public static SolidColorBrush LemonChiffon => lemonChiffon ??= new(Colors.LemonChiffon);
 		static ImmutableBrush lightBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightBlue"/>.</summary>
 		public static SolidColorBrush LightBlue => lightBlue ??= new(Colors.LightBlue);
 		static ImmutableBrush lightCoral;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightCoral']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightCoral"/>.</summary>
 		public static SolidColorBrush LightCoral => lightCoral ??= new(Colors.LightCoral);
 		static ImmutableBrush lightCyan;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightCyan']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightCyan"/>.</summary>
 		public static SolidColorBrush LightCyan => lightCyan ??= new(Colors.LightCyan);
 		static ImmutableBrush lightGoldenrodYellow;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGoldenrodYellow']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGoldenrodYellow"/>.</summary>
 		public static SolidColorBrush LightGoldenrodYellow => lightGoldenrodYellow ??= new(Colors.LightGoldenrodYellow);
 		static ImmutableBrush lightGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGray"/>.</summary>
 		public static SolidColorBrush LightGray => lightGray ??= new(Colors.LightGray);
 		static ImmutableBrush lightGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightGreen"/>.</summary>
 		public static SolidColorBrush LightGreen => lightGreen ??= new(Colors.LightGreen);
 		static ImmutableBrush lightPink;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightPink']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightPink"/>.</summary>
 		public static SolidColorBrush LightPink => lightPink ??= new(Colors.LightPink);
 		static ImmutableBrush lightSalmon;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSalmon']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSalmon"/>.</summary>
 		public static SolidColorBrush LightSalmon => lightSalmon ??= new(Colors.LightSalmon);
 		static ImmutableBrush lightSeaGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSeaGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSeaGreen"/>.</summary>
 		public static SolidColorBrush LightSeaGreen => lightSeaGreen ??= new(Colors.LightSeaGreen);
 		static ImmutableBrush lightSkyBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSkyBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSkyBlue"/>.</summary>
 		public static SolidColorBrush LightSkyBlue => lightSkyBlue ??= new(Colors.LightSkyBlue);
 		static ImmutableBrush lightSlateGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSlateGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSlateGray"/>.</summary>
 		public static SolidColorBrush LightSlateGray => lightSlateGray ??= new(Colors.LightSlateGray);
 		static ImmutableBrush lightSteelBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightSteelBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightSteelBlue"/>.</summary>
 		public static SolidColorBrush LightSteelBlue => lightSteelBlue ??= new(Colors.LightSteelBlue);
 		static ImmutableBrush lightYellow;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LightYellow']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LightYellow"/>.</summary>
 		public static SolidColorBrush LightYellow => lightYellow ??= new(Colors.LightYellow);
 		static ImmutableBrush lime;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Lime']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Lime"/>.</summary>
 		public static SolidColorBrush Lime => lime ??= new(Colors.Lime);
 		static ImmutableBrush limeGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='LimeGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.LimeGreen"/>.</summary>
 		public static SolidColorBrush LimeGreen => limeGreen ??= new(Colors.LimeGreen);
 		static ImmutableBrush linen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Linen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Linen"/>.</summary>
 		public static SolidColorBrush Linen => linen ??= new(Colors.Linen);
 		static ImmutableBrush magenta;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Magenta']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Magenta"/>.</summary>
 		public static SolidColorBrush Magenta => magenta ??= new(Colors.Magenta);
 		static ImmutableBrush maroon;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Maroon']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Maroon"/>.</summary>
 		public static SolidColorBrush Maroon => maroon ??= new(Colors.Maroon);
 		static ImmutableBrush mediumAquararine;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumAquamarine']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumAquamarine"/>.</summary>
 		public static SolidColorBrush MediumAquamarine => mediumAquararine ??= new(Colors.MediumAquamarine);
 		static ImmutableBrush mediumBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumBlue"/>.</summary>
 		public static SolidColorBrush MediumBlue => mediumBlue ??= new(Colors.MediumBlue);
 		static ImmutableBrush mediumOrchid;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumOrchid']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumOrchid"/>.</summary>
 		public static SolidColorBrush MediumOrchid => mediumOrchid ??= new(Colors.MediumOrchid);
 		static ImmutableBrush mediumPurple;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumPurple']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumPurple"/>.</summary>
 		public static SolidColorBrush MediumPurple => mediumPurple ??= new(Colors.MediumPurple);
 		static ImmutableBrush mediumSeaGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSeaGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumSeaGreen"/>.</summary>
 		public static SolidColorBrush MediumSeaGreen => mediumSeaGreen ??= new(Colors.MediumSeaGreen);
 		static ImmutableBrush mediumSlateBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSlateBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumSlateBlue"/>.</summary>
 		public static SolidColorBrush MediumSlateBlue => mediumSlateBlue ??= new(Colors.MediumSlateBlue);
 		static ImmutableBrush mediumSpringGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumSpringGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumSpringGreen"/>.</summary>
 		public static SolidColorBrush MediumSpringGreen => mediumSpringGreen ??= new(Colors.MediumSpringGreen);
 		static ImmutableBrush mediumTurquoise;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumTurquoise']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumTurquoise"/>.</summary>
 		public static SolidColorBrush MediumTurquoise => mediumTurquoise ??= new(Colors.MediumTurquoise);
 		static ImmutableBrush mediumVioletRed;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MediumVioletRed']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MediumVioletRed"/>.</summary>
 		public static SolidColorBrush MediumVioletRed => mediumVioletRed ??= new(Colors.MediumVioletRed);
 		static ImmutableBrush midnightBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MidnightBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MidnightBlue"/>.</summary>
 		public static SolidColorBrush MidnightBlue => midnightBlue ??= new(Colors.MidnightBlue);
 		static ImmutableBrush mintCream;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MintCream']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MintCream"/>.</summary>
 		public static SolidColorBrush MintCream => mintCream ??= new(Colors.MintCream);
 		static ImmutableBrush mistyRose;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='MistyRose']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.MistyRose"/>.</summary>
 		public static SolidColorBrush MistyRose => mistyRose ??= new(Colors.MistyRose);
 		static ImmutableBrush moccasin;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Moccasin']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Moccasin"/>.</summary>
 		public static SolidColorBrush Moccasin => moccasin ??= new(Colors.Moccasin);
 		static ImmutableBrush navajoWhite;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='NavajoWhite']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.NavajoWhite"/>.</summary>
 		public static SolidColorBrush NavajoWhite => navajoWhite ??= new(Colors.NavajoWhite);
 		static ImmutableBrush navy;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Navy']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Navy"/>.</summary>
 		public static SolidColorBrush Navy => navy ??= new(Colors.Navy);
 		static ImmutableBrush oldLace;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OldLace']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.OldLace"/>.</summary>
 		public static SolidColorBrush OldLace => oldLace ??= new(Colors.OldLace);
 		static ImmutableBrush olive;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Olive']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Olive"/>.</summary>
 		public static SolidColorBrush Olive => olive ??= new(Colors.Olive);
 		static ImmutableBrush oliveDrab;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OliveDrab']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.OliveDrab"/>.</summary>
 		public static SolidColorBrush OliveDrab => oliveDrab ??= new(Colors.OliveDrab);
 		static ImmutableBrush orange;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Orange']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Orange"/>.</summary>
 		public static SolidColorBrush Orange => orange ??= new(Colors.Orange);
 		static ImmutableBrush orangeRed;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='OrangeRed']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.OrangeRed"/>.</summary>
 		public static SolidColorBrush OrangeRed => orangeRed ??= new(Colors.OrangeRed);
 		static ImmutableBrush orchid;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Orchid']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Orchid"/>.</summary>
 		public static SolidColorBrush Orchid => orchid ??= new(Colors.Orchid);
 		static ImmutableBrush paleGoldenrod;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleGoldenrod']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PaleGoldenrod"/>.</summary>
 		public static SolidColorBrush PaleGoldenrod => paleGoldenrod ??= new(Colors.PaleGoldenrod);
 		static ImmutableBrush paleGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PaleGreen"/>.</summary>
 		public static SolidColorBrush PaleGreen => paleGreen ??= new(Colors.PaleGreen);
 		static ImmutableBrush paleTurquoise;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleTurquoise']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PaleTurquoise"/>.</summary>
 		public static SolidColorBrush PaleTurquoise => paleTurquoise ??= new(Colors.PaleTurquoise);
 		static ImmutableBrush paleVioletRed;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PaleVioletRed']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PaleVioletRed"/>.</summary>
 		public static SolidColorBrush PaleVioletRed => paleVioletRed ??= new(Colors.PaleVioletRed);
 		static ImmutableBrush papayaWhip;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PapayaWhip']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PapayaWhip"/>.</summary>
 		public static SolidColorBrush PapayaWhip => papayaWhip ??= new(Colors.PapayaWhip);
 		static ImmutableBrush peachPuff;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PeachPuff']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PeachPuff"/>.</summary>
 		public static SolidColorBrush PeachPuff => peachPuff ??= new(Colors.PeachPuff);
 		static ImmutableBrush peru;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Peru']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Peru"/>.</summary>
 		public static SolidColorBrush Peru => peru ??= new(Colors.Peru);
 		static ImmutableBrush pink;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Pink']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Pink"/>.</summary>
 		public static SolidColorBrush Pink => pink ??= new(Colors.Pink);
 		static ImmutableBrush plum;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Plum']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Plum"/>.</summary>
 		public static SolidColorBrush Plum => plum ??= new(Colors.Plum);
 		static ImmutableBrush powderBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='PowderBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.PowderBlue"/>.</summary>
 		public static SolidColorBrush PowderBlue => powderBlue ??= new(Colors.PowderBlue);
 		static ImmutableBrush purple;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Purple']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Purple"/>.</summary>
 		public static SolidColorBrush Purple => purple ??= new(Colors.Purple);
 		static ImmutableBrush red;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Red']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Red"/>.</summary>
 		public static SolidColorBrush Red => red ??= new(Colors.Red);
 		static ImmutableBrush rosyBrown;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='RosyBrown']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.RosyBrown"/>.</summary>
 		public static SolidColorBrush RosyBrown => rosyBrown ??= new(Colors.RosyBrown);
 		static ImmutableBrush royalBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='RoyalBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.RoyalBlue"/>.</summary>
 		public static SolidColorBrush RoyalBlue => royalBlue ??= new(Colors.RoyalBlue);
 		static ImmutableBrush saddleBrown;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SaddleBrown']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SaddleBrown"/>.</summary>
 		public static SolidColorBrush SaddleBrown => saddleBrown ??= new(Colors.SaddleBrown);
 		static ImmutableBrush salmon;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Salmon']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Salmon"/>.</summary>
 		public static SolidColorBrush Salmon => salmon ??= new(Colors.Salmon);
 		static ImmutableBrush sandyBrown;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SandyBrown']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SandyBrown"/>.</summary>
 		public static SolidColorBrush SandyBrown => sandyBrown ??= new(Colors.SandyBrown);
 		static ImmutableBrush seaGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SeaGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SeaGreen"/>.</summary>
 		public static SolidColorBrush SeaGreen => seaGreen ??= new(Colors.SeaGreen);
 		static ImmutableBrush seaShell;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SeaShell']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SeaShell"/>.</summary>
 		public static SolidColorBrush SeaShell => seaShell ??= new(Colors.SeaShell);
 		static ImmutableBrush sienna;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Sienna']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Sienna"/>.</summary>
 		public static SolidColorBrush Sienna => sienna ??= new(Colors.Sienna);
 		static ImmutableBrush silver;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Silver']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Silver"/>.</summary>
 		public static SolidColorBrush Silver => silver ??= new(Colors.Silver);
 		static ImmutableBrush skyBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SkyBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SkyBlue"/>.</summary>
 		public static SolidColorBrush SkyBlue => skyBlue ??= new(Colors.SkyBlue);
 		static ImmutableBrush slateBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SlateBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SlateBlue"/>.</summary>
 		public static SolidColorBrush SlateBlue => slateBlue ??= new(Colors.SlateBlue);
 		static ImmutableBrush slateGray;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SlateGray']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SlateGray"/>.</summary>
 		public static SolidColorBrush SlateGray => slateGray ??= new(Colors.SlateGray);
 		static ImmutableBrush snow;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Snow']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Snow"/>.</summary>
 		public static SolidColorBrush Snow => snow ??= new(Colors.Snow);
 		static ImmutableBrush springGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SpringGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SpringGreen"/>.</summary>
 		public static SolidColorBrush SpringGreen => springGreen ??= new(Colors.SpringGreen);
 		static ImmutableBrush steelBlue;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='SteelBlue']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.SteelBlue"/>.</summary>
 		public static SolidColorBrush SteelBlue => steelBlue ??= new(Colors.SteelBlue);
 		static ImmutableBrush tan;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Tan']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Tan"/>.</summary>
 		public static SolidColorBrush Tan => tan ??= new(Colors.Tan);
 		static ImmutableBrush teal;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Teal']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Teal"/>.</summary>
 		public static SolidColorBrush Teal => teal ??= new(Colors.Teal);
 		static ImmutableBrush thistle;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Thistle']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Thistle"/>.</summary>
 		public static SolidColorBrush Thistle => thistle ??= new(Colors.Thistle);
 		static ImmutableBrush tomato;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Tomato']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Tomato"/>.</summary>
 		public static SolidColorBrush Tomato => tomato ??= new(Colors.Tomato);
 		static ImmutableBrush transparent;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Transparent']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Transparent"/>.</summary>
 		public static SolidColorBrush Transparent => transparent ??= new(Colors.Transparent);
 		static ImmutableBrush turquoise;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Turquoise']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Turquoise"/>.</summary>
 		public static SolidColorBrush Turquoise => turquoise ??= new(Colors.Turquoise);
 		static ImmutableBrush violet;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Violet']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Violet"/>.</summary>
 		public static SolidColorBrush Violet => violet ??= new(Colors.Violet);
 		static ImmutableBrush wheat;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Wheat']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Wheat"/>.</summary>
 		public static SolidColorBrush Wheat => wheat ??= new(Colors.Wheat);
 		static ImmutableBrush white;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='White']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.White"/>.</summary>
 		public static SolidColorBrush White => white ??= new(Colors.White);
 		static ImmutableBrush whiteSmoke;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='WhiteSmoke']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.WhiteSmoke"/>.</summary>
 		public static SolidColorBrush WhiteSmoke => whiteSmoke ??= new(Colors.WhiteSmoke);
 		static ImmutableBrush yellow;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='Yellow']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.Yellow"/>.</summary>
 		public static SolidColorBrush Yellow => yellow ??= new(Colors.Yellow);
 		static ImmutableBrush yellowGreen;
-		/// <include file="../../docs/Microsoft.Maui.Controls/Brush.xml" path="//Member[@MemberName='YellowGreen']/Docs/*" />
+		/// <summary>Gets a <see cref="SolidColorBrush"/> of the system-defined color <see cref="Colors.YellowGreen"/>.</summary>
 		public static SolidColorBrush YellowGreen => yellowGreen ??= new(Colors.YellowGreen);
+
 	}
 }

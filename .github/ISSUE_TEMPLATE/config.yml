@@ -1,5 +1,11 @@
 blank_issues_enabled: true
 contact_links:
   - name: .NET MAUI Community Support
-    url: https://docs.microsoft.com/answers/topics/dotnet-maui.html
+    url: https://learn.microsoft.com/answers/topics/dotnet-maui.html
     about: Please ask and answer questions here.
+  - name: Bug report or feature request for Visual Studio for Windows and Mac
+    url: https://learn.microsoft.com/visualstudio/ide/how-to-report-a-problem-with-visual-studio?view=vs-2022
+    about: Use Visual Studio's Report a Problem feature for issues and suggestions with Visual Studio tooling
+  - name: Bug report or feature request for Visual Studio Code (including C# Dev Kit)
+    url: https://github.com/microsoft/vscode-dotnettools/issues
+    about: Use the microsoft/vscode-dotnettools repo to report issues with Visual Studio Code

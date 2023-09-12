@@ -288,7 +288,28 @@ namespace Microsoft.Maui.DeviceTests
 
 			return textField.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				textField.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				textField.SpellCheckingType == UITextSpellCheckingType.No;
+				textField.SpellCheckingType == UITextSpellCheckingType.Yes;
+		}
+		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var textField = searchView.GetSearchTextField();
+
+			if (textField is null)
+				return false;
+
+			return textField.AutocorrectionType == UITextAutocorrectionType.Yes;
+		}
+
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var textField = searchView.GetSearchTextField();
+
+			if (textField is null)
+				return false;
+
+			return textField.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 	}
 }

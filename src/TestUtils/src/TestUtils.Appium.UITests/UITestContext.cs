@@ -3,8 +3,9 @@ using Xamarin.UITest;
 
 namespace TestUtils.Appium.UITests
 {
-	public class UITestContext : IUITestContext
+	public sealed class UITestContext : IUITestContext
 	{
+		private bool _disposed;
 		readonly IApp _app;
 		readonly TestConfig _testConfig;
 
@@ -14,15 +15,22 @@ namespace TestUtils.Appium.UITests
 			_testConfig = testConfig;
 		}
 
-		public IApp App { get { return _app; } }
+		public IApp App { get { return _disposed ? throw new ObjectDisposedException("Accessing IApp that has been disposed") : _app; } }
 		public TestConfig TestConfig { get { return _testConfig; } }
 
 		public void Dispose()
 		{
+			if (_disposed)
+			{
+				return;
+			}
+
 			if (_app is IApp2 app2)
 			{
 				app2.Dispose();
 			}
+
+			_disposed = true;
 		}
 	}
 }

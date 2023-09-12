@@ -67,8 +67,7 @@ namespace Microsoft.Maui.Handlers
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
-		// TODO: NET8 make this public
-		internal static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
+		public static void MapBackground(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateBackground(searchBar);
 		}
@@ -140,6 +139,11 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsTextPredictionEnabled(ISearchBarHandler handler, ISearchBar searchBar)
 		{
 			handler.PlatformView?.UpdateIsTextPredictionEnabled(searchBar, handler?.QueryEditor);
+		}
+
+		public static void MapIsSpellCheckEnabled(ISearchBarHandler handler, ISearchBar searchBar)
+		{
+			handler.PlatformView?.UpdateIsSpellCheckEnabled(searchBar, handler?.QueryEditor);
 		}
 
 		public static void MapMaxLength(ISearchBarHandler handler, ISearchBar searchBar)

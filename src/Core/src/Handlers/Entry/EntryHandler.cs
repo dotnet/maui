@@ -28,6 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IEntry.VerticalTextAlignment)] = MapVerticalTextAlignment,
 			[nameof(IEntry.IsReadOnly)] = MapIsReadOnly,
 			[nameof(IEntry.IsTextPredictionEnabled)] = MapIsTextPredictionEnabled,
+			[nameof(IEntry.IsSpellCheckEnabled)] = MapIsSpellCheckEnabled,
 			[nameof(IEntry.Keyboard)] = MapKeyboard,
 			[nameof(IEntry.MaxLength)] = MapMaxLength,
 			[nameof(IEntry.Placeholder)] = MapPlaceholder,

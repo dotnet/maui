@@ -5,6 +5,35 @@ updates:
   schedule:
     interval: daily
   open-pull-requests-limit: 25
+  groups:
+    AndroidX:
+      patterns:
+        - "Xamarin.AndroidX.*"
+        - "Xamarin.Build.Download"
+        - "Xamarin.Google.Android.Material"
+        - "Xamarin.Google.Crypto.Tink.Android"
+    AspNetCore:
+      patterns:
+        - "Microsoft.AspNetCore.*"
+        - "Microsoft.JSInterop"
+    SkiaSharp:
+      patterns:
+        - "SkiaSharp.*"
+        - "Svg.*"
+        - "ShimSkiaSharp"
+        - "Fizzler"
+    MicrosoftExtensions:
+      patterns:
+        - "Microsoft.Extensions.*"
+    WindowsAppSDK:
+      patterns:
+        - "Microsoft.Graphics.Win2D"
+        - "Microsoft.Windows.SDK.BuildTools"
+        - "Microsoft.WindowsAppSDK"
+    xunit:
+      patterns:
+        - "xunit"
+        - "xunit.runner.*"
   ignore:
     - dependency-name: "MicrosoftMauiGraphicsVersion"         # maestro
     - dependency-name: "Microsoft.Maui.Graphics*"             # maestro

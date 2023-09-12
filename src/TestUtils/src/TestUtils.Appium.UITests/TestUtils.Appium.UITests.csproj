@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Xamarin.UITest" Version="4.2.0" />
+    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
   </ItemGroup>
 
   <ItemGroup>

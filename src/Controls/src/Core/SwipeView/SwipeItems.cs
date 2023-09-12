@@ -16,6 +16,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
 		public SwipeItems(IEnumerable<ISwipeItem> swipeItems)
 		{
+			foreach (var item in swipeItems)
+				if (item is Element e)
+					AddLogicalChild(e);
+
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
 		}
@@ -68,6 +72,10 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Clear']/Docs/*" />
 		public void Clear()
 		{
+			foreach (var item in _swipeItems)
+				if (item is Element e)
+					RemoveLogicalChild(e);
+
 			_swipeItems.Clear();
 		}
 
@@ -114,24 +122,22 @@ namespace Microsoft.Maui.Controls
 			_swipeItems.RemoveAt(index);
 		}
 
-		protected override void OnBindingContextChanged()
-		{
-			base.OnBindingContextChanged();
-
-			object bc = BindingContext;
-
-			foreach (BindableObject item in _swipeItems)
-				SetInheritedBindingContext(item, bc);
-		}
-
 		void OnSwipeItemsChanged(object sender, NotifyCollectionChangedEventArgs notifyCollectionChangedEventArgs)
 		{
-			if (notifyCollectionChangedEventArgs.NewItems != null)
+			if (notifyCollectionChangedEventArgs.NewItems is not null)
 			{
-				object bc = BindingContext;
-				foreach (BindableObject item in notifyCollectionChangedEventArgs.NewItems)
-					SetInheritedBindingContext(item, bc);
+				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
+					if (item is Element e)
+						AddLogicalChild(e);
 			}
+
+			if (notifyCollectionChangedEventArgs.OldItems is not null)
+			{
+				foreach (var item in notifyCollectionChangedEventArgs.OldItems)
+					if (item is Element e)
+						RemoveLogicalChild(e);
+			}
+
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
 		}
 

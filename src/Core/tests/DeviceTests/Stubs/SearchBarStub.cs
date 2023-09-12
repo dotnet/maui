@@ -41,6 +41,8 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 		public bool IsTextPredictionEnabled { get; set; } = true;
 
+		public bool IsSpellCheckEnabled { get; set; } = true;
+
 		public bool IsReadOnly { get; set; }
 
 		public int MaxLength { get; set; } = int.MaxValue;

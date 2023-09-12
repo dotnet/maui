@@ -88,7 +88,7 @@ namespace Microsoft.Maui.DeviceTests
 				case UITextView tv:
 					return tv.Font;
 				default:
-					Assert.True(false, $"I don't know how to get the UIFont from here {handler.PlatformView}");
+					Assert.Fail($"I don't know how to get the UIFont from here {handler.PlatformView}");
 					return null;
 
 			}

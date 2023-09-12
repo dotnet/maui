@@ -218,6 +218,13 @@ namespace Microsoft.Maui.ApplicationModel
 		}
 
 		/// <summary>
+		/// Represents permission to access nearby WiFi devices.
+		/// </summary>
+		public partial class NearbyWifiDevices
+		{
+		}
+
+		/// <summary>
 		/// Represents permission to access the device network state information.
 		/// </summary>
 		public partial class NetworkState

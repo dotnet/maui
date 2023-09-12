@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Platform
 				platformPicker.Text = picker.GetItem(picker.SelectedIndex);
 		}
 
-		internal static void UpdateFlowDirection(this AlertDialog alertDialog, MauiPicker platformPicker)
+		internal static void UpdateFlowDirection(this AndroidX.AppCompat.App.AlertDialog alertDialog, MauiPicker platformPicker)
 		{
 			var platformLayoutDirection = platformPicker.LayoutDirection;
 

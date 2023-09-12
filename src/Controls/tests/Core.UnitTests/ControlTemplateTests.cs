@@ -174,6 +174,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			((IElementController)entry).SetValueFromRenderer(Entry.TextProperty, "Bar");
 			viewModel.Name = "Raz";
 
+			Assert.Equal("Raz", page.Name);
 			Assert.Equal("Raz", entry.Text);
 		}
 	}

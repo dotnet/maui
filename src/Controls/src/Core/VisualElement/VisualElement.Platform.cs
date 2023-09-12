@@ -22,34 +22,42 @@ namespace Microsoft.Maui.Controls
 			_loadedUnloadedToken = null;
 
 			// Window and this VisualElement both have a handler to work with
-			if (Window?.Handler?.PlatformView != null &&
+			if (Window?.Handler?.PlatformView is not null &&
 				Handler?.PlatformView is PlatformView view)
 			{
 				if (view.IsLoaded())
 				{
-					OnLoadedCore();
-					_loadedUnloadedToken = view.OnUnloaded(OnUnloadedCore);
+					SendLoaded(false);
+
+					// If SendLoaded caused the unloaded tokens to wire up
+					_loadedUnloadedToken?.Dispose();
+					_loadedUnloadedToken = null;
+					_loadedUnloadedToken = this.OnUnloaded(SendUnloaded);
 				}
 				else
 				{
-					OnUnloadedCore();
-					_loadedUnloadedToken = view.OnLoaded(OnLoadedCore);
+					SendUnloaded(false);
+
+					// If SendUnloaded caused the unloaded tokens to wire up
+					_loadedUnloadedToken?.Dispose();
+					_loadedUnloadedToken = null;
+					_loadedUnloadedToken = this.OnLoaded(SendLoaded);
 				}
 			}
 			else
 			{
 				// My handler is still set but the window handler isn't set.
 				// This means I'm starting to detach from the platform window
-				// So we wait for the platform detatch events to fire before calling 
+				// So we wait for the platform detach events to fire before calling 
 				// OnUnloaded
 				if (Handler?.PlatformView is PlatformView detachingView &&
 					detachingView.IsLoaded())
 				{
-					_loadedUnloadedToken = detachingView.OnUnloaded(OnUnloadedCore);
+					_loadedUnloadedToken = this.OnUnloaded(SendUnloaded);
 				}
 				else
 				{
-					OnUnloadedCore();
+					SendUnloaded();
 				}
 			}
 		}

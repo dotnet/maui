@@ -30,11 +30,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
   </ItemGroup>
   <ItemGroup Condition=" '$(UseMaui)' != 'true' and '$(TargetPlatformIdentifier)' == 'android' ">
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" />
-    <PackageReference Include="Xamarin.Google.Android.Material" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.3" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.2" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetPlatformIdentifier)' == 'android' ">
-    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" />
+    <PackageReference Include="Xamarin.AndroidX.Window.WindowJava" Version="1.1.0.1" />
   </ItemGroup>
 
   <!-- Add icon for NuGet -->

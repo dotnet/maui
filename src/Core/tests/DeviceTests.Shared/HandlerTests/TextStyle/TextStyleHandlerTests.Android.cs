@@ -72,7 +72,7 @@ namespace Microsoft.Maui.DeviceTests
 				case SearchView sv:
 					return sv.GetFirstChildOfType<EditText>();
 				default:
-					Assert.True(false, $"I don't know how to get the TextView from here {handler.PlatformView}");
+					Assert.Fail($"I don't know how to get the TextView from here {handler.PlatformView}");
 					return null;
 
 			}

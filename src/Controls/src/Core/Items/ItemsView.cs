@@ -108,14 +108,6 @@ namespace Microsoft.Maui.Controls
 			set => SetValue(RemainingItemsThresholdProperty, value);
 		}
 
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='AddLogicalChild']/Docs/*" />
-		public void AddLogicalChild(Element element) =>
-			AddLogicalChildInternal(element);
-
-		/// <include file="../../../docs/Microsoft.Maui.Controls/ItemsView.xml" path="//Member[@MemberName='RemoveLogicalChild']/Docs/*" />
-		public void RemoveLogicalChild(Element element)
-			=> RemoveLogicalChildInternal(element);
-
 		internal static readonly BindableProperty InternalItemsLayoutProperty =
 			BindableProperty.Create(nameof(ItemsLayout), typeof(IItemsLayout), typeof(ItemsView),
 				LinearItemsLayout.Vertical, propertyChanged: OnInternalItemsLayoutPropertyChanged);

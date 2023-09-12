@@ -17,10 +17,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("http://www.example.com")]
 		[InlineData("http://example.com/?query=blah")]
 		[InlineData("https://example.com/?query=blah")]
-		[InlineData("mailto://someone@microsoft.com")]
-		[InlineData("mailto://someone@microsoft.com?subject=test")]
-		[InlineData("tel:+1 555 010 9999")]
-		[InlineData("sms:5550109999")]
+		[InlineData("mailto://someone@microsoft.com"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("mailto://someone@microsoft.com?subject=test"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("tel:+1 555 010 9999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("sms:5550109999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
 		[Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
 		public Task Open(string uri)
 		{
@@ -31,10 +47,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("http://www.example.com")]
 		[InlineData("http://example.com/?query=blah")]
 		[InlineData("https://example.com/?query=blah")]
-		[InlineData("mailto://someone@microsoft.com")]
-		[InlineData("mailto://someone@microsoft.com?subject=test")]
-		[InlineData("tel:+1 555 010 9999")]
-		[InlineData("sms:5550109999")]
+		[InlineData("mailto://someone@microsoft.com"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("mailto://someone@microsoft.com?subject=test"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("tel:+1 555 010 9999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("sms:5550109999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
 		public async Task CanOpen(string uri)
 		{
 #if __IOS__
@@ -52,10 +84,26 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[InlineData("http://www.example.com")]
 		[InlineData("http://example.com/?query=blah")]
 		[InlineData("https://example.com/?query=blah")]
-		[InlineData("mailto://someone@microsoft.com")]
-		[InlineData("mailto://someone@microsoft.com?subject=test")]
-		[InlineData("tel:+1 555 010 9999")]
-		[InlineData("sms:5550109999")]
+		[InlineData("mailto://someone@microsoft.com"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("mailto://someone@microsoft.com?subject=test"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("tel:+1 555 010 9999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
+		[InlineData("sms:5550109999"
+#if WINDOWS
+			, Skip = "Doesn't work on Windows on CI"
+#endif
+			)]
 		public async Task CanOpenUri(string uri)
 		{
 #if __IOS__

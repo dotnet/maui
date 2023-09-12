@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 
 namespace Microsoft.Maui.Controls
@@ -15,7 +16,7 @@ namespace Microsoft.Maui.Controls
 		readonly BindableProperty _basedOnResourceProperty = BindableProperty.CreateAttached("BasedOnResource", typeof(Style), typeof(Style), default(Style),
 			propertyChanged: OnBasedOnResourceChanged);
 
-		readonly WeakList<BindableObject> _targets = new();
+		readonly ConditionalWeakTable<BindableObject, object> _targets = new();
 
 		Style _basedOnStyle;
 
@@ -63,11 +64,11 @@ namespace Microsoft.Maui.Controls
 					return;
 				_baseResourceKey = value;
 				//update all DynamicResources
-				foreach (var target in _targets)
+				foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
 				{
-					target.RemoveDynamicResource(_basedOnResourceProperty);
+					target.Key.RemoveDynamicResource(_basedOnResourceProperty);
 					if (value != null)
-						target.SetDynamicResource(_basedOnResourceProperty, value);
+						target.Key.SetDynamicResource(_basedOnResourceProperty, value);
 				}
 				if (value != null)
 					BasedOn = null;
@@ -89,16 +90,21 @@ namespace Microsoft.Maui.Controls
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='Triggers']/Docs/*" />
 		public IList<TriggerBase> Triggers => _triggers ??= new AttachedCollection<TriggerBase>();
 
-		void IStyle.Apply(BindableObject bindable)
+		void IStyle.Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
 			lock (_targets)
 			{
-				_targets.Add(bindable);
+#if NETSTANDARD2_0
+				_targets.Remove(bindable);
+				_targets.Add(bindable, specificity);
+#else
+				_targets.AddOrUpdate(bindable, specificity);
+#endif
 			}
 
 			if (BaseResourceKey != null)
 				bindable.SetDynamicResource(_basedOnResourceProperty, BaseResourceKey);
-			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable));
+			ApplyCore(bindable, BasedOn ?? GetBasedOnResource(bindable), specificity);
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Style.xml" path="//Member[@MemberName='TargetType']/Docs/*" />
@@ -129,23 +135,12 @@ namespace Microsoft.Maui.Controls
 			return false;
 		}
 
-		void ApplyCore(BindableObject bindable, Style basedOn)
-		{
-			if (basedOn != null)
-				((IStyle)basedOn).Apply(bindable);
-
-			foreach (Setter setter in Setters)
-				setter.Apply(bindable, true);
-			((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
-			((AttachedCollection<TriggerBase>)Triggers).AttachTo(bindable);
-		}
-
 		void BasedOnChanged(Style oldValue, Style newValue)
 		{
-			foreach (var bindable in _targets)
+			foreach (var target in (IEnumerable<KeyValuePair<BindableObject, object>>)(object)_targets)
 			{
-				UnApplyCore(bindable, oldValue);
-				ApplyCore(bindable, newValue);
+				UnApplyCore(target.Key, oldValue);
+				ApplyCore(target.Key, newValue, (SetterSpecificity)target.Value);
 			}
 		}
 
@@ -156,16 +151,44 @@ namespace Microsoft.Maui.Controls
 			Style style = (bindable as IStyleElement).Style;
 			if (style == null)
 				return;
+			if (!style._targets.TryGetValue(bindable, out var objectspecificity))
+				return;
+
 			style.UnApplyCore(bindable, (Style)oldValue);
-			style.ApplyCore(bindable, (Style)newValue);
+			style.ApplyCore(bindable, (Style)newValue, (SetterSpecificity)objectspecificity);
+		}
+
+		ConditionalWeakTable<BindableObject, object> specificities = new();
+
+		void ApplyCore(BindableObject bindable, Style basedOn, SetterSpecificity specificity)
+		{
+			if (basedOn != null)
+				((IStyle)basedOn).Apply(bindable, new SetterSpecificity(specificity.Style - 1, 0, 0, 0));
+
+#if NETSTANDARD2_0
+			specificities.Remove(bindable);
+			specificities.Add(bindable, specificity);
+#else
+			specificities.AddOrUpdate(bindable, specificity);
+#endif
+
+			foreach (Setter setter in Setters)
+				setter.Apply(bindable, specificity);
+
+			((AttachedCollection<Behavior>)Behaviors).AttachTo(bindable);
+			((AttachedCollection<TriggerBase>)Triggers).AttachTo(bindable);
 		}
 
 		void UnApplyCore(BindableObject bindable, Style basedOn)
 		{
 			((AttachedCollection<TriggerBase>)Triggers).DetachFrom(bindable);
 			((AttachedCollection<Behavior>)Behaviors).DetachFrom(bindable);
+
+			if (!specificities.TryGetValue(bindable, out var specificity))
+				return;
+
 			foreach (Setter setter in Setters)
-				setter.UnApply(bindable, true);
+				setter.UnApply(bindable, (SetterSpecificity)specificity);
 
 			if (basedOn != null)
 				((IStyle)basedOn).UnApply(bindable);

@@ -128,63 +128,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			return layout;
 		}
 
-		[Fact]
-		public void AddRespectsCascadeInputTransparent()
-		{
-			var layout = new VerticalStackLayout()
-			{
-				InputTransparent = true,
-				CascadeInputTransparent = true
-			};
-
-			var handler = Substitute.For<IViewHandler>();
-			layout.Handler = handler;
-
-			var child0 = new Button() { InputTransparent = false };
-			layout.Add(child0);
-
-			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
-		}
-
-		[Fact]
-		public void InsertRespectsCascadeInputTransparent()
-		{
-			var layout = new VerticalStackLayout()
-			{
-				InputTransparent = true,
-				CascadeInputTransparent = true
-			};
-
-			var handler = Substitute.For<IViewHandler>();
-			layout.Handler = handler;
-
-			var child0 = new Button() { InputTransparent = false };
-			layout.Insert(0, child0);
-
-			handler.Received().UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
-		}
-
-		[Fact]
-		public void UpdateRespectsCascadeInputTransparent()
-		{
-			var layout = new VerticalStackLayout()
-			{
-				InputTransparent = true,
-				CascadeInputTransparent = true
-			};
-
-			var handler = Substitute.For<IViewHandler>();
-			layout.Handler = handler;
-
-			var child0 = new Button() { InputTransparent = false };
-			layout.Add(child0);
-
-			var child1 = new Button() { InputTransparent = false };
-			layout[0] = child1;
-
-			handler.Received(2).UpdateValue(Arg.Is(nameof(Layout.CascadeInputTransparent)));
-		}
-
 		IMauiContext SetupContext(ILayoutManagerFactory layoutManagerFactory)
 		{
 			var services = Substitute.For<IServiceProvider>();

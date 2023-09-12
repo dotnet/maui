@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IVisualTreeElement, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
+	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -210,15 +210,24 @@ namespace Microsoft.Maui.Controls
 
 		void IWindow.FrameChanged(Rect frame)
 		{
-			if (new Rect(X, Y, Width, Height) == frame)
+			var x = X;
+			var y = Y;
+			var width = Width;
+			var height = Height;
+			if (new Rect(x, y, width, height) == frame)
 				return;
 
 			_batchFrameUpdate++;
 
-			X = frame.X;
-			Y = frame.Y;
-			Width = frame.Width;
-			Height = frame.Height;
+			SetPropertyChanging(XProperty, nameof(X), x, frame.X);
+			SetPropertyChanging(YProperty, nameof(Y), y, frame.Y);
+			SetPropertyChanging(WidthProperty, nameof(Width), width, frame.Width);
+			SetPropertyChanging(HeightProperty, nameof(Height), height, frame.Height);
+
+			SetValueCore(XProperty, frame.X, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(YProperty, frame.Y, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(WidthProperty, frame.Width, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
+			SetValueCore(HeightProperty, frame.Height, SetValueFlags.None, SetValuePrivateFlags.Silent, SetterSpecificity.FromHandler);
 
 			_batchFrameUpdate--;
 			if (_batchFrameUpdate < 0)
@@ -226,7 +235,32 @@ namespace Microsoft.Maui.Controls
 
 			if (_batchFrameUpdate == 0)
 			{
+				SetPropertyChanged(XProperty, nameof(X), x, frame.X);
+				SetPropertyChanged(YProperty, nameof(Y), y, frame.Y);
+				SetPropertyChanged(WidthProperty, nameof(Width), width, frame.Width);
+				SetPropertyChanged(HeightProperty, nameof(Height), height, frame.Height);
+
 				SizeChanged?.Invoke(this, EventArgs.Empty);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			void SetPropertyChanging(BindableProperty property, string name, double oldValue, double newValue)
+			{
+				if (oldValue == newValue)
+					return;
+
+				property.PropertyChanging?.Invoke(this, oldValue, newValue);
+				OnPropertyChanging(name);
+			}
+
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			void SetPropertyChanged(BindableProperty property, string name, double oldValue, double newValue)
+			{
+				if (oldValue == newValue)
+					return;
+
+				OnPropertyChanged(name);
+				property.PropertyChanged?.Invoke(this, oldValue, newValue);
 			}
 		}
 
@@ -367,7 +401,7 @@ namespace Microsoft.Maui.Controls
 			PropertyPropagationExtensions.PropagatePropertyChanged(
 				FlowDirectionProperty.PropertyName,
 				(Element)bindable,
-				((IElementController)bindable).LogicalChildren);
+				((IVisualTreeElement)bindable).GetVisualChildren());
 		}
 
 		bool IFlowDirectionController.ApplyEffectiveFlowDirectionToChildContainer => true;
@@ -412,8 +446,6 @@ namespace Microsoft.Maui.Controls
 			ModalPopped?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
 
-			VisualDiagnostics.OnChildRemoved(this, modalPage, index);
-
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
 			this.Handler?.UpdateValue(nameof(ITitledElement.Title));
@@ -434,7 +466,6 @@ namespace Microsoft.Maui.Controls
 			var args = new ModalPushedEventArgs(modalPage);
 			ModalPushed?.Invoke(this, args);
 			Application?.NotifyOfWindowModalEvent(args);
-			VisualDiagnostics.OnChildAdded(this, modalPage);
 
 #if WINDOWS
 			this.Handler?.UpdateValue(nameof(IWindow.TitleBarDragRectangles));
@@ -506,6 +537,7 @@ namespace Microsoft.Maui.Controls
 			Destroying?.Invoke(this, EventArgs.Empty);
 			OnDestroying();
 
+			AlertManager.Unsubscribe();
 			Application?.RemoveWindow(this);
 			Handler?.DisconnectHandler();
 		}
@@ -569,12 +601,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		// Currently this returns MainPage + ModalStack
-		// Depending on how we want this to show up inside LVT
-		// we might want to change this to only return the currently visible page
-		IReadOnlyList<IVisualTreeElement> IVisualTreeElement.GetVisualChildren() =>
-			_visualChildren;
-
 		static void OnPageChanging(BindableObject bindable, object oldValue, object newValue)
 		{
 			if (oldValue is Page oldPage)
@@ -587,7 +613,7 @@ namespace Microsoft.Maui.Controls
 			{
 				_menuBarTracker.Target = null;
 				_visualChildren.Remove(oldPage);
-				RemoveLogicalChildInternal(oldPage);
+				RemoveLogicalChild(oldPage);
 				oldPage.HandlerChanged -= OnPageHandlerChanged;
 				oldPage.HandlerChanging -= OnPageHandlerChanging;
 			}
@@ -598,7 +624,7 @@ namespace Microsoft.Maui.Controls
 			if (newPage != null)
 			{
 				_visualChildren.Add(newPage);
-				AddLogicalChildInternal(newPage);
+				AddLogicalChild(newPage);
 				newPage.NavigationProxy.Inner = NavigationProxy;
 				_menuBarTracker.Target = newPage;
 

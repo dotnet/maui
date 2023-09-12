@@ -105,12 +105,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			// get an image
 			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again
 			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
 			// make sure it was NOT collected and we got the same image
@@ -131,7 +131,7 @@ namespace Microsoft.Maui.DeviceTests
 			// get an image
 			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var drawable1 = result1.Value;
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// release
@@ -140,7 +140,7 @@ namespace Microsoft.Maui.DeviceTests
 			// get the image again
 			var result2 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
 			var drawable2 = result2.Value;
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// make sure it WAS collected and we got a new image
@@ -161,12 +161,12 @@ namespace Microsoft.Maui.DeviceTests
 
 			// get an image
 			var result1 = await service.GetDrawableAsync(imageSource, MauiProgram.DefaultContext);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			// get the image again as a load
 			var result2 = await service.LoadDrawableAsync(imageSource, imageView);
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(2, cache.Cache[imageSource.Color].Count);
 
 			// make sure it was NOT collected and we got the same image
@@ -193,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 			result2.Dispose();
 
 			// ensure the count went down
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			result1.Dispose();
@@ -216,7 +216,7 @@ namespace Microsoft.Maui.DeviceTests
 			result1.Dispose();
 
 			// ensure the count went down
-			Assert.Equal(1, cache.Cache.Count);
+			Assert.Single(cache.Cache);
 			Assert.Equal(1, cache.Cache[imageSource.Color].Count);
 
 			result2.Dispose();

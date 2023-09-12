@@ -302,7 +302,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expected, layoutFrame.Height, 1.0d);
 		}
 
-#if !ANDROID
+#if !ANDROID && !IOS
 		[Fact]
 		public async Task FrameResizesItsContents()
 		{
@@ -334,30 +334,29 @@ namespace Microsoft.Maui.DeviceTests
 			};
 
 			await CreateHandlerAndAddToWindow<IPlatformViewHandler>(layout, async (handler) =>
-					{
-						// Place the frame in a spacious container in a large window
-						var size = (layout as IView).Measure(originalLayoutDimensions, originalLayoutDimensions);
-						var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
-						(layout as IView).Arrange(rect);
-						await OnFrameSetToNotEmpty(layout);
-						await OnFrameSetToNotEmpty(frame);
+			{
+				// Place the frame in a spacious container in a large window
+				var size = (layout as IView).Measure(originalLayoutDimensions, originalLayoutDimensions);
+				var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
+				(layout as IView).Arrange(rect);
+				await OnFrameSetToNotEmpty(layout);
+				await OnFrameSetToNotEmpty(frame);
 
-						// Measure frame when it was first rendered in a spacious container
-						var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
-						var originalFrameHeight = frameControlSize.Height;
-						Assert.True(frameControlSize.Width > 0);
-						// Resize window to be smaller, forcing the frame to shrink (and wait for the changes to reflect)
-						layout.Window.Width = shrunkWindowWidth;
-						await Task.Delay(2000);
+				// Measure frame when it was first rendered in a spacious container
+				var frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
+				var originalFrameHeight = frameControlSize.Height;
+				Assert.True(frameControlSize.Width > 0);
+				// Resize window to be smaller, forcing the frame to shrink (and wait for the changes to reflect)
+				layout.Window.Width = shrunkWindowWidth;
+				await Task.Delay(2000);
 
-						// Ensure frame is within the window dimensions
-						frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
-						Assert.True((frameControlSize.Width > 0) && (frameControlSize.Width < shrunkWindowWidth));
+				// Ensure frame is within the window dimensions
+				frameControlSize = (frame.Handler as IPlatformViewHandler).PlatformView.GetBoundingBox();
+				Assert.True((frameControlSize.Width > 0) && (frameControlSize.Width < shrunkWindowWidth));
 
-
-						// If the frame's height changed (it wrapped some text), ensure it hasn't shrunk
-						Assert.True(frameControlSize.Height >= originalFrameHeight);
-					});
+				// If the frame's height changed (it wrapped some text), ensure it hasn't shrunk
+				Assert.True(frameControlSize.Height >= originalFrameHeight);
+			});
 		}
 #endif
 

@@ -1,7 +1,9 @@
+using System;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.UnitTests;
+using NSubstitute;
 using Xunit;
 
 namespace Microsoft.Maui.UnitTests
@@ -71,6 +73,41 @@ namespace Microsoft.Maui.UnitTests
 
 			Assert.False(wasMapper1Called);
 			Assert.True(wasMapper2Called);
+		}
+
+		[Fact]
+		public void AddCommandWithArgs()
+		{
+			var mapper = new CommandMapper<IView, IViewHandler>();
+
+			// Add a command mapping with a callback function that accepts an argument
+			const string key = "test_key";
+			var action = Substitute.For<Action<IViewHandler, IView, object>>();
+			mapper.Add(key, action);
+
+			// Invoke the command
+			const int arg = 42;
+			mapper[key].Invoke(null, null, arg);
+
+			// Verify that the callback function was invoked
+			action.Received().Invoke(Arg.Any<IViewHandler>(), Arg.Any<IView>(), arg);
+		}
+
+		[Fact]
+		public void AddCommandWithNoArgs()
+		{
+			var mapper = new CommandMapper<IView, IViewHandler>();
+
+			// Add a command mapping with a callback function that does NOT take an argument
+			const string key = "test_key";
+			var action = Substitute.For<Action<IViewHandler, IView>>();
+			mapper.Add(key, action);
+
+			// Invoke the command
+			mapper.GetCommand(key)?.Invoke(null, null, null);
+
+			// Verify that the callback function was invoked
+			action.Received().Invoke(Arg.Any<IViewHandler>(), Arg.Any<IView>());
 		}
 	}
 }

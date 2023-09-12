@@ -102,6 +102,16 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 				Orientation = StackOrientation.Horizontal
 			};
 
+			var changePositionButton = new Button
+			{
+				Text = "Update Position"
+			};
+
+			changePositionButton.Clicked += (sender, e) =>
+			{
+				_viewModel.CarouselPosition = Random.Shared.Next(_viewModel.Items.Count);
+			};
+
 			var addItemButton = new Button
 			{
 				Text = "Add Item"
@@ -148,6 +158,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.CarouselViewGalleri
 			lbl.SetBinding(Label.TextProperty, nameof(CarouselView.Position));
 			lbl.BindingContext = carouselView;
 
+			StackLayoutButtons.Children.Add(changePositionButton);
 			StackLayoutButtons.Children.Add(addItemButton);
 			StackLayoutButtons.Children.Add(removeItemButton);
 			StackLayoutButtons.Children.Add(clearItemsButton);

@@ -24,9 +24,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void TestDynamicResourceOverride()
 		{
-			Application.Current.Resources = new ResourceDictionary();
-			Application.Current.Resources.Add("GreenColor", Colors.Green);
-			Application.Current.Resources.Add("RedColor", Colors.Red);
+			Application.Current.Resources = new ResourceDictionary
+			{
+				{ "GreenColor", Colors.Green },
+				{ "RedColor", Colors.Red }
+			};
 
 			var setter = new Setter()
 			{

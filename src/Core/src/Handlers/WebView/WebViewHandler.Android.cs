@@ -11,9 +11,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		internal const string AssetBaseUrl = "file:///android_asset/";
 
-		WebViewClient? _webViewClient;
-		MauiWebChromeClient? _webChromeClient;
-
 		bool _firstRun = true;
 		readonly HashSet<string> _loadedCookies = new HashSet<string>();
 
@@ -52,16 +49,19 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(AWebView platformView)
 		{
-			if (_webViewClient is MauiWebViewClient mauiWebViewClient)
-				mauiWebViewClient.Disconnect();
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				if (platformView.WebViewClient is MauiWebViewClient webViewClient)
+					webViewClient.Disconnect();
 
-			_webChromeClient?.Disconnect();
+				if (platformView.WebChromeClient is MauiWebChromeClient webChromeClient)
+					webChromeClient.Disconnect();
+			}
+
+			platformView.SetWebViewClient(null!);
 			platformView.SetWebChromeClient(null);
 
 			platformView.StopLoading();
-
-			_webViewClient = null;
-			_webChromeClient = null;
 
 			base.DisconnectHandler(platformView);
 		}
@@ -79,13 +79,13 @@ namespace Microsoft.Maui.Handlers
 		public static void MapWebViewClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebViewClient(platformHandler._webViewClient ??= new MauiWebViewClient(platformHandler));
+				handler.PlatformView.SetWebViewClient(new MauiWebViewClient(platformHandler));
 		}
 
 		public static void MapWebChromeClient(IWebViewHandler handler, IWebView webView)
 		{
 			if (handler is WebViewHandler platformHandler)
-				handler.PlatformView.SetWebChromeClient(platformHandler._webChromeClient ??= new MauiWebChromeClient(platformHandler));
+				handler.PlatformView.SetWebChromeClient(new MauiWebChromeClient(platformHandler));
 		}
 
 		public static void MapWebViewSettings(IWebViewHandler handler, IWebView webView)
@@ -143,7 +143,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected internal bool NavigatingCanceled(string? url)
 		{
-			if (VirtualView == null || string.IsNullOrWhiteSpace(url) || _webViewClient == null)
+			if (VirtualView == null || string.IsNullOrWhiteSpace(url))
 				return true;
 
 			if (url == AssetBaseUrl)
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Handlers
 			bool cancel = VirtualView.Navigating(CurrentNavigationEvent, url);
 
 			// if the user disconnects from the handler we want to exit
-			if (_webViewClient == null)
+			if (!PlatformView.IsAlive())
 				return true;
 
 			PlatformView?.UpdateCanGoBackForward(VirtualView);

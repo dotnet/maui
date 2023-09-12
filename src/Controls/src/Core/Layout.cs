@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
 	{
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
@@ -72,7 +72,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		/// <summary>Bindable property for <see cref="CascadeInputTransparent"/>.</summary>
 		public static readonly BindableProperty CascadeInputTransparentProperty =
-			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true);
+			BindableProperty.Create(nameof(CascadeInputTransparent), typeof(bool), typeof(Layout), true,
+				propertyChanged: OnCascadeInputTransparentPropertyChanged);
 
 		/// <summary>Bindable property for <see cref="Padding"/>.</summary>
 		public static readonly BindableProperty PaddingProperty = PaddingElement.PaddingProperty;
@@ -265,8 +266,20 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var oldBounds = new Rect[LogicalChildrenInternal.Count];
 			for (var index = 0; index < oldBounds.Length; index++)
 			{
-				var c = (VisualElement)LogicalChildrenInternal[index];
-				oldBounds[index] = c.Bounds;
+				if (LogicalChildrenInternal[index] is VisualElement c)
+				{
+					oldBounds[index] = c.Bounds;
+				}
+				else
+				{
+					// The Logical Children Of the Layout aren't VisualElements
+					// This means layout won't automatically be performed by this code
+					// This is really only relevant for controls that still inherit from the 
+					// legacy layouts. I think SwipeView is the only control that runs into this
+					// Because the children of SwipeView are all logical elements handled by the handler
+					// not by this code.
+					return;
+				}
 			}
 
 			double width = Width;
@@ -517,6 +530,16 @@ namespace Microsoft.Maui.Controls.Compatibility
 			UpdateChildrenLayout();
 
 			return Frame.Size;
+		}
+
+		static void OnCascadeInputTransparentPropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			// We only need to update if the cascade changes anything, namely when InputTransparent=true.
+			// When InputTransparent=false, then the cascade property has no effect.
+			if (bindable is Layout layout && layout.InputTransparent)
+			{
+				layout.RefreshInputTransparentProperty();
+			}
 		}
 	}
 }

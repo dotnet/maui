@@ -37,8 +37,6 @@ parameters:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
-        bootsiOS: $(iOS.Msi)
         artifact: nuget
 
 resources:
@@ -56,12 +54,12 @@ resources:
 
 stages:
 
-  - stage: pack_net6
+  - stage: pack_net
     displayName: Pack .NET MAUI
     dependsOn: []
     jobs:
       - ${{ each PackPlatform in parameters.PackPlatforms }}:
-        - job: pack_net6_${{ PackPlatform.name }}
+        - job: pack_net_${{ PackPlatform.name }}
           workspace:
             clean: all
           displayName: ${{ PackPlatform.name }}

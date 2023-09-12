@@ -95,7 +95,7 @@ namespace Microsoft.Maui.Controls.Internals
 
 		static void SetValueFromRenderer(BindableObject bindable, BindableProperty property, object value)
 		{
-			bindable.SetValueCore(property, value);
+			bindable.SetValue(property, value);
 		}
 
 		public static void SetBinding<TPlatformView>(TPlatformView target, BindableProperty targetProperty, BindingBase binding) where TPlatformView : class

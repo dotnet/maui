@@ -75,13 +75,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void CursorPositionInvalid()
 		{
-			Assert.Throws<System.ArgumentException>(() =>
+			var entry = new Entry
 			{
-				var entry = new Entry
-				{
-					CursorPosition = -1
-				};
-			});
+				CursorPosition = -1
+			};
+			Assert.NotEqual(-1, entry.CursorPosition);
 		}
 
 		[Theory]
@@ -103,13 +101,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void SelectionLengthInvalid()
 		{
-			Assert.Throws<System.ArgumentException>(() =>
+
+			var entry = new Entry
 			{
-				var entry = new Entry
-				{
-					SelectionLength = -1
-				};
-			});
+				SelectionLength = -1
+			};
+			Assert.NotEqual(-1, entry.SelectionLength);
 		}
 
 		[Theory]

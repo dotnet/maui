@@ -1648,7 +1648,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var swtb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
-				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property);
+				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
 				binding.Unapply();
 			}
 			swtb.Stop();
@@ -1665,7 +1665,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var swtbh = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
-				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property);
+				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
 				binding.Unapply();
 			}
 			swtbh.Stop();
@@ -1678,7 +1678,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var swb = Stopwatch.StartNew();
 			for (var i = 0; i < it; i++)
 			{
-				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property);
+				binding.Apply(i % 2 == 0 ? vm0 : vm1, bindable, property, false, SetterSpecificity.FromBinding);
 				binding.Unapply();
 			}
 			swb.Stop();

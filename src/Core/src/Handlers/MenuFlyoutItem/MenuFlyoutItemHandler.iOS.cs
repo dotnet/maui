@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Foundation;
-using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
-using static CoreMedia.CMTime;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -21,9 +16,7 @@ namespace Microsoft.Maui.Handlers
 			while (current != null)
 			{
 				if (current is Microsoft.Maui.IMenuFlyout)
-				{
 					return true;
-				}
 				current = current.Parent;
 			}
 			return false;
@@ -48,6 +41,11 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			return VirtualView.CreateMenuItem(MauiContext!);
+		}
+
+		public static void MapIsEnabled(IMenuFlyoutItemHandler handler, IMenuFlyoutItem view)
+		{
+			handler.PlatformView?.UpdateIsEnabled(view);
 		}
 
 		internal static void Execute(UICommand uICommand)

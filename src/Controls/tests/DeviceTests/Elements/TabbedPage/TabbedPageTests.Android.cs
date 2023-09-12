@@ -111,12 +111,52 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		BottomNavigationView GetBottomNavigationView(TabbedViewHandler tabViewHandler)
+		BottomNavigationView GetBottomNavigationView(IPlatformViewHandler tabViewHandler)
 		{
-			var layout = (tabViewHandler.PlatformView as Android.Views.IViewParent).FindParent((view) => view is CoordinatorLayout)
+			var layout = tabViewHandler.PlatformView.FindParent((view) => view is CoordinatorLayout)
 				as CoordinatorLayout;
 
 			return layout.GetFirstChildOfType<BottomNavigationView>();
+		}
+
+		async Task ValidateTabBarIconColor(
+			TabbedPage tabbedPage,
+			string tabText,
+			Color iconColor,
+			bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemIconContainsColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemIconDoesNotContainColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+		}
+
+		async Task ValidateTabBarTextColor(
+			TabbedPage tabbedPage,
+			string tabText,
+			Color iconColor,
+			bool hasColor)
+		{
+			if (hasColor)
+			{
+				await AssertionExtensions.AssertTabItemTextContainsColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
+			else
+			{
+				await AssertionExtensions.AssertTabItemTextDoesNotContainColor(
+					GetBottomNavigationView((tabbedPage.Handler as IPlatformViewHandler)),
+					tabText, iconColor, MauiContext);
+			}
 		}
 	}
 }

@@ -132,7 +132,7 @@ namespace Microsoft.Maui.Controls
 		#region IPropertyPropagationController
 		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName)
 		{
-			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, Items);
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this, ((IVisualTreeElement)this).GetVisualChildren());
 		}
 		#endregion
 
@@ -270,7 +270,7 @@ namespace Microsoft.Maui.Controls
 			if (CurrentItem == child)
 			{
 				if (ShellItemController.GetItems().Count == 0)
-					ClearValue(CurrentItemProperty);
+					ClearValue(CurrentItemProperty, specificity: SetterSpecificity.FromHandler);
 				else
 					SetValueFromRenderer(CurrentItemProperty, ShellItemController.GetItems()[0]);
 			}

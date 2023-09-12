@@ -64,14 +64,32 @@
                     Text="at the bottom"
                     HeightRequest="100"/>
                 <Label
-                    Text="IsTextPredictionEnabled=True"
-                    Style="{StaticResource Headline}"/>
-                <SearchBar
+                    Text="SpellCheck (True), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
                     IsTextPredictionEnabled="True"/>
                 <Label
-                    Text="IsTextPredictionEnabled=False"
-                    Style="{StaticResource Headline}"/>
-                <SearchBar
+                    Text="SpellCheck (False), TextPrediction (True)" 
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
+                    IsTextPredictionEnabled="True"/>
+                <Label
+                    Text="SpellCheck (True), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="True"
+                    IsTextPredictionEnabled="False"/>
+                <Label
+                    Text="SpellCheck (False), TextPrediction (False)" 
+                    Style="{StaticResource Headline}" />
+                <SearchBar 
+                    Text="Whats new" 
+                    IsSpellCheckEnabled="False"
                     IsTextPredictionEnabled="False"/>
                 <Label
                     Text="Focus"

@@ -669,6 +669,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).AutocorrectionType == UITextAutocorrectionType.Yes;
 
+		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
+			GetNativeEntry(entryHandler).SpellCheckingType == UITextSpellCheckingType.Yes;
+
 		bool GetNativeIsReadOnly(EntryHandler entryHandler) =>
 			!GetNativeEntry(entryHandler).UserInteractionEnabled;
 
@@ -699,7 +702,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			return nativeEntry.AutocapitalizationType == UITextAutocapitalizationType.Sentences &&
 				nativeEntry.AutocorrectionType == UITextAutocorrectionType.Yes &&
-				nativeEntry.SpellCheckingType == UITextSpellCheckingType.No;
+				nativeEntry.SpellCheckingType == UITextSpellCheckingType.Yes;
 		}
 
 		bool GetNativeClearButtonVisibility(EntryHandler entryHandler) =>

@@ -55,13 +55,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var titleColor = controller.EffectiveTabBarTitleColor;
 
 			_itemTextColor = MakeColorStateList(
-				titleColor ?? foregroundColor, 
-				disabledColor, 
+				titleColor ?? foregroundColor,
+				disabledColor,
 				unselectedColor);
 
 			_itemIconTint = MakeColorStateList(
-				foregroundColor ?? titleColor, 
-				disabledColor, 
+				foregroundColor ?? titleColor,
+				disabledColor,
 				unselectedColor);
 
 			bottomView.ItemTextColor = _itemTextColor;

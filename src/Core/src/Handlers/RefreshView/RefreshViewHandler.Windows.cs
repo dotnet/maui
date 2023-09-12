@@ -14,20 +14,16 @@ namespace Microsoft.Maui.Handlers
 
 		protected override RefreshContainer CreatePlatformView()
 		{
-			var refreshContainer = new RefreshContainer
+			return new RefreshContainer
 			{
-				ManipulationMode = UI.Xaml.Input.ManipulationModes.All,
 				PullDirection = RefreshPullDirection.TopToBottom
 			};
-
-			return refreshContainer;
 		}
 
 		protected override void ConnectHandler(RefreshContainer nativeView)
 		{
 			nativeView.Loaded += OnLoaded;
 			nativeView.RefreshRequested += OnRefresh;
-			nativeView.ManipulationDelta += OnManipulationDelta;
 
 			base.ConnectHandler(nativeView);
 		}
@@ -36,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			nativeView.Loaded -= OnLoaded;
 			nativeView.RefreshRequested -= OnRefresh;
-			nativeView.ManipulationDelta += OnManipulationDelta;
 
 			CompleteRefresh();
 
@@ -116,18 +111,6 @@ namespace Microsoft.Maui.Handlers
 			_refreshCompletionDeferral = args.GetDeferral();
 
 			if (VirtualView != null)
-				VirtualView.IsRefreshing = true;
-		}
-
-		void OnManipulationDelta(object sender, UI.Xaml.Input.ManipulationDeltaRoutedEventArgs e)
-		{
-			if (e.PointerDeviceType is UI.Input.PointerDeviceType.Touch)
-				return; // Already managed by the RefreshContainer control itself
-
-			const double minimumCumulativeY = 20;
-			double cumulativeY = e.Cumulative.Translation.Y;
-
-			if (cumulativeY > minimumCumulativeY && VirtualView is not null && !VirtualView.IsRefreshing)
 				VirtualView.IsRefreshing = true;
 		}
 

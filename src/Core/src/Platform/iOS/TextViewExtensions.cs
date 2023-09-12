@@ -53,6 +53,14 @@ namespace Microsoft.Maui.Platform
 				textView.AutocorrectionType = UITextAutocorrectionType.No;
 		}
 
+		public static void UpdateIsSpellCheckEnabled(this UITextView textView, IEditor editor)
+		{
+			if (editor.IsSpellCheckEnabled)
+				textView.SpellCheckingType = UITextSpellCheckingType.Yes;
+			else
+				textView.SpellCheckingType = UITextSpellCheckingType.No;
+		}
+
 		public static void UpdateFont(this UITextView textView, ITextStyle textStyle, IFontManager fontManager)
 		{
 			var font = textStyle.Font;
@@ -77,7 +85,10 @@ namespace Microsoft.Maui.Platform
 			textView.ApplyKeyboard(keyboard);
 
 			if (keyboard is not CustomKeyboard)
+			{
 				textView.UpdateIsTextPredictionEnabled(editor);
+				textView.UpdateIsSpellCheckEnabled(editor);
+			}
 
 			textView.ReloadInputViews();
 		}

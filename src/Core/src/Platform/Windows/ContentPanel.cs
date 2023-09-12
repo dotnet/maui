@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 	public class ContentPanel : MauiPanel
 	{
 		readonly Path? _borderPath;
-		IShape? _borderShape;
+		IBorderStroke? _borderStroke;
 		FrameworkElement? _content;
 
 		internal Path? BorderPath => _borderPath;
@@ -29,6 +29,8 @@ namespace Microsoft.Maui.Platform
 				AddContent(_content);
 			}
 		}
+
+		internal bool IsInnerPath { get; private set; }
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
@@ -49,12 +51,17 @@ namespace Microsoft.Maui.Platform
 
 		void ContentPanelSizeChanged(object sender, UI.Xaml.SizeChangedEventArgs e)
 		{
-			if (_borderPath == null)
+			if (_borderPath is null)
 				return;
 
-			_borderPath.UpdatePath(_borderShape, ActualWidth, ActualHeight);
-			UpdateContent();
-			UpdateClip(_borderShape);
+			var width = e.NewSize.Width;
+			var height = e.NewSize.Height;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			_borderPath.UpdatePath(_borderStroke?.Shape, width, height);
+			UpdateClip(_borderStroke?.Shape, width, height);
 		}
 
 		internal void EnsureBorderPath()
@@ -73,16 +80,39 @@ namespace Microsoft.Maui.Platform
 			_borderPath.UpdateBackground(background);
 		}
 
+		[Obsolete("Use Microsoft.Maui.Platform.UpdateBorderStroke instead")]
 		public void UpdateBorderShape(IShape borderShape)
 		{
-			_borderShape = borderShape;
+			UpdateBorder(borderShape);
+		}
 
-			if (_borderPath == null)
+		internal void UpdateBorderStroke(IBorderStroke borderStroke)
+		{
+			if (borderStroke is null)
 				return;
 
-			_borderPath.UpdateBorderShape(_borderShape, ActualWidth, ActualHeight);
-			UpdateContent();
-			UpdateClip(_borderShape);
+			_borderStroke = borderStroke;
+
+			if (_borderStroke is null)
+				return;
+
+			UpdateBorder(_borderStroke.Shape);
+		}
+
+		void UpdateBorder(IShape? strokeShape)
+		{
+			if (strokeShape is null || _borderPath is null)
+				return;
+
+			_borderPath.UpdateBorderShape(strokeShape, ActualWidth, ActualHeight);
+
+			var width = ActualWidth;
+			var height = ActualHeight;
+
+			if (width <= 0 || height <= 0)
+				return;
+
+			UpdateClip(strokeShape, width, height);
 		}
 
 		void AddContent(FrameworkElement? content)
@@ -94,37 +124,38 @@ namespace Microsoft.Maui.Platform
 				Children.Add(_content);
 		}
 
-		void UpdateContent()
+		void UpdateClip(IShape? borderShape, double width, double height)
 		{
-			if (Content == null || _borderPath == null)
+			if (Content is null)
 				return;
 
-			var strokeThickness = _borderPath.StrokeThickness;
-
-			Content.RenderTransform = new TranslateTransform() { X = -strokeThickness, Y = -strokeThickness };
-		}
-
-		void UpdateClip(IShape? borderShape)
-		{
-			if (Content == null)
+			if (height <= 0 && width <= 0)
 				return;
 
 			var clipGeometry = borderShape;
 
-			if (clipGeometry == null)
-				return;
-
-			double width = ActualWidth;
-			double height = ActualHeight;
-
-			if (height <= 0 && width <= 0)
+			if (clipGeometry is null)
 				return;
 
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
 
+
 			var pathSize = new Graphics.Rect(0, 0, width, height);
-			var clipPath = clipGeometry.PathForBounds(pathSize);
+			PathF? clipPath;
+
+			if (clipGeometry is IRoundRectangle roundedRectangle)
+			{
+				float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
+				IsInnerPath = true;
+			}
+			else
+			{
+				clipPath = clipGeometry.PathForBounds(pathSize);
+				IsInnerPath = false;
+			}
+
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
 

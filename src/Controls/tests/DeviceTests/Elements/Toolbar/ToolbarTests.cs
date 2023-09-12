@@ -154,6 +154,7 @@ namespace Microsoft.Maui.DeviceTests
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
+					await AssertionExtensions.Wait(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
 					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(currentPage.Handler));
 				}
 			});

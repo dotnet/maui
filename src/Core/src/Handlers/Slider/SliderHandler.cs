@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public SliderHandler() : base(Mapper)
+		public SliderHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

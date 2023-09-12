@@ -168,7 +168,7 @@ namespace Microsoft.Maui.Handlers
 			var measurementWidth = widthConstraint - padding.HorizontalThickness;
 			var measurementHeight = heightConstraint - padding.VerticalThickness;
 
-			var result = scrollView.CrossPlatformMeasure(measurementWidth, measurementHeight);
+			var result = (scrollView as ICrossPlatformLayout).CrossPlatformMeasure(measurementWidth, measurementHeight);
 
 			// ... and add the padding back in to the final result
 			var fullSize = new Size(result.Width + padding.HorizontalThickness, result.Height + padding.VerticalThickness);
@@ -189,7 +189,7 @@ namespace Microsoft.Maui.Handlers
 
 		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
 		{
-			return VirtualView.CrossPlatformArrange(bounds);
+			return (VirtualView as ICrossPlatformLayout).CrossPlatformArrange(bounds);
 		}
 	}
 }

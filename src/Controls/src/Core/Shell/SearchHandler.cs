@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetIsFocused(bool value)
 		{
-			SetValueCore(IsFocusedPropertyKey, value);
+			SetValue(IsFocusedPropertyKey, value, specificity: SetterSpecificity.FromHandler);
 		}
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public event EventHandler<FocusRequestArgs> FocusChangeRequested;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.Controls
 		void ISearchHandlerController.ItemSelected(object obj)
 		{
 			OnItemSelected(obj);
-			SetValueCore(SelectedItemPropertyKey, obj);
+			SetValue(SelectedItemPropertyKey, obj, specificity: SetterSpecificity.FromHandler);
 		}
 
 		void ISearchHandlerController.QueryConfirmed()
@@ -570,9 +570,9 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(ShowsResultsProperty, value); }
 		}
 
-		bool ClearPlaceholderEnabledCore { set => SetValueCore(ClearPlaceholderEnabledProperty, value); }
+		bool ClearPlaceholderEnabledCore { set => SetValue(ClearPlaceholderEnabledProperty, value); }
 
-		bool IsSearchEnabledCore { set => SetValueCore(IsSearchEnabledProperty, value); }
+		bool IsSearchEnabledCore { set => SetValue(IsSearchEnabledProperty, value); }
 
 		protected virtual void OnClearPlaceholderClicked()
 		{

@@ -49,6 +49,9 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).IsTextPredictionEnabled;
 
+		bool GetNativeIsSpellCheckEnabled(EditorHandler editorHandler) =>
+			GetNativeEditor(editorHandler).IsSpellCheckEnabled;
+
 		Color GetNativeTextColor(EditorHandler editorHandler) =>
 			GetNativeEditor(editorHandler).Resources.TryGet<SolidColorBrush>("TextControlForeground").ToColor();
 

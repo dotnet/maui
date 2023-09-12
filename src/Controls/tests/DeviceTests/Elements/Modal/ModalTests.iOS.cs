@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 					var currentPage = rootPage.GetCurrentPage();
 					await currentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
-					Assert.Equal(1, currentPage.Navigation.ModalStack.Count);
+					Assert.Single(currentPage.Navigation.ModalStack);
 
 					var rootView = handler.PlatformView;
 					Assert.NotNull(rootView);

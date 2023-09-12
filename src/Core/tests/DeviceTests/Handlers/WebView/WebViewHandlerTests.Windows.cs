@@ -78,13 +78,13 @@ namespace Microsoft.Maui.DeviceTests
 				handler.PlatformView.NavigationCompleted += (_, _) =>
 				{
 					navigationComplete?.SetResult();
-					navigationComplete = null;
 				};
 
 				await AttachAndRun(webView, async (handler) =>
 				{
 					await handler.PlatformView.OnLoadedAsync();
 					await navigationComplete.Task;
+					navigationComplete = null;
 				});
 			});
 		}

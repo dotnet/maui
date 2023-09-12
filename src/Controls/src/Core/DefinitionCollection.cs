@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	public class DefinitionCollection<T> : IList<T>, ICollection<T> where T : IDefinition
 	{
+		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		readonly List<T> _internalList;
 
 		internal DefinitionCollection() => _internalList = new List<T>();
@@ -101,13 +102,15 @@ namespace Microsoft.Maui.Controls
 			OnItemSizeChanged(this, EventArgs.Empty);
 		}
 
-		public event EventHandler ItemSizeChanged;
+		public event EventHandler ItemSizeChanged
+		{
+			add => _weakEventManager.AddEventHandler(value);
+			remove => _weakEventManager.RemoveEventHandler(value);
+		}
 
 		void OnItemSizeChanged(object sender, EventArgs e)
 		{
-			EventHandler eh = ItemSizeChanged;
-			if (eh != null)
-				eh(this, EventArgs.Empty);
+			_weakEventManager.HandleEvent(this, e, nameof(ItemSizeChanged));
 		}
 	}
 }

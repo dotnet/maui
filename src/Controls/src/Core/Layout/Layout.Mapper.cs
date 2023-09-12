@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Microsoft.Maui.Layouts;
 
 namespace Microsoft.Maui.Controls
 {
@@ -10,13 +11,9 @@ namespace Microsoft.Maui.Controls
 	{
 		internal static new void RemapForControls()
 		{
-			ViewHandler.ViewMapper = ControlsLayoutMapper;
 		}
 
-		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper)
-		{
-			[nameof(CascadeInputTransparent)] = MapInputTransparent,
-			[nameof(IView.InputTransparent)] = MapInputTransparent,
-		};
+		[Obsolete("Use LayoutHandler.Mapper instead.")]
+		public static IPropertyMapper<IView, IViewHandler> ControlsLayoutMapper = new PropertyMapper<IView, IViewHandler>(ControlsVisualElementMapper);
 	}
 }

@@ -57,7 +57,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(2, (view as IGestureController).CompositeGestureRecognizers.Count);
 
 			view.GestureRecognizers.Clear();
-			Assert.Equal(1, (view as IGestureController).CompositeGestureRecognizers.Count);
+			Assert.Single((view as IGestureController).CompositeGestureRecognizers);
 			Assert.Null(gestureRecognizer.Parent);
 		}
 
@@ -101,6 +101,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			gesture.PointerMovedCommand = cmd;
 			gesture.PointerMovedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void PointerPressedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerPressedCommand = cmd;
+			gesture.PointerPressedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void PointerReleasedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerReleasedCommand = cmd;
+			gesture.PointerReleasedCommandParameter = parameter;
 			cmd?.Execute(parameter);
 
 			Assert.Equal(commandExecuted, parameter);

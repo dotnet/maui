@@ -18,7 +18,6 @@ namespace Microsoft.Maui.Controls
 		public MenuBarTracker(Element parent, string handlerProperty)
 		{
 			_menuBar = new MenuBar();
-			_menuBar.Parent = parent;
 			_parent = parent;
 			_handlerProperty = handlerProperty;
 			CollectionChanged += OnMenuBarItemCollectionChanged;
@@ -27,6 +26,15 @@ namespace Microsoft.Maui.Controls
 		void OnMenuBarItemCollectionChanged(object sender, EventArgs e)
 		{
 			_menuBar.SyncMenuBarItemsFromPages(ToolbarItems);
+
+			if (_menuBar.Count == 0)
+			{
+				_menuBar.Parent?.RemoveLogicalChild(_menuBar);
+			}
+			else if (_menuBar.Parent != _parent)
+			{
+				_parent.AddLogicalChild(_menuBar);
+			}
 
 			if (_handlerProperty != null)
 			{

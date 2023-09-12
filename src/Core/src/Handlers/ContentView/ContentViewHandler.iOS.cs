@@ -47,7 +47,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			UpdateContent(handler);
 		}

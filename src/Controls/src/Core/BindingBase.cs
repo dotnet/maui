@@ -126,9 +126,11 @@ namespace Microsoft.Maui.Controls
 				throw new InvalidOperationException("Cannot change a binding while it's applied");
 		}
 
-		internal virtual void Apply(bool fromTarget) => IsApplied = true;
+		internal virtual void Apply(bool fromTarget)
+				=> IsApplied = true;
 
-		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged = false) => IsApplied = true;
+		internal virtual void Apply(object context, BindableObject bindObj, BindableProperty targetProperty, bool fromBindingContextChanged, SetterSpecificity specificity)
+			=> IsApplied = true;
 
 		internal abstract BindingBase Clone();
 
@@ -143,7 +145,7 @@ namespace Microsoft.Maui.Controls
 			return value;
 		}
 
-		internal bool TryFormat(string format, object arg0, out string value)
+		internal static bool TryFormat(string format, object arg0, out string value)
 		{
 			try
 			{
@@ -158,7 +160,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal bool TryFormat(string format, object[] args, out string value)
+		internal static bool TryFormat(string format, object[] args, out string value)
 		{
 			try
 			{

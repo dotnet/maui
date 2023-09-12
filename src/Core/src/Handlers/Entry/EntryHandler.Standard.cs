@@ -11,7 +11,20 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsPassword(IEntryHandler handler, IEntry entry) { }
 		public static void MapHorizontalTextAlignment(IEntryHandler handler, IEntry entry) { }
 		public static void MapVerticalTextAlignment(IEntryHandler handler, IEntry entry) { }
+
+		/// <summary>
+		/// Maps the abstract <see cref="ITextInput.IsTextPredictionEnabled"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler"> The associated handler.</param>
+		/// <param name="entry"> The associated <see cref="IEntry"/> instance.</param>
 		public static void MapIsTextPredictionEnabled(IEntryHandler handler, IEntry entry) { }
+
+		/// <summary>
+		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler"> The associated handler.</param>
+		/// <param name="entry"> The associated <see cref="IEntry"/> instance.</param>
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
 		public static void MapMaxLength(IEntryHandler handler, IEntry entry) { }
 		public static void MapPlaceholder(IEntryHandler handler, IEntry entry) { }
 		public static void MapPlaceholderColor(IEntryHandler handler, IEntry entry) { }

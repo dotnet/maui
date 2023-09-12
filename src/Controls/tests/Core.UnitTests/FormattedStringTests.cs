@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string original = "fubar";
 			FormattedString fs = original;
 			Assert.NotNull(fs);
-			Assert.Equal(1, fs.Spans.Count);
+			Assert.Single(fs.Spans);
 			Assert.NotNull(fs.Spans[0]);
 			Assert.Equal(fs.Spans[0].Text, original);
 		}
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			string original = null;
 			FormattedString fs = original;
 			Assert.NotNull(fs);
-			Assert.Equal(1, fs.Spans.Count);
+			Assert.Single(fs.Spans);
 			Assert.NotNull(fs.Spans[0]);
 			Assert.Equal(fs.Spans[0].Text, original);
 		}

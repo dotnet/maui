@@ -448,8 +448,10 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var page1 = new ContentPage();
-			var page2 = new ContentPage();
+			var page1 = new ContentPage()
+				{ Content = new Label() { Text = "Page 1" }, Title = "Page 1" };
+			var page2 = new ContentPage()
+				{ Content = new Label() { Text = "Page 2" }, Title = "Page 2" };
 
 			var shell = await CreateShellAsync((shell) =>
 			{
@@ -995,16 +997,7 @@ namespace Microsoft.Maui.DeviceTests
 				await shell.Navigation.PopAsync();
 			});
 
-			// Windows requires an actual delay
-			// Android/iOS require multiple GCs
-			await AssertionExtensions.Wait(() =>
-			{
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-				return !pageReference.IsAlive;
-			}, timeout: 5000);
-
-			Assert.NotNull(pageReference);
+			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
