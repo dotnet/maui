@@ -126,6 +126,9 @@ namespace Maui.Controls.Sample.ViewModels
 				new SectionModel(typeof(WindowsCollapseWidthAdjusterPage), "FlyoutPage Navigation Bar",
 					"This WinUI platform-specific is used to collapse the navigation bar on a FlyoutPage."),
 
+				new SectionModel(typeof(WindowsDragAndDropCustomization), "Drag and Drop Gesture Recognizer Platform-Specific",
+					"This WinUI platform-specific displays drag and drop customization such as custom drag gylph and text."),
+
 				new SectionModel(typeof(WindowsListViewPage), "ListView Selection Mode",
 					"This WinUI platform-specific controls whether items in a ListView can respond to tap gestures, and hence whether the native ListView fires the ItemClick or Tapped event."),
 
