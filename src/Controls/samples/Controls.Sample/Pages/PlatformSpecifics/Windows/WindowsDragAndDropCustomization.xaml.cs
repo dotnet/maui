@@ -34,16 +34,15 @@ namespace Maui.Controls.Sample.Pages
 			dragUI.Caption = string.IsNullOrEmpty (CustomCaptionEntry.Text) ? "Copy" : CustomCaptionEntry.Text;
 #endif
 		}
-	}
 
-
-	public class NameObject
-	{
-		public NameObject(string name)
+		public class NameObject
 		{
-			Name = name;
-		}
+			public NameObject(string name)
+			{
+				Name = name;
+			}
 
-		public string Name { get; set; }
+			public string Name { get; set; }
+		}
 	}
 }

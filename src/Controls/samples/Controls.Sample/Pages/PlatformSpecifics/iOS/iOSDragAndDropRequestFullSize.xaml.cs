@@ -128,16 +128,18 @@ namespace Maui.Controls.Sample.Pages
 				copySwitch.IsToggled = false;
 			}
 		}
-	}
 
-
-	public class NameObject
-	{
-		public NameObject(string name)
+		public class NameObject
 		{
-			Name = name;
-		}
+			public NameObject(string name)
+			{
+				Name = name;
+			}
 
-		public string Name { get; set; }
+			public string Name { get; set; }
+		}
 	}
+
+
+	
 }
