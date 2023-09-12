@@ -13,7 +13,7 @@ namespace Maui.Controls.Sample.Issues
 		public Issue16561()
 		{
 			InitializeComponent();
-			
+
 			var tapGesture = new TapGestureRecognizer();
 			tapGesture.Tapped += TapHandler;
 

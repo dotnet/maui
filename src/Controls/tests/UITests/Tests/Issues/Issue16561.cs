@@ -57,7 +57,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			AssertCorrectTapLocation(result[0].Text, expectedX2, expectedY, "Second");
 		}
 
-		static void AssertCorrectTapLocation(string tapData, float expectedX, float expectedY, string which) 
+		static void AssertCorrectTapLocation(string tapData, float expectedX, float expectedY, string which)
 		{
 			// Turn the text values into numbers so we can compare with a tolerance
 			(var tapX, var tapY) = ParseCoordinates(tapData);
@@ -66,7 +66,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			Assert.AreEqual((double)expectedY, tapY, 1, $"{which} tap has unexpected Y value");
 		}
 
-		static (double, double) ParseCoordinates(string text) 
+		static (double, double) ParseCoordinates(string text)
 		{
 			var values = text.Split(',', StringSplitOptions.TrimEntries)
 				.Select(double.Parse)
