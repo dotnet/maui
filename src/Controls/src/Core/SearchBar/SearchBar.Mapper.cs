@@ -18,8 +18,12 @@ namespace Microsoft.Maui.Controls
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(Text), MapText);
 			SearchBarHandler.Mapper.ReplaceMapping<SearchBar, ISearchBarHandler>(nameof(TextTransform), MapText);
 
+#if IOS || ANDROID
+			SearchBarHandler.Mapper.AppendToMapping(nameof(VisualElement.IsFocused), InputView.MapIsFocused);
+#endif
+
 #if ANDROID
-			SearchBarHandler.CommandMapper.PrependToMapping(nameof(ISearchBar.Focus), MapFocus);
+			SearchBarHandler.CommandMapper.PrependToMapping(nameof(ISearchBar.Focus), InputView.MapFocus);
 #endif
 		}
 	}

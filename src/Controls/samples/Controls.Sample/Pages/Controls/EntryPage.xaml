@@ -40,6 +40,8 @@
     <views:BasePage.Content>
         <ScrollView>
             <VerticalStackLayout Padding="12">
+                <Button Margin="5" x:Name="ShowSoftInputAsyncButton" Clicked="ShowSoftInputAsyncButton_Clicked" Text="Show Soft Input for Placeholder Button" />
+                <Button Margin="5" x:Name="HideSoftInputAsyncButton" Clicked="HideSoftInputAsyncButton_Clicked" Text="Hide Soft Input" />
                 <Label
                     Text="Basic"
                     Style="{StaticResource Headline}" />
@@ -66,6 +68,7 @@
                     Text="With Placeholder"
                     Style="{StaticResource Headline}" />
                 <Entry 
+                    x:Name="PlaceholderEntryItem"
                     Placeholder="Placeholder"/>
                 <Label
                     Text="Using PlaceholderColor"

@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class DatePickerHandler : ViewHandler<IDatePicker, UIDatePicker>
 	{
+		readonly UIDatePickerProxy _proxy = new();
+
 		protected override UIDatePicker CreatePlatformView()
 		{
 			return new UIDatePicker { Mode = UIDatePickerMode.Date, TimeZone = new NSTimeZone("UTC") };
@@ -16,9 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(UIDatePicker platformView)
 		{
-			platformView.EditingDidBegin += OnStarted;
-			platformView.EditingDidEnd += OnEnded;
-			platformView.ValueChanged += OnValueChanged;
+			_proxy.Connect(this, VirtualView, platformView);
 
 			var date = VirtualView?.Date;
 			if (date is DateTime dt)
@@ -31,9 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(UIDatePicker platformView)
 		{
-			platformView.EditingDidBegin -= OnStarted;
-			platformView.EditingDidEnd -= OnEnded;
-			platformView.ValueChanged -= OnValueChanged;
+			_proxy.Disconnect(platformView);
 
 			base.DisconnectHandler(platformView);
 		}
@@ -77,33 +75,58 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		void OnValueChanged(object? sender, EventArgs? e)
-		{
-			if (UpdateImmediately)  // Platform Specific
-				SetVirtualViewDate();
-
-			if (VirtualView != null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnStarted(object? sender, EventArgs eventArgs)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnEnded(object? sender, EventArgs eventArgs)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = false;
-		}
-
 		void SetVirtualViewDate()
 		{
 			if (VirtualView == null)
 				return;
 
 			VirtualView.Date = PlatformView.Date.ToDateTime().Date;
+		}
+
+		class UIDatePickerProxy
+		{
+			WeakReference<DatePickerHandler>? _handler;
+			WeakReference<IDatePicker>? _virtualView;
+
+			IDatePicker? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(DatePickerHandler handler, IDatePicker virtualView, UIDatePicker platformView)
+			{
+				_handler = new(handler);
+				_virtualView = new(virtualView);
+
+				platformView.EditingDidBegin += OnStarted;
+				platformView.EditingDidEnd += OnEnded;
+				platformView.ValueChanged += OnValueChanged;
+			}
+
+			public void Disconnect(UIDatePicker platformView)
+			{
+				platformView.EditingDidBegin -= OnStarted;
+				platformView.EditingDidEnd -= OnEnded;
+				platformView.ValueChanged -= OnValueChanged;
+			}
+
+			void OnValueChanged(object? sender, EventArgs? e)
+			{
+				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)
+					handler.SetVirtualViewDate();
+
+				if (VirtualView is IDatePicker virtualView)
+					virtualView.IsFocused = true;
+			}
+
+			void OnStarted(object? sender, EventArgs eventArgs)
+			{
+				if (VirtualView is IDatePicker virtualView)
+					virtualView.IsFocused = true;
+			}
+
+			void OnEnded(object? sender, EventArgs eventArgs)
+			{
+				if (VirtualView is IDatePicker virtualView)
+					virtualView.IsFocused = false;
+			}
 		}
 	}
 }

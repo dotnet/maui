@@ -37,6 +37,36 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
+		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "")
+		{
+			var binlogName = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+			var buildArgs = $"\"{projectFile}\" -c {config}";
+
+			if (!string.IsNullOrEmpty(target))
+			{
+				binlogName = $"{target}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+				buildArgs += $" -t:{target}";
+			}
+
+			if (!string.IsNullOrEmpty(framework))
+				buildArgs += $" -f:{framework}";
+
+			if (properties != null)
+			{
+				foreach (var p in properties)
+				{
+					buildArgs += $" -p:{p}";
+				}
+			}
+
+			if (string.IsNullOrEmpty(binlogPath))
+			{
+				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
+			}
+
+			return Run("publish", $"{buildArgs} -bl:\"{binlogPath}\"");
+		}
+
 		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";

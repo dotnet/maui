@@ -6,6 +6,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, UIDatePicker>
 	{
+		readonly UIDatePickerProxy _proxy = new();
+
 		protected override UIDatePicker CreatePlatformView()
 		{
 			return new UIDatePicker { Mode = UIDatePickerMode.Time, TimeZone = new NSTimeZone("UTC") };
@@ -17,27 +19,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			if (platformView != null)
-			{
-				platformView.EditingDidBegin += OnStarted;
-				platformView.EditingDidEnd += OnEnded;
-				platformView.ValueChanged += OnValueChanged;
-				platformView.UpdateTime(VirtualView);
-			}
+			_proxy.Connect(this, VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIDatePicker platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			if (platformView != null)
-			{
-				platformView.EditingDidBegin -= OnStarted;
-				platformView.EditingDidEnd -= OnEnded;
-				platformView.ValueChanged -= OnValueChanged;
-				platformView.RemoveFromSuperview();
-				platformView.Dispose();
-			}
+			_proxy.Disconnect(platformView);
 		}
 
 		public static void MapFormat(ITimePickerHandler handler, ITimePicker timePicker)
@@ -73,24 +62,6 @@ namespace Microsoft.Maui.Handlers
 			// handler.PlatformView?.UpdateTextAlignment(timePicker);
 		}
 
-		void OnStarted(object? sender, EventArgs eventArgs)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = true;
-		}
-
-		void OnEnded(object? sender, EventArgs eventArgs)
-		{
-			if (VirtualView != null)
-				VirtualView.IsFocused = false;
-		}
-
-		void OnValueChanged(object? sender, EventArgs e)
-		{
-			if (UpdateImmediately)  // Platform Specific
-				SetVirtualViewTime();
-		}
-
 		void SetVirtualViewTime()
 		{
 			if (VirtualView == null || PlatformView == null)
@@ -98,6 +69,54 @@ namespace Microsoft.Maui.Handlers
 
 			var datetime = PlatformView.Date.ToDateTime();
 			VirtualView.Time = new TimeSpan(datetime.Hour, datetime.Minute, 0);
+		}
+
+		class UIDatePickerProxy
+		{
+			WeakReference<TimePickerHandler>? _handler;
+			WeakReference<ITimePicker>? _virtualView;
+
+			ITimePicker? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(TimePickerHandler handler, ITimePicker virtualView, UIDatePicker platformView)
+			{
+				_handler = new(handler);
+				_virtualView = new(virtualView);
+
+				platformView.EditingDidBegin += OnStarted;
+				platformView.EditingDidEnd += OnEnded;
+				platformView.ValueChanged += OnValueChanged;
+			}
+
+			public void Disconnect(UIDatePicker platformView)
+			{
+				_virtualView = null;
+
+				platformView.EditingDidBegin -= OnStarted;
+				platformView.EditingDidEnd -= OnEnded;
+				platformView.ValueChanged -= OnValueChanged;
+				platformView.RemoveFromSuperview();
+			}
+
+			void OnStarted(object? sender, EventArgs eventArgs)
+			{
+				if (VirtualView is ITimePicker virtualView)
+					virtualView.IsFocused = true;
+			}
+
+			void OnEnded(object? sender, EventArgs eventArgs)
+			{
+				if (VirtualView is ITimePicker virtualView)
+					virtualView.IsFocused = false;
+			}
+
+			void OnValueChanged(object? sender, EventArgs e)
+			{
+				if (_handler is not null && _handler.TryGetTarget(out var handler) && handler.UpdateImmediately)
+				{
+					handler.SetVirtualViewTime();
+				}
+			}
 		}
 	}
 }

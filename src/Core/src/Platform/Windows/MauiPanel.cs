@@ -6,7 +6,7 @@ using WSize = global::Windows.Foundation.Size;
 
 namespace Microsoft.Maui.Platform
 {
-	public abstract class MauiPanel : Panel, ICrossPlatformLayoutBacking
+	public abstract class MauiPanel : Panel, ICrossPlatformLayoutBacking, IVisualTreeElementProvidable
 	{
 		public ICrossPlatformLayout? CrossPlatformLayout
 		{
@@ -51,6 +51,17 @@ namespace Microsoft.Maui.Platform
 			var actual = CrossPlatformArrange(new Rect(0, 0, width, height));
 
 			return actual.ToPlatform();
+		}
+
+		IVisualTreeElement? IVisualTreeElementProvidable.GetElement()
+		{
+			if (CrossPlatformLayout is IVisualTreeElement layoutElement &&
+				layoutElement.IsThisMyPlatformView(this))
+			{
+				return layoutElement;
+			}
+
+			return null;
 		}
 	}
 }

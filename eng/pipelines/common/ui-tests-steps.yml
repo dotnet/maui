@@ -17,6 +17,10 @@ steps:
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
         skipProvisioning: false
+      ${{ if eq(parameters.platform, 'android') }}:
+        skipAndroidSdks : false
+      ${{ if ne(parameters.platform, 'android') }}:
+        skipAndroidSdks: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
@@ -30,6 +34,15 @@ steps:
         defaults write -g NSAutomaticSpellingCorrectionEnabled -bool false
     displayName: "Modify defaults"
     continueOnError: true
+
+  # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
+  - task: ScreenResolutionUtility@1
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    inputs:
+      displaySettings: 'specific'
+      width: '1920'
+      height: '1080'
+    displayName: "Set screen resolution"
 
   - task: NodeTool@0
     inputs:

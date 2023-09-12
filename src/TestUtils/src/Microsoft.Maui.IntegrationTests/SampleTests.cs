@@ -33,6 +33,8 @@ namespace Microsoft.Maui.IntegrationTests
 			{
 				"UseWorkload=true",
 				$"RestoreConfigFile={TestNuGetConfig}",
+				// Surface warnings as build errors
+				"TreatWarningsAsErrors=true",
 			};
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: sampleProps, binlogPath: binlog),

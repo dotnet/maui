@@ -32,7 +32,7 @@ namespace TestUtils.Appium.UITests
 		{
 			Debug.WriteLine($">>>>> Converting raw query '{raw}' to {nameof(AppiumQuery)}");
 
-			var match = Regex.Match(raw, @"(.*)\s(marked|text):'((.|\n)*)'");
+			var match = Regex.Match(raw, @"(.*)\s(marked|text):'(.*)'");
 
 			var controlType = match.Groups[1].Captures[0].Value;
 			var marked = match.Groups[3].Captures[0].Value;
@@ -59,7 +59,7 @@ namespace TestUtils.Appium.UITests
 			return query(new AppQuery(QueryPlatform.iOS)).ToString().Replace("\\'", "'", StringComparison.InvariantCultureIgnoreCase);
 		}
 
-		static QueryPlatform GetQueryPlatform(string platform)
+		internal static QueryPlatform GetQueryPlatform(string platform)
 		{
 			var plat = platform.ToLowerInvariant();
 			QueryPlatform queryPlatform = QueryPlatform.iOS;

@@ -178,6 +178,15 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(TextAlignment.End, labelVerticalTextAlignment.VerticalTextAlignment);
 		}
 
+		[Fact]
+		public void OriginalLabelTextNotUpdatingAfterBindingIsSet()
+		{
+			var label = new Label() { Text = "sassifrass" };
+			label.BindingContext = 1;
+			label.SetBinding(Label.TextProperty, ".");
+			Assert.Equal("1", label.Text);
+		}
+
 		sealed class ViewModel : INotifyPropertyChanged
 		{
 			TextAlignment horizontalAlignment;

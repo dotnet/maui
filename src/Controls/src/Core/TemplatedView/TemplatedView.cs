@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Controls
 			double heightRequest = HeightRequest;
 			var childRequest = new SizeRequest();
 
-			if ((widthRequest == -1 || heightRequest == -1) && InternalChildren.Count > 0)
+			if ((widthRequest == -1 || heightRequest == -1) && InternalChildren.Count > 0 && InternalChildren[0] is View view)
 			{
-				childRequest = ((View)InternalChildren[0]).Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
+				childRequest = view.Measure(widthConstraint, heightConstraint, MeasureFlags.IncludeMargins);
 			}
 
 			return new SizeRequest

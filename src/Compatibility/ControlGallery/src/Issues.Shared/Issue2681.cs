@@ -75,8 +75,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 
 #if UITEST
 		[Test]
-		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
-		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewDoesntFreezeApp()
 		{
 			RunningApp.Tap(x => x.Marked(NavigateToPage));

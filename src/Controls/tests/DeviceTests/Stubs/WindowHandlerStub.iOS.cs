@@ -66,8 +66,12 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 					{
 						_workSpace.AddChildViewController(vc);
 						_workSpace.View.AddSubview(vc.View);
-						if (fireEvents)
-							FireWindowEvent(VirtualView, (window) => !window.IsActivated, () => VirtualView.Activated());
+						if (fireEvents && this is IElementHandler elementHandler && elementHandler.VirtualView is IWindow virtualView)
+							FireWindowEvent(virtualView, (window) => !window.IsActivated, () =>
+							{
+								if (!IsDisconnected)
+									VirtualView.Activated();
+							});
 					});
 			}
 			else
@@ -81,10 +85,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 			}
 		}
 
-		// If the content on the window is updated as part of the test
-		// this logic takes care of removing the old view and then adding the incoming
-		// view to the testing surface
-		void Disconnect(IView view, UIWindow platformView, Action finishedClosing)
+		async void Disconnect(IView view, UIWindow platformView, Action finishedClosing)
 		{
 			if (view == null)
 			{
@@ -114,13 +115,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 			FireWindowEvent(virtualView, (window) => window.IsActivated, () => virtualView.Deactivated());
 
-			pvc.PresentingViewController.DismissViewController(false,
-				() =>
-				{
-					finishedClosing.Invoke();
-					FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
-				});
+			// Cleanup any modal pages left over from the test
+			while (pvc.PresentedViewController is ModalWrapper mw)
+			{
+				await mw.DismissViewControllerAsync(false);
+				await Task.Yield();
+			}
 
+			await pvc.PresentingViewController.DismissViewControllerAsync(false);
+			await Task.Yield();
+			finishedClosing.Invoke();
+			FireWindowEvent(virtualView, (window) => !window.IsDestroyed, () => virtualView.Destroying());
 		}
 
 		bool FireWindowEvent(IWindow platformView, Func<Window, bool> condition, Action action)

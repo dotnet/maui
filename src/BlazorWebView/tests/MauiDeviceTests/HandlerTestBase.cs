@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 {
@@ -26,6 +26,10 @@ namespace Microsoft.Maui.MauiBlazorWebView.DeviceTests
 			_isCreated = true;
 			var appBuilder = MauiApp
 				.CreateBuilder();
+
+			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
+			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
 
 			additionalCreationActions?.Invoke(appBuilder);
 

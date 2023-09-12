@@ -6,16 +6,20 @@ using Microsoft.Maui.Controls.StyleSheets;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Element.xml" path="Type[@FullName='Microsoft.Maui.Controls.Element']/Docs/*" />
 	public partial class Element : IStyleSelectable
 	{
+		/// <inheritdoc/>
 		IEnumerable<IStyleSelectable> IStyleSelectable.Children => LogicalChildrenInternal;
 
+		/// <inheritdoc/>
 		IList<string> IStyleSelectable.Classes => null;
 
+		/// <inheritdoc/>
 		string IStyleSelectable.Id => StyleId;
 
 		string[] _styleSelectableNameAndBaseNames;
+
+		/// <inheritdoc/>
 		string[] IStyleSelectable.NameAndBases
 		{
 			get
@@ -35,6 +39,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <inheritdoc/>
 		IStyleSelectable IStyleSelectable.Parent => Parent;
 
 		//on parent set, or on parent stylesheet changed, reapply all

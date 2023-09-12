@@ -106,6 +106,36 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(commandExecuted, parameter);
 		}
 
+		[Fact]
+		public void PointerPressedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerPressedCommand = cmd;
+			gesture.PointerPressedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
+		[Fact]
+		public void PointerReleasedCommandFires()
+		{
+			var gesture = new PointerGestureRecognizer();
+			var parameter = new object();
+			object commandExecuted = null;
+			Command cmd = new Command(() => commandExecuted = parameter);
+
+			gesture.PointerReleasedCommand = cmd;
+			gesture.PointerReleasedCommandParameter = parameter;
+			cmd?.Execute(parameter);
+
+			Assert.Equal(commandExecuted, parameter);
+		}
+
 		VisualStateGroupList AddPointerOverVisualState(VisualElement visualElement)
 		{
 			VisualStateGroupList visualStateGroups = new VisualStateGroupList();
