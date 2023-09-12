@@ -354,23 +354,31 @@
             <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
             <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Condition="'%(MauiAsset.Link)' != '' Or '%(MauiAsset.LogicalName)' == ''" />
         </ItemGroup>
+        <!-- pick the destination property to assign the final path -->
+        <PropertyGroup>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
+        </PropertyGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
-            ItemMetadata="MauiAssetTargetPath"
+            ItemMetadata="$(_MauiAssetItemMetadata)"
             Input="@(_MauiAssetWithLinkMetadata)">
             <Output ItemName="_MauiAssetItemWithMetadata" TaskParameter="Output" />
         </GetMauiAssetPath>
+        <!-- add the processed assets to the correct itme groups and add any additional properties -->
         <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
-            <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" Link="%(MauiAssetTargetPath)" />
+            <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
-            <Content Include="@(_MauiAssetItemWithMetadata)" Link="%(MauiAssetTargetPath)" />
+            <Content Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" TargetPath="%(MauiAssetTargetPath)" CopyToPublishDirectory="PreserveNewest" />
+            <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" CopyToPublishDirectory="PreserveNewest" />
         </ItemGroup>
         <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <TizenResource Include="@(_MauiAssetItemWithMetadata)" TizenTpkFileName="%(MauiAssetTargetPath)" />
+            <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
         </ItemGroup>
     </Target>
 
