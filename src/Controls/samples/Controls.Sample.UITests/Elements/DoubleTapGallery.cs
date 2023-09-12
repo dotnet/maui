@@ -16,9 +16,11 @@ namespace Maui.Controls.Sample
 			{
 				HeightRequest = 200,
 				WidthRequest = 200,
-				BackgroundColor = Microsoft.Maui.Graphics.Colors.AliceBlue,
-				AutomationId = "DoubleTapSurface"
+				BackgroundColor = Microsoft.Maui.Graphics.Colors.AliceBlue
 			};
+
+			var dtLabel = new Label { Text = "DoubleTapSurface", AutomationId = "DoubleTapSurface" };
+			tapSurface.Add(dtLabel);
 
 			var doubleTapRecognizer = new TapGestureRecognizer() { NumberOfTapsRequired = 2 };
 			doubleTapRecognizer.Tapped += (sender, args) => { result.Text = "Success"; };
