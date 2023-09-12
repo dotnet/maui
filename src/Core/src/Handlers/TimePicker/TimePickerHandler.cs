@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public TimePickerHandler() : base(Mapper)
+		public TimePickerHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

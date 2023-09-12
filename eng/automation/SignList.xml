@@ -7,6 +7,9 @@
     <FirstParty Include="Microsoft.AspNetCore.Components.WebView.*.dll" />
     <FirstParty Include="Microsoft.Extensions*.dll" />
     <FirstParty Include="System.CodeDom.dll" />
+    <FirstParty Include="Microsoft.Bcl.AsyncInterfaces.dll" />
+    <FirstParty Include="System.Text.Json.dll" />
+    <FirstParty Include="System.Text.Encodings.Web.dll" />
 
     <!-- SkiaSharp -->
     <FirstParty Include="SkiaSharp*.dll" />
@@ -44,15 +47,12 @@
     <Skip Include="NuGet.*.dll" />
     <Skip Include="Mono.*.dll" />
     <Skip Include="Microsoft.Build.*.dll" />
-    <Skip Include="Microsoft.Bcl.AsyncInterfaces.dll" />
     <Skip Include="System.Buffers.dll" />
     <Skip Include="System.IO.UnmanagedMemoryStream.dll" />
     <Skip Include="System.Memory.dll" />
     <Skip Include="System.Numerics.Vectors.dll" />
     <Skip Include="System.ObjectModel.dll" />
     <Skip Include="System.Runtime.CompilerServices.Unsafe.dll" />
-    <Skip Include="System.Text.Json.dll" />
-    <Skip Include="System.Text.Encodings.Web.dll" />
   </ItemGroup>
 
 </Project>

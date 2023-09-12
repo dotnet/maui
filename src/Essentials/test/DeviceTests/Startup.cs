@@ -32,9 +32,6 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					},
 					SkipCategories = Traits
 						.GetSkipTraits()
-#if __ANDROID__
-						.Append($"{Traits.FileProvider}={Traits.FeatureSupport.ToExclude(OperatingSystem.IsAndroidVersionAtLeast(24))}")
-#endif
 						.ToList(),
 				})
 				.UseHeadlessRunner(new HeadlessRunnerOptions

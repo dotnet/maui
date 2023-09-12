@@ -29,13 +29,13 @@ namespace Microsoft.Maui.Handlers
 			PlatformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
 		}
 
-		public static void MapBackground(IContentViewHandler handler, IContentView view)
+		public static partial void MapBackground(IContentViewHandler handler, IContentView view)
 		{
 			handler.UpdateValue(nameof(handler.ContainerView));
 			handler.ToPlatform()?.UpdateBackground(view);
 		}
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 			if (handler is ContentViewHandler contentViewHandler)
 			{

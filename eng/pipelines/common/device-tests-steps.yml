@@ -1,5 +1,5 @@
 parameters:
-  platform: '' # [ android, ios, windows ]
+  platform: '' # [ android, ios, catalyst, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
   cakeArgs: '' # additional cake args
@@ -15,7 +15,7 @@ steps:
     parameters:
       ${{ if eq(parameters.platform, 'windows')}}:
         platform: windows
-      ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'android'))}}:
+      ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
@@ -61,18 +61,18 @@ steps:
     retryCountOnTaskFailure: 2
 
   - task: PublishTestResults@2
-    displayName: Publish the $(System.PhaseName) test results
+    displayName: Publish the $(Agent.JobName) test results
     condition: always()
     inputs:
       testResultsFormat: xUnit
       testResultsFiles: '$(TestResultsDirectory)/**/TestResults*(-*).xml'
-      testRunTitle: '$(System.PhaseName)_${{ parameters.windowsPackageId }} (attempt: $(System.JobAttempt))'
+      testRunTitle: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
   - task: PublishBuildArtifacts@1
     displayName: Publish Artifacts
     condition: always()
     inputs:
-      artifactName: $(System.PhaseName)_attempt_$(System.JobAttempt)
+      artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
   # This must always be placed as the last step in the job
   - template: agent-rebooter/mac.v1.yml@yaml-templates

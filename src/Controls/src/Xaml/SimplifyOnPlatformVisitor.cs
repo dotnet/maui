@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 #nullable disable
 
@@ -8,10 +9,21 @@ namespace Microsoft.Maui.Controls.Xaml
 	{
 		public SimplifyOnPlatformVisitor(string targetFramework)
 		{
-			TargetFramework = targetFramework;
+
+			if (string.IsNullOrEmpty(targetFramework))
+				return;
+
+			if (targetFramework.IndexOf("-android", StringComparison.OrdinalIgnoreCase) != -1)
+				Target = nameof(OnPlatformExtension.Android);
+			if (targetFramework.IndexOf("-ios", StringComparison.OrdinalIgnoreCase) != -1)
+				Target = nameof(OnPlatformExtension.iOS);
+			if (targetFramework.IndexOf("-macos", StringComparison.OrdinalIgnoreCase) != -1)
+				Target = nameof(OnPlatformExtension.macOS);
+			if (targetFramework.IndexOf("-maccatalyst", StringComparison.OrdinalIgnoreCase) != -1)
+				Target = nameof(OnPlatformExtension.MacCatalyst);
 		}
 
-		public string TargetFramework { get; }
+		public string Target { get; }
 
 		public TreeVisitingMode VisitingMode => TreeVisitingMode.BottomUp;
 		public bool StopOnDataTemplate => false;
@@ -26,73 +38,94 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public void Visit(MarkupNode node, INode parentNode)
 		{
+			//markup was already expanded to element
 		}
 
 		public void Visit(ElementNode node, INode parentNode)
 		{
-			if (node.XmlType.Name != nameof(OnPlatformExtension) || node.XmlType.NamespaceUri != XamlParser.MauiUri)
-				return;
-			if (string.IsNullOrEmpty(TargetFramework))
+			if (Target is null)
 				return;
 
-			string target = null;
-#if NETSTANDARD2_0
-			if (TargetFramework.Contains("-android"))
-#else
-			if (TargetFramework.Contains("-android", StringComparison.Ordinal))
-#endif
-				target = nameof(OnPlatformExtension.Android);
-#if NETSTANDARD2_0
-			if (TargetFramework.Contains("-ios"))
-#else
-			if (TargetFramework.Contains("-ios", StringComparison.Ordinal))
-#endif
-				target = nameof(OnPlatformExtension.iOS);
-#if NETSTANDARD2_0
-			if (TargetFramework.Contains("-macos"))
-#else
-			if (TargetFramework.Contains("-macos", StringComparison.Ordinal))
-#endif
-				target = nameof(OnPlatformExtension.macOS);
-#if NETSTANDARD2_0
-			if (TargetFramework.Contains("-maccatalyst"))
-#else
-			if (TargetFramework.Contains("-maccatalyst", StringComparison.Ordinal))
-#endif
-				target = nameof(OnPlatformExtension.MacCatalyst);
-#if NETSTANDARD2_0
-			if (TargetFramework.Contains("-tizen"))
-#else
-			if (TargetFramework.Contains("-tizen", StringComparison.Ordinal))
-#endif
-				target = nameof(OnPlatformExtension.Tizen);
-
-			if (target is null)
-				return;
-
-			if (node.Properties.TryGetValue(new XmlName("", target), out INode targetNode)
-				|| node.Properties.TryGetValue(new XmlName("", nameof(OnPlatformExtension.Default)), out targetNode))
+			//`{OnPlatform}` markup extension
+			if (node.XmlType.Name == nameof(OnPlatformExtension) && node.XmlType.NamespaceUri == XamlParser.MauiUri)
 			{
-				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
-					return;
-				if (parentNode is IElementNode parentEnode)
-					parentEnode.Properties[name] = targetNode;
+				if (node.Properties.TryGetValue(new XmlName("", Target), out INode targetNode)
+					|| node.Properties.TryGetValue(new XmlName("", nameof(OnPlatformExtension.Default)), out targetNode))
+				{
+					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+						return;
+					if (parentNode is IElementNode parentEnode)
+						parentEnode.Properties[name] = targetNode;
+				}
+				else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
+				{
+					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+						return;
+					if (parentNode is IElementNode parentEnode)
+						parentEnode.Properties[name] = node.CollectionItems[0];
+				}
+				else //no prop for target and no Default set
+				{
+					if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+						return;
+					//if there's no value for the targetPlatform, ignore the node.
+					//this is slightly different than what OnPlatform does (return default(T))
+					if (parentNode is IElementNode parentEnode)
+						parentEnode.Properties.Remove(name);
+				}
 			}
-			else if (node.CollectionItems.Count > 0) // syntax like {OnPlatform foo, iOS=bar}
+
+			//`<OnPlatform>` elements
+			if (node.XmlType.Name == "OnPlatform" && node.XmlType.NamespaceUri == XamlParser.MauiUri)
 			{
-				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
+				var onNode = GetOnNode(node, Target) ?? GetDefault(node);
+
+				//Property node
+				if (ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name)
+					&& parentNode is IElementNode parentEnode)
+				{
+					if (onNode != null)
+						parentEnode.Properties[name] = onNode;
+					else
+						parentEnode.Properties.Remove(name);
 					return;
-				if (parentNode is IElementNode parentEnode)
-					parentEnode.Properties[name] = node.CollectionItems[0];
+				}
+
+				//Collection item
+				if (onNode != null && parentNode is IElementNode parentEnode2)
+					parentEnode2.CollectionItems[parentEnode2.CollectionItems.IndexOf(node)] = onNode;
+
 			}
-			else //no prop for target and no Default set
+
+			INode GetOnNode(ElementNode onPlatform, string target)
 			{
-				if (!ApplyPropertiesVisitor.TryGetPropertyName(node, parentNode, out XmlName name))
-					return;
-				//if there's no value for the targetPlatform, ignore the node.
-				//this is slightly different than what OnPlatform does (return default(T))
-				if (parentNode is IElementNode parentEnode)
-					parentEnode.Properties.Remove(name);
+				foreach (var onNode in onPlatform.CollectionItems)
+				{
+					if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Platform"), out var platform))
+					{
+						var splits = ((platform as ValueNode).Value as string).Split(',');
+						foreach (var split in splits)
+						{
+							if (string.IsNullOrWhiteSpace(split))
+								continue;
+							if (split.Trim() == target)
+							{
+								if ((onNode as ElementNode).Properties.TryGetValue(new XmlName("", "Value"), out var node))
+									return node;
+
+								return (onNode as ElementNode).CollectionItems.FirstOrDefault();
+							}
+						}
+					}
+				}
+				return null;
+			}
+
+			INode GetDefault(ElementNode onPlatform)
+			{
+				if (node.Properties.TryGetValue(new XmlName("", "Default"), out INode defaultNode))
+					return defaultNode;
+				return null;
 			}
 
 		}

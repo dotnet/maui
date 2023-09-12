@@ -102,6 +102,9 @@ namespace Microsoft.Maui.Controls.Platform
 
 		void UpdateItemSize()
 		{
+			// Avoid the ItemWrapGrid grow beyond what this grid view is configured to
+			_wrapGrid.MaximumRowsOrColumns = Span;
+
 			if (_orientation == Orientation.Horizontal)
 			{
 				_wrapGrid.ItemHeight = _wrapGrid.ActualHeight / Span;

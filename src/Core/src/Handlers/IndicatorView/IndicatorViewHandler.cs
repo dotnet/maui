@@ -32,7 +32,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public IndicatorViewHandler() : base(Mapper)
+		public IndicatorViewHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

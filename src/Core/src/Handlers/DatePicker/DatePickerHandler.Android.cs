@@ -77,47 +77,46 @@ namespace Microsoft.Maui.Handlers
 			return dialog;
 		}
 
-		// This is a Android-specific mapping
-		public static void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapBackground(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateBackground(datePicker);
 		}
 
-		public static void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFormat(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateFormat(datePicker);
 		}
 
-		public static void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateDate(datePicker);
 		}
 
-		public static void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMinimumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateMinimumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapMaximumDate(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateMaximumDate(datePicker, platformHandler._dialog);
 		}
 
-		public static void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapCharacterSpacing(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			handler.PlatformView?.UpdateCharacterSpacing(datePicker);
 		}
 
-		public static void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapFont(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			var fontManager = handler.GetRequiredService<IFontManager>();
 
 			handler.PlatformView?.UpdateFont(datePicker, fontManager);
 		}
 
-		public static void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
+		public static partial void MapTextColor(IDatePickerHandler handler, IDatePicker datePicker)
 		{
 			if (handler is DatePickerHandler platformHandler)
 				handler.PlatformView?.UpdateTextColor(datePicker);

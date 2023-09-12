@@ -214,6 +214,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			((IShellController)shell).AddAppearanceObserver(this, shell);
 
 			SwitchFragment(FragmentManager, _frameLayout, shell.CurrentItem, false);
+
+			var rootManager = _mauiContext.GetNavigationRootManager();
+			rootManager?.OnWindowContentPlatformViewCreated();
 		}
 
 		IShellItemRenderer _currentView;

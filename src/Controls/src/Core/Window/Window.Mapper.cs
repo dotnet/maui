@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 		public static IPropertyMapper<IWindow, WindowHandler> ControlsWindowMapper =
 			new PropertyMapper<Window, WindowHandler>(WindowHandler.Mapper);
 
-		internal static void RemapForControls()
+		internal static new void RemapForControls()
 		{
 #if ANDROID
 			// This property is also on the Application Mapper since that's where the attached property exists

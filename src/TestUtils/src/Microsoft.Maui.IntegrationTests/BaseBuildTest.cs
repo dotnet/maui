@@ -25,7 +25,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected string[] BuildProps => new[]
+		protected List<string> BuildProps => new()
 		{
 			"RestoreNoCache=true",
 			//"GenerateAppxPackageOnBuild=true",
@@ -35,6 +35,8 @@ namespace Microsoft.Maui.IntegrationTests
 			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
 			//Try not restore dependencies of 6.0.10
 			$"DisableTransitiveFrameworkReferenceDownloads=true",
+			// Surface warnings as build errors
+			"TreatWarningsAsErrors=true",
 		};
 
 

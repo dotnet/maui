@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(page, app.MainPage);
 			Assert.NotEmpty(app.Windows);
-			Assert.Equal(1, app.Windows.Count);
+			Assert.Single(app.Windows);
 			Assert.Equal(window, app.Windows[0]);
 			Assert.Equal(page, app.Windows[0].Page);
 		}
@@ -61,7 +61,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(page2, app.MainPage);
 			Assert.NotEmpty(app.Windows);
-			Assert.Equal(1, app.Windows.Count);
+			Assert.Single(app.Windows);
 			Assert.Equal(window, app.Windows[0]);
 			Assert.Equal(page2, app.Windows[0].Page);
 		}

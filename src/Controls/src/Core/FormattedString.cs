@@ -44,7 +44,7 @@ namespace Microsoft.Maui.Controls
 					var bo = item as Span;
 					if (bo != null)
 					{
-						bo.Parent = null;
+						bo.Parent?.RemoveLogicalChild(bo);
 						bo.PropertyChanging -= OnItemPropertyChanging;
 						bo.PropertyChanged -= OnItemPropertyChanged;
 					}
@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 					var bo = item as Span;
 					if (bo != null)
 					{
-						bo.Parent = this;
+						this.AddLogicalChild(bo);
 						bo.PropertyChanging += OnItemPropertyChanging;
 						bo.PropertyChanged += OnItemPropertyChanged;
 					}

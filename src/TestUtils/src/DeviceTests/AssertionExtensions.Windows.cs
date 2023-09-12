@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -10,10 +13,11 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Graphics.DirectX;
 using Windows.Storage.Streams;
-using Windows.UI;
 using Xunit;
 using Xunit.Sdk;
 using WColor = Windows.UI.Color;
+using WHorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment;
+using WVerticalAlignment = Microsoft.UI.Xaml.VerticalAlignment;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -187,8 +191,8 @@ namespace Microsoft.Maui.DeviceTests
 
 					window.Content = new Grid
 					{
-						HorizontalAlignment = HorizontalAlignment.Center,
-						VerticalAlignment = VerticalAlignment.Center,
+						HorizontalAlignment = WHorizontalAlignment.Center,
+						VerticalAlignment = WVerticalAlignment.Center,
 						Children =
 						{
 							(grid = new Grid
@@ -322,7 +326,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -336,7 +340,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			}
 
-			Assert.True(false, await CreateColorError(bitmap, $"Color {expectedColor} not found."));
+			Assert.Fail(await CreateColorError(bitmap, $"Color {expectedColor} not found."));
 			return bitmap;
 		}
 
@@ -362,7 +366,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (imageRect.Width == 0 || imageRect.Height == 0)
 			{
 				// Detect this case and give a better message instead of letting GetPixelColors throw an IndexOutOfRangeException
-				Assert.True(false, $"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
+				Assert.Fail($"Bitmap must have non-zero width and height.  Width = {(int)imageRect.Width} Height = {(int)imageRect.Height}.");
 				return bitmap;
 			}
 
@@ -372,7 +376,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				if (c.IsEquivalent(unexpectedColor))
 				{
-					Assert.True(false, await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
+					Assert.Fail(await CreateColorError(bitmap, $"Color {unexpectedColor} was found."));
 				}
 			}
 
@@ -392,6 +396,18 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
+		}
+
+		public static async Task<CanvasBitmap> AssertColorsAtPointsAsync(this FrameworkElement view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				bitmap.AssertColorAtPoint(colors[i].ToWindowsColor(), (int)points[i].X, (int)points[i].Y);
+			}
+
+			return bitmap;
 		}
 
 		public static async Task<CanvasBitmap> AssertColorAtCenterAsync(this FrameworkElement view, WColor expectedColor, IMauiContext mauiContext)
@@ -476,5 +492,83 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			throw new NotImplementedException();
 		}
+
+		static List<NavigationViewItem?> GetTabBarItems(this NavigationView navigationView)
+		{
+			StackPanel? topNavArea;
+			if (navigationView is MauiNavigationView mauiNavView)
+				topNavArea = mauiNavView.TopNavArea;
+			else
+				topNavArea = navigationView.FindName("TopNavArea") as StackPanel;
+
+			if (topNavArea is null)
+				throw new Exception("Unable to find Top Nav Area");
+
+			return topNavArea.GetChildren<NavigationViewItem>().ToList();
+		}
+
+		static public Task AssertTabItemTextDoesNotContainColor(
+			this NavigationView navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemTextContainsColor(
+			this NavigationView navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static async Task AssertTabItemTextColor(
+			this NavigationView navigationView,
+			string tabText,
+			Color expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var items = navigationView.GetTabBarItems();
+			var platformItem =
+				items.FirstOrDefault(x => x?.Content?.ToString()?.Equals(tabText, StringComparison.OrdinalIgnoreCase) == true)
+				?.GetDescendantByName<UI.Xaml.Controls.Grid>("ContentGrid")
+				?.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("ContentPresenter");
+
+			if (platformItem is null)
+				throw new Exception("Unable to locate Tab Item Text Container");
+
+			if (hasColor)
+				await AssertContainsColor(platformItem, expectedColor, mauiContext);
+			else
+				await AssertDoesNotContainColor(platformItem, expectedColor, mauiContext);
+		}
+
+		static async Task AssertTabItemIconColor(
+			this NavigationView navigationView, string tabText, Color expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var items = navigationView.GetTabBarItems();
+			var platformItem =
+				items.FirstOrDefault(x => x?.Content?.ToString()?.Equals(tabText, StringComparison.OrdinalIgnoreCase) == true)
+				?.GetDescendantByName<UI.Xaml.Controls.ContentPresenter>("Icon");
+
+			if (platformItem is null)
+				throw new Exception("Unable to locate Tab Item Icon Container");
+
+			if (hasColor)
+				await AssertContainsColor(platformItem, expectedColor, mauiContext);
+			else
+				await AssertDoesNotContainColor(platformItem, expectedColor, mauiContext);
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this NavigationView navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this NavigationView navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
 	}
 }

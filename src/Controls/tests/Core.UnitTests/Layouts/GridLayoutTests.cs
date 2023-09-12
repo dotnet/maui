@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using NSubstitute;
 using Xunit;
 
@@ -183,6 +185,46 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			grid.ColumnDefinitions.Add(def2);
 
 			Assert.Equal(def2.BindingContext, context);
+		}
+
+		[Fact]
+		public async Task ColumnDefinitionDoesNotLeak()
+		{
+			// Long-lived column, like from a Style in App.Resources
+			var column = new ColumnDefinition();
+			WeakReference reference;
+
+			{
+				var grid = new Grid();
+				grid.ColumnDefinitions.Add(column);
+				reference = new(grid);
+			}
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Grid should not be alive!");
+		}
+
+		[Fact]
+		public async Task RowDefinitionDoesNotLeak()
+		{
+			// Long-lived row, like from a Style in App.Resources
+			var row = new RowDefinition();
+			WeakReference reference;
+
+			{
+				var grid = new Grid();
+				grid.RowDefinitions.Add(row);
+				reference = new(grid);
+			}
+
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
+
+			Assert.False(reference.IsAlive, "Grid should not be alive!");
 		}
 	}
 }

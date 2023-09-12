@@ -384,6 +384,8 @@ Microsoft.Maui.ApplicationModel.Permissions.Media
 Microsoft.Maui.ApplicationModel.Permissions.Media.Media() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Microphone
 Microsoft.Maui.ApplicationModel.Permissions.Microphone.Microphone() -> void
+Microsoft.Maui.ApplicationModel.Permissions.NearbyWifiDevices
+Microsoft.Maui.ApplicationModel.Permissions.NearbyWifiDevices.NearbyWifiDevices() -> void
 Microsoft.Maui.ApplicationModel.Permissions.NetworkState
 Microsoft.Maui.ApplicationModel.Permissions.NetworkState.NetworkState() -> void
 Microsoft.Maui.ApplicationModel.Permissions.Phone

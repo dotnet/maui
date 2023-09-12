@@ -69,7 +69,7 @@ namespace Microsoft.Maui.Controls
 						var classStyleProperty = BindableProperty.Create("ClassStyle", typeof(IList<Style>), typeof(Element), default(IList<Style>),
 							propertyChanged: (bindable, oldvalue, newvalue) => OnClassStyleChanged());
 						_classStyleProperties.Add(classStyleProperty);
-						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass);
+						Target.OnSetDynamicResource(classStyleProperty, Maui.Controls.Style.StyleClassPrefix + styleClass, SetterSpecificity.DefaultValue);
 					}
 
 					//reapply the css stylesheets
@@ -93,13 +93,21 @@ namespace Microsoft.Maui.Controls
 			set { SetStyle(value, ClassStyles, Style); }
 		}
 
-		public void Apply(BindableObject bindable)
+		public void Apply(BindableObject bindable, SetterSpecificity specificity)
 		{
-			ImplicitStyle?.Apply(bindable);
+			Apply(bindable);
+		}
+
+		void Apply(BindableObject bindable)
+		{
+			//NOTE specificity could be more fine grained (using distance)
+			ImplicitStyle?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
 			if (ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
-					((IStyle)classStyle)?.Apply(bindable);
-			Style?.Apply(bindable);
+					//NOTE specificity could be more fine grained (using distance)
+					((IStyle)classStyle)?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
+			//NOTE specificity could be more fine grained (using distance)
+			Style?.Apply(bindable, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 
 		public Type TargetType { get; }
@@ -176,7 +184,7 @@ namespace Microsoft.Maui.Controls
 		{
 			bool shouldReApplyStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles || Style != style;
 			bool shouldReApplyClassStyle = implicitStyle != ImplicitStyle || classStyles != ClassStyles;
-			bool shouldReApplyImplicitStyle = implicitStyle != ImplicitStyle && (Style as Style == null || ((Style)Style).CanCascade);
+			bool shouldReApplyImplicitStyle = implicitStyle != ImplicitStyle;
 
 			if (shouldReApplyStyle)
 				Style?.UnApply(Target);
@@ -190,13 +198,17 @@ namespace Microsoft.Maui.Controls
 			_classStyles = classStyles;
 			_style = style;
 
+			//FIXME compute specificity
 			if (shouldReApplyImplicitStyle)
-				ImplicitStyle?.Apply(Target);
+				ImplicitStyle?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleImplicit, 0, 0, 0));
+
 			if (shouldReApplyClassStyle && ClassStyles != null)
 				foreach (var classStyle in ClassStyles)
-					((IStyle)classStyle)?.Apply(Target);
+					//FIXME compute specificity
+					((IStyle)classStyle)?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 1, 0));
 			if (shouldReApplyStyle)
-				Style?.Apply(Target);
+				//FIXME compute specificity
+				Style?.Apply(Target, new SetterSpecificity(SetterSpecificity.StyleLocal, 0, 0, 0));
 		}
 	}
 }

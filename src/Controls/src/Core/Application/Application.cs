@@ -464,7 +464,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				RemoveLogicalChildInternal(windowElement);
+				RemoveLogicalChild(windowElement);
 			}
 
 			_windows.Remove(window);
@@ -518,7 +518,7 @@ namespace Microsoft.Maui.Controls
 
 			if (window is Element windowElement)
 			{
-				AddLogicalChildInternal(windowElement);
+				AddLogicalChild(windowElement);
 			}
 
 			if (window is NavigableElement ne)

@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public StepperHandler() : base(Mapper)
+		public StepperHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

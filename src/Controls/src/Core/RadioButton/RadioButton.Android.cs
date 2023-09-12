@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls
 
 		static AView? CreatePlatformView(ViewHandler<IRadioButton, AView> radioButton)
 		{
-			// If someone is using a completely different type for IRadioButton			
+			// If someone is using a completely different type for IRadioButton
 			if (radioButton.VirtualView is not RadioButton rb)
 				return null;
 

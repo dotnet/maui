@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:Microsoft.Maui.Controls.Xaml.UnitTests"
+             x:Class="Microsoft.Maui.Controls.Xaml.UnitTests.Maui10396"
+             x:DataType="local:Maui10396VM">
+    <StackLayout>
+        <local:Maui10396Card x:Name="card0" BindingContext="{Binding Cards[0]}"/>
+        <local:Maui10396Card x:Name="card1" BindingContext="{Binding Cards[1]}"/>
+        <local:Maui10396Card x:Name="card2" BindingContext="{Binding Cards[2]}"/>
+        <local:Maui10396Card x:Name="card3" BindingContext="{Binding Cards[3]}"/>
+        <local:Maui10396Card x:Name="card4" BindingContext="{Binding Cards[4]}"/>
+        <local:Maui10396Card x:Name="card5" BindingContext="{Binding Cards[5]}"/>
+
+    </StackLayout>
+       
+    
+</ContentView>

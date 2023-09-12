@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Handlers
 			return platformView;
 		}
 
-		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateIsRunning(activityIndicator);
 		}
 
-		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateColor(activityIndicator);
 		}

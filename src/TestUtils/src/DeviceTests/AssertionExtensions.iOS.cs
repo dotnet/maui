@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -259,7 +260,7 @@ namespace Microsoft.Maui.DeviceTests
 			var cap = bitmap.ColorAtPoint(x, y);
 
 			if (!ColorComparison.ARGBEquivalent(cap, expectedColor, tolerance))
-				Assert.Equal(expectedColor, cap, new ColorComparison());
+				throw new XunitException(CreateColorAtPointError(bitmap, expectedColor, x, y));
 
 			return bitmap;
 		}
@@ -294,6 +295,18 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var bitmap = await view.ToBitmap(mauiContext);
 			return bitmap.AssertColorAtPoint(expectedColor, x, y);
+		}
+
+		public static async Task<UIImage> AssertColorsAtPointsAsync(this UIView view, Graphics.Color[] colors, Graphics.Point[] points, IMauiContext mauiContext)
+		{
+			var bitmap = await view.ToBitmap(mauiContext);
+
+			for (int i = 0; i < points.Length; i++)
+			{
+				bitmap.AssertColorAtPoint(colors[i].ToPlatform(), (int)points[i].X, (int)points[i].Y);
+			}
+
+			return bitmap;
 		}
 
 		public static async Task<UIImage> AssertColorAtCenterAsync(this UIView view, UIColor expectedColor, IMauiContext mauiContext)
@@ -444,6 +457,9 @@ namespace Microsoft.Maui.DeviceTests
 			if (text == null)
 				return 0;
 
+			if (text.Length == 0)
+				return 0;
+
 			var value = text.GetAttribute(UIStringAttributeKey.KerningAdjustment, 0, out var range);
 			if (value == null)
 				return 0;
@@ -454,6 +470,57 @@ namespace Microsoft.Maui.DeviceTests
 			var kerning = Assert.IsType<NSNumber>(value);
 
 			return kerning.DoubleValue;
+		}
+
+		public static double GetLineHeight(this NSAttributedString text)
+		{
+			if (text == null)
+				return 0;
+
+			if (text.Length == 0)
+				return 0;
+
+			var value = text.GetAttribute(UIStringAttributeKey.ParagraphStyle, 0, out var range);
+			if (value == null)
+				return 0;
+
+			Assert.Equal(0, range.Location);
+			Assert.Equal(text.Length, range.Length);
+
+			var paragraphStyle = Assert.IsType<NSMutableParagraphStyle>(value);
+
+			return paragraphStyle.LineHeightMultiple;
+		}
+
+		public static TextDecorations GetTextDecorations(this NSAttributedString text)
+		{
+			var textDecorations = TextDecorations.None;
+
+			if (text == null)
+				return textDecorations;
+
+			if (text.Length == 0)
+				return textDecorations;
+
+			var valueUnderline = text.GetAttribute(UIStringAttributeKey.UnderlineStyle, 0, out var rangeUnderline);
+			var valueStrikethrough = text.GetAttribute(UIStringAttributeKey.StrikethroughStyle, 0, out var rangeStrikethrough);
+
+			Assert.Equal(0, rangeUnderline.Location);
+			Assert.Equal(text.Length, rangeUnderline.Length);
+
+			Assert.Equal(0, rangeStrikethrough.Location);
+			Assert.Equal(text.Length, rangeStrikethrough.Length);
+
+			if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueUnderline)
+			{
+				textDecorations = TextDecorations.Underline;
+			}
+			else if (NSNumber.FromInt32((int)NSUnderlineStyle.Single) == (NSNumber)valueStrikethrough)
+			{
+				textDecorations = TextDecorations.Strikethrough;
+			}
+
+			return textDecorations;
 		}
 
 		public static void AssertHasUnderline(this NSAttributedString attributedString)
@@ -515,6 +582,14 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						foreach (var window in windowScene.Windows)
 						{
+#if MACCATALYST
+							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+							// Added an env variable to accommodate for this and just return the first window found.
+							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+							{	
+								return window;
+							}
+#endif
 							if (window.IsKeyWindow)
 							{
 								return window;
@@ -678,6 +753,84 @@ namespace Microsoft.Maui.DeviceTests
 
 			_ = item ?? throw new Exception("Unable to locate BackButton UILabel Inside UINavigationBar");
 			return titleLabel?.Text;
+		}
+
+		static public Task AssertTabItemTextDoesNotContainColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemTextContainsColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static async Task AssertTabItemTextColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UILabel>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext, 0.1);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static async Task AssertTabItemIconColor(
+			this UITabBar navigationView, string tabText, Color expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static UIView GetTabItemView(this UITabBar tabBar, string tabText)
+		{
+			var tabBarItem = tabBar.Items?.Single(t => string.Equals(t.Title, tabText, StringComparison.OrdinalIgnoreCase));
+
+			if (tabBarItem is null)
+				throw new Exception($"Unable to find tab bar item: {tabText}");
+
+			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
+
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to find tab bar item: {tabText}");
+
+			return tabBarItemView;
 		}
 	}
 }

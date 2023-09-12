@@ -12,7 +12,10 @@
     <ApplicationTitle>Controls Appium Tests</ApplicationTitle>
     <ApplicationId>com.microsoft.maui.controls.appiumtests</ApplicationId>
     <ApplicationVersion>1</ApplicationVersion>
-  </PropertyGroup>
+     
+     <!-- To use a local version of visual-test-utils instead of the NuGets, clone the repo as a sibling to the maui directory, uncomment this, and add projects to the solution -->
+     <!-- <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils> -->
+   </PropertyGroup>
 
   <PropertyGroup>
     <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
@@ -34,10 +37,19 @@
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-beta02" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.3" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.4.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
     <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+  </ItemGroup>
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
   </ItemGroup>
 
 </Project>

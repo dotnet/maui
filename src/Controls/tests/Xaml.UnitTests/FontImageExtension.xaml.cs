@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void FontImageExtension_Positive(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);
-				var tabs = layout.AllChildren;
+				var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
 
 				int i = 0;
 				foreach (var tab in tabs)
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			public void FontImageExtension_Negative(bool useCompiledXaml)
 			{
 				var layout = new FontImageExtension(useCompiledXaml);
-				var tabs = layout.AllChildren;
+				var tabs = ((IVisualTreeElement)layout).GetVisualChildren();
 
 				foreach (var tab in tabs)
 				{

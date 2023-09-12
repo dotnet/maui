@@ -17,6 +17,10 @@ steps:
         skipProvisioning: true
       ${{ if ne(parameters.platform, 'windows') }}:
         skipProvisioning: false
+      ${{ if eq(parameters.platform, 'android') }}:
+        skipAndroidSdks : false
+      ${{ if ne(parameters.platform, 'android') }}:
+        skipAndroidSdks: false
       skipXcode: false
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
@@ -31,18 +35,28 @@ steps:
     displayName: "Modify defaults"
     continueOnError: true
 
+  # AzDO hosted agents default to 1024x768; set something bigger for Windows UI tests
+  - task: ScreenResolutionUtility@1
+    condition: eq('${{ parameters.platform }}' , 'windows')
+    inputs:
+      displaySettings: 'specific'
+      width: '1920'
+      height: '1080'
+    displayName: "Set screen resolution"
+
   - task: NodeTool@0
     inputs:
-      versionSpec: "18.13.0"
+      versionSpec: "20.3.1"
     displayName: "Install node"
 
   - pwsh: ./eng/scripts/appium-install.ps1
     displayName: "Install Appium"
-    continueOnError: true
+    continueOnError: false
+    retryCountOnTaskFailure: 1
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
-    retryCountOnTaskFailure: 3
+    retryCountOnTaskFailure: 2
     env:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)

@@ -12,7 +12,7 @@ namespace Microsoft.Maui.DeviceTests
 	//{
 	//}
 
-	[Collection("Non-Parallel Collection")]
+	//[Collection("Non-Parallel Collection")]
 	public partial class TestBase
 	{
 		public const int EmCoefficientPrecision = 4;

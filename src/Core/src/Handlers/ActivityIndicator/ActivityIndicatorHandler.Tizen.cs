@@ -6,12 +6,12 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override ActivityIndicator CreatePlatformView() => new ActivityIndicator();
 
-		public static void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapIsRunning(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateIsRunning(activityIndicator);
 		}
 
-		public static void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
+		public static partial void MapColor(IActivityIndicatorHandler handler, IActivityIndicator activityIndicator)
 		{
 			handler.PlatformView?.UpdateColor(activityIndicator);
 		}

@@ -194,7 +194,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			{
 				await shell.Navigation.PopToRootAsync();
 				await source.Task;
-				Assert.Equal(1, shell.Navigation.NavigationStack.Count);
+				Assert.Single(shell.Navigation.NavigationStack);
 			}
 		}
 

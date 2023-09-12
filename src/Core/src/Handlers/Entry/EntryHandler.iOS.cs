@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class EntryHandler : ViewHandler<IEntry, MauiTextField>
 	{
-		bool _set;
+		readonly MauiTextFieldProxy _proxy = new();
 
 		protected override MauiTextField CreatePlatformView() =>
 			new MauiTextField
@@ -22,35 +22,17 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.SetVirtualView(view);
 
-			if (!_set)
-				PlatformView.SelectionChanged += OnSelectionChanged;
-
-			_set = true;
+			_proxy.SetVirtualView(PlatformView);
 		}
 
 		protected override void ConnectHandler(MauiTextField platformView)
 		{
-			platformView.ShouldReturn += OnShouldReturn;
-			platformView.EditingDidBegin += OnEditingBegan;
-			platformView.EditingChanged += OnEditingChanged;
-			platformView.EditingDidEnd += OnEditingEnded;
-			platformView.TextPropertySet += OnTextPropertySet;
-			platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+			_proxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(MauiTextField platformView)
 		{
-			platformView.ShouldReturn -= OnShouldReturn;
-			platformView.EditingDidBegin -= OnEditingBegan;
-			platformView.EditingChanged -= OnEditingChanged;
-			platformView.EditingDidEnd -= OnEditingEnded;
-			platformView.TextPropertySet -= OnTextPropertySet;
-			platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
-
-			if (_set)
-				platformView.SelectionChanged -= OnSelectionChanged;
-
-			_set = false;
+			_proxy.Disconnect(platformView);
 		}
 
 		public static void MapText(IEntryHandler handler, IEntry entry)
@@ -124,53 +106,112 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateHorizontalTextAlignment(entry);
 		}
 
-		protected virtual bool OnShouldReturn(UITextField view)
+		protected virtual bool OnShouldReturn(UITextField view) =>
+			_proxy.OnShouldReturn(view);
+
+		class MauiTextFieldProxy
 		{
-			KeyboardAutoManager.GoToNextResponderOrResign(view);
+			bool _set;
+			WeakReference<IEntry>? _virtualView;
 
-			VirtualView?.Completed();
+			IEntry? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
-			return false;
-		}
+			public void Connect(IEntry virtualView, MauiTextField platformView)
+			{
+				_virtualView = new(virtualView);
 
-		void OnEditingBegan(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return;
+				platformView.ShouldReturn += OnShouldReturn;
+				platformView.EditingDidBegin += OnEditingBegan;
+				platformView.EditingChanged += OnEditingChanged;
+				platformView.EditingDidEnd += OnEditingEnded;
+				platformView.TextPropertySet += OnTextPropertySet;
+				platformView.ShouldChangeCharacters += OnShouldChangeCharacters;
+			}
 
-			PlatformView?.UpdateSelectionLength(VirtualView);
+			public void Disconnect(MauiTextField platformView)
+			{
+				_virtualView = null;
 
-			VirtualView.IsFocused = true;
-		}
+				platformView.ShouldReturn -= OnShouldReturn;
+				platformView.EditingDidBegin -= OnEditingBegan;
+				platformView.EditingChanged -= OnEditingChanged;
+				platformView.EditingDidEnd -= OnEditingEnded;
+				platformView.TextPropertySet -= OnTextPropertySet;
+				platformView.ShouldChangeCharacters -= OnShouldChangeCharacters;
 
-		void OnEditingChanged(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(PlatformView.Text);
+				if (_set)
+					platformView.SelectionChanged -= OnSelectionChanged;
 
-		void OnEditingEnded(object? sender, EventArgs e)
-		{
-			if (VirtualView == null || PlatformView == null)
-				return;
+				_set = false;
+			}
 
-			VirtualView.UpdateText(PlatformView.Text);
-			VirtualView.IsFocused = false;
-		}
+			public void SetVirtualView(MauiTextField platformView)
+			{
+				if (!_set)
+					platformView.SelectionChanged += OnSelectionChanged;
+				_set = true;
+			}
 
-		void OnTextPropertySet(object? sender, EventArgs e) =>
-			VirtualView.UpdateText(PlatformView.Text);
+			public bool OnShouldReturn(UITextField view)
+			{
+				KeyboardAutoManager.GoToNextResponderOrResign(view);
 
-		bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
-			VirtualView.TextWithinMaxLength(textField.Text, range, replacementString);
+				VirtualView?.Completed();
 
-		private void OnSelectionChanged(object? sender, EventArgs e)
-		{
-			var cursorPosition = PlatformView.GetCursorPosition();
-			var selectedTextLength = PlatformView.GetSelectedTextLength();
+				return false;
+			}
 
-			if (VirtualView.CursorPosition != cursorPosition)
-				VirtualView.CursorPosition = cursorPosition;
+			void OnEditingBegan(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
+				{
+					platformView.UpdateSelectionLength(virtualView);
+					virtualView.IsFocused = true;
+				}
+			}
 
-			if (VirtualView.SelectionLength != selectedTextLength)
-				VirtualView.SelectionLength = selectedTextLength;
+			void OnEditingChanged(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView)
+				{
+					VirtualView?.UpdateText(platformView.Text);
+				}
+			}
+
+			void OnEditingEnded(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
+				{
+					virtualView.UpdateText(platformView.Text);
+					virtualView.IsFocused = false;
+				}
+			}
+
+			void OnTextPropertySet(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView)
+				{
+					VirtualView?.UpdateText(platformView.Text);
+				}
+			}
+
+			bool OnShouldChangeCharacters(UITextField textField, NSRange range, string replacementString) =>
+				VirtualView?.TextWithinMaxLength(textField.Text, range, replacementString) ?? false;
+
+			void OnSelectionChanged(object? sender, EventArgs e)
+			{
+				if (sender is MauiTextField platformView && VirtualView is IEntry virtualView)
+				{
+					var cursorPosition = platformView.GetCursorPosition();
+					var selectedTextLength = platformView.GetSelectedTextLength();
+
+					if (virtualView.CursorPosition != cursorPosition)
+						virtualView.CursorPosition = cursorPosition;
+
+					if (virtualView.SelectionLength != selectedTextLength)
+						virtualView.SelectionLength = selectedTextLength;
+				}
+			}
 		}
 	}
 }

@@ -19,6 +19,7 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			protected ResizetizeImages GetNewTask(string type, params ITaskItem[] items) =>
 				new ResizetizeImages
 				{
+					DuplicateOutputErrorMessage = "Duplicate File: ",
 					PlatformType = type,
 					IntermediateOutputPath = DestinationDirectory,
 					InputsFile = "mauiimage.inputs",
@@ -30,10 +31,158 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				task.CopiedResources.Single(c => c.ItemSpec.Replace('\\', '/').EndsWith(path, StringComparison.Ordinal));
 		}
 
-		public class ExecuteForAndroid : ExecuteForApp
+		public abstract class ExecuteForPlatformApp : ExecuteForApp
 		{
-			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
-				GetNewTask("android", items);
+			protected abstract string Platform { get; }
+
+			protected abstract string GetPlatformOutputFileName(string file);
+
+			protected ResizetizeImages GetNewTask(params ITaskItem[] items) =>
+				GetNewTask(Platform, items);
+
+			[Fact]
+			public void GenerationSkippedOnIncrementalBuild()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/dotnet_logo.svg", new Dictionary<string, string>
+					{
+						["IsAppIcon"] = bool.TrueString,
+						["ForegroundFile"] = $"images/dotnet_foreground.svg",
+						["Link"] = "appicon",
+						["BackgroundFile"] = $"images/dotnet_background.svg",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				LogErrorEvents.Clear();
+				LogMessageEvents.Clear();
+				task = GetNewTask(items);
+				success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				Assert.True(LogMessageEvents.Any(x => x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
+			}
+
+			[Fact]
+			public void CanUseSameFileMultipleTimesWithDifferentLinks()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageTwo",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileExists(GetPlatformOutputFileName("ImageOne.png"));
+				AssertFileSize(GetPlatformOutputFileName("ImageOne.png"), 1792, 1792);
+
+				AssertFileExists(GetPlatformOutputFileName("ImageTwo.png"));
+				AssertFileSize(GetPlatformOutputFileName("ImageTwo.png"), 1792, 1792);
+			}
+
+			[Fact]
+			public void CanUseSameFileMultipleTimesWhenOneHasALink()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
+
+				AssertFileExists(GetPlatformOutputFileName("camera.png"));
+				AssertFileSize(GetPlatformOutputFileName("camera.png"), 1792, 1792);
+
+				AssertFileExists(GetPlatformOutputFileName("ImageOne.png"));
+				AssertFileSize(GetPlatformOutputFileName("ImageOne.png"), 1792, 1792);
+			}
+
+			[Fact]
+			public void FailsOnExactMatchingMultipleFiles()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["Link"] = "ImageOne",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
+			public void FailsOnExactMatchingMultipleFilesWhenTheMetadataIsNotRelevant()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["SomeRandomMetadata"] = "NotMe",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
+			}
+
+			[Fact]
+			public void FailsOnAlmostExactMatchingMultipleFiles()
+			{
+				var items = new[]
+				{
+					new TaskItem("images/camera.svg"),
+					new TaskItem("images/camera.svg", new Dictionary<string, string>
+					{
+						["TintColor"] = "#FF00FF",
+					}),
+				};
+
+				var task = GetNewTask(items);
+				var success = task.Execute();
+				Assert.False(success, "Expected an error about duplicates");
+
+				Assert.True(LogErrorEvents.Any(x => x.Message.StartsWith("Duplicate File: ", StringComparison.OrdinalIgnoreCase)), LogErrorEvents.FirstOrDefault()?.Message);
+			}
+		}
+
+		public class ExecuteForAndroid : ExecuteForPlatformApp
+		{
+			protected override string Platform => "android";
+
+			protected override string GetPlatformOutputFileName(string file) =>
+				$"drawable-mdpi/{file}";
 
 			[Fact]
 			public void NoItemsSucceed()
@@ -779,10 +928,11 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			//}
 		}
 
-		public class ExecuteForiOS : ExecuteForApp
+		public class ExecuteForiOS : ExecuteForPlatformApp
 		{
-			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
-				GetNewTask("ios", items);
+			protected override string Platform => "ios";
+
+			protected override string GetPlatformOutputFileName(string file) => $"{file}";
 
 			[Fact]
 			public void NoItemsSucceed()
@@ -1091,10 +1241,12 @@ namespace Microsoft.Maui.Resizetizer.Tests
 			}
 		}
 
-		public class ExecuteForWindows : ExecuteForApp
+		public class ExecuteForWindows : ExecuteForPlatformApp
 		{
-			ResizetizeImages GetNewTask(params ITaskItem[] items) =>
-				GetNewTask("uwp", items);
+			protected override string Platform => "uwp";
+
+			protected override string GetPlatformOutputFileName(string file) =>
+				$"{Path.GetFileNameWithoutExtension(file)}.scale-100{Path.GetExtension(file)}";
 
 			[Fact]
 			public void NoItemsSucceed()
@@ -1472,36 +1624,6 @@ namespace Microsoft.Maui.Resizetizer.Tests
 				}
 				var size = ResizeImageInfo.Parse(item);
 				Assert.Equal(resize, size.Resize);
-			}
-
-			[Theory]
-			[InlineData("android")]
-			[InlineData("uwp")]
-			[InlineData("ios")]
-			public void GenerationSkippedOnIncrementalBuild(string platform)
-			{
-				var items = new[]
-				{
-					new TaskItem("images/dotnet_logo.svg", new Dictionary<string, string>
-					{
-						["IsAppIcon"] = bool.TrueString,
-						["ForegroundFile"] = $"images/dotnet_foreground.svg",
-						["Link"] = "appicon",
-						["BackgroundFile"] = $"images/dotnet_background.svg",
-					}),
-				};
-
-				var task = GetNewTask(platform, items);
-				var success = task.Execute();
-				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
-
-				LogErrorEvents.Clear();
-				LogMessageEvents.Clear();
-				task = GetNewTask(platform, items);
-				success = task.Execute();
-				Assert.True(success, LogErrorEvents.FirstOrDefault()?.Message);
-
-				Assert.True(LogMessageEvents.Any(x => x.Message.Contains("Skipping ", StringComparison.OrdinalIgnoreCase)), $"Image generation should have been skipped.");
 			}
 		}
 	}

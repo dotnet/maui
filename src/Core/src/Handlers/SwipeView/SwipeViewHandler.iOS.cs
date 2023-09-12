@@ -1,26 +1,16 @@
 using System;
-using System.Threading.Tasks;
-using UIKit;
 
 namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, MauiSwipeView>
 	{
-		protected override MauiSwipeView CreatePlatformView()
-		{
-			return new MauiSwipeView
-			{
-				CrossPlatformLayout = VirtualView,
-				Element = VirtualView
-			};
-		}
+		protected override MauiSwipeView CreatePlatformView() => new() { CrossPlatformLayout = VirtualView };
 
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
 			_ = PlatformView ?? throw new InvalidOperationException($"{nameof(PlatformView)} should have been set by base class.");
 
-			PlatformView.Element = VirtualView;
 			PlatformView.CrossPlatformLayout = VirtualView;
 		}
 

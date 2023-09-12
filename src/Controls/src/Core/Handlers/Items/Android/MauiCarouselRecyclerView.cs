@@ -116,7 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var oldItemViewAdapter = ItemsViewAdapter;
 
-			if (oldItemViewAdapter != null)
+			if (oldItemViewAdapter != null && _initialized)
 			{
 				UnsubscribeCollectionItemsSourceChanged(oldItemViewAdapter);
 				ItemsView.SetValueFromRenderer(CarouselView.PositionProperty, 0);
@@ -467,6 +467,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_gotoPosition = currentItemPosition;
 				ItemsView.ScrollTo(currentItemPosition, position: Microsoft.Maui.Controls.ScrollToPosition.Center, animate: Carousel.AnimateCurrentItemChanges);
 			}
+
+			_gotoPosition = -1;
 		}
 
 		void IMauiCarouselRecyclerView.UpdateFromPosition()

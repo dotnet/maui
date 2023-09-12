@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
@@ -10,6 +11,11 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 using Xunit;
+
+#if WINDOWS
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -127,6 +133,22 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 				view.Arrange(new Rect(0, 0, w, h));
+
+#if WINDOWS
+				if (viewHandler.PlatformView is SwipeControl swipeControl && !swipeControl.IsLoaded)
+				{
+					void SwipeViewLoaded(object s, RoutedEventArgs e)
+					{
+						swipeControl.Arrange(new global::Windows.Foundation.Rect(0, 0, w, h));
+						swipeControl.Loaded -= SwipeViewLoaded;
+					};
+
+					// Doing the SwipeItems arrange before the view has loaded causes the SwipeControl
+					// to crash on the first layout pass. So we wait until the control has been loaded.
+					swipeControl.Loaded += SwipeViewLoaded;
+				}
+				else
+#endif
 				viewHandler.PlatformArrange(view.Frame);
 			}
 		}
@@ -246,6 +268,28 @@ namespace Microsoft.Maui.DeviceTests
 				await plaformView.AssertColorAtPointAsync(color.ToWindowsColor(), x, y, MauiContext);
 #else
 				await plaformView.AssertColorAtPointAsync(color.ToPlatform(), x, y, MauiContext);
+#endif
+			});
+		}
+
+		protected Task AssertColorsAtPoints(IView view, Type handlerType, Color[] colors, Point[] points)
+		{
+			return InvokeOnMainThreadAsync(async () =>
+			{
+				var plaformView = CreateHandler(view, handlerType).ToPlatform();
+				await plaformView.AssertColorsAtPointsAsync(colors, points, MauiContext);
+			});
+		}
+
+		protected Task<ImageAnalysis.RawBitmap> GetRawBitmap(Controls.VisualElement view, Type handlerType)
+		{
+			return InvokeOnMainThreadAsync<RawBitmap>(async () =>
+			{
+				var platformView = CreateHandler(view, handlerType).ToPlatform();
+#if WINDOWS
+				return await platformView.AttachAndRun<RawBitmap>(async (window) => await view.AsRawBitmapAsync(), MauiContext);
+#else
+				return await platformView.AttachAndRun<RawBitmap>(async () => await view.AsRawBitmapAsync());
 #endif
 			});
 		}

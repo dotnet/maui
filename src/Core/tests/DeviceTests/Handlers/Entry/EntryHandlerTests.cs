@@ -23,6 +23,57 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(entry, () => entry.Text, GetNativeText, entry.Text);
 		}
 
+		[Fact(DisplayName = "Text Property Initializes Correctly when Keyboard Mapper is Executed Before Text Mapper")]
+		public async Task TextInitializesCorrectlyWhenKeyboardIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
+				[nameof(IEntry.Keyboard)] = EntryHandler.MapKeyboard
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Text Property Initializes Correctly when IsReadOnly Mapper is Executed Before Text Mapper")]
+		public async Task TextInitializesCorrectlyWhenIsReadOnlyIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
+				[nameof(IEntry.IsReadOnly)] = EntryHandler.MapIsReadOnly
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
+		[Fact(DisplayName = "Text Property Initializes Correctly when IsPassword Mapper is Executed Before Text Mapper")]
+		public async Task TextInitializesCorrectlyWhenIsPasswordIsBeforeText()
+		{
+			var entry = new EntryStub()
+			{
+				Text = "Test Text Here"
+			};
+
+			CustomEntryHandler.TestMapper = new PropertyMapper<IEntry, IEntryHandler>(EntryHandler.Mapper)
+			{
+				// this mapper is run first and then the ones in the ctor arg (EntryHandler.Mapper)
+				[nameof(IEntry.IsPassword)] = EntryHandler.MapIsPassword
+			};
+
+			await ValidatePropertyInitValue<string, CustomEntryHandler>(entry, () => entry.Text, GetNativeText, entry.Text);
+		}
+
 		[Fact(DisplayName = "TextColor Initializes Correctly")]
 		public async Task TextColorInitializesCorrectly()
 		{
@@ -733,6 +784,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			protected override void UpdateCursorStartPosition(EntryHandler entryHandler, int position) =>
 				EntryHandlerTests.UpdateCursorStartPosition(entryHandler, position);
+		}
+
+		class CustomEntryHandler : EntryHandler
+		{
+			// make a copy of the Core mappers because we don't want any Controls changes or to override us
+			public static PropertyMapper<IEntry, IEntryHandler> TestMapper = new(Mapper);
+			public static CommandMapper<IEntry, IEntryHandler> TestCommandMapper = new(CommandMapper);
+
+			// make sure to use our mappers
+			public CustomEntryHandler()
+				: base(TestMapper, TestCommandMapper)
+			{
+			}
 		}
 	}
 }

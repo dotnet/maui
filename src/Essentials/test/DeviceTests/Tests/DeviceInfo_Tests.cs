@@ -53,6 +53,8 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 #if WINDOWS_UWP || WINDOWS
 			Assert.Equal(DevicePlatform.WinUI, DeviceInfo.Platform);
+#elif MACCATALYST
+			Assert.Equal(DevicePlatform.MacCatalyst, DeviceInfo.Platform);
 #elif __IOS__
 			Assert.Equal(DevicePlatform.iOS, DeviceInfo.Platform);
 #elif __ANDROID__

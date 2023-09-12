@@ -10,9 +10,17 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Editor)]
 	public partial class EditorTests : ControlsHandlerTestBase
 	{
-#if !IOS && !MACCATALYST
-		// iOS is broken until this point
-		// https://github.com/dotnet/maui/issues/3425
+		void SetupBuilder()
+		{
+			EnsureHandlerCreated(builder =>
+			{
+				builder.ConfigureMauiHandlers(handlers =>
+				{
+					handlers.AddHandler<Editor, EditorHandler>();
+				});
+			});
+		}
+
 		[Theory]
 		[InlineData(EditorAutoSizeOption.Disabled)]
 		[InlineData(EditorAutoSizeOption.TextChanges)]
@@ -32,23 +40,36 @@ namespace Microsoft.Maui.DeviceTests
 				}
 			};
 
-			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, (_) =>
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async (_) =>
 			{
-				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
+				var frame = editor.Frame;
+
+				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(100, 100)));
+				await WaitForUIUpdate(frame, editor);
+
 				var initialHeight = editor.Height;
 
-				editor.Text += Environment.NewLine + " Some new text" + Environment.NewLine;
+				editor.Text += Environment.NewLine + " Some new text" + Environment.NewLine + " Some new text" + Environment.NewLine;
+
 				layout.Arrange(new Graphics.Rect(Graphics.Point.Zero, layout.Measure(1000, 1000)));
+				await WaitForUIUpdate(frame, editor);
 
-				if (option == EditorAutoSizeOption.Disabled)
-					Assert.Equal(initialHeight, editor.Height);
-				else
+				if (option == EditorAutoSizeOption.TextChanges)
 					Assert.True(initialHeight < editor.Height);
-
-				return Task.CompletedTask;
+				else
+					Assert.Equal(initialHeight, editor.Height);
 			});
 		}
-#endif
+
+		static async Task WaitForUIUpdate(Graphics.Rect frame, Editor collectionView, int timeout = 1000, int interval = 100)
+		{
+			// Wait for layout to happen
+			while (collectionView.Frame == frame && timeout >= 0)
+			{
+				await Task.Delay(interval);
+				timeout -= interval;
+			}
+		}
 
 #if WINDOWS
 		// Only Windows needs the IsReadOnly workaround for MaxLength==0 to prevent text from being entered

@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 	{
 		protected override object CreatePlatformView() => throw new NotImplementedException();
 
-		public static void MapContent(IContentViewHandler handler, IContentView page)
+		public static partial void MapContent(IContentViewHandler handler, IContentView page)
 		{
 		}
 	}

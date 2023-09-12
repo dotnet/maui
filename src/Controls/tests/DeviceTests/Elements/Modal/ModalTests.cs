@@ -441,7 +441,7 @@ namespace Microsoft.Maui.DeviceTests
 					window.Page = nextPage;
 					await OnUnloadedAsync(modalPage.Content);
 					await OnLoadedAsync(nextPage.Content);
-					Assert.Equal(0, window.Navigation.ModalStack.Count);
+					Assert.Empty(window.Navigation.ModalStack);
 				});
 		}
 
@@ -510,13 +510,13 @@ namespace Microsoft.Maui.DeviceTests
 
 					await currentPage.Navigation.PushModalAsync(modalPage);
 					await OnLoadedAsync(modalPage);
-					Assert.Equal(1, currentPage.Navigation.ModalStack.Count);
+					Assert.Single(currentPage.Navigation.ModalStack);
 					await currentPage.Navigation.PopModalAsync();
 					await OnUnloadedAsync(modalPage);
 				});
 
 
-			Assert.Equal(0, rootPage.GetCurrentPage().Navigation.ModalStack.Count);
+			Assert.Empty(rootPage.GetCurrentPage().Navigation.ModalStack);
 		}
 
 		class PageTypes : IEnumerable<object[]>

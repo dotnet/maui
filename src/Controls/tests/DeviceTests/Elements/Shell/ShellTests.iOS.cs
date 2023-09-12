@@ -31,6 +31,9 @@ namespace Microsoft.Maui.DeviceTests
 			var pageWithTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Top Tabs" } };
 			var pageWithoutTopTabs = new ContentPage() { Content = new Label() { Text = "Page With Bottom Tabs" } };
 
+			pageWithTopTabs.On<iOS>().SetUseSafeArea(true);
+			pageWithoutTopTabs.On<iOS>().SetUseSafeArea(true);
+
 			var mainTab1 = new Tab()
 			{
 				Items =
@@ -98,7 +101,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(1, navigatedFired);
 				Assert.Equal(ShellNavigationSource.PopToRoot, shellNavigationSource.Value);
 
-				Assert.Equal(0, shell.Navigation.ModalStack.Count);
+				Assert.Empty(shell.Navigation.ModalStack);
 
 				void ShellNavigated(object sender, ShellNavigatedEventArgs e)
 				{
@@ -141,7 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 				await finishedNavigation.Task.WaitAsync(TimeSpan.FromSeconds(2));
 				Assert.Equal(1, navigatedFired);
 				Assert.Equal(ShellNavigationSource.PopToRoot, shellNavigationSource.Value);
-				Assert.Equal(0, shell.Navigation.ModalStack.Count);
+				Assert.Empty(shell.Navigation.ModalStack);
 
 				void ShellNavigated(object sender, ShellNavigatedEventArgs e)
 				{

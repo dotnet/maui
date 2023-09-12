@@ -48,6 +48,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
+		// It sets image.Source and waits for it to load, a valid test case.
 		[Fact("Image Does Not Leak")]
 		public async Task DoesNotLeak()
 		{
@@ -71,19 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 				await image.Wait();
 			});
 
-			Assert.NotNull(handlerReference);
-			Assert.NotNull(platformViewReference);
-
-			// Several GCs required on iOS
-			for (int i = 0; i < 5; i++)
-			{
-				if (!handlerReference.IsAlive && !platformViewReference.IsAlive)
-					break;
-				await Task.Yield();
-				GC.Collect();
-				GC.WaitForPendingFinalizers();
-			}
-
+			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);
 			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
 			Assert.False(platformViewReference.IsAlive, "PlatformView should not be alive!");
 		}

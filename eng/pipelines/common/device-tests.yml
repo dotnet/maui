@@ -1,8 +1,11 @@
 parameters:
   androidPool: { }
   iosPool: { }
-  androidApiLevels: [ 30 ]
+  catalystPool: { }
+  windowsPool: { }
+  androidApiLevels: [ 33 ]
   iosVersions: [ 'latest' ]
+  catalystVersions: [ 'latest' ]
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
   artifactName: 'nuget'
@@ -14,6 +17,7 @@ parameters:
       desc: Human Description
       android: /optional/path/to/android.csproj
       ios: /optional/path/to/ios.csproj
+      catalyst: /optional/path/to/catalyst.csproj
 
 stages:
   - stage: android_device_tests
@@ -33,13 +37,12 @@ stages:
               ${{ each api in parameters.androidApiLevels }}:
                 ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
                   ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_API_${{ api }}:
-                    ${{ if ge(api, 24) }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis_playstore;x86"
-                    ${{ else }}:
-                      ANDROID_EMULATORS: "system-images;android-${{ api }};google_apis;x86"
                     REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
                     PROJECT_PATH: ${{ project.android }}
-                    DEVICE: android-emulator-32_${{ api }}
+                    ${{ if eq(api, 27) }}:
+                      DEVICE: android-emulator-32_${{ api }}
+                    ${{ if not(eq(api, 27)) }}:
+                      DEVICE: android-emulator-64_${{ api }}
       steps:
         - template: device-tests-steps.yml
           parameters:
@@ -91,6 +94,43 @@ stages:
             checkoutDirectory: ${{ parameters.checkoutDirectory }}
             useArtifacts: ${{ parameters.useArtifacts }}
 
+  - stage: catalyst_device_tests
+    displayName: macOS Device Tests
+    dependsOn: []
+    jobs:
+    - job: catalyst_device_tests
+      workspace:
+        clean: all
+      displayName: "macOS tests"
+      pool: ${{ parameters.catalystPool }}
+      strategy:
+        matrix:
+          # create all the variables used for the matrix
+          ${{ each project in parameters.projects }}:
+            ${{ if ne(project.catalyst, '') }}:
+              ${{ each version in parameters.catalystVersions }}:
+                ${{ if not(containsValue(project.catalystVersionsExclude, version)) }}:
+                  ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_V_${{ version }}:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                    PROJECT_PATH: ${{ project.catalyst }}
+                    ${{ if eq(version, 'latest') }}:
+                      DEVICE: maccatalyst
+                    ${{ else }}:
+                      DEVICE: maccatalyst_${{ version }}
+      steps:
+        - template: device-tests-steps.yml
+          parameters:
+            platform: catalyst
+            path: $(PROJECT_PATH)
+            device: $(DEVICE)
+            windowsPackageId: catalyst # Only needed for Windows, will be ignored
+            provisionatorChannel: ${{ parameters.provisionatorChannel }}
+            agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+            artifactName: ${{ parameters.artifactName }}
+            artifactItemPattern: ${{ parameters.artifactItemPattern }}
+            checkoutDirectory: ${{ parameters.checkoutDirectory }}
+            useArtifacts: ${{ parameters.useArtifacts }}
+
   - stage: windows_device_tests
     displayName: Windows Device Tests
     dependsOn: []
@@ -99,23 +139,24 @@ stages:
       workspace:
         clean: all
       displayName: "Windows device tests"
-      pool:
-        vmImage: windows-latest
+      pool: ${{ parameters.windowsPool }}
       strategy:
         matrix:
           # create all the variables used for the matrix
           ${{ each project in parameters.projects }}:
             ${{ if ne(project.windows, '') }}:
-              ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}:
-                PROJECT_PATH: ${{ project.windows }}
-                PACKAGE_ID: ${{ project.windowsPackageId }}
+              ${{ each version in parameters.windowsVersions }}:
+                ${{ replace(coalesce(project.desc, project.name), ' ', '_') }}_${{ version }}:
+                  PROJECT_PATH: ${{ project.windows }}
+                  PACKAGE_ID: ${{ project.windowsPackageId }}
+                  DEVICE: ${{ version }}
       steps:
         - template: device-tests-steps.yml
           parameters:
             platform: windows
             path: $(PROJECT_PATH)
             windowsPackageId: $(PACKAGE_ID)
-            device: windows
+            device: $(DEVICE) # For Windows this switches between packaged and unpackaged
             provisionatorChannel: ${{ parameters.provisionatorChannel }}
             agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
             artifactName: ${{ parameters.artifactName }}

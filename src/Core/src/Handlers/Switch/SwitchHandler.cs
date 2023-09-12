@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 		{
 		};
 
-		public SwitchHandler() : base(Mapper)
+		public SwitchHandler() : base(Mapper, CommandMapper)
 		{
 		}
 

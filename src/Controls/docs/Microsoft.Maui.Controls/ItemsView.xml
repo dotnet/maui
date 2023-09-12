@@ -31,28 +31,6 @@
         <remarks>To be added.</remarks>
       </Docs>
     </Member>
-    <Member MemberName="AddLogicalChild">
-      <MemberSignature Language="C#" Value="public void AddLogicalChild (Microsoft.Maui.Controls.Element element);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void AddLogicalChild(class Microsoft.Maui.Controls.Element element) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ItemsView.AddLogicalChild(Microsoft.Maui.Controls.Element)" />
-      <MemberSignature Language="F#" Value="member this.AddLogicalChild : Microsoft.Maui.Controls.Element -&gt; unit" Usage="itemsView.AddLogicalChild element" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="element" Type="Microsoft.Maui.Controls.Element" />
-      </Parameters>
-      <Docs>
-        <param name="element">To be added.</param>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
     <Member MemberName="EmptyView">
       <MemberSignature Language="C#" Value="public object EmptyView { get; set; }" />
       <MemberSignature Language="ILAsm" Value=".property instance object EmptyView" />
@@ -526,28 +504,6 @@
         <ReturnType>Microsoft.Maui.Controls.BindableProperty</ReturnType>
       </ReturnValue>
       <Docs>
-        <summary>To be added.</summary>
-        <remarks>To be added.</remarks>
-      </Docs>
-    </Member>
-    <Member MemberName="RemoveLogicalChild">
-      <MemberSignature Language="C#" Value="public void RemoveLogicalChild (Microsoft.Maui.Controls.Element element);" />
-      <MemberSignature Language="ILAsm" Value=".method public hidebysig instance void RemoveLogicalChild(class Microsoft.Maui.Controls.Element element) cil managed" />
-      <MemberSignature Language="DocId" Value="M:Microsoft.Maui.Controls.ItemsView.RemoveLogicalChild(Microsoft.Maui.Controls.Element)" />
-      <MemberSignature Language="F#" Value="member this.RemoveLogicalChild : Microsoft.Maui.Controls.Element -&gt; unit" Usage="itemsView.RemoveLogicalChild element" />
-      <MemberType>Method</MemberType>
-      <AssemblyInfo>
-        <AssemblyName>Microsoft.Maui.Controls.Core</AssemblyName>
-        <AssemblyVersion>2.0.0.0</AssemblyVersion>
-      </AssemblyInfo>
-      <ReturnValue>
-        <ReturnType>System.Void</ReturnType>
-      </ReturnValue>
-      <Parameters>
-        <Parameter Name="element" Type="Microsoft.Maui.Controls.Element" />
-      </Parameters>
-      <Docs>
-        <param name="element">To be added.</param>
         <summary>To be added.</summary>
         <remarks>To be added.</remarks>
       </Docs>

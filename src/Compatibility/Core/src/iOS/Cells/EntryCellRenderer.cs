@@ -90,7 +90,8 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.iOS
 			var cell = (EntryCellTableViewCell)sender;
 			var model = (EntryCell)cell.Cell;
 
-			model.Text = cell.TextField.Text;
+			model
+				.SetValue(EntryCell.TextProperty, cell.TextField.Text, specificity: SetterSpecificity.FromHandler);
 		}
 
 		static void UpdateHorizontalTextAlignment(EntryCellTableViewCell cell, EntryCell entryCell)

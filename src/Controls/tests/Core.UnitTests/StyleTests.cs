@@ -244,22 +244,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public void ImplicitStylesOverridenByStyle()
 		{
 			var rd = new ResourceDictionary {
-				new Style (typeof(Label)) { Setters = {
-						new Setter { Property = Label.TextColorProperty, Value = Colors.Pink },
-					}
-				},
+				new Style (typeof(Label)) { Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Pink }, } },
 				{ "foo", "FOO" },
-				{"labelStyle", new Style (typeof(Label)) { Setters = {
-							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
-						}
-					}
-				}
+				{ "labelStyle", new Style (typeof(Label)) { Setters = { new Setter { Property = Label.TextColorProperty, Value = Colors.Purple } } } },
 			};
 
 			var label = new Label();
-			label.SetDynamicResource(VisualElement.StyleProperty, "labelStyle");
-			var layout = new StackLayout { Children = { label }, Resources = rd };
 
+			var layout = new StackLayout { Children = { label }, Resources = rd };
+			Assert.Equal(label.TextColor, Colors.Pink);
+
+			label.SetDynamicResource(VisualElement.StyleProperty, "labelStyle");
 			Assert.Equal(label.TextColor, Colors.Purple);
 		}
 
@@ -272,7 +267,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					}
 				},
 				{ "foo", "FOO" },
-				{"labelStyle", new Style (typeof(Label)) { Setters = {
+				{ "labelStyle", new Style (typeof(Label)) { Setters = {
 							new Setter { Property = Label.TextColorProperty, Value = Colors.Purple }
 						}
 					}
@@ -530,7 +525,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
-		public void ImplicitStylesNotAppliedByDefaultIfAStyleExists()
+		public void ImplicitStylesAppliedByDefaultIfAStyleExists()
 		{
 			var implicitstyle = new Style(typeof(Label))
 			{
@@ -552,7 +547,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					Style = style
 				}
 			};
-			Assert.Equal(Label.TextProperty.DefaultValue, ((Label)view.Content).Text);
+			Assert.Equal("Foo", ((Label)view.Content).Text);
 			Assert.Equal(Colors.Red, ((Label)view.Content).TextColor);
 		}
 
@@ -902,7 +897,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			t.Style = s;
 
-			Assert.Equal(1, MockApplication.MockLogger.Messages.Count);
+			Assert.Single(MockApplication.MockLogger.Messages);
 			Assert.Equal($"Style TargetType Microsoft.Maui.Controls.Button is not compatible with element target type Microsoft.Maui.Controls.View", MockApplication.MockLogger.Messages.FirstOrDefault());
 		}
 
@@ -914,7 +909,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			t.Style = s;
 
-			Assert.Equal(1, MockApplication.MockLogger.Messages.Count);
+			Assert.Single(MockApplication.MockLogger.Messages);
 			Assert.Equal($"Style TargetType Microsoft.Maui.Controls.Button is not compatible with element target type Microsoft.Maui.Controls.Label", MockApplication.MockLogger.Messages.FirstOrDefault());
 		}
 
@@ -1010,6 +1005,202 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(button.BackgroundColor, Colors.Red);
 			button.ClearValue(Button.BackgroundColorProperty);
 			Assert.Equal(button.BackgroundColor, Colors.HotPink);
+		}
+
+		[Fact]
+		public void UnapplyingValueDefaultToStyle()
+		{
+			var label = new Label();
+			var style = new Style(typeof(Label))
+			{
+				Setters = {
+					new Setter { Property = Label.TextProperty, Value = "foo" },
+				}
+			};
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			label.Style = style;
+			Assert.Equal("foo", label.Text);
+
+			label.Text = "bar";
+			Assert.Equal("bar", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+			Assert.Equal("foo", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingValueAfterStyleRemoval()
+		{
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "foo" } } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			label.Style = style;
+			Assert.Equal("foo", label.Text);
+
+			label.Text = "bar";
+			Assert.Equal("bar", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("bar", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingStyleDefaultToImplicit1()
+		{
+			var stackLayout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
+				}
+			};
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "style" }, } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			stackLayout.Children.Add(label);
+			Assert.Equal("implicit", label.Text);
+
+			label.Style = style;
+			Assert.Equal("style", label.Text);
+
+			label.Text = "value";
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+			Assert.Equal("implicit", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingStyleDefaultToImplicit2()
+		{
+			var stackLayout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
+				}
+			};
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "style" }, } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			label.Style = style;
+			Assert.Equal("style", label.Text);
+
+			stackLayout.Children.Add(label);
+			Assert.Equal("style", label.Text);
+
+			label.Text = "value";
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+			Assert.Equal("implicit", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingStyleDefaultToImplicit3()
+		{
+			var stackLayout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
+				}
+			};
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "style" }, } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			label.Text = "value";
+			Assert.Equal("value", label.Text);
+
+			label.Style = style;
+			Assert.Equal("value", label.Text);
+
+			stackLayout.Children.Add(label);
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("value", label.Text);
+
+			label.ClearValue(Label.TextProperty);
+			Assert.Equal("implicit", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingStyleDefaultToImplicit4()
+		{
+			var stackLayout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
+				}
+			};
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "style" }, } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			stackLayout.Children.Add(label);
+			Assert.Equal("implicit", label.Text);
+
+			label.Style = style;
+			Assert.Equal("style", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("implicit", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingStyleDefaultToImplicit5()
+		{
+			var stackLayout = new StackLayout
+			{
+				Resources = new ResourceDictionary {
+					new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "implicit" } } },
+				}
+			};
+			var label = new Label();
+			var style = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "style" }, } };
+
+			Assert.Equal(label.Text, Label.TextProperty.DefaultValue);
+
+			label.Style = style;
+			Assert.Equal("style", label.Text);
+
+			stackLayout.Children.Add(label);
+			Assert.Equal("style", label.Text);
+
+			label.ClearValue(Label.StyleProperty);
+			Assert.Equal("implicit", label.Text);
+		}
+
+		[Fact]
+		public void UnapplyingBasedOn()
+		{
+			var basedOn = new Style(typeof(Label)) { Setters = { new Setter { Property = Label.TextProperty, Value = "basedOn" }, } };
+			var style = new Style(typeof(Label)) { BasedOn = basedOn };
+
+			var label = new Label { Style = style };
+			Assert.Equal("basedOn", label.Text);
+
+			style.BasedOn = null;
+			Assert.Equal(Label.TextProperty.DefaultValue, label.Text);
+
 		}
 	}
 }

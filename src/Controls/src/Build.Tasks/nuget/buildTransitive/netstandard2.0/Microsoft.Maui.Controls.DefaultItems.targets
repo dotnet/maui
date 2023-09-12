@@ -1,11 +1,19 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
 	<!--
-	NOTE: we cannot update/remove existing default items in our props file, as it is
-	imported *before* the default items are created by Microsoft.NET.Sdk.DefaultItems.props.
-	Doing it here works, but means that it will override things users do in their csproj.
-	Unfortunately there is no way to work around this without adding a new extension point to
-	the sdk props.
+	Set up some basic structuring.
+	
+	This file does two things:
+		- Move all the .xaml.cs files under their .xaml files.
+		- Remove the .xaml and .css from the @(None) item group.
+	
+	These are in the workload so they can run when the NuGet packages are not yet restored.
+	The single project system also has various globs and changes, but that does not affect
+	how the solution explorer "looks". As a result, we can leave it there for now as it is
+	useful to have in the packages for independent updates - if need be.
+	
+	This is duplicated in the workload Microsoft.Maui.Sdk.DefaultItems.targets for now because .NET MAUI
+	is also consumed via NuGet - machines that have older workloads need to also update these items.
 	-->
 	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultXamlItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
 		<Compile Update="**\*.xaml$(DefaultLanguageSourceExtension)" DependentUpon="%(Filename)" SubType="Code" />
@@ -15,7 +23,5 @@
 	<ItemGroup Condition="'$(EnableDefaultItems)'=='True' And '$(EnableDefaultCssItems)'=='True' And '$(EnableDefaultEmbeddedResourceItems)'=='True'">
 		<None Remove="**\*.css" Condition="'$(EnableDefaultNoneItems)'=='True'" />
 	</ItemGroup>
-
-	<Import Project="Microsoft.Maui.Controls.SingleProject.targets" />
 
 </Project>
