@@ -130,8 +130,12 @@ namespace Microsoft.Maui.Platform
 		{
 #if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
-				platformViewHandler.PlatformView != null)
+				platformViewHandler.PlatformView is not null)
 			{
+#if IOS
+				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+					return platformViewHandler.ContainerView.OnUnloaded(action);
+#endif
 				return platformViewHandler.PlatformView.OnUnloaded(action);
 			}
 
@@ -145,8 +149,12 @@ namespace Microsoft.Maui.Platform
 		{
 #if PLATFORM
 			if (element.Handler is IPlatformViewHandler platformViewHandler &&
-				platformViewHandler.PlatformView != null)
+				platformViewHandler.PlatformView is not null)
 			{
+#if IOS
+				if (platformViewHandler.ContainerView is IUIViewLifeCycleEvents)
+					return platformViewHandler.ContainerView.OnLoaded(action);
+#endif
 				return platformViewHandler.PlatformView.OnLoaded(action);
 			}
 
@@ -161,7 +169,14 @@ namespace Microsoft.Maui.Platform
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			platformView.OnUnloaded(() => taskCompletionSource.SetResult(true));
+			IDisposable? token = null;
+			token = platformView.OnUnloaded(() =>
+			{
+				taskCompletionSource.SetResult(true);
+				token?.Dispose();
+				token = null;
+			});
+
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 
@@ -169,7 +184,13 @@ namespace Microsoft.Maui.Platform
 		{
 			timeOut = timeOut ?? TimeSpan.FromSeconds(2);
 			TaskCompletionSource<object> taskCompletionSource = new TaskCompletionSource<object>();
-			platformView.OnLoaded(() => taskCompletionSource.SetResult(true));
+			IDisposable? token = null;
+			token = platformView.OnLoaded(() =>
+			{
+				taskCompletionSource.SetResult(true);
+				token?.Dispose();
+				token = null;
+			});
 			return taskCompletionSource.Task.WaitAsync(timeOut.Value);
 		}
 #endif

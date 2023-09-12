@@ -13,19 +13,35 @@ using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="Type[@FullName='Microsoft.Maui.Controls.Page']/Docs/*" />
+	/// <summary>
+	/// A <see cref="VisualElement" /> that occupies the entire screen.
+	/// </summary>
+	/// <remarks><see cref = "Page" /> is primarily a base class for more useful derived types. Objects that are derived from the <see cref="Page"/> class are most prominently used as the top level UI element in .NET MAUI applications. In addition to their role as the main pages of applications, <see cref="Page"/> objects and their descendants can be used with navigation classes, such as <see cref="NavigationPage"/> or <see cref="FlyoutPage"/>, among others, to provide rich user experiences that conform to the expected behaviors on each platform.
+	/// </remarks>
 	public partial class Page : VisualElement, ILayout, IPageController, IElementConfiguration<Page>, IPaddingElement, ISafeAreaView, ISafeAreaView2, IView, ITitledElement, IToolbarElement
 	{
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BusySetSignalName']/Docs/*" />
+		/// <summary>
+		/// The identifier used by the internal messaging system to set <see cref="IsBusy"/>.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string BusySetSignalName = "Microsoft.Maui.Controls.BusySet";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='AlertSignalName']/Docs/*" />
+		/// <summary>
+		/// The identifier used by the internal messaging system to display an alert dialog.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string AlertSignalName = "Microsoft.Maui.Controls.SendAlert";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='PromptSignalName']/Docs/*" />
+		/// <summary>
+		/// The identifier used by the internal messaging system to display a prompt dialog.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string PromptSignalName = "Microsoft.Maui.Controls.SendPrompt";
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ActionSheetSignalName']/Docs/*" />
+		/// <summary>
+		/// The identifier used by the internal messaging system to display an action sheet.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		public const string ActionSheetSignalName = "Microsoft.Maui.Controls.ShowActionSheet";
 
 		internal static readonly BindableProperty IgnoresContainerAreaProperty = BindableProperty.Create("IgnoresContainerArea", typeof(bool), typeof(Page), false);
@@ -59,7 +75,9 @@ namespace Microsoft.Maui.Controls
 
 		List<Action> _pendingActions = new List<Action>();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Page"/> class.
+		/// </summary>
 		public Page()
 		{
 			var toolbarItems = new ObservableCollection<ToolbarItem>();
@@ -79,57 +97,83 @@ namespace Microsoft.Maui.Controls
 			this.NavigatedTo += FlushPendingActions;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='BackgroundImageSource']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="ImageSource"/> that will be used as the background for this page. This is a bindable property.
+		/// </summary>
 		public ImageSource BackgroundImageSource
 		{
 			get { return (ImageSource)GetValue(BackgroundImageSourceProperty); }
 			set { SetValue(BackgroundImageSourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IconImageSource']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="ImageSource"/> to be used for the icon associated to this page. This is a bindable property.
+		/// </summary>
+		/// <remarks>For example, this icon might be shown in the flyout menu or a tab bar together with <see cref="Title"/>.</remarks>
 		public ImageSource IconImageSource
 		{
 			get { return (ImageSource)GetValue(IconImageSourceProperty); }
 			set { SetValue(IconImageSourceProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IsBusy']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the page busy state. This will cause the platform specific global activity indicator to show a busy state.
+		/// This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// <para>Setting <see cref="IsBusy"/> to <see langword="true"/> on multiple pages at once will cause the global activity indicator to run until all are set back to <see langword="false"/>. It is the developer's responsibility to unset the <see cref="IsBusy"/> flag before cleaning up a page.</para>
+		/// </remarks>
 		public bool IsBusy
 		{
 			get { return (bool)GetValue(IsBusyProperty); }
 			set { SetValue(IsBusyProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='Padding']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the space between the content of the page and its border. This is a bindable property.
+		/// </summary>
 		public Thickness Padding
 		{
 			get { return (Thickness)GetValue(PaddingElement.PaddingProperty); }
 			set { SetValue(PaddingElement.PaddingProperty, value); }
 		}
 
+		/// <inheritdoc/>
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
 		{
 			return default(Thickness);
 		}
 
+		/// <inheritdoc/>
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
 			UpdateChildrenLayout();
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='Title']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the page's title.
+		/// </summary>
+		/// <remarks>For example, this title might be shown in the flyout menu or a tab bar together with <see cref="IconImageSource"/>.</remarks>
 		public string Title
 		{
 			get { return (string)GetValue(TitleProperty); }
 			set { SetValue(TitleProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ToolbarItems']/Docs/*" />
+		/// <summary>
+		/// Gets the <see cref="ToolbarItem"/> objects for this page, implemented in a platform-specific manner.
+		/// </summary>
 		public IList<ToolbarItem> ToolbarItems { get; internal set; }
 
+		/// <summary>
+		/// Gets the <see cref="MenuBarItem"/> objects for this page, implemented in a platform-specific manner.
+		/// </summary>
 		public IList<MenuBarItem> MenuBarItems { get; internal set; }
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ContainerArea']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the area this page is contained in.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public Rect ContainerArea
 		{
@@ -144,7 +188,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='IgnoresContainerArea']/Docs/*" />
+		/// <summary>
+		/// Gets or sets a value that determines whether to ignore the <see cref="ContainerArea"/>. This is a bindable property.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public bool IgnoresContainerArea
 		{
@@ -152,12 +199,17 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(IgnoresContainerAreaProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='InternalChildren']/Docs/*" />
+		/// <summary>
+		/// Gets the internal collection of child elements contained in this page.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
+		/// <inheritdoc/>
 		bool ISafeAreaView.IgnoreSafeArea => !On<PlatformConfiguration.iOS>().UsingSafeArea();
 
+		/// <inheritdoc/>
 		Thickness ISafeAreaView2.SafeAreaInsets
 		{
 			set
@@ -166,18 +218,37 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// Raised when the children of this page, and thus potentially the layout, have changed.
+		/// </summary>
 		public event EventHandler LayoutChanged;
 
+		/// <summary>
+		/// Raised when this page is visually appearing on screen.
+		/// </summary>
 		public event EventHandler Appearing;
 
+		/// <summary>
+		/// Raised when this page is visually disappearing from the screen.
+		/// </summary>
 		public event EventHandler Disappearing;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayActionSheet'][1]/Docs/*" />
+		/// <inheritdoc cref="DisplayActionSheet(string, string, string, FlowDirection, string[])"/>
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, params string[] buttons)
 		{
 			return DisplayActionSheet(title, cancel, destruction, FlowDirection.MatchParent, buttons);
 		}
 
+		/// <summary>
+		/// Displays a platform action sheet, allowing the application user to choose from several buttons.
+		/// </summary>
+		/// <param name="title">Title of the displayed action sheet. Can be <see langword="null"/> to hide the title.</param>
+		/// <param name="cancel">Text to be displayed in the 'Cancel' button. Can be null to hide the <see langword="null"/> action.</param>
+		/// <param name="destruction">Text to be displayed in the 'Destruct' button. Can be <see langword="null"/> to hide the destructive option.</param>
+		/// <param name="flowDirection">The flow direction to be used by the action sheet.</param>
+		/// <param name="buttons">Text labels for additional buttons.</param>
+		/// <returns>A <see cref="Task"/> that displays an action sheet and returns the string caption of the button pressed by the user.</returns>
+		/// <remarks>Developers should be aware that Windows line endings, CR-LF, only work on Windows systems, and are incompatible with iOS and Android. A particular consequence of this is that characters that appear after a CR-LF, (For example, in the title) may not be displayed on non-Windows platforms. Developers must use the correct line endings for each of the targeted systems.</remarks>
 		public Task<string> DisplayActionSheet(string title, string cancel, string destruction, FlowDirection flowDirection, params string[] buttons)
 		{
 			var args = new ActionSheetArguments(title, cancel, destruction, buttons);
@@ -193,30 +264,35 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs/*" />
+		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel)
 		{
 			return DisplayAlert(title, message, null, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs/*" />
+		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel)
 		{
 			return DisplayAlert(title, message, accept, cancel, FlowDirection.MatchParent);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][1]/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <inheritdoc cref="DisplayAlert(string, string, string, string, FlowDirection)"/>
 		public Task DisplayAlert(string title, string message, string cancel, FlowDirection flowDirection)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			return DisplayAlert(title, message, null, cancel, flowDirection);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayAlert'][2]/Docs/*" />
-#pragma warning disable CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
+		/// <summary>
+		/// Displays an alert dialog to the application user with a single cancel button.
+		/// </summary>
+		/// <param name="title">The title of the alert dialog. Can be <see langword="null"/> to hide the title.</param>
+		/// <param name="message">The body text of the alert dialog.</param>
+		/// <param name="accept">Text to be displayed on the 'Accept' button. Can be <see langword="null"/> to hide this button.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
+		/// <param name="flowDirection">The flow direction to be used by the alert.</param>
+		/// <returns>A <see cref="Task"/> that contains the user's choice as a <see cref="bool"/> value. <see langword="true"/> indicates that the user accepted the alert. <see langword="false"/> indicates that the user cancelled the alert.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="cancel"/> is <see langword="null"/> or empty.</exception>
 		public Task<bool> DisplayAlert(string title, string message, string accept, string cancel, FlowDirection flowDirection)
-#pragma warning restore CS1573 // Parameter has no matching param tag in the XML comment (but other parameters do)
 		{
 			if (string.IsNullOrEmpty(cancel))
 				throw new ArgumentNullException(nameof(cancel));
@@ -234,7 +310,18 @@ namespace Microsoft.Maui.Controls
 			return args.Result.Task;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='DisplayPromptAsync'][2]/Docs/*" />
+		/// <summary>
+		/// Displays a prompt dialog to the application user with the intent to capture a single string value.
+		/// </summary>
+		/// <param name="title">The title of the prompt dialog.</param>
+		/// <param name="message">The body text of the prompt dialog.</param>
+		/// <param name="accept">Text to be displayed on the 'Accept' button.</param>
+		/// <param name="cancel">Text to be displayed on the 'Cancel' button.</param>
+		/// <param name="placeholder">The placeholder text to display in the prompt. Can be <see langword="null"/> when no placeholder is desired.</param>
+		/// <param name="maxLength">The maximum length of the user response.</param>
+		/// <param name="keyboard">The keyboard type to use for the user response.</param>
+		/// <param name="initialValue">A pre-defined response that will be displayed, and which can be edited by the user.</param>
+		/// <returns>A <see cref="Task"/> that displays a prompt display and returns the string value as entered by the user.</returns>
 		public Task<string> DisplayPromptAsync(string title, string message, string accept = "OK", string cancel = "Cancel", string placeholder = null, int maxLength = -1, Keyboard keyboard = default(Keyboard), string initialValue = "")
 		{
 			var args = new PromptArguments(title, message, accept, cancel, placeholder, maxLength, keyboard, initialValue);
@@ -262,18 +349,30 @@ namespace Microsoft.Maui.Controls
 			this.NavigatedTo -= FlushPendingActions;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='ForceLayout']/Docs/*" />
+		/// <summary>
+		/// Forces the page to perform a layout pass.
+		/// </summary>
 		public void ForceLayout()
 		{
 			SizeAllocated(Width, Height);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendBackButtonPressed']/Docs/*" />
+		/// <summary>
+		/// Calls <see cref="OnBackButtonPressed"/>.
+		/// </summary>
+		/// <returns><see langword="true"/> when the back navigation was handled by the <see cref="OnBackButtonPressed"/> override, otherwise <see langword="false"/>.</returns>
 		public bool SendBackButtonPressed()
 		{
 			return OnBackButtonPressed();
 		}
 
+		/// <summary>
+		/// Lays out the child elements when the layout is invalidated.
+		/// </summary>
+		/// <param name="x">X-coordinate of the top left corner of the bounding rectangle.</param>
+		/// <param name="y">Y-coordinate of the top left corner of the bounding rectangle.</param>
+		/// <param name="width">Width of the bounding rectangle.</param>
+		/// <param name="height">Height of the bounding rectangle.</param>
 		protected virtual void LayoutChildren(double x, double y, double width, double height)
 		{
 			var area = new Rect(x, y, width, height);
@@ -304,15 +403,26 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
+		/// <summary>
+		/// When overridden in a derived class, allows application developers to customize behavior immediately prior to the page becoming visible.
+		/// </summary>
 		protected virtual void OnAppearing()
 		{
 		}
 
+		/// <summary>
+		/// Determines the behavior when the back button of the page is pressed.
+		/// </summary>
+		/// <returns><see langword="true"/> when the back navigation was handled by the override, otherwise <see langword="false"/>.</returns>
+		/// <remarks>
+		/// <para>Application developers can override this method to provide behavior when the back button is pressed. 
+		/// When overridden to handle or cancel the navigation yourself, this method should return <see langword="true"/>.</para>
+		/// <para>This only works on Android and UWP for the hardware back button. On iOS, this method will never be called because there is no hardware back button.</para>
+		/// </remarks>
 		protected virtual bool OnBackButtonPressed()
 		{
 			if (RealParent is BaseShellItem || RealParent is Shell)
 				return false;
-
 
 			var window = RealParent as Window;
 			if (window == null || this == window.Page)
@@ -329,6 +439,9 @@ namespace Microsoft.Maui.Controls
 			return !canceled;
 		}
 
+		/// <summary>
+		/// Invoked whenever the binding context of the page changes. Override this method to add class handling for this event.
+		/// </summary>
 		protected override void OnBindingContextChanged()
 		{
 			base.OnBindingContextChanged();
@@ -346,16 +459,31 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(_titleView, BindingContext);
 		}
 
+		/// <summary>
+		/// Indicates that the preferred size of a child <see cref="Element"/> has changed.
+		/// </summary>
+		/// <param name="sender">The object that raised the event.</param>
+		/// <param name="e">The event arguments.</param>
 		protected virtual void OnChildMeasureInvalidated(object sender, EventArgs e)
 		{
 			InvalidationTrigger trigger = (e as InvalidationEventArgs)?.Trigger ?? InvalidationTrigger.Undefined;
 			OnChildMeasureInvalidated((VisualElement)sender, trigger);
 		}
 
+		/// <summary>
+		/// When overridden in a derived class, allows the application developer to customize behavior as the page disappears.
+		/// </summary>
+		/// <remarks>
+		/// This method is called when the page disappears due to navigating away from the page within the app. It is <b>not</b> called when the app disappears due to an event external to the app (e.g. user navigates to the home screen or another app, a phone call is received, the device is locked, the device is turned off).
+		/// </remarks>
 		protected virtual void OnDisappearing()
 		{
 		}
 
+		/// <summary>
+		/// Called when the page's <see cref="Element.Parent"/> property has changed.
+		/// <exception cref="InvalidOperationException">Thrown when the page's <see cref="Element.RealParent"/> can't be casted to <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
+		/// </summary>
 		protected override void OnParentSet()
 		{
 			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
@@ -363,6 +491,11 @@ namespace Microsoft.Maui.Controls
 			base.OnParentSet();
 		}
 
+		/// <summary>
+		/// Indicates that the page has been assigned a size.
+		/// </summary>
+		/// <param name="width">The width allocated to the page.</param>
+		/// <param name="height">The height allocated to the page.</param>
 		protected override void OnSizeAllocated(double width, double height)
 		{
 			_allocatedFlag = true;
@@ -370,6 +503,9 @@ namespace Microsoft.Maui.Controls
 			UpdateChildrenLayout();
 		}
 
+		/// <summary>
+		/// Requests that the child <see cref="Element"/>s of the page update their layouts.
+		/// </summary>
 		protected void UpdateChildrenLayout()
 		{
 			if (!ShouldLayoutChildren())
@@ -432,7 +568,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-
 		internal void OnAppearing(Action action)
 		{
 			if (_hasAppeared)
@@ -450,7 +585,10 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendAppearing']/Docs/*" />
+		/// <summary>
+		/// Sends the signal to the page that it is about to visually appear on screen.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendAppearing()
 		{
@@ -488,7 +626,10 @@ namespace Microsoft.Maui.Controls
 			FindApplication(this)?.OnPageAppearing(this);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/Page.xml" path="//Member[@MemberName='SendDisappearing']/Docs/*" />
+		/// <summary>
+		/// Sends the signal to the page that it is about to be visually hidden from the screen.
+		/// </summary>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SendDisappearing()
 		{
@@ -623,6 +764,7 @@ namespace Microsoft.Maui.Controls
 
 		internal bool HasNavigatedTo { get; private set; }
 
+		/// <inheritdoc/>
 		Paint IView.Background
 		{
 			get
@@ -639,6 +781,8 @@ namespace Microsoft.Maui.Controls
 		}
 
 		Toolbar _toolbar;
+
+		/// <inheritdoc/>
 		IToolbar IToolbarElement.Toolbar
 		{
 			get => _toolbar;
@@ -677,14 +821,43 @@ namespace Microsoft.Maui.Controls
 			(this as IPageContainer<Page>)?.CurrentPage?.SendNavigatedFrom(args);
 		}
 
+		/// <summary>
+		/// Raised after the page was navigated to.
+		/// </summary>
 		public event EventHandler<NavigatedToEventArgs> NavigatedTo;
+
+		/// <summary>
+		/// Raised before navigating away from the page.
+		/// </summary>
 		public event EventHandler<NavigatingFromEventArgs> NavigatingFrom;
+
+		/// <summary>
+		/// Raised after the page was navigated away from.
+		/// </summary>
 		public event EventHandler<NavigatedFromEventArgs> NavigatedFrom;
 
+		/// <summary>
+		/// When overridden in a derived class, allows application developers to customize behavior immediately after the page was navigated to.
+		/// </summary>
+		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatedTo(NavigatedToEventArgs args) { }
+
+		/// <summary>
+		/// When overridden in a derived class, allows application developers to customize behavior immediately prior to the page being navigated away from.
+		/// </summary>
+		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatingFrom(NavigatingFromEventArgs args) { }
+
+		/// <summary>
+		/// When overridden in a derived class, allows application developers to customize behavior immediately after the page was being navigated away from.
+		/// </summary>
+		/// <param name="args">The event arguments.</param>
 		protected virtual void OnNavigatedFrom(NavigatedFromEventArgs args) { }
 
+		/// <summary>
+		/// Retrieves the parent window that contains the page.
+		/// </summary>
+		/// <returns>The <see cref="Window"/> instance that parents the page.</returns>
 		public virtual Window GetParentWindow()
 			=> this.FindParentOfType<Window>();
 	}

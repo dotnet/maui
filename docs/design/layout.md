@@ -185,6 +185,8 @@ The ILayout interface is composed of a few other interfaces - it's an IView, an 
 
 It also provides the `ClipsToBounds` property, which determines whether its child views can be displayed outside of its boundaries, or are clipped at the edges. 
 
+> 📝 In MAUI.Controls, the value of `ClipsToBounds` is provided by the `IsClippedToBounds` property of Layout. For migration convenience from Xamarin.Forms, the `IsClippedToBounds` property defaults to `false`, so layouts in MAUI.Controls _do not clip_ by default. 
+
 The ILayout interface also provides the `CrossPlatformMeasure()` and `CrossPlatfromArrange()` methods; these methods are utilized by the platform backing controls (e.g. LayoutViewGroup) to handle the cross-platform layout work. 
 
 Technically speaking, it's possible to implement all of the cross-platform layout logic directly in an implementation of ILayout, and it's possible that some SDKs may choose to do so. But by convention, that work is instead delegated to an implementation of ILayoutManager. 

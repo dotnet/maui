@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Platform
 			}
 			else if (source is BitmapSource bitmap)
 			{
-				var rasterizationScale = element?.XamlRoot?.RasterizationScale ?? 1;
+				var rasterizationScale = element.GetDisplayDensity();
 
 				return new Size
 				{

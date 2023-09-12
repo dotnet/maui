@@ -1,6 +1,7 @@
 ﻿#nullable disable
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
@@ -9,7 +10,7 @@ using SizeF = CoreGraphics.CGSize;
 
 namespace Microsoft.Maui.Platform
 {
-	public class MauiLabel : UILabel
+	public class MauiLabel : UILabel, IUIViewLifeCycleEvents
 	{
 		UIControlContentVerticalAlignment _verticalAlignment = UIControlContentVerticalAlignment.Center;
 
@@ -98,5 +99,19 @@ namespace Microsoft.Maui.Platform
 		SizeF AddInsets(SizeF size) => new SizeF(
 			width: size.Width + TextInsets.Left + TextInsets.Right,
 			height: size.Height + TextInsets.Top + TextInsets.Bottom);
+
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		EventHandler _movedToWindow;
+		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
+		{
+			add => _movedToWindow += value;
+			remove => _movedToWindow -= value;
+		}
+
+		public override void MovedToWindow()
+		{
+			base.MovedToWindow();
+			_movedToWindow?.Invoke(this, EventArgs.Empty);
+		}
 	}
 }

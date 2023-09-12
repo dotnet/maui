@@ -69,6 +69,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			Cell.SendDisappearing();
 			// 🚀 unsubscribe from propertychanged
 			Cell.PropertyChanged -= _propertyChangedHandler;
+			// Allows the Cell to unsubscribe from Parent.PropertyChanged
+			Cell.Parent = null;
 		}
 
 

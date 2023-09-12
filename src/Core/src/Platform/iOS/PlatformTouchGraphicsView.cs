@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
@@ -10,6 +11,7 @@ namespace Microsoft.Maui.Platform
 	{
 		readonly UIHoverGestureRecognizerProxy _proxy;
 		WeakReference<IGraphicsView>? _graphicsView;
+		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIHoverGestureRecognizer? _hoverGesture;
 		RectF _rect;
 		bool _pressedContained = false;

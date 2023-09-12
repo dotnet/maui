@@ -12,7 +12,11 @@ using Microsoft.Maui.HotReload;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="Type[@FullName='Microsoft.Maui.Controls.View']/Docs/*" />
+	/// <summary>A visual element that is used to place layouts and controls on the screen.</summary>
+	/// <remarks>
+	/// This is the base class for <see cref="Layout"/> and most of the controls.
+	/// Because <see cref="View" /> ultimately inherits from <see cref="BindableObject" />, application developers can use the Model-View-ViewModel architecture, as well as XAML, to develop portable user interfaces.
+	/// </remarks>
 	public partial class View : VisualElement, IViewController, IGestureController, IGestureRecognizers, IView, IPropertyMapperView, IHotReloadableView, IControlsView
 	{
 		protected internal IGestureController GestureController => this;
@@ -83,6 +87,10 @@ namespace Microsoft.Maui.Controls
 
 		PointerGestureRecognizer _recognizerForPointerOverState;
 
+		/// <summary>
+		/// Initializes a new instance of the <see cref="View"/> class
+		/// </summary>
+		/// <remarks>It is unlikely that an application developer would want to create an instance of <see cref="View"/> on their own.</remarks>
 		protected internal View()
 		{
 			_gestureManager = new GestureManager(this);
@@ -150,7 +158,14 @@ namespace Microsoft.Maui.Controls
 			};
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GestureRecognizers']/Docs/*" />
+		/// <summary>The collection of gesture recognizers associated with this view.</summary>
+		/// <remarks>
+		/// Adding items to this collection will associate gesture events with this element.
+		/// It is not recommended to add gesture recognizers for gestures that elements already natively support.
+		/// <para>
+		/// For example, adding a <see cref="TapGestureRecognizer"/> to a <see cref="Button"/> may lead to unexpected results.
+		/// </para>
+		/// </remarks>
 		public IList<IGestureRecognizer> GestureRecognizers
 		{
 			get { return _gestureRecognizers; }
@@ -158,6 +173,7 @@ namespace Microsoft.Maui.Controls
 
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
 
+		/// <inheritdoc/>
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
 			get
@@ -186,33 +202,55 @@ namespace Microsoft.Maui.Controls
 			PointerGestureRecognizer
 				.SetupForPointerOverVSM(this, (result) => SetPointerOver(result), ref _recognizerForPointerOverState);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='GetChildElements']/Docs/*" />
+		/// <summary>
+		/// Gets the child elements that are visually beneath the specified <paramref name="point" />.
+		/// </summary>
+		/// <param name="point">The point under which to search for child elements.</param>
+		/// <returns>All child elements visually beneath <paramref name="point"/>.</returns>
 		public virtual IList<GestureElement> GetChildElements(Point point)
 		{
 			return null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='HorizontalOptions']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Assigning <see cref="HorizontalOptions"/> modifies how the element is laid out when there is excess space available along the X axis from the parent layout.
+		/// If multiple elements inside a layout are set to expand, the extra space is distributed proportionally.
+		/// </remarks>
 		public LayoutOptions HorizontalOptions
 		{
 			get { return (LayoutOptions)GetValue(HorizontalOptionsProperty); }
 			set { SetValue(HorizontalOptionsProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='Margin']/Docs/*" />
+		/// <summary>
+		/// Gets or set the margin for the view.
+		/// </summary>
 		public Thickness Margin
 		{
 			get { return (Thickness)GetValue(MarginProperty); }
 			set { SetValue(MarginProperty, value); }
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/View.xml" path="//Member[@MemberName='VerticalOptions']/Docs/*" />
+		/// <summary>
+		/// Gets or sets the <see cref="LayoutOptions" /> that define how the element gets laid out in a layout cycle. This is a bindable property.
+		/// </summary>
+		/// <remarks>
+		/// Assigning <see cref="VerticalOptions"/> modifies how the element is laid out when there is excess space available along the Y axis from the parent layout.
+		/// If multiple elements inside a layout are set to expand, the extra space is distributed proportionally.
+		/// </remarks>
 		public LayoutOptions VerticalOptions
 		{
 			get { return (LayoutOptions)GetValue(VerticalOptionsProperty); }
 			set { SetValue(VerticalOptionsProperty, value); }
 		}
 
+		/// <summary>
+		/// Invoked whenever the binding context of the <see cref="View" /> changes. 
+		/// </summary>
+		/// <remarks>This method can be overridden to add class handling for this event. Overrides must call the base method.</remarks>
 		protected override void OnBindingContextChanged()
 		{
 			this.PropagateBindingContext(GestureRecognizers);
@@ -233,6 +271,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 #nullable enable
+		/// <inheritdoc/>
 		Thickness IView.Margin => Margin;
 		partial void HandlerChangedPartial();
 		GestureManager _gestureManager;
@@ -244,23 +283,34 @@ namespace Microsoft.Maui.Controls
 			HandlerChangedPartial();
 		}
 
+		/// <summary>
+		/// Represents the view's internal <see cref="PropertyMapper"/>.
+		/// </summary>
+		/// <remarks>Contains the unique property overrides that are used by <see cref="IPropertyMapperView.GetPropertyMapperOverrides"/>.</remarks>
 		protected PropertyMapper propertyMapper;
 
 		internal protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView =>
 			(PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
 
+		/// <inheritdoc/>
 		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
 
+		/// <inheritdoc/>
 		Primitives.LayoutAlignment IView.HorizontalLayoutAlignment => HorizontalOptions.ToCore();
+
+		/// <inheritdoc/>
 		Primitives.LayoutAlignment IView.VerticalLayoutAlignment => VerticalOptions.ToCore();
 
 		#region HotReload
 
+		/// <inheritdoc/>
 		IView IReplaceableView.ReplacedView =>
 			MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
+		/// <inheritdoc/>
 		IReloadHandler IHotReloadableView.ReloadHandler { get; set; }
 
+		/// <inheritdoc/>
 		void IHotReloadableView.TransferState(IView newView)
 		{
 			//TODO: LEt you hot reload the the ViewModel
@@ -268,6 +318,7 @@ namespace Microsoft.Maui.Controls
 				v.BindingContext = BindingContext;
 		}
 
+		/// <inheritdoc/>
 		void IHotReloadableView.Reload()
 		{
 			Dispatcher.Dispatch(() =>

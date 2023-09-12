@@ -11,9 +11,9 @@ namespace Microsoft.Maui.Embedding
 	{
 		public static MauiAppBuilder UseMauiEmbedding<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder)
 			where TApp : class, IApplication
-				=> builder.UseMauiApp<Controls.Application>();
+				=> builder.UseMauiApp<TApp>();
 
-		public static MauiAppBuilder UseMauiEmbedding<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, Controls.Application> implementationFactory)
+		public static MauiAppBuilder UseMauiEmbedding<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this MauiAppBuilder builder, Func<IServiceProvider, TApp> implementationFactory)
 			where TApp : class, IApplication
 				=> builder.UseMauiApp(implementationFactory);
 	}

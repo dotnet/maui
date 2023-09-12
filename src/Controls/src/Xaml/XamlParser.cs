@@ -430,7 +430,7 @@ namespace Microsoft.Maui.Controls.Xaml
 
 		public static bool IsPublicOrVisibleInternal(this Type type, Assembly assembly)
 		{
-			if (type.IsPublic)
+			if (type.IsPublic || type.IsNestedPublic)
 				return true;
 			if (type.Assembly == assembly)
 				return true;

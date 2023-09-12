@@ -16,9 +16,9 @@ namespace TestUtils.Appium.UITests
 			}
 		}
 
-		protected static TestDevice Device 
-		{ 
-			get 
+		protected static TestDevice Device
+		{
+			get
 			{
 				return UITestContext == null
 					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(Device)} property.")
@@ -26,14 +26,14 @@ namespace TestUtils.Appium.UITests
 			}
 		}
 
-		protected static IApp App 
+		protected static IApp App
 		{
-			get 
+			get
 			{
-				return UITestContext == null 
+				return UITestContext == null
 					? throw new InvalidOperationException($"Call {nameof(InitialSetup)} before accessing the {nameof(App)} property.")
 					: UITestContext.App;
-			} 
+			}
 		}
 
 		public abstract TestConfig GetTestConfig();
