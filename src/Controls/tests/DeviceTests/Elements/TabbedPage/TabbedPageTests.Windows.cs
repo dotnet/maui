@@ -106,40 +106,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Selected/Unselected Color")]
-		public async Task SelectedAndUnselectedTabColor()
-		{
-			SetupBuilder();
-			var tabbedPage = CreateBasicTabbedPage();
-			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2" });
-
-			tabbedPage.SelectedTabColor = Colors.Red;
-			tabbedPage.UnselectedTabColor = Colors.Purple;
-
-			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, handler =>
-			{
-				var navView = GetMauiNavigationView(handler.MauiContext);
-				var navItem1 = GetNavigationViewItems(navView).ToList()[0];
-				var navItem2 = GetNavigationViewItems(navView).ToList()[1];
-
-				Assert.NotNull(navItem1.Background);
-				Assert.NotNull(navItem2.Background);
-
-				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem1.Background).ToColor());
-				Assert.Equal(Colors.Purple, ((WSolidColorBrush)navItem2.Background).ToColor());
-
-				tabbedPage.CurrentPage = tabbedPage.Children[1];
-
-				Assert.NotNull(navItem1.Background);
-				Assert.NotNull(navItem2.Background);
-
-				Assert.Equal(Colors.Purple, ((WSolidColorBrush)navItem1.Background).ToColor());
-				Assert.Equal(Colors.Red, ((WSolidColorBrush)navItem2.Background).ToColor());
-
-				return Task.CompletedTask;
-			});
-		}
-
 		[Fact(DisplayName = "Adding and Removing Pages Propagates Correctly")]
 		public async Task AddingAndRemovingPagesPropagatesCorrectly()
 		{

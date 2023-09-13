@@ -270,8 +270,16 @@ Task("Test")
 		// Unpackaged process blocks the thread, so we can wait shorter for the results
 		waitForResultTimeoutInSeconds = 30;
 
-		// Start the DeviceTests app for unpackaged
-		StartProcess(TEST_APP, testResultsFile);
+		// Start the app once, this will trigger the discovery of the test categories
+		StartProcess(TEST_APP, testResultsFile + " -1");
+
+		var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+		for (int i = 0; i <= testsToRunCount; i++)
+		{
+			// Start the DeviceTests app for unpackaged
+			StartProcess(TEST_APP, testResultsFile + " " + i);
+		}
 	}
 
 	if (FileExists(testsToRunFile))
