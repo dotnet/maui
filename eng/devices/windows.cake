@@ -323,7 +323,13 @@ Task("Test")
 		throw new Exception($"Test result file(s) not found after {waited} seconds, process might have crashed or not completed yet.");
 	}
 
-	Information($"Tests Finished");
+	foreach(var file in System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml"))
+	{
+		var failed = XmlPeek(file, "/assemblies/assembly[@failed > 0 or @errors > 0]/@failed");
+		if (!string.IsNullOrEmpty(failed)) {
+			throw new Exception($"At least {failed} test(s) failed.");
+		}
+	}
 });
 
 
