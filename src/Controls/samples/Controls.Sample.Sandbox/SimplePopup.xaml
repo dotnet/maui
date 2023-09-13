@@ -1,0 +1,11 @@
+﻿<toolkit:Popup xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+               xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+               xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+               x:Class="Maui.Controls.Sample.SimplePopup">
+
+    <VerticalStackLayout>
+        <Entry Text="Top Entry" ReturnType="Next"/>
+        <BoxView HeightRequest="400" Color="green"/>
+        <Entry Text="Bottom Entry" ReturnType="Next"/>
+    </VerticalStackLayout>
+</toolkit:Popup>

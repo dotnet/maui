@@ -29,6 +29,7 @@ public static class KeyboardAutoManagerScroll
 	static double AnimationDuration = 0.25;
 	static UIView? View = null;
 	static UIView? ContainerView = null;
+	static CGRect? StartingContainerViewFrame = null;
 	static CGRect? CursorRect = null;
 	internal static bool IsKeyboardShowing = false;
 	static int TextViewTopDistance = 20;
@@ -103,6 +104,8 @@ public static class KeyboardAutoManagerScroll
 			CursorRect = null;
 
 			ContainerView = View.GetContainerView();
+			if (ContainerView is not null)
+				StartingContainerViewFrame = ContainerView.ConvertRectToView(ContainerView.Bounds, null);
 
 			await AdjustPositionDebounce();
 		}
@@ -248,17 +251,28 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
-		// allow time to debounce from the observers as well as allow
-		// other external scrolling to finish before we initiate ours.
+		await Task.Delay(10);
 
-		// For example: with Maui Community Toolkit Popup, the popup viewcontroller
+		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
 		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
 		// that cause the viewcontroller to translate in the postive y-axis.
 		// This translation happens at the same time that the Entry and Editors
 		// are focused and our keyboard scrolling begins. Due to this, we are adding
 		// to the delay so that the translation on the y-axis of the viewcontroller can
 		// occur prior to our calculations for scrolling.
-		await Task.Delay(30);
+		var vc = View?.FindResponder<UIViewController>();
+		if (vc?.ActivePresentationController?.PresentationStyle == UIModalPresentationStyle.Popover)
+		{
+			await Task.Delay(30);
+
+			var currentContainerViewFrame = ContainerView?.ConvertRectToView(ContainerView.Bounds, null);
+			while (currentContainerViewFrame != StartingContainerViewFrame)
+			{
+				StartingContainerViewFrame = currentContainerViewFrame;
+				await Task.Delay(5);
+				currentContainerViewFrame = ContainerView?.ConvertRectToView(ContainerView.Bounds, null);
+			}
+		}
 
 		if (entranceCount == DebounceCount)
 			AdjustPosition();
@@ -544,6 +558,10 @@ public static class KeyboardAutoManagerScroll
 		if (move >= 0)
 		{
 			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - TextViewTopDistance));
+			if (-kbSize.Height - TextViewTopDistance > rootViewOrigin.Y - move)
+			{
+				Console.WriteLine($"{-kbSize.Height - TextViewTopDistance} > {rootViewOrigin.Y - move}");
+			}
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
@@ -648,6 +666,7 @@ public static class KeyboardAutoManagerScroll
 		ContainerView = null;
 		TopViewBeginOrigin = InvalidPoint;
 		CursorRect = null;
+		StartingContainerViewFrame = null;
 	}
 
 	static NSIndexPath? GetPreviousIndexPath(this UIScrollView scrollView, NSIndexPath indexPath)
