@@ -184,8 +184,8 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui-blazor", "Debug", "net8.0")]
-		[TestCase("maui-blazor", "Release", "net8.0")]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 		{
 			string projectDir = TestDirectory;
