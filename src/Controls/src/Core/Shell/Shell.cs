@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 				?? (bindable as BaseShellItem)?.FindParentOfType<Shell>()
 				?? (bindable as Page)?.FindParentOfType<Shell>();
 
-			shell.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
+			shell?.OnPropertyChanged(NavBarIsVisibleProperty.PropertyName);
 		}
 
 		/// <summary>Bindable property for attached property <c>NavBarHasShadow</c>.</summary>
