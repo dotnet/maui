@@ -104,6 +104,9 @@ public static class KeyboardAutoManagerScroll
 			CursorRect = null;
 
 			ContainerView = View.GetContainerView();
+
+			// Grab the starting position of the ContainerView so we can track if
+			// there is any external scrolling going on
 			if (ContainerView is not null)
 				StartingContainerViewFrame = ContainerView.ConvertRectToView(ContainerView.Bounds, null);
 
@@ -558,10 +561,6 @@ public static class KeyboardAutoManagerScroll
 		if (move >= 0)
 		{
 			rootViewOrigin.Y = (nfloat)Math.Max(rootViewOrigin.Y - move, Math.Min(0, -kbSize.Height - TextViewTopDistance));
-			if (-kbSize.Height - TextViewTopDistance > rootViewOrigin.Y - move)
-			{
-				Console.WriteLine($"{-kbSize.Height - TextViewTopDistance} > {rootViewOrigin.Y - move}");
-			}
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
