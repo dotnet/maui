@@ -188,6 +188,9 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 		{
+			if(TestEnvironment.IsWindows)
+				Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
+
 			string projectDir = TestDirectory;
 			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 			// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
