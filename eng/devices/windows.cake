@@ -35,6 +35,7 @@ string DOTNET_PLATFORM = $"win10-x64";
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string certificateThumbprint = "";
 bool isPackagedTestRun = TEST_DEVICE.ToLower().Equals("packaged");
+bool isControlsProjectTestRun = PROJECT.FullPath.EndsWith("Controls.DeviceTests.csproj");
 
 // Certificate Common Name to use/generate (eg: CN=DotNetMauiTests)
 var certCN = Argument("commonname", "DotNetMAUITests");
@@ -207,6 +208,7 @@ Task("Test")
 	var testResultsPath = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\");
 	var testResultsFile = testResultsPath + $"\\TestResults-{PACKAGEID.Replace(".", "_")}.xml";
 	var testsToRunFile = MakeAbsolute((DirectoryPath)TEST_RESULTS).FullPath.Replace("/", "\\") + $"\\devicetestcategories.txt";
+
 	Information($"Test Results File: {testResultsFile}");
 	Information($"Tests To Run File: {testsToRunFile}");
 
@@ -243,26 +245,38 @@ Task("Test")
 		// Install the DeviceTests app
 		StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(msixPath).FullPath + "\"");
 
-		// Start the app once, this will trigger the discovery of the test categories
-		var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
-		StartProcess("powershell", startArgsInitial);
-
-		Information($"Waiting 5 seconds for process to finish...");
-		System.Threading.Thread.Sleep(5000);
-
-		var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
-
-		for (int i = 0; i <= testsToRunCount; i++)
+		if (isControlsProjectTestRun)
 		{
-			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
+			// Start the app once, this will trigger the discovery of the test categories
+			var startArgsInitial = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"-1\"";
+			StartProcess("powershell", startArgsInitial);
+
+			Information($"Waiting 10 seconds for process to finish...");
+			System.Threading.Thread.Sleep(10000);
+
+			var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+			for (int i = 0; i <= testsToRunCount; i++)
+			{
+				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
+
+				Information(startArgs);
+
+				// Start the DeviceTests app for packaged
+				StartProcess("powershell", startArgs);
+
+				Information($"Waiting 10 seconds for the next...");
+				System.Threading.Thread.Sleep(10000);
+			}
+		}
+		else
+		{
+			var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\"";
 
 			Information(startArgs);
 
 			// Start the DeviceTests app for packaged
 			StartProcess("powershell", startArgs);
-
-			Information($"Waiting 10 seconds for the next...");
-			System.Threading.Thread.Sleep(10000);
 		}
 	}
 	else
@@ -270,15 +284,22 @@ Task("Test")
 		// Unpackaged process blocks the thread, so we can wait shorter for the results
 		waitForResultTimeoutInSeconds = 30;
 
-		// Start the app once, this will trigger the discovery of the test categories
-		StartProcess(TEST_APP, testResultsFile + " -1");
-
-		var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
-
-		for (int i = 0; i <= testsToRunCount; i++)
+		if (isControlsProjectTestRun)
 		{
-			// Start the DeviceTests app for unpackaged
-			StartProcess(TEST_APP, testResultsFile + " " + i);
+			// Start the app once, this will trigger the discovery of the test categories
+			StartProcess(TEST_APP, testResultsFile + " -1");
+
+			var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
+
+			for (int i = 0; i <= testsToRunCount; i++)
+			{
+				// Start the DeviceTests app for unpackaged
+				StartProcess(TEST_APP, testResultsFile + " " + i);
+			}
+		}
+		else
+		{
+			StartProcess(TEST_APP, testResultsFile);
 		}
 	}
 
