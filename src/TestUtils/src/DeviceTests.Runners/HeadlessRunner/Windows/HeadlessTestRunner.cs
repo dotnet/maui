@@ -63,7 +63,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			var allCategories = File.ReadAllLines(_categoriesFilePath);
 			var categoriesToRun = allCategories.Skip(_loopCount).Take(1).ToArray();
 
-			List<string> categoriesToSkip = [];
+			List<string> categoriesToSkip = new();
 
 			foreach (var test in allCategories.Except(categoriesToRun))
 			{
@@ -71,7 +71,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			}
 
 			var currentCategory = categoriesToRun[0];
-			var resultPath = _resultsPath?.Split(".xml") ?? [""];
+			var resultPath = _resultsPath?.Split(".xml") ?? new[] { "" };
 			_resultsPath = $"{resultPath[0]}_{currentCategory}.xml";
 
 			testRunner.SkipCategories(categoriesToSkip);
