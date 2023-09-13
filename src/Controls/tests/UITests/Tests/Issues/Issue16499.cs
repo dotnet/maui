@@ -18,7 +18,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void AppDoesntCrashWhenReusingSameTitleView()
 		{
 			App.WaitForElement("SuccessLabel");
-			App.WaitForElement("SuccessLabel");
 		}
 	}
 }
