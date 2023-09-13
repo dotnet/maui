@@ -1,5 +1,6 @@
 package com.microsoft.maui;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.BlendMode;
@@ -10,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.PathEffect;
 import android.graphics.PorterDuff;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
@@ -35,6 +37,7 @@ import androidx.appcompat.widget.TintTypedArray;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 import androidx.viewpager2.widget.ViewPager2;
+import androidx.window.layout.WindowMetricsCalculator;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestBuilder;
@@ -548,6 +551,19 @@ public class PlatformInterop {
             InputFilter[] newFilter = new InputFilter[currentFilters.size()];
             editText.setFilters(currentFilters.toArray(newFilter));
         }
+    }
+
+    /**
+     * Computes the current WindowMetrics' bounds
+     * @param activity
+     * @return Rect value of the bounds
+     */
+    @NonNull
+    public static Rect getCurrentWindowMetrics(Activity activity) {
+        return WindowMetricsCalculator.Companion
+            .getOrCreate()
+            .computeCurrentWindowMetrics(activity)
+            .getBounds();
     }
 
     private static class ColorStates
