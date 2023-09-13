@@ -26,7 +26,10 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 #if WINDOWS
 			var cliArgs = Environment.GetCommandLineArgs();
 			if (cliArgs.Length > 1)
+			{
 				testResultsFile = HeadlessTestRunner.TestResultsFile = cliArgs.Skip(1).FirstOrDefault();
+				HeadlessTestRunner.LoopCount = int.Parse(cliArgs.Skip(2).FirstOrDefault() ?? "0");
+			}
 #endif
 
 			if (!string.IsNullOrEmpty(testResultsFile) && !hasRunHeadless)
