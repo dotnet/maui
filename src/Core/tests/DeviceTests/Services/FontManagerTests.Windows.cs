@@ -11,7 +11,11 @@ public partial class FontManagerTests : TestBase
 	[InlineData("dokdo_regular.ttf", "ms-appx:///dokdo_regular.ttf#Dokdo")]
 	[InlineData("dokdo_regular#dokdo", "ms-appx:///dokdo_regular.ttf#Dokdo")]
 	[InlineData("dokdo_regular.ttf#dokdo", "ms-appx:///dokdo_regular.ttf#Dokdo")]
-	[InlineData("myalias", "ms-appx:///dokdo_regular.ttf#Dokdo")]
+	[InlineData("myalias", "ms-appx:///dokdo_regular.ttf#Dokdo"
+#if WINDOWS
+			, Skip = "Not working for unpackaged"
+#endif
+	)]
 	public Task CanLoadFonts(string fontName, string actualFontFamily) =>
 		InvokeOnMainThreadAsync(() =>
 		{
