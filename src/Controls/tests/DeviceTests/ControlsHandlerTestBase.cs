@@ -416,15 +416,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				EventHandler loaded = null;
 
-				loaded = async (_, __) =>
+				loaded = (_, __) =>
 				{
 					if (loaded is not null)
 						frameworkElement.Loaded -= loaded;
 					try
 					{
-#if WINDOWS
-						await Task.Delay(50);
-#endif
 						source.TrySetResult();
 					}
 					catch (Exception e)
@@ -445,9 +442,6 @@ namespace Microsoft.Maui.DeviceTests
 			var source = new TaskCompletionSource();
 			if (!frameworkElement.IsLoaded && !frameworkElement.IsLoadedOnPlatform())
 			{
-#if WINDOWS
-				await Task.Delay(50);
-#endif
 				source.TrySetResult();
 			}
 			// in the xplat code we switch Loaded to Unloaded if the window property is removed.
@@ -455,13 +449,10 @@ namespace Microsoft.Maui.DeviceTests
 			// This is most likely a bug.
 			else if (frameworkElement.IsLoadedOnPlatform())
 			{
-				frameworkElement.OnUnloaded(async () =>
+				frameworkElement.OnUnloaded(() =>
 				{
 					try
 					{
-#if WINDOWS
-						await Task.Delay(50);
-#endif
 						source.TrySetResult();
 					}
 					catch (Exception e)
@@ -474,15 +465,12 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				EventHandler unloaded = null;
 
-				unloaded = async (_, __) =>
+				unloaded = (_, __) =>
 				{
 					if (unloaded is not null)
 						frameworkElement.Unloaded -= unloaded;
 					try
 					{
-#if WINDOWS
-						await Task.Delay(50);
-#endif
 						source.TrySetResult();
 					}
 					catch (Exception e)
