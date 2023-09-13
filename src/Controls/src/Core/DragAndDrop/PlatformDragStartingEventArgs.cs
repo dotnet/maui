@@ -26,6 +26,7 @@ public class PlatformDragStartingEventArgs
 	internal Foundation.NSItemProvider? ItemProvider { get; private set; }
 	internal Func<UIKit.UIDragPreview?>? PreviewProvider { get; private set; }
 	internal UIKit.UIDragItem[]? DragItems { get; private set; }
+	internal Func<UIKit.UIDragInteraction, UIKit.IUIDragSession, bool>? PrefersFullSizePreviews { get; private set; }
 
 	internal PlatformDragStartingEventArgs(UIKit.UIView? sender, UIKit.UIDragInteraction dragInteraction,
 		UIKit.IUIDragSession dragSession)
@@ -69,6 +70,21 @@ public class PlatformDragStartingEventArgs
 	public void SetDragItems(UIKit.UIDragItem[] dragItems)
 	{
 		DragItems = dragItems;
+	}
+
+	/// <summary>
+	/// Sets the func that requests to keep drag previews full-sized when dragging begins.
+	/// </summary>
+	/// <param name="prefersFullSizePreviews">Func that returns whether to request full size previews.</param>
+	/// <remarks>
+	/// The default behavior on iOS is to reduce the size of the drag shadow if not requested here.
+	/// Even if requested, it is up to the system whether or not to fulfill the request.
+	/// This method exists inside <see cref="PlatformDragStartingEventArgs"/> since the preview must
+	/// have this value set when dragging begins.
+	/// </remarks>
+	public void SetPrefersFullSizePreviews(Func<UIKit.UIDragInteraction, UIKit.IUIDragSession, bool>? prefersFullSizePreviews)
+	{
+		PrefersFullSizePreviews = prefersFullSizePreviews;
 	}
 
 #elif ANDROID
