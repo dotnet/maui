@@ -15,18 +15,18 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
-		[TestCase("maui", "net6.0", "Debug", false)]
-		[TestCase("maui", "net6.0", "Release", false)]
-		[TestCase("maui", "net7.0", "Debug", false)]
-		[TestCase("maui", "net7.0", "Release", false)]
-		[TestCase("maui-blazor", "net6.0", "Debug", false)]
-		[TestCase("maui-blazor", "net6.0", "Release", false)]
-		[TestCase("maui-blazor", "net7.0", "Debug", false)]
-		[TestCase("maui-blazor", "net7.0", "Release", false)]
-		[TestCase("mauilib", "net6.0", "Debug", true)]
-		[TestCase("mauilib", "net6.0", "Release", true)]
-		[TestCase("mauilib", "net7.0", "Debug", true)]
-		[TestCase("mauilib", "net7.0", "Release", true)]
+		[TestCase("maui", DotNetPrevious, "Debug", false)]
+		[TestCase("maui", DotNetPrevious, "Release", false)]
+		[TestCase("maui", DotNetCurrent, "Debug", false)]
+		[TestCase("maui", DotNetCurrent, "Release", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		[TestCase("mauilib", DotNetPrevious, "Release", true)]
+		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
+		[TestCase("mauilib", DotNetCurrent, "Release", true)]
 		public void Build(string id, string framework, string config, bool shouldPack)
 		{
 			var projectDir = TestDirectory;
@@ -48,14 +48,14 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net6.0", "Debug")]
-		[TestCase("maui", "net6.0", "Release")]
-		[TestCase("maui", "net7.0", "Debug")]
-		[TestCase("maui", "net7.0", "Release")]
-		[TestCase("maui-blazor", "net6.0", "Debug")]
-		[TestCase("maui-blazor", "net6.0", "Release")]
-		[TestCase("maui-blazor", "net7.0", "Debug")]
-		[TestCase("maui-blazor", "net7.0", "Release")]
+		[TestCase("maui", DotNetPrevious, "Debug")]
+		[TestCase("maui", DotNetPrevious, "Release")]
+		[TestCase("maui", DotNetCurrent, "Debug")]
+		[TestCase("maui", DotNetCurrent, "Release")]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug")]
+		[TestCase("maui-blazor", DotNetPrevious, "Release")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
+		[TestCase("maui-blazor", DotNetCurrent, "Release")]
 		public void BuildUnpackaged(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net7.0", "Release")]
+		[TestCase("maui", DotNetCurrent, "Release")]
 		public void PublishUnpackaged(string id, string framework, string config)
 		{
 			if (!TestEnvironment.IsWindows)
@@ -97,6 +97,7 @@ namespace Microsoft.Maui.IntegrationTests
 			AssetExists("appiconLogo.scale-100.png");
 			AssetExists("OpenSans-Regular.ttf");
 			AssetExists("splashSplashScreen.scale-100.png");
+			AssetExists("AboutAssets.txt");
 
 			void AssetExists(string filename)
 			{
@@ -107,10 +108,10 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("mauilib", "net6.0", "Debug")]
-		[TestCase("mauilib", "net6.0", "Release")]
-		[TestCase("mauilib", "net7.0", "Debug")]
-		[TestCase("mauilib", "net7.0", "Release")]
+		[TestCase("mauilib", DotNetPrevious, "Debug")]
+		[TestCase("mauilib", DotNetPrevious, "Release")]
+		[TestCase("mauilib", DotNetCurrent, "Debug")]
+		[TestCase("mauilib", DotNetCurrent, "Release")]
 		public void PackCoreLib(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
@@ -132,9 +133,9 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "net7.0", "Debug")]
-		[TestCase("mauilib", "net7.0", "Debug")]
-		[TestCase("maui-blazor", "net7.0", "Debug")]
+		[TestCase("maui", DotNetCurrent, "Debug")]
+		[TestCase("mauilib", DotNetCurrent, "Debug")]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug")]
 		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
