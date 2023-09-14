@@ -283,7 +283,7 @@ namespace Microsoft.Maui.Controls
 			{
 				var kvp = context.Values.Last();
 				context.Values.Remove(kvp.Key);
-				context.Values.Add(SetterSpecificity.FromBinding, kvp.Value);
+				context.Values[SetterSpecificity.FromBinding] = kvp.Value;
 			}
 
 			context.Binding?.Unapply();
