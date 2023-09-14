@@ -1,3 +1,4 @@
+using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
 {
@@ -180,6 +181,39 @@ namespace Microsoft.Maui.IntegrationTests
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
+		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
+		{
+			if(TestEnvironment.IsWindows)
+				Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
+
+			string projectDir = TestDirectory;
+			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
+			string appLocation = config == "Release" ?
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", "maccatalyst-x64", $"{Path.GetFileName(projectDir)}.app");
+			string entitlementsPath = Path.Combine(projectDir, "x.xml");
+
+			List<string> buildWithCodeSignProps = new List<string>(BuildProps)
+			{
+				"EnableCodeSigning=true"
+			};
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+
+			List<string> expectedEntitlements = config == "Release" ?
+				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
+				new() { "com.apple.security.get-task-allow" };
+			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
+
+			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
 		}
 
 		void EnableTizen(string projectFile)
