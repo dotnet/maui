@@ -62,9 +62,9 @@ namespace Microsoft.Maui
 
 			_application = _services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, _applicationContext);
+			this.SetApplicationHandler(_application, _applicationContext);
 
-			this.CreatePlatformWindow(Application);
+			this.CreatePlatformWindow(_application);
 
 			_services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}
