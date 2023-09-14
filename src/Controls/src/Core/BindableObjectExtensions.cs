@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Maui.Graphics;
+using System.Linq;
 
 namespace Microsoft.Maui.Controls
 {
@@ -11,11 +12,13 @@ namespace Microsoft.Maui.Controls
 		internal static void RefreshPropertyValue(this BindableObject self, BindableProperty property, object value)
 		{
 			var ctx = self.GetContext(property);
-			if (ctx?.Binding is not null)
+			if (ctx != null && ctx.Bindings.Count >0)
 			{
+				var binding = ctx.Bindings.Last().Value;
+
 				// support bound properties
 				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
-					ctx.Binding.Apply(false);
+					binding.Apply(false);
 			}
 			else
 			{
