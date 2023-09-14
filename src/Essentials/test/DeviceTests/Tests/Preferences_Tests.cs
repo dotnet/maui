@@ -222,7 +222,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Theory(
 #if WINDOWS
-		, Skip = "Fails on Windows unpackaged"
+		Skip = "Fails on Windows unpackaged"
 #endif
 		)]
 		[InlineData(null, DateTimeKind.Utc)]
@@ -457,7 +457,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Theory(
 #if WINDOWS
-		, Skip = "Fails on Windows unpackaged"
+		Skip = "Fails on Windows unpackaged"
 #endif
 		)]
 		[InlineData(null, DateTimeKind.Utc)]
