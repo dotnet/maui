@@ -11,11 +11,7 @@ public partial class FontManagerTests : TestBase
 	[InlineData("dokdo_regular.ttf", "ms-appx:///dokdo_regular.ttf#Dokdo")]
 	[InlineData("dokdo_regular#dokdo", "ms-appx:///dokdo_regular.ttf#Dokdo")]
 	[InlineData("dokdo_regular.ttf#dokdo", "ms-appx:///dokdo_regular.ttf#Dokdo")]
-	[InlineData("myalias", "ms-appx:///dokdo_regular.ttf#Dokdo"
-#if WINDOWS
-			, Skip = "Not working for unpackaged"
-#endif
-	)]
+	[InlineData("myalias", "ms-appx:///dokdo_regular.ttf#Dokdo")]
 	public Task CanLoadFonts(string fontName, string actualFontFamily) =>
 		InvokeOnMainThreadAsync(() =>
 		{
@@ -29,7 +25,11 @@ public partial class FontManagerTests : TestBase
 		});
 
 	// TODO: this is not going to work in unpackaged
-	[Fact]
+	[Fact(
+#if WINDOWS
+			Skip = "Not working for unpackaged"
+#endif
+	)]
 	public Task CanLoadEmbeddedFont() =>
 		InvokeOnMainThreadAsync(() =>
 		{
