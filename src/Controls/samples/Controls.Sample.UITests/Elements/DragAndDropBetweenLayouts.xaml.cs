@@ -138,7 +138,7 @@ namespace Maui.Controls.Sample
 			SLAllColors.Clear();
 			SLRainbow.Clear();
 
-			var leftLayoutColors = new string[] { "Red", "Purple", "Yellow", "Blue"};
+			var leftLayoutColors = new string[] { "Red", "Purple", "Yellow", "Blue" };
 			foreach (var color in leftLayoutColors)
 			{
 				SLAllColors.Add(RegenerateColorLabel(color));
@@ -185,5 +185,5 @@ namespace Maui.Controls.Sample
 			dropRelativeScreen.Text = "Drop relative to screen:";
 			dropRelativeLabel.Text = "Drop relative to this label:";
 		}
-    }
+	}
 }

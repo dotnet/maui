@@ -1,0 +1,86 @@
+trigger:
+  branches:
+    include:
+    - main
+    - release/*
+  tags:
+    include:
+    - '*'
+  paths:
+    include:
+    - '*'
+    exclude:
+    - .github/*
+    - docs/*
+    - CODE-OF-CONDUCT.md
+    - CONTRIBUTING.md
+    - LICENSE.TXT
+    - PATENTS.TXT
+    - README.md
+    - SECURITY.md
+    - THIRD-PARTY-NOTICES.TXT
+
+
+variables:
+  - template: /eng/pipelines/common/variables.yml
+  
+parameters:
+  - name: provisionatorChannel
+    displayName: 'Provisionator channel'
+    type: string
+    default: 'latest'           # Support for launching a build against a Provisionator PR (e.g., pr/[github-account-name]/[pr-number]) as a means to test in-progress Provisionator changes
+
+  - name: PackPlatforms
+    type: object
+    default:
+      - name: Windows
+        poolName: $(windowsNet6VmPool)
+        vmImage: $(windowsNet6VmImage)
+        artifact: nuget
+
+# resources:
+#   repositories:
+#     - repository: yaml-templates
+#       type: github
+#       name: xamarin/yaml-templates
+#       endpoint: xamarin
+#       ref: refs/heads/main
+#     - repository: sdk-insertions
+#       type: github
+#       name: xamarin/sdk-insertions
+#       ref: refs/heads/main
+#       endpoint: xamarin
+
+stages:
+
+  - stage: pack_net
+    displayName: Pack .NET MAUI
+    dependsOn: []
+    jobs:
+      - ${{ each PackPlatform in parameters.PackPlatforms }}:
+        - job: pack_net_${{ PackPlatform.name }}
+          workspace:
+            clean: all
+          displayName: ${{ PackPlatform.name }}
+          timeoutInMinutes: 240
+          pool:
+            name: ${{ PackPlatform.poolName }}
+            vmImage: ${{ PackPlatform.vmImage }}
+            ${{ if startsWith(PackPlatform.poolName, 'VSEng-VSMac-Xamarin-Shared') }}:
+              demands:
+                - macOS.Name -equals Ventura
+                - macOS.Architecture -equals x64
+          steps:
+            - template: common/pack.yml
+              parameters:
+                platform: ${{ PackPlatform.name }}
+                poolName: ${{ PackPlatform.poolName }}
+                provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                artifact:  ${{ PackPlatform.artifact }}
+
+  - ${{ if or(eq(variables['System.TeamProject'], 'DevDiv'), eq(variables['Build.DefinitionName'], 'dotnet-maui')) }}:
+    - template: common/sign.yml                                     # Sign only using the private server
+    # - template: common/insertion.yml                                # Insert on VS and SDK
+    #   parameters:
+    #     poolName: $(windowsNet6VmPool)
+    #     vmImage: $(windowsNet6VmImage)

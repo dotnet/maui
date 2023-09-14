@@ -15,6 +15,12 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
+#if IOS
+using TabbedViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.TabbedRenderer;
+#endif
+#if WINDOWS
+using WSolidColorBrush = Microsoft.UI.Xaml.Media.SolidColorBrush;
+#endif
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -44,6 +50,98 @@ namespace Microsoft.Maui.DeviceTests
 				});
 
 				additionalCreationActions?.Invoke(builder);
+			});
+		}
+
+
+#if WINDOWS
+		[Fact(DisplayName = "BarBackground Color")]
+		public async Task BarBackgroundColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true);
+			tabbedPage.BarBackground = SolidColorBrush.Purple;
+
+			await CreateHandlerAndAddToWindow<WindowHandlerStub>(new Window(tabbedPage), (handler) =>
+			{
+				var navView = GetMauiNavigationView(tabbedPage.Handler.MauiContext);
+				var platformBrush = (WSolidColorBrush)((Paint)tabbedPage.BarBackground).ToPlatform();
+				Assert.Equal(platformBrush.Color, ((WSolidColorBrush)navView.TopNavArea.Background).Color);
+				return Task.CompletedTask;
+			});
+		}
+#endif
+
+
+		[Fact(DisplayName = "Bar Text Color"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
+		public async Task BarTextColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true, pages: new[]
+			{
+				new ContentPage() { Title = "Page 1" },
+				new ContentPage() { Title = "Page 2" }
+			});
+
+			tabbedPage.BarTextColor = Colors.Red;
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				// Pre iOS15 you couldn't set the text color of the unselected tab
+				// so only android/windows currently set the color of both
+
+#if IOS
+				bool unselectedMatchesSelected = false;
+#else
+				bool unselectedMatchesSelected = true;
+#endif
+
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesSelected);
+				tabbedPage.BarTextColor = Colors.Blue;
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, unselectedMatchesSelected);
+			});
+		}
+
+		[Fact(DisplayName = "Selected/Unselected Color"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
+		public async Task SelectedAndUnselectedTabColor()
+		{
+			SetupBuilder();
+			var tabbedPage = CreateBasicTabbedPage(true);
+			tabbedPage.Children.Add(new ContentPage() { Title = "Page 2", IconImageSource = "white.png" });
+
+			tabbedPage.SelectedTabColor = Colors.Red;
+			tabbedPage.UnselectedTabColor = Colors.Purple;
+
+			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
+			{
+				// Pre iOS15 you couldn't set the text color of the unselected tab
+				// so only android/windows currently set the color of both
+#if IOS
+				bool unselectedMatchesTabColor = false;
+#else
+				bool unselectedMatchesTabColor = true;
+#endif
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, unselectedMatchesTabColor);
+				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
+				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
+
+				tabbedPage.CurrentPage = tabbedPage.Children[1];
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesTabColor);
+				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
+				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
 			});
 		}
 
@@ -224,7 +322,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
+#if !WINDOWS && !MACCATALYST
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
@@ -314,7 +412,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			pages = pages ?? new List<Page>()
 			{
-				new ContentPage() { Title = "Page 1" }
+				new ContentPage() { Title = "Page 1", IconImageSource = "white.png" }
 			};
 
 			var tabs = new TabbedPage()

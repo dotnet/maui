@@ -346,28 +346,40 @@
 
     <Target Name="ProcessMauiAssets"
         Condition="'$(EnableMauiAssetProcessing)' == 'true'">
-        <PropertyGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <_MauiAssetItemMetadata>TargetPath</_MauiAssetItemMetadata>
-        </PropertyGroup>
-        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
-            <!-- Windows does not recognize %(LogicalName), so we must copy it to %(Link) -->
-            <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+        <ItemGroup>
+            <!--
+                The GetMauiAssetPath task uses the Link metadata or the ItemSpec, so make
+                sure all LogicalName items also have a Link value for this task.
+            -->
+            <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
+            <_MauiAssetWithLinkMetadata Include="@(MauiAsset)" Condition="'%(MauiAsset.Link)' != '' Or '%(MauiAsset.LogicalName)' == ''" />
         </ItemGroup>
-        <PropertyGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-            <_MauiAssetItemMetadata>TizenTpkFileName</_MauiAssetItemMetadata>
+        <!-- pick the destination property to assign the final path -->
+        <PropertyGroup>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsiOSApp)' == 'True'">Link</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">TargetPath</_MauiAssetItemMetadata>
+            <_MauiAssetItemMetadata Condition="'$(_ResizetizerIsTizenApp)' == 'True'">TizenTpkFileName</_MauiAssetItemMetadata>
         </PropertyGroup>
-      <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
-        <MauiAsset Update="@(MauiAsset)" Link="%(MauiAsset.LogicalName)" Condition="'%(MauiAsset.Link)' == '' And '%(MauiAsset.LogicalName)' != ''" />
-      </ItemGroup>
         <GetMauiAssetPath
             ProjectDirectory="$(MSBuildProjectDirectory)"
             ItemMetadata="$(_MauiAssetItemMetadata)"
-            Input="@(MauiAsset)">
-            <Output ItemName="AndroidAsset"          TaskParameter="Output" Condition="'$(_ResizetizerIsAndroidApp)' == 'True'" />
-            <Output ItemName="Content"               TaskParameter="Output" Condition="'$(_ResizetizerIsiOSApp)' == 'True'" />
-            <Output ItemName="ContentWithTargetPath" TaskParameter="Output" Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'" />
-            <Output ItemName="TizenResource" TaskParameter="Output" Condition="'$(_ResizetizerIsTizenApp)' == 'True'" />
+            Input="@(_MauiAssetWithLinkMetadata)">
+            <Output ItemName="_MauiAssetItemWithMetadata" TaskParameter="Output" />
         </GetMauiAssetPath>
+        <!-- add the processed assets to the correct itme groups and add any additional properties -->
+        <ItemGroup Condition="'$(_ResizetizerIsAndroidApp)' == 'True'">
+            <AndroidAsset Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsiOSApp)' == 'True'">
+            <Content Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
+            <ContentWithTargetPath Include="@(_MauiAssetItemWithMetadata)" CopyToPublishDirectory="PreserveNewest" />
+        </ItemGroup>
+        <ItemGroup Condition="'$(_ResizetizerIsTizenApp)' == 'True'">
+            <TizenResource Include="@(_MauiAssetItemWithMetadata)" />
+        </ItemGroup>
     </Target>
 
     <Target Name="ProcessMauiSplashScreens"
@@ -462,6 +474,7 @@
             <_MauiSplashAssets Include="$(_MauiIntermediateSplashScreen)**\*" />
             <ContentWithTargetPath Include="@(_MauiSplashAssets)">
                 <TargetPath>%(_MauiSplashAssets.Filename)%(_MauiSplashAssets.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
         </ItemGroup>
 
@@ -548,6 +561,7 @@
 
             <ContentWithTargetPath Include="@(_MauiFontCopied)" Condition="'@(_MauiFontCopied)' != ''">
                 <TargetPath>$([System.IO.Path]::GetFileName(%(_MauiFontCopied.Identity)))</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
         </ItemGroup>
@@ -654,6 +668,7 @@
         <ItemGroup Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True'">
             <ContentWithTargetPath Include="@(_ResizetizerCollectedImages)">
                 <TargetPath>%(_ResizetizerCollectedImages.Filename)%(_ResizetizerCollectedImages.Extension)</TargetPath>
+                <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
             </ContentWithTargetPath>
 
             <FileWrites Include="@(_ResizetizerCollectedImages)" />
