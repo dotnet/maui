@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Graphics
 
 		void DrawStrokePath(ICanvas canvas, RectF dirtyRect, PathF path)
 		{
-			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0 || ShapeView.Stroke == null)
+			if (ShapeView == null || ShapeView.Shape == null || ShapeView.StrokeThickness <= 0)
 				return;
 
 			canvas.SaveState();
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.Graphics
 			canvas.StrokeSize = strokeThickness;
 
 			// Set Stroke
-			var stroke = ShapeView.Stroke;
+			var stroke = ShapeView.Stroke ?? ShapeView.Background;
 
 			// TODO: Add Paint support for Stroke in Microsoft.Maui.Graphics.
 			// For now, only support a solid color.
@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Graphics
 			// Set Fill
 			var fillPaint = ShapeView.Fill ?? ShapeView.Background;
 
-			if (fillPaint != null)
+			if (fillPaint is not null)
 				canvas.SetFillPaint(fillPaint, dirtyRect);
 
 			canvas.FillPath(path);

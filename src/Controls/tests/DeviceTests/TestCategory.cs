@@ -24,6 +24,7 @@
 		public const string Image = "Image";
 		public const string Label = "Label";
 		public const string Layout = "Layout";
+		public const string Line = nameof(Line);
 		public const string ListView = "ListView";
 		public const string MenuFlyout = nameof(MenuFlyout);
 		public const string Modal = "Modal";

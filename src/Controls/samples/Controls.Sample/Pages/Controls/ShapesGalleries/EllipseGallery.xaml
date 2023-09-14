@@ -18,9 +18,22 @@
             <StackLayout
                 Padding="12">
                 <Label
-                    Text="A basic Rectangle"/>
-                <Ellipse x:Name="ellipse"
+                    Text="A basic Ellipse (using Fill)"/>
+                <Ellipse 
+                    x:Name="ellipse"
                     Fill ="Red"
+                    WidthRequest ="150"
+                    HeightRequest ="50"/>
+                <Label
+                    Text="A basic Ellipse (using BackgroundColor)"/>
+                <Ellipse
+                    BackgroundColor ="Red"
+                    WidthRequest ="150"
+                    HeightRequest ="50"/>
+                <Label
+                    Text="A basic Ellipse (using Background)"/>
+                <Ellipse
+                    Background ="Red"
                     WidthRequest ="150"
                     HeightRequest ="50"/>
                 <Label

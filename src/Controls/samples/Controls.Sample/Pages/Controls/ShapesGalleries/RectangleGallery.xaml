@@ -18,9 +18,21 @@
             <StackLayout
                 Padding="12">
                 <Label
-                    Text="A basic Rectangle"/>
+                    Text="A basic Rectangle (using Fill)"/>
                 <Rectangle
                     Fill ="Red"
+                    WidthRequest ="150"
+                    HeightRequest ="50"/>
+                <Label
+                    Text="A basic Rectangle (using BackgroundColor)"/>
+                <Rectangle
+                    BackgroundColor ="Red"
+                    WidthRequest ="150"
+                    HeightRequest ="50"/>
+                <Label
+                    Text="A basic Rectangle (using Background)"/>
+                <Rectangle
+                    Background ="Red"
                     WidthRequest ="150"
                     HeightRequest ="50"/>
                 <Label

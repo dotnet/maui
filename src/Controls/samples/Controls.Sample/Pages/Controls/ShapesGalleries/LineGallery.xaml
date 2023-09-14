@@ -8,11 +8,30 @@
         <StackLayout
             Padding="12">
             <Label
-                Text="A basic Line"/>
+                Text="A basic Line (using Stroke)"/>
             <Line
                 HeightRequest="120"
                 WidthRequest="120"
                 Stroke="Purple"
+                StrokeThickness="4"
+                X1="40" Y1="0"
+                X2="0" Y2="120" />
+            <Label
+                Text="A basic Line (using BackgroundColor)"/>
+            <Line
+                HeightRequest="120"
+                WidthRequest="120"
+                BackgroundColor="Green"
+                StrokeThickness="4"
+                X1="40" Y1="0"
+                X2="0" Y2="120" />
+            <Label
+                Text="A basic Line (using Background)"/>
+            <Line   
+                HeightRequest="120" 
+                WidthRequest="120"
+                Background="Red"
+                StrokeThickness="4"
                 X1="40" Y1="0"
                 X2="0" Y2="120" />
             <Label
