@@ -27,6 +27,7 @@ public partial class Maui17222 : ContentPage
 #if DEBUG
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+
 		[Test]
 		public void GetsourceInfo([Values(false)] bool useCompiledXaml)
 		{
