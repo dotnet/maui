@@ -1,11 +1,11 @@
-<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
 
 	<PropertyGroup>
 		<EnableDefaultMauiBlazorEntitlements Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='' And '$(ProjectCapability)'=='MauiBlazor'">true</EnableDefaultMauiBlazorEntitlements>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True' And '$(Configuration)' == 'Release'">
-        <!-- Essential for MAUI Blazor, as it allows your sandboxed app to connect to a server process on another machine.-->
+	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True'And '$(Configuration)' == 'Release'">
+		<!--Essential for MAUI Blazor, as it allows your sandboxed app to connect to a server process.-->
 		<CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
 	</ItemGroup>
 

@@ -4,4 +4,6 @@
     <MtouchLink Condition="'$(MtouchLink)' == '' and '$(Configuration)' == 'Debug' and '$(UseInterpreter)' == 'true'">None</MtouchLink>
   </PropertyGroup>
 
+  <Import Project="Microsoft.Maui.Controls.DefaultItems.targets" />
+
 </Project>
