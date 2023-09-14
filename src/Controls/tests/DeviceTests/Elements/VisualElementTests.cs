@@ -30,6 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 #if ANDROID || IOS || MACCATALYST
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
 #endif
+		[Category(TestCategory.Lifecycle)]
 		public class NewWindowCollection : ControlsHandlerTestBase
 		{
 			protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder builder)
