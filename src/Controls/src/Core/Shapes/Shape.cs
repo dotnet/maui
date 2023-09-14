@@ -163,7 +163,27 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		Paint IShapeView.Fill => Fill;
 
-		Paint IStroke.Stroke => Stroke;
+		Paint IStroke.Stroke
+		{
+			get
+			{
+				if (this is Line)
+				{
+					if (!Brush.IsNullOrEmpty(Stroke))
+						return Stroke;
+
+					if (!Brush.IsNullOrEmpty(Background))
+						return Background;
+
+					if (BackgroundColor.IsNotDefault())
+						return new SolidColorBrush(BackgroundColor);
+
+					return Brush.Default;
+				}
+
+				return Stroke;
+			}
+		}
 
 		LineCap IStroke.StrokeLineCap =>
 			StrokeLineCap switch
