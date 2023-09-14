@@ -50,5 +50,6 @@
 		public const string WebView = "WebView";
 		public const string Window = "Window";
 		public const string WindowOverlay = "WindowOverlay";
+		public const string Xaml = nameof(Xaml);
 	}
 }
