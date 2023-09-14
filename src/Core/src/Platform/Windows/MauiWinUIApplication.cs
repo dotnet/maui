@@ -21,10 +21,10 @@ namespace Microsoft.Maui
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			// Windows running on a different thread will "launch" the app again
-			if (Application != null)
+			if (_application != null)
 			{
-				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
-				Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 				return;
 			}
 
@@ -35,25 +35,43 @@ namespace Microsoft.Maui
 
 			var applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = applicationContext.Services;
+			_services = applicationContext.Services;
 
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
+			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 
-			Application = Services.GetRequiredService<IApplication>();
+			_application = _services.GetRequiredService<IApplication>();
 
-			this.SetApplicationHandler(Application, applicationContext);
+			this.SetApplicationHandler(_application, applicationContext);
 
-			this.CreatePlatformWindow(Application, args);
+			this.CreatePlatformWindow(_application, args);
 
-			Services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
+			_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
 		}
 
 		public static new MauiWinUIApplication Current => (MauiWinUIApplication)UI.Xaml.Application.Current;
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		IServiceProvider _services = null!;
 
-		public IApplication Application { get; protected set; } = null!;
+		IApplication _application = null!;
+
+		IServiceProvider IPlatformApplication.Services => _services;
+
+		IApplication IPlatformApplication.Application => _application;
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IServiceProvider Services
+		{
+			get => _services;
+			protected set => _services = value;
+		}
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IApplication Application
+		{
+			get => _application;
+			protected set => _application = value;
+		}
 	}
 }

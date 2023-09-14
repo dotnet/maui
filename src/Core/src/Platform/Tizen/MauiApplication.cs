@@ -18,6 +18,10 @@ namespace Microsoft.Maui
 
 		IMauiContext _applicationContext = null!;
 
+		IApplication _application = default!;
+
+		IServiceProvider _services = default!;
+
 		protected MauiApplication()
 		{
 			Current = this;
@@ -44,25 +48,25 @@ namespace Microsoft.Maui
 
 			_applicationContext = rootContext.MakeApplicationScope(this);
 
-			Services = _applicationContext.Services;
+			_services = _applicationContext.Services;
 
-			if (Services == null)
+			if (_services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
-			Current.Services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
+			_services.InvokeLifecycleEvents<TizenLifecycle.OnPreCreate>(del => del(this));
 		}
 
 		protected override void OnCreate()
 		{
 			base.OnCreate();
 
-			Application = Services.GetRequiredService<IApplication>();
+			_application = _services.GetRequiredService<IApplication>();
 
 			this.SetApplicationHandler(Application, _applicationContext);
 
 			this.CreatePlatformWindow(Application);
 
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}
 
 		public void SetBackButtonPressedHandler(Func<bool> handler)
@@ -73,61 +77,75 @@ namespace Microsoft.Maui
 		protected override void OnAppControlReceived(AppControlReceivedEventArgs e)
 		{
 			base.OnAppControlReceived(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnAppControlReceived>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnAppControlReceived>(del => del(this, e));
 		}
 
 		protected override void OnDeviceOrientationChanged(DeviceOrientationEventArgs e)
 		{
 			base.OnDeviceOrientationChanged(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnDeviceOrientationChanged>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnDeviceOrientationChanged>(del => del(this, e));
 		}
 
 		protected override void OnLocaleChanged(LocaleChangedEventArgs e)
 		{
 			base.OnLocaleChanged(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnLocaleChanged>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnLocaleChanged>(del => del(this, e));
 		}
 
 		protected override void OnLowBattery(LowBatteryEventArgs e)
 		{
 			base.OnLowBattery(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnLowBattery>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnLowBattery>(del => del(this, e));
 		}
 
 		protected override void OnLowMemory(LowMemoryEventArgs e)
 		{
 			base.OnLowMemory(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnLowMemory>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnLowMemory>(del => del(this, e));
 		}
 
 		protected override void OnPause()
 		{
 			base.OnPause();
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnPause>(del => del(this));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnPause>(del => del(this));
 		}
 
 		protected override void OnRegionFormatChanged(RegionFormatChangedEventArgs e)
 		{
 			base.OnRegionFormatChanged(e);
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnRegionFormatChanged>(del => del(this, e));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnRegionFormatChanged>(del => del(this, e));
 		}
 
 		protected override void OnResume()
 		{
 			base.OnResume();
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnResume>(del => del(this));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnResume>(del => del(this));
 		}
 
 		protected override void OnTerminate()
 		{
 			base.OnTerminate();
-			Current.Services?.InvokeLifecycleEvents<TizenLifecycle.OnTerminate>(del => del(this));
+			_services?.InvokeLifecycleEvents<TizenLifecycle.OnTerminate>(del => del(this));
 		}
 
 		public static new MauiApplication Current { get; private set; } = null!;
 
-		public IServiceProvider Services { get; protected set; } = null!;
+		IServiceProvider IPlatformApplication.Services => _services;
 
-		public IApplication Application { get; protected set; } = null!;
+		IApplication IPlatformApplication.Application => _application;
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IServiceProvider Services
+		{
+			get => _services;
+			protected set => _services = value;
+		}
+
+		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		public IApplication Application
+		{
+			get => _application;
+			protected set => _application = value;
+		}
 	}
 }
