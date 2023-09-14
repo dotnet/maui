@@ -26,6 +26,7 @@
 		public const string Layout = "Layout";
 		public const string ListView = "ListView";
 		public const string MenuFlyout = nameof(MenuFlyout);
+		public const string Memory = nameof(Memory);
 		public const string Modal = "Modal";
 		public const string NavigationPage = "NavigationPage";
 		public const string Page = "Page";
