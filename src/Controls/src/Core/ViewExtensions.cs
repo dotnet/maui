@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Animations;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
@@ -305,6 +306,9 @@ namespace Microsoft.Maui.Controls
 
 			return fallbackToAppMauiContext ? Application.Current?.FindMauiContext() : default;
 		}
+
+		internal static ILogger<T>? CreateLogger<T>(this Element element, bool fallbackToAppMauiContext = true) =>
+			element.FindMauiContext(fallbackToAppMauiContext)?.CreateLogger<T>();
 
 		internal static IFontManager RequireFontManager(this Element element, bool fallbackToAppMauiContext = false)
 			=> element.RequireMauiContext(fallbackToAppMauiContext).Services.GetRequiredService<IFontManager>();
