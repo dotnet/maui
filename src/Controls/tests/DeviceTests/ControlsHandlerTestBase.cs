@@ -466,12 +466,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				EventHandler unloaded = null;
 
-				unloaded = (_, __) =>
+				unloaded = async (_, __) =>
 				{
 					if (unloaded is not null)
 						frameworkElement.Unloaded -= unloaded;
 					try
 					{
+						await Task.Yield();
 						source.TrySetResult();
 					}
 					catch (Exception e)
@@ -519,9 +520,7 @@ namespace Microsoft.Maui.DeviceTests
 				if (page is IPageContainer<Page> pc)
 					await OnNavigatedToAsync(pc.CurrentPage);
 
-#if WINDOWS
-				await Task.Delay(100);
-#endif
+				await Task.Yield();
 
 				return;
 			}
@@ -537,9 +536,7 @@ namespace Microsoft.Maui.DeviceTests
 			if (page.Parent is TabbedPage)
 				await Task.Delay(10);
 
-#if WINDOWS
-			await Task.Delay(100);
-#endif
+			await Task.Yield();
 
 			void NavigatedTo(object sender, NavigatedToEventArgs e)
 			{
