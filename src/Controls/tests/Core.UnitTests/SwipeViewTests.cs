@@ -160,7 +160,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			leftItems.Add(swipeItem);
 			swipeView.BindingContext = bc1;
 
-			Assert.Equal(swipeView.BindingContext, bc1);
+			Assert.Equal(leftItems.BindingContext, bc1);
 			Assert.Equal(swipeItem.BindingContext, bc1);
 
 			Assert.Equal(leftItems, swipeView.LeftItems);
@@ -178,10 +178,12 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.NotSame(swipeItem.Parent, leftItems);
 			Assert.NotSame(leftItems.Parent, swipeView);
 
-
-
 			Assert.Equal(swipeItem.Parent, leftItems2);
 			Assert.Equal(leftItems2.Parent, swipeView);
+
+			swipeView.BindingContext = bc2;
+			Assert.Equal(leftItems2.BindingContext, bc2);
+			Assert.Equal(swipeItem.BindingContext, bc2);
 		}
 
 		[Fact]

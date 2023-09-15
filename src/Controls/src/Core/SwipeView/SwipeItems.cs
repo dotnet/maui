@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,7 +19,10 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var item in swipeItems)
 				if (item is Element e)
-					AddLogicalSwipeItemIfParentIsSet(e);
+				{
+					CheckParent(e);
+					AddLogicalChild(e);
+				}
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
@@ -106,7 +110,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Insert']/Docs/*" />
 		public void Insert(int index, ISwipeItem item)
-		{
+		{			
 			_swipeItems.Insert(index, item);
 		}
 
@@ -128,7 +132,10 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
 					if (item is Element e)
-						AddLogicalSwipeItemIfParentIsSet(e);
+					{
+						CheckParent(e);
+						AddLogicalChild(e);
+					}
 			}
 
 			if (notifyCollectionChangedEventArgs.OldItems is not null)
@@ -141,39 +148,21 @@ namespace Microsoft.Maui.Controls
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
 		}
 
-		void AddLogicalSwipeItemIfParentIsSet(Element e)
-		{
-			if (Parent is null)
-				return;
-
-			AddLogicalChild(e);
-		}
-
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _swipeItems.GetEnumerator();
 		}
 
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		protected override void OnParentSet()
-#pragma warning restore RS0016 // Add public types and members to the declared API
+		// If a SwipeItem occupies multiple SwipeItems, we only want the logical hierarchy
+		// to wire up to the SwipeItems that are currently part of a SwipeView.
+		// We could throw an exception here but that would be too hostile of a breaking behavior.
+		// TODO NET9 This warning should probably be elevated to `Element` for NET9
+		void CheckParent(Element e)
 		{
-			base.OnParentSet();
-
-			if (Parent is null)
-				ClearLogicalChildren();
-			else if (_swipeItems is not null)
+			if (e.Parent is not null && e.Parent != this)
 			{
-				foreach(var item in _swipeItems)
-				{
-					if (item is Element e)
-					{
-						if (!LogicalChildrenInternalBackingStore.Contains(e))
-						{
-							AddLogicalChild(e);
-						}
-					}
-				}
+				this.CreateLogger<SwipeItems>()
+					?.LogWarning($"{e} is already part of {e.Parent}. Remove from {e.Parent} otherwise you will experience inconsistent behavior.");
 			}
 		}
 	}
