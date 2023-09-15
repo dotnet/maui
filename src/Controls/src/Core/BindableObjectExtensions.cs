@@ -1,8 +1,8 @@
 #nullable disable
 using System;
 using System.Collections.Generic;
-using Microsoft.Maui.Graphics;
 using System.Linq;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,7 +12,7 @@ namespace Microsoft.Maui.Controls
 		internal static void RefreshPropertyValue(this BindableObject self, BindableProperty property, object value)
 		{
 			var ctx = self.GetContext(property);
-			if (ctx != null && ctx.Bindings.Count >0)
+			if (ctx != null && ctx.Bindings.Count > 0)
 			{
 				var binding = ctx.Bindings.Last().Value;
 

@@ -15,7 +15,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Setting a new TitleView on an already created page crashes iOS";
 
 		[Test]
-		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage() {
+		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage()
+		{
 			try
 			{
 				App.WaitForElement("TitleViewLabel4", timeout: TimeSpan.FromSeconds(4));

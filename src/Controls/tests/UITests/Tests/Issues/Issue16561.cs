@@ -56,7 +56,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			AssertCorrectTapLocation(result[0].Text, expectedX2, expectedY, "Second");
 		}
 
-		static void TapTwice(IApp2 app, PointF point1, PointF point2) 
+		static void TapTwice(IApp2 app, PointF point1, PointF point2)
 		{
 			var driver = app.Driver ?? throw new InvalidOperationException("The Appium driver is null; cannot perform taps.");
 
