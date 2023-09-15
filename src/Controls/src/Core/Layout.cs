@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 		}
 	}
 
-	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement
+	public abstract class Layout : View, ILayout, ILayoutController, IPaddingElement, IView, IVisualTreeElement, IInputTransparentContainerElement, IElementController
 	{
 		/// <summary>Bindable property for <see cref="IsClippedToBounds"/>.</summary>
 		public static readonly BindableProperty IsClippedToBoundsProperty =
@@ -108,6 +108,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 			set => SetValue(CascadeInputTransparentProperty, value);
 		}
 
+		IReadOnlyList<Element> IElementController.LogicalChildren => InternalChildren;
+
 		Thickness IPaddingElement.PaddingDefaultValueCreator() => default(Thickness);
 
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue) => InvalidateLayout();
@@ -120,19 +122,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 			}
 		}
 
-		private protected override IList<Element> LogicalChildrenInternalBackingStore
-			=> InternalChildren;
-
 		internal ObservableCollection<Element> InternalChildren { get; } = new ObservableCollection<Element>();
 
 		public event EventHandler LayoutChanged;
 
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public IReadOnlyList<Element> Children => InternalChildren;
+		public IReadOnlyList<Element> Children => InternalChildren;		
 
 		public void ForceLayout() => SizeAllocated(Width, Height);
-
-		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren() => Children.ToList().AsReadOnly();
 
 		public override SizeRequest Measure(double widthConstraint, double heightConstraint, MeasureFlags flags = MeasureFlags.None)
 		{
@@ -263,10 +260,10 @@ namespace Microsoft.Maui.Controls.Compatibility
 			if (!ShouldLayoutChildren())
 				return;
 
-			var oldBounds = new Rect[LogicalChildrenInternal.Count];
+			var oldBounds = new Rect[InternalChildren.Count];
 			for (var index = 0; index < oldBounds.Length; index++)
 			{
-				if (LogicalChildrenInternal[index] is VisualElement c)
+				if (InternalChildren[index] is VisualElement c)
 				{
 					oldBounds[index] = c.Bounds;
 				}
@@ -292,8 +289,8 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 			var isHeadless = CompressedLayout.GetIsHeadless(this);
 			var headlessOffset = CompressedLayout.GetHeadlessOffset(this);
-			for (var i = 0; i < LogicalChildrenInternal.Count; i++)
-				CompressedLayout.SetHeadlessOffset((VisualElement)LogicalChildrenInternal[i], isHeadless ? new Point(headlessOffset.X + Bounds.X, headlessOffset.Y + Bounds.Y) : new Point());
+			for (var i = 0; i < InternalChildren.Count; i++)
+				CompressedLayout.SetHeadlessOffset((VisualElement)InternalChildren[i], isHeadless ? new Point(headlessOffset.X + Bounds.X, headlessOffset.Y + Bounds.Y) : new Point());
 
 			_lastLayoutSize = new Size(width, height);
 
@@ -302,7 +299,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			for (var i = 0; i < oldBounds.Length; i++)
 			{
 				Rect oldBound = oldBounds[i];
-				Rect newBound = ((VisualElement)LogicalChildrenInternal[i]).Bounds;
+				Rect newBound = ((VisualElement)InternalChildren[i]).Bounds;
 				if (oldBound != newBound)
 				{
 					LayoutChanged?.Invoke(this, EventArgs.Empty);
@@ -361,11 +358,11 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		internal virtual void OnChildMeasureInvalidated(VisualElement child, InvalidationTrigger trigger)
 		{
-			IReadOnlyList<Element> children = LogicalChildrenInternal;
+			IReadOnlyList<Element> children = InternalChildren;
 			int count = children.Count;
 			for (var index = 0; index < count; index++)
 			{
-				if (LogicalChildrenInternal[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
+				if (InternalChildren[index] is VisualElement v && v.IsVisible && (!v.IsPlatformEnabled || !v.IsPlatformStateConsistent))
 					return;
 			}
 
@@ -420,6 +417,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			if (e.Action == NotifyCollectionChangedAction.Move)
 			{
+				LogicalChildrenInternalBackingStore.RemoveAt(e.OldStartingIndex);
+
+				for(int i = e.NewStartingIndex; i < e.NewStartingIndex + e.NewItems.Count; i++)
+				{
+					if (e.NewItems[i - e.NewStartingIndex] is Element element)
+						LogicalChildrenInternalBackingStore.Insert(i, element);
+				}
+				
 				return;
 			}
 
@@ -458,7 +463,7 @@ namespace Microsoft.Maui.Controls.Compatibility
 			var parent = view.Parent as Layout;
 			parent?.InternalChildren.Remove(view);
 
-			OnChildAdded(view);
+			InsertLogicalChild(InternalChildren.Count - 1, view);
 			if (ShouldInvalidateOnChildAdded(view))
 				InvalidateLayout();
 
@@ -469,14 +474,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			view.MeasureInvalidated -= OnChildMeasureInvalidated;
 
-			OnChildRemoved(view, oldIndex);
+			RemoveLogicalChild(view);
 			if (ShouldInvalidateOnChildRemoved(view))
 				InvalidateLayout();
 		}
 
 		bool ShouldLayoutChildren()
 		{
-			if (Width <= 0 || Height <= 0 || !LogicalChildrenInternal.Any() || !IsVisible || !IsPlatformStateConsistent || DisableLayout)
+			if (Width <= 0 || Height <= 0 || !InternalChildren.Any() || !IsVisible || !IsPlatformStateConsistent || DisableLayout)
 				return false;
 
 			foreach (Element element in VisibleDescendants())

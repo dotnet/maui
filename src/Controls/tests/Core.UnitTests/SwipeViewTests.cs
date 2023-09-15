@@ -187,6 +187,30 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void EnsureAllLogicalElementsAreAdded()
+		{
+			var bc = new object();
+			var swipeView = new SwipeView()
+			{
+				BindingContext = bc
+			};
+
+			var leftItems = swipeView.LeftItems;
+			var swipeItem = new SwipeItem();
+			leftItems.Add(swipeItem);
+			var frame = new Border();
+			swipeView.Content = frame;
+
+			var logicals = (swipeView as IVisualTreeElement).GetVisualChildren();
+
+			Assert.Contains(leftItems, logicals);
+			Assert.Contains(frame, logicals);
+
+			Assert.Equal(bc, swipeView.BindingContext);
+			Assert.Equal(bc, frame.BindingContext);
+		}
+
+		[Fact]
 		public void TestDefaultSwipeItems()
 		{
 			var swipeView = new SwipeView();
