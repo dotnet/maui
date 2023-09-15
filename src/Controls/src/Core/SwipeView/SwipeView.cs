@@ -22,6 +22,13 @@ namespace Microsoft.Maui.Controls
 
 			// This just disables any of the legacy layout code from running
 			DisableLayout = true;
+
+			// SwipeItems is an Element so it participates in the Visual Hierarchy.
+			// This is why we add each set of items to the logical children of swipeview
+			AddLogicalChild(RightItems);
+			AddLogicalChild(LeftItems);
+			AddLogicalChild(TopItems);
+			AddLogicalChild(BottomItems);
 		}
 
 		/// <summary>Bindable property for <see cref="Threshold"/>.</summary>
@@ -127,12 +134,14 @@ namespace Microsoft.Maui.Controls
 			{
 				oldItems.CollectionChanged -= SwipeItemsCollectionChanged;
 				oldItems.PropertyChanged -= SwipeItemsPropertyChanged;
+				swipeView.RemoveLogicalChild(oldItems);
 			}
 
 			if (newValue is SwipeItems newItems)
 			{
 				newItems.CollectionChanged += SwipeItemsCollectionChanged;
 				newItems.PropertyChanged += SwipeItemsPropertyChanged;
+				swipeView.AddLogicalChild(newItems);
 			}
 
 			void SwipeItemsPropertyChanged(object sender, PropertyChangedEventArgs e)
