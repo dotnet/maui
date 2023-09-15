@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls
 			if (e.Parent is not null && e.Parent != this)
 			{
 				this.CreateLogger<SwipeItems>()
-					?.LogWarning($"{e} is already part of {e.Parent}. Remove from {e.Parent} otherwise you will experience inconsistent behavior.");
+					?.LogWarning($"{e} is already part of {e.Parent}. Remove from {e.Parent} to avoid inconsistent behavior.");
 			}
 		}
 	}
