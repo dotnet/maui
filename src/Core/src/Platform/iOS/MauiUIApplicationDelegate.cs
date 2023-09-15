@@ -19,9 +19,9 @@ namespace Microsoft.Maui
 
 		IMauiContext _applicationContext = null!;
 
-		IServiceProvider _services = null!;
+		IServiceProvider? _services;
 
-		IApplication _application = null!;
+		IApplication? _application;
 
 		protected MauiUIApplicationDelegate() : base()
 		{
@@ -56,7 +56,7 @@ namespace Microsoft.Maui
 		[Export("application:didFinishLaunchingWithOptions:")]
 		public virtual bool FinishedLaunching(UIApplication application, NSDictionary launchOptions)
 		{
-			_application = _services.GetRequiredService<IApplication>();
+			_application = _services!.GetRequiredService<IApplication>();
 
 			this.SetApplicationHandler(_application, _applicationContext);
 
@@ -169,21 +169,22 @@ namespace Microsoft.Maui
 		[Export("window")]
 		public virtual UIWindow? Window { get; set; }
 
-		IServiceProvider IPlatformApplication.Services => _services;
+		// TODO: we should investigate throwing an exception or changing the public API
+		IServiceProvider IPlatformApplication.Services => _services!;
 
-		IApplication IPlatformApplication.Application => _application;
+		IApplication IPlatformApplication.Application => _application!;
 
 		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
 		public IServiceProvider Services
 		{
-			get => _services;
+			get => _services!;
 			protected set => _services = value;
 		}
 
 		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
 		public IApplication Application
 		{
-			get => _application;
+			get => _application!;
 			protected set => _application = value;
 		}
 	}

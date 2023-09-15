@@ -21,7 +21,7 @@ namespace Microsoft.Maui
 		protected override void OnLaunched(UI.Xaml.LaunchActivatedEventArgs args)
 		{
 			// Windows running on a different thread will "launch" the app again
-			if (_application != null)
+			if (_application != null && _services != null)
 			{
 				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunching>(del => del(this, args));
 				_services.InvokeLifecycleEvents<WindowsLifecycle.OnLaunched>(del => del(this, args));
@@ -52,25 +52,26 @@ namespace Microsoft.Maui
 
 		public UI.Xaml.LaunchActivatedEventArgs LaunchActivatedEventArgs { get; protected set; } = null!;
 
-		IServiceProvider _services = null!;
+		IServiceProvider? _services;
 
-		IApplication _application = null!;
+		IApplication? _application;
 
-		IServiceProvider IPlatformApplication.Services => _services;
+		// TODO: we should investigate throwing an exception or changing the public API
+		IServiceProvider IPlatformApplication.Services => _services!;
 
-		IApplication IPlatformApplication.Application => _application;
+		IApplication IPlatformApplication.Application => _application!;
 
 		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
 		public IServiceProvider Services
 		{
-			get => _services;
+			get => _services!;
 			protected set => _services = value;
 		}
 
 		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
 		public IApplication Application
 		{
-			get => _application;
+			get => _application!;
 			protected set => _application = value;
 		}
 	}
