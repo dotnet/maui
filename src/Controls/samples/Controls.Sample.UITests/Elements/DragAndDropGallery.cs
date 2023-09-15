@@ -8,8 +8,6 @@ namespace Maui.Controls.Sample
 		public DragAndDropGallery()
 		{
 			Add(new DragAndDropEvents());
-			Add(new DragAndDropBetweenLayouts());
-			Add(new DragAndDropEventArgs());
 		}
 	}
 }

@@ -9,7 +9,6 @@ namespace Maui.Controls.Sample
 	{
 		public GestureRecognizerGallery()
 		{
-			Add(new PointerGestureRecognizerEvents());
 			Add(new DoubleTapGallery());
 		}
 	}

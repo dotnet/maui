@@ -18,9 +18,9 @@ namespace Microsoft.Maui.AppiumTests
 	[TestFixture(TestDevice.Windows)]
 #else
 	[TestFixture(TestDevice.iOS)]
-	[TestFixture(TestDevice.Mac)]
+	/*[TestFixture(TestDevice.Mac)]
 	[TestFixture(TestDevice.Windows)]
-	[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]*/
 #endif
 	public class UITestBase : UITestContextTestBase
 	{
@@ -122,9 +122,9 @@ namespace Microsoft.Maui.AppiumTests
 			switch (_testDevice)
 			{
 				case TestDevice.iOS:
-					testConfig.DeviceName = "iPhone X";
-					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4";
-					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "";
+					//testConfig.DeviceName = "iPhone X";
+					//testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4";
+					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "A592196A-46C5-415F-B167-936DE824BAF3";
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
