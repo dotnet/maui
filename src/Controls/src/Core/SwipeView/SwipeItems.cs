@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		{
 			foreach (var item in swipeItems)
 				if (item is Element e)
-					AddLogicalChild(e);
+					AddLogicalSwipeItemIfParentIsSet(e);
 
 			_swipeItems = new ObservableCollection<Maui.ISwipeItem>(swipeItems) ?? throw new ArgumentNullException(nameof(swipeItems));
 			_swipeItems.CollectionChanged += OnSwipeItemsChanged;
@@ -128,7 +128,7 @@ namespace Microsoft.Maui.Controls
 			{
 				foreach (var item in notifyCollectionChangedEventArgs.NewItems)
 					if (item is Element e)
-						AddLogicalChild(e);
+						AddLogicalSwipeItemIfParentIsSet(e);
 			}
 
 			if (notifyCollectionChangedEventArgs.OldItems is not null)
@@ -141,9 +141,40 @@ namespace Microsoft.Maui.Controls
 			CollectionChanged?.Invoke(this, notifyCollectionChangedEventArgs);
 		}
 
+		void AddLogicalSwipeItemIfParentIsSet(Element e)
+		{
+			if (Parent is null)
+				return;
+
+			AddLogicalChild(e);
+		}
+
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return _swipeItems.GetEnumerator();
+		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		protected override void OnParentSet()
+#pragma warning restore RS0016 // Add public types and members to the declared API
+		{
+			base.OnParentSet();
+
+			if (Parent is null)
+				ClearLogicalChildren();
+			else if (_swipeItems is not null)
+			{
+				foreach(var item in _swipeItems)
+				{
+					if (item is Element e)
+					{
+						if (!LogicalChildrenInternalBackingStore.Contains(e))
+						{
+							AddLogicalChild(e);
+						}
+					}
+				}
+			}
 		}
 	}
 }

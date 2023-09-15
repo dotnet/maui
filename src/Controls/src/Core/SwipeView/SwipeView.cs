@@ -21,6 +21,8 @@ namespace Microsoft.Maui.Controls
 			// This just disables any of the legacy layout code from running
 			DisableLayout = true;
 
+			// SwipeItems is an Element so it participates in the Visual Hierarchy.
+			// This is why we add each set of items to the logical children of swipeview
 			AddLogicalChild(RightItems);
 			AddLogicalChild(LeftItems);
 			AddLogicalChild(TopItems);
@@ -115,18 +117,12 @@ namespace Microsoft.Maui.Controls
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SwipeItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 			{
 				if (sender is SwipeItems swipeItems)
 					SendChange(swipeItems);
-
-				if (sender is IEnumerable<ISwipeItem> enumerable)
-					SendChange(new SwipeItems(enumerable));
 			}
 
 			void SendChange(SwipeItems swipeItems)
