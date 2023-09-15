@@ -100,6 +100,11 @@ namespace Microsoft.Maui.Controls
 		{
 			List<Maui.IVisualTreeElement> elements = new List<IVisualTreeElement>();
 
+			// I realize we are adding these all via AddLogicalChild but the base Compatibility.Layout
+			// Implements IVisualTreeElement.GetVisualChildren() and ruins that so we need to explicitly
+			// implement IVTE so we can collect up all the logical children for IVTE
+			// This is required for hot reload and live visual tree to work as well
+
 			elements.Add(LeftItems);
 			elements.Add(RightItems);
 			elements.Add(TopItems);
