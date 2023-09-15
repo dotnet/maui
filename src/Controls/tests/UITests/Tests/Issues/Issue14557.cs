@@ -12,6 +12,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void HeaderAndFooterRender()
 		{
+			// This issue is not working on net7 for the following platforms 
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Android
+			});
+
 			App.WaitForElement("collectionView");
 
 			var headerText = App.Query("headerLabel").First().Text;

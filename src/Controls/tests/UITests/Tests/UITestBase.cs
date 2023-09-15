@@ -18,9 +18,9 @@ namespace Microsoft.Maui.AppiumTests
 	[TestFixture(TestDevice.Windows)]
 #else
 	[TestFixture(TestDevice.iOS)]
-	/*[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Mac)]
 	[TestFixture(TestDevice.Windows)]
-	[TestFixture(TestDevice.Android)]*/
+	[TestFixture(TestDevice.Android)]
 #endif
 	public class UITestBase : UITestContextTestBase
 	{
