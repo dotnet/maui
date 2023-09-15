@@ -3,7 +3,7 @@
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
     <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.96</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
-    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-rc.2.23431.5</MicrosoftDotnetSdkInternalPackageVersion>
+    <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-rc.2.23456.6</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>8.0.0-rc.2.23457.7</MicrosoftNETCoreAppRefPackageVersion>
     <SystemTextJsonPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</SystemTextJsonPackageVersion>
@@ -23,7 +23,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>8.0.0-rc.2.23457.7</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>8.0.0-rc.2.23457.7</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-rc.2.440</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-rc.2.442</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet80_164PackageVersion>16.4.8911-net8-rc2</MicrosoftMacCatalystSdknet80_164PackageVersion>
     <MicrosoftmacOSSdknet80_133PackageVersion>13.3.8911-net8-rc2</MicrosoftmacOSSdknet80_133PackageVersion>
