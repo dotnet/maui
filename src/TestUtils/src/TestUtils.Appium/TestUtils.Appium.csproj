@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -9,10 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="5.0.0-beta02" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj" />
   </ItemGroup>
 
 </Project>

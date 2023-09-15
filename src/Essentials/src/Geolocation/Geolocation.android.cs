@@ -230,6 +230,9 @@ namespace Microsoft.Maui.Devices.Sensors
 			continuousListener = null;
 		}
 
+// TODO: android.location.Criteria deprecated in API 34
+// https://developer.android.com/reference/android/location/Criteria
+#pragma warning disable CA1422
 		static (string? Provider, float Accuracy) GetBestProvider(LocationManager locationManager, GeolocationAccuracy accuracy)
 		{
 			// Criteria: https://developer.android.com/reference/android/location/Criteria
@@ -282,6 +285,7 @@ namespace Microsoft.Maui.Devices.Sensors
 
 			return (provider, accuracyDistance);
 		}
+#pragma warning restore CA1422
 
 		internal static bool IsBetterLocation(AndroidLocation location, AndroidLocation? bestLocation)
 		{
