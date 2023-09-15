@@ -303,7 +303,7 @@ namespace Microsoft.Maui.Controls
 			{
 				var b_p = context.Bindings.Last();
 				oldSpecificity = b_p.Key;
-				oldBinding = b_p.Value;				
+				oldBinding = b_p.Value;
 			}
 
 			if (oldBinding != null && specificity.CompareTo(oldSpecificity) < 0)
@@ -708,12 +708,12 @@ namespace Microsoft.Maui.Controls
 			var isCurrent = binding == currentbinding;
 
 			if (isCurrent)
-			{ 
+			{
 				binding.Unapply();
 
 				currentbinding = null;
 				if (count > 1)
-					currentbinding = context.Bindings.Values.ElementAt(count-2);
+					currentbinding = context.Bindings.Values.ElementAt(count - 2);
 
 				property.BindingChanging?.Invoke(this, binding, currentbinding);
 
