@@ -38,7 +38,7 @@ namespace Microsoft.Maui.AppiumTests
 			UITestContext.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac, TestDevice.Windows
-			});
+			}, BackportedTestMessage);
 
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
