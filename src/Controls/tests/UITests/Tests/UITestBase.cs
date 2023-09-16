@@ -30,6 +30,8 @@ namespace Microsoft.Maui.AppiumTests
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
 
+		// In order to track tests we've already determined aren't relevant for NET7
+		// we've backported and just marked them as ignore.
 		public const string BackportedTestMessage = "This test was backported to NET7 from NET8 and isn't relevant on NET7";
 
 		public UITestBase(TestDevice device)
