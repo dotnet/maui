@@ -1,7 +1,7 @@
 ﻿using System;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class IndicatorsSampleMaximumVisible : ContentPage
 	{

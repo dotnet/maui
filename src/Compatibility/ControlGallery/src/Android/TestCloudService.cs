@@ -1,7 +1,7 @@
 using System;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery;
+using Microsoft.Maui.Controls.ControlGallery;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	public class TestCloudService : ITestCloudService
 	{

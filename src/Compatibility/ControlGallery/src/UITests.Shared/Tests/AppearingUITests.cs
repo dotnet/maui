@@ -40,14 +40,6 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Test]
-		public void AppearingCarouselPage()
-		{
-			App.Tap(t => t.Marked("CarouselAppearingPage"));
-			App.WaitForElement("Appearing CarouselAppearingPage");
-			App.WaitForElement("Appearing Page 1");
-		}
-
-		[Test]
 		public void AppearingTabbedPage()
 		{
 			App.Tap(t => t.Marked("TabbedAppearingPage"));

@@ -10,7 +10,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	internal class AbsolutePositioningExplorationViewModel : INotifyPropertyChanged
@@ -117,17 +117,17 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				}
 			};
 
-			grid.Children.Add(new Label { Text = "X:", VerticalTextAlignment = TextAlignment.Center }, 0, 0);
-			grid.Children.Add(xSlider, 1, 0);
+			grid.Add(new Label { Text = "X:", VerticalTextAlignment = TextAlignment.Center }, 0, 0);
+			grid.Add(xSlider, 1, 0);
 
-			grid.Children.Add(new Label { Text = "Y:", VerticalTextAlignment = TextAlignment.Center }, 0, 1);
-			grid.Children.Add(ySlider, 1, 1);
+			grid.Add(new Label { Text = "Y:", VerticalTextAlignment = TextAlignment.Center }, 0, 1);
+			grid.Add(ySlider, 1, 1);
 
-			grid.Children.Add(new Label { Text = "Width:", VerticalTextAlignment = TextAlignment.Center }, 0, 2);
-			grid.Children.Add(widthSlider, 1, 2);
+			grid.Add(new Label { Text = "Width:", VerticalTextAlignment = TextAlignment.Center }, 0, 2);
+			grid.Add(widthSlider, 1, 2);
 
-			grid.Children.Add(new Label { Text = "Height:", VerticalTextAlignment = TextAlignment.Center }, 0, 3);
-			grid.Children.Add(heightSlider, 1, 3);
+			grid.Add(new Label { Text = "Height:", VerticalTextAlignment = TextAlignment.Center }, 0, 3);
+			grid.Add(heightSlider, 1, 3);
 
 			absLayout.Children.Add(rect);
 

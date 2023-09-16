@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.UwpIgnore)]
@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("Webview query is not implemented yet on UITEst desktop")]
 #endif
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla26993Test()
 		{
 			RunningApp.Screenshot("I am at BZ26993");

@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls.Internals;
 using static Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific.Application;
 using WindowsOS = Microsoft.Maui.Controls.PlatformConfiguration.Windows;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 3228, "[UWP] Default Search Directory for UWP Icons (Platform Specific)")]

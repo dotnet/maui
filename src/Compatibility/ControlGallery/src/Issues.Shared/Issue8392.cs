@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 8392, "[Bug] CollectionView does not marshal ObservableCollection.CollectionChanged to MainThread")]
@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				}
 			};
 
-			grid.Children.Add(numberLabel, 0, 0);
+			grid.Add(numberLabel, 0, 0);
 
 			return grid;
 		}

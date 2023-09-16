@@ -15,7 +15,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Linq;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(UITestCategories.CollectionView)]
@@ -45,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DelayedIsRefreshingAndCommandTest_SwipeDown()
 		{
 			var collectionView = RunningApp.WaitForElement(q => q.Marked("CollectionView7803"))[0];

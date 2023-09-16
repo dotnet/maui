@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 3086, "On iOS, groupheadertemplate is broken")]
 	public partial class Issue3086 : ContentPage

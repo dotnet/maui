@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries
 {
 
 

@@ -10,10 +10,11 @@ using NUnit.Framework;
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(Compatibility.UITests.UITestCategories.Bugzilla)]
+	[Category(Compatibility.UITests.UITestCategories.TabbedPage)]
 #endif
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 32801, "Memory Leak in TabbedPage + NavigationPage")]

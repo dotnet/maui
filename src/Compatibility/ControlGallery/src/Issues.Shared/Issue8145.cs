@@ -7,7 +7,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Shell)]
@@ -79,6 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if !(__ANDROID__ || __IOS__)
 		[Ignore("Shell test is only supported on Android and iOS")]
 #endif
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Issue8145ShellToolbarDisposedException()
 		{

@@ -9,7 +9,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 5830, "[Enhancement] EntryCellTableViewCell should be public", PlatformAffected.iOS)]
@@ -47,6 +47,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if (UITEST && __IOS__)
         [Test]
 		[Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
         public void Issue5830Test()
         {
 			RunningApp.WaitForElement("TestReady");

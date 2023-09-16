@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries
 {
 	public partial class IsEnabledRefreshViewGallery : ContentPage
 	{

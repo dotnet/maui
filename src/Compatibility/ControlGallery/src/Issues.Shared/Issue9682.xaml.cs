@@ -18,7 +18,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9682, "[iOS] URI Images no longer loading",
 		PlatformAffected.iOS)]
@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test, NUnit.Framework.Category(UITestCategories.Image)]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void MonkiesShouldLoad()
 		{
 			RunningApp.WaitForElement("MonkeyLoadButton");

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	public partial class Issue7856_1 : ContentPage
 	{

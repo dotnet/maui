@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	public class CustomFrame9974 : Frame
 	{

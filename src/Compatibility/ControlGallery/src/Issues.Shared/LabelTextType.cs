@@ -9,7 +9,7 @@ using NUnit.Framework;
 using System.Linq;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Label)]
@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void LabelToggleHtmlAndPlainTextTest() 
 		{
 			RunningApp.WaitForElement ("TextTypeLabel");

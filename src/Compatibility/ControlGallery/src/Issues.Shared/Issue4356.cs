@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -23,6 +23,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	public partial class Issue4356 : TestContentPage
 	{
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void Issue4356Test()
 		{

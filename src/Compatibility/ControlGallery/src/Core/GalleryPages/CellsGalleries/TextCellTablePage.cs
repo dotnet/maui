@@ -1,6 +1,6 @@
 using Microsoft.Maui.Devices;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class TextCellTablePage : ContentPage
 	{

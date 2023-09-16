@@ -1,6 +1,6 @@
 ﻿using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.AlternateLayoutGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class StaggeredLayout : ContentPage

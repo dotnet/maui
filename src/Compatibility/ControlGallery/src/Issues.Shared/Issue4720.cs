@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.WebView)]
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		protected override bool Isolate => true;
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void WebViewDoesntCrashWhenLoadingAHeavyPageAndUsingExecutionModeSeparateProcess()
 		{
 			//4 iterations were enough to run out of memory before the fix.

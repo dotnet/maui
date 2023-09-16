@@ -2,7 +2,7 @@
 using System.Windows.Input;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Skip)]
 	public partial class StateTriggerEventsGallery : ContentPage

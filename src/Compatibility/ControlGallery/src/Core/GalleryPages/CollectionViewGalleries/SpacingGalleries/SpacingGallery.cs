@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.SpacingGalleries
 {
 	internal class SpacingGallery : ContentPage
 	{

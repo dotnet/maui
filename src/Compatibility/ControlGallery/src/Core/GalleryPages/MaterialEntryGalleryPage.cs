@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public class MaterialEntryGalleryPage : ContentPage
 	{

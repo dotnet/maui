@@ -6,7 +6,7 @@ using Android.Util;
 using Android.Views;
 using Android.Widget;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	/// <summary>
 	///     This is a custom Android control which deliberately does some incorrect measuring

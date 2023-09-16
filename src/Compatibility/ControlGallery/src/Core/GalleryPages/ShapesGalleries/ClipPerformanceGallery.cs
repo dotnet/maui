@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.ShapesGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries
 {
 	public class ClipPerformanceGallery : ContentPage
 	{

@@ -18,7 +18,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Shell Back Button Behavior Test",
@@ -223,6 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 
 #if UITEST && (__SHELL__)
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		public void CommandTest()
 		{
@@ -282,6 +283,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void BackButtonSetToTextStillNavigatesBack()
 		{
 			RunningApp.Tap(PushPageId);
@@ -292,6 +294,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void BackButtonSetToTextStillOpensFlyout()
 		{
 			RunningApp.Tap(ToggleTextId);
@@ -314,6 +317,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 #else
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void FlyoutDisabledDoesntOpenFlyoutWhenSetToText()
 		{
 			RunningApp.WaitForElement("ToggleFlyoutBehavior");

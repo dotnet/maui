@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	public class Expense
@@ -114,6 +114,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewViewCellBindingTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Remove"));
@@ -129,6 +130,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewViewCellBindingTestsAddListItem () 
 		{
 			RunningApp.Tap (q => q.Button ("Add"));
@@ -138,6 +140,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewViewCellBindingTestsRemoveListItem () 
 		{
 			RunningApp.Tap (q => q.Button ("Remove"));

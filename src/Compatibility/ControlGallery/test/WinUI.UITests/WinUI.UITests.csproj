@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -16,15 +16,15 @@
 
   <ItemGroup>
     <PackageReference Include="Appium.WebDriver" Version="4.3.1" />
-    <PackageReference Include="Castle.Core" Version="5.1.0" />
+    <PackageReference Include="Castle.Core" Version="5.1.1" />
     <PackageReference Include="DotNetSeleniumExtras.PageObjects" Version="3.11.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Selenium.Support" Version="4.1.1" />
     <PackageReference Include="Selenium.WebDriver" Version="4.1.1" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="3.2.9" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,7 +33,6 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <ItemGroup>

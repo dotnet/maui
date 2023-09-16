@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries
 {
 	public class CodeOnlyExample : ContentPage
 	{

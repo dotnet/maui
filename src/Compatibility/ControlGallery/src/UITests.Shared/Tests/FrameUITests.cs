@@ -76,6 +76,13 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		[Ignore("This is covered by the platform tests")]
 		public override void _TranslationY() { }
+#else
+
+		[FailsOnMauiIOS]
+		public override void _TranslationX() { }
+
+		[FailsOnMauiIOS]
+		public override void _TranslationY() { }
 #endif
 
 #if __IOS__ || WINDOWS

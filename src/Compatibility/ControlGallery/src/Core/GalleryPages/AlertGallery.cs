@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class AlertGallery : ContentPage
 	{

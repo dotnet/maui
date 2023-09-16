@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -173,7 +173,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			_colorsPositionLabel.FormattedText.Spans.Clear();
 			for (var i = 0; i < _boxStack.Children.Count; i++)
 			{
-				if (_boxStack.Children[i].BackgroundColor.Red > 0)
+				if (((View)_boxStack.Children[i]).BackgroundColor.Red > 0)
 				{
 					_colorsPositionLabel.FormattedText.Spans.Add(new Span()
 					{
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 					continue;
 				}
 
-				if (_boxStack.Children[i].BackgroundColor.Green > 0)
+				if (((View)_boxStack.Children[i]).BackgroundColor.Green > 0)
 				{
 					_colorsPositionLabel.FormattedText.Spans.Add(new Span()
 					{

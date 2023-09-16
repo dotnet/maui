@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Internals;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.EmptyViewGalleries
 {
 	[Preserve(AllMembers = true)]
 	public class EmptyViewGalleryFilterInfo : INotifyPropertyChanged

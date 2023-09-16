@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
@@ -6,7 +6,7 @@
     <AssemblyName>Microsoft.Maui.Controls.Android.UITests</AssemblyName>
     <IsPackable>false</IsPackable>
     <Nullable>disable</Nullable>
-    <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__</DefineConstants>
+    <DefineConstants>$(DefineConstants);__ANDROID__;UITEST;__SHELL__;ANDROID</DefineConstants>
     <NoWarn>1701;1702;0618;0612;CA1307;CA1309</NoWarn>
   </PropertyGroup>
 
@@ -15,11 +15,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="Xam.Plugin.DeviceInfo" Version="4.1.1" />
-    <PackageReference Include="Xamarin.UITest" Version="3.2.9" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
+    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,7 +28,6 @@
     <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\..\Controls\src\Core\Controls.Core.csproj" />
     <ProjectReference Include="..\..\..\..\Core\src\Core.csproj" />
-    <ProjectReference Include="..\..\..\Core\src\Compatibility.csproj" />
   </ItemGroup>
 
   <Target Name="_CopyXamarinUITestFiles" AfterTargets="Build">

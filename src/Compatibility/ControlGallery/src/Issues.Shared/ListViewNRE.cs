@@ -13,7 +13,7 @@ using NUnit.Framework;
 [assembly: NUnit.Framework.Category("Issues")]
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "ListView crashes when disposed on ItemSelected", PlatformAffected.iOS)]
@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ListViewNRETest()
 		{
 			RunningApp.WaitForElement(q => q.Marked("1"));

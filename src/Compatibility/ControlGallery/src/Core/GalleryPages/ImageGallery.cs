@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class ImageGallery : ContentPage
 	{
@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 			var disabled = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var rotate = new Image { Source = ImageSource.FromFile("cover1.jpg") };
 			var transparent = new Image { Source = ImageSource.FromFile("cover1.jpg") };
-			var embedded = new Image { Source = ImageSource.FromResource("Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.crimson.jpg", typeof(ImageGallery).Assembly) };
+			var embedded = new Image { Source = ImageSource.FromResource("Microsoft.Maui.Controls.ControlGallery.GalleryPages.crimson.jpg", typeof(ImageGallery).Assembly) };
 			var gif = new Image { Source = "GifOne.gif" };
 			_autoPlayGif = new Image { Source = "GifOne.gif" };
 

@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries
 {
 	public interface ILocalize
 	{

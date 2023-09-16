@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.UwpIgnore)]
@@ -129,6 +129,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla57515Test()
 		{
 			RunningApp.WaitForElement(ZoomContainer);

@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 8766, "[Bug] CollectionView.EmptyView does not inherit parent Visual", PlatformAffected.All)]
 	public class Issue8766 : TestContentPage

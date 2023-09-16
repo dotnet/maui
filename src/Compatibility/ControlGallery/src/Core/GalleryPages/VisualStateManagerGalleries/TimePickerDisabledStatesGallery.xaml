@@ -4,7 +4,7 @@
 			xmlns:windowsSpecific="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.WindowsSpecific;assembly=Microsoft.Maui.Controls"
 			xmlns:androidSpecific="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
 			xmlns:iosSpecific="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries.TimePickerDisabledStatesGallery"
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries.TimePickerDisabledStatesGallery"
 			Title="TimePicker Disabled States Gallery">
 
 	<ContentPage.Resources>
