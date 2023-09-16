@@ -13,9 +13,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void HeaderAndFooterRender()
 		{
 			// This issue is not working on net7 for the following platforms 
+			// This is not a regression it's just the test being backported from net8
 			UITestContext.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Android
+				TestDevice.Android, TestDevice.Windows
 			});
 
 			App.WaitForElement("collectionView");

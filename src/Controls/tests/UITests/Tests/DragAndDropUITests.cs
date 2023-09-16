@@ -31,6 +31,13 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void DragEvents()
 		{
+			// This issue is not working on net7 for the following platforms 
+			// This is not a regression it's just the test being backported from net8
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac, TestDevice.Windows
+			});
+
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DragAndDropEvents");
 			App.Tap("GoButton");

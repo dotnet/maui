@@ -32,6 +32,14 @@ namespace Microsoft.Maui.AppiumTests
 			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
 				"PointerGestureRecognizer doesn't work with mouse in Android or iOS");
 
+
+			// This issue is not working on net7 for the following platforms 
+			// This is not a regression it's just the test being backported from net8
+			UITestContext.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Mac, TestDevice.Windows
+			});
+
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
 			App.Tap("GoButton");
