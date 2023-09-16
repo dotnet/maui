@@ -169,7 +169,6 @@ Microsoft.Maui.Controls.Element.ClearLogicalChildren() -> void
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
-*REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.ViewRenderer<TElement, TPlatformView>.ViewRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.VisualElementRenderer(Microsoft.Maui.IPropertyMapper! mapper, Microsoft.Maui.CommandMapper? commandMapper = null) -> void
 ~static readonly Microsoft.Maui.Controls.ContentPage.HideSoftInputOnTappedProperty -> Microsoft.Maui.Controls.BindableProperty
