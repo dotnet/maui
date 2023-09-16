@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue8778"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue8778"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     Title="Issue 8778">

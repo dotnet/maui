@@ -8,7 +8,7 @@ using Microsoft.Maui.Graphics;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4854, "[macOS] Visual glitch when exiting the full screen with ScrollViewer", PlatformAffected.macOS)]

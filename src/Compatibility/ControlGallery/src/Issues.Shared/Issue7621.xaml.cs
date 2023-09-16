@@ -16,7 +16,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Linq;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]

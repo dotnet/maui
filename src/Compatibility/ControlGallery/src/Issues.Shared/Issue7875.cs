@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Button)]
@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				TextColor = Colors.White,
 				Text = "If the buttons below have the same size, the test has passed."
 			};
-			layout.Children.Add(instructions, 0, 0);
+			layout.Add(instructions, 0, 0);
 
 			var button = new Button
 			{
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				ImageSource = "calculator.png",
 				Text = "Text"
 			};
-			layout.Children.Add(button, 0, 1);
+			layout.Add(button, 0, 1);
 
 			var accesibilityButton = new Button
 			{
@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 			accesibilityButton.SetValue(AutomationProperties.NameProperty, "AccesibilityButton");
 			accesibilityButton.SetValue(AutomationProperties.HelpTextProperty, "Help Large Text");
-			layout.Children.Add(accesibilityButton, 0, 2);
+			layout.Add(accesibilityButton, 0, 2);
 
 			Content = layout;
 		}

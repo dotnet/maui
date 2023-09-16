@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.LayoutGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.LayoutGalleries
 {
 	public class VerticalStackLayoutGallery : ContentPage
 	{

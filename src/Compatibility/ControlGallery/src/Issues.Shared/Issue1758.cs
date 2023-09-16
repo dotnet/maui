@@ -8,7 +8,7 @@ using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -35,9 +35,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			Content = layout;
 		}
 
-		Layout Relative()
+		Compatibility.Layout Relative()
 		{
-			var layout = new RelativeLayout();
+			var layout = new Compatibility.RelativeLayout();
 
 			layout.Children.Add(_list,
 				Compatibility.Constraint.RelativeToParent(p => p.X),

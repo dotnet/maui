@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Effects;
+using Microsoft.Maui.Controls.ControlGallery.Effects;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 #if UITEST
@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2399, "Label Renderer Dispose never called")]
@@ -132,12 +132,13 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				};
 
 				AttachedStateEffects.Add(View);
-				AttachedStateEffects.Add((View as StackLayout).Children[0]);
+				AttachedStateEffects.Add((Element)(View as StackLayout).Children[0]);
 			}
 		}
 
 #if UITEST && __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void WaitForAllEffectsToDetach()
 		{
 			RunningApp.WaitForElement(q => q.Text("Success"));

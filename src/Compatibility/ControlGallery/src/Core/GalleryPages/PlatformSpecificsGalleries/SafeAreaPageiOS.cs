@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformSpecificsGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformSpecificsGalleries
 {
 	public class SafeAreaPageiOS : ContentPage
 	{
@@ -107,21 +107,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.Plat
 							tabbedPage.Children.Add(new NavigationPage(pageSafe) { Title = pageSafe.Title});
 							tabbedPage.Children.Add(new NavigationPage(pageNotSafe) { Title = pageNotSafe.Title});
 							setRoot.Execute(tabbedPage);
-						})
-					},
-					new Button
-					{
-						Text = "Set CarouselPage as root",
-						Command = new Command(() =>
-						{
-							var pageSafe = new SafeAreaPageiOS(restore,setRoot);
-							var pageNotSafe = new SafeAreaPageiOS(restore,setRoot);
-							pageNotSafe.On<iOS>().SetUseSafeArea(false);
-							pageNotSafe.Title ="Not Using Safe Area";
-							var carouselPage = new CarouselPage();
-							carouselPage.Children.Add(pageSafe);
-							carouselPage.Children.Add(pageNotSafe);
-							setRoot.Execute(carouselPage);
 						})
 					},
 					new Button

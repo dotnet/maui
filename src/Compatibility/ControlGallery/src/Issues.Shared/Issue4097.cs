@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.DependencyService;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 4097, "Dependency service thread safety test", PlatformAffected.All)]

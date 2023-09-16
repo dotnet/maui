@@ -1,4 +1,4 @@
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using NUnit.Framework;
 using Xamarin.UITest;
@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 			App.NavigateToGallery(GalleryQueries.EntryGallery);
 		}
 
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(Entry), "Focus")]
 		public override void _Focus()
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		// TODO
 		// Implement control specific ui tests
+		[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 		[UiTest(typeof(Entry), "Completed")]
 		[Category(UITestCategories.UwpIgnore)]

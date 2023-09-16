@@ -17,7 +17,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9771, "Changing CarouselView Position does not change view ", PlatformAffected.UWP)]
 	public partial class Issue9771 : TestContentPage

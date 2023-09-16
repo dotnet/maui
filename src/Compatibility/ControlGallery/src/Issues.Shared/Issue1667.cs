@@ -14,7 +14,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1667, "Entry: Position and color of caret", PlatformAffected.All)]
@@ -97,6 +97,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if UITEST
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestCursorPositionAndSelection()
 		{
 			RunningApp.WaitForElement("CursorTextEntry");
@@ -116,6 +117,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if __IOS__
 		[Test]
 		[NUnit.Framework.Category(UITestCategories.ManualReview)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestCursorColorOniOS()
 		{
 			RunningApp.WaitForElement("CursorTextEntry");

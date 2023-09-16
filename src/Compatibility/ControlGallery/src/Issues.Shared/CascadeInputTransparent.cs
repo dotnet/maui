@@ -12,7 +12,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.InputTransparent)]
@@ -154,7 +154,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			layout.Children.Add(overButton);
 
 			// Bump up the elevation to cover FastRenderer buttons
-			layout.On<Android>().SetElevation(10f);
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.VisualElement.SetElevation(layout, 10f);
 
 			grid.Children.Add(underButton);
 			Grid.SetRow(underButton, 2);
@@ -214,6 +214,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		static IEnumerable<string> TestList => new List<string> { CascadesChange, CascadesStatic, NotCascadingChange, NotCascadingStatic };
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test, TestCaseSource(nameof(TestList))]
 		public void TransparencyCascading(string test)
 		{

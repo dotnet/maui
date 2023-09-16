@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.DataTemplateSelectorGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class VariedSizeDataTemplateSelectorGallery : ContentPage

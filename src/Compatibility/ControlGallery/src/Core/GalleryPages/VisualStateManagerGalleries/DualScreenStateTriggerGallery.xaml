@@ -2,7 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries.DualScreenStateTriggerGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries.DualScreenStateTriggerGallery"
     xmlns:dualScreen="clr-namespace:Microsoft.Maui.Controls.Foldable;assembly=Microsoft.Maui.Controls.Foldable"
     Title="DualScreenStateTrigger Gallery">
     <ContentPage.Content>

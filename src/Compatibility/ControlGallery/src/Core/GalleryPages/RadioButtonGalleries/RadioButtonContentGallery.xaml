@@ -4,7 +4,7 @@
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries.RadioButtonContentGallery">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries.RadioButtonContentGallery">
     <ContentPage.Content>
         <ScrollView>
             <StackLayout>

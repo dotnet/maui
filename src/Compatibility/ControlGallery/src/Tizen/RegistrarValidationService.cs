@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Tizen
 		{
 			message = "Success";
 
-			if (element == null || element is OpenGLView)
+			if (element == null)
 				return true;
 
 			var renderer = Platform.Tizen.Platform.GetOrCreateRenderer(element);

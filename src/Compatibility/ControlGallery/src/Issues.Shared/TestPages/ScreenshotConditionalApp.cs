@@ -8,13 +8,13 @@ using NUnit.Framework.Interfaces;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 using Xamarin.UITest;
 using Xamarin.UITest.Queries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 
 #if __IOS__
 using Xamarin.UITest.iOS;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	using IApp = Xamarin.UITest.IApp;
 	/// <summary>

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Converters;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries
 {
 	public partial class KeyboardPage : ContentPage
 	{

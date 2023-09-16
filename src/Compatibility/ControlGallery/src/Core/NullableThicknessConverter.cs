@@ -2,7 +2,7 @@
 using System.Globalization;
 using Microsoft.Maui.Converters;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class NullableThicknessConverter : IValueConverter
 	{

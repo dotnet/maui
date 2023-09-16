@@ -14,7 +14,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	// To test this sample include <PackageReference Include="ReactiveUI" Version="11.2.3" /> in Microsoft.Maui.Controls.ControlGallery
 	// and uncomment the ViewModel

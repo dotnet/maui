@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Maui.Controls;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages
 {
 	public partial class ControlTemplateXamlPage : ContentPage
 	{

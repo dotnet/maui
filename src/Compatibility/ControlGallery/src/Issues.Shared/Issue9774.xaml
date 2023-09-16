@@ -4,9 +4,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"      
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery" xmlns:controls1="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery" xmlns:controls1="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
     mc:Ignorable="d"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue9774"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue9774"
     Title="Issue 9774">
     <ContentPage.Content>
         <StackLayout HorizontalOptions="FillAndExpand" VerticalOptions="FillAndExpand">

@@ -6,8 +6,8 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
     mc:Ignorable="d"
-    xmlns:local="using:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue12084"
+    xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue12084"
     Title="Issue 12084">
     <StackLayout>
         <Label

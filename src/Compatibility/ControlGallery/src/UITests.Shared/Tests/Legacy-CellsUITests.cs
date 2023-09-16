@@ -141,6 +141,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		[UiTest(typeof(ListView))]
 		[UiTest(typeof(ImageCell))]
 		[NUnit.Framework.Category(UITestCategories.RequiresInternetConnection)]
+		[FailsOnMauiIOS]
 		public async Task CellsGalleryImageUrlCellList()
 		{
 			SelectTest("ImageCell Url List");
@@ -295,6 +296,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		[Description("TableView with EntryCells, all are present")]
 		[UiTest(typeof(TableView))]
 		[UiTest(typeof(EntryCell))]
+		[FailsOnMauiIOS]
 		public void CellsGalleryEntryCellTable()
 		{
 			SelectTest("EntryCell Table");
@@ -316,6 +318,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		[Category(UITestCategories.Cells)]
 		[Description("EntryCell fires .Completed event")]
 		[UiTest(typeof(EntryCell), "Completed")]

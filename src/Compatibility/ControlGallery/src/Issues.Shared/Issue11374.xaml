@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="using:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-             xmlns:effects="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues"
+             xmlns:local="using:Microsoft.Maui.Controls.ControlGallery"
+             xmlns:effects="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
              mc:Ignorable="d"
              Title="Test 11374"
-             x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue11374">
+             x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11374">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />

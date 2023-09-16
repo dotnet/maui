@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries
 {
 	public partial class RadioButtonBorder
 	{

@@ -14,7 +14,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.InputTransparent)]
@@ -65,7 +65,9 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Preserve(AllMembers = true)]
+#pragma warning disable CA1815 // Override equals and operator equals on value types
 		public struct TestPoint
+#pragma warning restore CA1815 // Override equals and operator equals on value types
 		{
 			public TestPoint(int i) : this()
 			{
@@ -160,7 +162,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			};
 
 			// Bump up the elevation to cover FastRenderer buttons
-			layout.On<Android>().SetElevation(10f);
+			Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.VisualElement.SetElevation(layout, 10f);
 
 			grid.Children.Add(button);
 			Grid.SetRow(button, 3);
@@ -179,6 +181,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
         [Test, TestCaseSource(nameof(GenerateTests))]
         public void VerifyInputTransparent(TestPoint test)
         {

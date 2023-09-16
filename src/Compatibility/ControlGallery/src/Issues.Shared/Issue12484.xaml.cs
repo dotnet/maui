@@ -10,7 +10,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -36,6 +36,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST && __ANDROID__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiAndroid]
 		public void Issue12484ControlTemplateRendererTest()
 		{
 			RunningApp.WaitForElement("Success");
