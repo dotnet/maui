@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
@@ -27,6 +27,7 @@ public partial class Maui17222 : ContentPage
 #if DEBUG
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+
 		[Test]
 		public void GetsourceInfo([Values(false)] bool useCompiledXaml)
 		{

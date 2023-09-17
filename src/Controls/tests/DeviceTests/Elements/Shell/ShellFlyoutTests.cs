@@ -17,6 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
+#if !MACCATALYST
 		[Fact]
 		public async Task LogicalChildrenPropagateCorrectly()
 		{
@@ -318,5 +319,6 @@ namespace Microsoft.Maui.DeviceTests
 				await testAction(shell, handler);
 			});
 		}
+#endif
 	}
 }
