@@ -1,7 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Controls.Shapes;
@@ -32,7 +32,7 @@ public partial class Maui17333 : ResourceDictionary
 		{
 			if (useCompiledXaml)
 			{
-				MockCompiler.Compile(typeof(Maui17333),targetFramework: "net-ios");
+				MockCompiler.Compile(typeof(Maui17333), targetFramework: "net-ios");
 			}
 		}
 	}
