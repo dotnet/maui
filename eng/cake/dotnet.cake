@@ -1,7 +1,6 @@
-
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 
-// Contains .NET 6-related Cake targets
+// Contains .NET - related Cake targets
 
 var ext = IsRunningOnWindows() ? ".exe" : "";
 var dotnetPath = $"./bin/dotnet/dotnet{ext}";
@@ -12,6 +11,7 @@ string MSBuildExe = Argument("msbuild", EnvironmentVariable("MSBUILD_EXE", ""));
 string nugetSource = Argument("nugetsource", "");
 
 string TestTFM = Argument("testtfm", "");
+var useNuget = Argument("usenuget", true);
 if (TestTFM == "default")
     TestTFM = "";
 
@@ -47,10 +47,10 @@ Task("dotnet")
                 $"<add key=\"nuget-only\" value=\"{nugetSource}\" />");
         }
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
     });
@@ -67,15 +67,15 @@ Task("dotnet-local-workloads")
         DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
         });
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
             MSBuildSettings = new DotNetCoreMSBuildSettings()
-                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}.binlog")
+                .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
             ToolPath = dotnetPath,
@@ -417,7 +417,7 @@ Task("dotnet-diff")
             // run the diff
             foreach (var nupkg in nupkgs)
             {
-                DotNetCoreTool("api-tools", new DotNetCoreToolSettings
+                DotNetTool("api-tools", new DotNetToolSettings
                 {
                     DiagnosticOutput = true,
                     ArgumentCustomization = builder => builder
@@ -425,7 +425,6 @@ Task("dotnet-diff")
                         .AppendQuoted(nupkg.FullPath)
                         .Append("--latest")
                         // .Append("--verbose")
-                        .Append("--prerelease")
                         .Append("--group-ids")
                         .Append("--ignore-unchanged")
                         .AppendSwitchQuoted("--output", GetDiffDirectory().FullPath)
@@ -564,7 +563,7 @@ Dictionary<string, string> GetDotNetEnvironmentVariables()
 void SetDotNetEnvironmentVariables()
 {
     var dotnet = MakeAbsolute(Directory("./bin/dotnet/")).ToString();
-
+    
     //Workaround: https://github.com/dotnet/linker/issues/3012
     SetEnvironmentVariable("DOTNET_gcServer", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
@@ -661,13 +660,13 @@ void RunMSBuildWithDotNet(
     var name = System.IO.Path.GetFileNameWithoutExtension(sln);
     var type = useDotNetBuild ? "dotnet" : "msbuild";
     var binlog = string.IsNullOrEmpty(targetFramework) ?
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}.binlog\"" :
-        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}.binlog\"";
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"" :
+        $"\"{GetLogDirectory()}/{binlogPrefix}{name}-{configuration}-{target}-{targetFramework}-{type}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog\"";
     
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    var msbuildSettings = new DotNetCoreMSBuildSettings()
+    var msbuildSettings = new DotNetMSBuildSettings()
         .SetConfiguration(configuration)
         .SetMaxCpuCount(maxCpuCount)
         .WithTarget(target)
@@ -686,7 +685,7 @@ void RunMSBuildWithDotNet(
         }
     }
 
-    var dotnetBuildSettings = new DotNetCoreBuildSettings
+    var dotnetBuildSettings = new DotNetBuildSettings
     {
         MSBuildSettings = msbuildSettings,
     };
@@ -699,13 +698,15 @@ void RunMSBuildWithDotNet(
         if (!string.IsNullOrEmpty(targetFramework))
             args.Append($"-f {targetFramework}");
 
+        //args.Append("/tl");
+
         return args;
     };
 
     if (localDotnet)
         dotnetBuildSettings.ToolPath = dotnetPath;
 
-    DotNetCoreBuild(sln, dotnetBuildSettings);
+    DotNetBuild(sln, dotnetBuildSettings);
 }
 
 void RunTestWithLocalDotNet(string csproj)

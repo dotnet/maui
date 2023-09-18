@@ -1,0 +1,208 @@
+parameters:
+  androidPool: { }
+  iosPool: { }
+  windowsPool: { }
+  macosPool: { }
+  androidCompatibilityPool: { }
+  iosCompatibilityPool: { }
+  androidApiLevels: [ 30 ]
+  iosVersions: [ 'latest' ]
+  provisionatorChannel: 'latest'
+  agentPoolAccessToken: ''
+  runCompatibilityTests: false
+  projects:
+    - name: name
+      desc: Human Description
+      android: /optional/path/to/android.csproj
+      ios: /optional/path/to/ios.csproj
+      winui: /optional/path/to/winui.csproj
+      mac: /optional/path/to/mac.csproj
+      app: /optional/path/to/app.csproj
+      compatibilityAndroidApp: /optional/path/to/app.csproj
+      compatibilityAndroidTestProject: /optional/path/to/android.csproj
+      compatibilityiOSTestProject: /optional/path/to/ios.csproj
+      compatibilityiOSApp: /optional/path/to/app.csproj
+
+stages:
+
+  - stage: android_ui_tests
+    displayName: Android UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.android, '') }}:
+          - ${{ each api in parameters.androidApiLevels }}:
+            - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+              - job: android_ui_tests_${{ project.name }}_${{ api }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                pool: ${{ parameters.androidPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: android
+                      version: ${{ api }}
+                      path: ${{ project.android }}
+                      app: ${{ project.app }}
+                      ${{ if eq(api, 27) }}:
+                        device: android-emulator-32_${{ api }}
+                      ${{ if not(eq(api, 27)) }}:
+                        device: android-emulator-64_${{ api }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - stage: ios_ui_tests
+    displayName: iOS UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.ios, '') }}:
+          - ${{ each version in parameters.iosVersions }}:
+            - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+              - job: ios_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                pool: ${{ parameters.iosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: ios
+                      ${{ if eq(version, 'latest') }}:
+                        version: 16.4
+                      ${{ if ne(version, 'latest') }}:
+                        version: ${{ version }}
+                      path: ${{ project.ios }}
+                      app: ${{ project.app }}
+                      ${{ if eq(version, 'latest') }}:
+                        device: ios-simulator-64
+                      ${{ if ne(version, 'latest') }}:
+                        device: ios-simulator-64_${{ version }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - stage: winui_ui_tests
+    displayName: WinUI UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.winui, '') }}:
+              - job: winui_ui_tests_${{ project.name }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }}
+                pool: ${{ parameters.windowsPool }}
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: windows
+                      version: "10.0.19041"
+                      device: windows10
+                      path: ${{ project.winui }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - stage: mac_ui_tests
+    displayName: macOS UITests
+    dependsOn: []
+    jobs:
+      - ${{ each project in parameters.projects }}:
+        - ${{ if ne(project.mac, '') }}:
+              - job: mac_ui_tests_${{ project.name }}
+                timeoutInMinutes: 240 # how long to run the job before automatically cancelling
+                workspace:
+                  clean: all
+                displayName: ${{ coalesce(project.desc, project.name) }}
+                pool: ${{ parameters.macosPool }}
+                variables:
+                  REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                steps:
+                  - template: ui-tests-steps.yml
+                    parameters:
+                      platform: catalyst
+                      version: "13.1"
+                      device: mac
+                      path: ${{ project.mac }}
+                      app: ${{ project.app }}
+                      provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                      agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+  - ${{ if eq(parameters.runCompatibilityTests, true) }}:  
+    - stage: android_compatibility_ui_tests
+      displayName: Android Compatibility UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.android, '') }}:
+            - ${{ each api in parameters.androidApiLevels }}:
+              - ${{ if not(containsValue(project.androidApiLevelsExclude, api)) }}:
+                - job: android_compatibility_ui_tests_${{ project.name }}_${{ api }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (API ${{ api }})
+                  pool: ${{ parameters.androidCompatibilityPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-compatibility-steps.yml
+                      parameters:
+                        platform: android
+                        provisionPlatform: macos
+                        configuration: Debug
+                        version: ${{ api }}
+                        path: ${{ project.compatibilityAndroidTestProject }}
+                        app: ${{ project.compatibilityAndroidApp }}
+                        targetSample: "dotnet-legacy-controlgallery-android"
+                        ${{ if eq(api, 27) }}:
+                          DEVICE: android-emulator-32_${{ api }}
+                        ${{ if not(eq(api, 27)) }}:
+                          DEVICE: android-emulator-64_${{ api }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+
+
+    - stage: ios_compatibility_ui_tests
+      displayName: iOS Compatibility UITests
+      dependsOn: []
+      jobs:
+        - ${{ each project in parameters.projects }}:
+          - ${{ if ne(project.ios, '') }}:
+            - ${{ each version in parameters.iosVersions }}:
+              - ${{ if not(containsValue(project.iosVersionsExclude, version)) }}:
+                - job: ios_compatibility_ui_tests_${{ project.name }}_${{ replace(version, '.', '_') }}
+                  timeoutInMinutes: 240
+                  workspace:
+                    clean: all
+                  displayName: ${{ coalesce(project.desc, project.name) }} (v${{ version }})
+                  pool: ${{ parameters.iosCompatibilityPool }}
+                  variables:
+                    REQUIRED_XCODE: $(DEVICETESTS_REQUIRED_XCODE)
+                  steps:
+                    - template: ui-tests-compatibility-steps.yml
+                      parameters:
+                        platform: ios
+                        provisionPlatform: macos
+                        configuration: Debug
+                        ${{ if eq(version, 'latest') }}:
+                          version: 16.2
+                        ${{ if ne(version, 'latest') }}:
+                          version: ${{ version }}
+                        path: ${{ project.compatibilityiOSTestProject }}
+                        app: ${{ project.compatibilityiOSApp }}
+                        targetSample: "dotnet-legacy-controlgallery-ios"
+                        ${{ if eq(version, 'latest') }}:
+                          device: ios-simulator-64
+                        ${{ if ne(version, 'latest') }}:
+                          device: ios-simulator-64_${{ version }}
+                        provisionatorChannel: ${{ parameters.provisionatorChannel }}
+                        agentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
