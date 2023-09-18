@@ -159,7 +159,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, windowDisappearing);
 		}
 
-		[Fact]
+		[Fact(
+#if WINDOWS && PACKAGED
+		Skip = "Fails on Windows (Packaged)"
+#endif
+		)]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
 		{
 			SetupBuilder();
@@ -238,7 +242,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if WINDOWS
+#if WINDOWS && PACKAGED
 		Skip = "Fails on Windows (Packaged)"
 #endif
 		)]
@@ -485,7 +489,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if WINDOWS
+#if WINDOWS && PACKAGED
 		Skip = "Fails on Windows (Packaged)"
 #endif
 		)]

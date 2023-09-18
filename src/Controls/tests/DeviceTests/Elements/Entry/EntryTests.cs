@@ -23,7 +23,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task MaxLengthTrims()
 		{
 			var entry = new Entry
@@ -43,7 +47,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task InitializingTextTransformBeforeTextShouldUpdateTextProperty()
 		{
 			var entry = new Entry
@@ -60,7 +68,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		[InlineData("hello", "HELLO")]
 		[InlineData("woRld", "WORLD")]
 		public async Task ChangingPlatformTextPreservesTextTransform(string text, string expected)

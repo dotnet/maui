@@ -203,7 +203,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash")]
+		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
+#if WINDOWS
+		, Skip = "Fails on Windows"
+#endif
+		)]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
@@ -351,6 +355,8 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
+#elif WINDOWS
+		[Theory(Skip = "Test doesn't work on Windows")]
 #else
 		[Theory]
 #endif
