@@ -17,11 +17,7 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Dispatcher)]
 	public class DispatchingTests : ControlsHandlerTestBase
 	{
-		[Fact(
-#if MACCATALYST
-			Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact]
 		public async Task DispatchFromBackgroundThread()
 		{
 			bool dispatched = false;

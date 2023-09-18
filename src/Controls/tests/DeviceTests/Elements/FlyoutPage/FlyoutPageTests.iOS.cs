@@ -27,11 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool IsPad => UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Pad;
 
 #if MACCATALYST
-		[Fact(DisplayName = "Flyout Page Takes Into Account Safe Area by Default"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-		)]
+		[Fact(DisplayName = "Flyout Page Takes Into Account Safe Area by Default")]
 		public async Task FlyoutPageTakesIntoAccountSafeAreaByDefault()
 		{
 			SetupBuilder();

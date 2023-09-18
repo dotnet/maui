@@ -135,11 +135,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory(DisplayName = "Details View Updates"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-		)]
+		[Theory(DisplayName = "Details View Updates")]
 		[ClassData(typeof(FlyoutPageLayoutBehaviorTestCases))]
 		public async Task DetailsViewUpdates(Type flyoutPageType)
 		{
@@ -177,11 +173,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData(false
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[InlineData(false)]
 		[InlineData(true)]
 		public async Task DetailsPageMeasuresCorrectlyInSplitMode(bool isRtl)
 		{

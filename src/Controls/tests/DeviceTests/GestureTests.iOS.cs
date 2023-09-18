@@ -30,11 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if MACCATALYST
-		[Fact(
-#if MACCATALYST
-			Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact]
 		public async Task InteractionsAreRemovedWhenGestureIsRemoved()
 		{
 			var label = new Label();
@@ -60,11 +56,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if MACCATALYST
-			Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact]
 		public async Task InteractionsAreRemovedWhenGestureButtonMaskChanged()
 		{
 			var label = new Label();

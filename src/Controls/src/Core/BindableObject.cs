@@ -253,19 +253,8 @@ namespace Microsoft.Maui.Controls
 		{
 			BindablePropertyContext context = GetContext(property ?? throw new ArgumentNullException(nameof(property)));
 
-			var specificity = SetterSpecificity.FromBinding;
-			if (context != null && context.Bindings.Count > 0)
-				specificity = context.Bindings.Last().Key;
-
-			RemoveBinding(property, specificity);
-		}
-
-		internal void RemoveBinding(BindableProperty property, SetterSpecificity specificity)
-		{
-			BindablePropertyContext context = GetContext(property ?? throw new ArgumentNullException(nameof(property)));
-
-			if (context != null && context.Bindings.Count > 0)
-				RemoveBinding(property, context, specificity);
+			if (context?.Binding != null)
+				RemoveBinding(property, context);
 		}
 
 		/// <summary>
@@ -294,27 +283,14 @@ namespace Microsoft.Maui.Controls
 			{
 				var kvp = context.Values.Last();
 				context.Values.Remove(kvp.Key);
-				context.Values[SetterSpecificity.FromBinding] = kvp.Value;
+				context.Values.Add(SetterSpecificity.FromBinding, kvp.Value);
 			}
 
-			BindingBase oldBinding = null;
-			SetterSpecificity oldSpecificity = default;
-			if (context.Bindings.Count > 0)
-			{
-				var b_p = context.Bindings.Last();
-				oldSpecificity = b_p.Key;
-				oldBinding = b_p.Value;
-			}
+			context.Binding?.Unapply();
+			context.BindingSpecificity = specificity;
 
-			if (oldBinding != null && specificity.CompareTo(oldSpecificity) < 0)
-			{
-				context.Bindings[specificity] = binding;
-				return;
-			}
-
-			oldBinding?.Unapply();
-
-			context.Bindings[specificity] = binding ?? throw new ArgumentNullException(nameof(binding));
+			BindingBase oldBinding = context.Binding;
+			context.Binding = binding ?? throw new ArgumentNullException(nameof(binding));
 
 			targetProperty.BindingChanging?.Invoke(this, oldBinding, binding);
 
@@ -343,11 +319,9 @@ namespace Microsoft.Maui.Controls
 			if (bpContext != null && oldContext == null)
 				oldContext = bpContext.Values.LastOrDefault().Value;
 
-			var binding = bpContext?.Bindings.Values.LastOrDefault();
-
-			if (binding != null)
+			if (bpContext != null && bpContext.Binding != null)
 			{
-				binding.Context = value;
+				bpContext.Binding.Context = value;
 				bindable._inheritedContext = null;
 			}
 			else
@@ -398,7 +372,12 @@ namespace Microsoft.Maui.Controls
 		protected void UnapplyBindings()
 		{
 			foreach (var context in _properties.Values)
-				context.Bindings.Values.LastOrDefault()?.Unapply();
+			{
+				if (context.Binding == null)
+					continue;
+
+				context.Binding.Unapply();
+			}
 		}
 
 		internal bool GetIsBound(BindableProperty targetProperty)
@@ -407,7 +386,7 @@ namespace Microsoft.Maui.Controls
 				throw new ArgumentNullException(nameof(targetProperty));
 
 			BindablePropertyContext bpcontext = GetContext(targetProperty);
-			return bpcontext != null && bpcontext.Bindings.Count > 0;
+			return bpcontext != null && bpcontext.Binding != null;
 		}
 
 		internal virtual void OnRemoveDynamicResource(BindableProperty property)
@@ -419,9 +398,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal void RemoveDynamicResource(BindableProperty property)
-			=> RemoveDynamicResource(property, SetterSpecificity.DynamicResourceSetter);
-
-		internal void RemoveDynamicResource(BindableProperty property, SetterSpecificity specificity)
 		{
 			if (property == null)
 				throw new ArgumentNullException(nameof(property));
@@ -619,7 +595,7 @@ namespace Microsoft.Maui.Controls
 			if ((context.Attributes & BindableContextAttributes.IsDynamicResource) != 0 && clearDynamicResources)
 				RemoveDynamicResource(property);
 
-			BindingBase binding = context.Bindings.Values.LastOrDefault();
+			BindingBase binding = context.Binding;
 
 			if (!silent && (!sameValue || raiseOnEqual))
 			{
@@ -642,10 +618,7 @@ namespace Microsoft.Maui.Controls
 			for (int i = 0, propLength = prop.Length; i < propLength; i++)
 			{
 				BindablePropertyContext context = prop[i];
-				var kvp = context.Bindings.LastOrDefault();
-				var specificity = kvp.Key;
-				var binding = kvp.Value;
-
+				BindingBase binding = context.Binding;
 				if (binding == null)
 					continue;
 
@@ -653,7 +626,7 @@ namespace Microsoft.Maui.Controls
 					continue;
 
 				binding.Unapply(fromBindingContextChanged: fromBindingContextChanged);
-				binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, specificity);
+				binding.Apply(BindingContext, this, context.Property, fromBindingContextChanged, context.BindingSpecificity);
 			}
 		}
 
@@ -696,31 +669,13 @@ namespace Microsoft.Maui.Controls
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		BindablePropertyContext GetOrCreateContext(BindableProperty property) => GetContext(property) ?? CreateAndAddContext(property);
 
-		void RemoveBinding(BindableProperty property, BindablePropertyContext context, SetterSpecificity specificity)
+		void RemoveBinding(BindableProperty property, BindablePropertyContext context)
 		{
-			var count = context.Bindings.Count;
+			context.Binding.Unapply();
 
-			if (count == 0)
-				return; //used to fail;
+			property.BindingChanging?.Invoke(this, context.Binding, null);
 
-			var currentbinding = context.Bindings.Values.Last();
-			var binding = context.Bindings[specificity];
-			var isCurrent = binding == currentbinding;
-
-			if (isCurrent)
-			{
-				binding.Unapply();
-
-				currentbinding = null;
-				if (count > 1)
-					currentbinding = context.Bindings.Values.ElementAt(count - 2);
-
-				property.BindingChanging?.Invoke(this, binding, currentbinding);
-
-				currentbinding?.Apply(BindingContext, this, property, false, context.Bindings.Keys.ElementAt(count - 2));
-			}
-
-			context.Bindings.Remove(specificity);
+			context.Binding = null;
 		}
 
 		/// <summary>
@@ -785,7 +740,9 @@ namespace Microsoft.Maui.Controls
 		{
 			public BindableContextAttributes Attributes;
 
-			public SortedList<SetterSpecificity, BindingBase> Bindings = new();
+			//TODO should be a list of bindings/specificity
+			public BindingBase Binding;
+			public SetterSpecificity BindingSpecificity = SetterSpecificity.FromBinding;
 
 			public Queue<SetValueArgs> DelayedSetters;
 			public BindableProperty Property;
