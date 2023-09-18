@@ -10,8 +10,8 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WebViewTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Evaluate JavaScript returning a String value"
-#if WINDOWS && PACKAGED
-		, Skip = "Fails on Windows (Packaged)"
+#if WINDOW
+		, Skip = "Fails on Windows"
 #endif
 		)]
 		public async Task EvaluateJavaScriptWithString()

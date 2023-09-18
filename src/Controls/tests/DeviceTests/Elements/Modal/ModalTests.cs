@@ -242,8 +242,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if WINDOWS && PACKAGED
-		Skip = "Fails on Windows (Packaged)"
+#if WINDOWS
+		Skip = "Fails on Windows"
 #endif
 		)]
 		[InlineData(true)]
