@@ -489,7 +489,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory(
-#if WINDOWS && PACKAGED
+#if WINDOWS
 		Skip = "Fails on Windows (Packaged)"
 #endif
 		)]

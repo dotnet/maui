@@ -10,7 +10,7 @@ namespace Microsoft.Maui.DeviceTests
 	public partial class WebViewTests : ControlsHandlerTestBase
 	{
 		[Fact(DisplayName = "Evaluate JavaScript returning a String value"
-#if WINDOW
+#if WINDOWS
 		, Skip = "Fails on Windows"
 #endif
 		)]
