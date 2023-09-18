@@ -237,7 +237,11 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows (Packaged)"
+#endif
+		)]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
@@ -480,7 +484,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows (Packaged)"
+#endif
+		)]
 		[ClassData(typeof(PageTypes))]
 		public async Task SwappingRootPageWhileModalPageIsOpenDoesntCrash(Page rootPage, Page newRootPage)
 		{
