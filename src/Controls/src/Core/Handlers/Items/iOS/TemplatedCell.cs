@@ -153,16 +153,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				// emit a bunch of needless binding errors
 				itemsView.AddLogicalChild(view);
 
-				// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
-				// First we check whether the cell has the default selected background color; if it does, then we should check
-				// to see if the cell content is the VSM to set a selected color 
-				if (SelectedBackgroundView.BackgroundColor == Maui.Platform.ColorExtensions.Gray && IsUsingVSMForSelectionColor(view))
-				{
-					SelectedBackgroundView = new UIView
-					{
-						BackgroundColor = UIColor.Clear
-					};
-				}
+				UpdateSelectionColor(view);
 			}
 			else
 			{
@@ -257,6 +248,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				base.Selected = value;
 
 				UpdateVisualStates();
+
+				if (base.Selected)
+				{
+					// This must be called here otherwise the first item will have a gray background
+					UpdateSelectionColor();
+				}
 			}
 		}
 
@@ -314,6 +311,28 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				VisualStateManager.GoToState(element, Selected
 					? VisualStateManager.CommonStates.Selected
 					: VisualStateManager.CommonStates.Normal);
+			}
+		}
+
+		void UpdateSelectionColor()
+		{
+			if (PlatformHandler.VirtualView is not View view)
+			{
+				return;
+			}
+
+			UpdateSelectionColor(view);
+		}
+
+		void UpdateSelectionColor(View view)
+		{
+			// Prevents the use of default color when there are VisualStateManager with Selected state setting the background color
+			// First we check whether the cell has the default selected background color; if it does, then we should check
+			// to see if the cell content is the VSM to set a selected color
+
+			if (ColorExtensions.AreEqual(SelectedBackgroundView.BackgroundColor, ColorExtensions.Gray) && IsUsingVSMForSelectionColor(view))
+			{
+				SelectedBackgroundView.BackgroundColor = UIColor.Clear;
 			}
 		}
 	}
