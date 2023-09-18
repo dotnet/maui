@@ -1,12 +1,17 @@
 <Project>
 
 	<PropertyGroup>
-		<EnableDefaultMauiBlazorEntitlements Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='' And '$(ProjectCapability)'=='MauiBlazor'">true</EnableDefaultMauiBlazorEntitlements>
+		<EnableDefaultMauiBlazorEntitlements Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='' And '$(UsingMicrosoftNETSdkRazor)'=='true'">true</EnableDefaultMauiBlazorEntitlements>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True'And '$(Configuration)' == 'Release'">
+	<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='true'And '$(Configuration)' == 'Release'">
 		<!--Essential for MAUI Blazor, as it allows your sandboxed app to connect to a server process.-->
+		<CustomEntitlements Include="com.apple.security.app-sandbox" Type="boolean" Value="true" />
 		<CustomEntitlements Include="com.apple.security.network.client" Type="boolean" Value="true" />
+	</ItemGroup>
+
+		<ItemGroup Condition="'$(EnableDefaultMauiBlazorEntitlements)'=='True'And '$(Configuration)' == 'Debug'">
+		<CustomEntitlements Include="com.apple.security.get-task-allow" Type="boolean" Value="true" />
 	</ItemGroup>
 
 </Project>
