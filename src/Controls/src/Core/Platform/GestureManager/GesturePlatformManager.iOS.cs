@@ -103,8 +103,6 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			_gestureRecognizers.Clear();
 
-			_dragAndDropDelegate?.Disconnect();
-
 			Disconnect();
 
 			_platformView = null;

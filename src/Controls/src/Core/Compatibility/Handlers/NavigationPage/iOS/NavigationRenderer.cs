@@ -1759,38 +1759,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (view != null)
 				{
 					_view = view;
-
-					if (_view.Parent is null)
-					{
-						_view.ParentSet += OnTitleViewParentSet;
-					}
-					else
-					{
-						SetupTitleView();
-					}
-				}
-
-				ClipsToBounds = true;
-			}
-
-			void OnTitleViewParentSet(object sender, EventArgs e)
-			{
-				if (sender is View view)
-					view.ParentSet -= OnTitleViewParentSet;
-
-				SetupTitleView();
-			}
-
-			void SetupTitleView()
-			{
-				var mauiContext = _view.FindMauiContext();
-				if (_view is not null && mauiContext is not null)
-				{
-					var platformView = _view.ToPlatform(mauiContext);
-					_child = (IPlatformViewHandler)_view.Handler;
+					var platformView = view.ToPlatform(view.FindMauiContext());
+					_child = (IPlatformViewHandler)view.Handler;
 					AddSubview(platformView);
 				}
 
+				ClipsToBounds = true;
 			}
 
 			public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
@@ -1898,11 +1872,6 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_child.PlatformView.RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
-					}
-
-					if (_view is not null)
-					{
-						_view.ParentSet -= OnTitleViewParentSet;
 					}
 
 					_view = null;

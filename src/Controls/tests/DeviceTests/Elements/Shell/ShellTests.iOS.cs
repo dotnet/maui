@@ -24,7 +24,6 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.Shell)]
 	public partial class ShellTests
 	{
-#if !MACCATALYST
 		[Fact(DisplayName = "Page Adjust When Top Tabs Are Present")]
 		public async Task PageAdjustsWhenTopTabsArePresent()
 		{
@@ -382,7 +381,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 #endif
-#endif
+
 		async Task TapToSelect(ContentPage page)
 		{
 			var shellContent = page.Parent as ShellContent;

@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 
 		internal override BindingBase Clone()
 		{
-			var clone = new AppThemeBinding
+			var clone =  new AppThemeBinding
 			{
 				Light = Light,
 				_isLightSet = _isLightSet,

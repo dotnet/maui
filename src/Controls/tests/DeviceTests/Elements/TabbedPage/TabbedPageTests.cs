@@ -73,11 +73,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 
-		[Fact(DisplayName = "Bar Text Color"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact(DisplayName = "Bar Text Color")]
 		public async Task BarTextColor()
 		{
 			SetupBuilder();
@@ -107,11 +103,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Selected/Unselected Color"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-			)]
+		[Fact(DisplayName = "Selected/Unselected Color")]
 		public async Task SelectedAndUnselectedTabColor()
 		{
 			SetupBuilder();
@@ -322,7 +314,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS && !MACCATALYST
+#if !WINDOWS
 		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
