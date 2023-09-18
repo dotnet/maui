@@ -49,12 +49,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool InstallSimulator(string targetDevice)
 		{
-			return Run($"apple simulators install \"{targetDevice}\" --xcode=\"{XCODE_PATH}\"");
+			return Run($"apple simulators install \"{targetDevice}\" ");
 		}
 
 		public static string GetSimulatorUDID(string targetDevice)
 		{
-			return RunForOutput($"apple device \"{targetDevice}\" --xcode=\"{XCODE_PATH}\"", out _, timeoutInSeconds: 30);
+			return RunForOutput($"apple device \"{targetDevice}\" ", out _, timeoutInSeconds: 30);
 		}
 
 		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT)
