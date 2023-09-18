@@ -44,7 +44,11 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task ImageSetFromStreamRenders()
 		{
 			SetupBuilder();
-			var layout = new VerticalStackLayout();
+			var layout = new VerticalStackLayout()
+			{
+				HeightRequest = 100,
+				WidthRequest = 100
+			};
 
 			using var stream = GetType().Assembly.GetManifestResourceStream("red-embedded.png");
 
@@ -58,8 +62,16 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
-				await handler.ToPlatform().AssertContainsColor(Colors.Red
+
+				await handler.ToPlatform().AttachAndRun(async () =>
+				{
+					await image.Wait();
+					await handler.ToPlatform().AssertContainsColor(Colors.Red
+#if WINDOWS
+					, handler.MauiContext
+#endif
+					);
+				}
 #if WINDOWS
 					, handler.MauiContext
 #endif
