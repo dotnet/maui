@@ -14,9 +14,36 @@ namespace Microsoft.Maui.Controls.Platform
 	class DragAndDropDelegate : NSObject, IUIDragInteractionDelegate, IUIDropInteractionDelegate
 	{
 		IPlatformViewHandler _viewHandler;
+		PlatformDragStartingEventArgs _platformDragStartingEventArgs;
+
 		public DragAndDropDelegate(IPlatformViewHandler viewHandler)
 		{
 			_viewHandler = viewHandler;
+		}
+
+		public void Disconnect ()
+		{
+			_viewHandler = null;
+		}
+
+		[Export("dragInteraction:prefersFullSizePreviewsForSession:")]
+		[Preserve(Conditional = true)]
+		public bool PrefersFullSizePreviews(UIDragInteraction interaction, IUIDragSession session)
+		{
+			return _platformDragStartingEventArgs?.PrefersFullSizePreviews?.Invoke(interaction, session) ?? false;
+		}
+
+		[Export("dropInteraction:sessionDidEnd:")]
+		[Preserve(Conditional = true)]
+		public void SessionDidEnd(UIDropInteraction interaction, IUIDropSession session)
+		{
+			_platformDragStartingEventArgs = null;
+		}
+
+		[Export("dragInteraction:session:didEndWithOperation:")]
+		public void SessionDidEnd(UIDragInteraction interaction, IUIDragSession session, UIDropOperation operation)
+		{
+			_platformDragStartingEventArgs = null;
 		}
 
 		[Export("dragInteraction:session:willEndWithOperation:")]
@@ -129,6 +156,8 @@ namespace Microsoft.Maui.Controls.Platform
 		public UIDragItem[] HandleDragStarting(View element, IPlatformViewHandler handler, IUIDragSession session, PlatformDragStartingEventArgs platformArgs)
 		{
 			UIDragItem[] returnValue = null;
+			// if we touch and hold an item but do not move it, the _platformDragStartingEventArgs could be assigned. Reset it here in that case.
+			_platformDragStartingEventArgs = null;
 			SendEventArgs<DragGestureRecognizer>(rec =>
 			{
 				if (!rec.CanDrag)
@@ -146,6 +175,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (!args.Handled)
 #pragma warning restore CS0618 // Type or member is obsolete
 				{
+					_platformDragStartingEventArgs = args.PlatformArgs;
 
 					if (args.PlatformArgs.DragItems is UIDragItem[] dragItems)
 					{

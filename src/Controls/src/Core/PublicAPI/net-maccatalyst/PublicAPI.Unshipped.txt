@@ -10,6 +10,7 @@ Microsoft.Maui.Controls.PlatformDropCompletedEventArgs
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragInteraction.get -> UIKit.UIDragInteraction?
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DragSession.get -> UIKit.IUIDragSession?
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropInteraction.get -> UIKit.UIDropInteraction?
+Microsoft.Maui.Controls.PlatformDragStartingEventArgs.SetPrefersFullSizePreviews(System.Func<UIKit.UIDragInteraction!, UIKit.IUIDragSession!, bool>? prefersFullSizePreviews) -> void
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropOperation.get -> UIKit.UIDropOperation?
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.DropSession.get -> UIKit.IUIDropSession?
 Microsoft.Maui.Controls.PlatformDropCompletedEventArgs.Sender.get -> UIKit.UIView?
