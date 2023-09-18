@@ -224,7 +224,7 @@ namespace Microsoft.Maui.DeviceTests.Handlers.Layout
 			layout.Add(containedButton);
 			_ = await CreateHandlerAsync(layout);
 			var handler = containedButton.Handler as IPlatformViewHandler;
-			Assert.NotEqual(handler.PlatformView, handler.ContainerView);
+			await InvokeOnMainThreadAsync(() => Assert.NotEqual(handler.PlatformView, handler.ContainerView));
 		}
 
 		LabelStub CreateZTestLabel(int zIndex)
