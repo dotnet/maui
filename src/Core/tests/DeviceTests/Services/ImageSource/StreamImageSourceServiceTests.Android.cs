@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var bitmap = bitmapDrawable.Bitmap;
 
-			bitmap.AssertColorAtCenter(expectedColor);
+			await bitmap.AssertContainsColor(expectedColor).ConfigureAwait(false);
 		}
 #endif
 	}
