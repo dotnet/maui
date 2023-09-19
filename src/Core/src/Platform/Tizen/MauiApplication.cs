@@ -63,6 +63,9 @@ namespace Microsoft.Maui
 			if (_services == null)
 				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
 
+			if (_applicationContext == null)
+				throw new InvalidOperationException($"The {nameof(IMauiContext)} instance was not found.");
+
 			_application = _services.GetRequiredService<IApplication>();
 
 			this.SetApplicationHandler(_application, _applicationContext);
