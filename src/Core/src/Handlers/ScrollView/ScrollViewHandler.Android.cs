@@ -50,8 +50,6 @@ namespace Microsoft.Maui.Handlers
 			var widthSpec = Context.CreateMeasureSpec(widthConstraint, virtualView.Width, virtualView.MaximumWidth);
 			var heightSpec = Context.CreateMeasureSpec(heightConstraint, virtualView.Height, virtualView.MaximumHeight);
 
-			// If the ScrollView is inside of a layout it shouldn't have to fill all the space it can
-			// See: https://github.com/dotnet/maui/issues/16464
 			if (platformView.FillViewport)
 			{
 				/*	With FillViewport active, the Android ScrollView will measure the content at least once; if it is 
