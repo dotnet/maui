@@ -188,7 +188,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void CheckEntitlementsForMauiBlazorOnMacCatalyst(string id, string config, string framework)
 		{
-			if(TestEnvironment.IsWindows)
+			if (TestEnvironment.IsWindows)
 				Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
 
 			string projectDir = TestDirectory;
