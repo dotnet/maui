@@ -42,8 +42,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.Scrolled += Scrolled;
-			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			_eventProxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIScrollView platformView)
@@ -52,17 +51,6 @@ namespace Microsoft.Maui.Handlers
 
 			PendingScrollToRequest = null;
 			_eventProxy.Disconnect(platformView);
-		}
-
-		void ScrollAnimationEnded(object? sender, EventArgs e)
-		{
-			VirtualView.ScrollFinished();
-		}
-
-		void Scrolled(object? sender, EventArgs e)
-		{
-			VirtualView.HorizontalOffset = PlatformView.ContentOffset.X;
-			VirtualView.VerticalOffset = PlatformView.ContentOffset.Y;
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -109,8 +97,7 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
-
-				if (uiScrollView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				if (handler.PlatformView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
 				{
 					// If the ContentSize of the UIScrollView has not yet been defined,
 					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
@@ -338,6 +325,59 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			uiScrollView.ContentSize = contentSize;
+		}
+
+		class ScrollEventProxy
+		{
+			WeakReference<IScrollView>? _virtualView;
+
+			IScrollView? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IScrollView virtualView, UIScrollView platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.Scrolled += Scrolled;
+				platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			}
+
+			public void Disconnect(UIScrollView platformView)
+			{
+				_virtualView = null;
+
+				platformView.Scrolled -= Scrolled;
+				platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IButton virtualView)
+				{
+					virtualView.Released();
+					virtualView.Clicked();
+				}
+			}
+
+			void ScrollAnimationEnded(object? sender, EventArgs e)
+			{
+				VirtualView?.ScrollFinished();
+			}
+
+			void Scrolled(object? sender, EventArgs e)
+			{
+				if (VirtualView == null)
+				{
+					return;
+				}
+
+				if (sender is not UIScrollView platformView)
+				{
+					return;
+				}
+
+				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
+				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
+			}
 		}
 	}
 }
