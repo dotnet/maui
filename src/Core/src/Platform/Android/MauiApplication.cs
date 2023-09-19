@@ -84,7 +84,7 @@ namespace Microsoft.Maui
 
 		IApplication IPlatformApplication.Application => _application!;
 
-		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		[Obsolete("Use the IPlatformApplication.Current.Services instead.")]
 		public IServiceProvider Services
 		{
 			get => _services!;
