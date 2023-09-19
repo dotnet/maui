@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.EditItemPage"
+             Shell.PresentationMode="ModalAnimated"
+             Visual="Material">
+    <ContentPage.Content>
+        <Grid Margin="20,30,20,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*" />
+                <RowDefinition Height="8*" />
+                <RowDefinition Height="1*" />
+            </Grid.RowDefinitions>
+
+            <Label FontSize="25" FontAttributes="Bold" Text="Edit recipe" Style="{StaticResource RecipeItemLabelStyle}" Margin="15" SemanticProperties.HeadingLevel="Level1"/>
+            <StackLayout Grid.Row="1" Margin="15,0">
+                <Label x:Name="recipeNameLabel" Text="Recipe Name" Style="{StaticResource RecipeItemLabelStyle}"/>
+                <Entry SemanticProperties.Description="{Binding Source={x:Reference recipeNameLabel},Path=Text}" Text="{Binding RecipeName, Mode=TwoWay}" IsSpellCheckEnabled="false" Margin="0,0,0,10" MinimumHeightRequest="50"/>
+                <Label x:Name="imageUrlLabel" Text="Image URL" Style="{StaticResource RecipeItemLabelStyle}"/>
+                <Entry SemanticProperties.Description="{Binding Source={x:Reference imageUrlLabel},Path=Text}" Text="{Binding ImageUrl, Mode=TwoWay}" IsSpellCheckEnabled="false" Margin="0,0,0,10" MinimumHeightRequest="50"/>
+                <Label x:Name="ingredientsLabel" Text="Ingredients" Style="{StaticResource RecipeItemLabelStyle}"/>
+                <Editor SemanticProperties.Description="{Binding Source={x:Reference ingredientsLabel},Path=Text}" Text="{Binding Ingredients, Mode=TwoWay}" AutoSize="TextChanges" IsSpellCheckEnabled="false" Margin="0,0,0,10" MinimumHeightRequest="50"/>
+                <Label x:Name="recipeLabel" Text="Recipe" Style="{StaticResource RecipeItemLabelStyle}"/>
+                <Editor SemanticProperties.Description="{Binding Source={x:Reference recipeLabel},Path=Text}" Text="{Binding RecipeBody, Mode=TwoWay}" AutoSize="TextChanges" IsSpellCheckEnabled="false" Margin="0,0,0,10" MinimumHeightRequest="50"/>
+                <Label FontSize="Small" FormattedText="{Binding RecipeUrl}" FontAttributes="Italic" />
+            </StackLayout>
+            <FlexLayout Grid.Row="2" AlignItems="Center" JustifyContent="SpaceEvenly">
+                <Button Padding="{OnPlatform iOS=12,7}" TextColor="{AppThemeBinding Dark=White, Light=Black}" Text="Cancel" Command="{Binding CancelCommand}" BackgroundColor="{AppThemeBinding Dark=DarkGray, Light=LightGray}" HorizontalOptions="Fill"/>
+                <Button Padding="{OnPlatform iOS=12,7}" TextColor="{AppThemeBinding Dark=#BF2E2E, Light=White}" Text="Delete" Command="{Binding DeleteCommand}" BackgroundColor="{AppThemeBinding Dark=White, Light=#BF2E2E}" HorizontalOptions="Fill" />
+                <Button Padding="{OnPlatform iOS=12,7}" Text="Update" Command="{Binding UpdateCommand}" HorizontalOptions="Fill" Background="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" TextColor="{AppThemeBinding Dark={StaticResource Primary}, Light=White}" />
+            </FlexLayout>
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>

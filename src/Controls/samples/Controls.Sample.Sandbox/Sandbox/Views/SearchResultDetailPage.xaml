@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:xct="http://xamarin.com/schemas/2020/toolkit" x:Class="Recipes.Views.SearchResultDetailPage"
+             Title="{Binding Title}"
+             Visual="Material"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+             ios:Page.UseSafeArea="true">
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="6*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill" IsVisible="{Binding ImageUrlVisible}" />
+            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" Style="{StaticResource RecipeNameStyle}" SemanticProperties.HeadingLevel="Level1" FontSize="24" Padding="5" Margin="15,0" HorizontalTextAlignment="Center" IsVisible="{Binding RecipeNameVisible}" MaxLines="3"/>
+        </Grid>
+        <ScrollView Grid.Row="1" VerticalScrollBarVisibility="Always">
+            <StackLayout>
+                <Label Text="Ingredients:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+                <StackLayout BindableLayout.ItemsSource="{Binding Ingredients}" IsVisible="{Binding IngredientsVisible}" Padding="15,0">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}" VerticalOptions="Center" Margin="10,0"/>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" />
+                <Button Loaded="Button_Loaded" Text="Click here to view full recipe." Clicked="OpenUrl" FontSize="Small" Margin="25,0,0,25" IsVisible="{Binding RecipeUrlVisible}" HorizontalOptions="Start" Background="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" TextColor="{AppThemeBinding Dark={StaticResource Primary}, Light=White}" />
+
+            </StackLayout>
+        </ScrollView>
+        <Button Grid.Row="2" Text="Add to My Recipes" Command="{Binding AddItemCommand}" Clicked="AddItem_Clicked" FontAttributes="Bold" Background="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" TextColor="{AppThemeBinding Dark={StaticResource Primary}, Light=White}"/>
+    </Grid>
+</ContentPage>

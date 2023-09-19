@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:local="clr-namespace:Recipes.Views"
+       xmlns:sharedTransitions="clr-namespace:Plugin.SharedTransitions;assembly=Plugin.SharedTransitions"
+       Title="Recipes"
+       x:Class="Recipes.AppShell">
+    <!--
+        The overall app visual hierarchy is defined here, along with navigation.
+    
+        https://docs.microsoft.com/xamarin/xamarin-forms/app-fundamentals/shell/
+    
+        Need to Review if NavBarHasShadow=true is also weird on iOS
+    -->
+    <Shell.Resources>
+        <ResourceDictionary>
+            <Style x:Key="BaseStyle" TargetType="Element">
+                <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
+                <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" />
+                <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" />
+                <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Dark=DarkGray, Light=LightGray}" />
+                <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Dark=LightGray, Light=#587656}" />
+                <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Dark=Black, Light=White}" />
+                <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" />
+                <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" />
+                <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Dark=LightGray, Light=#587656}" />
+            </Style>
+            <Style TargetType="TabBar" BasedOn="{StaticResource BaseStyle}" />
+            <Style TargetType="FlyoutItem" BasedOn="{StaticResource BaseStyle}" />
+        </ResourceDictionary>
+    </Shell.Resources>
+    <TabBar>
+        <ShellContent Title="Recipe Search" Icon="search.png" Route="StartingPage" ContentTemplate="{DataTemplate local:StartingPage}" />
+        <ShellContent Title="My Recipes" Icon="cookbook.png" Route="MyRecipesPage" ContentTemplate="{DataTemplate local:MyRecipesPage}" />
+    </TabBar>
+</Shell>

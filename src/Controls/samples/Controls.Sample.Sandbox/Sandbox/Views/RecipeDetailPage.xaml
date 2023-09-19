@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Recipes.Views.RecipeDetailPage"
+             Title="{Binding Title}">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Edit" Command="{Binding EditRecipeCommand}" />
+    </ContentPage.ToolbarItems>
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*" />
+            <RowDefinition Height="7*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Column="0" Grid.Row="0" Margin="0,0,0,10">
+            <Image Source="{Binding ImageUrl}" Aspect="AspectFill" VerticalOptions="Fill" HorizontalOptions="Fill"  IsVisible="{Binding ImageUrlVisible}" AutomationProperties.IsInAccessibleTree="False" />
+            <Label HorizontalOptions="Center" VerticalOptions="Center" Text="{Binding RecipeName}" Style="{StaticResource RecipeNameStyle}" SemanticProperties.HeadingLevel="Level1" FontSize="24" Padding="5" Margin="15,0" HorizontalTextAlignment="Center" IsVisible="{Binding RecipeNameVisible}" MaxLines="3" />
+        </Grid>
+        <ScrollView Grid.Row="1" AutomationProperties.IsInAccessibleTree="False" VerticalScrollBarVisibility="Always">
+            <StackLayout>
+                <Label Text="Ingredients:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+                <StackLayout  BindableLayout.ItemsSource="{Binding IngredientCheckList}" Padding="15,0" IsVisible="{Binding IngredientsVisible}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <StackLayout Orientation="Horizontal">
+                                <CheckBox SemanticProperties.Description="{Binding IngredientItem}" Color="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" IsChecked="{Binding IngredientChecked}" HeightRequest="50" WidthRequest="50"/>
+                                <Label AutomationProperties.IsInAccessibleTree="False" Text="{Binding IngredientItem}"  VerticalOptions="Center"/>
+                            </StackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <Label Text="Recipe:" SemanticProperties.HeadingLevel="Level2" Padding="15" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{AppThemeBinding Dark=White, Light={StaticResource Primary}}"/>
+                <StackLayout  BindableLayout.ItemsSource="{Binding RecipeList}" Padding="20,5" >
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate>
+                            <Label Text="{Binding .}" VerticalOptions="Center" LineBreakMode="WordWrap"/>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </StackLayout>
+
+                <Button Text="Click here to view full recipe."
+                        Clicked="OpenUrl"
+                        Loaded="Button_Loaded"
+                        FontSize="Small"
+                        Margin="25,0"
+                        IsVisible="{Binding RecipeUrlVisible}"
+                        HorizontalOptions="Start"
+                        Background="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" TextColor="{AppThemeBinding Dark={StaticResource Primary}, Light=White}" />
+
+                <Grid Padding="15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="7*" />
+                        <ColumnDefinition Width="3*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+                    <Label Text="Review:" SemanticProperties.HeadingLevel="Level2" FontAttributes="Bold" TextDecorations="Underline" FontSize="Medium" TextColor="{AppThemeBinding Dark=White, Light={StaticResource Primary}}" IsVisible="{Binding RecipeReviewVisible}" />
+                    <Label Grid.Column="1" Text="{Binding RecipeRating, StringFormat='{0:F1} / 10 ★'}" Style="{StaticResource RecipeItemLabelStyle}" IsVisible="{Binding RecipeReviewVisible}" SemanticProperties.Description="{Binding RecipeRating, StringFormat='{0:F1} out of 10 stars'}"/>
+                </Grid>
+                <Label Padding="15" Text="{Binding RecipeReview}" IsVisible="{Binding RecipeReviewVisible}" />
+            </StackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
