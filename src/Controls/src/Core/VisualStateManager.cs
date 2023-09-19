@@ -71,7 +71,7 @@ namespace Microsoft.Maui.Controls
 
 			var groups = (VisualStateGroupList)visualElement.GetValue(VisualStateGroupsProperty);
 			var context = visualElement.GetContext(VisualStateGroupsProperty);
-			var vsgSpecificity = context.Values.Keys.Last();
+			var vsgSpecificity = context.Values.GetSpecificityAndValue().Key;
 			if (vsgSpecificity == SetterSpecificity.DefaultValue)
 				vsgSpecificity = new SetterSpecificity();
 			groups.Specificity = vsgSpecificity;
