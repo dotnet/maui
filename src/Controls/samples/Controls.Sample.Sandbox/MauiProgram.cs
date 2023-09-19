@@ -20,7 +20,7 @@ namespace Maui.Controls.Sample
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
-				.UseMauiApp<App>()
+				.UseMauiApp<Recipes.App>()
 				.Build();
 	}
 

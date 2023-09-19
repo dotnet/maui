@@ -1,8 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
        xmlns:local="clr-namespace:Recipes.Views"
-       xmlns:sharedTransitions="clr-namespace:Plugin.SharedTransitions;assembly=Plugin.SharedTransitions"
        Title="Recipes"
        x:Class="Recipes.AppShell">
     <!--
@@ -30,7 +29,7 @@
         </ResourceDictionary>
     </Shell.Resources>
     <TabBar>
-        <ShellContent Title="Recipe Search" Icon="search.png" Route="StartingPage" ContentTemplate="{DataTemplate local:StartingPage}" />
-        <ShellContent Title="My Recipes" Icon="cookbook.png" Route="MyRecipesPage" ContentTemplate="{DataTemplate local:MyRecipesPage}" />
+        <ShellContent Title="Recipe Search" Route="StartingPage" ContentTemplate="{DataTemplate local:StartingPage}" />
+        <ShellContent Title="My Recipes" Route="MyRecipesPage" ContentTemplate="{DataTemplate local:MyRecipesPage}" />
     </TabBar>
 </Shell>
