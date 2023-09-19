@@ -1,0 +1,6 @@
+# Enforce performance code analyzers
+# We can gradually add to this list until we're ready to activate enforcement
+# for the entire project
+# To run the performance CA on all files, replace the list of files with [*.cs]
+[{Flex.cs,PlatformTouchGraphicsView.cs}]
+dotnet_analyzer_diagnostic.category-Performance.severity = warning
