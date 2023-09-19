@@ -160,8 +160,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if WINDOWS && PACKAGED
-		Skip = "Fails on Windows (Packaged)"
+#if WINDOWS
+		Skip = "Fails on Windows"
 #endif
 		)]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()

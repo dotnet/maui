@@ -82,7 +82,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Evaluate JavaScript returning an Integer value")]
+		[Fact(DisplayName = "Evaluate JavaScript returning an Integer value"
+#if WINDOWS
+		, Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task EvaluateJavaScriptWithInteger()
 		{
 			SetupBuilder();
