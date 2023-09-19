@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Handlers
 
 			// If the ScrollView is inside of a layout it shouldn't have to fill all the space it can
 			// See: https://github.com/dotnet/maui/issues/16464
-			if (platformView.FillViewport && virtualView.Parent?.Handler is not ILayoutHandler)
+			if (platformView.FillViewport)
 			{
 				/*	With FillViewport active, the Android ScrollView will measure the content at least once; if it is 
 					smaller than the ScrollView's viewport, it measure a second time at the size of the viewport
@@ -63,12 +63,12 @@ namespace Microsoft.Maui.Handlers
 
 				var orientation = virtualView.Orientation;
 
-				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical)
+				if (!double.IsInfinity(heightConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Vertical))
 				{
 					heightSpec = AdjustSpecForAlignment(heightSpec, virtualView.VerticalLayoutAlignment);
 				}
 
-				if (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal)
+				if (!double.IsInfinity(widthConstraint) && (orientation == ScrollOrientation.Both || orientation == ScrollOrientation.Horizontal))
 				{
 					widthSpec = AdjustSpecForAlignment(widthSpec, virtualView.HorizontalLayoutAlignment);
 				}

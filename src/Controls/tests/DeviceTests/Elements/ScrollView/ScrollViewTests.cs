@@ -126,6 +126,26 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!"); 
 		}
 
+		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill")]
+		public async Task ShouldGrow()
+		{
+			var label = new Label() { Text = "Text inside a ScrollView" };
+			var childLayout = new VerticalStackLayout { label };
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
+			var parentLayout = new Grid { scrollView };
+			parentLayout.HeightRequest = 500;
+
+			await CreateHandlerAsync<LabelHandler>(label);
+			await CreateHandlerAsync<LayoutHandler>(childLayout);
+			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
+			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
+
+			await AttachAndRun(parentLayout, (layoutHandler) => { });
+			Assert.True(parentLayout.Height == 500, "Parent be 500px tall");
+			Assert.True(scrollView.Height == 500, "ScrollView should fill parent layout" );
+			Assert.True(childLayout.Height == 500, "Child VerticalStackLayout should fill available space");
+		}
+
 		void SetupBuilder()
 		{
 			EnsureHandlerCreated(builder =>
