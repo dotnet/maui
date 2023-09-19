@@ -20,7 +20,7 @@ namespace Microsoft.Maui
 
 		IApplication? _application;
 
-		IServiceProvider _services;
+		IServiceProvider? _services;
 
 		protected MauiApplication()
 		{
@@ -60,13 +60,16 @@ namespace Microsoft.Maui
 		{
 			base.OnCreate();
 
-			_application = _services!.GetRequiredService<IApplication>();
+			if (_services == null)
+				throw new InvalidOperationException($"The {nameof(IServiceProvider)} instance was not found.");
+
+			_application = _services.GetRequiredService<IApplication>();
 
 			this.SetApplicationHandler(_application, _applicationContext);
 
 			this.CreatePlatformWindow(_application);
 
-			_services?.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
+			_services.InvokeLifecycleEvents<TizenLifecycle.OnCreate>(del => del(this));
 		}
 
 		public void SetBackButtonPressedHandler(Func<bool> handler)
