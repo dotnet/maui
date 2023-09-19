@@ -472,6 +472,7 @@
 			VerticalTextAlignmentEnd,
 			MaxLines,
 			HtmlTextType,
+			BrokenHtmlTextType,
 			HtmlTextTypeMultipleLines,
 			HtmlTextLabelProperties,
 			TextTypeToggle,
