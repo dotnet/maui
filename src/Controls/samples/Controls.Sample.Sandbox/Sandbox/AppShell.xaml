@@ -29,7 +29,7 @@
         </ResourceDictionary>
     </Shell.Resources>
     <TabBar>
-        <ShellContent Title="Recipe Search" Route="StartingPage" ContentTemplate="{DataTemplate local:StartingPage}" />
-        <ShellContent Title="My Recipes" Route="MyRecipesPage" ContentTemplate="{DataTemplate local:MyRecipesPage}" />
+        <ShellContent Title="Recipe Search" Icon="search.png" Route="StartingPage" ContentTemplate="{DataTemplate local:StartingPage}" />
+        <ShellContent Title="My Recipes" Icon="cookbook.png" Route="MyRecipesPage" ContentTemplate="{DataTemplate local:MyRecipesPage}" />
     </TabBar>
 </Shell>
