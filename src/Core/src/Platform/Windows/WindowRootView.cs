@@ -3,8 +3,12 @@ using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.Win32;
 using Windows.Foundation;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using ViewManagement = Windows.UI.ViewManagement;
+using Microsoft.UI.Windowing;
 
 namespace Microsoft.Maui.Platform
 {
@@ -23,11 +27,13 @@ namespace Microsoft.Maui.Platform
 		MenuBar? _menuBar;
 		FrameworkElement? _appTitleBar;
 		bool _hasTitleBarImage = false;
+		ViewManagement.UISettings _viewSettings;
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 
 		public WindowRootView()
 		{
 			IsTabStop = false;
+			_viewSettings = new ViewManagement.UISettings();
 		}
 
 		internal double AppTitleBarActualHeight => AppTitleBarContentControl?.ActualHeight ?? 0;
@@ -127,6 +133,8 @@ namespace Microsoft.Maui.Platform
 		{
 			base.OnApplyTemplate();
 
+			_viewSettings.ColorValuesChanged += ViewSettingsColorValuesChanged;
+
 			AppTitleBarContainer = (FrameworkElement)GetTemplateChild("AppTitleBarContainer");
 			AppTitleBarContentControl = (ContentControl?)GetTemplateChild("AppTitleBarContentControl") ??
 				AppTitleBarContainer.GetDescendantByName<ContentControl>("AppTitleBarContentControl");
@@ -182,6 +190,7 @@ namespace Microsoft.Maui.Platform
 				}
 			};
 		}
+
 		void OnAppTitleBarContentControlLoaded(object sender, RoutedEventArgs e)
 		{
 			LoadAppTitleBarControls();
@@ -221,9 +230,34 @@ namespace Microsoft.Maui.Platform
 				AppFontIcon.ImageFailed += OnImageFailed;
 			}
 
+			ApplyTitlebarColorPrevalence();
 			UpdateAppTitleBarMargins();
 		}
 
+		private void ViewSettingsColorValuesChanged(ViewManagement.UISettings sender, object args)
+		{
+			ApplyTitlebarColorPrevalence();
+		}
+
+		void ApplyTitlebarColorPrevalence()
+		{
+			try
+			{
+				using var dwmSubKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM\");
+				var enableAccentColor = dwmSubKey?.GetValue("ColorPrevalence");
+				if (enableAccentColor != null && int.TryParse(enableAccentColor.ToString(), out var enableValue))
+				{
+					if (enableValue == 1 && _appTitleBar is Border border)
+					{
+						// `ColorValuesChanged` doesn't fire on the UI thread
+						DispatcherQueue.TryEnqueue(() => {
+							border.Background = new SolidColorBrush(_viewSettings.GetColorValue(ViewManagement.UIColorType.Accent));
+						});
+					}
+				}
+			}
+			catch (Exception) { }
+		}
 
 		ActionDisposable? _contentChanged;
 
