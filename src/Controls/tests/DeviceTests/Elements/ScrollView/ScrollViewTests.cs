@@ -141,9 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
 
 			await AttachAndRun(parentLayout, (layoutHandler) => { });
-			Assert.True(parentLayout.Height == 500, "Parent be 500px tall");
-			Assert.True(scrollView.Height == 500, "ScrollView should fill parent layout" );
-			Assert.True(childLayout.Height == 500, "Child VerticalStackLayout should fill available space");
+			Assert.True(childLayout.Height == scrollView.Height, $"Child VerticalStackLayout should fill ScrollView and have the same height! Expected: {scrollView.Height}, was: {parentLayout.Height}");
+			Assert.True(scrollView.Height == parentLayout.Height, $"ScrollView should fill parent Grid's height! Expected: {parentLayout.Height}, was: {scrollView.Height}");
+			Assert.True(parentLayout.Height == 500, $"Parent should be 500px tall! Was: {parentLayout.Height}");
 		}
 
 		void SetupBuilder()
