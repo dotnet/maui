@@ -1,14 +1,11 @@
 using System;
-using System.Collections.Generic;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.Win32;
 using Windows.Foundation;
-using WThickness = Microsoft.UI.Xaml.Thickness;
 using ViewManagement = Windows.UI.ViewManagement;
-using Microsoft.UI.Windowing;
+using WThickness = Microsoft.UI.Xaml.Thickness;
 
 namespace Microsoft.Maui.Platform
 {
@@ -243,17 +240,21 @@ namespace Microsoft.Maui.Platform
 		{
 			try
 			{
+				// Figure out if the "show accent color on title bars" setting is enabled
 				using var dwmSubKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM\");
 				var enableAccentColor = dwmSubKey?.GetValue("ColorPrevalence");
-				if (enableAccentColor != null && int.TryParse(enableAccentColor.ToString(), out var enableValue))
+				if (enableAccentColor != null && 
+					int.TryParse(enableAccentColor.ToString(), out var enableValue) &&
+					_appTitleBar is Border border)
 				{
-					if (enableValue == 1 && _appTitleBar is Border border)
-					{
-						// `ColorValuesChanged` doesn't fire on the UI thread
-						DispatcherQueue.TryEnqueue(() => {
-							border.Background = new SolidColorBrush(_viewSettings.GetColorValue(ViewManagement.UIColorType.Accent));
-						});
-					}
+					DispatcherQueue.TryEnqueue(() => {
+						border.Background = enableValue == 1 ?
+							new SolidColorBrush(_viewSettings.GetColorValue(ViewManagement.UIColorType.Accent)) :
+							new SolidColorBrush(UI.Colors.Transparent);
+
+						if (NavigationViewControl != null && NavigationViewControl.ButtonHolderGrid != null)
+							NavigationViewControl.ButtonHolderGrid.Background = border.Background;
+					});
 				}
 			}
 			catch (Exception) { }
