@@ -115,12 +115,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var view = new Microsoft.Maui.Controls.ScrollView();
 				var page = new ContentPage { Content = view };
-				await CreateHandlerAndAddToWindow(page, () =>
+				await CreateHandlerAndAddToWindow(page, async () =>
 				{
 					viewReference = new(view);
 					handlerReference = new(view.Handler);
 					platformReference = new(view.Handler.PlatformView);
 					page.Content = null;
+					await Task.Delay(1000);
 				});
 			}
 
