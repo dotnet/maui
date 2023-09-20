@@ -256,9 +256,9 @@ Task("Test")
 			Information($"Waiting 10 seconds for process to finish...");
 			System.Threading.Thread.Sleep(10000);
 
-			var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
+			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
 
-			for (int i = 0; i <= testsToRunCount; i++)
+			for (int i = 0; i <= testCategoriesToRun; i++)
 			{
 				var startArgs = "Start-Process shell:AppsFolder\\$((Get-AppxPackage -Name \"" + PACKAGEID + "\").PackageFamilyName)!App -ArgumentList \"" + testResultsFile + "\", \"" + i + "\"";
 
@@ -291,9 +291,9 @@ Task("Test")
 			// Start the app once, this will trigger the discovery of the test categories
 			StartProcess(TEST_APP, testResultsFile + " -1");
 
-			var testsToRunCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
+			var testCategoriesToRun = System.IO.File.ReadAllLines(testsToRunFile).Length;
 
-			for (int i = 0; i <= testsToRunCount; i++)
+			for (int i = 0; i <= testCategoriesToRun; i++)
 			{
 				// Start the DeviceTests app for unpackaged
 				StartProcess(TEST_APP, testResultsFile + " " + i);
@@ -305,11 +305,6 @@ Task("Test")
 		}
 	}
 
-	if (FileExists(testsToRunFile))
-	{
-		DeleteFile(testsToRunFile);
-	}
-
 	var waited = 0;
 	while (System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0) {
 		System.Threading.Thread.Sleep(1000);
@@ -318,6 +313,36 @@ Task("Test")
 		Information($"Waiting {waited} second(s) for tests to finish...");
 		if (waited >= waitForResultTimeoutInSeconds)
 			break;
+	}
+
+	// If we're running the Controls project, double-check if we have all test result files
+	// and if the categories we expected to run match the test result files
+	if (isControlsProjectTestRun)
+	{
+		var expectedCategoriesRanCount = System.IO.File.ReadAllLines(testsToRunFile).Length-1;
+		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+
+		while (actualResultFileCount < expectedCategoriesRanCount) {
+			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+			System.Threading.Thread.Sleep(1000);
+			waited++;
+
+			Information($"Waiting {waited} additional second(s) for tests to finish...");
+			if (waited >= 30)
+				break;
+		}
+			
+		if (FileExists(testsToRunFile))
+		{
+			DeleteFile(testsToRunFile);
+		}
+
+		// While the count should match exactly, if we get more files somehow we'll allow it
+		// If it's less, throw an exception to fail the pipeline.
+		if (actualResultFileCount < expectedCategoriesRanCount)
+		{
+			throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
+		}
 	}
 
 	if(System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length == 0)
