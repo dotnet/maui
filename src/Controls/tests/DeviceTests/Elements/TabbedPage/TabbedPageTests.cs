@@ -204,8 +204,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
-#if WINDOWS
-		, Skip = "Fails on Windows"
+#if WINDOWS || ANDROID
+		, Skip = "Fails on Windows and Android (https://github.com/dotnet/maui/issues/17444)"
 #endif
 		)]
 		[ClassData(typeof(TabbedPagePivots))]
@@ -215,7 +215,18 @@ namespace Microsoft.Maui.DeviceTests
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
-			var firstPage = new NavigationPage(new ContentPage());
+			var firstPage = new NavigationPage(new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Page one",
+						Background = Colors.Purple
+					}
+				}
+			});
+
 			tabbedPage.Children.Insert(0, firstPage);
 			tabbedPage.CurrentPage = firstPage;
 			var secondPage = tabbedPage.Children[1];
