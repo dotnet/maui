@@ -134,6 +134,15 @@ namespace Microsoft.Maui.DeviceTests
 					GenerateItems(itemsCount, data);
 					collectionView.ItemsSource = data;
 
+					if (n == 0)
+					{
+						await AssertionExtensions.Wait(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
+					}
+					else
+					{
+						await WaitForUIUpdate(frame, collectionView);
+					}
+
 					await WaitForUIUpdate(frame, collectionView);
 					frame = collectionView.Frame;
 
