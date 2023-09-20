@@ -45,7 +45,7 @@ namespace Microsoft.Maui
 
 			if (MicaController.IsSupported())
 			{
-				base.SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.Base };
+				base.SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.BaseAlt };
 			}
 
 			SubClassingWin32();
