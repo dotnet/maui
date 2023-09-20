@@ -53,7 +53,6 @@
         <Style x:Key="ButtonIconStyle" TargetType="Label">
             <Style.Setters>
                 <Setter Property="BackgroundColor" Value="#99FF0000" />
-                <Setter Property="FontSize" Value="64" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalTextAlignment" Value="Center" />
                 <Setter Property="HorizontalOptions" Value="Center" />
@@ -62,29 +61,29 @@
         </Style>
     </ContentView.Resources>
 
-    <HorizontalStackLayout Margin="10,10,10,10" Spacing="20">
+    <HorizontalStackLayout Margin="10,10,10,10" Spacing="10">
         <VerticalStackLayout Spacing="10" VerticalOptions="Center">
             <Border Style="{StaticResource BorderStyle}">
                 <Label
-                    FontSize="10"
+                    FontSize="18"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
 
             <Border Style="{StaticResource BorderStyle2}">
                 <Label
-                    FontSize="10"
+                    FontSize="18"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
 
             <Border Style="{StaticResource BorderStyle3}">
                 <Label
-                    FontSize="10"
+                    FontSize="18"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
         </VerticalStackLayout>
@@ -92,25 +91,51 @@
         <VerticalStackLayout Spacing="10" VerticalOptions="Center">
             <Border Style="{StaticResource BorderStyle}">
                 <Label
-                    FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                    FontSize="96"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
 
             <Border Style="{StaticResource BorderStyle2}">
                 <Label
-                    FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                    FontSize="96"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
 
             <Border Style="{StaticResource BorderStyle3}">
                 <Label
-                    FontSize="{Binding Value, Source={x:Reference FontSizeSlider}}"
+                    FontSize="96"
                     Style="{StaticResource ButtonIconStyle}"
-                    Text="Test"
+                    Text="+"
+                    TextColor="#0088ee" />
+            </Border>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Spacing="10" VerticalOptions="Center">
+            <Border Style="{StaticResource BorderStyle}">
+                <Label
+                    FontSize="120"
+                    Style="{StaticResource ButtonIconStyle}"
+                    Text="+"
+                    TextColor="#0088ee" />
+            </Border>
+
+            <Border Style="{StaticResource BorderStyle2}">
+                <Label
+                    FontSize="120"
+                    Style="{StaticResource ButtonIconStyle}"
+                    Text="+"
+                    TextColor="#0088ee" />
+            </Border>
+
+            <Border Style="{StaticResource BorderStyle3}">
+                <Label
+                    FontSize="120"
+                    Style="{StaticResource ButtonIconStyle}"
+                    Text="+"
                     TextColor="#0088ee" />
             </Border>
         </VerticalStackLayout>
