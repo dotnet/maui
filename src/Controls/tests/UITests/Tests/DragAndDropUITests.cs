@@ -144,6 +144,7 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
+		[Test]
 		public void DragStartEventCoordinates()
 		{
 			App.WaitForElement("TargetView");
