@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -15,6 +12,24 @@ namespace Microsoft.Maui.Handlers
 	{
 		const nint ContentPanelTag = 0x845fed;
 
+		readonly ScrollEventProxy _eventProxy = new();
+
+		public override bool NeedsContainer
+		{
+			get
+			{
+				//if we are being wrapped by a BorderView we need a container
+				//so we can handle masks and clip shapes
+				if (VirtualView?.Parent is IBorderView)
+				{
+					return true;
+				}
+				return base.NeedsContainer;
+			}
+		}
+
+		internal ScrollToRequest? PendingScrollToRequest { get; private set; }
+
 		protected override UIScrollView CreatePlatformView()
 		{
 			return new UIScrollView();
@@ -24,27 +39,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(platformView);
 
-			platformView.Scrolled += Scrolled;
-			platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			_eventProxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UIScrollView platformView)
 		{
 			base.DisconnectHandler(platformView);
 
-			platformView.Scrolled -= Scrolled;
-			platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
-		}
-
-		void ScrollAnimationEnded(object? sender, EventArgs e)
-		{
-			VirtualView.ScrollFinished();
-		}
-
-		void Scrolled(object? sender, EventArgs e)
-		{
-			VirtualView.HorizontalOffset = PlatformView.ContentOffset.X;
-			VirtualView.VerticalOffset = PlatformView.ContentOffset.Y;
+			PendingScrollToRequest = null;
+			_eventProxy.Disconnect(platformView);
 		}
 
 		public static void MapContent(IScrollViewHandler handler, IScrollView scrollView)
@@ -91,6 +94,14 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (args is ScrollToRequest request)
 			{
+				if (handler.PlatformView.ContentSize == CGSize.Empty && handler is ScrollViewHandler scrollViewHandler)
+				{
+					// If the ContentSize of the UIScrollView has not yet been defined,
+					// we create a pending scroll request that we will launch after performing the Layout and sizing process.
+					scrollViewHandler.PendingScrollToRequest = request;
+					return;
+				}
+
 				handler.PlatformView.SetContentOffset(new CoreGraphics.CGPoint(request.HorizontalOffset, request.VerticalOffset), !request.Instant);
 
 				if (request.Instant)
@@ -285,6 +296,12 @@ namespace Microsoft.Maui.Handlers
 
 			contentView.Bounds = contentBounds;
 			contentView.Center = new CGPoint(contentBounds.GetMidX(), contentBounds.GetMidY());
+
+			if (PendingScrollToRequest != null)
+			{
+				VirtualView.RequestScrollTo(PendingScrollToRequest.HorizontalOffset, PendingScrollToRequest.VerticalOffset, PendingScrollToRequest.Instant);
+				PendingScrollToRequest = null;
+			}
 		}
 
 		static double AccountForPadding(double constraint, double padding)
@@ -305,6 +322,59 @@ namespace Microsoft.Maui.Handlers
 			}
 
 			uiScrollView.ContentSize = contentSize;
+		}
+
+		class ScrollEventProxy
+		{
+			WeakReference<IScrollView>? _virtualView;
+
+			IScrollView? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(IScrollView virtualView, UIScrollView platformView)
+			{
+				_virtualView = new(virtualView);
+
+				platformView.Scrolled += Scrolled;
+				platformView.ScrollAnimationEnded += ScrollAnimationEnded;
+			}
+
+			public void Disconnect(UIScrollView platformView)
+			{
+				_virtualView = null;
+
+				platformView.Scrolled -= Scrolled;
+				platformView.ScrollAnimationEnded -= ScrollAnimationEnded;
+			}
+
+			void OnButtonTouchUpInside(object? sender, EventArgs e)
+			{
+				if (VirtualView is IButton virtualView)
+				{
+					virtualView.Released();
+					virtualView.Clicked();
+				}
+			}
+
+			void ScrollAnimationEnded(object? sender, EventArgs e)
+			{
+				VirtualView?.ScrollFinished();
+			}
+
+			void Scrolled(object? sender, EventArgs e)
+			{
+				if (VirtualView == null)
+				{
+					return;
+				}
+
+				if (sender is not UIScrollView platformView)
+				{
+					return;
+				}
+
+				VirtualView.HorizontalOffset = platformView.ContentOffset.X;
+				VirtualView.VerticalOffset = platformView.ContentOffset.Y;
+			}
 		}
 	}
 }
