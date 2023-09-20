@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
+using static ObjCRuntime.Dlfcn;
 
 namespace Microsoft.Maui.Platform;
 
@@ -39,6 +40,8 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
+
+	static int DebugBounceCount = 0;
 
 	public static void Connect()
 	{
@@ -168,6 +171,8 @@ public static class KeyboardAutoManagerScroll
 		StartingContentInsets = new UIEdgeInsets();
 		StartingScrollIndicatorInsets = new UIEdgeInsets();
 		StartingContentInsets = new UIEdgeInsets();
+
+		DebugBounceCount = 0;
 	}
 
 	static void DidHideKeyboard(NSNotification notification)
@@ -254,7 +259,8 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
-		await Task.Delay(10);
+		// seems like 25 is still not enough for some editors
+		await Task.Delay(25);
 
 		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
 		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
@@ -278,7 +284,12 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		if (entranceCount == DebounceCount)
+		{
 			AdjustPosition();
+			DebugBounceCount++;
+			if (DebugBounceCount > 1)
+				Console.WriteLine($"Multiple Debounces with offset being 25");
+		}
 	}
 
 	// main method to calculate and animate the scrolling
@@ -437,7 +448,7 @@ public static class KeyboardAutoManagerScroll
 				{
 					shouldContinue = superScrollView.ContentOffset.Y > 0;
 
-					if (shouldContinue && View.FindResponder<UITableViewCell>() is UITableViewCell tableCell
+					if (shouldContinue && View?.FindResponder<UITableViewCell>() is UITableViewCell tableCell
 						&& tableView.IndexPathForCell(tableCell) is NSIndexPath indexPath
 						&& tableView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath)
 					{
@@ -454,7 +465,7 @@ public static class KeyboardAutoManagerScroll
 				{
 					shouldContinue = superScrollView.ContentOffset.Y > 0;
 
-					if (shouldContinue && View.FindResponder<UICollectionViewCell>() is UICollectionViewCell collectionCell
+					if (shouldContinue && View?.FindResponder<UICollectionViewCell>() is UICollectionViewCell collectionCell
 						&& collectionView.IndexPathForCell(collectionCell) is NSIndexPath indexPath
 						&& collectionView.GetPreviousIndexPath(indexPath) is NSIndexPath previousIndexPath
 						&& collectionView.GetLayoutAttributesForItem(previousIndexPath) is UICollectionViewLayoutAttributes attributes)
@@ -487,8 +498,16 @@ public static class KeyboardAutoManagerScroll
 					var tempScrollView = superScrollView.FindResponder<UIScrollView>();
 					var nextScrollView = FindParentScroll(tempScrollView);
 
-					var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
+					// if PrefersLargeTitles is true, we may need additional logic to
+					// handle the collapsable navbar
+					var navController = View?.GetNavigationController();
+					var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
+					if (prefersLargeTitles)
+						move = AdjustForLargeTitles(move, superScrollView, navController!);
 
+					var origContentOffsetY = superScrollView.ContentOffset.Y;
+					var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
+					var requestedMove = move;
 					// the contentOffset.Y will change to shouldOffSetY so we can subtract the difference from the move
 					move -= (nfloat)(shouldOffsetY - superScrollView.ContentOffset.Y);
 
@@ -501,17 +520,43 @@ public static class KeyboardAutoManagerScroll
 
 						if (nextScrollView is null && superScrollViewRect.Y < keyboardYPosition)
 						{
+							
+
 							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 							{
 								newContentOffset.Y += innerScrollValue;
 								innerScrollValue = 0;
 								ScrolledView = superScrollView;
 
-								if (View.FindResponder<UIStackView>() is not null)
+								if (View?.FindResponder<UIStackView>() is not null)
 									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
 								else
 									superScrollView.ContentOffset = newContentOffset;
-							}, () => { });
+							}, () => {});
+
+							// after this scroll finishes, there is an edge case where if we have Large Titles,
+							// the entire requeseted scroll amount may not be allowed. If so, we need to scroll
+							// the rest of the distance afterwards
+							var actualScrolledAmount = superScrollView.ContentOffset.Y - origContentOffsetY;
+							var amountNotScrolled = requestedMove - actualScrolledAmount;
+							Console.WriteLine($"Tried to scroll this much: {requestedMove}");
+							Console.WriteLine($"Actually scrolled this much: {actualScrolledAmount}");
+
+							if (prefersLargeTitles && amountNotScrolled != 0)
+							{
+								UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
+								{
+									Console.WriteLine($"Extra move of: {amountNotScrolled}");
+									newContentOffset.Y += (nfloat)amountNotScrolled;
+									innerScrollValue = 0;
+									ScrolledView = superScrollView;
+
+									if (View?.FindResponder<UIStackView>() is not null)
+										superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
+									else
+										superScrollView.ContentOffset = newContentOffset;
+								}, () => { });
+							}
 						}
 
 						else
@@ -642,6 +687,36 @@ public static class KeyboardAutoManagerScroll
 		var kbSize = intersectRect == CGRect.Empty ? new CGSize(KeyboardFrame.Width, 0) : intersectRect.Size;
 
 		return window.Frame.Height - kbSize.Height;
+	}
+
+	// In the case we have PrefersLargeTitles set to true, the UINavigationBar
+	// has additional height that collapses when scrolling. Try to remove
+	// this collapsable height difference from the calculated move distance.
+	static nfloat AdjustForLargeTitles(nfloat move, UIScrollView superScrollView, UINavigationController navController)
+	{
+		
+		var navBarCollapsedHeight = 44;
+		var minMoveToCollapseNavBar = 52;
+		var amountScrolled = superScrollView.ContentOffset.Y;
+		var amountLeftToCollapseNavBar = minMoveToCollapseNavBar - amountScrolled;
+		var navBarCollapseDifference = navController.NavigationBar.Frame.Height - navBarCollapsedHeight;
+
+		// if the navbar will collapse from our scroll
+		if (move >= amountLeftToCollapseNavBar)
+		{
+			// if subtracting navBarCollapseDifference from our scroll
+			// will cause the collapse not to happen, we need to scroll
+			// to the minimum amount that will cause the collapse or else
+			// we will not see our view
+			if (move - navBarCollapseDifference < amountLeftToCollapseNavBar)
+				return amountLeftToCollapseNavBar;
+
+			// else the navBar will collapse and we want to subtract
+			// the navBarCollapseDifference to account for it
+			else
+				return move - navBarCollapseDifference;
+		}
+		return move;
 	}
 
 	static void RestorePosition()
