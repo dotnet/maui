@@ -342,8 +342,10 @@ namespace Microsoft.Maui.Controls.Platform
 				int dragFlags;
 				if (args.PlatformArgs?.DragFlags is ADragFlags d)
 					dragFlags = (int)d;
-				else
+				else if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					dragFlags = (int)ADragFlags.Global | (int)ADragFlags.GlobalUriRead;
+				else
+					dragFlags = 256 | 1; // use the value of enums since the enums are not supported here
 
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);

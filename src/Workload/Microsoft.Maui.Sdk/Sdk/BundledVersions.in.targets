@@ -12,6 +12,12 @@
       however Visual Studio currently depends on this assembly being loaded for Live Visual Tree.
     -->
     <UseMauiCompat Condition=" '$(UseMauiCompat)' == '' and '$(UseMaui)' == 'true' ">true</UseMauiCompat>
+
+    <!--
+      If opted into NuGet Central Package Management, $(DisableMauiImplicitPackageReferences) defaults to true
+      https://learn.microsoft.com/nuget/consume-packages/Central-Package-Management
+    -->
+    <DisableMauiImplicitPackageReferences Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(DisableMauiImplicitPackageReferences)' == '' ">true</DisableMauiImplicitPackageReferences>
   </PropertyGroup>
 
   <!--
@@ -20,16 +26,16 @@
     packages. Then the packages that were specified by the user are removed from the list. Finally,
     the remaining implicit packages are added into the project.
 
-    This logic only installs packages if and only if $(EnableMauiImplicitPackageReferences) is not
+    This logic only installs packages if and only if $(DisableMauiImplicitPackageReferences) is not
     true. This property allows the user to totally override all the default nugets installed. This
     should not be needed as the $(MauiVersion) should be sufficient. However, there may be a case
     to test various CI builds of .NET MAUI.
 
     One thing to note: the old and unsupported $(UseMauiNuGets) property is the same as the new
-    $(EnableMauiImplicitPackageReferences) property and is just kept for compatibility. It should
+    $(DisableMauiImplicitPackageReferences) property and is just kept for compatibility. It should
     not be used any any project, but there are some existing projects that have used them.
   -->
-  <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
+  <ItemGroup Condition=" '$(DisableMauiImplicitPackageReferences)' != 'true' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Resizetizer" Version="$(MauiVersion)" PrivateAssets="all" Condition=" '$(UseMauiAssets)' == 'true' " />
     <_MauiImplicitPackageReference Include="Microsoft.Maui.Essentials" Version="$(MauiVersion)" Condition=" '$(UseMauiEssentials)' == 'true' ">
       <PrivateAssets Condition=" '$(OutputType)' == 'Library' and '$(AndroidApplication)' != 'true' ">all</PrivateAssets>
@@ -48,7 +54,7 @@
     </_MauiImplicitPackageReference>
   </ItemGroup>
   <!-- Install the nuget packages if we are allowed to -->
-  <ItemGroup Condition=" '$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true' ">
+  <ItemGroup Condition=" '$(DisableMauiImplicitPackageReferences)' != 'true' and '$(UseMauiNuGets)' != 'true' ">
     <_MauiImplicitPackageReference Remove="@(PackageReference)" />
     <PackageReference Include="@(_MauiImplicitPackageReference)" IsMauiImplicitPackageReference="true" />
     <_MauiImplicitRequiredPackageReference Include="@(_MauiImplicitPackageReference->WithMetadataValue('IsMauiImplicitOptionalPackageReference',''))" />
@@ -59,7 +65,7 @@
     AfterTargets="CollectPackageReferences"
     Condition="
       ('$(SkipValidateMauiImplicitPackageReferences)' != 'true') and
-      ('$(EnableMauiImplicitPackageReferences)' != 'false' and '$(UseMauiNuGets)' != 'true') and
+      ('$(DisableMauiImplicitPackageReferences)' != 'true' and '$(UseMauiNuGets)' != 'true') and
       ('$(UseMaui)' == 'true' or '$(UseMauiCore)' == 'true' or '$(UseMauiEssentials)' == 'true' or '$(UseMauiAssets)' == 'true') and
       ('@(_MauiImplicitRequiredPackageReference->Count())' != '0') ">
 
