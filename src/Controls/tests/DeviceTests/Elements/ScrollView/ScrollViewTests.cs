@@ -133,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 			var childLayout = new VerticalStackLayout { label };
 			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
 			var parentLayout = new Grid { scrollView };
-			parentLayout.HeightRequest = 500;
+			parentLayout.HeightRequest = 300;
 
 			await CreateHandlerAsync<LabelHandler>(label);
 			await CreateHandlerAsync<LayoutHandler>(childLayout);
@@ -144,8 +144,8 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(childLayout.Height == scrollView.Height, $"Child VerticalStackLayout should fill ScrollView and have the same height! Expected: {scrollView.Height}, was: {parentLayout.Height}");
 			Assert.True(scrollView.Height == parentLayout.Height, $"ScrollView should fill parent Grid's height! Expected: {parentLayout.Height}, was: {scrollView.Height}");
 
-			// iOS and Mac return heights of ~460 as of writing this test. Android is usually off by one or two px. Hence that's why the condition is less strict
-			Assert.True(parentLayout.Height > 450 && parentLayout.Height < 550, $"Parent should be ~500px tall! Was: {parentLayout.Height}");
+			// Android is usually off by one or two px. Hence that's why the condition is less strict
+			Assert.True(parentLayout.Height > 295 && parentLayout.Height < 305, $"Parent should be ~500px tall! Was: {parentLayout.Height}");
 		}
 
 		void SetupBuilder()
