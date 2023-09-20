@@ -6,6 +6,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Android.Graphics.Drawables;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -35,6 +37,45 @@ namespace Microsoft.Maui.DeviceTests
 				// So we assert that the images are _not_ equal to ensure that caching is _not_ turned on for
 				// image streams.
 				await bitmapDrawable1.Bitmap.AssertNotEqualAsync(bitmapDrawable2.Bitmap);
+			});
+		}
+
+		[Fact]
+		public async Task ImageSetFromStreamRenders()
+		{
+			SetupBuilder();
+			var layout = new VerticalStackLayout()
+			{
+				HeightRequest = 100,
+				WidthRequest = 100
+			};
+
+			using var stream = GetType().Assembly.GetManifestResourceStream("red-embedded.png");
+
+			var image = new Image
+			{
+				Source = ImageSource.FromStream(() => stream)
+			};
+
+			layout.Add(image);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+
+				await handler.ToPlatform().AttachAndRun(async () =>
+				{
+					await image.Wait();
+					await handler.ToPlatform().AssertContainsColor(Colors.Red
+#if WINDOWS
+					, handler.MauiContext
+#endif
+					);
+				}
+#if WINDOWS
+					, handler.MauiContext
+#endif
+				);
 			});
 		}
 	}
