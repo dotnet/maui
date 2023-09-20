@@ -240,61 +240,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			if (pointerGestureRecognizer != null && OperatingSystem.IsIOSVersionAtLeast(13))
 			{
-				var uiRecognizers = CreatePointerRecognizer(
-					hoverGesture =>
-					{
-						if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
-							weakEventTracker.Target is GesturePlatformManager eventTracker &&
-							eventTracker._handler?.VirtualView is View view &&
-							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
-						{
-							var originPoint = hoverGesture.LocationInView(eventTracker?.PlatformView);
-							var platformPointerArgs = new PlatformPointerEventArgs(hoverGesture.View, hoverGesture);
-
-							switch (hoverGesture.State)
-							{
-								case UIGestureRecognizerState.Began:
-									pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-								case UIGestureRecognizerState.Changed:
-									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-								case UIGestureRecognizerState.Cancelled:
-								case UIGestureRecognizerState.Failed:
-								case UIGestureRecognizerState.Ended:
-									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-							}
-						}
-					},
-					pressGesture =>
-					{
-						if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
-							weakEventTracker.Target is GesturePlatformManager eventTracker &&
-							eventTracker._handler?.VirtualView is View view &&
-							eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
-						{
-							var originPoint = pressGesture.LocationInView(eventTracker?.PlatformView);
-							var platformPointerArgs = new PlatformPointerEventArgs(pressGesture.View, pressGesture);
-
-							switch (pressGesture.State)
-							{
-								case UIGestureRecognizerState.Began:
-									pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-								case UIGestureRecognizerState.Changed:
-									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-								case UIGestureRecognizerState.Cancelled:
-								case UIGestureRecognizerState.Failed:
-								case UIGestureRecognizerState.Ended:
-									pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-									break;
-							}
-						}
-					}
-				);
+				var uiRecognizers = CreatePointerRecognizer(weakRecognizer, weakEventTracker);
 				return uiRecognizers;
 			}
 
@@ -452,12 +398,66 @@ namespace Microsoft.Maui.Controls.Platform
 
 		[SupportedOSPlatform("ios13.0")]
 		[SupportedOSPlatform("maccatalyst13.0")]
-		List<UIGestureRecognizer?> CreatePointerRecognizer(Action<UIHoverGestureRecognizer> hoverAction, Action<UIGestureRecognizer> pressAction)
+		List<UIGestureRecognizer?> CreatePointerRecognizer(WeakReference weakRecognizer, WeakReference weakEventTracker)
 		{
+			bool exited = false;
+
+			Action<UIGestureRecognizer> action = (pointerGesture) =>
+			{
+				if (weakRecognizer.Target is PointerGestureRecognizer pointerGestureRecognizer &&
+					weakEventTracker.Target is GesturePlatformManager eventTracker &&
+					eventTracker._handler?.VirtualView is View view &&
+					eventTracker._handler?.MauiContext?.GetPlatformWindow() is UIWindow window)
+				{
+					var originPoint = pointerGesture.LocationInView(eventTracker?.PlatformView);
+					var platformPointerArgs = new PlatformPointerEventArgs(pointerGesture.View, pointerGesture);
+
+					switch (pointerGesture.State)
+					{
+						case UIGestureRecognizerState.Began:
+							if (pointerGesture is UIHoverGestureRecognizer)
+								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							else
+								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							break;
+						case UIGestureRecognizerState.Changed:
+							if (pointerGesture is UIHoverGestureRecognizer)
+								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							else
+							{
+								if (view.ToPlatform().Bounds.Contains(originPoint))
+									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								else
+								{
+									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+									exited = true;
+									pointerGesture.State = UIGestureRecognizerState.Ended;
+								}
+							}
+							break;
+						case UIGestureRecognizerState.Cancelled:
+						case UIGestureRecognizerState.Failed:
+						case UIGestureRecognizerState.Ended:
+							if (pointerGesture is UIHoverGestureRecognizer && !exited)
+								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+							else if (pointerGesture is CustomPressGestureRecognizer && exited)
+							{
+								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
+								// PointerMoved still gets fired after this, one time.
+								// if (exited) break; on UIGestureRecognizerState.Changed does prevent this
+								// however, that prevents any gesture detection on re-entry.
+								// so I still need to figure out that part. but progress!
+							}
+							break;
+					}
+				}
+			};
+
 			var result = new List<UIGestureRecognizer?>()
 			{
-				new UIHoverGestureRecognizer(hoverAction) { ShouldRecognizeSimultaneously = (g, o) => true },
-				new CustomPressGestureRecognizer(pressAction) { ShouldRecognizeSimultaneously = (g, o) => true }
+				new UIHoverGestureRecognizer((gesture) => action.Invoke(gesture)) { ShouldRecognizeSimultaneously = (g, o) => true },
+				new CustomPressGestureRecognizer((gesture) => action.Invoke(gesture)) { ShouldRecognizeSimultaneously = (g, o) => true }
+
 			};
 			return result;
 		}
