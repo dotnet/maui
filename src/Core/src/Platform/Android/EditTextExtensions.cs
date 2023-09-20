@@ -201,6 +201,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateReturnType(this EditText editText, IEntry entry)
 		{
+			editText.SetInputType(entry);
 			editText.ImeOptions = entry.ReturnType.ToPlatform();
 		}
 
