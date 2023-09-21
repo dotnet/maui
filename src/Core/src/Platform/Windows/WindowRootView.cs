@@ -103,7 +103,7 @@ namespace Microsoft.Maui.Platform
 		{
 			_useCustomAppTitleBar = useCustomAppTitleBar;
 			WindowTitleBarContentControlMinHeight = appTitleBarHeight;
-			
+
 			double topMargin = appTitleBarHeight;
 			if (AppTitleBarContentControl != null)
 			{
