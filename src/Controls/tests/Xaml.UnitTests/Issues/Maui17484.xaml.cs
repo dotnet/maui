@@ -31,9 +31,9 @@ public partial class Maui17484 : ContentPage
 		public void ObsoleteinDT([Values(false, true)] bool useCompiledXaml)
 		{
 			if (useCompiledXaml)
-				Assert.DoesNotThrow(()=>MockCompiler.Compile(typeof(Maui17484)));
+				Assert.DoesNotThrow(() => MockCompiler.Compile(typeof(Maui17484)));
 			else
-				Assert.DoesNotThrow(()=>new Maui17484(useCompiledXaml));
+				Assert.DoesNotThrow(() => new Maui17484(useCompiledXaml));
 
 
 
