@@ -132,6 +132,14 @@ namespace Microsoft.Maui.Controls.Handlers
 		private void OnItemsChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			MapMenuItems();
+
+			// Update tab item colors when we add or remove items
+			if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add ||
+				 e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove) &&
+				_shellAppearanceElement != null)
+			{
+				UpdateAppearance(_shellAppearanceElement);
+			}
 		}
 
 		private void OnNavigationTabChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
