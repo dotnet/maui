@@ -10,18 +10,24 @@ using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls
 {
-	/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="Type[@FullName='Microsoft.Maui.Controls.BindableObject']/Docs/*" />
+	/// <summary>
+	/// Provides a mechanism to propagate data changes from one object to another. Enables validation, type coercion, and an event system.
+	/// </summary>
+	/// <remarks>The <see cref="BindableObject" /> class provides a data storage mechanism that enables the application developer to synchronize data between objects in response to changes, for example, between the View and View Model in the MVVM design pattern. All of the visual elements in the <c>Microsoft.Maui.Controls</c> namespace inherit from <see cref="BindableObject" /> class, so they can all be used to bind the data behind their user interface.</remarks>
 	public abstract class BindableObject : INotifyPropertyChanged, IDynamicResourceHandler
 	{
 		IDispatcher _dispatcher;
 
-		// return the dispatcher that was available when this was created,
-		// otherwise try to find the nearest dispatcher (probably the window/app)
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='Dispatcher']/Docs/*" />
+		/// <summary>
+		/// Gets the dispatcher that was available when this bindable object was created,
+		/// otherwise tries to find the nearest available dispatcher (probably the window's/app's).
+		/// </summary>
 		public IDispatcher Dispatcher =>
 			_dispatcher ??= this.FindDispatcher();
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='.ctor']/Docs/*" />
+		/// <summary>
+		/// Initializes a new instance of the <see cref="BindableObject"/> class.
+		/// </summary>
 		public BindableObject()
 		{
 			// try use the current thread's dispatcher
@@ -37,23 +43,47 @@ namespace Microsoft.Maui.Controls
 			BindableProperty.Create(nameof(BindingContext), typeof(object), typeof(BindableObject), default(object),
 									BindingMode.OneWay, null, BindingContextPropertyChanged, null, null, BindingContextPropertyBindingChanging);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='BindingContext']/Docs/*" />
+		/// <summary>
+		/// Gets or sets an object that contains the properties that will be targeted by the bound properties that belong to this <see cref="BindableObject" />.
+		/// This is a bindable property.
+		/// </summary>
 		public object BindingContext
 		{
 			get => _inheritedContext ?? GetValue(BindingContextProperty);
 			set => SetValue(BindingContextProperty, value);
 		}
 
+		/// <summary>
+		/// Occurs when a property value changes.
+		/// </summary>
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		/// <summary>
+		/// Occurs when a property value is changing.
+		/// </summary>
 		public event PropertyChangingEventHandler PropertyChanging;
+
+		/// <summary>
+		/// Occurs when the value of the <see cref="BindingContext"/> property changes.
+		/// </summary>
 		public event EventHandler BindingContextChanged;
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][1]/Docs/*" />
+		/// <summary>
+		/// Clears any value that is previously set for a bindable property.
+		/// </summary>
+		/// <param name="property">The <see cref="BindableProperty"/> to clear the value for.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <remarks>When <paramref name="property"/> is read-only, nothing will happen.</remarks>
 		public void ClearValue(BindableProperty property) => ClearValue(property, fromStyle: false, checkAccess: true);
 
 		internal void ClearValue(BindableProperty property, bool fromStyle) => ClearValue(property, fromStyle: fromStyle, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='ClearValue'][2]/Docs/*" />
+		/// <summary>
+		/// Clears any value that is previously set for a bindable property, identified by its key.
+		/// </summary>
+		/// <param name="propertyKey">The key that identifies the bindable property to clear the value for.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyKey"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when <paramref name="propertyKey"/> is a read-only property.</exception>
 		public void ClearValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)
@@ -107,7 +137,17 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='GetValue']/Docs/*" />
+		/// <summary>
+		/// Returns the value that is contained in the given bindable property.
+		/// </summary>
+		/// <param name="property">The bindable property for which to get the value.</param>
+		/// <returns>The value that is contained in the <see cref="BindableProperty" />.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <remarks>
+		/// <see cref="GetValue(BindableProperty)" /> and <see cref="SetValue(BindableProperty, object)" /> are used to access the values of properties that are implemented by a <see cref="BindableProperty" />.
+		/// That is, application developers typically provide an interface for a bound property by defining a <see langword="public" /> property whose <see langword="get" /> accessor casts the result of <see cref="GetValue(BindableProperty)" /> to the appropriate type and returns it, and whose <see langword="set" /> accessor uses <see cref="SetValue(BindableProperty, object)" /> to set the value on the correct property.
+		/// Application developers should perform no other steps in the public property that defines the interface of the bound property.
+		/// </remarks>
 		public object GetValue(BindableProperty property)
 		{
 			if (property == null)
@@ -183,7 +223,12 @@ namespace Microsoft.Maui.Controls
 			return resultArray;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='IsSet']/Docs/*" />
+		/// <summary>
+		/// Determines whether or not a bindable property exists and has a value set.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property to check if a value is currently set.</param>
+		/// <returns><see langword="true"/> if the target property exists and has been set. Otherwise <see langword="false"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="targetProperty"/> is <see langword="null"/>.</exception>
 		public bool IsSet(BindableProperty targetProperty)
 		{
 			var bpcontext = GetContext(targetProperty ?? throw new ArgumentNullException(nameof(targetProperty)));
@@ -192,7 +237,12 @@ namespace Microsoft.Maui.Controls
 		}
 
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='RemoveBinding']/Docs/*" />
+		/// <summary>
+		/// Removes a previously set binding from a bindable property.
+		/// </summary>
+		/// <param name="property">The bindable property from which to remove bindings.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <remarks>When <paramref name="property" /> is not currently bound, nothing will happen.</remarks>
 		public void RemoveBinding(BindableProperty property)
 		{
 			BindablePropertyContext context = GetContext(property ?? throw new ArgumentNullException(nameof(property)));
@@ -201,7 +251,11 @@ namespace Microsoft.Maui.Controls
 				RemoveBinding(property, context);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetBinding']/Docs/*" />
+		/// <summary>
+		/// Assigns a binding to a bindable property.
+		/// </summary>
+		/// <param name="targetProperty">The bindable property on which to apply <paramref name="binding"/>.</param>
+		/// <param name="binding">The binding to set for <paramref name="targetProperty"/>.</param>
 		public void SetBinding(BindableProperty targetProperty, BindingBase binding) => SetBinding(targetProperty, binding, false);
 
 		internal void SetBinding(BindableProperty targetProperty, BindingBase binding, bool fromStyle)
@@ -229,7 +283,12 @@ namespace Microsoft.Maui.Controls
 			binding.Apply(BindingContext, this, targetProperty);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetInheritedBindingContext']/Docs/*" />
+		/// <summary>
+		/// Sets the inherited context to a nested element.
+		/// </summary>
+		/// <param name="bindable">The object on which to set the inherited binding context.</param>
+		/// <param name="value">The inherited context to set.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static void SetInheritedBindingContext(BindableObject bindable, object value)
 		{
@@ -259,8 +318,14 @@ namespace Microsoft.Maui.Controls
 			bindable.OnBindingContextChanged();
 		}
 
+		/// <summary>
+		/// Applies all the current bindings to <see cref="BindingContext" />.
+		/// </summary>
 		protected void ApplyBindings() => ApplyBindings(skipBindingContext: false, fromBindingContextChanged: false);
 
+		/// <summary>
+		/// Raises the <see cref="BindingContextChanged"/> event.
+		/// </summary>
 		protected virtual void OnBindingContextChanged()
 		{
 			BindingContextChanged?.Invoke(this, EventArgs.Empty);
@@ -277,12 +342,23 @@ namespace Microsoft.Maui.Controls
 				SetInheritedBindingContext(contextFlyout, BindingContext);
 		}
 
+		/// <summary>
+		/// Raises the <see cref="PropertyChanged"/> event.
+		/// </summary>
+		/// <param name="propertyName">The name of the property that has changed.</param>
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
 			=> PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 
+		/// <summary>
+		/// Raises the <see cref="PropertyChanging"/> event.
+		/// </summary>
+		/// <param name="propertyName">The name of the property that is changing.</param>
 		protected virtual void OnPropertyChanging([CallerMemberName] string propertyName = null)
 			=> PropertyChanging?.Invoke(this, new PropertyChangingEventArgs(propertyName));
 
+		/// <summary>
+		/// Removes all current bindings from the current context.
+		/// </summary>
 		protected void UnapplyBindings()
 		{
 			foreach (var context in _properties.Values)
@@ -361,10 +437,22 @@ namespace Microsoft.Maui.Controls
 			OnSetDynamicResource(property, key);
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][1]/Docs/*" />
+		/// <summary>
+		/// Sets the value of the specified bindable property.
+		/// </summary>
+		/// <param name="property">The bindable property on which to assign a value.</param>
+		/// <param name="value">The value to set.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <remarks>If <paramref name="property"/> is read-only, nothing will happen.</remarks>
 		public void SetValue(BindableProperty property, object value) => SetValue(property, value, false, true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValue'][2]/Docs/*" />
+		/// <summary>
+		/// Sets the value of the specified bindable property.
+		/// </summary>
+		/// <param name="propertyKey">The key that identifies the bindable property to assign the value to.</param>
+		/// <param name="value">The value to set.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyKey"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the bindable property identified by <paramref name="propertyKey"/> is read-only.</exception>
 		public void SetValue(BindablePropertyKey propertyKey, object value)
 		{
 			if (propertyKey == null)
@@ -395,7 +483,13 @@ namespace Microsoft.Maui.Controls
 		internal void SetValueCore(BindablePropertyKey propertyKey, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(propertyKey.BindableProperty, value, attributes, SetValuePrivateFlags.None);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='SetValueCore']/Docs/*" />
+		/// <summary>
+		/// Method for internal use to set the value of the specified property.
+		/// </summary>
+		/// <param name="property">The bindable property to assign a value to.</param>
+		/// <param name="value">The value to set.</param>
+		/// <param name="attributes">The flags that are applied for setting this value.</param>
+		/// <remarks>For internal use only. This API can be changed or removed without notice at any time.</remarks>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public void SetValueCore(BindableProperty property, object value, SetValueFlags attributes = SetValueFlags.None)
 			=> SetValueCore(property, value, attributes, SetValuePrivateFlags.Default);
@@ -603,10 +697,26 @@ namespace Microsoft.Maui.Controls
 			context.Binding = null;
 		}
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][1]/Docs/*" />
+		/// <summary>
+		/// Coerces the value of the specified bindable property.
+		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate"/> of the specified bindable property.
+		/// </summary>
+		/// <param name="property">The bindable property to coerce the value of.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="property"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when <paramref name="property"/> is read-only.</exception>
+		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate"/>.</exception>
+		/// <remarks>If <see cref="BindableProperty.CoerceValueDelegate"/> is not assigned to, nothing will happen.</remarks>
 		public void CoerceValue(BindableProperty property) => CoerceValue(property, checkAccess: true);
 
-		/// <include file="../../docs/Microsoft.Maui.Controls/BindableObject.xml" path="//Member[@MemberName='CoerceValue'][2]/Docs/*" />
+		/// <summary>
+		/// Coerces the value of the specified bindable property.
+		/// This is done by invoking <see cref="BindableProperty.CoerceValueDelegate"/> of the specified bindable property.
+		/// </summary>
+		/// <param name="propertyKey">The key that identifies the bindable property to coerce the value of.</param>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="propertyKey"/> is <see langword="null"/>.</exception>
+		/// <exception cref="InvalidOperationException">Thrown when the bindable property identified by <paramref name="propertyKey"/> is read-only.</exception>
+		/// <exception cref="ArgumentException">Thrown when the value is invalid according to the assigned logic in <see cref="BindableProperty.ValidateValueDelegate"/>.</exception>
+		/// <remarks>If <see cref="BindableProperty.CoerceValueDelegate"/> is not assigned to, nothing will happen.</remarks>
 		public void CoerceValue(BindablePropertyKey propertyKey)
 		{
 			if (propertyKey == null)
