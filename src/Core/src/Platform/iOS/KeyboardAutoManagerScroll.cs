@@ -12,7 +12,6 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
 using UIKit;
-using static ObjCRuntime.Dlfcn;
 
 namespace Microsoft.Maui.Platform;
 
@@ -40,8 +39,6 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
-
-	static int DebugBounceCount = 0;
 
 	public static void Connect()
 	{
@@ -171,8 +168,6 @@ public static class KeyboardAutoManagerScroll
 		StartingContentInsets = new UIEdgeInsets();
 		StartingScrollIndicatorInsets = new UIEdgeInsets();
 		StartingContentInsets = new UIEdgeInsets();
-
-		DebugBounceCount = 0;
 	}
 
 	static void DidHideKeyboard(NSNotification notification)
@@ -259,9 +254,6 @@ public static class KeyboardAutoManagerScroll
 
 		var entranceCount = DebounceCount;
 
-		// seems like 25 is still not enough for some editors
-		await Task.Delay(25);
-
 		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
 		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
 		// that cause the viewcontroller to translate in the postive y-axis.
@@ -284,12 +276,7 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		if (entranceCount == DebounceCount)
-		{
 			AdjustPosition();
-			DebugBounceCount++;
-			if (DebugBounceCount > 1)
-				Console.WriteLine($"Multiple Debounces with offset being 25");
-		}
 	}
 
 	// main method to calculate and animate the scrolling
@@ -508,6 +495,7 @@ public static class KeyboardAutoManagerScroll
 					var origContentOffsetY = superScrollView.ContentOffset.Y;
 					var shouldOffsetY = superScrollView.ContentOffset.Y - Math.Min(superScrollView.ContentOffset.Y, -move);
 					var requestedMove = move;
+
 					// the contentOffset.Y will change to shouldOffSetY so we can subtract the difference from the move
 					move -= (nfloat)(shouldOffsetY - superScrollView.ContentOffset.Y);
 
@@ -539,14 +527,11 @@ public static class KeyboardAutoManagerScroll
 							// the rest of the distance afterwards
 							var actualScrolledAmount = superScrollView.ContentOffset.Y - origContentOffsetY;
 							var amountNotScrolled = requestedMove - actualScrolledAmount;
-							Console.WriteLine($"Tried to scroll this much: {requestedMove}");
-							Console.WriteLine($"Actually scrolled this much: {actualScrolledAmount}");
 
 							if (prefersLargeTitles && amountNotScrolled != 0)
 							{
 								UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 								{
-									Console.WriteLine($"Extra move of: {amountNotScrolled}");
 									newContentOffset.Y += (nfloat)amountNotScrolled;
 									innerScrollValue = 0;
 									ScrolledView = superScrollView;
@@ -694,11 +679,10 @@ public static class KeyboardAutoManagerScroll
 	// this collapsable height difference from the calculated move distance.
 	static nfloat AdjustForLargeTitles(nfloat move, UIScrollView superScrollView, UINavigationController navController)
 	{
-		
 		var navBarCollapsedHeight = 44;
-		var minMoveToCollapseNavBar = 52;
+		var minPageMoveToCollapseNavBar = 52;
 		var amountScrolled = superScrollView.ContentOffset.Y;
-		var amountLeftToCollapseNavBar = minMoveToCollapseNavBar - amountScrolled;
+		var amountLeftToCollapseNavBar = minPageMoveToCollapseNavBar - amountScrolled;
 		var navBarCollapseDifference = navController.NavigationBar.Frame.Height - navBarCollapsedHeight;
 
 		// if the navbar will collapse from our scroll

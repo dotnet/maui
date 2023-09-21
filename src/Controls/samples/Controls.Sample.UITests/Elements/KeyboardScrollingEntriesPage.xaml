@@ -26,26 +26,6 @@
                 <Entry Placeholder="Entry17" AutomationId="Entry17" Background="lightgray" HeightRequest="50"/>
                 <Entry Placeholder="Entry18" AutomationId="Entry18" Background="lightgray" HeightRequest="50"/>
             </VerticalStackLayout>
-            <!--<VerticalStackLayout>
-                <Entry Placeholder="Entry1" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry2" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry3" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry4" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry5" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry6" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry7" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry8" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry9" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry10" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry11" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry12" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry13" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry14" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry15" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry16" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry17" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-                <Entry Placeholder="Entry18" AutomationId="Entry" Background="lightgray" HeightRequest="50"/>
-            </VerticalStackLayout>-->
         </Grid>
     </Grid>
 </ContentView>
