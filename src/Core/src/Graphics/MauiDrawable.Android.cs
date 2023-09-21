@@ -522,10 +522,13 @@ namespace Microsoft.Maui.Graphics
 					platformPaint.Color = _backgroundColor.Value;
 #pragma warning restore CA1416
 				}
+				else if (_background != null)
+				{
+					SetPaint(platformPaint, _background);
+				}
 				else
 				{
-					if (_background != null)
-						SetPaint(platformPaint, _background);
+					platformPaint.Color = AColor.Transparent;
 				}
 			}
 		}
