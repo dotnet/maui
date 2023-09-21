@@ -46,7 +46,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			{
 				var layout = new Issue3076(useCompiledXaml);
 
-				Assert.That(layout.controls, Is.TypeOf<Microsoft.Maui.Controls.Compatibility.ControlGallery.Issue3076Button>());
+				Assert.That(layout.controls, Is.TypeOf<Microsoft.Maui.Controls.ControlGallery.Issue3076Button>());
 				Assert.AreEqual(TextAlignment.Start, layout.controls.HorizontalContentAlignment);
 			}
 		}
