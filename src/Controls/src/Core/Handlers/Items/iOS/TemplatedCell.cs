@@ -58,7 +58,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			ConstrainedDimension = default;
 		}
 
-		public void Unbind()
+		internal void Unbind()
 		{
 			if (PlatformHandler?.VirtualView is View view)
 			{

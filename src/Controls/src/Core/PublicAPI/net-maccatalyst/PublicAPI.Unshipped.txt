@@ -87,7 +87,6 @@ virtual Microsoft.Maui.Controls.DragStartingEventArgs.GetPosition(Microsoft.Maui
 virtual Microsoft.Maui.Controls.DropEventArgs.GetPosition(Microsoft.Maui.Controls.Element? relativeTo) -> Microsoft.Maui.Graphics.Point?
 *REMOVED*override Microsoft.Maui.Controls.RefreshView.MeasureOverride(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 Microsoft.Maui.Controls.Border.~Border() -> void
-Microsoft.Maui.Controls.Handlers.Items.TemplatedCell.Unbind() -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
 Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer.FlyoutOverlapsDetailsInPopoverMode.get -> bool
