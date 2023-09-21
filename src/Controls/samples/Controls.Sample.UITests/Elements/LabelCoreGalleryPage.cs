@@ -13,9 +13,9 @@ internal class LabelCoreGalleryPage : CoreGalleryPage<Label>
 		element.Text = "I am a label's text.";
 	}
 
-	protected override void Build(StackLayout stackLayout)
+	protected override void Build()
 	{
-		base.Build(stackLayout);
+		base.Build();
 
 		// demonstrates that formatted text appears correctly
 		{
