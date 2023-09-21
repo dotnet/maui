@@ -59,7 +59,7 @@ namespace Microsoft.Maui.Controls
 			foreach (var b in Bindings)
 				bindingsclone.Add(b.Clone());
 
-			return new MultiBinding()
+			var clone = new MultiBinding()
 			{
 				Converter = Converter,
 				ConverterParameter = ConverterParameter,
@@ -69,6 +69,11 @@ namespace Microsoft.Maui.Controls
 				TargetNullValue = TargetNullValue,
 				StringFormat = StringFormat,
 			};
+
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
+			return clone;
 		}
 
 		internal override void Apply(bool fromTarget)
