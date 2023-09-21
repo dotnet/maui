@@ -63,9 +63,7 @@ namespace Microsoft.Maui.Platform
 		/// <param name="imageView">The <see cref="UIImageView"/> to be measured.</param>
 		/// <param name="constraints">The specified size constraints.</param>
 		/// <returns>The size where the image would fit depending on the aspect ratio.</returns>
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public static CGSize SizeThatFitsImage(this UIImageView imageView, CGSize constraints) // Method name subject to change
-#pragma warning restore RS0016 // Add public types and members to the declared API
+		internal static CGSize SizeThatFitsImage(this UIImageView imageView, CGSize constraints)
 		{
 			// If there's no image, we don't need to take up any space
 			if (imageView.Image is null)
@@ -78,7 +76,7 @@ namespace Microsoft.Maui.Platform
 			var widthRatio = Math.Min(imageSize.Width, widthConstraint) / imageSize.Width;
 			var heightRatio = Math.Min(imageSize.Height, heightConstraint) / imageSize.Height;
 
-			// In cases where we the image must fit its given constraints, we must shrink based on the smalles dimension (scale factor)
+			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
 			if(imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
