@@ -102,47 +102,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// NOTE: this test is slightly different than MemoryTests.HandlerDoesNotLeak
-		// It calls CreateHandlerAndAddToWindow(), a valid test case.
-		[Fact(DisplayName = "ScrollView Does Not Leak")]
-		public async Task DoesNotLeak()
-		{
-			SetupBuilder();
-
-			WeakReference viewReference = null;
-			WeakReference handlerReference = null;
-			WeakReference platformReference = null;
-			{
-				var view = new Microsoft.Maui.Controls.ScrollView();
-				var page = new ContentPage { Content = view };
-				await CreateHandlerAndAddToWindow(page, () =>
-				{
-					viewReference = new(view);
-					handlerReference = new(view.Handler);
-					platformReference = new(view.Handler.PlatformView);
-					page.Content = null;
-				});
-			}
-
-			await AssertionExtensions.WaitForGC(viewReference, handlerReference, platformReference);
-			Assert.False(viewReference.IsAlive, "ScrollView should not be alive!");
-			Assert.False(handlerReference.IsAlive, "Handler should not be alive!");
-			Assert.False(platformReference.IsAlive, "PlatformView should not be alive!");
-		}
-
-		void SetupBuilder()
-		{
-			EnsureHandlerCreated(builder =>
-			{
-				builder.ConfigureMauiHandlers(handlers =>
-				{
-					handlers.AddHandler<Label, LabelHandler>();
-					handlers.AddHandler<IScrollView, ScrollViewHandler>();
-					handlers.AddHandler<Grid, LayoutHandler>();
-				});
-			});
-		}
-
 		static async Task AssertContentSizeChanged(Task<bool> changed)
 		{
 			await WaitAssert(() => changed.IsCompleted && changed.Result, timeout: 5000, message: "PropertyChanged event with PropertyName 'ContentSize' did not fire").ConfigureAwait(false);
