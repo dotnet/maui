@@ -27,6 +27,7 @@ public partial class Maui17222 : ContentPage
 #if DEBUG
 		[SetUp] public void Setup() => AppInfo.SetCurrent(new MockAppInfo());
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
+
 		[Test]
 		public void GetsourceInfo([Values(false)] bool useCompiledXaml)
 		{
@@ -37,19 +38,19 @@ public partial class Maui17222 : ContentPage
 
 			var page = new Maui17222(useCompiledXaml);
 			SourceInfo info = VisualDiagnostics.GetSourceInfo(page);
-			Assert.AreEqual(new Uri("Issues/Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(2, info.LineNumber);
 			Assert.AreEqual(2, info.LinePosition);
 
 			var button = page.button;
 			info = VisualDiagnostics.GetSourceInfo(button);
-			Assert.AreEqual(new Uri("Issues/Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(6, info.LineNumber);
 			Assert.AreEqual(6, info.LinePosition);
 
 			Style style = button.Style;
 			info = VisualDiagnostics.GetSourceInfo(style);
-			Assert.AreEqual(new Uri("Issues/Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(5, info.LineNumber);
 			Assert.AreEqual(6, info.LinePosition);
 
@@ -57,14 +58,14 @@ public partial class Maui17222 : ContentPage
 			Assert.AreEqual(setter.Property, Button.TextColorProperty);
 			Assert.AreEqual(setter.Value, Colors.Red);
 			info = VisualDiagnostics.GetSourceInfo(setter);
-			Assert.AreEqual(new Uri("Issues/Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222Style.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(6, info.LineNumber);
 			Assert.AreEqual(10, info.LinePosition);
 
 
 			style = style.BasedOn;
 			info = VisualDiagnostics.GetSourceInfo(style);
-			Assert.AreEqual(new Uri("Issues/Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
+			Assert.AreEqual(new Uri($"Issues{System.IO.Path.DirectorySeparatorChar}Maui17222BaseStyle.xaml;assembly=Microsoft.Maui.Controls.Xaml.UnitTests", UriKind.Relative), info.SourceUri);
 			Assert.AreEqual(5, info.LineNumber);
 			Assert.AreEqual(6, info.LinePosition);
 		}

@@ -101,9 +101,12 @@ namespace Microsoft.Maui.Controls.Platform
 					PlatformView.RemoveInteraction(interaction);
 				}
 			}
+
+			_interactions.Clear();
 			_gestureRecognizers.Clear();
 
 			_dragAndDropDelegate?.Disconnect();
+			_dragAndDropDelegate = null;
 
 			Disconnect();
 
@@ -608,6 +611,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
+						_interactions.Add(interaction);
 						PlatformView.AddInteraction(interaction);
 					}
 				}
@@ -619,10 +623,12 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uIDropInteraction == null && PlatformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
+						_interactions.Add(interaction);
 						PlatformView.AddInteraction(interaction);
 					}
 				}
 			}
+
 			if (OperatingSystem.IsIOSVersionAtLeast(11))
 			{
 				if (!dragFound && uIDragInteraction != null && PlatformView != null)

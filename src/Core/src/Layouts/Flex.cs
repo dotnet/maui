@@ -198,7 +198,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>
 		/// Auto basis.
 		/// </summary>
-		public static Basis Auto = new Basis();
+		public static Basis Auto;
 		/// <summary>
 		/// Whether the basis length is relative to parent's size.
 		/// </summary>
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>This property defines the grow factor of the item; the amount of available space it should use on the main-axis. If this property is set to 0, the item will not grow.</summary>
 		/// <value>The item grow factor.</value>
 		/// <remarks>The default value for this property is 0 (does not take any available space).</remarks>
-		public float Grow { get; set; } = 0f;
+		public float Grow { get; set; }
 
 		/// <summary>This property defines the height size dimension of the item.</summary>
 		/// <value>The height size dimension.</value>
@@ -296,22 +296,22 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>This property defines the margin space required on the bottom edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginBottom { get; set; } = 0f;
+		public float MarginBottom { get; set; }
 
 		/// <summary>This property defines the margin space required on the left edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginLeft { get; set; } = 0f;
+		public float MarginLeft { get; set; }
 
 		/// <summary>This property defines the margin space required on the right edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginRight { get; set; } = 0f;
+		public float MarginRight { get; set; }
 
 		/// <summary>This property defines the margin space required on the top edge of the item.</summary>
 		/// <value>The top edge margin space (negative values are allowed).</value>
 		/// <remarks>The default value for this property is 0.</remarks>
-		public float MarginTop { get; set; } = 0f;
+		public float MarginTop { get; set; }
 
 		int order;
 
@@ -330,19 +330,19 @@ namespace Microsoft.Maui.Layouts.Flex
 
 		/// <summary>This property defines the height of the item's bottom edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingBottom { get; set; } = 0f;
+		public float PaddingBottom { get; set; }
 
 		/// <summary>This property defines the height of the item's left edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingLeft { get; set; } = 0f;
+		public float PaddingLeft { get; set; }
 
 		/// <summary>This property defines the height of the item's right edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingRight { get; set; } = 0f;
+		public float PaddingRight { get; set; }
 
 		/// <summary>This property defines the height of the item's top edge padding space that should be used when laying out child items.</summary>
 		/// <value>The bottom edge padding space.Negative values are not allowed.</value>
-		public float PaddingTop { get; set; } = 0f;
+		public float PaddingTop { get; set; }
 
 		/// <summary>This property defines whether the item should be positioned by the flexbox rules of the layout engine(Relative) or have an absolute fixed position (Absolute). If this property is set to Absolute, the<see cref="P:Microsoft.Maui.Controls.Flex.Item.Left" />, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.Right" />, <see cref = "P:Microsoft.Maui.Controls.Flex.Item.Top" /> and <see cref= "P:Microsoft.Maui.Controls.Flex.Item.Bottom" /> properties will then be used to determine the item's fixed position in its container.</summary>
 		/// <value>Any value part of the<see cref="T:Microsoft.Maui.Controls.Flex.Position" /> enumeration.</value>

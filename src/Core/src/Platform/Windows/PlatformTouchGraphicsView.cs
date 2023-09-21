@@ -10,8 +10,8 @@ namespace Microsoft.Maui.Platform
 	{
 		IGraphicsView? _graphicsView;
 		readonly W2DGraphicsView _platformGraphicsView;
-		bool _isTouching = false;
-		bool _isInBounds = false;
+		bool _isTouching;
+		bool _isInBounds;
 
 		public PlatformTouchGraphicsView()
 		{

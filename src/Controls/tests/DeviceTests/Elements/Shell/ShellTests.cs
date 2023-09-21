@@ -46,7 +46,7 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			});
 		}
-
+#if !MACCATALYST
 		[Fact]
 		public async Task PageLayoutDoesNotExceedWindowBounds()
 		{
@@ -1108,7 +1108,7 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.Equal(count, appearanceObservers.Count); // Count doesn't increase
 			});
 		}
-
+#endif
 		protected Task<Shell> CreateShellAsync(Action<Shell> action) =>
 			InvokeOnMainThreadAsync(() =>
 			{

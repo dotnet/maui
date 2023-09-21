@@ -4,15 +4,14 @@
              x:Class="Maui.Controls.Sample.Issues.Issue16561">
     <StackLayout>
 
-        <Grid x:Name="TapArea"
-              AutomationId="TapArea"
-              BackgroundColor="LightBlue"
+        <Grid BackgroundColor="LightBlue"
               Margin="10"
+              x:Name="TapArea"
               HeightRequest="300">
-            <Label HorizontalOptions="Center"
-                   VerticalOptions="Center"
+            <Label HorizontalOptions="Start" VerticalOptions="Start"
                    TextColor="Black"
-                   Text="Tap In This Grid" />
+                   AutomationId="TapArea"
+                   Text="Tap In This Grid. This label needs to be long so the Windows test will work." />
         </Grid>
 
         <Label HeightRequest="100"

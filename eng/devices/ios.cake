@@ -172,9 +172,6 @@ Task("Test")
 	}
 
 	var XCODE_PATH =  Argument("xcode_path", "");
-
-	if (String.IsNullOrEmpty(XCODE_PATH) && IsCIBuild())
-		XCODE_PATH = "/Applications/Xcode_14.3.0.app";
 		
 	string xcode_args = "";
 	if (!String.IsNullOrEmpty(XCODE_PATH))
