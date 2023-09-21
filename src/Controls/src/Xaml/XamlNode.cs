@@ -208,7 +208,7 @@ namespace Microsoft.Maui.Controls.Xaml
 			{
 				foreach (var node in Properties.Values.ToList())
 					node.Accept(visitor, this);
-				foreach (var node in CollectionItems)
+				foreach (var node in CollectionItems.ToList())
 					node.Accept(visitor, this);
 			}
 
