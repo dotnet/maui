@@ -259,7 +259,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
+		static void UpdateSwipeItemViewLayout(ISwipeItemView swipeItemView)
 		{
 			swipeItemView?.Handler?.ToPlatform().InvalidateMeasure(swipeItemView);
 		}
@@ -428,7 +428,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		void ExecuteSwipeItem(ISwipeItem item)
+		static void ExecuteSwipeItem(ISwipeItem item)
 		{
 			if (item == null)
 				return;
@@ -722,7 +722,7 @@ namespace Microsoft.Maui.Platform
 			return swipeItems != null && swipeItems.Where(s => GetIsVisible(s)).Any();
 		}
 
-		bool GetIsVisible(ISwipeItem swipeItem)
+		static bool GetIsVisible(ISwipeItem swipeItem)
 		{
 			if (swipeItem is IView view)
 				return view.Visibility == Maui.Visibility.Visible;
