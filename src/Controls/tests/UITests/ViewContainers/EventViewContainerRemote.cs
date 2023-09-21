@@ -5,8 +5,13 @@ namespace Microsoft.Maui.AppiumTests
 {
 	internal sealed class EventViewContainerRemote : BaseViewContainerRemote
 	{
-		public EventViewContainerRemote(IUITestContext? testContext, Enum formsType, string? platformViewType)
-			: base(testContext, formsType, platformViewType)
+		public EventViewContainerRemote(IUITestContext? testContext, string formsType)
+			: base(testContext, formsType)
+		{
+		}
+
+		public EventViewContainerRemote(IUITestContext? testContext, Enum formsType)
+			: base(testContext, formsType)
 		{
 		}
 
