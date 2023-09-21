@@ -171,7 +171,6 @@ Microsoft.Maui.Controls.ShellNavigationQueryParameters.Values.get -> System.Coll
 Microsoft.Maui.Controls.PointerEventArgs.PlatformArgs.get -> Microsoft.Maui.Controls.PlatformPointerEventArgs?
 Microsoft.Maui.Controls.PlatformPointerEventArgs
 *REMOVED*override Microsoft.Maui.Controls.SwipeItems.OnBindingContextChanged() -> void
-*REMOVED*override Microsoft.Maui.Controls.SwipeView.OnBindingContextChanged() -> void
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.get -> string
 *REMOVED*~Microsoft.Maui.Controls.Editor.FontFamily.set -> void
 *REMOVED*Microsoft.Maui.Controls.Editor.CursorPosition.get -> int
