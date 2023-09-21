@@ -27,7 +27,7 @@
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdknet80_164PackageVersion>16.4.8960-net8-rtm</MicrosoftMacCatalystSdknet80_164PackageVersion>
     <MicrosoftmacOSSdknet80_133PackageVersion>13.3.8960-net8-rtm</MicrosoftmacOSSdknet80_133PackageVersion>
-    <MicrosoftiOSSdknet80_164PackageVersion>16.4.8960-net8-rtm</MicrosoftiOSSdknet80_164PackageVersion>
+    <MicrosoftiOSSdknet80_164PackageVersion>16.4.8959-net8-rc2</MicrosoftiOSSdknet80_164PackageVersion>
     <MicrosofttvOSSdknet80_164PackageVersion>16.4.8960-net8-rtm</MicrosofttvOSSdknet80_164PackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet80_164PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet80_133PackageVersion)</MicrosoftmacOSSdkPackageVersion>
