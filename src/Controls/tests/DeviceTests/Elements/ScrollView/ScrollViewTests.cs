@@ -150,9 +150,9 @@ namespace Microsoft.Maui.DeviceTests
 			await AttachAndRun(parentLayout, (layoutHandler) => { });
 
 			// Android is usually off by one or two px. Hence that's why the condition has some tolerance
-			Assert.Equal(scrollView.Height, childLayout.Height, 2);
-			Assert.Equal(parentLayout.Height, scrollView.Height, 2);
-			Assert.Equal(expectedHeight, parentLayout.Height, 2);
+			Assert.Equal(scrollView.Height, childLayout.Height, 2.0);
+			Assert.Equal(parentLayout.Height, scrollView.Height, 2.0);
+			Assert.Equal(expectedHeight, parentLayout.Height, 2.0);
 		}
 
 		void SetupBuilder()
