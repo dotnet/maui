@@ -129,18 +129,13 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill")]
 		public async Task ShouldGrow()
 		{
-			var label = new Label() { Text = "Text inside a ScrollView", Margin = 0, Padding = 0 };
+			var label = new Label() { Text = "Text inside a ScrollView"};
 			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout, Margin = 0, Padding = 0 };
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout };
 			var parentLayout = new Grid { scrollView };
 
-			var expectedHeight = 500;
+			var expectedHeight = 100;
 			parentLayout.HeightRequest = expectedHeight;
-
-			childLayout.Margin = 0;
-			childLayout.Padding = 0;
-			parentLayout.Margin = 0;
-			parentLayout.Padding = 0;
 
 			await CreateHandlerAsync<LabelHandler>(label);
 			await CreateHandlerAsync<LayoutHandler>(childLayout);
