@@ -6,12 +6,11 @@ namespace Microsoft.Maui.AppiumTests
 {
 	public class ButtonUITests : _ViewUITests
 	{
-		static readonly string Button = "android.widget.Button";
 		const string ButtonGallery = "* marked:'Button Gallery'";
+
 		public ButtonUITests(TestDevice device)
 			: base(device)
 		{
-			PlatformViewType = Button;
 		}
 
 		protected override void NavigateToGallery()
@@ -22,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void Clicked()
 		{
-			var remote = new EventViewContainerRemote(UITestContext, Test.Button.Clicked, PlatformViewType);
+			var remote = new EventViewContainerRemote(UITestContext, Test.Button.Clicked);
 			remote.GoTo();
 
 			var textBeforeClick = remote.GetEventLabel().Text;

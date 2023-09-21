@@ -23,7 +23,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		protected IUITestContext _uiTestContext;
 
-		protected BaseViewContainerRemote(IUITestContext? testContext, Enum formsType, string? platformViewType)
+		protected BaseViewContainerRemote(IUITestContext? testContext, Enum formsType)
+			: this(testContext, formsType.ToString())
+		{
+		}
+
+		protected BaseViewContainerRemote(IUITestContext? testContext, string formsType)
 		{
 			_uiTestContext = testContext ?? throw new ArgumentNullException(nameof(testContext));
 			App = testContext.App;
