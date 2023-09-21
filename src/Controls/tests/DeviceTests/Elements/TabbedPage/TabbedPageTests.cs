@@ -338,7 +338,11 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 #if !WINDOWS && !MACCATALYST
-		[Theory]
+		[Theory(
+#if IOS
+		Skip = "Test crashes on iOS, potential fix: https://github.com/dotnet/maui/pull/17544"
+#endif
+		)]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
