@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net7.0</TargetFrameworks>
+    <IsPackable>false</IsPackable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <SingleProject>true</SingleProject>
+  </PropertyGroup>
+
+   <PropertyGroup>
+    <ApplicationTitle>Controls Appium Tests</ApplicationTitle>
+    <ApplicationId>com.microsoft.maui.controls.appiumtests</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+     
+     <!-- To use a local version of visual-test-utils instead of the NuGets, clone the repo as a sibling to the maui directory, uncomment this, and add projects to the solution -->
+     <!-- <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils> -->
+   </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants Condition=" '$(ExtraDefineConstants)' != '' ">$(DefineConstants);$(ExtraDefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\samples\Controls.Sample.UITests\Test.cs" Link="Test.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\Controls\src\Core\Controls.Core.csproj" />
+    <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
+    <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj" />
+    <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-beta02" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+  </ItemGroup>
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
+  </ItemGroup>
+
+</Project>

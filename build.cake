@@ -19,7 +19,6 @@ PowerShell:
 // ADDINS
 //////////////////////////////////////////////////////////////////////
 #addin "nuget:?package=Cake.Android.SdkManager&version=3.0.2"
-#addin "nuget:?package=Cake.Boots&version=1.0.4.624"
 #addin "nuget:?package=Cake.AppleSimulator&version=0.2.0"
 #addin "nuget:?package=Cake.FileHelpers&version=3.2.1"
 #load "eng/cake/dotnet.cake"
@@ -28,8 +27,8 @@ PowerShell:
 //////////////////////////////////////////////////////////////////////
 // TOOLS
 //////////////////////////////////////////////////////////////////////
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.11.1
-#tool "nuget:?package=nuget.commandline&version=5.8.1"
+#tool "nuget:?package=NUnit.ConsoleRunner&version=3.16.3"
+#tool "nuget:?package=nuget.commandline&version=6.6.1"
 
 //////////////////////////////////////////////////////////////////////
 // ARGUMENTS

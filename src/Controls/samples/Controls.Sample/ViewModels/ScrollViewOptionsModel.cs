@@ -12,6 +12,10 @@ namespace Maui.Controls.Sample.ViewModels
 	{
 		protected override IEnumerable<SectionModel> CreateItems() => new[]
 		{
+			new SectionModel(typeof(ScrollToFromConstructorPage), "Scroll To from constructor",
+				"ScrollView is capable of scrolling its contents invoking the scroll from the Page constructor",
+				new ScrollToFromConstructorPage()),
+
 			new SectionModel(typeof(ScrollToEndPage), "Scroll To End",
 				"ScrollView is capable of scrolling its contents."),
 
@@ -35,7 +39,9 @@ namespace Maui.Controls.Sample.ViewModels
 				new ScrollViewTemplatePageModel{ Spacing = 200, ScrollViewPadding = new Thickness(25),
 					ContentBackground = Colors.LightBlue, VerticalAlignment = LayoutOptions.Fill }),
 
-
+			new SectionModel(typeof(ScrollViewOrientationPage), "Orientation",
+				"Lock the orientation of your ScrollView",
+				new ScrollViewTemplatePageModel{ VerticalAlignment = LayoutOptions.Fill }),
 		};
 	}
 }

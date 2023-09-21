@@ -27,6 +27,30 @@ namespace Microsoft.Maui.DeviceTests
 			return exitCondition.Invoke();
 		}
 
+		public static Task<bool> WaitForGC(params WeakReference[] references)
+		{
+			// Check all the WeakReference values are non-null
+			Assert.NotEmpty(references);
+			foreach (var reference in references)
+			{
+				Assert.NotNull(reference);
+			}
+
+			return Wait(() =>
+			{
+				GC.Collect();
+				GC.WaitForPendingFinalizers();
+
+				foreach (var reference in references)
+				{
+					if (reference.IsAlive)
+						return false;
+				}
+
+				return true; // No references alive
+			}, timeout: 5000);
+		}
+
 		public static void AssertHasFlag(this Enum self, Enum flag)
 		{
 			var hasFlag = self.HasFlag(flag);
@@ -63,10 +87,10 @@ namespace Microsoft.Maui.DeviceTests
 			// to the Visual Tree
 			var platformViewHandler = (IPlatformViewHandler)view.Handler!;
 			var platformView = platformViewHandler.PlatformView!;
-
-#if WINDOWS
 			var mauiContext = platformViewHandler.MauiContext ?? throw new InvalidOperationException("MauiContext cannot be null here");
 			var dispatcher = mauiContext.GetDispatcher();
+
+#if WINDOWS
 			return dispatcher.DispatchAsync(async () =>
 			{
 				if (platformView.XamlRoot is null)
@@ -81,8 +105,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 #else
-			RunAssertions();
-			return Task.CompletedTask;
+			return dispatcher.DispatchAsync(RunAssertions);
 #endif
 			void RunAssertions()
 			{
