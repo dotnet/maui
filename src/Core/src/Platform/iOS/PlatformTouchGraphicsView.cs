@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIHoverGestureRecognizer? _hoverGesture;
 		RectF _rect;
-		bool _pressedContained = false;
+		bool _pressedContained;
 
 		public PlatformTouchGraphicsView()
 		{

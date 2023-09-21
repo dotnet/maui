@@ -25,14 +25,14 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
-		[TestCase("maui", "Debug", "net6.0")]
-		[TestCase("maui", "Release", "net6.0")]
-		[TestCase("maui", "Debug", "net7.0")]
-		[TestCase("maui", "Release", "net7.0")]
-		[TestCase("maui-blazor", "Debug", "net6.0")]
-		[TestCase("maui-blazor", "Release", "net6.0")]
-		[TestCase("maui-blazor", "Debug", "net7.0")]
-		[TestCase("maui-blazor", "Release", "net7.0")]
+		[TestCase("maui", "Debug", DotNetPrevious)]
+		[TestCase("maui", "Release", DotNetPrevious)]
+		[TestCase("maui", "Debug", DotNetCurrent)]
+		[TestCase("maui", "Release", DotNetCurrent)]
+		[TestCase("maui-blazor", "Debug", DotNetPrevious)]
+		[TestCase("maui-blazor", "Release", DotNetPrevious)]
+		[TestCase("maui-blazor", "Debug", DotNetCurrent)]
+		[TestCase("maui-blazor", "Release", DotNetCurrent)]
 		public void RunOniOS(string id, string config, string framework)
 		{
 			var projectDir = TestDirectory;

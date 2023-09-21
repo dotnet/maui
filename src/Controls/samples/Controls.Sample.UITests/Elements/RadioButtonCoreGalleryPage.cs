@@ -13,9 +13,9 @@ namespace Maui.Controls.Sample
 			element.Content = "RadioButton";
 		}
 
-		protected override void Build(StackLayout stackLayout)
+		protected override void Build()
 		{
-			base.Build(stackLayout);
+			base.Build();
 
 			IsEnabledStateViewContainer.View.CheckedChanged += (sender, args) => IsEnabledStateViewContainer.TitleLabel.Text += " (Checked Changed)";
 
