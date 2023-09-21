@@ -129,11 +129,16 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill")]
 		public async Task ShouldGrow()
 		{
-			var label = new Label() { Text = "Text inside a ScrollView" };
+			var label = new Label() { Text = "Text inside a ScrollView", Margin = 0, Padding = 0 };
 			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout, Margin = 0, Padding = 0 };
 			var parentLayout = new Grid { scrollView };
-			parentLayout.HeightRequest = 300;
+			parentLayout.HeightRequest = 500;
+
+			childLayout.Margin = 0;
+			childLayout.Padding = 0;
+			parentLayout.Margin = 0;
+			parentLayout.Padding = 0;
 
 			await CreateHandlerAsync<LabelHandler>(label);
 			await CreateHandlerAsync<LayoutHandler>(childLayout);
@@ -141,11 +146,11 @@ namespace Microsoft.Maui.DeviceTests
 			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
 
 			await AttachAndRun(parentLayout, (layoutHandler) => { });
-			Assert.True(childLayout.Height == scrollView.Height, $"Child VerticalStackLayout should fill ScrollView and have the same height! Expected: {scrollView.Height}, was: {parentLayout.Height}");
-			Assert.True(scrollView.Height == parentLayout.Height, $"ScrollView should fill parent Grid's height! Expected: {parentLayout.Height}, was: {scrollView.Height}");
+			Assert.True(childLayout.Height == scrollView.Height, $"Child VerticalStackLayout should fill ScrollView and have the same height! Expected: {scrollView.Height}, was: {childLayout.Height}");
+			Assert.True(scrollView.Height == parentLayout.Height, $"ScrollView should fill parent Grid's height! Expected: {parentLayout.Height}, was: {scrollView.Height}. Inner label height: {label.Height}");
 
 			// Android is usually off by one or two px. Hence that's why the condition is less strict
-			Assert.True(parentLayout.Height > 295 && parentLayout.Height < 305, $"Parent should be ~500px tall! Was: {parentLayout.Height}");
+			Assert.True(parentLayout.Height > 495 && parentLayout.Height < 505, $"Parent should be ~500px tall! Was: {parentLayout.Height}");
 		}
 
 		void SetupBuilder()
