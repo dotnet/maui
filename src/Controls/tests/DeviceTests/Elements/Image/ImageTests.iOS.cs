@@ -52,11 +52,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			// We check for both image and layout to ensure that image is the right size
-			Assert.True(image.Height == 100, "Image should be 100px tall after resize!");
-			Assert.True(image.Width == 200, "Image should be 200px wide after resize!");
+			Assert.Equal(100, image.Height);
+			Assert.Equal(200, image.Width);
 
-			Assert.True(layout.Height == 100, "Layout should be 100px tall!");
-			Assert.True(layout.Width == 200, "Layout should be 200px wide!");
+			Assert.Equal(100, layout.Height);
+			Assert.Equal(200, layout.Width);
 		}
 
 
@@ -87,11 +87,40 @@ namespace Microsoft.Maui.DeviceTests
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});
 
-			Assert.True(image.Height == expectedHeight, $"Image should have expected height! Expected: {expectedHeight}, was: {image.Height}");
-			Assert.True(image.Width == expectedWidth, $"Image should have expected width! Expected: {expectedWidth}, was: {image.Width}");
+			Assert.Equal(expectedHeight, image.Height);
+			Assert.Equal(expectedWidth, image.Width);
 
-			Assert.True(layout.Height == expectedHeight, $"Layout should have expected height! Expected: {expectedHeight}, was: {layout.Height}");
-			Assert.True(layout.Width == expectedWidth, $"Layout should have expected width! Expected: {expectedWidth}, was: {layout.Width}");
+			Assert.Equal(expectedHeight, layout.Height);
+			Assert.Equal(expectedWidth, layout.Width);
+		}
+
+		[Fact]
+		public async Task ImagesRespectExplicitConstraints()
+		{
+			SetupBuilder();
+
+			var layout = new Grid();
+			var image = new Image
+			{
+				Source = "big_white_horizontal.png",
+				Aspect = Aspect.AspectFit,
+				HeightRequest = 100
+			};
+
+			layout.Add(image);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				var handler = CreateHandler<LayoutHandler>(layout);
+
+				await image.Wait();
+
+				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
+			});
+
+			// We asked the image to have a fixed height, so it should resize accordingly even if it could grow in width
+			Assert.Equal(100, image.Height);
+			Assert.Equal(200, image.Width);
 		}
 	}
 }
