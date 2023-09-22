@@ -27,6 +27,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void BordersAreValid()
 		{
+			App.WaitForElement("WaitForStubControl");
+
 			VerifyScreenshot();
 		}
 	}
