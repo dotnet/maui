@@ -84,21 +84,11 @@ namespace Microsoft.Maui
 			// This also affects ImageButtons
 			if (platformView is UIImageView imageView)
 			{
-				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
-
 				sizeThatFits = imageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
 			}
 			else if (platformView is UIButton imageButton && imageButton.ImageView?.Image is not null)
 			{
-				widthConstraint = IsExplicitSet(virtualView.Width) ? virtualView.Width : widthConstraint;
-				heightConstraint = IsExplicitSet(virtualView.Height) ? virtualView.Height : heightConstraint;
-
 				sizeThatFits = imageButton.ImageView.SizeThatFitsImage(new CGSize((float)widthConstraint, (float)heightConstraint));
-			}
-			else if (platformView is WrapperView wrapper)
-			{
-				sizeThatFits = wrapper.SizeThatFitsWrapper(new CGSize((float)widthConstraint, (float)heightConstraint), virtualView.Width, virtualView.Height);
 			}
 			else
 			{
