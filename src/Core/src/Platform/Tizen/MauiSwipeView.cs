@@ -717,7 +717,7 @@ namespace Microsoft.Maui.Platform
 			return IsValidSwipeItems(swipeItems);
 		}
 
-		bool IsValidSwipeItems(ISwipeItems? swipeItems)
+		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
 			return swipeItems != null && swipeItems.Where(s => GetIsVisible(s)).Any();
 		}
