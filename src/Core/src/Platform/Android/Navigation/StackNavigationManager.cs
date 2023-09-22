@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Android.Content;
 using Android.OS;
+using Android.Views;
 using AndroidX.Fragment.App;
 using AndroidX.Navigation;
 using AndroidX.Navigation.Fragment;
@@ -279,6 +280,12 @@ namespace Microsoft.Maui.Platform
 			if (IsNavigating)
 				NavigationFinished(NavigationView);
 
+			if (_fragmentContainerView is not null)
+			{
+				_fragmentContainerView.ViewAttachedToWindow -= OnNavigationPlatformViewAttachedToWindow;
+				_fragmentContainerView.ChildViewAdded -= OnNavigationHostViewAdded;
+			}
+
 			_fragmentLifecycleCallbacks?.Disconnect();
 			_fragmentLifecycleCallbacks = null;
 
@@ -305,11 +312,45 @@ namespace Microsoft.Maui.Platform
 
 			if (_navHost == null)
 				throw new InvalidOperationException($"No NavHostFragment found");
+
+			if (_fragmentContainerView is not null)
+			{
+				_fragmentContainerView.ViewAttachedToWindow += OnNavigationPlatformViewAttachedToWindow;
+				_fragmentContainerView.ChildViewAdded += OnNavigationHostViewAdded;
+			}
 		}
 
+		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
+		{
+			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
+			if (_fragmentManager?.IsDestroyed == true && _fragmentContainerView is not null)
+			{
+				CheckForFragmentChange();
+				var fragmentManager = MauiContext.GetFragmentManager();
+				var navHostFragment = new MauiNavHostFragment()
+				{
+					StackNavigationManager = this
+				};
+
+				// We can't call CheckForFragmentChange right away. The Fragment has to finish attaching
+				// before we can start interacting with the Navigation Host
+				fragmentManager
+					.BeginTransactionEx()
+					.Add(_fragmentContainerView.Id, navHostFragment)
+					.Commit();
+			}
+		}
+
+		void OnNavigationHostViewAdded(object? sender, ViewGroup.ChildViewAddedEventArgs e)
+		{
+			CheckForFragmentChange();
+		}
 
 		internal void CheckForFragmentChange()
 		{
+			if (_fragmentContainerView?.Fragment is null)
+				return;
+
 			var fragmentManager = MauiContext.GetFragmentManager();
 			var navHostFragment = _fragmentContainerView?.Fragment;
 

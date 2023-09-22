@@ -204,7 +204,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
-#if WINDOWS || ANDROID
+#if WINDOWS
 		, Skip = "Fails on Windows and Android (https://github.com/dotnet/maui/issues/17444)"
 #endif
 		)]
@@ -225,7 +225,10 @@ namespace Microsoft.Maui.DeviceTests
 						Background = Colors.Purple
 					}
 				}
-			});
+			})
+			{
+				Title = "First Page"
+			};
 
 			tabbedPage.Children.Insert(0, firstPage);
 			tabbedPage.CurrentPage = firstPage;
@@ -236,13 +239,12 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(firstPage);
 				tabbedPage.Children.Remove(firstPage);
 				await OnNavigatedToAsync(secondPage);
-
+				await OnUnloadedAsync(firstPage);
 				// Validate that the second page becomes the current active page
 				Assert.Equal(secondPage, tabbedPage.CurrentPage);
 
 				// add the removed page back
 				tabbedPage.Children.Insert(0, firstPage);
-
 				// Validate that the second page is still the current active page
 				Assert.Equal(secondPage, tabbedPage.CurrentPage);
 
