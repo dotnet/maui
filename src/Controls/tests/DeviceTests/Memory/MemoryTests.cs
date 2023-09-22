@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests.Memory;
 
+[Category(TestCategory.Memory)]
 public class MemoryTests : ControlsHandlerTestBase
 {
 	void SetupBuilder()

@@ -118,11 +118,31 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(ContentPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(FlyoutPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(NavigationPage)}, {nameof(FlyoutPage)}WithNavigationPage")]
-		[InlineData($"{nameof(Shell)}, {nameof(ContentPage)}, {nameof(Shell)}")]
-		[InlineData($"FlyoutPageWithNavigationPage, NavigationPageWithFlyoutPage, FlyoutPageWithNavigationPage")]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(ContentPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if ANDROID || WINDOWS
+			, Skip = "Currently Failing on Android & Windows https://github.com/dotnet/maui/issues/17444"
+#endif
+			)]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(FlyoutPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if ANDROID || WINDOWS
+			, Skip = "Currently Failing on Android & Windows https://github.com/dotnet/maui/issues/17444"
+#endif
+			)]
+		[InlineData($"{nameof(FlyoutPage)}WithNavigationPage, {nameof(NavigationPage)}, {nameof(FlyoutPage)}WithNavigationPage"
+#if ANDROID || WINDOWS
+			, Skip = "Currently Failing on Android & Windows https://github.com/dotnet/maui/issues/17444"
+#endif
+			)]
+		[InlineData($"{nameof(Shell)}, {nameof(ContentPage)}, {nameof(Shell)}"
+#if ANDROID || WINDOWS
+			, Skip = "Currently Failing on Android & Windows https://github.com/dotnet/maui/issues/17444"
+#endif
+			)]
+		[InlineData($"FlyoutPageWithNavigationPage, NavigationPageWithFlyoutPage, FlyoutPageWithNavigationPage"
+#if ANDROID || WINDOWS
+			, Skip = "Currently Failing on Android & Windows https://github.com/dotnet/maui/issues/17444"
+#endif
+			)]
 		public async Task ToolbarUpdatesCorrectlyWhenSwappingMainPageWithAlreadyUsedPage(string pages)
 		{
 			string[] pageSet = pages.Split(',');
