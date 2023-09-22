@@ -62,6 +62,37 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Theory(DisplayName = "Shell TabBar add/remove selected color works correctly")]
+		[InlineData("#FF0000")]
+		[InlineData("#00FF00")]
+		public async Task ShellTabBarAddRemoveSelectedColorWorksCorrectly(string colorHex)
+		{
+			var expectedColor = Color.FromArgb(colorHex);
+			var unselectedColor = Color.FromArgb("#FFFF00");
+			await RunShellTabBarTests(shell =>
+				{
+					Shell.SetTabBarForegroundColor(shell, expectedColor);
+					Shell.SetTabBarUnselectedColor(shell, unselectedColor);
+				},
+				async (shell) =>
+				{
+					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, true);
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], unselectedColor, true);
+
+					var removedTab = shell.Items[0].Items[0];
+
+					// Remove the selected tab...
+					shell.Items[0].Items.RemoveAt(0);
+
+					// Now add it back
+					shell.Items[0].Items.Add(removedTab);
+
+					await ValidateTabBarTextColor(shell.CurrentSection, expectedColor, true);	   // Tab 2
+					await ValidateTabBarTextColor(shell.Items[0].Items[1], unselectedColor, true); // Tab 3
+					await ValidateTabBarTextColor(shell.Items[0].Items[2], unselectedColor, true); // Tab 1
+				});
+		}
+
 		NavigationView GetTabBarItems(ShellSection section)
 		{
 			var shellItemHandler = section.FindParentOfType<Shell>().CurrentItem.Handler as ShellItemHandler;
