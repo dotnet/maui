@@ -62,6 +62,8 @@
     </ContentView.Resources>
 
     <HorizontalStackLayout Margin="10,10,10,10" Spacing="10">
+        <Label AutomationId="WaitForStubControl" />
+
         <VerticalStackLayout Spacing="10" VerticalOptions="Center">
             <Border Style="{StaticResource BorderStyle}">
                 <Label
