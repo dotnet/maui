@@ -36,6 +36,23 @@ namespace Microsoft.Maui.IntegrationTests
 				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
 			}
 
+			// We set WarnAsError to specifically cause *MSBuild* warnings to be errors (setting TreatWarningsAsErrors
+			// affect only C# compiler warnings).
+			buildArgs += " -warnaserror";
+
+			// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
+			var csWarningsToIgnore = new string[]
+			{
+				"NETSDK1201", // Details: "For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier
+							  // will no longer produce a self contained app by default. To continue building
+							  // self-contained apps, set the SelfContained property to true or use the --self-contained
+							  // argument."
+							  // Justification: This warning isn't meaningful in this test scenario.
+				"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
+						  // Justification: It's OK for templates to have missing doc comments.
+			};
+			buildArgs += " " + string.Join(" ", csWarningsToIgnore.Select(csWarning => $"-p:nowarn={csWarning}"));
+
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
@@ -84,8 +101,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
 		{
 			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
-			if (exitCode != 0)
-				TestContext.WriteLine(runOutput);
+			TestContext.WriteLine($"Process exit code: {exitCode}");
+			TestContext.WriteLine($"-------- Process output start --------");
+			TestContext.WriteLine(runOutput);
+			TestContext.WriteLine($"-------- Process output end --------");
 
 			return exitCode == 0;
 		}

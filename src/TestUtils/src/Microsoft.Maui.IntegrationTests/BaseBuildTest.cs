@@ -98,25 +98,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
-			// Clean up test or attach content from failed tests
-			if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed ||
-				TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Skipped)
+			// Attach test content and logs as artifacts
+			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
-				try
-				{
-					if (Directory.Exists(TestDirectory))
-						Directory.Delete(TestDirectory, recursive: true);
-				}
-				catch (IOException)
-				{
-				}
-			}
-			else
-			{
-				foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
-				{
-					TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
-				}
+				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
 			}
 		}
 
