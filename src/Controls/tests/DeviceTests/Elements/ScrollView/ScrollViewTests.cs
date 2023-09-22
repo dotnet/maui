@@ -142,7 +142,11 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
 			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
 
-			await AttachAndRun(parentLayout, (layoutHandler) => { });
+			await AttachAndRun(parentLayout, async (layoutHandler) => {
+#if IOS || MACCATALYST
+				await layoutHandler.PlatformView.ThrowScreenshot(MauiContext, "Throwing to see results");
+#endif
+			});
 
 			// Android is usually off by one or two px. Hence that's why the condition has some tolerance
 			Assert.Equal(scrollView.Height, childLayout.Height, 2.0);
