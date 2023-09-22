@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Graphics;
@@ -8,12 +9,15 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using Google.Android.Material.BottomNavigation;
+using Google.Android.Material.Navigation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
+using MColor = Microsoft.Maui.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 
 namespace Microsoft.Maui.DeviceTests
@@ -642,5 +646,81 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool IsExcludedWithChildren(this AView view) =>
 			view.GetSemanticPlatformElement().ImportantForAccessibility == ImportantForAccessibility.NoHideDescendants;
+
+		static public Task AssertTabItemTextDoesNotContainColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemTextContainsColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static async Task AssertTabItemTextColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<TextView>()?.Parent;
+
+			if (navItemView is null)
+				throw new Exception("Unable to locate Tab Item Text Container");
+
+			if (hasColor)
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			else
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+		}
+
+		static async Task AssertTabItemIconColor(
+			this BottomNavigationView navigationView, string tabText, MColor expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var navItemView = (AView?)GetTab(navigationView, tabText)?.GetFirstChildOfType<ImageView>()?.Parent;
+
+			if (navItemView is null)
+				throw new Exception("Unable to locate Tab Item Icon Container");
+
+			if (hasColor)
+				await navItemView.AssertContainsColor(expectedColor.ToPlatform(), mauiContext);
+			else
+				await navItemView.AssertDoesNotContainColor(expectedColor.ToPlatform(), mauiContext);
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this BottomNavigationView navigationView,
+			string tabText,
+			MColor expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static BottomNavigationItemView GetTab(
+			this BottomNavigationView bottomView, string tabText)
+		{
+			var menu = bottomView.Menu;
+
+			var navigationMenu = (BottomNavigationMenuView)bottomView.MenuView;
+			var navItems = navigationMenu.GetChildrenOfType<BottomNavigationItemView>();
+
+			var navItemView =
+				navItems.Single(x =>
+				{
+					return x.GetChildrenOfType<TextView>()
+						.Where(tv => String.Equals(tv.Text, tabText, StringComparison.OrdinalIgnoreCase))
+						.Count() > 0;
+				});
+
+			return navItemView;
+		}
 	}
 }

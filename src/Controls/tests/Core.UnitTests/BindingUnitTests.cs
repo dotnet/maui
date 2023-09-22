@@ -2308,5 +2308,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var label = new Label();
 			label.SetBinding(Label.TextColorProperty, new Binding());
 		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/16849
+		public void ValueFromHandlerDoesntClearTwoWayBinding()
+		{
+			var vm = new MockViewModel();
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Text", BindingMode.TwoWay);
+			entry.SetValueFromRenderer(Entry.TextProperty, "foo");
+			Assert.Equal("foo", vm.Text);
+			vm.Text = "bar";
+			Assert.Equal("bar", entry.Text);
+			vm.Text = string.Empty;
+			Assert.Equal(string.Empty, entry.Text);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/16849
+		public void ManualValueDoesntClearTwoWayBinding()
+		{
+			var vm = new MockViewModel();
+			var entry = new Entry { BindingContext = vm };
+			entry.SetBinding(Entry.TextProperty, "Text", BindingMode.TwoWay);
+			entry.SetValue(Entry.TextProperty, "foo");
+			Assert.Equal("foo", vm.Text);
+			vm.Text = "bar";
+			Assert.Equal("bar", entry.Text);
+			vm.Text = string.Empty;
+			Assert.Equal(string.Empty, entry.Text);
+		}
 	}
 }

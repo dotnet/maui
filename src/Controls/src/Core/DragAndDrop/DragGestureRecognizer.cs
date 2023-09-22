@@ -108,18 +108,22 @@ namespace Microsoft.Maui.Controls
 			DropCompleted?.Invoke(this, args);
 		}
 
-		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null)
+		internal DragStartingEventArgs SendDragStarting(View element, Func<IElement?, Point?>? getPosition = null, PlatformDragStartingEventArgs? platformArgs = null)
 		{
-			var args = new DragStartingEventArgs(getPosition);
+			var args = new DragStartingEventArgs(getPosition, platformArgs);
 
 			DragStartingCommand?.Execute(DragStartingCommandParameter);
 			DragStarting?.Invoke(this, args);
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (!args.Handled)
 				args.Data.PropertiesInternal.Add("DragSource", element);
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (args.Cancel || args.Handled)
 				return args;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_isDragActive = true;
 

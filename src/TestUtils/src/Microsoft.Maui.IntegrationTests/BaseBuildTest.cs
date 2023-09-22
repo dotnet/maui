@@ -3,6 +3,9 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public class BaseBuildTest
 	{
+		public const string DotNetCurrent = "net7.0";
+		public const string DotNetPrevious = "net6.0";
+
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
 
 		public string TestName
@@ -25,7 +28,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
 		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected string[] BuildProps => new[]
+		protected List<string> BuildProps => new()
 		{
 			"RestoreNoCache=true",
 			//"GenerateAppxPackageOnBuild=true",

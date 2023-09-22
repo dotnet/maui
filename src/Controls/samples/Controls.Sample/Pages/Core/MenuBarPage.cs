@@ -12,9 +12,10 @@ namespace Maui.Controls.Sample.Pages
 			InitializeComponent();
 
 			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(
-				new KeyboardAccelerator() { 
-					Modifiers = KeyboardAcceleratorModifiers.Ctrl|KeyboardAcceleratorModifiers.Shift,
-					Key = "F" 
+				new KeyboardAccelerator()
+				{
+					Modifiers = KeyboardAcceleratorModifiers.Ctrl | KeyboardAcceleratorModifiers.Shift,
+					Key = "F"
 				}
 			);
 			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(

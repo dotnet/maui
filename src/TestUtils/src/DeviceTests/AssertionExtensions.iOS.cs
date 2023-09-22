@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
@@ -582,6 +582,14 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						foreach (var window in windowScene.Windows)
 						{
+#if MACCATALYST
+							// When running headless (on CI or local) Mac Catalyst has trouble finding the window through the method below.
+							// Added an env variable to accommodate for this and just return the first window found.
+							if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("headlessrunner")))
+							{	
+								return window;
+							}
+#endif
 							if (window.IsKeyWindow)
 							{
 								return window;
@@ -745,6 +753,84 @@ namespace Microsoft.Maui.DeviceTests
 
 			_ = item ?? throw new Exception("Unable to locate BackButton UILabel Inside UINavigationBar");
 			return titleLabel?.Text;
+		}
+
+		static public Task AssertTabItemTextDoesNotContainColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemTextContainsColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemTextColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static async Task AssertTabItemTextColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UILabel>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext, 0.1);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static async Task AssertTabItemIconColor(
+			this UITabBar navigationView, string tabText, Color expectedColor, bool hasColor,
+			IMauiContext mauiContext)
+		{
+			var tabBarItemView = GetTabItemView(navigationView, tabText).FindDescendantView<UIImageView>();
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to locate Tab Item Icon Container: {tabText}");
+
+			if (hasColor)
+			{
+				await tabBarItemView.AssertContainsColor(expectedColor, mauiContext);
+			}
+			else
+			{
+				await tabBarItemView.AssertDoesNotContainColor(expectedColor, mauiContext);
+			}
+		}
+
+		static public Task AssertTabItemIconDoesNotContainColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, false, mauiContext);
+
+		static public Task AssertTabItemIconContainsColor(
+			this UITabBar navigationView,
+			string tabText,
+			Color expectedColor,
+			IMauiContext mauiContext) => AssertTabItemIconColor(navigationView, tabText, expectedColor, true, mauiContext);
+
+		static UIView GetTabItemView(this UITabBar tabBar, string tabText)
+		{
+			var tabBarItem = tabBar.Items?.Single(t => string.Equals(t.Title, tabText, StringComparison.OrdinalIgnoreCase));
+
+			if (tabBarItem is null)
+				throw new Exception($"Unable to find tab bar item: {tabText}");
+
+			var tabBarItemView = tabBarItem.ValueForKey(new Foundation.NSString("view")) as UIView;
+
+			if (tabBarItemView is null)
+				throw new Exception($"Unable to find tab bar item: {tabText}");
+
+			return tabBarItemView;
 		}
 	}
 }

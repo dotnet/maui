@@ -24,10 +24,12 @@ namespace Microsoft.Maui.Controls
 		/// </summary>
 		/// <param name="dataPackage">The data package associated with the drag source.</param>
 		/// <param name="getPosition">The current location in the coordinate system of the drag.</param>
-		internal DragEventArgs(DataPackage dataPackage, Func<IElement?, Point?>? getPosition)
+		/// <param name="platformArgs">The platform-specific data associated with the drag.</param>
+		internal DragEventArgs(DataPackage dataPackage, Func<IElement?, Point?>? getPosition, PlatformDragEventArgs platformArgs)
 		{
 			Data = dataPackage;
 			_getPosition = getPosition;
+			PlatformArgs = platformArgs;
 		}
 
 		/// <summary>
@@ -39,6 +41,11 @@ namespace Microsoft.Maui.Controls
 		/// Gets or sets a value that specifies which operations are allowed by the drop target.
 		/// </summary>
 		public DataPackageOperation AcceptedOperation { get; set; } = DataPackageOperation.Copy;
+
+		/// <summary>
+		/// Gets the platform-specific arguments associated with the <see cref="DragEventArgs"/>.
+		/// </summary>
+		public PlatformDragEventArgs? PlatformArgs { get; }
 
 		/// <summary>
 		/// Gets the location of the drag relative to the specified element.
