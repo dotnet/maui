@@ -131,8 +131,11 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var label = new Label() { Text = "Text inside a ScrollView"};
 			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout };
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout , Background = Brush.Red };
 			var parentLayout = new Grid { scrollView };
+
+			parentLayout.Background = Brush.Yellow;
+			childLayout.Background = Brush.AliceBlue;
 
 			var expectedHeight = 100;
 			parentLayout.HeightRequest = expectedHeight;
