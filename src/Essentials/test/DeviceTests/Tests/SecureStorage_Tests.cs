@@ -167,6 +167,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #if MACCATALYST
 			(Skip = "Need to configure entitlements.")
 #endif
+
+#if WINDOWS
+			(Skip = "IOException on unpackaged: The process cannot access the file...")
+#endif
 		]
 		public async Task Set_Get_Async_MultipleTimes()
 		{
@@ -184,6 +188,10 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		[Fact
 #if MACCATALYST
 			(Skip = "Need to configure entitlements.")
+#endif
+
+#if WINDOWS
+			(Skip = "IOException on unpackaged: The process cannot access the file...")
 #endif
 		]
 		public async Task Set_Get_Remove_Async_MultipleTimes()

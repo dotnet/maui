@@ -6,13 +6,16 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	//// Uncomment these sections if you hit issues with parallel executions
-	//[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
-	//public class NonParallelCollectionDefinitionClass
-	//{
-	//}
+	// Uncomment these sections if you hit issues with parallel executions
 
-	//[Collection("Non-Parallel Collection")]
+#if WINDOWS
+	[CollectionDefinition("Non-Parallel Collection", DisableParallelization = true)]
+	public class NonParallelCollectionDefinitionClass
+	{
+	}
+
+	[Collection("Non-Parallel Collection")]
+#endif
 	public partial class TestBase
 	{
 		public const int EmCoefficientPrecision = 4;

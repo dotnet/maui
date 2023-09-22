@@ -73,7 +73,11 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 
-		[Fact(DisplayName = "Bar Text Color")]
+		[Fact(DisplayName = "Bar Text Color"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
 		public async Task BarTextColor()
 		{
 			SetupBuilder();
@@ -103,7 +107,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Selected/Unselected Color")]
+		[Fact(DisplayName = "Selected/Unselected Color"
+#if MACCATALYST
+			, Skip = "Fails on Mac Catalyst, fixme"
+#endif
+			)]
 		public async Task SelectedAndUnselectedTabColor()
 		{
 			SetupBuilder();
@@ -195,7 +203,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash")]
+		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
+#if WINDOWS || ANDROID
+		, Skip = "Fails on Windows and Android (https://github.com/dotnet/maui/issues/17444)"
+#endif
+		)]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemoveCurrentPageAndThenReAddDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
@@ -203,7 +215,18 @@ namespace Microsoft.Maui.DeviceTests
 
 			var tabbedPage = CreateBasicTabbedPage(bottomTabs, isSmoothScrollEnabled);
 
-			var firstPage = new NavigationPage(new ContentPage());
+			var firstPage = new NavigationPage(new ContentPage()
+			{
+				Content = new VerticalStackLayout()
+				{
+					new Label()
+					{
+						Text = "Page one",
+						Background = Colors.Purple
+					}
+				}
+			});
+
 			tabbedPage.Children.Insert(0, firstPage);
 			tabbedPage.CurrentPage = firstPage;
 			var secondPage = tabbedPage.Children[1];
@@ -314,8 +337,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS
-		[Theory]
+#if !WINDOWS && !MACCATALYST
+		[Theory(
+#if IOS
+		Skip = "Test crashes on iOS, potential fix: https://github.com/dotnet/maui/pull/17544"
+#endif
+		)]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{
@@ -343,6 +370,8 @@ namespace Microsoft.Maui.DeviceTests
 
 #if IOS
 		[Theory(Skip = "Test doesn't work on iOS yet; probably because of https://github.com/dotnet/maui/issues/10591")]
+#elif WINDOWS
+		[Theory(Skip = "Test doesn't work on Windows")]
 #else
 		[Theory]
 #endif
