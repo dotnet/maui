@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Appium;
+using NUnit.Framework;
 
 namespace Microsoft.Maui.AppiumTests
 {
@@ -15,14 +16,18 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			base.FixtureSetup();
 			App.NavigateToGallery(BorderGallery);
-
-			VerifyScreenshot();
 		}
 
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
 			App.NavigateBack();
+		}
+
+		[Test]
+		public void BordersAreValid()
+		{
+			VerifyScreenshot();
 		}
 	}
 }
