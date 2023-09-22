@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var bc1 = new object();
 			var bc2 = new object();
-			
+
 			var swipeView = new SwipeView();
 			var leftItems = swipeView.LeftItems;
 			var swipeItem = new SwipeItem();
