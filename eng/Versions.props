@@ -28,7 +28,7 @@
     <MicrosoftMacCatalystSdknet80_164PackageVersion>16.4.8959-net8-rc2</MicrosoftMacCatalystSdknet80_164PackageVersion>
     <MicrosoftmacOSSdknet80_133PackageVersion>13.3.8959-net8-rc2</MicrosoftmacOSSdknet80_133PackageVersion>
     <MicrosoftiOSSdknet80_164PackageVersion>16.4.8961-net8-rtm</MicrosoftiOSSdknet80_164PackageVersion>
-    <MicrosofttvOSSdknet80_164PackageVersion>16.4.8959-net8-rc2</MicrosofttvOSSdknet80_164PackageVersion>
+    <MicrosofttvOSSdknet80_164PackageVersion>16.4.8961-net8-rtm</MicrosofttvOSSdknet80_164PackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet80_164PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet80_133PackageVersion)</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet80_164PackageVersion)</MicrosoftiOSSdkPackageVersion>
