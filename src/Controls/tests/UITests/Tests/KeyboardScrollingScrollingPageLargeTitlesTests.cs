@@ -42,5 +42,11 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			KeyboardScrolling.EditorsScrollingTest(App, UITestContext, KeyboardScrollingGallery);
 		}
+
+		[Test]
+		public void EntryNextEditorTest()
+		{
+			KeyboardScrolling.EntryNextEditorScrollingTest(App, UITestContext, KeyboardScrollingGallery);
+		}
 	}
 }

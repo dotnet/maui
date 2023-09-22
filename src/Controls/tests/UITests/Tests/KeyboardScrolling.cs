@@ -32,7 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			// Entries 6 - 14 hit a group of interesting areas on scrolling
 			// depending on the type of iOS device.
-			for (int i = 6; i <= 15; i++)
+			for (int i = 6; i <= 14; i++)
 			{
 				var shouldContinue = false;
 				if (isEditor)
@@ -52,14 +52,17 @@ namespace Microsoft.Maui.AppiumTests
 			app.WaitForElement("TargetView");
 			app.EnterText("TargetView", pageName);
 			app.Tap("GoButton");
+			app.Tap(marked);
 			var shouldContinue = CheckIfViewAboveKeyboard(app, marked, isEditor);
+			if (shouldContinue)
+				HideKeyboard(app, (app as AppiumUITestApp)?.Driver, isEditor);
 			app.NavigateBack();
 			return shouldContinue;
 		}
 
+		// will return a bool showing if the view is visible
 		static bool CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
 		{
-			app.Tap(marked);
 			var views = app.WaitForElement(marked);
 
 			// if this view is not on the screen, the keyboard will not be
@@ -85,12 +88,15 @@ namespace Microsoft.Maui.AppiumTests
 			}
 			Assert.Less(rect.CenterY, keyboardPosition.Y);
 
+			return true;
+		}
+
+		internal static void HideKeyboard(IApp app, AppiumDriver? driver, bool isEditor)
+		{
 			if (isEditor)
-				CloseiOSEditorKeyboard(testApp?.Driver);
+				CloseiOSEditorKeyboard(driver);
 			else
 				app.DismissKeyboard();
-
-			return true;
 		}
 
 		internal static System.Drawing.Point? FindiOSKeyboardLocation(AppiumDriver? driver)
@@ -107,6 +113,36 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			var keyboardDoneButton = driver?.FindElement(MobileBy.Name("Done"));
 			keyboardDoneButton?.Click();
+		}
+
+		internal static void EntryNextEditorScrollingTest(IApp app, IUITestContext? testContext, string galleryName)
+		{
+			testContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
+				"These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.");
+
+			app.WaitForElement("TargetView");
+			app.EnterText("TargetView", "KeyboardScrollingEntryNextEditorPage");
+			app.Tap("GoButton");
+
+			app.WaitForElement("Entry1");
+			app.Tap("Entry1");
+			CheckIfViewAboveKeyboard(app, "Entry1", false);
+			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+
+			CheckIfViewAboveKeyboard(app, "Entry2", false);
+			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+
+			CheckIfViewAboveKeyboard(app, "Entry3", false);
+			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+
+			CheckIfViewAboveKeyboard(app, "Editor", true);
+		}
+
+		// Unintentionally types a 'V' but also presses the next keyboard key
+		internal static void NextiOSKeyboardPress(AppiumDriver? driver)
+		{
+			var keyboard = driver?.FindElement(MobileBy.ClassName("UIAKeyboard"));
+			keyboard?.SendKeys("\n");
 		}
 	}
 }

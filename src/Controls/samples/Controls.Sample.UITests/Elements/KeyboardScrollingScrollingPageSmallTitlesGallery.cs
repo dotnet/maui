@@ -12,6 +12,7 @@ namespace Maui.Controls.Sample
 			On<iOS>().SetLargeTitleDisplay(LargeTitleDisplayMode.Never);
 			Add(new KeyboardScrollingEntriesPage());
 			Add(new KeyboardScrollingEditorsPage());
+			Add(new KeyboardScrollingEntryNextEditorPage());
 		}
 
 		protected override bool SupportsScroll

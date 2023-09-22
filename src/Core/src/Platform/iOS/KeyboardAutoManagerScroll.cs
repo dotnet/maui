@@ -28,6 +28,7 @@ public static class KeyboardAutoManagerScroll
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
 	static UIView? View = null;
+	static bool isLastViewEntry = false;
 	static UIView? ContainerView = null;
 	static CGRect? StartingContainerViewFrame = null;
 	static CGRect? CursorRect = null;
@@ -149,6 +150,17 @@ public static class KeyboardAutoManagerScroll
 			await AdjustPositionDebounce();
 			IsKeyboardShowing = true;
 		}
+		// if we are going from an entry to an editor, without lowering the
+		// keyboard we need to adjust for the AccessoryView on editors
+		else if (isLastViewEntry && View is UITextView)
+		{
+			await AdjustPositionDebounce();
+		}
+
+		if (View is UITextField)
+			isLastViewEntry = true;
+		else
+			isLastViewEntry = false;
 	}
 
 	static void WillHideKeyboard(NSNotification notification)
