@@ -31,12 +31,10 @@ namespace Microsoft.Maui.Handlers
 			base.SetupContainer();
 
 			// VerticalAlignment only works when the child's Height is Auto
-			PlatformView.Height = double.NaN;
+			PlatformView.Height = Primitives.Dimension.Unset;
 
-			MapHeight(this, VirtualView);
-			MapWidth(this, VirtualView);
-			MapMaximumHeight(this, VirtualView);
-			MapMaximumWidth(this, VirtualView);
+			UpdateValue(nameof(IView.Height));
+			UpdateValue(nameof(IView.Width));
 		}
 
 		/// <inheritdoc/>
@@ -44,10 +42,8 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.RemoveContainer();
 
-			MapHeight(this, VirtualView);
-			MapWidth(this, VirtualView);
-			MapMaximumHeight(this, VirtualView);
-			MapMaximumWidth(this, VirtualView);
+			UpdateValue(nameof(IView.Height));
+			UpdateValue(nameof(IView.Width));
 		}
 
 		/// <summary>
@@ -58,13 +54,16 @@ namespace Microsoft.Maui.Handlers
 		public static void MapHeight(IImageHandler handler, IImage view)
 		{
 			// VerticalAlignment only works when the container's Height is set and the child's Height is Auto. The child's Height
-			// is set to Auto when the container is introduced
-			if (handler.ContainerView is FrameworkElement element)
+			// is set to Auto when the container is introduced.
+			if (handler.ContainerView is FrameworkElement container)
 			{
-				element.Height = view.Height;
+				container.Height = view.Height;
+				handler.PlatformView.Height = Primitives.Dimension.Unset;
 			}
-
-			ViewHandler.MapHeight(handler, view);
+			else
+			{
+				ViewHandler.MapHeight(handler, view);
+			}
 		}
 
 		/// <summary>
@@ -74,42 +73,14 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="view">The associated <see cref="Image"/> instance.</param>
 		public static void MapWidth(IImageHandler handler, IImage view)
 		{
-			if (handler.ContainerView is FrameworkElement element)
+			if (handler.ContainerView is FrameworkElement container)
 			{
-				element.Width = view.Width;
+				container.Width = view.Width;
 			}
-
-			ViewHandler.MapWidth(handler, view);
-		}
-
-		/// <summary>
-		/// Maps the abstract <see cref="IView.MaximumHeight"/> property to the platform-specific implementations.
-		/// </summary>
-		/// <param name="handler">The associated handler.</param>
-		/// <param name="view">The associated <see cref="Image"/> instance.</param>
-		public static void MapMaximumHeight(IImageHandler handler, IImage view)
-		{
-			if (handler.ContainerView is FrameworkElement element)
+			else
 			{
-				element.MaxHeight = view.MaximumHeight;
+				ViewHandler.MapWidth(handler, view);
 			}
-
-			ViewHandler.MapMaximumHeight(handler, view);
-		}
-
-		/// <summary>
-		/// Maps the abstract <see cref="IView.MaximumWidth"/> property to the platform-specific implementations.
-		/// </summary>
-		/// <param name="handler">The associated handler.</param>
-		/// <param name="view">The associated <see cref="Image"/> instance.</param>
-		public static void MapMaximumWidth(IImageHandler handler, IImage view)
-		{
-			if (handler.ContainerView is FrameworkElement element)
-			{
-				element.MaxWidth = view.MaximumWidth;
-			}
-
-			ViewHandler.MapMaximumWidth(handler, view);
 		}
 
 		/// <summary>
