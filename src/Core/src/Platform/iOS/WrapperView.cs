@@ -4,6 +4,7 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using static Microsoft.Maui.Primitives.Dimension;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -131,6 +132,23 @@ namespace Microsoft.Maui.Platform
 			}
 
 			return child.SizeThatFits(size);
+		}
+
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		{
+			if (Subviews.Length == 0)
+				return base.SizeThatFits(originalSpec);
+
+			var child = Subviews[0];
+
+			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null))
+			{
+				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
+				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
+				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+			}
+
+			return SizeThatFits(originalSpec);
 		}
 
 		public override void SetNeedsLayout()
