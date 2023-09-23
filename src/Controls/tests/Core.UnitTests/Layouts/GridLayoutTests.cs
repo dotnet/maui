@@ -187,24 +187,27 @@ namespace Microsoft.Maui.Controls.Core.UnitTests.Layouts
 			Assert.Equal(def2.BindingContext, context);
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task ColumnDefinitionDoesNotLeak()
 		{
 			// Long-lived column, like from a Style in App.Resources
-			var column = new ColumnDefinition();
-			WeakReference reference;
+			var columnDefinition = new ColumnDefinition();
 
+			WeakReference CreateReference()
 			{
 				var grid = new Grid();
-				grid.ColumnDefinitions.Add(column);
-				reference = new(grid);
+				grid.ColumnDefinitions.Add(columnDefinition);
+				return new(grid);
 			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			WeakReference reference = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Grid should not be alive!");
+
+			// Ensure that the ColumnDefinition isn't collected during the test
+			GC.KeepAlive(columnDefinition);
 		}
 
 		[Fact]

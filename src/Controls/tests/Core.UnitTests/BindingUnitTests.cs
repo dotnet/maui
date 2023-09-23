@@ -2041,34 +2041,38 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)] 
 		public async Task BindingUnsubscribesForDeadTarget()
 		{
-			var viewmodel = new TestViewModel();
+			var viewModel = new TestViewModel();
 
+			void CreateReference()
 			{
 				var button = new Button();
 				button.SetBinding(Button.TextProperty, "Foo");
-				button.BindingContext = viewmodel;
+				button.BindingContext = viewModel;
 			}
 
-			Assert.Equal(1, viewmodel.InvocationListSize());
+			CreateReference();
+			
+			Assert.Equal(1, viewModel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
-			viewmodel.OnPropertyChanged("Foo");
+			viewModel.OnPropertyChanged("Foo");
 
-			Assert.Equal(0, viewmodel.InvocationListSize());
+			Assert.Equal(0, viewModel.InvocationListSize());
+
+			// Ensure that the viewModel isn't collected during the test
+			GC.KeepAlive(viewModel);
 		}
 
-		[Fact]
+		[Fact] // Fixed
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
-			WeakReference bindingRef;
-
+			
+			WeakReference CreateReference()
 			{
 				var binding = new Binding("Foo");
 
@@ -2076,8 +2080,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewModel;
 
-				bindingRef = new WeakReference(binding);
+				return new (binding);
 			}
+
+			var bindingRef = CreateReference();
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
@@ -2086,6 +2092,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.WaitForPendingFinalizers();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
+
+			GC.KeepAlive(viewModel);
 		}
 
 		[Fact]

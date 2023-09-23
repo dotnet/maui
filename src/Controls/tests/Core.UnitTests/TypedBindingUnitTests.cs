@@ -1406,7 +1406,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingUnsubscribesForDeadTarget()
 		{
 			var viewmodel = new TestViewModel();
@@ -1437,9 +1437,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			viewmodel.OnPropertyChanged("Foo");
 
