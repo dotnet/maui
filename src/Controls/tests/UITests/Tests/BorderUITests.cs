@@ -25,8 +25,12 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void BordersAreValid()
+		public void BordersWithVariousShapes()
 		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "BordersWithVariousShapes");
+			App.Tap("GoButton");
+
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();

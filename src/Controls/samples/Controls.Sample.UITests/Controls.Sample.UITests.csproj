@@ -46,15 +46,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="Elements\Border1.xaml.cs">
-      <DependentUpon>Border1.xaml</DependentUpon>
+    <Compile Update="Elements\BordersWithVariousShapes.xaml.cs">
+      <DependentUpon>BordersWithVariousShapes.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
   <ItemGroup>
-    <MauiXaml Update="Elements\Border1.xaml">
+    <MauiXaml Update="Elements\BordersWithVariousShapes.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
   </ItemGroup>

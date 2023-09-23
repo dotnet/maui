@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample
 	{
 		public BorderGallery()
 		{
-			Add(new Border1());
+			Add(new BordersWithVariousShapes());
 		}
 	}
 }

@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentView
-    x:Class="Maui.Controls.Sample.Border1"
+    x:Class="Maui.Controls.Sample.BordersWithVariousShapes"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    AutomationId="Border1">
+    AutomationId="BordersWithVariousShapes">
     <ContentView.Resources>
         <Style x:Key="BorderStyle" TargetType="Border">
             <Style.Setters>

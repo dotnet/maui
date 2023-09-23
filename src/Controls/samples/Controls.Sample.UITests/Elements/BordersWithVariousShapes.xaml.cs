@@ -4,9 +4,9 @@ using Microsoft.Maui.Controls.Xaml;
 namespace Maui.Controls.Sample
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class Border1 : ContentView
+	public partial class BordersWithVariousShapes : ContentView
 	{
-		public Border1()
+		public BordersWithVariousShapes()
 		{
 			InitializeComponent();
 		}
