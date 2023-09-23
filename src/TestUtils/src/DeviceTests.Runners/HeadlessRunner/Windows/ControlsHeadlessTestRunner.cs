@@ -74,14 +74,14 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			_resultsPath = $"{resultPath[0]}_{currentCategory}.xml";
 
 			testRunner.SkipCategories(categoriesToSkip);
-			
+
 			return testRunner;
 		}
-		
+
 		public async Task<string?> RunTestsAsync()
 		{
 			TestsCompleted += OnTestsCompleted;
-			
+
 			try
 			{
 				// Got called with -1 parameter, just discover the tests to run

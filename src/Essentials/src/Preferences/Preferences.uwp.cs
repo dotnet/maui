@@ -177,7 +177,7 @@ namespace Microsoft.Maui.Storage
 		public void Set<T>(string key, T value, string sharedName = null)
 		{
 			Preferences.CheckIsSupportedType<T>();
-			
+
 			var prefs = _preferences.GetOrAdd(CleanSharedName(sharedName), _ => new ShareNameDictionary());
 
 			if (value is null)
