@@ -323,20 +323,26 @@ namespace Microsoft.Maui.Platform
 		void OnNavigationPlatformViewAttachedToWindow(object? sender, AView.ViewAttachedToWindowEventArgs e)
 		{
 			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
-			if (_fragmentManager?.IsDestroyed == true && _fragmentContainerView is not null)
+			if (_fragmentManager.IsDestroyed(MauiContext.Context) &&
+				_fragmentContainerView is not null)
 			{
-				CheckForFragmentChange();
 				var fragmentManager = MauiContext.GetFragmentManager();
+
+				if (fragmentManager.IsDestroyed(MauiContext.Context))
+					return;
+
 				var navHostFragment = new MauiNavHostFragment()
 				{
 					StackNavigationManager = this
 				};
 
 				// We can't call CheckForFragmentChange right away. The Fragment has to finish attaching
-				// before we can start interacting with the Navigation Host
+				// before we can start interacting with the Navigation Host.
+				// OnNavigationHostViewAdded takes care of calling CheckForFragmentChange once the
+				// view has been added
 				fragmentManager
 					.BeginTransactionEx()
-					.Add(_fragmentContainerView.Id, navHostFragment)
+					.AddEx(_fragmentContainerView.Id, navHostFragment)
 					.Commit();
 			}
 		}
