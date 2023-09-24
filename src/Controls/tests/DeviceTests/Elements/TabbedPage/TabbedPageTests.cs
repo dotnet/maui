@@ -205,7 +205,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
 #if WINDOWS
-		, Skip = "Fails on Windows and Android (https://github.com/dotnet/maui/issues/17444)"
+		, Skip = "Fails on Windows"
 #endif
 		)]
 		[ClassData(typeof(TabbedPagePivots))]
