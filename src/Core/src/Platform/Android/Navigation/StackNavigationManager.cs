@@ -324,7 +324,8 @@ namespace Microsoft.Maui.Platform
 		{
 			// If the previous Navigation Host Fragment was destroyed then we need to add a new one
 			if (_fragmentManager.IsDestroyed(MauiContext.Context) &&
-				_fragmentContainerView is not null)
+				_fragmentContainerView is not null &&
+				_fragmentContainerView.Fragment is null)
 			{
 				var fragmentManager = MauiContext.GetFragmentManager();
 
