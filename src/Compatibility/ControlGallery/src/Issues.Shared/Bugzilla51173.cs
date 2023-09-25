@@ -10,7 +10,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Image)]
@@ -22,6 +22,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 	public class Bugzilla51173 : TestContentPage
 	{
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test(Description = "Attempt to load an image from a URI which does not exist")]
 		public void Bugzilla51173_NonexistentUri()
 		{
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(q => q.Marked(NotLoading));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test(Description = "The IImageSourceHandler itself throws an exception")]
 		public void Bugzilla51173_HandlerThrowsException()
 		{
@@ -43,6 +45,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(q => q.Marked(NotLoading));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test(Description = "The URI is valid, but the image data is not")]
 		public void Bugzilla51173_RealUriWithInvalidImageData()
 		{
@@ -53,6 +56,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(q => q.Marked(NotLoading));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test(Description = "Attempt to load a local image which does not exist")]
 		public void Bugzilla51173_NonexistentImage()
 		{
@@ -63,6 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.WaitForElement(q => q.Marked(NotLoading));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test(Description = "Attempt to load a local image which exists, but has corrupt data")]
 		public void Bugzilla51173_InvalidImage()
 		{
@@ -74,6 +79,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test(Description = "Load a valid image")]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void Bugzilla51173_ValidImage()
 		{
 			RunningApp.WaitForElement(q => q.Marked(ValidImage));

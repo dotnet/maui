@@ -6,7 +6,7 @@ using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat;
 using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using static Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific.AppCompat.NavigationPage;
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class NavigationBarGallery : ContentPage
 	{

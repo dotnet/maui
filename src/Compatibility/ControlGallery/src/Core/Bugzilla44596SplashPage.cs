@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Graphics;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class Bugzilla44596SplashPage : ContentPage
 	{

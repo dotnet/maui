@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"	 
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"	 
 	xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue4744">
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue4744">
 
     <StackLayout Margin="80">
         <Button Text="Display Action Sheet (&quot;&quot;)" Clicked="Button_Clicked"></Button>

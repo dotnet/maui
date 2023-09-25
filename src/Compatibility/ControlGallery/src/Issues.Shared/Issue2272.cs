@@ -9,7 +9,7 @@ using NUnit.Framework;
 using Xamarin.UITest.Android;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
@@ -40,6 +40,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 #if __MACOS__
 		[Ignore("EnterText problems in UITest Desktop")]
 #endif
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void TestFocusIsOnTheEndAfterSettingText ()
 		{
 			RunningApp.WaitForElement("userNameEditorEmptyString");

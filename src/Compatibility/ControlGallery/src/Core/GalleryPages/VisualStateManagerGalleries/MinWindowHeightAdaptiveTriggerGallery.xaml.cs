@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries
+﻿namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries
 {
 	public partial class MinWindowHeightAdaptiveTriggerGallery : ContentPage
 	{

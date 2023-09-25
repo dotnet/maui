@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 2271, "ScrollToAsync not working on iOS", PlatformAffected.iOS)]
@@ -54,12 +54,12 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			async void ScrollToStart_Clicked(object sender, EventArgs e)
 			{
-				await scrollView.ScrollToAsync(layout.Children.First(), ScrollToPosition.Start, false);
+				await scrollView.ScrollToAsync((Element)layout.First(), ScrollToPosition.Start, false);
 			}
 
 			async void ScrollToEnd_Clicked(object sender, EventArgs e)
 			{
-				await scrollView.ScrollToAsync(layout.Children.Last(), ScrollToPosition.End, false);
+				await scrollView.ScrollToAsync((Element)layout.Last(), ScrollToPosition.End, false);
 			}
 
 			async void AddItem_Clicked(object sender, EventArgs e)

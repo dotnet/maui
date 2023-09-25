@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 				return false;
 
 			var transform = obj as Matrix;
-			if ((Object)transform == null)
+			if (transform is null)
 				return false;
 
 			const double tolerance = 0.01;

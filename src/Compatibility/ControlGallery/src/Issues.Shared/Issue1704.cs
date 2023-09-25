@@ -12,10 +12,13 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 1704, "[Enhancement] Basic GIF animation features", PlatformAffected.UWP)]
+#if UITEST
+	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.TabbedPage)]
+#endif
 	public class Issue1704 : TestTabbedPage
 	{
 		ContentPage _page1;

@@ -8,7 +8,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.ManualReview)]
@@ -39,9 +39,10 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AddToLayout(layoutCustomFount, i, _fontFamilyMacOs);
 				AddToLayout(layoutDefaultFont, i, null);
 			}
-			grid.Children.Add(label, 0, 2, 0, 1);
-			grid.Children.Add(layoutCustomFount, 0, 1);
-			grid.Children.Add(layoutDefaultFont, 1, 1);
+
+			grid.Add(label, 0, 2, 0, 1);
+			grid.Add(layoutCustomFount, 0, 1);
+			grid.Add(layoutDefaultFont, 1, 1);
 			Content = new ScrollView { Content = grid };
 		}
 

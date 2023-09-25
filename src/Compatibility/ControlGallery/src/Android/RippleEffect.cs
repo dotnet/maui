@@ -5,8 +5,8 @@ using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Platform;
 using AView = Android.Views.View;
 
-[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.RippleEffect), nameof(Microsoft.Maui.Controls.Compatibility.ControlGallery.Android.RippleEffect))]
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect), nameof(Microsoft.Maui.Controls.ControlGallery.Android.RippleEffect))]
+namespace Microsoft.Maui.Controls.ControlGallery.Android
 {
 	[Preserve(AllMembers = true)]
 	public class RippleEffect : PlatformEffect
@@ -22,7 +22,8 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Android
 
 					using (var outValue = new TypedValue())
 					{
-						view.Context.Theme.ResolveAttribute(Resource.Attribute.selectableItemBackground, outValue, true);
+						// TODO Do we need to see why this isn't generated
+						//view.Context.Theme.ResolveAttribute(Resource.Attribute.selectableItemBackground, outValue, true);
 						view.SetBackgroundResource(outValue.ResourceId);
 					}
 				}

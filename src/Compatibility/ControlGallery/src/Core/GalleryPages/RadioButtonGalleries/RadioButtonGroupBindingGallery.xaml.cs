@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using Microsoft.Maui.Controls.Xaml;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries
+namespace Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries
 {
 	[XamlCompilation(XamlCompilationOptions.Compile)]
 	public partial class RadioButtonGroupBindingGallery : ContentPage

@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using Microsoft.Maui.Storage;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	public class SimpleApp : Application
 	{

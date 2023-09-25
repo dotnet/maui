@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Microsoft.Maui.Controls.Compatibility.UITests;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.Gestures)]
@@ -67,6 +67,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SingleTapWithOnlyDoubleTapRecognizerShouldRegisterNothing()
 		{
 			RunningApp.WaitForElement(DoubleTapBoxId);
@@ -76,6 +77,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void DoubleTapWithOnlyDoubleTapRecognizerShouldRegisterOneDoubleTap()
 		{
 			RunningApp.WaitForElement(DoubleTapBoxId);

@@ -7,7 +7,7 @@ using Microsoft.Maui.Controls.Compatibility.UITests;
 using System.Threading.Tasks;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Issue(IssueTracker.Github, 9951, "Android 10 Setting ThumbColor on Switch causes a square block", PlatformAffected.Android)]
 #if UITEST

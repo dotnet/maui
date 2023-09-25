@@ -257,15 +257,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.DeviceTests.Shared", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.DeviceTests", "src\Graphics\tests\DeviceTests\Graphics.DeviceTests.csproj", "{34969E49-FA6E-41BB-9813-5689BB14021E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{AFDA4EF1-D2FF-4324-9CAD-2EA882C61289}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{AFDA4EF1-D2FF-4324-9CAD-2EA882C61289}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{2CC3DA70-87A1-4B1C-BA1D-A4604D335712}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{2CC3DA70-87A1-4B1C-BA1D-A4604D335712}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{449BE21C-C436-46AC-A1B0-CEC0AA0CCB6A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{449BE21C-C436-46AC-A1B0-CEC0AA0CCB6A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestUtils.Appium.UITests", "src\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj", "{32785C8E-3312-4994-B957-75842EDB0DED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.Appium.UITests", "src\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj", "{32785C8E-3312-4994-B957-75842EDB0DED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{11453141-4D35-48A3-819A-BCED5ACEBF28}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{11453141-4D35-48A3-819A-BCED5ACEBF28}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.Core.UnitTests", "src\Compatibility\Core\tests\Compatibility.UnitTests\Compatibility.Core.UnitTests.csproj", "{72226329-4B50-4AE3-AF6E-2E2CCD33CF08}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -675,6 +677,10 @@ Global
 		{11453141-4D35-48A3-819A-BCED5ACEBF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11453141-4D35-48A3-819A-BCED5ACEBF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11453141-4D35-48A3-819A-BCED5ACEBF28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{72226329-4B50-4AE3-AF6E-2E2CCD33CF08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{72226329-4B50-4AE3-AF6E-2E2CCD33CF08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{72226329-4B50-4AE3-AF6E-2E2CCD33CF08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{72226329-4B50-4AE3-AF6E-2E2CCD33CF08}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -799,6 +805,7 @@ Global
 		{449BE21C-C436-46AC-A1B0-CEC0AA0CCB6A} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{32785C8E-3312-4994-B957-75842EDB0DED} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{11453141-4D35-48A3-819A-BCED5ACEBF28} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{72226329-4B50-4AE3-AF6E-2E2CCD33CF08} = {85EBD2BA-EA5A-4B1F-AF16-81FBD58579DF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

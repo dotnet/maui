@@ -1,6 +1,6 @@
 using Microsoft.Maui.Controls.CustomAttributes;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	internal class StepperCoreGalleryPage : CoreGalleryPage<Stepper>
 	{

@@ -2,9 +2,9 @@
 using Microsoft.Maui.Controls.Compatibility.Platform.iOS;
 using Microsoft.Maui.Controls.Platform;
 
-[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomEffects.FooEffect), nameof(Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomEffects.FooEffect))]
+[assembly: ExportEffect(typeof(Microsoft.Maui.Controls.ControlGallery.iOS.CustomEffects.FooEffect), nameof(Microsoft.Maui.Controls.ControlGallery.iOS.CustomEffects.FooEffect))]
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.iOS.CustomEffects
+namespace Microsoft.Maui.Controls.ControlGallery.iOS.CustomEffects
 {
 	public class FooEffect : PlatformEffect
 	{

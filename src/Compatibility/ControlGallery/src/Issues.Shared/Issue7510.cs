@@ -13,7 +13,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[Category(UITestCategories.CollectionView)]
@@ -83,7 +83,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 				var cell = new Label();
 				cell.SetBinding(Label.TextProperty, "Title");
-				grid.Children.Add(cell, 0, 0);
+				grid.Add(cell, 0, 0);
 
 				return grid;
 			});

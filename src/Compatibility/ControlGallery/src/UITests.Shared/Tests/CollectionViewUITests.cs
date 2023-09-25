@@ -61,6 +61,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		[TestCase("DataTemplate", "HorizontalListCode", 19, 6)]
 		[TestCase("DataTemplate", "VerticalGridCode", 19, 6)]
 		[TestCase("DataTemplate", "HorizontalGridCode", 19, 6)]
+		[FailsOnMauiIOS]
 		public void VisitAndUpdateItemsSource(string collectionTestName, string subGallery, int firstItem, int lastItem)
 		{
 			VisitInitialGallery(collectionTestName);

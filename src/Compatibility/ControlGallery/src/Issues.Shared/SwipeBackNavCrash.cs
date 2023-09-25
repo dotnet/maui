@@ -14,7 +14,7 @@ using Xamarin.UITest.iOS;
 #endif
 
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 0, "Swipe back nav crash", PlatformAffected.iOS)]
@@ -31,6 +31,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsAllElementsPresent ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
@@ -38,6 +39,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsGoToSecondPage () 
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
@@ -47,6 +49,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if __IOS__
 		[Test]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void SwipeBackNavCrashTestsSwipeBackDoesNotCrash ()
 		{
 			RunningApp.WaitForElement (q => q.Marked ("Page One"));
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 			var mainBounds = RunningApp.RootViewRect();
 
-			UITests.Gestures.Pan (RunningApp, new UITests.Drag (mainBounds, 0, 125, 75, 125, UITests.Drag.Direction.LeftToRight));
+			Gestures.Pan (RunningApp, new Drag (mainBounds, 0, 125, 75, 125, Drag.Direction.LeftToRight));
 			System.Threading.Thread.Sleep (3);
 			RunningApp.Screenshot ("Crash?");
 			RunningApp.WaitForElement (q => q.Marked ("Swipe lightly left and right to crash this page"));

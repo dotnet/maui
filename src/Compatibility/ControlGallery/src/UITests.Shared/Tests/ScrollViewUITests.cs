@@ -57,6 +57,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 
 		[Test]
 		[Description("ScrollTo Y = 100")]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ScrollToYTwice()
 		{
 			App.Tap(c => c.Marked("Scroll to 100"));

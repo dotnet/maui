@@ -1,5 +1,5 @@
 ﻿using System;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using OpenQA.Selenium.Appium.Windows;
 using Xamarin.UITest;
 

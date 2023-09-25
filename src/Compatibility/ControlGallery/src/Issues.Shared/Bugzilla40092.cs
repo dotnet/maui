@@ -11,7 +11,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Bugzilla, 40092, "Ensure android devices with fractional scale factors (3.5) don't have a white line around the border"
@@ -48,7 +48,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 				AutomationId = Black
 			};
 
-			mainLayout.Children.Add(view, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
+			mainLayout.Add(view, new Rect(0, 0, 1, 1), AbsoluteLayoutFlags.All);
 			Content = thePage;
 
 		}

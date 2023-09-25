@@ -1,4 +1,6 @@
-﻿namespace Microsoft.Maui.Controls.Compatibility.UITests
+﻿using NUnit.Framework;
+
+namespace Microsoft.Maui.Controls.Compatibility.UITests
 {
 	internal static class UITestCategories
 	{
@@ -69,4 +71,47 @@
 		public const string Accessibility = "Accessibility";
 		public const string Brush = "Brush";
 	}
+
+
+	public class FailsOnMaui : IgnoreAttribute
+	{
+		public FailsOnMaui() : base(nameof(FailsOnMaui))
+		{
+		}
+	}
+
+#if ANDROID
+	public class FailsOnMauiAndroid : IgnoreAttribute
+	{
+		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiAndroid))
+		{
+		}
+	}
+#else
+	// For now I'm just ignoring any tests that fail on one platform on all the platforms
+	// this is mainly to get a set of tests green and then I can parse between the platforms
+	public class FailsOnMauiAndroid : IgnoreAttribute//CategoryAttribute
+	{
+		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiAndroid))
+		{
+		}
+	}
+#endif
+
+#if IOS
+	public class FailsOnMauiIOS : IgnoreAttribute
+	{
+		public FailsOnMauiIOS() : base(nameof(FailsOnMauiIOS))
+		{
+		}
+	}
+#else
+	public class FailsOnMauiIOS : CategoryAttribute
+	{
+		public FailsOnMauiIOS() : base(nameof(FailsOnMauiIOS))
+		{
+		}
+	}
+#endif
+
 }

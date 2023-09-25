@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Xamarin.UITest;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 #if UITEST
 	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Bugzilla)]
@@ -223,6 +223,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 #if UITEST
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -237,6 +238,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.Tap(q => q.Marked("Focus Entry in ListView"));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -252,6 +254,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 		}
 
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]
@@ -266,6 +269,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 			RunningApp.Tap(q => q.Marked("Focus Entry in Table"));
 		}
 
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
 		[Test]
 #if __MACOS__
 		[Ignore("EnterText on UITest.Desktop not implemented")]

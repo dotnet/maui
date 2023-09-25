@@ -5,9 +5,9 @@
     xmlns:d="http://schemas.microsoft.com/dotnet/2021/maui/design"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    xmlns:local="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues"
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue11262"
+    xmlns:local="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11262"
     x:Name="Issue11262Page"
     Title="Issue 11262">
     <Grid

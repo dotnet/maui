@@ -2,9 +2,9 @@
 <controls:TestContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery"
-    xmlns:issues="clr-namespace:Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues"
-    x:Class="Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues.Issue11081"
+    xmlns:controls="clr-namespace:Microsoft.Maui.Controls.ControlGallery"
+    xmlns:issues="clr-namespace:Microsoft.Maui.Controls.ControlGallery.Issues"
+    x:Class="Microsoft.Maui.Controls.ControlGallery.Issues.Issue11081"
     Title="Issue 11081">
     <Grid>
         <Grid.RowDefinitions>

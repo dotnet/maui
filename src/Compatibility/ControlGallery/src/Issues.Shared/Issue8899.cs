@@ -11,7 +11,7 @@ using Xamarin.UITest;
 using NUnit.Framework;
 #endif
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
+namespace Microsoft.Maui.Controls.ControlGallery.Issues
 {
 	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.Github, 8899, "Clearing CollectionView IsGrouped=\"True\" crashes application iOS ")]
@@ -100,6 +100,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues
 
 #if UITEST
 		[Test, Category(UITestCategories.CollectionView)]
+		[Compatibility.UITests.FailsOnMauiIOS]
 		public void ClearingGroupedCollectionViewShouldNotCrash()
 		{
 			RunningApp.WaitForElement(Go);

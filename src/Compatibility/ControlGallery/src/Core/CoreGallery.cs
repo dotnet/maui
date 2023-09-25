@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.AppThemeGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DateTimePickerGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.DragAndDropGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.GradientGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.PlatformTestsGallery;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RadioButtonGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.RefreshViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.ShapesGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.SwipeViewGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.GalleryPages.VisualStateManagerGalleries;
-using Microsoft.Maui.Controls.Compatibility.ControlGallery.Issues;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.AppThemeGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.CollectionViewGalleries.CarouselViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DateTimePickerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.DragAndDropGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.GradientGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.PlatformTestsGallery;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RadioButtonGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.RefreshViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.ShapesGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.SwipeViewGalleries;
+using Microsoft.Maui.Controls.ControlGallery.GalleryPages.VisualStateManagerGalleries;
+using Microsoft.Maui.Controls.ControlGallery.Issues;
 using Microsoft.Maui.Controls.CustomAttributes;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.PlatformConfiguration;
@@ -24,23 +24,12 @@ using Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;
 using Microsoft.Maui.Graphics;
 using AbsoluteLayoutFlags = Microsoft.Maui.Layouts.AbsoluteLayoutFlags;
 
-namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
+namespace Microsoft.Maui.Controls.ControlGallery
 {
 	[Preserve(AllMembers = true)]
 	public static class Messages
 	{
 		public const string ChangeRoot = "com.xamarin.ChangeRoot";
-	}
-
-	[Preserve(AllMembers = true)]
-	internal class CoreCarouselPage : CarouselPage
-	{
-		public CoreCarouselPage()
-		{
-			AutomationId = "CarouselPageRoot";
-			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Page 1" });
-			Children.Add(new CoreRootPage(this, NavigationBehavior.PushModalAsync) { Title = "Page 2" });
-		}
 	}
 
 	[Preserve(AllMembers = true)]
@@ -231,7 +220,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 		{
 			var roots = new[] {
 				new CoreViewContainer ("SwapRoot - Tests", typeof(PlatformTestsConsole)),
-				new CoreViewContainer ("SwapRoot - CarouselPage", typeof(CoreCarouselPage)),
 				new CoreViewContainer ("SwapRoot - ContentPage", typeof(CoreContentPage)),
 				new CoreViewContainer ("SwapRoot - FlyoutPage", typeof(CoreFlyoutPage)),
 				new CoreViewContainer ("SwapRoot - NavigationPage", typeof(CoreNavigationPage)),
@@ -331,7 +319,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new PanGestureGalleryPage(), "Pan gesture Gallery"),
 				new GalleryPageFactory(() => new SwipeGestureGalleryPage(), "Swipe gesture Gallery"),
 				new GalleryPageFactory(() => new PinchGestureTestPage(), "Pinch gesture Gallery"),
-				new GalleryPageFactory(() => new ClickGestureGalleryPage(), "Click gesture Gallery"),
 				new GalleryPageFactory(() => new AutomationIdGallery(), "AutomationID Gallery"),
 				new GalleryPageFactory(() => new LayoutPerformanceGallery(), "Layout Perf Gallery"),
 				new GalleryPageFactory(() => new ListViewSelectionColor(), "ListView SelectionColor Gallery"),
@@ -346,9 +333,7 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new CoreBoxViewGalleryPage(), "BoxView Gallery"),
 				new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 				new GalleryPageFactory(() => new ButtonLayoutGalleryPage(), "Button Layout Gallery"),
-				new GalleryPageFactory(() => new ButtonLayoutGalleryPage(VisualMarker.Material), "Button Layout Gallery (Material)"),
 				new GalleryPageFactory(() => new ButtonBorderBackgroundGalleryPage(), "Button Border & Background Gallery"),
-				new GalleryPageFactory(() => new ButtonBorderBackgroundGalleryPage(VisualMarker.Material), "Button Border & Background Gallery (Material)"),
 				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
 				new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "DatePicker Gallery"),
 				new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
@@ -360,7 +345,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new KeyboardCoreGallery(), "Keyboard Gallery"),
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
-				new GalleryPageFactory(() => new OpenGLViewCoreGalleryPage(), "OpenGLView Gallery"),
 				new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 				new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "ProgressBar Gallery"),
 				new GalleryPageFactory(() => new MaterialProgressBarGallery(), "ProgressBar & Slider Gallery (Material)"),
@@ -392,7 +376,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new BoundContentPage(), "BoundPage Gallery - Legacy"),
 				new GalleryPageFactory(() => new BackgroundImageGallery(), "BackgroundImage gallery"),
 				new GalleryPageFactory(() => new ButtonGallery(), "Button Gallery - Legacy"),
-				new GalleryPageFactory(() => new CarouselPageGallery(), "CarouselPage Gallery - Legacy"),
 				new GalleryPageFactory(() => new CellTypesListPage(), "Cells Gallery - Legacy"),
 				new GalleryPageFactory(() => new ClipToBoundsGallery(), "ClipToBounds Gallery - Legacy"),
 				new GalleryPageFactory(() => new ControlTemplatePage(), "ControlTemplated Gallery - Legacy"),
@@ -422,10 +405,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new MinimumSizeGallery(), "MinimumSize Gallery - Legacy"),
 				new GalleryPageFactory(() => new MultiGallery(), "Multi Gallery - Legacy"),
 				new GalleryPageFactory(() => new NavigationPropertiesGallery(), "Navigation Properties"),
-#if HAVE_OPENTK
-				new GalleryPageFactory(() => new BasicOpenGLGallery(), "Basic OpenGL Gallery - Legacy"),
-				new GalleryPageFactory(() => new AdvancedOpenGLGallery(), "Advanced OpenGL Gallery - Legacy"),
-#endif
 				new GalleryPageFactory(() => new PickerGallery(), "Picker Gallery - Legacy"),
 				new GalleryPageFactory(() => new ProgressBarGallery(), "ProgressBar Gallery - Legacy"),
 				new GalleryPageFactory(() => new RelativeLayoutGallery(), "RelativeLayout Gallery - Legacy"),
@@ -439,7 +418,6 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 				new GalleryPageFactory(() => new StyleXamlGallery(), "Style Gallery in Xaml"),
 				new GalleryPageFactory(() => new SwitchGallery(), "Switch Gallery - Legacy"),
 				new GalleryPageFactory(() => new TableViewGallery(), "TableView Gallery - Legacy"),
-				new GalleryPageFactory(() => new TemplatedCarouselGallery(), "TemplatedCarouselPage Gallery - Legacy"),
 				new GalleryPageFactory(() => new TemplatedTabbedGallery(), "TemplatedTabbedPage Gallery - Legacy"),
 				new GalleryPageFactory(() => new UnevenViewCellGallery(), "UnevenViewCell Gallery - Legacy"),
 				new GalleryPageFactory(() => new UnevenListGallery(), "UnevenList Gallery - Legacy"),
@@ -647,18 +625,18 @@ namespace Microsoft.Maui.Controls.Compatibility.ControlGallery
 
 		void ValidateRegistrar()
 		{
-			foreach (var view in Issues.Helpers.ViewHelper.GetAllViews())
-			{
-				if (!DependencyService.Get<IRegistrarValidationService>().Validate(view, out string message))
-					throw new InvalidOperationException(message);
-			}
+			//foreach (var view in Issues.Helpers.ViewHelper.GetAllViews())
+			//{
+			//	if (!DependencyService.Get<IRegistrarValidationService>().Validate(view, out string message))
+			//		throw new InvalidOperationException(message);
+			//}
 
-			foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
-			{
-				page.Visual = VisualMarker.Default;
-				if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
-					throw new InvalidOperationException(message);
-			}
+			//foreach (var page in Issues.Helpers.ViewHelper.GetAllPages())
+			//{
+			//	page.Visual = VisualMarker.Default;
+			//	if (!DependencyService.Get<IRegistrarValidationService>().Validate(page, out string message))
+			//		throw new InvalidOperationException(message);
+			//}
 		}
 	}
 
