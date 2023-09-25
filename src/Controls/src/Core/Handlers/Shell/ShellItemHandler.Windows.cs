@@ -136,7 +136,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			// Update tab item colors when we add or remove items
 			if ((e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add ||
 				 e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove) &&
-				_shellAppearanceElement != null)
+				_shellAppearanceElement is not null)
 			{
 				UpdateAppearance(_shellAppearanceElement);
 			}
