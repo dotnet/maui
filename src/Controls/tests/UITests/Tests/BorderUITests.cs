@@ -24,15 +24,14 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateBack();
 		}
 
-		// TODO: Enable this as a test once fully working
-		//[Test]
+		[Test]
 		public void BordersWithVariousShapes()
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "BordersWithVariousShapes");
 			App.Tap("GoButton");
 
-			App.WaitForElement("WaitForStubControl");
+			App.WaitForElement("WaitForControl");
 
 			VerifyScreenshot();
 		}

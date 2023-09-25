@@ -63,7 +63,7 @@
 
     <HorizontalStackLayout Margin="10,10,10,10" Spacing="10">
         <VerticalStackLayout Spacing="10" VerticalOptions="Center">
-            <Border Style="{StaticResource BorderStyle}">
+            <Border AutomationId="WaitForControl" Style="{StaticResource BorderStyle}">
                 <Label
                     FontSize="18"
                     Style="{StaticResource ButtonIconStyle}"
@@ -86,8 +86,6 @@
                     Text="+"
                     TextColor="#0088ee" />
             </Border>
-
-            <Label AutomationId="WaitForStubControl" Text="" />
         </VerticalStackLayout>
 
         <VerticalStackLayout Spacing="10" VerticalOptions="Center">
