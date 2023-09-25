@@ -46,7 +46,8 @@ namespace Microsoft.Maui.Controls
 
 			var visualElement = (VisualElement)bindable;
 
-			((VisualStateGroupList)newValue).VisualElement = visualElement;
+			if (newValue != null)
+				((VisualStateGroupList)newValue).VisualElement = visualElement;
 
 			visualElement.ChangeVisualState();
 
