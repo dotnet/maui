@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Platform
 				if (view._isSwipeEnabled && panGestureRecognizer != null)
 				{
 					CGPoint point = panGestureRecognizer.LocationInView(view);
-					var navigationController = view.GetUINavigationController(view.GetViewController());
+					var navigationController = GetUINavigationController(view.GetViewController());
 
 					switch (panGestureRecognizer.State)
 					{
@@ -1029,7 +1029,7 @@ namespace Microsoft.Maui.Platform
 					var swipeItemX = swipeItemRect.Left;
 					var swipeItemY = swipeItemRect.Top;
 
-					if (swipeItemRect.Contains(point)) 
+					if (swipeItemRect.Contains(point))
 					{
 						MauiSwipeView.ExecuteSwipeItem(swipeItem);
 
@@ -1057,7 +1057,7 @@ namespace Microsoft.Maui.Platform
 			return viewController;
 		}
 
-		UINavigationController? GetUINavigationController(UIViewController? controller)
+		static UINavigationController? GetUINavigationController(UIViewController? controller)
 		{
 			if (controller != null)
 			{
