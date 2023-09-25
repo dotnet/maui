@@ -29,7 +29,6 @@ namespace Microsoft.Maui.DeviceTests
 
 #if ANDROID
 		[Fact("Checks that the default background is transparent")]
-#endif
 		public async Task DefaultBackgroundIsTransparent ()
 		{
 			// We use a Grid container to set a background color and then make sure that the Border background
@@ -86,6 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(180, innerBlob.Width, 2d);
 			Assert.Equal(180, innerBlob.Height, 2d);
 		}
+#endif
 
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public async Task RoundedRectangleBorderLayoutIsCorrect()
