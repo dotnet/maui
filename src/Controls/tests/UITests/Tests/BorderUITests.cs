@@ -35,5 +35,17 @@ namespace Microsoft.Maui.AppiumTests
 
 			VerifyScreenshot();
 		}
+
+		[Test]
+		public void BorderBackground()
+		{
+			App.WaitForElement("TargetView");
+			App.EnterText("TargetView", "BorderBackground");
+			App.Tap("GoButton");
+
+			App.WaitForElement("WaitForControl");
+
+			VerifyScreenshot();
+		}
 	}
 }

@@ -46,6 +46,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="Elements\BorderBackground.xaml.cs">
+      <DependentUpon>BorderBackground.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Elements\BordersWithVariousShapes.xaml.cs">
       <DependentUpon>BordersWithVariousShapes.xaml</DependentUpon>
     </Compile>
@@ -54,6 +57,9 @@
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 
   <ItemGroup>
+    <MauiXaml Update="Elements\BorderBackground.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
     <MauiXaml Update="Elements\BordersWithVariousShapes.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
