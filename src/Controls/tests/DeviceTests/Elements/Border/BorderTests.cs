@@ -27,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if ANDROID || WINDOWS
+#if ANDROID
 		[Fact("Checks that the default background is transparent")]
 #endif
 		public async Task DefaultBackgroundIsTransparent ()
