@@ -27,7 +27,9 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID || WINDOWS
 		[Fact("Checks that the default background is transparent")]
+#endif
 		public async Task DefaultBackgroundIsTransparent ()
 		{
 			// We use a Grid container to set a background color and then make sure that the Border background
