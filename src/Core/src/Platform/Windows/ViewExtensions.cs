@@ -261,10 +261,12 @@ namespace Microsoft.Maui.Platform
 			ToolTipService.SetToolTip(platformView, tooltip?.Content);
 		}
 
+		/// <summary>
+		/// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
+		/// usually requires setting the other at the same time.
+		/// </summary>
 		internal static void UpdatePlatformViewBackground(this LayoutPanel layoutPanel, ILayout layout)
 		{
-			// Background and InputTransparent for Windows layouts are heavily intertwined, so setting one
-			// usuall requires setting the other at the same time
 			layoutPanel.UpdateInputTransparent(layout.InputTransparent, layout?.Background?.ToPlatform());
 		}
 

@@ -18,9 +18,9 @@ namespace Microsoft.Maui.Platform
 		MauiHorizontalScrollView? _hScrollView;
 		bool _isBidirectional;
 		ScrollOrientation _scrollOrientation = ScrollOrientation.Vertical;
-		ScrollBarVisibility _defaultHorizontalScrollVisibility = 0;
-		ScrollBarVisibility _defaultVerticalScrollVisibility = 0;
-		ScrollBarVisibility _horizontalScrollVisibility = 0;
+		ScrollBarVisibility _defaultHorizontalScrollVisibility;
+		ScrollBarVisibility _defaultVerticalScrollVisibility;
+		ScrollBarVisibility _horizontalScrollVisibility;
 
 		internal float LastX { get; set; }
 		internal float LastY { get; set; }
@@ -182,7 +182,7 @@ namespace Microsoft.Maui.Platform
 			base.AwakenScrollBars();
 		}
 
-		bool IScrollBarView.ScrollBarsInitialized { get; set; } = false;
+		bool IScrollBarView.ScrollBarsInitialized { get; set; }
 
 		protected override void OnLayout(bool changed, int left, int top, int right, int bottom)
 		{
@@ -415,7 +415,7 @@ namespace Microsoft.Maui.Platform
 			base.AwakenScrollBars();
 		}
 
-		bool IScrollBarView.ScrollBarsInitialized { get; set; } = false;
+		bool IScrollBarView.ScrollBarsInitialized { get; set; }
 
 		protected override void OnScrollChanged(int l, int t, int oldl, int oldt)
 		{

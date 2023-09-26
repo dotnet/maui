@@ -204,8 +204,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory("Remove CurrentPage And Then Re-Add Doesnt Crash"
-#if WINDOWS || ANDROID
-		, Skip = "Fails on Windows and Android (https://github.com/dotnet/maui/issues/17444)"
+#if WINDOWS
+		, Skip = "Fails on Windows"
 #endif
 		)]
 		[ClassData(typeof(TabbedPagePivots))]
@@ -225,7 +225,10 @@ namespace Microsoft.Maui.DeviceTests
 						Background = Colors.Purple
 					}
 				}
-			});
+			})
+			{
+				Title = "First Page"
+			};
 
 			tabbedPage.Children.Insert(0, firstPage);
 			tabbedPage.CurrentPage = firstPage;
@@ -236,13 +239,12 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(firstPage);
 				tabbedPage.Children.Remove(firstPage);
 				await OnNavigatedToAsync(secondPage);
-
+				await OnUnloadedAsync(firstPage);
 				// Validate that the second page becomes the current active page
 				Assert.Equal(secondPage, tabbedPage.CurrentPage);
 
 				// add the removed page back
 				tabbedPage.Children.Insert(0, firstPage);
-
 				// Validate that the second page is still the current active page
 				Assert.Equal(secondPage, tabbedPage.CurrentPage);
 
@@ -337,12 +339,8 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-#if !WINDOWS && !MACCATALYST
-		[Theory(
-#if IOS
-		Skip = "Test crashes on iOS, potential fix: https://github.com/dotnet/maui/pull/17544"
-#endif
-		)]
+#if !WINDOWS
+		[Theory]
 		[ClassData(typeof(TabbedPagePivots))]
 		public async Task RemovingAllPagesDoesntCrash(bool bottomTabs, bool isSmoothScrollEnabled)
 		{

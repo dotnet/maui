@@ -66,6 +66,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="opacity">The opacity to fade to.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> FadeTo(this VisualElement view, double opacity, uint length = 250, Easing? easing = null)
 		{
@@ -83,6 +84,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="bounds">The layout bounds.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> LayoutTo(this VisualElement view, Rect bounds, uint length = 250, Easing? easing = null)
 		{
@@ -110,6 +112,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="drotation">The relative rotation.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelRotateTo(this VisualElement view, double drotation, uint length = 250, Easing? easing = null)
 		{
@@ -127,6 +130,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="dscale">The relative scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RelScaleTo(this VisualElement view, double dscale, uint length = 250, Easing? easing = null)
 		{
@@ -144,6 +148,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
@@ -161,6 +166,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateXTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
@@ -178,6 +184,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="rotation">The final rotation value.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> RotateYTo(this VisualElement view, double rotation, uint length = 250, Easing? easing = null)
 		{
@@ -194,6 +201,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
@@ -211,6 +219,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleXTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
@@ -228,6 +237,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="scale">The final absolute scale.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> ScaleYTo(this VisualElement view, double scale, uint length = 250, Easing? easing = null)
 		{
@@ -246,6 +256,7 @@ namespace Microsoft.Maui.Controls
 		/// <param name="y">The y component of the final translation vector.</param>
 		/// <param name="length">The time, in milliseconds, over which to animate the transition. The default is 250.</param>
 		/// <param name="easing">The easing function to use for the animation.</param>
+		/// <returns>A <see cref="Task"/> containing a <see cref="bool"/> value which indicates whether the animation was canceled. <see langword="true"/> indicates that the animation was canceled. <see langword="false"/> indicates that the animation ran to completion.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="view"/> is <see langword="null"/>.</exception>
 		public static Task<bool> TranslateTo(this VisualElement view, double x, double y, uint length = 250, Easing? easing = null)
 		{

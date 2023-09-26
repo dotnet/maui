@@ -187,7 +187,7 @@ namespace Microsoft.Maui
 
 		internal IServiceProvider? Services =>
 			Window?.Handler?.GetServiceProvider() ??
-			MauiWinUIApplication.Current.Services;
+			IPlatformApplication.Current?.Services;
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);
