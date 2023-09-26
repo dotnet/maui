@@ -123,7 +123,6 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
 			{
-				//{ "UseMaui", "UseMauiCore" },
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			});
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
