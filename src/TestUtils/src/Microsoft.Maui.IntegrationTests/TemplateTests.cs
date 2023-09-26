@@ -43,7 +43,7 @@ namespace Microsoft.Maui.IntegrationTests
 					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
 
 			string target = shouldPack ? "Pack" : "";
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -69,7 +69,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"<UseMaui>true</UseMaui>",
 				"<UseMaui>true</UseMaui><WindowsPackageType>None</WindowsPackageType>");
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -123,12 +123,12 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
 			{
-				{ "UseMaui", "UseMauiCore" },
+				//{ "UseMaui", "UseMauiCore" },
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			});
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -152,7 +152,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"<PackageReference Include=\"Microsoft.Maui.Controls\" Version=\"$(MauiVersion)\" />",
 				"");
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -179,7 +179,7 @@ namespace Microsoft.Maui.IntegrationTests
 				$"<ApplicationVersion>1</ApplicationVersion>",
 				$"<ApplicationVersion>{version}</ApplicationVersion>");
 
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -205,7 +205,7 @@ namespace Microsoft.Maui.IntegrationTests
 			};
 
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
-			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps),
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
 			List<string> expectedEntitlements = config == "Release" ?
