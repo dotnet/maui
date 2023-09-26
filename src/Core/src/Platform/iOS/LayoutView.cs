@@ -25,6 +25,9 @@ namespace Microsoft.Maui.Platform
 		{
 			var result = base.HitTest(point, uievent);
 
+			if (result is null)
+				return null!;
+
 			if (!_userInteractionEnabled && this.Equals(result))
 			{
 				// If user interaction is disabled (IOW, if the corresponding Layout is InputTransparent),
@@ -32,6 +35,22 @@ namespace Microsoft.Maui.Platform
 				// hit testing targets.
 
 				return null;
+			}
+
+			if (!result.UserInteractionEnabled)
+			{
+				// If the child also has user interaction disabled (IOW the child is InputTransparent),
+				// then we also want to exclude it from the hit testing.
+
+				return null!;
+			}
+
+			if (result is LayoutView layoutView && !layoutView.UserInteractionEnabledOverride)
+			{
+				// If the child is a layout then we need to check the UserInteractionEnabledOverride
+				// since layouts always have user interaction enabled.
+
+				return null!;
 			}
 
 			return result!;
