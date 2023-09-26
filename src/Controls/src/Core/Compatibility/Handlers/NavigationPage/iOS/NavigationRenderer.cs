@@ -243,6 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
 
@@ -1146,7 +1147,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// the animation changing the frame during navigation
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
-					!n._navigating)
+					!n._disposed &&
+					!n._navigating
+					)
 				{
 					nfloat offset = 0;
 

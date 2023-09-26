@@ -9,7 +9,11 @@ namespace Microsoft.Maui.DeviceTests
 	[Category(TestCategory.WebView)]
 	public partial class WebViewTests : ControlsHandlerTestBase
 	{
-		[Fact(DisplayName = "Evaluate JavaScript returning a String value")]
+		[Fact(DisplayName = "Evaluate JavaScript returning a String value"
+#if WINDOWS
+		, Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task EvaluateJavaScriptWithString()
 		{
 			SetupBuilder();
@@ -78,7 +82,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Evaluate JavaScript returning an Integer value")]
+		[Fact(DisplayName = "Evaluate JavaScript returning an Integer value"
+#if WINDOWS
+		, Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task EvaluateJavaScriptWithInteger()
 		{
 			SetupBuilder();

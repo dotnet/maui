@@ -236,5 +236,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(Colors.Red, label.TextColor);
 		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/17478
+		public void BindingConversion()
+		{
+			var border = new Border();
+			border.SetAppTheme(Border.StrokeProperty, Colors.Red, Colors.Black);
+		}
 	}
 }

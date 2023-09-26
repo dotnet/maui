@@ -30,7 +30,7 @@
 //			base.OnCreate(savedInstanceState);
 
 //#pragma warning disable CS0612 // Type or member is obsolete
-//			Forms.Init(new MauiContext(MauiApplication.Current.Services, this));
+//			Forms.Init(new MauiContext(IPlatformApplication.Current.Services, this));
 //#pragma warning restore CS0612 // Type or member is obsolete
 //			LoadApplication(new Issue10182Application());
 

@@ -110,7 +110,7 @@ namespace Microsoft.Maui.Controls
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/SwipeItems.xml" path="//Member[@MemberName='Insert']/Docs/*" />
 		public void Insert(int index, ISwipeItem item)
-		{			
+		{
 			_swipeItems.Insert(index, item);
 		}
 
