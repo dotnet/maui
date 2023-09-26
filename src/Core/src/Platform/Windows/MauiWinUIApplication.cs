@@ -61,14 +61,12 @@ namespace Microsoft.Maui
 
 		IApplication IPlatformApplication.Application => _application!;
 
-		[Obsolete("Use the IPlatformApplication.Current.Services instead.")]
 		public IServiceProvider Services
 		{
 			get => _services!;
 			protected set => _services = value;
 		}
 
-		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
 		public IApplication Application
 		{
 			get => _application!;
