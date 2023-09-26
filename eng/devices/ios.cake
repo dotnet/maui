@@ -30,7 +30,7 @@ var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSIO
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
-string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-x64";
+string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string TEST_FRAMEWORK = "net472";
@@ -116,11 +116,20 @@ Task("Build")
 				MaxCpuCount = 0
 			},
 			ToolPath = DOTNET_PATH,
-			ArgumentCustomization = args => args
+			ArgumentCustomization = args =>
+			{ 	
+				args
 				.Append("/p:BuildIpa=true")
-				.Append("/bl:" + binlog)
-				//.Append("/tl")
-			
+				.Append("/bl:" + binlog);
+				
+				// if we building for a device
+				if(TEST_DEVICE.ToLower().Contains("device"))
+				{
+					args.Append("/p:RuntimeIdentifier=ios-arm64");
+				}
+
+				return args;
+			}
 		});
 	}
 	else
@@ -142,6 +151,35 @@ Task("Build")
 			};
 		});
 	}
+});
+
+Task("uitest-build")
+	.Does(() =>
+{
+	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+
+	Information("app" +DEFAULT_APP_PROJECT);
+	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
+		Configuration = CONFIGURATION,
+		Framework = TARGET_FRAMEWORK,
+		ToolPath = DOTNET_PATH,
+		ArgumentCustomization = args =>
+		{ 	
+			args
+			.Append("/p:BuildIpa=true")
+			.Append("/p:RuntimeIdentifier=ios-arm64")
+			.Append("/bl:" + binlog);
+			
+			// if we building for a device
+			if(TEST_DEVICE.ToLower().Contains("device"))
+			{
+				args.Append("/p:RuntimeIdentifier=ios-arm64");
+			}
+
+			return args;
+		}
+	});
 });
 
 Task("Test")
@@ -232,6 +270,7 @@ Task("Test")
 });
 
 Task("uitest")
+	.IsDependentOn("uitest-build")
 	.Does(() =>
 {
 	SetupAppPackageNameAndResult();
@@ -355,13 +394,49 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 	try {
 		DotNetTool("tool", settings);
 	} finally {
+		string iosVersionToRun = version;
+		string deviceToRun = "";
+		if(TEST_DEVICE.Contains("device"))
+		{
+			//var devices = ListAttachedDevices()
+			var deviceName = "ipad";
+			var deviceVersion = "16.4";
+			var deviceUdid=  "";
 
-		var sims = ListAppleSimulators();
-	 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
-		var simXH = xharness.First();
-		Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
-		Information("The platform version to run tests: {0}", version);
-		SetEnvironmentVariable("IOS_SIMULATOR_UDID",simXH.UDID);
-		SetEnvironmentVariable("IOS_PLATFORM_VERSION", version);
+			DotNetTool("tool", new DotNetToolSettings {
+				DiagnosticOutput = true,
+				ArgumentCustomization = args => args.Append("run xharness apple device ios-device " +
+					$"--verbosity=\"Debug\" "),
+				SetupProcessSettings = processSettings =>
+				{
+					processSettings.RedirectStandardOutput = true;
+					processSettings.RedirectStandardError = true;
+					processSettings.RedirectedStandardOutputHandler = (output) => {
+							Information("Find devices output: {0}", output);
+							if (!string.IsNullOrEmpty(output))
+							{
+								deviceUdid = output.Trim();
+							}
+							return output;
+						};
+				}
+			});
+
+			deviceToRun = deviceUdid;
+			Information("The device to run tests: {0} {1}", deviceName, deviceVersion);
+			iosVersionToRun = deviceVersion;
+		}
+		else{
+
+			var sims = ListAppleSimulators();
+	 		var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+			var simXH = xharness.First();
+			deviceToRun =  simXH.UDID;
+			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+		}
+	
+		Information("The platform version to run tests: {0}", iosVersionToRun);
+		SetEnvironmentVariable("IOS_SIMULATOR_UDID", deviceToRun);
+		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersionToRun);
 	}
 }

@@ -9,6 +9,12 @@ if (string.Equals(TARGET, "uitest", StringComparison.OrdinalIgnoreCase))
     DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
 }
 
+if (string.Equals(TARGET, "uitest-build", StringComparison.OrdinalIgnoreCase))
+{
+    DEFAULT_PROJECT = "../../src/Controls/tests/UITests/Controls.AppiumTests.csproj";
+    DEFAULT_APP_PROJECT = "../../src/Controls/samples/Controls.Sample.UITests/Controls.Sample.UITests.csproj";
+}
+
 void FailRunOnOnlyInconclusiveTests(string testResultsFile)
 {
     // When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified
