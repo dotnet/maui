@@ -28,7 +28,6 @@ public static class KeyboardAutoManagerScroll
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
 	static UIView? View = null;
-	static bool isLastViewEntry = false;
 	static UIView? ContainerView = null;
 	static CGRect? StartingContainerViewFrame = null;
 	static CGRect? CursorRect = null;
@@ -150,17 +149,6 @@ public static class KeyboardAutoManagerScroll
 			await AdjustPositionDebounce();
 			IsKeyboardShowing = true;
 		}
-		// if we are going from an entry to an editor, without lowering the
-		// keyboard we need to adjust for the AccessoryView on editors
-		else if (isLastViewEntry && View is UITextView)
-		{
-			await AdjustPositionDebounce();
-		}
-
-		if (View is UITextField)
-			isLastViewEntry = true;
-		else
-			isLastViewEntry = false;
 	}
 
 	static void WillHideKeyboard(NSNotification notification)
@@ -265,6 +253,12 @@ public static class KeyboardAutoManagerScroll
 		Interlocked.Increment(ref DebounceCount);
 
 		var entranceCount = DebounceCount;
+
+		// If we are going to a new view that has an InputAccessoryView
+		// while we have the keyboard up, we need a delay to recalculate
+		// the height of the InputAccessoryView
+		if (IsKeyboardShowing && View?.InputAccessoryView is not null)
+			await Task.Delay(10);
 
 		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
 		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
@@ -520,8 +514,6 @@ public static class KeyboardAutoManagerScroll
 
 						if (nextScrollView is null && superScrollViewRect.Y < keyboardYPosition)
 						{
-							
-
 							UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
 							{
 								newContentOffset.Y += innerScrollValue;
@@ -532,7 +524,7 @@ public static class KeyboardAutoManagerScroll
 									superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
 								else
 									superScrollView.ContentOffset = newContentOffset;
-							}, () => {});
+							}, () => { });
 
 							// after this scroll finishes, there is an edge case where if we have Large Titles,
 							// the entire requeseted scroll amount may not be allowed. If so, we need to scroll
