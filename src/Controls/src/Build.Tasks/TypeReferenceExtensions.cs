@@ -414,8 +414,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			List<TypeReference> args = new List<TypeReference>();
 			for (var i = 0; i < self.GenericArguments.Count; i++)
 			{
-				var genericParameter = self.GenericArguments[i] as GenericParameter;
-				if (genericParameter == null)
+				if (self.GenericArguments[i] is ArrayType arrayType && arrayType.ElementType is GenericParameter arrayGenericParameter)
+					args.Add(declaringTypeReference.GenericArguments[arrayGenericParameter.Position].MakeArrayType());
+				else if (self.GenericArguments[i] is not GenericParameter genericParameter)
 					args.Add(self.GenericArguments[i].ResolveGenericParameters(declaringTypeReference));
 				else if (genericParameter.Type == GenericParameterType.Type)
 					args.Add(declaringTypeReference.GenericArguments[genericParameter.Position]);
