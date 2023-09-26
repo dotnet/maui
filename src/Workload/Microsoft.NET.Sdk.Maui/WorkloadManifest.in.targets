@@ -40,21 +40,21 @@
   <ItemGroup Condition=" $([MSBuild]::VersionEquals($(TargetFrameworkVersion), '@MAUI_PREVIOUS_DOTNET_VERSION@')) and ('$(SkipMauiWorkloadManifest)' != 'true') ">
     <KnownFrameworkReference
         Update="Microsoft.Maui.Core"
-        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
     />
     <KnownFrameworkReference
         Update="Microsoft.Maui.Controls"
-        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
     />
     <KnownFrameworkReference
         Update="Microsoft.Maui.Essentials"
-        DefaultRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        LatestRuntimeFrameworkVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
-        TargetingPackVersion="@MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION@"
+        DefaultRuntimeFrameworkVersion="$(MauiVersion)"
+        LatestRuntimeFrameworkVersion="$(MauiVersion)"
+        TargetingPackVersion="$(MauiVersion)"
     />
   </ItemGroup>
 
