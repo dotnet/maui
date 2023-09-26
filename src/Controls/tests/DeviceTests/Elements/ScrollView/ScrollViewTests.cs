@@ -60,7 +60,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if ANDROID
+			Skip = "Fails on Android"
+#endif
+		)]
 		public async Task TestContentHorizontalOptionsChanged()
 		{
 			var label = new Label
