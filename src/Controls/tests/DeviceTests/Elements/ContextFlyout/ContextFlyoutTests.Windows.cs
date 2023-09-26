@@ -147,7 +147,7 @@ namespace Microsoft.Maui.DeviceTests
 				flyout.Add(flyoutItem);
 			}
 
-			public void RemoveFlyoutItem(int index) 
+			public void RemoveFlyoutItem(int index)
 			{
 				flyout.RemoveAt(index);
 			}

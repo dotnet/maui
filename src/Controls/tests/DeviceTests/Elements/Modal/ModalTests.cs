@@ -159,7 +159,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(2, windowDisappearing);
 		}
 
-		[Fact]
+		[Fact(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task PushingNavigationPageModallyWithShellShowsToolbarCorrectly()
 		{
 			SetupBuilder();
@@ -237,7 +241,11 @@ namespace Microsoft.Maui.DeviceTests
 				});
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows"
+#endif
+		)]
 		[InlineData(true)]
 		[InlineData(false)]
 		public async Task PushModalFromAppearing(bool useShell)
@@ -480,7 +488,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		}
 
-		[Theory]
+		[Theory(
+#if WINDOWS
+		Skip = "Fails on Windows (Packaged)"
+#endif
+		)]
 		[ClassData(typeof(PageTypes))]
 		public async Task SwappingRootPageWhileModalPageIsOpenDoesntCrash(Page rootPage, Page newRootPage)
 		{

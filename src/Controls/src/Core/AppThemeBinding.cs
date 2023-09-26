@@ -2,6 +2,7 @@
 using System;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
+using Microsoft.Maui.Controls.Xaml.Diagnostics;
 
 namespace Microsoft.Maui.Controls
 {
@@ -12,14 +13,22 @@ namespace Microsoft.Maui.Controls
 		bool _attached;
 		SetterSpecificity specificity;
 
-		internal override BindingBase Clone() => new AppThemeBinding
+		internal override BindingBase Clone()
 		{
-			Light = Light,
-			_isLightSet = _isLightSet,
-			Dark = Dark,
-			_isDarkSet = _isDarkSet,
-			Default = Default
-		};
+			var clone = new AppThemeBinding
+			{
+				Light = Light,
+				_isLightSet = _isLightSet,
+				Dark = Dark,
+				_isDarkSet = _isDarkSet,
+				Default = Default
+			};
+
+			if (DebuggerHelper.DebuggerIsAttached && VisualDiagnostics.GetSourceInfo(this) is SourceInfo info)
+				VisualDiagnostics.RegisterSourceInfo(clone, info.SourceUri, info.LineNumber, info.LinePosition);
+
+			return clone;
+		}
 
 		internal override void Apply(bool fromTarget)
 		{
@@ -68,7 +77,14 @@ namespace Microsoft.Maui.Controls
 				if (value is DynamicResource dynamicResource)
 					target.SetDynamicResource(_targetProperty, dynamicResource.Key, specificity);
 				else
+				{
+					if (!BindingExpression.TryConvert(ref value, _targetProperty, _targetProperty.ReturnType, true))
+					{
+						BindingDiagnostics.SendBindingFailure(this, null, target, _targetProperty, "AppThemeBinding", BindingExpression.CannotConvertTypeErrorMessage, value, _targetProperty.ReturnType);
+						return;
+					}
 					target.SetValueCore(_targetProperty, value, Internals.SetValueFlags.ClearDynamicResource, BindableObject.SetValuePrivateFlags.Default | BindableObject.SetValuePrivateFlags.Converted, specificity);
+				}
 			};
 		}
 

@@ -1867,7 +1867,7 @@ namespace Microsoft.Maui.Controls
 		bool IView.IsFocused
 		{
 			get => (bool)GetValue(IsFocusedProperty);
-			set => SetValue(IsFocusedPropertyKey, value);
+			set => SetValue(IsFocusedPropertyKey, value, SetterSpecificity.FromHandler);
 		}
 
 		/// <inheritdoc/>

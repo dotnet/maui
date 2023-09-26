@@ -60,7 +60,7 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 
 			await _waitForApplication.Task;
 
-			Services = MauiApplication.Current.Services;
+			Services = IPlatformApplication.Current?.Services ?? throw new InvalidOperationException("Unable to find Application Services");
 			Options = Services.GetRequiredService<TestOptions>();
 			RunnerOptions = Services.GetRequiredService<HeadlessRunnerOptions>();
 

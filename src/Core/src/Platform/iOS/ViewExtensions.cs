@@ -324,7 +324,9 @@ namespace Microsoft.Maui.Platform
 			if (imageSource != null)
 			{
 				var service = provider.GetRequiredImageSourceService(imageSource);
-				var result = await service.GetImageAsync(imageSource);
+
+				var scale = platformView.GetDisplayDensity();
+				var result = await service.GetImageAsync(imageSource, scale);
 				var backgroundImage = result?.Value;
 
 				if (backgroundImage == null)
@@ -904,6 +906,9 @@ namespace Microsoft.Maui.Platform
 
 			return null;
 		}
+
+		internal static float GetDisplayDensity(this UIView? view) =>
+			view?.Window?.GetDisplayDensity() ?? 1.0f;
 
 		internal static bool HideSoftInput(this UIView inputView) => inputView.ResignFirstResponder();
 

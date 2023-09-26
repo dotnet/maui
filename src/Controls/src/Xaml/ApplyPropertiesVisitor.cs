@@ -387,6 +387,8 @@ namespace Microsoft.Maui.Controls.Xaml
 
 			void registerSourceInfo(object target, string path)
 			{
+				if (VisualDiagnostics.GetSourceInfo(target) != null)
+					return;
 				var assemblyName = rootElement.GetType().Assembly?.GetName().Name;
 				if (lineInfo != null)
 					VisualDiagnostics.RegisterSourceInfo(target, new Uri($"{path};assembly={assemblyName}", UriKind.Relative), lineInfo.LineNumber, lineInfo.LinePosition);
@@ -483,9 +485,11 @@ namespace Microsoft.Maui.Controls.Xaml
 			if (addMethod == null)
 				return false;
 
-			foreach (var mi in rootElement.GetType().GetRuntimeMethods())
+			var rootElementType = rootElement.GetType();
+			do
 			{
-				if (mi.Name == (string)value)
+				var mi = rootElementType.GetMethod((string)value, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+				if (mi != null)
 				{
 					try
 					{
@@ -497,7 +501,8 @@ namespace Microsoft.Maui.Controls.Xaml
 						// incorrect method signature
 					}
 				}
-			}
+				rootElementType = rootElementType.BaseType;
+			} while (rootElementType is not null);
 
 			exception = new XamlParseException($"No method {value} with correct signature found on type {rootElement.GetType()}", lineInfo);
 			return false;

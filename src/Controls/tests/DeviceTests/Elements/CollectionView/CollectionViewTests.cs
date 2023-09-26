@@ -47,6 +47,8 @@ namespace Microsoft.Maui.DeviceTests
 			WeakReference weakReference = null;
 			var collectionView = new CollectionView
 			{
+				Header = new Label { Text = "Header" },
+				Footer = new Label { Text = "Footer" },
 				ItemTemplate = new DataTemplate(() => new Label())
 			};
 
@@ -75,7 +77,7 @@ namespace Microsoft.Maui.DeviceTests
 			await AssertionExtensions.WaitForGC(weakReference);
 			Assert.False(weakReference.IsAlive, "ObservableCollection should not be alive!");
 			Assert.NotNull(logicalChildren);
-			Assert.True(logicalChildren.Count <= 3, "_logicalChildren should not grow in size!");
+			Assert.True(logicalChildren.Count <= 5, "_logicalChildren should not grow in size!");
 		}
 
 		[Theory]

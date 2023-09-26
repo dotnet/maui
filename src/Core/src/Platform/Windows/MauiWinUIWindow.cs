@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
@@ -134,6 +135,20 @@ namespace Microsoft.Maui
 						Marshal.StructureToPtr(rect, e.LParam, true);
 					}
 				}
+				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
+				{
+					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
+					{
+						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+
+						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
+						if (rootManager != null)
+						{
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
+						}
+					}
+				}
 
 				Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
 					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
@@ -172,7 +187,7 @@ namespace Microsoft.Maui
 
 		internal IServiceProvider? Services =>
 			Window?.Handler?.GetServiceProvider() ??
-			MauiWinUIApplication.Current.Services;
+			IPlatformApplication.Current?.Services;
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);

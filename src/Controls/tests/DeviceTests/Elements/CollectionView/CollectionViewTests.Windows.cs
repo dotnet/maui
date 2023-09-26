@@ -54,7 +54,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(Skip = "FIX FOR .NET8")]
+		[Fact]
 		public async Task ValidateItemContainerDefaultHeight()
 		{
 			SetupBuilder();

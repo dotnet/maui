@@ -1614,6 +1614,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			{
 				Root = root,
 				XamlFilePath = parentContext.XamlFilePath,
+				LoggingHelper = parentContext.LoggingHelper,
 			};
 
 			//Instanciate nested class

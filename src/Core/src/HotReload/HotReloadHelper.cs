@@ -149,9 +149,7 @@ namespace Microsoft.Maui.HotReload
 			var newType = newHandler;
 			if (pair.Value.IsGenericType)
 				newType = pair.Value.GetGenericTypeDefinition().MakeGenericType(newHandler);
-#pragma warning disable RS0030 // Do not use banned APIs
 			HandlerService.AddHandler(view, newType);
-#pragma warning restore RS0030 // Do not use banned APIs
 		}
 
 		public static void TriggerReload()
