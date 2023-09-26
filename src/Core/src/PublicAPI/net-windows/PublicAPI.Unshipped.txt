@@ -62,6 +62,7 @@ static Microsoft.Maui.GridLength.operator !=(Microsoft.Maui.GridLength left, Mic
 static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Microsoft.Maui.GridLength right) -> bool
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
+static Microsoft.Maui.Handlers.LayoutHandler.MapInputTransparent(Microsoft.Maui.ILayoutHandler! handler, Microsoft.Maui.ILayout! layout) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.MapSourceAsync(Microsoft.Maui.Handlers.ISwipeItemMenuItemHandler! handler, Microsoft.Maui.ISwipeItemMenuItem! image) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Hosting.MauiHandlersCollectionExtensions.AddHandler<TType>(this Microsoft.Maui.Hosting.IMauiHandlersCollection! handlersCollection, System.Func<System.IServiceProvider!, Microsoft.Maui.IElementHandler!>! handlerImplementationFactory) -> Microsoft.Maui.Hosting.IMauiHandlersCollection!
