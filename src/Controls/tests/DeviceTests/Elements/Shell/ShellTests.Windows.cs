@@ -125,7 +125,7 @@ namespace Microsoft.Maui.DeviceTests
 					var rootNavView = handler.PlatformView;
 					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
 					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
-					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
 
 					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
 					Assert.NotNull(shellItemView);
@@ -181,13 +181,14 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var rootNavView = (handler.PlatformView);
 				var shellItemView = shell.CurrentItem.Handler.PlatformView as UI.Xaml.Controls.NavigationView;
-				var expected = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				var expectedShell = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
 
 				Assert.False(rootNavView.IsPaneToggleButtonVisible);
 				Assert.False(shellItemView.IsPaneToggleButtonVisible);
 
-				Assert.Equal(expected, rootNavView.PaneDisplayMode);
-				Assert.Equal(expected, shellItemView.PaneDisplayMode);
+				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+				Assert.Equal(expectedShell, shellItemView.PaneDisplayMode);
 
 				return Task.CompletedTask;
 			});
@@ -214,7 +215,7 @@ namespace Microsoft.Maui.DeviceTests
 				var rootNavView = (handler.PlatformView);
 				var shellItemView = shell.CurrentItem.Handler.PlatformView as UI.Xaml.Controls.NavigationView;
 				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
-				var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+				var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Top;
 
 				Assert.True(rootNavView.IsPaneToggleButtonVisible);
 				Assert.False(shellItemView.IsPaneToggleButtonVisible);
