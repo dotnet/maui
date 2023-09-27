@@ -258,7 +258,7 @@ public static class KeyboardAutoManagerScroll
 		// while we have the keyboard up, we need a delay to recalculate
 		// the height of the InputAccessoryView
 		if (IsKeyboardShowing && View?.InputAccessoryView is not null)
-			await Task.Delay(10);
+			await Task.Delay(20);
 
 		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
 		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
@@ -384,6 +384,8 @@ public static class KeyboardAutoManagerScroll
 
 		else if (cursorRect.Y <= topLayoutGuide)
 			move = cursorRect.Y - (nfloat)topLayoutGuide;
+
+		Console.WriteLine($"Move: {move}");
 
 		// Find the next parent ScrollView that is scrollable
 		var superView = View.FindResponder<UIScrollView>();
