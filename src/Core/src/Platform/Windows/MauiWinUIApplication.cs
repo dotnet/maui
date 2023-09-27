@@ -61,14 +61,24 @@ namespace Microsoft.Maui
 
 		IApplication IPlatformApplication.Application => _application!;
 
-		[Obsolete("Use the IPlatformApplication.Current.Services instead.")]
+		// TODO NET9 MARK THESE AS OBSOLETE. We didn't mark them obsolete in NET8 because that
+		// was causing warnings to generate for our WinUI projects, so we need to workaround that
+		// before we mark this as obsolete.
+		/// <summary>
+		/// Use the IPlatformApplication.Current.Services instead.
+		/// </summary>
 		public IServiceProvider Services
 		{
 			get => _services!;
 			protected set => _services = value;
 		}
 
-		[Obsolete("Use the IPlatformApplication.Current.Application instead.")]
+		// TODO NET9 MARK THESE AS OBSOLETE. We didn't mark them obsolete in NET8 because that
+		// was causing warnings to generate for our WinUI projects, so we need to workaround that
+		// before we mark this as obsolete.
+		/// <summary>
+		/// Use the IPlatformApplication.Current.Application instead.
+		/// </summary>
 		public IApplication Application
 		{
 			get => _application!;
