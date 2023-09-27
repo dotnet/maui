@@ -36,6 +36,11 @@ namespace Microsoft.Maui.Controls
 					ToolbarItems,
 					OnToolbarItemPropertyChanged);
 			}
+			else if (newHandler.MauiContext?.Context != oldHandler?.MauiContext?.Context)
+			{
+				// Platform Title View is from a previous activity context so we just want to null it out
+				_platformTitleView = null;
+			}
 		}
 
 		void OnToolbarItemPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -81,7 +86,7 @@ namespace Microsoft.Maui.Controls
 			titleView.ToPlatform(MauiContext);
 			_platformTitleViewHandler = titleView.Handler;
 
-			if (_platformTitleView == null)
+			if (_platformTitleView == null || _platformTitleView.Context != MauiContext.Context)
 			{
 				var context = MauiContext.Context!;
 				_platformTitleView = new Container(context);
@@ -91,6 +96,7 @@ namespace Microsoft.Maui.Controls
 
 			if (_platformTitleView.Parent != PlatformView)
 			{
+				_platformTitleView.RemoveFromParent();
 				PlatformView.AddView(_platformTitleView);
 			}
 

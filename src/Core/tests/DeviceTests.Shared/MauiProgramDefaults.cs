@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Hosting;
@@ -42,12 +43,31 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureTests(new TestOptions
 				{
 					Assemblies = testAssemblies,
-				})
-				.UseHeadlessRunner(new HeadlessRunnerOptions
+				});
+
+#if WINDOWS
+			if (testAssemblies.Any(a => a.FullName.Contains("Controls.DeviceTests",
+				StringComparison.OrdinalIgnoreCase)))
+			{
+				appBuilder.UseControlsHeadlessRunner(new HeadlessRunnerOptions
 				{
 					RequiresUIContext = true,
-				})
-				.UseVisualRunner();
+				});
+			}
+			else
+			{
+				appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
+				{
+					RequiresUIContext = true,
+				});
+			}
+#else
+			appBuilder.UseHeadlessRunner(new HeadlessRunnerOptions
+			{
+				RequiresUIContext = true,
+			});
+#endif
+			appBuilder.UseVisualRunner();
 
 			var mauiApp = appBuilder.Build();
 

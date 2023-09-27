@@ -30,7 +30,10 @@ namespace Microsoft.Maui
 
 			base.OnCreate(savedInstanceState);
 
-			this.CreatePlatformWindow(MauiApplication.Current.Application, savedInstanceState);
+			if (IPlatformApplication.Current?.Application is not null)
+			{
+				this.CreatePlatformWindow(IPlatformApplication.Current.Application, savedInstanceState);
+			}
 		}
 
 		public override bool DispatchTouchEvent(MotionEvent? e)

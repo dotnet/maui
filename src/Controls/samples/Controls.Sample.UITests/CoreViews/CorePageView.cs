@@ -43,6 +43,7 @@ namespace Maui.Controls.Sample
 		}
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
+				new GalleryPageFactory(() => new BorderGallery(), "Border Gallery"),
 				new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
 				new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
 				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
@@ -52,6 +53,7 @@ namespace Maui.Controls.Sample
 				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 				new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
 				new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
+				new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
 		};
 
 		public CorePageView(Page rootPage)
