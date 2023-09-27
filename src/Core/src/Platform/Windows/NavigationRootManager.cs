@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Platform
 			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
-			
+
 			SetTitleBarVisibility(_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar);
 		}
 
@@ -37,7 +37,7 @@ namespace Microsoft.Maui.Platform
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
-                    UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
+					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
 					isVisible
 				);
 		}
