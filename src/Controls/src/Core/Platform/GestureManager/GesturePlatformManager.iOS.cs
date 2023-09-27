@@ -415,12 +415,16 @@ namespace Microsoft.Maui.Controls.Platform
 					switch (pointerGesture.State)
 					{
 						case UIGestureRecognizerState.Began:
+							exited = false;
 							if (pointerGesture is UIHoverGestureRecognizer)
 								pointerGestureRecognizer.SendPointerEntered(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 							else
 								pointerGestureRecognizer.SendPointerPressed(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 							break;
 						case UIGestureRecognizerState.Changed:
+							if (exited)
+								break;
+
 							if (pointerGesture is UIHoverGestureRecognizer)
 								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 							else
@@ -432,22 +436,20 @@ namespace Microsoft.Maui.Controls.Platform
 									pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 									exited = true;
 									pointerGesture.State = UIGestureRecognizerState.Ended;
+									break;
 								}
 							}
 							break;
 						case UIGestureRecognizerState.Cancelled:
 						case UIGestureRecognizerState.Failed:
 						case UIGestureRecognizerState.Ended:
-							if (pointerGesture is UIHoverGestureRecognizer && !exited)
+							if (exited)
+								break;
+
+							if (pointerGesture is UIHoverGestureRecognizer)
 								pointerGestureRecognizer.SendPointerExited(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-							else if (pointerGesture is CustomPressGestureRecognizer && exited)
-							{
+							else
 								pointerGestureRecognizer.SendPointerReleased(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
-								// PointerMoved still gets fired after this, one time.
-								// if (exited) break; on UIGestureRecognizerState.Changed does prevent this
-								// however, that prevents any gesture detection on re-entry.
-								// so I still need to figure out that part. but progress!
-							}
 							break;
 					}
 				}
