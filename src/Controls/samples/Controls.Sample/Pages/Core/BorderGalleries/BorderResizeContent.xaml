@@ -56,7 +56,7 @@
                         Value="101" />
                 <Setter Property="BackgroundColor"
                         Value="LightBlue" />
-               
+                <Setter Property="StrokeThickness" Value="8" />
                 <Setter Property="Stroke"
                         Value="LightGreen" />
             </Style.Setters>
