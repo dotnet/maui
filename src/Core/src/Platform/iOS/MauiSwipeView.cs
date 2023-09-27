@@ -217,7 +217,7 @@ namespace Microsoft.Maui.Platform
 				if (view._isSwipeEnabled && panGestureRecognizer != null)
 				{
 					CGPoint point = panGestureRecognizer.LocationInView(view);
-					var navigationController = view.GetUINavigationController(view.GetViewController());
+					var navigationController = GetUINavigationController(view.GetViewController());
 
 					switch (panGestureRecognizer.State)
 					{
@@ -247,7 +247,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		UIView CreateEmptyContent()
+		static UIView CreateEmptyContent()
 		{
 			var emptyContentView = new UIView
 			{
@@ -274,7 +274,7 @@ namespace Microsoft.Maui.Platform
 			return _swipeDirection == SwipeDirection.Left || _swipeDirection == SwipeDirection.Right;
 		}
 
-		bool IsValidSwipeItems(ISwipeItems? swipeItems)
+		static bool IsValidSwipeItems(ISwipeItems? swipeItems)
 		{
 			return swipeItems != null && swipeItems.Any(GetIsVisible);
 		}
@@ -402,7 +402,7 @@ namespace Microsoft.Maui.Platform
 			_swipeTransitionMode = swipeTransitionMode;
 		}
 
-		void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
+		static void UpdateSwipeItemInsets(UIButton button, float spacing = 0.0f)
 		{
 			if (button.ImageView?.Image == null)
 				return;
@@ -536,17 +536,7 @@ namespace Microsoft.Maui.Platform
 			if (_contentView == null)
 				return false;
 
-			bool touchContent = TouchInsideContent(_contentView.Frame.Left, _contentView.Frame.Top, _contentView.Frame.Width, _contentView.Frame.Height, point.X, point.Y);
-
-			return touchContent;
-		}
-
-		bool TouchInsideContent(double x1, double y1, double x2, double y2, double x, double y)
-		{
-			if (x > x1 && x < (x1 + x2) && y > y1 && y < (y1 + y2))
-				return true;
-
-			return false;
+			return _contentView.Frame.Contains(point);
 		}
 
 		ISwipeItems? GetSwipeItemsByDirection()
@@ -778,7 +768,7 @@ namespace Microsoft.Maui.Platform
 					foreach (var swipeItem in swipeItems)
 					{
 						if (GetIsVisible(swipeItem))
-							ExecuteSwipeItem(swipeItem);
+							MauiSwipeView.ExecuteSwipeItem(swipeItem);
 					}
 
 					if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
@@ -996,7 +986,7 @@ namespace Microsoft.Maui.Platform
 				return false;
 
 			var swipeItems = GetSwipeItemsByDirection();
-			return IsValidSwipeItems(swipeItems);
+			return MauiSwipeView.IsValidSwipeItems(swipeItems);
 		}
 
 		double GetSwipeOffset(CGPoint initialPoint, CGPoint endPoint)
@@ -1039,9 +1029,9 @@ namespace Microsoft.Maui.Platform
 					var swipeItemX = swipeItemRect.Left;
 					var swipeItemY = swipeItemRect.Top;
 
-					if (TouchInsideContent(swipeItemX, swipeItemY, swipeItemRect.Width, swipeItemRect.Height, point.X, point.Y))
+					if (swipeItemRect.Contains(point))
 					{
-						ExecuteSwipeItem(swipeItem);
+						MauiSwipeView.ExecuteSwipeItem(swipeItem);
 
 						if (swipeItems.SwipeBehaviorOnInvoked != SwipeBehaviorOnInvoked.RemainOpen)
 							ResetSwipe();
@@ -1067,7 +1057,7 @@ namespace Microsoft.Maui.Platform
 			return viewController;
 		}
 
-		UINavigationController? GetUINavigationController(UIViewController? controller)
+		static UINavigationController? GetUINavigationController(UIViewController? controller)
 		{
 			if (controller != null)
 			{
@@ -1078,7 +1068,7 @@ namespace Microsoft.Maui.Platform
 
 				if (controller.ChildViewControllers.Any())
 				{
-					var childs = controller.ChildViewControllers.Count();
+					var childs = controller.ChildViewControllers.Length;
 
 					for (int i = 0; i < childs; i++)
 					{
@@ -1095,7 +1085,7 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		void ExecuteSwipeItem(ISwipeItem item)
+		static void ExecuteSwipeItem(ISwipeItem item)
 		{
 			if (item == null)
 				return;

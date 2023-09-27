@@ -17,11 +17,11 @@ namespace Microsoft.Maui
 		[Export("scene:willConnectToSession:options:")]
 		public virtual void WillConnect(UIScene scene, UISceneSession session, UISceneConnectionOptions connectionOptions)
 		{
-			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneWillConnect>(del => del(scene, session, connectionOptions));
 
-			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && MauiUIApplicationDelegate.Current?.Application != null)
+			if (session.Configuration.Name == MauiUIApplicationDelegate.MauiSceneConfigurationKey && IPlatformApplication.Current?.Application != null)
 			{
-				this.CreatePlatformWindow(MauiUIApplicationDelegate.Current.Application, scene, session, connectionOptions);
+				this.CreatePlatformWindow(IPlatformApplication.Current.Application, scene, session, connectionOptions);
 
 				if (Window != null)
 					GetServiceProvider()?.InvokeLifecycleEvents<iOSLifecycle.OnPlatformWindowCreated>(del => del(Window));
@@ -31,7 +31,7 @@ namespace Microsoft.Maui
 		[Export("sceneDidDisconnect:")]
 		public virtual void DidDisconnect(UIScene scene)
 		{
-			MauiUIApplicationDelegate.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
+			IPlatformApplication.Current?.Services?.InvokeLifecycleEvents<iOSLifecycle.SceneDidDisconnect>(del => del(scene));
 
 			// for iOS 13 only where active apperance is not supported yet
 			// for iOS 14+, see DidUpdateCoordinateSpace
