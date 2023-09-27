@@ -385,8 +385,6 @@ public static class KeyboardAutoManagerScroll
 		else if (cursorRect.Y <= topLayoutGuide)
 			move = cursorRect.Y - (nfloat)topLayoutGuide;
 
-		Console.WriteLine($"Move: {move}");
-
 		// Find the next parent ScrollView that is scrollable
 		var superView = View.FindResponder<UIScrollView>();
 		var superScrollView = FindParentScroll(superView);
