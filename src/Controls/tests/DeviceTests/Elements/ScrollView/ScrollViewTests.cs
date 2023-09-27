@@ -126,16 +126,17 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!"); 
 		}
 
-		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill")]
+		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill"
+#if MACCATALYST || IOS
+			, Skip = "See: https://github.com/dotnet/maui/issues/17700. If the issue is solved, re-enable the tests"
+#endif
+		)]
 		public async Task ShouldGrow()
 		{
 			var label = new Label() { Text = "Text inside a ScrollView"};
 			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout , Background = Brush.Red };
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
 			var parentLayout = new Grid { scrollView };
-
-			parentLayout.Background = Brush.Yellow;
-			childLayout.Background = Brush.AliceBlue;
 
 			var expectedHeight = 100;
 			parentLayout.HeightRequest = expectedHeight;
@@ -145,11 +146,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
 			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
 
-			await AttachAndRun(parentLayout, async (layoutHandler) => {
-#if IOS || MACCATALYST
-				await layoutHandler.PlatformView.ThrowScreenshot(MauiContext, "Throwing to see results");
-#endif
-			});
+			await AttachAndRun(parentLayout, (layoutHandler) => {});
 
 			// Android is usually off by one or two px. Hence that's why the condition has some tolerance
 			Assert.Equal(scrollView.Height, childLayout.Height, 2.0);
