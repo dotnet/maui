@@ -15,11 +15,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners
 				if (s_services is null)
 				{
 #if __ANDROID__
-					s_services = MauiTestInstrumentation.Current?.Services ?? MauiApplication.Current.Services;
+					s_services = MauiTestInstrumentation.Current?.Services ?? IPlatformApplication.Current?.Services;
 #elif __IOS__
-					s_services = MauiTestApplicationDelegate.Current?.Services ?? MauiUIApplicationDelegate.Current.Services;
+					s_services = MauiTestApplicationDelegate.Current?.Services ?? IPlatformApplication.Current?.Services;
 #elif WINDOWS
-					s_services = MauiWinUIApplication.Current.Services;
+					s_services = IPlatformApplication.Current?.Services;
 #endif
 				}
 

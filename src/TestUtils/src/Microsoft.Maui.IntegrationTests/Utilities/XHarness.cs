@@ -4,7 +4,6 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public static class XHarness
 	{
-		static readonly string XCODE_PATH = "/Applications/Xcode_14.3.0.app";
 		static readonly string XHarnessTool = "xharness";
 		const int DEFAULT_TIMEOUT = 300;
 
@@ -27,7 +26,7 @@ namespace Microsoft.Maui.IntegrationTests
 		public static bool RunAppleForTimeout(string appPath, string resultDir, string targetDevice, int launchTimeoutSeconds = 75)
 		{
 			var timeoutString = TimeSpan.FromSeconds(launchTimeoutSeconds).ToString();
-			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice} --timeout=\"{timeoutString}\" --xcode=\"{XCODE_PATH}\" --verbosity=Debug";
+			var args = $"apple run --app=\"{appPath}\" --output-directory=\"{resultDir}\" --target={targetDevice} --timeout=\"{timeoutString}\" --verbosity=Debug";
 			var xhOutput = RunForOutput(args, out int exitCode, launchTimeoutSeconds + 30);
 
 			var launchLogMatch = false;
@@ -50,12 +49,12 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public static bool InstallSimulator(string targetDevice)
 		{
-			return Run($"apple simulators install \"{targetDevice}\" --xcode=\"{XCODE_PATH}\"");
+			return Run($"apple simulators install \"{targetDevice}\" ");
 		}
 
 		public static string GetSimulatorUDID(string targetDevice)
 		{
-			return RunForOutput($"apple device \"{targetDevice}\" --xcode=\"{XCODE_PATH}\"", out _, timeoutInSeconds: 30);
+			return RunForOutput($"apple device \"{targetDevice}\" ", out _, timeoutInSeconds: 30);
 		}
 
 		public static bool Run(string args, int timeoutInSeconds = DEFAULT_TIMEOUT)

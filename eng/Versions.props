@@ -5,22 +5,31 @@
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>7.0.203</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
-    <MicrosoftNETCoreAppRefPackageVersion>7.0.7</MicrosoftNETCoreAppRefPackageVersion>
-    <!-- NOTE: should eventually revert back to $(MicrosoftNETCoreAppRefPackageVersion) in .NET 7 -->
-    <MicrosoftExtensionsPackageVersion>7.0.0</MicrosoftExtensionsPackageVersion>
-    <MicrosoftExtensionsServicingPackageVersion>7.0.0</MicrosoftExtensionsServicingPackageVersion>
+    <MicrosoftNETCoreAppRefPackageVersion>7.0.11</MicrosoftNETCoreAppRefPackageVersion>
     <SystemCodeDomPackageVersion>7.0.0</SystemCodeDomPackageVersion>
+    <!-- extensions -->
+    <MicrosoftExtensionsConfigurationPackageVersion>7.0.0</MicrosoftExtensionsConfigurationPackageVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsPackageVersion>7.0.0</MicrosoftExtensionsConfigurationAbstractionsPackageVersion>
+    <MicrosoftExtensionsConfigurationJsonPackageVersion>7.0.0</MicrosoftExtensionsConfigurationJsonPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>7.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>7.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>7.0.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsPackageVersion>7.0.1</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingPackageVersion>7.0.0</MicrosoftExtensionsLoggingPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>7.0.0</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>7.0.0</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <MicrosoftExtensionsPrimitivesPackageVersion>7.0.0</MicrosoftExtensionsPrimitivesPackageVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.46</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>33.0.68</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.4.7060</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>13.3.7060</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.4.7060</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.4.7060</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>16.4.7099</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>13.3.7099</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>16.4.7099</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>16.4.7099</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.105</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
-    <MicrosoftNETWorkloadEmscriptenPackageVersion>7.0.7</MicrosoftNETWorkloadEmscriptenPackageVersion>
+    <MicrosoftNETWorkloadEmscriptenPackageVersion>7.0.11</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
     <MicrosoftWindowsAppSDKPackageVersion>1.3.230724000</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.756</MicrosoftWindowsSDKBuildToolsPackageVersion>
@@ -50,7 +59,7 @@
     <SystemIOUnmanagedMemoryStreamPackageVersion>4.3.0</SystemIOUnmanagedMemoryStreamPackageVersion>
     <SystemObjectModelPackageVersion>4.3.0</SystemObjectModelPackageVersion>
     <SystemRuntimeCompilerServicesUnsafePackageVersion>6.0.0</SystemRuntimeCompilerServicesUnsafePackageVersion>
-    <_MicrosoftWebWebView2Version>1.0.1938.49</_MicrosoftWebWebView2Version>
+    <_MicrosoftWebWebView2Version>1.0.2045.28</_MicrosoftWebWebView2Version>
     <!-- GLIDE - the android maven artifact in /src/Core/AndroidNative/maui/build.gradle -->
     <!-- must be kept in sync with the binding library version to it here: -->
     <_XamarinAndroidGlideVersion>4.15.1.2</_XamarinAndroidGlideVersion>
@@ -64,13 +73,14 @@
        - Feed URI in the nuget.config
        - Native assets build and sha
     -->
-    <_SkiaSharpVersion>2.88.2</_SkiaSharpVersion>
-    <_HarfBuzzSharpVersion>2.8.2.2</_HarfBuzzSharpVersion>
-    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.193b587552cb0ed39372a049d7e6c692db98c267.483</_SkiaSharpNativeAssetsVersion>
+    <_SkiaSharpVersion>2.88.6</_SkiaSharpVersion>
+    <_SkiaSharpExtendedVersion>2.0.0-preview.86</_SkiaSharpExtendedVersion>
+    <_HarfBuzzSharpVersion>7.3.0</_HarfBuzzSharpVersion>
+    <_SkiaSharpNativeAssetsVersion>0.0.0-commit.e2c5c86249621857107c779af0f79b4d06613766.655</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23456.2</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23456.2</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23456.2</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>

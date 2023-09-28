@@ -13,6 +13,10 @@ using PlatformView = System.Object;
 
 namespace Microsoft.Maui.Handlers
 {
+	/// <summary>
+	/// Represents the view handler for the abstract <see cref="ILayout"/> view and its platform-specific implementation.
+	/// </summary>
+	/// <seealso href="https://learn.microsoft.com/dotnet/maui/user-interface/handlers/">Conceptual documentation on handlers</seealso>
 	public partial class LayoutHandler : ILayoutHandler
 	{
 		public static IPropertyMapper<ILayout, ILayoutHandler> Mapper = new PropertyMapper<ILayout, ILayoutHandler>(ViewMapper)
@@ -48,15 +52,27 @@ namespace Microsoft.Maui.Handlers
 
 		PlatformView ILayoutHandler.PlatformView => PlatformView;
 
-		public static void MapBackground(ILayoutHandler handler, ILayout layout)
-		{
-#if TIZEN
-			handler.UpdateValue(nameof(handler.ContainerView));
-			handler.ToPlatform()?.UpdateBackground(layout);
-#endif
-			((PlatformView?)handler.PlatformView)?.UpdateBackground(layout);
-		}
+		/// <summary>
+		/// Maps the abstract <see cref="IView.Background"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="layout">The associated <see cref="ILayout"/> instance.</param>
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout);
 
+#if ANDROID || WINDOWS
+		/// <summary>
+		/// Maps the abstract <see cref="IView.InputTransparent"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="layout">The associated <see cref="ILayout"/> instance.</param>
+		public static partial void MapInputTransparent(ILayoutHandler handler, ILayout layout);
+#endif
+
+		/// <summary>
+		/// Maps the abstract <see cref="ILayout.ClipsToBounds"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler">The associated handler.</param>
+		/// <param name="layout">The associated <see cref="ILayout"/> instance.</param>
 		public static void MapClipsToBounds(ILayoutHandler handler, ILayout layout)
 		{
 			((PlatformView?)handler.PlatformView)?.UpdateClipsToBounds(layout);
