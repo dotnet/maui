@@ -363,20 +363,12 @@ namespace Microsoft.Maui.Controls.Shapes
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			var result = base.MeasureOverride(widthConstraint, heightConstraint);
-
-			if (result.Width != 0 && result.Height != 0)
-			{
-				return result;
-			}
-
 			// TODO: not using this.GetPath().Bounds.Size;
 			//       since default GetBoundsByFlattening(0.001) returns incorrect results for curves
 			RectF pathBounds = this.GetPath().GetBoundsByFlattening(1);
 			SizeF boundsByFlattening = pathBounds.Size;
 
-			result.Height = boundsByFlattening.Height;
-			result.Width = boundsByFlattening.Width;
+			Size result = new Size(boundsByFlattening.Width, boundsByFlattening.Height);
 
 			widthConstraint -= StrokeThickness;
 			heightConstraint -= StrokeThickness;
@@ -429,6 +421,9 @@ namespace Microsoft.Maui.Controls.Shapes
 
 			result.Height += StrokeThickness;
 			result.Width += StrokeThickness;
+
+			result.Height += Margin.VerticalThickness;
+			result.Width += Margin.HorizontalThickness;
 
 			DesiredSize = result;
 			return result;
