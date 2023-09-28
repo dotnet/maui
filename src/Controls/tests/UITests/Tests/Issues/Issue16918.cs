@@ -10,7 +10,7 @@ namespace Controls.AppiumTests.Tests.Issues
 			: base(device)
 		{ }
 
-		public override string Issue => "Image buttons aliasing";
+		public override string Issue => "ImageButton is not properly anti-aliased when scaled down";
 
 		[Test]
 		public void Issue16918Test()
@@ -23,7 +23,7 @@ namespace Controls.AppiumTests.Tests.Issues
 				TestDevice.iOS
 			});
 
-			App.WaitForElement("WaitForStubControl");
+			App.WaitForElement("MenuImage");
 			VerifyScreenshot();
 		}
 	}

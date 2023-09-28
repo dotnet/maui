@@ -15,7 +15,9 @@
                 Source="menu_entry_settings_40.png"
                 SemanticProperties.Description="Cute dot net bot waving hi to you!"
                 HeightRequest="40"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Center"
+                x:Name="MenuImage"
+                AutomationId="MenuImage"/>
 
             <Label 
                 Text="ImageButton (SVG 40x40):"
