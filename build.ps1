@@ -9,7 +9,7 @@ Param(
 )
 
 # Restore Cake tool
-& dotnet tool restore --configfile NuGet.Config
+& dotnet tool restore
 
 # Build Cake arguments
 $cakeArguments = @("$Script");
