@@ -27,6 +27,66 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+#if ANDROID
+		[Fact("Checks that the default background is transparent")]
+		public async Task DefaultBackgroundIsTransparent ()
+		{
+			// We use a Grid container to set a background color and then make sure that the Border background
+			// is transparent by making sure that the parent Grid's Blue background shows through.
+			var grid = new Grid
+			{
+				ColumnDefinitions = new ColumnDefinitionCollection()
+				{
+					new ColumnDefinition(GridLength.Star)
+				},
+				RowDefinitions = new RowDefinitionCollection()
+				{
+					new RowDefinition(GridLength.Star)
+				},
+				BackgroundColor = Colors.Blue,
+				WidthRequest = 200,
+				HeightRequest = 200
+			};
+
+			var border = new Border {
+				WidthRequest = 200,
+				HeightRequest = 200,
+				Stroke = Colors.Red,
+				StrokeThickness = 10
+			};
+
+			grid.Add(border, 0, 0);
+
+			await CreateHandlerAsync<BorderHandler>(border);
+			await CreateHandlerAsync<LayoutHandler>(grid);
+
+			var bitmap = await GetRawBitmap(grid, typeof(LayoutHandler));
+			Assert.Equal(200, bitmap.Width, 2d);
+			Assert.Equal(200, bitmap.Height, 2d);
+
+			// Analyze red border - we expect it to fill a 200x200 area
+			var redBlob = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Red > .5).Single();
+			Assert.Equal(200, redBlob.Width, 2d);
+			Assert.Equal(200, redBlob.Height, 2d);
+
+			// Analyze the blue blob - it should fill the inside of the border (minus the stroke thickness)
+			var blueBlobs = ConnectedComponentAnalysis.FindConnectedPixels(bitmap, (c) => c.Blue > .5);
+
+			// Note: There is a 1px blue border around the red border, so we need to find the one
+			// that represents the inner bounds of the border.
+			var innerBlob = blueBlobs[0];
+
+			for (int i = 1; i < blueBlobs.Count; i++)
+			{
+				if (blueBlobs[i].MinColumn > innerBlob.MinColumn && blueBlobs[i].MaxColumn < innerBlob.MaxColumn)
+					innerBlob = blueBlobs[i];
+			}
+
+			Assert.Equal(180, innerBlob.Width, 2d);
+			Assert.Equal(180, innerBlob.Height, 2d);
+		}
+#endif
+
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public async Task RoundedRectangleBorderLayoutIsCorrect()
 		{

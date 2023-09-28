@@ -89,6 +89,7 @@ static Microsoft.Maui.GridLength.operator ==(Microsoft.Maui.GridLength left, Mic
 static Microsoft.Maui.Handlers.EditorHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEditorHandler! handler, Microsoft.Maui.IEditor! editor) -> void
 static Microsoft.Maui.Handlers.EntryHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.IEntryHandler! handler, Microsoft.Maui.IEntry! entry) -> void
 static Microsoft.Maui.Handlers.ImageButtonHandler.MapBackground(Microsoft.Maui.Handlers.IImageButtonHandler! handler, Microsoft.Maui.IImageButton! imageButton) -> void
+static Microsoft.Maui.Handlers.LayoutHandler.MapInputTransparent(Microsoft.Maui.ILayoutHandler! handler, Microsoft.Maui.ILayout! layout) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapFocus(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar, object? args) -> void
 static Microsoft.Maui.Handlers.SearchBarHandler.MapIsSpellCheckEnabled(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Handlers.StepperHandler.MapIsEnabled(Microsoft.Maui.Handlers.IStepperHandler! handler, Microsoft.Maui.IStepper! stepper) -> void
