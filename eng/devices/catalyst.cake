@@ -117,7 +117,6 @@ Task("Test")
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
-		ToolPath = DOTNET_PATH,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
 		$"--targets=\"{TEST_DEVICE}\" " +
