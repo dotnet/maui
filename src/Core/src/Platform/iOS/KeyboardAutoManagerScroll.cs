@@ -39,9 +39,20 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken = null;
 	static NSObject? TextFieldToken = null;
 	static NSObject? TextViewToken = null;
+	static bool? ShouldConnect = null;
 
 	public static void Connect()
 	{
+		// if Disconnect was called prior to the first Connect
+		// call in the Created Lifecycle event, do not connect
+		if (ShouldConnect is false)
+		{
+			ShouldConnect = true;
+			return;
+		}
+
+		ShouldConnect = true;
+
 		if (TextFieldToken is not null)
 			return;
 
@@ -58,6 +69,11 @@ public static class KeyboardAutoManagerScroll
 
 	public static void Disconnect()
 	{
+		// if Disconnect is called prior to Connect, signal to not
+		// Connect during the Created Lifecycle event
+		if (ShouldConnect is null)
+			ShouldConnect = false;
+
 		if (WillShowToken is not null)
 		{
 			NSNotificationCenter.DefaultCenter.RemoveObserver(WillShowToken);
