@@ -55,7 +55,7 @@ steps:
     - pwsh: dotnet cake --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: dotnet cake -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 2
