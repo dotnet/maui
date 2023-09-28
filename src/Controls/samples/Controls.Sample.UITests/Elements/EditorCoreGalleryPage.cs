@@ -11,9 +11,9 @@ namespace Maui.Controls.Sample
 			get { return false; }
 		}
 
-		protected override void Build(StackLayout stackLayout)
+		protected override void Build()
 		{
-			base.Build(stackLayout);
+			base.Build();
 
 			var completedContainer = new EventViewContainer<Editor>(Test.Editor.Completed, new Editor());
 			completedContainer.View.Completed += (sender, args) => completedContainer.EventFired();

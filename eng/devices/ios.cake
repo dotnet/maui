@@ -172,9 +172,6 @@ Task("Test")
 	}
 
 	var XCODE_PATH =  Argument("xcode_path", "");
-
-	if (String.IsNullOrEmpty(XCODE_PATH) && IsCIBuild())
-		XCODE_PATH = "/Applications/Xcode_14.3.0.app";
 		
 	string xcode_args = "";
 	if (!String.IsNullOrEmpty(XCODE_PATH))
@@ -251,7 +248,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_ios.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-ios");
 });
 
 Task("cg-uitest")

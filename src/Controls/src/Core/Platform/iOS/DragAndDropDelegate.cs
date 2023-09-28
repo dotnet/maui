@@ -61,8 +61,6 @@ namespace Microsoft.Maui.Controls.Platform
 		[Preserve(Conditional = true)]
 		public UIDragItem[] GetItemsForBeginningSession(UIDragInteraction interaction, IUIDragSession session)
 		{
-			var originalPoint = session.LocationInView(_viewHandler.PlatformView);
-
 			return HandleDragStarting((View)_viewHandler.VirtualView, _viewHandler, session, new PlatformDragStartingEventArgs(_viewHandler.PlatformView, interaction, session));
 		}
 
@@ -103,7 +101,6 @@ namespace Microsoft.Maui.Controls.Platform
 				package = cdi.DataPackage;
 			}
 
-			var dragLocation = session.LocalDragSession.LocationInView(_viewHandler.PlatformView);
 			var platformArgs = new PlatformDragEventArgs(_viewHandler.PlatformView, interaction, session);
 
 			if (HandleDragOver((View)_viewHandler.VirtualView, package, session.LocalDragSession, platformArgs))
