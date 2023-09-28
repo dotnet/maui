@@ -183,7 +183,11 @@ namespace Microsoft.Maui.DeviceTests
 				unsetValue);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "Might be same/related as: https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
