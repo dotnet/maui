@@ -291,7 +291,7 @@ namespace Microsoft.Maui.Platform
 			animator.Start();
 		}
 
-		void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
+		static void IOnScrollChangeListener.OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
 		{
 			OnScrollChanged(scrollX, scrollY, oldScrollX, oldScrollY);
 		}
