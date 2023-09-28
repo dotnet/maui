@@ -1,10 +1,13 @@
 using System;
-using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
+using Windows.Storage.FileProperties;
+using StorageFile = Windows.Storage.StorageFile;
 using WThickness = Microsoft.UI.Xaml.Thickness;
+using ResourceContext = Windows.ApplicationModel.Resources.Core.ResourceContext;
 
 namespace Microsoft.Maui.Platform
 {
@@ -99,10 +102,11 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		internal void UpdateAppTitleBar(int appTitleBarHeight, bool useCustomAppTitleBar)
+		internal void UpdateAppTitleBar(int appTitleBarHeight, bool useCustomAppTitleBar, WThickness margin)
 		{
 			_useCustomAppTitleBar = useCustomAppTitleBar;
 			WindowTitleBarContentControlMinHeight = appTitleBarHeight;
+			
 			double topMargin = 0;
 			if (AppTitleBarContentControl != null)
 			{
@@ -122,6 +126,11 @@ namespace Microsoft.Maui.Platform
 				WindowTitleBarContentControlVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 
+			var flowDirectionSetting = ResourceContext.GetForViewIndependentUse().QualifierValues["LayoutDirection"];
+			WindowTitleBarFlowDirection = flowDirectionSetting == "LTR" ?
+				UI.Xaml.FlowDirection.LeftToRight : UI.Xaml.FlowDirection.RightToLeft;
+
+			WindowTitleMargin = margin;
 			UpdateRootNavigationViewMargins(topMargin);
 		}
 
@@ -226,7 +235,6 @@ namespace Microsoft.Maui.Platform
 			UpdateAppTitleBarMargins();
 		}
 
-
 		ActionDisposable? _contentChanged;
 
 		protected override void OnContentChanged(object oldContent, object newContent)
@@ -317,12 +325,10 @@ namespace Microsoft.Maui.Platform
 			// If the AppIcon loads correctly then we set a margin for the text from the image
 			if (_hasTitleBarImage)
 			{
-				WindowTitleMargin = new WThickness(12, 0, 0, 0);
 				WindowTitleIconVisibility = UI.Xaml.Visibility.Visible;
 			}
 			else
 			{
-				WindowTitleMargin = new WThickness(0);
 				WindowTitleIconVisibility = UI.Xaml.Visibility.Collapsed;
 			}
 		}
@@ -449,6 +455,19 @@ namespace Microsoft.Maui.Platform
 		{
 			get => (double)GetValue(WindowTitleBarContentControlMinHeightProperty);
 			set => SetValue(WindowTitleBarContentControlMinHeightProperty, value);
+		}
+
+		internal static readonly DependencyProperty WindowTitleBarFlowDirectionProperty =
+			DependencyProperty.Register(
+				nameof(WindowTitleBarFlowDirection),
+				typeof(UI.Xaml.FlowDirection),
+				typeof(WindowRootView),
+				new PropertyMetadata(UI.Xaml.FlowDirection.LeftToRight));
+
+		internal UI.Xaml.FlowDirection WindowTitleBarFlowDirection
+		{
+			get => (UI.Xaml.FlowDirection)GetValue(WindowTitleBarFlowDirectionProperty);
+			set => SetValue(WindowTitleBarFlowDirectionProperty, value);
 		}
 	}
 }

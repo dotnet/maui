@@ -24,16 +24,21 @@ namespace Microsoft.Maui.Platform
 			// This should always get set by the code after but
 			// we are setting it just in case
 			var appbarHeight = 32;
+			var titlebarMargins = new UI.Xaml.Thickness(0, 0, 0, 0);
 			if (AppWindowTitleBar.IsCustomizationSupported())
 			{
 				var density = _platformWindow.GetDisplayDensity();
 				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
+				titlebarMargins = new UI.Xaml.Thickness(
+					_platformWindow.AppWindow.TitleBar.LeftInset, 0,
+					_platformWindow.AppWindow.TitleBar.RightInset, 0);
 			}
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
 					AppWindowTitleBar.IsCustomizationSupported() &&
-					_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar
+					_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar,
+					titlebarMargins
 				);
 
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
