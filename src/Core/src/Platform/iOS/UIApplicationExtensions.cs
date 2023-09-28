@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Platform
 			if (platformWindow is null)
 				return null;
 
-			foreach (var window in MauiUIApplicationDelegate.Current.Application.Windows)
+			foreach (var window in IPlatformApplication.Current?.Application?.Windows ?? Array.Empty<IWindow>())
 			{
 				if (window?.Handler?.PlatformView == platformWindow)
 					return window;

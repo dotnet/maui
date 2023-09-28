@@ -1,6 +1,30 @@
 <Project>
   <ItemGroup>
     <PackageReference
+        Update="HarfBuzzSharp"
+        Version="$(_HarfBuzzSharpVersion)"
+    />
+    <PackageReference
+        Update="HarfBuzzSharp.NativeAssets.Linux"
+        Version="$(_HarfBuzzSharpVersion)"
+    />
+    <PackageReference
+        Update="HarfBuzzSharp.NativeAssets.macOS"
+        Version="$(_HarfBuzzSharpVersion)"
+    />
+    <PackageReference
+        Update="HarfBuzzSharp.NativeAssets.Win32"
+        Version="$(_HarfBuzzSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.HarfBuzz"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.Extended"
+        Version="$(_SkiaSharpExtendedVersion)"
+    />
+    <PackageReference
         Update="SkiaSharp"
         Version="$(_SkiaSharpVersion)"
     />
@@ -9,11 +33,31 @@
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
+        Update="SkiaSharp.Views.Gtk3"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
         Update="SkiaSharp.Views.WinUI"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
-        Update="SkiaSharp.HarfBuzz"
+        Update="SkiaSharp.Views.WPF"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.NativeAssets.Linux"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.NativeAssets.Linux.NoDependencies"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.NativeAssets.macOS"
+        Version="$(_SkiaSharpVersion)"
+    />
+    <PackageReference
+        Update="SkiaSharp.NativeAssets.Win32"
         Version="$(_SkiaSharpVersion)"
     />
     <PackageReference
