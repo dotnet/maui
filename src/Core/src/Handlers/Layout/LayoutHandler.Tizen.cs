@@ -176,6 +176,12 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
+		{
+			handler.UpdateValue(nameof(handler.ContainerView));
+			handler.ToPlatform()?.UpdateBackground(layout);
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (disposing)
