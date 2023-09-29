@@ -928,7 +928,6 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		/// <inheritdoc/>
 		void IEffectControlProvider.RegisterEffect(Effect effect)
 		{
 			if (effect is RoutingEffect re && re.Inner != null)
