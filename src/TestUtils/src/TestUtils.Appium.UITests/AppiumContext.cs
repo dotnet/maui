@@ -72,7 +72,7 @@ namespace TestUtils.Appium.UITests
 			{
 				if (_server == null || !_server.IsRunning)
 				{
-					TestContext.Error.WriteLine($">>>>> Server was not running when calling {nameof(CreateUITestContext)}, starting it ourselves...");
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} Server was not running when calling {nameof(CreateUITestContext)}, starting it ourselves...");
 					CreateAndStartServer();
 				}
 			}
@@ -109,7 +109,7 @@ namespace TestUtils.Appium.UITests
 					// Default command timeout is 60 seconds when executing the NewSessionCommand
 					if (retries++ < 10)
 					{
-						TestContext.Error.WriteLine($">>>>> Retrying to create the driver, attempt #{retries}");
+						TestContext.Error.WriteLine($">>>>> {DateTime.Now} Retrying to create the driver, attempt #{retries}");
 					}
 					else
 					{
