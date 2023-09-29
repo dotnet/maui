@@ -243,11 +243,12 @@ namespace Microsoft.Maui.Platform
 				// Figure out if the "show accent color on title bars" setting is enabled
 				using var dwmSubKey = Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\DWM\");
 				var enableAccentColor = dwmSubKey?.GetValue("ColorPrevalence");
-				if (enableAccentColor != null && 
+				if (enableAccentColor != null &&
 					int.TryParse(enableAccentColor.ToString(), out var enableValue) &&
 					_appTitleBar is Border border)
 				{
-					DispatcherQueue.TryEnqueue(() => {
+					DispatcherQueue.TryEnqueue(() =>
+					{
 						border.Background = enableValue == 1 ?
 							new SolidColorBrush(_viewSettings.GetColorValue(ViewManagement.UIColorType.Accent)) :
 							new SolidColorBrush(UI.Colors.Transparent);

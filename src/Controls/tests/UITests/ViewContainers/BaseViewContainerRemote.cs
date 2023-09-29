@@ -21,6 +21,10 @@ namespace Microsoft.Maui.AppiumTests
 
 		public string StateButtonQuery { get; private set; }
 
+		public string LayeredHiddenButtonQuery { get; private set; }
+
+		public string LayeredLabelQuery { get; private set; }
+
 		protected IUITestContext _uiTestContext;
 
 		protected BaseViewContainerRemote(IUITestContext? testContext, Enum formsType)
@@ -38,6 +42,8 @@ namespace Microsoft.Maui.AppiumTests
 			EventLabelQuery = string.Format("* marked:'{0}EventLabel'", formsType);
 			StateLabelQuery = string.Format("* marked:'{0}StateLabel'", formsType);
 			StateButtonQuery = string.Format("* marked:'{0}StateButton'", formsType);
+			LayeredHiddenButtonQuery = string.Format("* marked:'{0}LayeredHiddenButton'", formsType);
+			LayeredLabelQuery = string.Format("* marked:'{0}LayeredLabel'", formsType);
 		}
 
 		public AppResult GetView()
