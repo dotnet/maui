@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Platform
 					appbarHeight,
 					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
 					isVisible,
-          titlebarMargins
+					titlebarMargins
 				);
 		}
 
