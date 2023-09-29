@@ -124,12 +124,20 @@ namespace Microsoft.Maui.IntegrationTests
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
-			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
+
+			var projectSectionsToReplace = new Dictionary<string, string>()
 			{
 				{ "UseMaui", "UseMauiCore" }, // This is the key part of the test
-				{ "Include=\"Microsoft.Maui.Controls\"", "Include=\"Microsoft.Maui.Core\"" }, // And this part is to ensure the version of the MAUI Core package is specified
 				{ "SingleProject", "EnablePreviewMsixTooling" },
-			});
+			};
+			if (framework != "net6.0")
+			{
+				// On versions after net6.0 this package reference also has to be updated to ensure the version of the MAUI Core package
+				// is specified and avoids the MA002 warning.
+				projectSectionsToReplace.Add("Include=\"Microsoft.Maui.Controls\"", "Include=\"Microsoft.Maui.Core\"");
+			}
+
+			FileUtilities.ReplaceInFile(projectFile, projectSectionsToReplace);
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, properties: BuildProps, msbuildWarningsAsErrors: true),
