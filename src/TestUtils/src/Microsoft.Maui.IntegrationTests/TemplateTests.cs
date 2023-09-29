@@ -107,6 +107,9 @@ namespace Microsoft.Maui.IntegrationTests
 			}
 		}
 
+		/// <summary>
+		/// Tests the scenario where a .NET MAUI Library specifically uses UseMauiCore instead of UseMaui.
+		/// </summary>
 		[Test]
 		[TestCase("mauilib", DotNetPrevious, "Debug")]
 		[TestCase("mauilib", DotNetPrevious, "Release")]
@@ -123,6 +126,8 @@ namespace Microsoft.Maui.IntegrationTests
 			EnableTizen(projectFile);
 			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
 			{
+				{ "UseMaui", "UseMauiCore" }, // This is the key part of the test
+				{ "Include=\"Microsoft.Maui.Controls\"", "Include=\"Microsoft.Maui.Core\"" }, // And this part is to ensure the version of the MAUI Core package is specified
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			});
 			Directory.Delete(Path.Combine(projectDir, "Platforms"), recursive: true);
