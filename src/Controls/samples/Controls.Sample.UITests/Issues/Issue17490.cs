@@ -67,7 +67,7 @@ namespace Maui.Controls.Sample.Issues
 
 				Platform.PlatformMethods.SetParent(childWindowHandle, mainWindowHandle);
 			}
-		}
 #endif
+		}
 	}
 }
