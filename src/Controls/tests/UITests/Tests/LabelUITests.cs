@@ -6,13 +6,11 @@ namespace Microsoft.Maui.AppiumTests;
 
 public class LabelUITests : _ViewUITests
 {
-	static readonly string Label = "android.widget.TextView";
 	const string LabelGallery = "* marked:'Label Gallery'";
 
 	public LabelUITests(TestDevice device)
 		: base(device)
 	{
-		PlatformViewType = Label;
 	}
 
 	protected override void NavigateToGallery() =>
@@ -33,7 +31,7 @@ public class LabelUITests : _ViewUITests
 			Assert.Ignore("This test is failing on iOS/Mac Catalyst/Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
 		}
 
-		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped, PlatformViewType);
+		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped);
 		remote.GoTo();
 
 		var textBeforeClick = remote.GetEventLabel().Text;
