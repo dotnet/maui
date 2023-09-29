@@ -1,14 +1,13 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
 using NUnit.Framework;
-using TestUtils.Appium.UITests;
-using Xamarin.UITest;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public class GestureRecognizerUITests : UITestBase
+	public class GestureRecognizerUITests : UITest
 	{
-		const string GestureRecognizerGallery = "* marked:'Gesture Recognizer Gallery'";
+		const string GestureRecognizerGallery = "Gesture Recognizer Gallery";
 		public GestureRecognizerUITests(TestDevice device)
 			: base(device)
 		{
@@ -23,25 +22,25 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			App.NavigateBack();
+			this.Back();
 		}
 
 		[Test]
 		public void PointerGestureTest()
 		{
-			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
 				"PointerGestureRecognizer doesn't work with mouse in Android or iOS");
 
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "PointerGestureRecognizerEvents");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("primaryLabel");
 			// using Tap in place of moving mouse for now
-			App.Tap("primaryLabel");
-			App.Tap("secondaryLabel");
+			App.Click("primaryLabel");
+			App.Click("secondaryLabel");
 
-			var secondaryLabelText = App.Query("secondaryLabel").First().Text;
+			var secondaryLabelText = App.FindElement("secondaryLabel").GetText();
 			Assert.IsNotEmpty(secondaryLabelText);
 		}
 
@@ -50,12 +49,12 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.WaitForElement("TargetView");
 			App.EnterText("TargetView", "DoubleTapGallery");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 
 			App.WaitForElement("DoubleTapSurface");
-			App.DoubleTap("DoubleTapSurface");
+			App.DoubleClick("DoubleTapSurface");
 
-			var result = App.Query("DoubleTapResults").First().Text;
+			var result = App.FindElement("DoubleTapResults").GetText();
 			Assert.AreEqual("Success", result);
 		}
 	}
