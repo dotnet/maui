@@ -324,7 +324,7 @@ Task("uitest")
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
 
 	Information("Run UITests project {0}", PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true);
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
 });
 
 Task("cg-uitest")

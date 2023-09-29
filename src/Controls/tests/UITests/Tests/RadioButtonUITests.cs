@@ -5,7 +5,7 @@ namespace Microsoft.Maui.AppiumTests
 {
 	public class RadioButtonUITests : _ViewUITests
 	{
-		public const string RadioButtonGallery = "* marked:'RadioButton Core Gallery'";
+		public const string RadioButtonGallery = "* marked:'RadioButton Gallery'";
 
 		public RadioButtonUITests(TestDevice device)
 			: base(device)
