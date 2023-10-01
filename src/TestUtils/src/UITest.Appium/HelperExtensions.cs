@@ -156,8 +156,8 @@ namespace UITest.Appium
 
             while (true)
             {
-                var elementText = app.FindElement(automationId).GetText();
-                if (elementText != null && elementText.Contains(text, StringComparison.OrdinalIgnoreCase))
+                var element = app.FindElements(automationId).FirstOrDefault();
+                if (element != null && (element.GetText()?.Contains(text, StringComparison.OrdinalIgnoreCase) ?? false))
                 {
                     return true;
                 }

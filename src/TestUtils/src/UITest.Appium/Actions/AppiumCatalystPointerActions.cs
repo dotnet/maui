@@ -10,7 +10,8 @@ namespace UITest.Appium
 
         readonly List<string> _commands = new()
         {
-            DoubleClickCommand
+            DoubleClickCommand,
+            DragAndDropCommand,
         };
         readonly AppiumApp _appiumApp;
 

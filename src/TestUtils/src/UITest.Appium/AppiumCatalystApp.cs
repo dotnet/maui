@@ -1,6 +1,6 @@
 ﻿using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Android;
 using OpenQA.Selenium.Appium.Enums;
+using OpenQA.Selenium.Appium.Mac;
 using UITest.Core;
 
 namespace UITest.Appium
@@ -8,7 +8,7 @@ namespace UITest.Appium
     public class AppiumCatalystApp : AppiumApp, ICatalystApp
     {
         public AppiumCatalystApp(Uri remoteAddress, IConfig config)
-            : base(new AndroidDriver(remoteAddress, GetOptions(config)), config)
+            : base(new MacDriver(remoteAddress, GetOptions(config)), config)
         {
             _commandExecutor.AddCommandGroup(new AppiumCatalystPointerActions(this));
         }
