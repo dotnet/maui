@@ -22,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Mac, TestDevice.iOS, TestDevice.Android
 			});
 
-			App.WaitForElement("Success");
+			App.WaitForElement("SuccessLabel");
 		}
 	}
 }
