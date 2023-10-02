@@ -1,30 +1,4 @@
 {
-  "version": 1,
   "isRoot": true,
-  "tools": {
-    "cake.tool": {
-      "version": "2.3.0",
-      "commands": [
-        "dotnet-cake"
-      ]
-    },
-    "powershell": {
-      "version": "7.3.7",
-      "commands": [
-        "pwsh"
-      ]
-    },
-    "api-tools": {
-      "version": "1.3.5",
-      "commands": [
-        "api-tools"
-      ]
-    },
-    "microsoft.dotnet.xharness.cli": {
-      "version": "8.0.0-prerelease.23471.1",
-      "commands": [
-        "xharness"
-      ]
-    }
-  }
+  "version": 1
 }
