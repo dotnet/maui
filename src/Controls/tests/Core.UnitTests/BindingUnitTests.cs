@@ -2054,7 +2054,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 
 			CreateReference();
-			
+
 			Assert.Equal(1, viewModel.InvocationListSize());
 
 			await TestHelpers.Collect();
@@ -2067,7 +2067,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(viewModel);
 		}
 
-		[Fact] // Fixed
+		[Fact, Category(TestCategory.Memory)] 
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
@@ -2087,9 +2087,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewModel.InvocationListSize());
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(bindingRef.IsAlive, "Binding should not be alive!");
 

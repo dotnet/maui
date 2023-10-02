@@ -1437,7 +1437,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			Assert.Equal(1, viewmodel.InvocationListSize());
 
-			await TestHelpers.Collect();
+			await Task.Yield();
+			GC.Collect();
+			GC.WaitForPendingFinalizers();
 
 			viewmodel.OnPropertyChanged("Foo");
 
