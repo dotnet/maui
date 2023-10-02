@@ -30,6 +30,7 @@ namespace Microsoft.Maui.DeviceTests
 		protected override MauiAppBuilder ConfigureBuilder(MauiAppBuilder mauiAppBuilder)
 		{
 			mauiAppBuilder.Services.AddSingleton<IApplication>((_) => new ApplicationStub());
+			mauiAppBuilder.Services.AddScoped(_ => new HideSoftInputOnTappedChangedManager());
 			return mauiAppBuilder.ConfigureTestBuilder();
 		}
 
