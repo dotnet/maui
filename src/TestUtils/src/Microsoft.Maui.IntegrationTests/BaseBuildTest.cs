@@ -98,6 +98,7 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
+			// Attach test content and logs as artifacts
 			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
 				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
