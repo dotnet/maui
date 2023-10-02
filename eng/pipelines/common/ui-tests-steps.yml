@@ -61,10 +61,7 @@ steps:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
-  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
-    displayName: 'Add .NET to PATH'
-
-  - pwsh: dotnet cake -target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
+  - pwsh: dotnet cake --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
 
   - pwsh: dotnet cake --target=dotnet-samples --configuration="${{ parameters.configuration }}" --${{ parameters.platform }} --verbosity=diagnostic --usenuget=false
