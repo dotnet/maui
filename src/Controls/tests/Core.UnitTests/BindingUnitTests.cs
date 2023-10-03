@@ -2,11 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Graphics;
 using Xunit;
 
 namespace Microsoft.Maui.Controls.Core.UnitTests
@@ -2337,6 +2339,19 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal("bar", entry.Text);
 			vm.Text = string.Empty;
 			Assert.Equal(string.Empty, entry.Text);
+		}
+
+		[Fact]
+		//https://github.com/dotnet/maui/issues/17776
+		public void DoubleSetBinding()
+		{
+			var button = new Button { BackgroundColor = Colors.HotPink };
+
+			//shouldn't crash
+			button.BackgroundColor = Colors.Coral;
+			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
+			button.BackgroundColor = Colors.Coral;
+			button.SetBinding(Button.BackgroundColorProperty, new Binding("BackgroundColor", source: this));
 		}
 	}
 }
