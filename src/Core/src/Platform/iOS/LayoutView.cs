@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 				return null!;
 			}
 
-			return result;
+			return result!;
 		}
 
 		internal bool UserInteractionEnabledOverride => _userInteractionEnabled;
