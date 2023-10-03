@@ -28,6 +28,11 @@ string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ??
 var udid = Argument("udid", EnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 var iosVersion = Argument("apiversion", EnvironmentVariable("IOS_PLATFORM_VERSION") ?? defaultVersion);
 
+string DEVICE_UDID = "";
+string DEVICE_VERSION = "";
+string DEVICE_NAME = "";
+string DEVICE_OS = "";
+
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-arm64";
@@ -44,17 +49,15 @@ Setup(context =>
 {
 	Cleanup();
 
-	// only install when an explicit version is specified
-	if (TEST_DEVICE.IndexOf("_") != -1) {
-		var settings = new DotNetToolSettings {
-			ToolPath = DOTNET_PATH,
-			DiagnosticOutput = true,
-			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
-				$"\"{TEST_DEVICE}\" " +
-				$"--verbosity=\"Debug\" ")
-		};
-
-		DotNetTool("tool", settings);
+	// only grab attached iOS devices if we are trying to test on device
+	if (TEST_DEVICE.Contains("device")) 
+	{ 
+		GetDevices(iosVersion);
+	}
+	// only install simulator when an explicit version is specified
+	if (TEST_DEVICE.IndexOf("_") != -1) 
+	{
+		GetSimulators(TEST_DEVICE);
 	}
 });
 
@@ -71,6 +74,11 @@ void Cleanup()
 	// delete the XHarness simulators first, if it exists
 	Information("Deleting XHarness simulator if exists...");
 	var sims = ListAppleSimulators();
+	if(sims.Count == 0)
+	{
+		Information("No simulators found to delete.");
+		return;
+	}
 	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
 	foreach (var sim in xharness) {
 		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
@@ -384,59 +392,132 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 	Information("Install with xharness: {0}",testApp);
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple install " +
-		$"--app=\"{testApp}\" " +
-		$"--targets=\"{testDevice}\" " +
-		$"--output-directory=\"{testResultsDirectory}\" " +
-		$"--verbosity=\"Debug\" ")
+		ArgumentCustomization = args => { 
+			args.Append("run xharness apple install " +
+							$"--app=\"{testApp}\" " +
+							$"--targets=\"{testDevice}\" " +
+							$"--output-directory=\"{testResultsDirectory}\" " +
+							$"--verbosity=\"Debug\" ");
+			if (testDevice.Contains("device"))
+			{
+				if(string.IsNullOrEmpty(DEVICE_UDID))
+				{
+					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+				}
+				args.Append($"--device=\"{DEVICE_UDID}\" ");
+			}
+			return args;
+		}
 	};
 
 	try {
 		DotNetTool("tool", settings);
 	} finally {
 		string iosVersionToRun = version;
-		string deviceToRun = "";
-		if(TEST_DEVICE.Contains("device"))
+		string deviceToRun = "";	
+		
+		if (testDevice.Contains("device"))
+		{	
+			if(!string.IsNullOrEmpty(DEVICE_UDID))
+			{
+				deviceToRun = DEVICE_UDID;
+			}
+			else
+			{
+				throw new Exception("No device was found to run tests on.");
+			}
+			
+			iosVersionToRun = DEVICE_VERSION;
+			
+			Information("The device to run tests: {0} {1}", DEVICE_NAME, iosVersionToRun);
+		}
+		else
 		{
-			//var devices = ListAttachedDevices()
-			var deviceName = "ipad";
-			var deviceVersion = "16.4";
-			var deviceUdid=  "";
+			var sims = ListAppleSimulators();
+			var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+			var simXH = xharness.First();
+			deviceToRun = simXH.UDID;
+			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+		}
 
-			DotNetTool("tool", new DotNetToolSettings {
-				DiagnosticOutput = true,
-				ArgumentCustomization = args => args.Append("run xharness apple device ios-device " +
-					$"--verbosity=\"Debug\" "),
-				SetupProcessSettings = processSettings =>
+		Information("The platform version to run tests: {0}", iosVersionToRun);
+		SetEnvironmentVariable("IOS_SIMULATOR_UDID", deviceToRun);
+		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersionToRun);
+	}
+}
+
+void GetSimulators(string version)
+{
+	DotNetTool("tool", new DotNetToolSettings {
+			ToolPath = DOTNET_PATH,
+			DiagnosticOutput = true,
+			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
+				$"\"{version}\" " +
+				$"--verbosity=\"Debug\" ")
+		});
+}
+
+void GetDevices(string version)
+{
+	var deviceUdid = "";
+	var deviceName = "";
+	var deviceVersion = "";
+	var deviceOS = "";
+	
+	var list = new List<string>();
+	bool isDevice = false;
+	// print the apple state of the machine
+	// this will print the connected devices
+	DotNetTool("tool", new DotNetToolSettings {
+			DiagnosticOutput = true,
+			ArgumentCustomization = args => args.Append("run xharness apple state --verbosity=\"Debug\" "),
+			SetupProcessSettings = processSettings =>
 				{
 					processSettings.RedirectStandardOutput = true;
 					processSettings.RedirectStandardError = true;
 					processSettings.RedirectedStandardOutputHandler = (output) => {
-							Information("Find devices output: {0}", output);
-							if (!string.IsNullOrEmpty(output))
+							Information("Apple State:", output);
+							if (output == "Connected Devices:" )
 							{
-								deviceUdid = output.Trim();
+								isDevice = true;
+							}
+							else if(isDevice)
+							{
+								list.Add(output);
 							}
 							return output;
 						};
 				}
-			});
-
-			deviceToRun = deviceUdid;
-			Information("The device to run tests: {0} {1}", deviceName, deviceVersion);
-			iosVersionToRun = deviceVersion;
+	});
+	//this removes the extra lines from output
+	list.Remove(list.Last());
+	list.Remove(list.Last());
+	foreach (var item in list)
+	{
+		Information("Device: {0}", item.Trim());
+		var parts = item.Trim().Split(" ",StringSplitOptions.RemoveEmptyEntries);
+		if(item.Contains("iPhone"))
+		{
+			deviceOS = "iPhone";
 		}
-		else{
-
-			var sims = ListAppleSimulators();
-	 		var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
-			var simXH = xharness.First();
-			deviceToRun =  simXH.UDID;
-			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
+		if(item.Contains("iPad iOS"))
+		{
+			deviceOS = "iPad iOS";
 		}
-	
-		Information("The platform version to run tests: {0}", iosVersionToRun);
-		SetEnvironmentVariable("IOS_SIMULATOR_UDID", deviceToRun);
-		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersionToRun);
+
+		deviceName = parts[0].Trim();
+		deviceUdid = parts[1].Trim();
+		deviceVersion = parts[2].Trim();
+		Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
+
+		if(version.Contains(deviceVersion.Split(".")[0]))
+		{
+			Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
+			DEVICE_UDID = deviceUdid;
+			DEVICE_VERSION = deviceVersion;
+			DEVICE_NAME = deviceName;
+			DEVICE_OS = deviceOS;
+			break;
+		}
 	}
 }
