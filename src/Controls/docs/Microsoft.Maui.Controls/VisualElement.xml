@@ -1145,7 +1145,7 @@
         <summary>Gets or sets a value that indicates whether this element is included in tab navigation. This is a bindable property.</summary>
         <value>
           <see langword="true" /> if the element is included in tab navigation; otherwise, <see langword="false" />. Default value is <see langword="true" />.</value>
-        <remarks>Controlling the tab sequence with a combination of IsTabStop and <see cref="T:Microsoft.Maui.Controls.VisualElement.TabIndex" /> rather than using the default tab sequence is sometimes necessary in order to tune the keyboard accessibility of your UI.
+          <remarks>Controlling the tab sequence with a combination of IsTabStop and <see cref="T:Microsoft.Maui.Controls.VisualElement.TabIndex" /> rather than using the default tab sequence is sometimes necessary in order to tune the keyboard accessibility of your UI. </remarks>
       </Docs>
     </Member>
     <Member MemberName="IsTabStopProperty">
