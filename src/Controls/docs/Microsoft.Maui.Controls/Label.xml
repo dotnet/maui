@@ -60,7 +60,6 @@ public class App : Application
     };
 }
 ]]></code>
-        <para>The FormsGallery sample, which can be found on the <format type="text/html"><a href="https://developer.xamarin.com/samples/tag/Microsoft.Maui.Controls/" target="_blank">Sample Applications</a></format> page, has a LabelDemoPage.cs file. This file contains a longer and more complete example.</para>
       </example>
     </remarks>
   </Docs>
