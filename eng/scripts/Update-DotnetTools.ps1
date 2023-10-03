@@ -57,7 +57,8 @@ foreach ($tool in $toolsJson.tools.psobject.Properties) {
 
     # Run dotnet tool restore for the current tool
     Write-Host "Restoring tool: $toolName"
-    dotnet tool restore --tool-manifest $updatedJsonPath
+    dotnet --version 
+    dotnet tool restore --tool-manifest $updatedJsonPath -v diag
 }
 
 Write-Host "All tools restored successfully."
