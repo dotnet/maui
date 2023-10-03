@@ -54,6 +54,9 @@ steps:
     continueOnError: false
     retryCountOnTaskFailure: 1
 
+  - pwsh: ./eng/scripts/Update-DotnetTools.ps1 -toolsJsonPath ".config/tools.json" -outputFolder ".config"
+    displayName: 'Dotnet tool restore'
+
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 2
@@ -63,9 +66,6 @@ steps:
 
   - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
     displayName: 'Add .NET to PATH'
-
-  - pwsh: ./eng/scripts/Update-DotnetTools.ps1 -toolsJsonPath ".config/tools.json" -outputFolder ".config"
-    displayName: 'Build the MSBuild Tasks'
 
   - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="${{ parameters.configuration }}"
     displayName: 'Build the MSBuild Tasks'
