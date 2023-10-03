@@ -780,7 +780,6 @@ namespace Microsoft.Maui.Controls
 
 		Toolbar _toolbar;
 
-		/// <inheritdoc/>
 		IToolbar IToolbarElement.Toolbar
 		{
 			get => _toolbar;
