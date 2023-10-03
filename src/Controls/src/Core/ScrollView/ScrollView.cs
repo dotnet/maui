@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="Type[@FullName='Microsoft.Maui.Controls.ScrollView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView
+	public partial class ScrollView : Compatibility.Layout, IScrollViewController, IElementConfiguration<ScrollView>, IFlowDirectionController, IScrollView, IContentView, ISafeAreaView
 	{
 		#region IScrollViewController
 
@@ -137,6 +137,7 @@ namespace Microsoft.Maui.Controls
 		View _content;
 		TaskCompletionSource<bool> _scrollCompletionSource;
 		Rect _layoutAreaOverride;
+		private bool _ignoreSafeArea;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/ScrollView.xml" path="//Member[@MemberName='Content']/Docs/*" />
 		public View Content
@@ -430,6 +431,24 @@ namespace Microsoft.Maui.Controls
 				}
 			}
 		}
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+
+		public bool IgnoreSafeArea
+		{
+			get
+			{
+				return _ignoreSafeArea;
+			}
+
+			set
+			{
+				_ignoreSafeArea = value;
+				Handler?.UpdateValue(nameof(ISafeAreaView.IgnoreSafeArea));
+			}
+		}
+
+#pragma warning restore RS0016 // Add public types and members to the declared API
 
 		void IScrollView.RequestScrollTo(double horizontalOffset, double verticalOffset, bool instant)
 		{

@@ -136,6 +136,21 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		static void MapIgnoreSafeArea(IScrollViewHandler handler, IScrollView view)
+		{
+			if (view is ISafeAreaView sav)
+			{
+				if (sav.IgnoreSafeArea)
+				{
+					handler.PlatformView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Automatic;
+				}
+				else
+				{
+					handler.PlatformView.ContentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentBehavior.Never;
+				}
+			}
+		}
+
 		// Find the internal ContentView; it may not be Subviews[0] because of the scrollbars
 		static ContentView? GetContentView(UIScrollView scrollView)
 		{
