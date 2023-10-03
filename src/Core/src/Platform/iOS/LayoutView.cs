@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Platform
 			Superview?.SetNeedsLayout();
 		}
 
-		public override UIView HitTest(CGPoint point, UIEvent? uievent)
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
 		{
 			var result = base.HitTest(point, uievent);
 
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid
 				// hit testing targets.
 
-				return null!;
+				return null;
 			}
 
 			return result!;
