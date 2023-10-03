@@ -61,8 +61,6 @@
       "src\\TestUtils\\src\\DeviceTests.Runners\\TestUtils.DeviceTests.Runners.csproj",
       "src\\TestUtils\\src\\DeviceTests\\TestUtils.DeviceTests.csproj",
       "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
-      "src\\TestUtils\\src\\TestUtils.Appium.UITests\\TestUtils.Appium.UITests.csproj",
-      "src\\TestUtils\\src\\TestUtils.Appium\\TestUtils.Appium.csproj",
       "src\\TestUtils\\src\\TestUtils\\TestUtils.csproj"
     ]
   }

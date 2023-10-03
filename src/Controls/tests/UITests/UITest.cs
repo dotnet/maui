@@ -54,24 +54,23 @@ namespace Microsoft.Maui.AppiumTests
 			var configuration = "Release";
 #endif
 
-			var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
-			var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
-
 			IConfig config = new Config();
-			config.SetProperty("AppPath", appProjectPath);
 			config.SetProperty("AppId", "com.microsoft.maui.uitests");
-
-			var windowsExe = "Controls.Sample.UITests.exe";
-			var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{configuration}\\{frameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
-
+			
 			switch (_testDevice)
 			{
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", "iPhone X");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4");
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "44C1C757-55A1-4EF3-9A6E-8FC73924ED32");
 					break;
 				case TestDevice.Windows:
+
+					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
+					var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
+					var windowsExe = "Controls.Sample.UITests.exe";
+					var windowsExePath = Path.Combine(appProjectFolder, $"bin\\{configuration}\\{frameworkVersion}-windows10.0.20348\\win10-x64\\{windowsExe}");
+
 					var appPath = string.IsNullOrEmpty(Environment.GetEnvironmentVariable("WINDOWS_APP_PATH"))
 					   ? windowsExePath
 					   : Environment.GetEnvironmentVariable("WINDOWS_APP_PATH");
