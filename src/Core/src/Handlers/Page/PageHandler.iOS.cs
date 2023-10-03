@@ -25,7 +25,15 @@ namespace Microsoft.Maui.Handlers
 		{
 			if (handler is IPlatformViewHandler invh && invh.ViewController is not null)
 			{
-				invh.ViewController.View?.UpdateBackground(page);
+				if (page.Background is ImageSourcePaint image)
+				{
+					var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+
+					invh.ViewController.View?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
+						.FireAndForget(handler);
+				}
+				else
+					invh.ViewController.View?.UpdateBackground(page);
 			}
 		}
 
