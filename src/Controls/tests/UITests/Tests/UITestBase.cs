@@ -63,13 +63,13 @@ namespace Microsoft.Maui.AppiumTests
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
 		}
 
-		protected virtual void FixtureSetup() 
+		protected virtual void FixtureSetup()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
 		}
 
-		protected virtual void FixtureTeardown() 
+		protected virtual void FixtureTeardown()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");

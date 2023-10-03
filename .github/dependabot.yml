@@ -12,6 +12,8 @@ updates:
         - "Xamarin.Build.Download"
         - "Xamarin.Google.Android.Material"
         - "Xamarin.Google.Crypto.Tink.Android"
+        - "Xamarin.GooglePlayServices.Maps"
+        - "Xamarin.Android.Glide*"
     AspNetCore:
       patterns:
         - "Microsoft.AspNetCore.*"
