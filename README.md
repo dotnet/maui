@@ -19,8 +19,8 @@
 
 ## Current News
 
-* February 21, 2023 - [Announcing .NET 8 Preview 1](https://devblogs.microsoft.com/dotnet/announcing-dotnet-8-preview-1/)
-* November 8, 2022 - [Announcing .NET MAUI for .NET 7 General Availability](https://devblogs.microsoft.com/dotnet/dotnet-maui-dotnet-7/)
+* September 12, 2023 - [Announcing .NET MAUI in .NET 8 Release Candidate 1: Quality](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8-rc-1)
+* August 8, 2023 - [Announcing .NET MAUI in .NET 8 Preview 7: Keyboard Accelerators](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8-preview-7/)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 

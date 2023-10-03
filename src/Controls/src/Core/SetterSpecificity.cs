@@ -4,7 +4,7 @@ using System;
 namespace Microsoft.Maui.Controls
 {
 	//NOTE: IDEA: review this: merge FROM into a single int (vsm, manual, dynamicR, binding), and CSS into another
-	internal readonly struct SetterSpecificity : IComparable<SetterSpecificity>
+	internal readonly struct SetterSpecificity : IComparable<SetterSpecificity>, IEquatable<SetterSpecificity>
 	{
 		public static readonly SetterSpecificity DefaultValue = new(-1, 0, 0, 0, -1, 0, 0, 0);
 		public static readonly SetterSpecificity VisualStateSetter = new SetterSpecificity(1, 0, 0, 0, 0, 0, 0, 0);
@@ -91,9 +91,9 @@ namespace Microsoft.Maui.Controls
 			return Type.CompareTo(other.Type);
 		}
 
-		public override bool Equals(object obj) => Equals((SetterSpecificity)obj);
+		public override bool Equals(object obj) => obj is SetterSpecificity s && Equals(s);
 
-		bool Equals(SetterSpecificity other) => CompareTo(other) == 0;
+		public bool Equals(SetterSpecificity other) => CompareTo(other) == 0;
 
 		public override int GetHashCode() => (Vsm, Manual, DynamicResource, Binding, Style, Id, Class, Type).GetHashCode();
 

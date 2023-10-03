@@ -243,6 +243,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			if (disposing)
 			{
+				Delegate = null;
 				foreach (var childViewController in ViewControllers)
 					childViewController.Dispose();
 
@@ -1146,7 +1147,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				// the animation changing the frame during navigation
 				if (_navigation.TryGetTarget(out n) &&
 					ChildViewControllers.Length > 0 &&
-					!n._navigating)
+					!n._disposed &&
+					!n._navigating
+					)
 				{
 					nfloat offset = 0;
 
@@ -1759,12 +1762,38 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				if (view != null)
 				{
 					_view = view;
-					var platformView = view.ToPlatform(view.FindMauiContext());
-					_child = (IPlatformViewHandler)view.Handler;
-					AddSubview(platformView);
+
+					if (_view.Parent is null)
+					{
+						_view.ParentSet += OnTitleViewParentSet;
+					}
+					else
+					{
+						SetupTitleView();
+					}
 				}
 
 				ClipsToBounds = true;
+			}
+
+			void OnTitleViewParentSet(object sender, EventArgs e)
+			{
+				if (sender is View view)
+					view.ParentSet -= OnTitleViewParentSet;
+
+				SetupTitleView();
+			}
+
+			void SetupTitleView()
+			{
+				var mauiContext = _view.FindMauiContext();
+				if (_view is not null && mauiContext is not null)
+				{
+					var platformView = _view.ToPlatform(mauiContext);
+					_child = (IPlatformViewHandler)_view.Handler;
+					AddSubview(platformView);
+				}
+
 			}
 
 			public override CGSize IntrinsicContentSize => UILayoutFittingExpandedSize;
@@ -1872,6 +1901,11 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 						_child.PlatformView.RemoveFromSuperview();
 						_child.DisconnectHandler();
 						_child = null;
+					}
+
+					if (_view is not null)
+					{
+						_view.ParentSet -= OnTitleViewParentSet;
 					}
 
 					_view = null;

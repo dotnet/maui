@@ -3,6 +3,9 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public class BaseBuildTest
 	{
+		public const string DotNetCurrent = "net7.0";
+		public const string DotNetPrevious = "net6.0";
+
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
 
 		public string TestName
