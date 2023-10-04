@@ -43,17 +43,36 @@ namespace Maui.Controls.Sample
 		}
 
 		List<GalleryPageFactory> _pages = new List<GalleryPageFactory> {
-				new GalleryPageFactory(() => new BorderGallery(), "Border Gallery"),
-				new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
-				new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
-				new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
-				new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
-				new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Core Gallery"),
-				new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
-				new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
-				new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
-				new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
-				new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
+			// Concepts & Abstracts
+			new GalleryPageFactory(() => new BorderGallery(), "Border Gallery"),
+			new GalleryPageFactory(() => new DragAndDropGallery(), "Drag and Drop Gallery"),
+			new GalleryPageFactory(() => new GestureRecognizerGallery(), "Gesture Recognizer Gallery"),
+			new GalleryPageFactory(() => new InputTransparencyGalleryPage(), "Input Transparency Gallery"),
+			// Elements
+			new GalleryPageFactory(() => new ActivityIndicatorCoreGalleryPage(), "ActivityIndicator Gallery"),
+			new GalleryPageFactory(() => new BoxViewCoreGalleryPage(), "Box Gallery"),
+			new GalleryPageFactory(() => new ButtonCoreGalleryPage(), "Button Gallery"),
+			new GalleryPageFactory(() => new CarouselViewCoreGalleryPage(), "CarouselView Gallery"),
+			new GalleryPageFactory(() => new CheckBoxCoreGalleryPage(), "CheckBox Gallery"),
+			new GalleryPageFactory(() => new CollectionViewCoreGalleryPage(), "CollectionView Gallery"),
+			new GalleryPageFactory(() => new DatePickerCoreGalleryPage(), "Date Picker Gallery"),
+			new GalleryPageFactory(() => new EditorCoreGalleryPage(), "Editor Gallery"),
+			new GalleryPageFactory(() => new EntryCoreGalleryPage(), "Entry Gallery"),
+			new GalleryPageFactory(() => new FrameCoreGalleryPage(), "Frame Gallery"),
+			new GalleryPageFactory(() => new ImageButtonCoreGalleryPage(), "Image Button Gallery"),
+			new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
+			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
+			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
+			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
+			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
+			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
+			new GalleryPageFactory(() => new ScrollViewCoreGalleryPage(), "ScrollView Gallery"),
+			new GalleryPageFactory(() => new SearchBarCoreGalleryPage(), "Search Bar Gallery"),
+			new GalleryPageFactory(() => new SliderCoreGalleryPage(), "Slider Gallery"),
+			new GalleryPageFactory(() => new StepperCoreGalleryPage(), "Stepper Gallery"),
+			new GalleryPageFactory(() => new SwitchCoreGalleryPage(), "Switch Gallery"),
+			new GalleryPageFactory(() => new TimePickerCoreGalleryPage(), "Time Picker Gallery"),
+			new GalleryPageFactory(() => new WebViewCoreGalleryPage(), "WebView Gallery"),
 		};
 
 		public CorePageView(Page rootPage)

@@ -70,6 +70,7 @@ namespace Maui.Controls.Sample
 			IsEnabled,
 			Navigation,
 			InputTransparent,
+			NotInputTransparent,
 			Layout,
 			X,
 			Y,

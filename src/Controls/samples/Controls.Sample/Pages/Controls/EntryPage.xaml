@@ -146,6 +146,17 @@
                     IsSpellCheckEnabled="False"
                     IsTextPredictionEnabled="False"/>
                 <Label
+                    Text="ReturnType (Search)"
+                    Style="{StaticResource Headline}" />
+                <Entry
+                    ReturnType="Search" />
+                <Label
+                    Text="Update the ReturnType just typing"
+                    Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="ReturnTypeEntry"
+                    TextChanged="OnReturnTypeEntryTextChanged"/>
+                <Label
                     Text="Return Command"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -225,9 +236,9 @@
                     HeightRequest="100"/>
                 <HorizontalStackLayout>
                     <Label
-                    x:Name="lblCursor"
-                    Text="CursorPosition = 4"
-                    Style="{StaticResource Headline}" />
+                        x:Name="lblCursor"
+                        Text="CursorPosition = 4"
+                        Style="{StaticResource Headline}" />
                     <Slider x:Name="sldCursorPosition" ValueChanged="OnSlideCursorPositionValueChanged" WidthRequest="100"/>
                 </HorizontalStackLayout>
                 <Entry
