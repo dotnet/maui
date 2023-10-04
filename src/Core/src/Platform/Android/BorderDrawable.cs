@@ -1,11 +1,15 @@
 ﻿using System;
+using Android.Animation;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Graphics.Drawables.Shapes;
 using Android.Util;
+using Android.Views;
+using Android.Views.Animations;
 using AndroidX.Core.Content;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
+using static Android.Animation.ValueAnimator;
 using AColor = Android.Graphics.Color;
 using AContext = Android.Content.Context;
 using APaint = Android.Graphics.Paint;
@@ -14,8 +18,10 @@ using GPaint = Microsoft.Maui.Graphics.Paint;
 
 namespace Microsoft.Maui.Platform
 {
-	public class BorderDrawable : PaintDrawable
+	public class BorderDrawable : PaintDrawable, IAnimatorUpdateListener
 	{
+		const int RippleDurationTime = 500; // Duration time in milliseconds
+
 		readonly AContext? _context;
 		readonly float _density;
 
@@ -39,6 +45,14 @@ namespace Microsoft.Maui.Platform
 		float _strokeThickness;
 
 		CornerRadius _cornerRadius;
+
+		APaint? _ripplePaint;
+		AColor? _rippleColor;
+		float _rippleX;
+		float _rippleY;
+		float _rippleRadius;
+		float _rippleOpacity;
+		ValueAnimator? _rippleAnimator;
 
 		public BorderDrawable(AContext? context)
 		{
@@ -238,6 +252,87 @@ namespace Microsoft.Maui.Platform
 			InvalidateSelf();
 		}
 
+		internal void OnTouchChange(MotionEvent? e)
+		{
+
+			switch (e?.ActionMasked)
+			{
+				case MotionEventActions.Down:
+					OnTouchDown(e.GetX(), e.GetY());
+					break;
+				case MotionEventActions.Move:
+					break;
+				case MotionEventActions.Up:
+					break;
+
+			}
+		}
+
+		void OnTouchDown(float x, float y)
+		{
+			_rippleX = x;
+			_rippleY = y;
+
+			StartRippleAnimation();
+		}
+
+		void StartRippleAnimation()
+		{
+			_rippleRadius = 0;
+			_rippleOpacity = 1;
+
+			if (_bounds is null || _bounds.IsEmpty)
+				return;
+
+			int height = _bounds.Height();
+			int width = _bounds.Width();
+
+			// The radius is computed based on the size of the ripple's container.
+			int min = Math.Min(height, width) * 2;
+			int max = Math.Max(height, width) * 2;
+
+			PropertyValuesHolder? scalePropertyValuesHolder = PropertyValuesHolder.OfFloat("rippleScale", min, max);
+			PropertyValuesHolder? opacityPropertyValuesHolder = PropertyValuesHolder.OfFloat("rippleOpacity", 1f, 0f);
+
+			if (scalePropertyValuesHolder is null || opacityPropertyValuesHolder is null)
+				return;
+
+			_rippleAnimator = ValueAnimator.OfPropertyValuesHolder(scalePropertyValuesHolder, opacityPropertyValuesHolder);
+
+			if (_rippleAnimator is null)
+				return;
+
+			_rippleAnimator.SetTarget(this);
+			_rippleAnimator.SetInterpolator(new AccelerateDecelerateInterpolator());
+			_rippleAnimator.SetDuration(RippleDurationTime).Start();
+			_rippleAnimator.AddUpdateListener(this);
+		}
+
+		public void OnAnimationUpdate(ValueAnimator animation)
+		{
+			var rippleScale = animation.GetAnimatedValue("rippleScale");
+			var rippleOpacity = animation.GetAnimatedValue("rippleOpacity");
+
+			if (rippleScale is null || rippleOpacity is null)
+				return;
+
+			_rippleRadius = (float)rippleScale;
+			_rippleOpacity = (float)rippleOpacity;
+
+			InvalidateSelf();
+		}
+
+		public void SetRippleColor(AColor? rippleColor)
+		{
+			if (_rippleColor == rippleColor)
+				return;
+
+			_rippleColor = rippleColor;
+
+			InitializeRippleIfNeeded();
+			InvalidateSelf();
+		}
+
 		protected override void OnBoundsChange(ARect bounds)
 		{
 			if (_bounds != bounds)
@@ -288,6 +383,18 @@ namespace Microsoft.Maui.Platform
 				}
 			}
 
+			if (HasRipple())
+			{
+				if (_ripplePaint is not null)
+				{
+					if (_rippleColor is not null)
+						_ripplePaint.Color = _rippleColor.Value;
+
+					var rippleAlpha = (int)(_rippleOpacity * _ripplePaint.Color.A / 255 * 255);
+					_ripplePaint.Alpha = rippleAlpha;
+				}
+			}
+
 			if (_invalidatePath)
 			{
 				_invalidatePath = false;
@@ -311,13 +418,22 @@ namespace Microsoft.Maui.Platform
 
 			var saveCount = canvas.SaveLayer(0, 0, _width, _height, null);
 
-			if (_clipPath != null && Paint != null)
+			if (_clipPath is not null && Paint is not null)
 				canvas.DrawPath(_clipPath, Paint);
 
 			if (HasBorder())
 			{
-				if (_clipPath != null && _borderPaint != null)
+				if (_clipPath is not null && _borderPaint is not null)
 					canvas.DrawPath(_clipPath, _borderPaint);
+			}
+
+			if (HasRipple())
+			{
+				if (_clipPath is not null && _ripplePaint is not null)
+					canvas.DrawPath(_clipPath, _ripplePaint);
+
+				if (_ripplePaint is not null)
+					canvas.DrawCircle(_rippleX, _rippleY, _rippleRadius, _ripplePaint);
 			}
 
 			canvas.RestoreToCount(saveCount);
@@ -332,14 +448,21 @@ namespace Microsoft.Maui.Platform
 
 			if (disposing)
 			{
-				if (_clipPath != null)
+				if (_clipPath is not null)
 				{
 					_clipPath.Dispose();
 					_clipPath = null;
 				}
+
+				if (_rippleAnimator is not null)
+				{
+					_rippleAnimator.Dispose();
+					_rippleAnimator = null;
+				}
 			}
 
 			DisposeBorder(disposing);
+			DisposeRipple(disposing);
 
 			base.Dispose(disposing);
 		}
@@ -356,11 +479,30 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
+		protected virtual void DisposeRipple(bool disposing)
+		{
+			if (disposing)
+			{
+				if (_ripplePaint != null)
+				{
+					_ripplePaint.Dispose();
+					_ripplePaint = null;
+				}
+			}
+		}
+
 		bool HasBorder()
 		{
 			InitializeBorderIfNeeded();
 
 			return _stroke != null || _borderColor != null;
+		}
+
+		bool HasRipple()
+		{
+			InitializeRippleIfNeeded();
+
+			return _rippleColor != null;
 		}
 
 		void InitializeBorderIfNeeded()
@@ -375,6 +517,21 @@ namespace Microsoft.Maui.Platform
 			{
 				_borderPaint = new APaint(PaintFlags.AntiAlias);
 				_borderPaint.SetStyle(APaint.Style.Stroke);
+			}
+		}
+
+		void InitializeRippleIfNeeded()
+		{
+			if (_rippleColor is null)
+			{
+				DisposeRipple(true);
+				return;
+			}
+
+			if (_ripplePaint is null)
+			{
+				_ripplePaint = new APaint(PaintFlags.AntiAlias);
+				_ripplePaint.SetStyle(APaint.Style.Fill);
 			}
 		}
 

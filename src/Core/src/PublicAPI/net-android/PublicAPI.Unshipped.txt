@@ -26,6 +26,8 @@ Microsoft.Maui.KeyboardAcceleratorModifiers.None = 0 -> Microsoft.Maui.KeyboardA
 Microsoft.Maui.KeyboardAcceleratorModifiers.Shift = 1 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.KeyboardAcceleratorModifiers.Windows = 16 -> Microsoft.Maui.KeyboardAcceleratorModifiers
 Microsoft.Maui.Layouts.FlexBasis.Equals(Microsoft.Maui.Layouts.FlexBasis other) -> bool
+Microsoft.Maui.Platform.BorderDrawable.OnAnimationUpdate(Android.Animation.ValueAnimator! animation) -> void
+Microsoft.Maui.Platform.BorderDrawable.SetRippleColor(Android.Graphics.Color? rippleColor) -> void
 Microsoft.Maui.Platform.IImageSourcePartSetter
 Microsoft.Maui.Platform.IImageSourcePartSetter.Handler.get -> Microsoft.Maui.IElementHandler?
 Microsoft.Maui.Platform.IImageSourcePartSetter.ImageSourcePart.get -> Microsoft.Maui.IImageSourcePart?
@@ -133,5 +135,6 @@ virtual Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft
 virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
+virtual Microsoft.Maui.Platform.BorderDrawable.DisposeRipple(bool disposing) -> void
 ~override Microsoft.Maui.Platform.WrapperView.DrawShadow(Android.Graphics.Canvas canvas, int viewWidth, int viewHeight) -> void
 ~override Microsoft.Maui.Platform.WrapperView.GetClipPath(int width, int height) -> Android.Graphics.Path

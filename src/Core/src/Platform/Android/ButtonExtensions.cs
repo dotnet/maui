@@ -89,6 +89,7 @@ namespace Microsoft.Maui.Platform
 				platformView.Background = mauiDrawable;
 
 				mauiDrawable.SetBackground(background);
+				mauiDrawable.SetRippleColor(Colors.White.WithAlpha(0.25f).ToPlatform());
 
 				if (button.StrokeColor != null)
 					mauiDrawable.SetBorderBrush(new SolidPaint { Color = button.StrokeColor });

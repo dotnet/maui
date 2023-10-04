@@ -174,8 +174,13 @@ namespace Microsoft.Maui.Handlers
 		{
 			public ButtonHandler? Handler { get; set; }
 
-			public bool OnTouch(AView? v, global::Android.Views.MotionEvent? e) =>
-				Handler?.OnTouch(Handler?.VirtualView, v, e) ?? false;
+			public bool OnTouch(AView? v, global::Android.Views.MotionEvent? e)
+			{
+				if (Handler?.PlatformView.Background is BorderDrawable borderDrawable)
+					borderDrawable.OnTouchChange(e);
+
+				return Handler?.OnTouch(Handler?.VirtualView, v, e) ?? false;
+			}
 		}
 
 		partial class ButtonImageSourcePartSetter
