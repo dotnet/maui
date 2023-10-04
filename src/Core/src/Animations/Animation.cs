@@ -105,13 +105,13 @@ namespace Microsoft.Maui.Animations
 		/// </summary>
 		public bool HasFinished { get; protected set; }
 
-		/// <summary>
+		/// <summary>dotnet_analyzer_diagnostic.CA1805.severity = none
 		/// Specifies whether this animation should repeat.
 		/// </summary>
 		public bool Repeats { get; set; }
 
 		double _skippedSeconds;
-		int _usingResource = 0;
+		int _usingResource;
 
 		/// <summary>
 		/// Provides an <see cref="IEnumerator"/> of the child animations.
@@ -347,7 +347,7 @@ namespace Microsoft.Maui.Animations
 		/// </summary>
 		public bool IsDisposed => _disposedValue;
 
-		private bool _disposedValue = false; // To detect redundant calls
+		private bool _disposedValue; // To detect redundant calls
 
 		protected virtual void Dispose(bool disposing)
 		{
