@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Theory, Category(TestCategory.Memory)] 
+		[Theory, Category(TestCategory.Memory)]
 		[InlineData(typeof(ImmutableBrush), false)]
 		[InlineData(typeof(SolidColorBrush), false)]
 		[InlineData(typeof(LinearGradientBrush), true)]

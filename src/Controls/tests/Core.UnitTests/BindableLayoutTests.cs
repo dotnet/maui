@@ -249,7 +249,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
-		[Fact, Category(TestCategory.Memory)] 
+		[Fact, Category(TestCategory.Memory)]
 		public async Task LayoutIsGarbageCollectedAfterItsRemoved()
 		{
 			var pageRoot = new Grid();
