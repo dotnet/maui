@@ -254,7 +254,6 @@ namespace Microsoft.Maui.Platform
 
 		internal void OnTouchChange(MotionEvent? e)
 		{
-
 			switch (e?.ActionMasked)
 			{
 				case MotionEventActions.Down:
@@ -264,7 +263,6 @@ namespace Microsoft.Maui.Platform
 					break;
 				case MotionEventActions.Up:
 					break;
-
 			}
 		}
 
