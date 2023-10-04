@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;
@@ -99,14 +100,23 @@ namespace Maui.Controls.Sample.Pages
 			};
 		}
 
-		private void ShowSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		void ShowSoftInputAsyncButton_Clicked(object sender, EventArgs e)
 		{
-			this.PlaceholderEntryItem.ShowSoftInputAsync(System.Threading.CancellationToken.None);
+			PlaceholderEntryItem.ShowSoftInputAsync(System.Threading.CancellationToken.None);
+		}
+		
+		void HideSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		{
+			PlaceholderEntryItem.HideSoftInputAsync(System.Threading.CancellationToken.None);
 		}
 
-		private void HideSoftInputAsyncButton_Clicked(object sender, EventArgs e)
+		void OnReturnTypeEntryTextChanged(object sender, TextChangedEventArgs e)
 		{
-			this.PlaceholderEntryItem.HideSoftInputAsync(System.Threading.CancellationToken.None);
+			Random rnd = new Random();
+			var returnTypeCount = Enum.GetNames(typeof(ReturnType)).Length;
+			ReturnTypeEntry.ReturnType = (ReturnType)rnd.Next(0, returnTypeCount);
+
+			Debug.WriteLine($"ReturnType: {ReturnTypeEntry.ReturnType}");
 		}
 	}
 }
