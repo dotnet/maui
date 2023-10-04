@@ -60,6 +60,7 @@
   -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true' AND '$(MauiGenerateResourceDesigner)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
+    <AndroidUseIntermediateDesignerFile Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))">false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->
