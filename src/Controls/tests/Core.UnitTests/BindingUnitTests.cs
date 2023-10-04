@@ -2041,7 +2041,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		[Fact, Category(TestCategory.Memory)] 
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingUnsubscribesForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
@@ -2067,11 +2067,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			GC.KeepAlive(viewModel);
 		}
 
-		[Fact, Category(TestCategory.Memory)] 
+		[Fact, Category(TestCategory.Memory)]
 		public async Task BindingDoesNotStayAliveForDeadTarget()
 		{
 			var viewModel = new TestViewModel();
-			
+
 			WeakReference CreateReference()
 			{
 				var binding = new Binding("Foo");
@@ -2080,7 +2080,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				button.SetBinding(Button.TextProperty, binding);
 				button.BindingContext = viewModel;
 
-				return new (binding);
+				return new(binding);
 			}
 
 			var bindingRef = CreateReference();

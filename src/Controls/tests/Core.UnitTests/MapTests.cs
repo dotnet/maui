@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Fact, Category(TestCategory.Memory)] 
+		[Fact, Category(TestCategory.Memory)]
 		public async Task ElementIsGarbageCollectedAfterItsRemoved()
 		{
 			var pageRoot = new Grid();
