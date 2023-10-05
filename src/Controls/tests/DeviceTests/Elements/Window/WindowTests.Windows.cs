@@ -144,7 +144,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
 			{
 				var mauiToolBar = GetPlatformToolbar(handler);
-				var presenter = handler.PlatformView.AppWindow.Presenter as OverlappedPresenter;
+				var presenter = handler.PlatformView.GetAppWindow()?.Presenter as OverlappedPresenter;
 				var rootView = GetWindowRootView(handler);
 				var defaultTitleBarHeight = rootView.AppTitleBarActualHeight;
 				Assert.True(defaultTitleBarHeight > 0);
