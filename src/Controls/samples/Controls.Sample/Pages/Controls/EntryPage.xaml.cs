@@ -104,7 +104,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			PlaceholderEntryItem.ShowSoftInputAsync(System.Threading.CancellationToken.None);
 		}
-		
+
 		void HideSoftInputAsyncButton_Clicked(object sender, EventArgs e)
 		{
 			PlaceholderEntryItem.HideSoftInputAsync(System.Threading.CancellationToken.None);
