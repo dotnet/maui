@@ -19,7 +19,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			});
 
 			App.Click("OpenAlertWithModals");
-			App.Click("Cancel");
+			App.WaitForElement("Cancel").Click();
 		}
 
 		[Test]
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			});
 
 			App.Click("OpenAlertWithNewUIWindow");
-			App.Click("Cancel");
+			App.WaitForElement("Cancel").Click();
 		}
 	}
 }

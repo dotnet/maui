@@ -62,10 +62,9 @@ namespace Microsoft.Maui.AppiumTests
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", "iPhone X");
 					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4");
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "44C1C757-55A1-4EF3-9A6E-8FC73924ED32");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
-
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
 					var appProjectPath = Path.Combine(appProjectFolder, "Controls.Sample.UITests.csproj");
 					var windowsExe = "Controls.Sample.UITests.exe";

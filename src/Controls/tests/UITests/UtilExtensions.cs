@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (testBase.Device == TestDevice.Android)
 			{
-				var query = testBase.App.FindElement("Navigate up");
+				var query = testBase.App.Query.ByAccessibilityId("Navigate up").First();
 				query.Click();
 			}
 			else if (testBase.Device == TestDevice.iOS || testBase.Device == TestDevice.Mac)

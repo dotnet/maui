@@ -67,7 +67,7 @@ namespace UITest.Appium
 
         public static bool IsKeyboardShown(this IApp app)
         {
-            var response = app.CommandExecutor.Execute("isKeyboardShow", ImmutableDictionary<string,object>.Empty);
+            var response = app.CommandExecutor.Execute("isKeyboardShown", ImmutableDictionary<string,object>.Empty);
             var responseValue = response?.Value ?? false;
             return (bool)responseValue;
         }

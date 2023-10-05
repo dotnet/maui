@@ -21,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				App.Click("PopMeButton");
+				App.WaitForElement("PopMeButton", timeout: TimeSpan.FromSeconds(4)).Click();
 			}
 		}
 	}
