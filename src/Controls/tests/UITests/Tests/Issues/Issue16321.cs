@@ -18,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
 			});
 
-			App.Click("OpenAlertWithModals");
+			App.WaitForElement("OpenAlertWithModals").Click();
 			App.WaitForElement("Cancel").Click();
 		}
 
@@ -30,7 +30,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Mac, TestDevice.Windows, TestDevice.Android
 			});
 
-			App.Click("OpenAlertWithNewUIWindow");
+			App.WaitForElement("OpenAlertWithNewUIWindow").Click();
 			App.WaitForElement("Cancel").Click();
 		}
 	}
