@@ -1,7 +1,7 @@
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.UnitTests;
 using NUnit.Framework;
-using Microsoft.Maui.Dispatching;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
