@@ -1,4 +1,6 @@
-﻿namespace Maui.Controls.Sample
+﻿using System.Collections.Generic;
+
+namespace Maui.Controls.Sample
 {
 	public static class Test
 	{
@@ -68,6 +70,7 @@
 			IsEnabled,
 			Navigation,
 			InputTransparent,
+			NotInputTransparent,
 			Layout,
 			X,
 			Y,
@@ -706,6 +709,63 @@
 			PeekAreaInsets,
 			Position,
 			IsBounceEnabled
+		}
+
+		public enum InputTransparency
+		{
+			Default,
+			IsFalse,
+			IsTrue,
+			TransLayoutOverlay,
+			TransLayoutOverlayWithButton,
+			CascadeTransLayoutOverlay,
+			CascadeTransLayoutOverlayWithButton,
+		}
+
+		public static class InputTransparencyMatrix
+		{
+			// this is both for color diff and cols
+			const bool truee = true;
+
+			public static readonly IReadOnlyDictionary<(bool RT, bool RC, bool NT, bool NC, bool T), (bool Clickable, bool PassThru)> States =
+				new Dictionary<(bool, bool, bool, bool, bool), (bool, bool)>
+				{
+					[(truee, truee, truee, truee, truee)] = (false, truee),
+					[(truee, truee, truee, truee, false)] = (false, truee),
+					[(truee, truee, truee, false, truee)] = (false, truee),
+					[(truee, truee, truee, false, false)] = (false, truee),
+					[(truee, truee, false, truee, truee)] = (false, truee),
+					[(truee, truee, false, truee, false)] = (false, truee),
+					[(truee, truee, false, false, truee)] = (false, truee),
+					[(truee, truee, false, false, false)] = (false, truee),
+					[(truee, false, truee, truee, truee)] = (false, truee),
+					[(truee, false, truee, truee, false)] = (false, truee),
+					[(truee, false, truee, false, truee)] = (false, truee),
+					[(truee, false, truee, false, false)] = (truee, false),
+					[(truee, false, false, truee, truee)] = (false, false),
+					[(truee, false, false, truee, false)] = (truee, false),
+					[(truee, false, false, false, truee)] = (false, false),
+					[(truee, false, false, false, false)] = (truee, false),
+					[(false, truee, truee, truee, truee)] = (false, false),
+					[(false, truee, truee, truee, false)] = (false, false),
+					[(false, truee, truee, false, truee)] = (false, false),
+					[(false, truee, truee, false, false)] = (truee, false),
+					[(false, truee, false, truee, truee)] = (false, false),
+					[(false, truee, false, truee, false)] = (truee, false),
+					[(false, truee, false, false, truee)] = (false, false),
+					[(false, truee, false, false, false)] = (truee, false),
+					[(false, false, truee, truee, truee)] = (false, false),
+					[(false, false, truee, truee, false)] = (false, false),
+					[(false, false, truee, false, truee)] = (false, false),
+					[(false, false, truee, false, false)] = (truee, false),
+					[(false, false, false, truee, truee)] = (false, false),
+					[(false, false, false, truee, false)] = (truee, false),
+					[(false, false, false, false, truee)] = (false, false),
+					[(false, false, false, false, false)] = (truee, false),
+				};
+
+			public static string GetKey(bool rootTrans, bool rootCascade, bool nestedTrans, bool nestedCascade, bool trans, bool isClickable, bool isPassThru) =>
+				$"Root{(rootTrans ? "Trans" : "")}{(rootCascade ? "Cascade" : "")}Nested{(nestedTrans ? "Trans" : "")}{(nestedCascade ? "Cascade" : "")}Control{(trans ? "Trans" : "")}Is{(isClickable ? "" : "Not")}ClickableIs{(isPassThru ? "" : "Not")}PassThru";
 		}
 	}
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.ObjectModel;
+using System.Data.Common;
 using System.Linq;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Devices.Sensors;
@@ -326,37 +328,45 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsMapWithItemsSource(itemsSource, map));
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task ElementIsGarbageCollectedAfterItsRemoved()
 		{
-			var map = new Map()
-			{
-				ItemTemplate = GetItemTemplate()
-			};
-
-			// Create a view-model and bind the map to it
-			map.SetBinding(Map.ItemsSourceProperty, new Binding(nameof(MockViewModel.Items)));
-			map.BindingContext = new MockViewModel(new ObservableCollection<int>(Enumerable.Range(0, 10)));
-
-			// Set ItemsSource
-			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
-			Assert.True(IsMapWithItemsSource(itemsSource, map));
-			itemsSource = null;
-
-			// Remove map from container
 			var pageRoot = new Grid();
-			pageRoot.Children.Add(map);
 			var page = new ContentPage() { Content = pageRoot };
 
-			var weakReference = new WeakReference(map);
-			pageRoot.Children.Remove(map);
-			map = null;
+			WeakReference CreateReference()
+			{
+				var map = new Map()
+				{
+					ItemTemplate = GetItemTemplate()
+				};
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+				// Create a view-model and bind the map to it
+				map.SetBinding(Map.ItemsSourceProperty, new Binding(nameof(MockViewModel.Items)));
+				map.BindingContext = new MockViewModel(new ObservableCollection<int>(Enumerable.Range(0, 10)));
+
+				// Set ItemsSource
+				var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+				Assert.True(IsMapWithItemsSource(itemsSource, map));
+
+				// Add the map to the container
+				pageRoot.Children.Add(map);
+
+				var weakReference = new WeakReference(map);
+
+				// Remove map from container
+				pageRoot.Children.Remove(map);
+
+				return weakReference;
+			}
+
+			var weakReference = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(weakReference.IsAlive);
+
+			GC.KeepAlive(page);
 		}
 
 		[Fact]
