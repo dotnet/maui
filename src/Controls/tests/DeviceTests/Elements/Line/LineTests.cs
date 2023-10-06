@@ -35,6 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 			var line = new Line()
 			{
 				Stroke = expected,
+				StrokeThickness = 5,
 				X1 = 0,
 				Y1 = 0,
 				X2 = 200,
@@ -57,6 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			var line = new Line()
 			{
 				BackgroundColor = expected,
+				StrokeThickness = 5,
 				X1 = 0,
 				Y1 = 0,
 				X2 = 200,
