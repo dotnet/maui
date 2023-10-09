@@ -813,12 +813,20 @@ namespace Microsoft.Maui.Layouts
 
 				if (expandStarRows)
 				{
-					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness, _rowSpacing, _rowStarCount, !double.IsInfinity(_gridHeightConstraint));
+					// If the grid is constrained vertically, we will need to limit the upper size of * rows;
+					// if not, they can be whatever size makes sense for the content
+					var limitStarRowHeights = !double.IsInfinity(_gridHeightConstraint);
+					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness, 
+						_rowSpacing, _rowStarCount, limitStarRowHeights);
 				}
 
 				if (expandStarColumns)
 				{
-					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness, _columnSpacing, _columnStarCount, !double.IsInfinity(_gridWidthConstraint));
+					// If the grid is constrained horizontally, we will need to limit the upper size of * columns;
+					// if not, they can be whatever size makes sense for the content
+					var limitStarRowWidths = !double.IsInfinity(_gridWidthConstraint);
+					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness, 
+						_columnSpacing, _columnStarCount, limitStarRowWidths);
 				}
 			}
 
