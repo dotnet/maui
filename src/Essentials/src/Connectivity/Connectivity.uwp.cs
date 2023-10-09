@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Windows.Networking.Connectivity;
+using Microsoft.Maui.ApplicationModel;
+using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Networking
 {
@@ -17,22 +19,68 @@ namespace Microsoft.Maui.Networking
 		void NetworkStatusChanged(object sender) =>
 			OnConnectivityChanged();
 
-		public NetworkAccess NetworkAccess
+		public NetworkAccess NetworkAccess => 
+			HasThreadAccess ?
+			GetNetworkAccess() :			
+			DispatchAsync(GetNetworkAccess).GetAwaiter().GetResult();
+
+		bool HasThreadAccess
 		{
 			get
 			{
+				var dispatcherQueue = WindowStateManager.Default?.GetActiveWindow(false)?.DispatcherQueue;
+				return dispatcherQueue?.HasThreadAccess ?? false;
+			}
+		}
+
+		Task<T> DispatchAsync<T>(Func<T> func)
+		{
+			var dispatcherQueue = WindowStateManager.Default.GetActiveWindow(false)?.DispatcherQueue;
+
+			var tcs = new TaskCompletionSource<T>();
+
+			_ = dispatcherQueue.TryEnqueue(() =>
+			{
+				try
+				{
+					var result = func();
+					tcs.SetResult(result);
+				}
+				catch (Exception ex)
+				{
+					tcs.SetException(ex);
+				}
+			});
+
+			return tcs.Task;
+		}
+
+		NetworkAccess GetNetworkAccess()
+		{
+			try
+			{
 				var profile = NetworkInformation.GetInternetConnectionProfile();
+
 				if (profile == null)
 					return NetworkAccess.Unknown;
 
 				var level = profile.GetNetworkConnectivityLevel();
-				return level switch
+
+				switch (level)
 				{
-					NetworkConnectivityLevel.LocalAccess => NetworkAccess.Local,
-					NetworkConnectivityLevel.InternetAccess => NetworkAccess.Internet,
-					NetworkConnectivityLevel.ConstrainedInternetAccess => NetworkAccess.ConstrainedInternet,
-					_ => NetworkAccess.None,
-				};
+					case NetworkConnectivityLevel.LocalAccess:
+						return NetworkAccess.Local;
+					case NetworkConnectivityLevel.InternetAccess:
+						return NetworkAccess.Internet;
+					case NetworkConnectivityLevel.ConstrainedInternetAccess:
+						return NetworkAccess.ConstrainedInternet;
+					default:
+						return NetworkAccess.None;
+				}
+			}
+			catch
+			{
+				return NetworkAccess.Unknown;
 			}
 		}
 
