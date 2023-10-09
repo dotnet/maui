@@ -145,5 +145,52 @@ namespace Microsoft.Maui
 				action?.Invoke(handler!, view);
 			});
 		}
+
+
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> ModifyMappingFluent<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			var previousMethod = propertyMapper.GetProperty(key);
+
+			void newMethod(TViewHandler handler, TVirtualView view)
+			{
+				method(handler, view, previousMethod);
+			}
+
+			propertyMapper.Add(key, newMethod);
+
+			return propertyMapper;
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> ReplaceMappingFluent<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			return propertyMapper.ModifyMappingFluent(key, (h, v, p) => method.Invoke(h, v));
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> AppendToMappingFluent<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			return propertyMapper.ModifyMappingFluent(key, (handler, view, action) =>
+			{
+				action?.Invoke(handler, view);
+				method(handler, view);
+			});
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> PrependToMappingFluent<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			return propertyMapper.ModifyMappingFluent(key, (handler, view, action) =>
+			{
+				method(handler, view);
+				action?.Invoke(handler, view);
+			});
+		}
 	}
 }

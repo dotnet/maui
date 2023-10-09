@@ -52,13 +52,16 @@ namespace Microsoft.Maui.Handlers
 			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
-		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView)
+		static void MapBackground(ISwipeViewHandler handler, ISwipeView view, System.Action<IElementHandler, IElement>? action)
 		{
-			if (swipeView.Background == null)
+			if (view.Background == null)
 				handler.PlatformView.Control?.SetWindowBackground();
 			else
-				ViewHandler.MapBackground(handler, swipeView);
+				action?.Invoke(handler, view);
 		}
+
+		public static void MapBackground(ISwipeViewHandler handler, ISwipeView swipeView) =>
+			MapBackground(handler, swipeView, (_, _) => ViewHandler.MapBackground(handler, swipeView));
 
 		public static void MapSwipeTransitionMode(ISwipeViewHandler handler, ISwipeView swipeView)
 		{

@@ -16,7 +16,6 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISwipeView, ISwipeViewHandler> Mapper = new PropertyMapper<ISwipeView, ISwipeViewHandler>(ViewHandler.ViewMapper)
 		{
-			[nameof(IContentView.Content)] = MapContent,
 			[nameof(ISwipeView.SwipeTransitionMode)] = MapSwipeTransitionMode,
 			[nameof(ISwipeView.LeftItems)] = MapLeftItems,
 			[nameof(ISwipeView.TopItems)] = MapTopItems,
@@ -25,10 +24,13 @@ namespace Microsoft.Maui.Handlers
 #if ANDROID || IOS || TIZEN
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 #endif
+		}
+		.ReplaceMappingFluent(nameof(IContentView.Content), MapContent)
 #if ANDROID
-			[nameof(IView.Background)] = MapBackground,
+		.ModifyMappingFluent(nameof(IView.Background), MapBackground)
 #endif
-		};
+		;
+
 
 		public static CommandMapper<ISwipeView, ISwipeViewHandler> CommandMapper = new(ViewCommandMapper)
 		{
