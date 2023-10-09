@@ -5,6 +5,7 @@ using System.Linq;
 using Windows.Networking.Connectivity;
 using Microsoft.Maui.ApplicationModel;
 using System.Threading.Tasks;
+using Microsoft.UI.Dispatching;
 
 namespace Microsoft.Maui.Networking
 {
@@ -28,8 +29,12 @@ namespace Microsoft.Maui.Networking
 		{
 			get
 			{
-				var dispatcherQueue = WindowStateManager.Default?.GetActiveWindow(false)?.DispatcherQueue;
-				return dispatcherQueue?.HasThreadAccess ?? false;
+				DispatcherQueue dispatcherQueue = WindowStateManager.Default?.GetActiveWindow(false)?.DispatcherQueue;
+
+				if (dispatcherQueue is null)
+					return true;
+
+				return dispatcherQueue.HasThreadAccess;
 			}
 		}
 
