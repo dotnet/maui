@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:proc="clr-namespace:PanCardView.Processors;assembly=PanCardView"
+    xmlns:cards="clr-namespace:PanCardView;assembly=PanCardView"
+             x:Class="BorderIssue.MainPage">
+
+    <StackLayout Spacing="20">
+        <Label Text="Working with Frame"/>
+        
+        <cards:CoverFlowView x:Name="testCoverFlow" Background="LightBlue"
+                PositionShiftValue="0"
+                IsCyclical="false">
+
+            <x:Arguments>
+                <proc:CoverFlowProcessor ScaleFactor="0.75" OpacityFactor="0.25" />
+            </x:Arguments>
+
+            <cards:CoverFlowView.ItemTemplate>
+                <DataTemplate>
+                    <ContentView>
+                        <Frame HeightRequest="200"
+                       VerticalOptions="Center"
+                       HorizontalOptions="Fill"
+                       Padding="0"  Background="pink">
+                            <Label Text="test" Background="red" VerticalOptions="Center"/>
+                        </Frame>
+                    </ContentView>
+                </DataTemplate>
+            </cards:CoverFlowView.ItemTemplate>
+
+        </cards:CoverFlowView>
+
+
+        <Label Text="Not working with Border"/>
+        
+        <cards:CoverFlowView x:Name="testCoverFlow2" Background="LightGreen"
+        PositionShiftValue="0"
+        IsCyclical="false">
+
+            <x:Arguments>
+                <proc:CoverFlowProcessor ScaleFactor="0.75" OpacityFactor="0.25" />
+            </x:Arguments>
+
+            <cards:CoverFlowView.ItemTemplate>
+                <DataTemplate>
+                    <ContentView>
+                        <Border HeightRequest="200"
+               VerticalOptions="Center"
+               HorizontalOptions="Fill"
+               Padding="0"  Background="pink">
+                            <Label Text="test" Background="red" VerticalOptions="Center"/>
+                        </Border>
+                    </ContentView>
+                </DataTemplate>
+            </cards:CoverFlowView.ItemTemplate>
+
+        </cards:CoverFlowView>
+    </StackLayout>
+
+</ContentPage>

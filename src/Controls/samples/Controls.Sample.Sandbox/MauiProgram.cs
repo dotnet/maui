@@ -2,6 +2,7 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using PanCardView;
 
 namespace Maui.Controls.Sample
 {
@@ -11,7 +12,8 @@ namespace Maui.Controls.Sample
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
-				.UseMauiApp<App>()
+				.UseMauiApp<BorderIssue.App>()
+				.UseCardsView()
 				.Build();
 	}
 
