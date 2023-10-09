@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		}
 
 		[Fact]
-		public async Task Test()
+		public async Task Connection_BackgroundThread()
 		{
 			var current = Connectivity.Current.NetworkAccess;
 
