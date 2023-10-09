@@ -3171,14 +3171,10 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, 0, 40, 20));
 		}
 
-
-		// TODO cut down test below, then dupe it for width
-		// Might be able to make this work single column with the oversized item in col 0
-
 		[Theory, Category(GridStarSizing)]
-		[InlineData(926, 845)]
-		//[InlineData(926, 926)]
-		//[InlineData(926, 1026)]
+		[InlineData(926, 845)] 
+		[InlineData(926, 926)]
+		[InlineData(926, 1026)]
 		public void StarsAdjustWhenArrangeAndMeasureHeightDiffer(double heightConstraint, double arrangedHeight)
 		{
 			var grid = CreateGridLayout(rows: "*, *", columns: "*");
@@ -3194,17 +3190,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var gridLayoutManager = new GridLayoutManager(grid);
 
 			double widthConstraint = 400;
-			double yOffset = 40;
 
 			_ = gridLayoutManager.Measure(widthConstraint, heightConstraint);
 
 			// Arranging at a different size than the measurement constraints
-			gridLayoutManager.ArrangeChildren(new Rect(0, yOffset, widthConstraint, arrangedHeight));
+			gridLayoutManager.ArrangeChildren(new Rect(0, 0, widthConstraint, arrangedHeight));
 
 			double expectedHeight = arrangedHeight / 2;
 
-			AssertArranged(smallerView, new Rect(0, yOffset, widthConstraint, expectedHeight));
-			AssertArranged(largerView, new Rect(0, expectedHeight + yOffset, widthConstraint, expectedHeight));
+			AssertArranged(smallerView, new Rect(0, 0, widthConstraint, expectedHeight));
+			AssertArranged(largerView, new Rect(0, expectedHeight, widthConstraint, expectedHeight));
 		}
 
 		[Theory, Category(GridStarSizing)]
@@ -3226,17 +3221,16 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var gridLayoutManager = new GridLayoutManager(grid);
 
 			double heightConstraint = 400;
-			double xOffset = 40;
 
 			_ = gridLayoutManager.Measure(widthConstraint, heightConstraint);
 
 			// Arranging at a different size than the measurement constraints
-			gridLayoutManager.ArrangeChildren(new Rect(xOffset, 0, arrangedWidth, heightConstraint));
+			gridLayoutManager.ArrangeChildren(new Rect(0, 0, arrangedWidth, heightConstraint));
 
 			double expectedWidth = arrangedWidth / 2;
 
-			AssertArranged(smallerView, new Rect(xOffset, 0, expectedWidth, heightConstraint));
-			AssertArranged(largerView, new Rect(expectedWidth + xOffset, 0, expectedWidth, heightConstraint));
+			AssertArranged(smallerView, new Rect(0, 0, expectedWidth, heightConstraint));
+			AssertArranged(largerView, new Rect(expectedWidth, 0, expectedWidth, heightConstraint));
 		}
 	}
 }
