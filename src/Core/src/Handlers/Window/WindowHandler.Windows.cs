@@ -89,8 +89,7 @@ namespace Microsoft.Maui.Handlers
 				container.AddPage(windowManager.RootView);
 			}
 
-			if (window.VisualDiagnosticsOverlay != null)
-				window.VisualDiagnosticsOverlay.Initialize();
+			window.VisualDiagnosticsOverlay?.Initialize();
 		}
 
 		public static void MapX(IWindowHandler handler, IWindow view) =>

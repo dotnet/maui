@@ -21,8 +21,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			View = model;
 			View.ModelChanged += (s, e) =>
 			{
-				if (Table != null)
-					Table.ReloadData();
+				Table?.ReloadData();
 			};
 			AutomaticallyDeselect = true;
 		}

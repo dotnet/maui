@@ -88,8 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
-				if (PlatformView != null)
-					PlatformView.RemoveGestureRecognizer(kvp.Value);
+				PlatformView?.RemoveGestureRecognizer(kvp.Value);
 				kvp.Value.ShouldReceiveTouch = null;
 				kvp.Value.Dispose();
 			}
@@ -652,8 +651,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var uiRecognizer = _gestureRecognizers[gestureRecognizer];
 				_gestureRecognizers.Remove(gestureRecognizer);
 
-				if (PlatformView != null)
-					PlatformView.RemoveGestureRecognizer(uiRecognizer);
+				PlatformView?.RemoveGestureRecognizer(uiRecognizer);
 
 				if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
 					tapGestureRecognizer != null)

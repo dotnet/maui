@@ -132,17 +132,16 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				CollectionView.AddSubview(uiView);
 			}
 
-			if (formsElement != null)
-				ItemsView.AddLogicalChild(formsElement);
+			formsElement?.AddLogicalChild(formsElement);
 
 			if (formsElement != null)
 			{
 				RemeasureLayout(formsElement);
 				formsElement.MeasureInvalidated += OnFormsElementMeasureInvalidated;
 			}
-			else if (uiView != null)
+			else
 			{
-				uiView.SizeToFit();
+				uiView?.SizeToFit();
 			}
 		}
 

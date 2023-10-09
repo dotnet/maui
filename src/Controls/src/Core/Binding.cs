@@ -325,8 +325,7 @@ namespace Microsoft.Maui.Controls
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);
 
-			if (_expression != null)
-				_expression.Unapply();
+			_expression?.Unapply();
 		}
 	}
 }

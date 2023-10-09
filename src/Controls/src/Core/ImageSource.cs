@@ -35,8 +35,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_cancellationTokenSource == value)
 					return;
-				if (_cancellationTokenSource != null)
-					_cancellationTokenSource.Cancel();
+				_cancellationTokenSource?.Cancel();
 				_cancellationTokenSource = value;
 			}
 		}
@@ -126,8 +125,7 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			TaskCompletionSource<bool> tcs = Interlocked.Exchange(ref _completionSource, null);
-			if (tcs != null)
-				tcs.SetResult(cancelled);
+			tcs?.SetResult(cancelled);
 
 			lock (_synchandle)
 			{

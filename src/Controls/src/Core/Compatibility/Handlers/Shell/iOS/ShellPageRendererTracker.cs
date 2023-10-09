@@ -298,8 +298,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					(primaries = primaries ?? new List<UIBarButtonItem>()).Add(item.ToUIBarButtonItem(false, true));
 				}
 
-				if (primaries != null)
-					primaries.Reverse();
+				primaries?.Reverse();
 			}
 
 			NavigationItem.SetRightBarButtonItems(primaries == null ? new UIBarButtonItem[0] : primaries.ToArray(), false);
@@ -673,10 +672,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		void UpdateFlowDirection()
 		{
-			if (_searchHandlerAppearanceTracker != null)
-			{
-				_searchHandlerAppearanceTracker.UpdateFlowDirection(_context.Shell);
-			}
+			_searchHandlerAppearanceTracker?.UpdateFlowDirection(_context.Shell);
 			if (_searchController != null)
 			{
 				_searchController.View.UpdateFlowDirection(_context.Shell);

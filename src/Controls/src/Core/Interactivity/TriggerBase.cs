@@ -82,14 +82,12 @@ namespace Microsoft.Maui.Controls
 
 		internal virtual void OnAttachedTo(BindableObject bindable)
 		{
-			if (Condition != null)
-				Condition.SetUp(bindable);
+			Condition?.SetUp(bindable);
 		}
 
 		internal virtual void OnDetachingFrom(BindableObject bindable)
 		{
-			if (Condition != null)
-				Condition.TearDown(bindable);
+			Condition?.TearDown(bindable);
 		}
 
 		internal virtual void OnSeal()

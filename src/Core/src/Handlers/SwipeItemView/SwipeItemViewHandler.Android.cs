@@ -50,8 +50,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapVisibility(ISwipeItemViewHandler handler, ISwipeItemView view)
 		{
 			var swipeView = handler.PlatformView?.Parent.GetParentOfType<MauiSwipeView>();
-			if (swipeView != null)
-				swipeView.UpdateIsVisibleSwipeItem(view);
+			swipeView?.UpdateIsVisibleSwipeItem(view);
 		}
 
 		protected override void DisconnectHandler(ContentViewGroup platformView)

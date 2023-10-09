@@ -29,8 +29,7 @@ namespace Microsoft.Maui.Controls
 				else
 					++_currentCount;
 			}
-			if (toRelease != null)
-				toRelease.TrySetResult(true);
+			toRelease?.TrySetResult(true);
 		}
 
 		public Task WaitAsync(CancellationToken token)

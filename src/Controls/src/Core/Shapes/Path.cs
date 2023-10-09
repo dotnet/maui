@@ -109,8 +109,7 @@ namespace Microsoft.Maui.Controls.Shapes
 		{
 			var path = new PathF();
 
-			if (Data != null)
-				Data.AppendPath(path);
+			Data?.AppendPath(path);
 
 			return path;
 		}
