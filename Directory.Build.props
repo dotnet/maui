@@ -1,4 +1,20 @@
 <Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+
+  <PropertyGroup>
+    <Copyright>$(CopyrightNetFoundation)</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>Latest</LangVersion>
+
+    <!--
+      Tools and packages produced by this repository support infrastructure and are not shipping on NuGet or via any other official channel.
+    -->
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
   <Import Project="eng\Versions.props" />
 
   <PropertyGroup>
