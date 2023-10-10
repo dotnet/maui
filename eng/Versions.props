@@ -99,6 +99,6 @@
     <DotNetEmscriptenManifestVersionBand>8.0.100-rtm</DotNetEmscriptenManifestVersionBand>
     <DotNetAndroidManifestVersionBand>$(DotNetVersionBand)</DotNetAndroidManifestVersionBand>
     <DotNetMaciOSManifestVersionBand>$(DotNetVersionBand)</DotNetMaciOSManifestVersionBand>
-    <DotNetTizenManifestVersionBand>$(DotNetVersionBand)</DotNetTizenManifestVersionBand>
+    <DotNetTizenManifestVersionBand>8.0.100-rc.2</DotNetTizenManifestVersionBand>
   </PropertyGroup>
 </Project>
