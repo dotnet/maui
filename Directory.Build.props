@@ -15,7 +15,7 @@
     <IsShipping>false</IsShipping>
   </PropertyGroup>
 
-  <Import Project="eng\Versions.props" />
+  <!-- <Import Project="eng\Versions.props" /> -->
 
   <PropertyGroup>
     <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">8</_MauiDotNetVersionMajor>
@@ -190,9 +190,7 @@
     <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
     <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
   </PropertyGroup>
-  <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
-  <Target Name="GitVersion" />
-  <Target Name="GitInfo" />
+ 
   <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
   <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
