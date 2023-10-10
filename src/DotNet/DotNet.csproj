@@ -4,12 +4,14 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
+    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
     <DotNetInstallScriptName>dotnet-install.ps1</DotNetInstallScriptName>
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>&amp; '$(DotNetInstallScriptPath)' -Version $(MicrosoftDotnetSdkInternalPackageVersion) -InstallDir '$(DotNetDirectory)' -Verbose</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'false' ">$(DotNetInstallCommand) -AzureFeed $(DotNetFeedUrl)</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) -AzureFeed $(InternalAzureFeed) -FeedCredential $env:DOTNET_TOKEN</DotNetInstallCommand> 
     <DotNetInstallCommand>powershell -ExecutionPolicy ByPass -NoProfile -Command &quot;$(DotNetInstallCommand)&quot;</DotNetInstallCommand>
   </PropertyGroup>
@@ -19,12 +21,12 @@
     <DotNetInstallScriptPath>$(DotNetOutputPath)$(DotNetInstallScriptName)</DotNetInstallScriptPath>
     <DotNetInstallCommand>bash '$(DotNetInstallScriptPath)' --version $(MicrosoftDotnetSdkInternalPackageVersion) --install-dir '$(DotNetDirectory)' --verbose</DotNetInstallCommand>
     <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' == 'true' ">$(DotNetInstallCommand) --azure-feed $(InternalAzureFeed) --feed-credential $DOTNET_TOKEN</DotNetInstallCommand>
+    <DotNetInstallCommand Condition=" '$(PRIVATE_BUILD)' != 'true' ">$(DotNetInstallCommand) --azure-feed $(DotNetFeedUrl)</DotNetInstallCommand>
   </PropertyGroup>
 
   <PropertyGroup>
     <_ProvisionDependsOn>
       _DownloadDotNetInstallScript;
-      _GetExternalDotNetSdkVersions;
       _InstallDotNet;
       _AcquireWorkloadManifests;
       _InstallWorkloadPacks;
@@ -58,7 +60,7 @@
         DestinationFolder="$(_InstallTempDirectory)"
     />
     <ItemGroup>
-      <_WorkloadFiles Include="$(_InstallTempDirectory)data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_InstallTempDirectory)data/*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Name="microsoft.net.sdk.maui"
@@ -153,7 +155,7 @@
     <_WorkloadIds Include="macos" />
     <_WorkloadIds Include="ios" />
     <_WorkloadIds Include="tvos" />
-    <_WorkloadIds Include="tizen" />
+    <_WorkloadIds Include="tizen" Condition=" '$(IncludeTizenTargetFrameworks)' == 'true' " />
   </ItemGroup>
 
   <Target Name="_AcquireWorkloadManifests"
@@ -178,8 +180,8 @@
       We downloaded these to $(_WorkloadManifestDir), so we could move files individually.
     -->
     <ItemGroup>
-      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/WorkloadManifest.*" />
-      <_WorkloadFiles Include="$(_WorkloadManifestDir)samsung.net.sdk.*/*/data/WorkloadManifest.*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)microsoft.net.*/*/data/*" />
+      <_WorkloadFiles Include="$(_WorkloadManifestDir)samsung.net.sdk.*/*/data/*" />
     </ItemGroup>
     <CopyWorkloadFiles
         Files="@(_WorkloadFiles)"
