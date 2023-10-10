@@ -249,30 +249,32 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(IsLayoutWithItemsSource(itemsSource, layout));
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task LayoutIsGarbageCollectedAfterItsRemoved()
 		{
-			var layout = new StackLayout
-			{
-				IsPlatformEnabled = true,
-			};
-
-			var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
-			BindableLayout.SetItemsSource(layout, itemsSource);
-
 			var pageRoot = new Grid();
-			pageRoot.Children.Add(layout);
 			var page = new ContentPage() { Content = pageRoot };
 
-			var weakReference = new WeakReference(layout);
-			pageRoot.Children.Remove(layout);
-			layout = null;
+			WeakReference CreateReference()
+			{
+				var layout = new StackLayout { IsPlatformEnabled = true };
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+				var itemsSource = new ObservableCollection<int>(Enumerable.Range(0, 10));
+				BindableLayout.SetItemsSource(layout, itemsSource);
+				pageRoot.Children.Add(layout);
+				var reference = new WeakReference(layout);
+				pageRoot.Children.Remove(layout);
+				return reference;
+			}
+
+			var weakReference = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(weakReference.IsAlive);
+
+			// Ensure that the ContentPage isn't collected during the test
+			GC.KeepAlive(page);
 		}
 
 		[Fact]

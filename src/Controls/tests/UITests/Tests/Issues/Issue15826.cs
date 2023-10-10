@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -27,14 +28,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			Assert.AreEqual(GetExpectedListsStatus("List 1"), thirdStatus);
 		}
 
-		string TapButtonAndGetStatus()
+		string? TapButtonAndGetStatus()
 		{
-			App.Tap(buttonId);
+			App.Click(buttonId);
 
 			return GetStatus();
 		}
 
-		string GetStatus() => App.Query(x => x.Marked("LabelStatus"))[0].Text;
+		string? GetStatus() => App.FindElement("LabelStatus").GetText();
 
 		string GetExpectedListsStatus(string listName) => $"{listName} is now visible";
 	}
