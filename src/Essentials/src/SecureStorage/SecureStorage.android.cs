@@ -9,9 +9,9 @@ namespace Microsoft.Maui.Storage
 {
 	partial class SecureStorageImplementation : ISecureStorage
 	{
-		async Task<string> PlatformGetAsync(string key)
+		Task<string> PlatformGetAsync(string key)
 		{
-			return await Task.Run(() =>
+			return Task.Run(() =>
 			{
 				try
 				{
