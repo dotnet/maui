@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>a9cc3c80fe43d19a38cacda4c1aecc51fb6eabb1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.0.12">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.1.10">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>7cde40e87e0ef36718913ba1c0464d6cf97b0bd3</Sha>
+      <Sha>1a309b63345d64356a68805c2e20f1c4fd794e42</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk.net8.0_16.4" Version="16.4.8965-net8-rtm">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk.net8.0_16.4" Version="16.4.8966-net8-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>1d5c1292ca15f271aefab4b655cdd47f298f10c5</Sha>
+      <Sha>468c3dd14d283162ab345491392fc185cc8f3168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk.net8.0_13.3" Version="13.3.8965-net8-rtm">
+    <Dependency Name="Microsoft.macOS.Sdk.net8.0_13.3" Version="13.3.8966-net8-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>1d5c1292ca15f271aefab4b655cdd47f298f10c5</Sha>
+      <Sha>468c3dd14d283162ab345491392fc185cc8f3168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk.net8.0_16.4" Version="16.4.8965-net8-rtm">
+    <Dependency Name="Microsoft.iOS.Sdk.net8.0_16.4" Version="16.4.8966-net8-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>1d5c1292ca15f271aefab4b655cdd47f298f10c5</Sha>
+      <Sha>468c3dd14d283162ab345491392fc185cc8f3168</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk.net8.0_16.4" Version="16.4.8965-net8-rtm">
+    <Dependency Name="Microsoft.tvOS.Sdk.net8.0_16.4" Version="16.4.8966-net8-rtm">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>1d5c1292ca15f271aefab4b655cdd47f298f10c5</Sha>
+      <Sha>468c3dd14d283162ab345491392fc185cc8f3168</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-8.0.100.Transport" Version="8.0.0-rtm.23504.4" CoherentParentDependency="Microsoft.NETCore.App.Ref">
       <Uri>https://github.com/dotnet/emsdk</Uri>

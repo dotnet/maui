@@ -23,12 +23,12 @@
     <MicrosoftExtensionsLoggingDebugVersion>8.0.0-rtm.23509.5</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>8.0.0-rtm.23509.5</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.12</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.99.0-preview.1.10</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdknet80_164PackageVersion>16.4.8965-net8-rtm</MicrosoftMacCatalystSdknet80_164PackageVersion>
-    <MicrosoftmacOSSdknet80_133PackageVersion>13.3.8965-net8-rtm</MicrosoftmacOSSdknet80_133PackageVersion>
-    <MicrosoftiOSSdknet80_164PackageVersion>16.4.8965-net8-rtm</MicrosoftiOSSdknet80_164PackageVersion>
-    <MicrosofttvOSSdknet80_164PackageVersion>16.4.8965-net8-rtm</MicrosofttvOSSdknet80_164PackageVersion>
+    <MicrosoftMacCatalystSdknet80_164PackageVersion>16.4.8966-net8-rtm</MicrosoftMacCatalystSdknet80_164PackageVersion>
+    <MicrosoftmacOSSdknet80_133PackageVersion>13.3.8966-net8-rtm</MicrosoftmacOSSdknet80_133PackageVersion>
+    <MicrosoftiOSSdknet80_164PackageVersion>16.4.8966-net8-rtm</MicrosoftiOSSdknet80_164PackageVersion>
+    <MicrosofttvOSSdknet80_164PackageVersion>16.4.8966-net8-rtm</MicrosofttvOSSdknet80_164PackageVersion>
     <MicrosoftMacCatalystSdkPackageVersion>$(MicrosoftMacCatalystSdknet80_164PackageVersion)</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>$(MicrosoftmacOSSdknet80_133PackageVersion)</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>$(MicrosoftiOSSdknet80_164PackageVersion)</MicrosoftiOSSdkPackageVersion>
