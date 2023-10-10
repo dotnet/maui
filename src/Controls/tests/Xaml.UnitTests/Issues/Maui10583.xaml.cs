@@ -1,12 +1,12 @@
 using System;
+using System.Collections.Generic;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
 using Microsoft.Maui.Devices;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.UnitTests;
-using Microsoft.Maui.Dispatching;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 namespace Microsoft.Maui.Controls.Xaml.UnitTests
 {
@@ -24,7 +24,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		}
 	}
 
-	public enum Maui10583Enum {
+	public enum Maui10583Enum
+	{
 		John, Paul, George, Ringo
 	}
 
@@ -67,8 +68,8 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 				Assert.That(page.lv.ItemsSource, Is.Not.Null);
 				var items = page.lv.ItemsSource as Maui10583Enum[];
 				Assert.That(items[1], Is.EqualTo(Maui10583Enum.Paul));
-				
-		
+
+
 			}
 		}
 	}

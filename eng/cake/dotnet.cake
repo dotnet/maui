@@ -709,21 +709,29 @@ void RunMSBuildWithDotNet(
 
 void RunTestWithLocalDotNet(string csproj)
 {
-    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-    var results = $"{name}-{configuration}.trx";
-
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, null, true);
+    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
 }
 
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null)
 {
+    string binlog;
+    string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
-    var results = $"{name}-{config}.trx";
+    var logDirectory = GetLogDirectory();
+
+    if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
+    {
+        binlog = $"{logDirectory}/{name}-{config}.binlog";
+        results = $"{name}-{config}.trx";   
+    }
+    else
+    {
+        binlog = $"{logDirectory}/{resultsFileNameWithoutExtension}.binlog";
+        results = $"{resultsFileNameWithoutExtension}.trx";
+    }
 
     Information("Run Test binlog: {0}", binlog);
 
@@ -732,7 +740,8 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
             Configuration = config,
             NoBuild = noBuild,
             Loggers = { 
-                $"trx;LogFileName={results}"  
+                $"trx;LogFileName={results}",
+                $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
             //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
