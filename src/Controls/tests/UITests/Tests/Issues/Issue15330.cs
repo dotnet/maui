@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -14,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue15330Test()
 		{
-			UITestContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
 				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/17125");
 
 			App.WaitForElement("WaitForStubControl");
