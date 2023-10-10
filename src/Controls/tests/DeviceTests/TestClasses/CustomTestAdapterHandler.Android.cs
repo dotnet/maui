@@ -40,12 +40,14 @@ namespace Microsoft.Maui.DeviceTests
 
 			public override long GetItemId(int position)
 			{
-				return position;
+				return position >= 0 && position < _tabbedPage.Children.Count
+					? position
+					: -1;
 			}
 
 			public override bool ContainsItem(long itemId)
 			{
-				return true;
+				return (itemId >= 0) && (itemId < (long) _tabbedPage.Children.Count);
 			}
 		}
 	}
