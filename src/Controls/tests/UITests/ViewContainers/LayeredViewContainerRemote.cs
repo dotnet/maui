@@ -1,23 +1,23 @@
-using TestUtils.Appium.UITests;
-using Xamarin.UITest.Queries;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	internal sealed class LayeredViewContainerRemote : BaseViewContainerRemote
 	{
-		public LayeredViewContainerRemote(IUITestContext? testContext, Enum formsType)
+		public LayeredViewContainerRemote(IUIClientContext? testContext, Enum formsType)
 			: base(testContext, formsType)
 		{
 		}
 
-		public AppResult GetLayeredLabel()
+		public IUIElement GetLayeredLabel()
 		{
-			return App.Query(q => q.Raw(LayeredLabelQuery)).First();
+			return App.FindElement(LayeredLabelQuery);
 		}
 
 		public void TapHiddenButton()
 		{
-			App.Tap(q => q.Raw(LayeredHiddenButtonQuery));
+			App.Click(LayeredHiddenButtonQuery);
 		}
 	}
 }
