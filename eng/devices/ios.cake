@@ -292,6 +292,9 @@ Task("cg-uitest")
 		nunitSettings.Where = TEST_WHERE;
 	}
 	RunTestsNunit(testLibDllPath, nunitSettings);
+
+	// When all tests are inconclusive the run does not fail, check if this is the case and fail the pipeline so we get notified	
+	FailRunOnOnlyInconclusiveTests(System.IO.Path.Combine(nunitSettings.Work.FullPath, "TestResult.xml"));
 });
 
 RunTarget(TARGET);
