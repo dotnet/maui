@@ -18,10 +18,6 @@
   </Interfaces>
   <Docs>
     <summary>A deep application link in an app link search index.</summary>
-    <remarks>
-      <para>For information on setting up deep application linking on the Android platform (and on using deep linking in general), see <format type="text/html"><a href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</a></format>.</para>
-    </remarks>
-    <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</related>
   </Docs>
   <Members>
     <Member MemberName=".ctor">
@@ -61,7 +57,6 @@
         <summary>Gets or sets an application-specific URI that uniquely describes content within an app.</summary>
         <value>An application-specific URI that uniquely describes content within an app.</value>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="AppLinkUriProperty">
@@ -104,7 +99,6 @@
         <summary>Gets or sets a description that appears with the item in search results.</summary>
         <value>The description that appears with the item in search results.</value>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="DescriptionProperty">
@@ -171,7 +165,6 @@
         <summary>Gets or sets a value that tells whether the item that is identified by the link entry is currently open.</summary>
         <value>A value that tells whether the item that is identified by the link entry is currently open.</value>
         <remarks>Application developers can set this value in <see cref="E:Microsoft.Maui.Controls.Application.PageAppearing" /> and <see cref="E:Microsoft.Maui.Controls.Application.PageDisappearing" /> methods to control whether the app link is shown for indexing or Handoff.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="IsLinkActiveProperty">
@@ -191,7 +184,6 @@
       <Docs>
         <summary>Backing store for the <see cref="P:Microsoft.Maui.Controls.AppLinkEntry.IsLinkActive" /> property.</summary>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="KeyValues">
@@ -215,7 +207,6 @@
         <summary>Gets a dictionary of application-specific key-value pairs.</summary>
         <value>A dictionary of standard and application-specific key-value pairs that is used for Handoff on the iOS platform.</value>
         <remarks>The standard keys are <c>contentType</c>, <c>associatedWebPage</c>, and <c>shouldAddToPublicIndex</c>.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="Thumbnail">
@@ -239,7 +230,6 @@
         <summary>Gets or sets a small image that appears with the item in search results.</summary>
         <value>A small image that appears with the item in search results</value>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="ThumbnailProperty">
@@ -282,7 +272,6 @@
         <summary>Gets or sets the title of the item.</summary>
         <value>The title of the item.</value>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/working-with/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="TitleProperty">

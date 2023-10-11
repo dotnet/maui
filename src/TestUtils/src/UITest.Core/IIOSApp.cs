@@ -1,6 +1,6 @@
 ﻿namespace UITest.Core
 {
-    public interface IIOSApp : IApp
-    {
-    }
+	public interface IIOSApp : IApp
+	{
+	}
 }
