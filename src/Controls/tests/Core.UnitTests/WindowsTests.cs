@@ -638,26 +638,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.Equal(outH, coreWindow.MinimumHeight);
 		}
 
-		[Fact]
+		[Fact, Category(TestCategory.Memory)]
 		public async Task WindowDoesNotLeak()
 		{
 			var application = new Application();
-			WeakReference reference;
 
-			// Scope for window
+			WeakReference CreateReference()
 			{
 				var window = new Window { Page = new ContentPage() };
-				reference = new WeakReference(window);
+				var reference = new WeakReference(window);
 				application.OpenWindow(window);
 				((IWindow)window).Destroying();
+				return reference;
 			}
 
+			var reference = CreateReference();
+
 			// GC
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "Window should not be alive!");
+
+			GC.KeepAlive(application);
 		}
 
 		// NOTE: this test is here to show `ConditionalWeakTable _requestedWindows` was a bad idea

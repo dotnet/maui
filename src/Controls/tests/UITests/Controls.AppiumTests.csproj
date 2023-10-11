@@ -31,8 +31,10 @@
     <ProjectReference Include="..\..\..\BlazorWebView\src\Maui\Microsoft.AspNetCore.Components.WebView.Maui.csproj" />
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
-    <ProjectReference Include="..\..\..\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,7 +42,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageReference Include="Xamarin.UITest" Version="4.1.4" />
   </ItemGroup>
 
   <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">

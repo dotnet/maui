@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Common;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(fired);
 		}
 
-		[Theory]
+		[Theory, Category(TestCategory.Memory)]
 		[InlineData(typeof(ImmutableBrush), false)]
 		[InlineData(typeof(SolidColorBrush), false)]
 		[InlineData(typeof(LinearGradientBrush), true)]
@@ -111,13 +112,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				(Brush)Activator.CreateInstance(type) :
 				(Brush)Activator.CreateInstance(type, Colors.CornflowerBlue);
 
-			var reference = new WeakReference(new VisualElement { Background = brush });
+			WeakReference CreateReference()
+			{
+				return new WeakReference(new VisualElement { Background = brush });
+			}
 
-			await Task.Yield();
-			GC.Collect();
-			GC.WaitForPendingFinalizers();
+			var reference = CreateReference();
+
+			await TestHelpers.Collect();
 
 			Assert.False(reference.IsAlive, "VisualElement should not be alive!");
+
+			GC.KeepAlive(brush);
 		}
 
 		[Fact]
