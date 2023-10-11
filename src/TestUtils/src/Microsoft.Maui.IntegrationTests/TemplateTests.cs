@@ -170,9 +170,9 @@ namespace Microsoft.Maui.IntegrationTests
 				{ "UseMaui", "UseMauiCore" }, // This is the key part of the test
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			};
-			if (framework != "net6.0")
+			if (framework != "net7.0")
 			{
-				// On versions after net6.0 this package reference also has to be updated to ensure the version of the MAUI Core package
+				// On versions after net7.0 this package reference also has to be updated to ensure the version of the MAUI Core package
 				// is specified and avoids the MA002 warning.
 				projectSectionsToReplace.Add("Include=\"Microsoft.Maui.Controls\"", "Include=\"Microsoft.Maui.Core\"");
 			}

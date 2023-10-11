@@ -53,7 +53,8 @@ namespace Microsoft.Maui.IntegrationTests
 					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
 							// Justification: It's OK for templates to have missing doc comments.
 				};
-				buildArgs += " " + string.Join(" ", csWarningsToIgnore.Select(csWarning => $"-p:nowarn={csWarning}"));
+				var csWarnings = string.Join("%3B", csWarningsToIgnore);
+				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
