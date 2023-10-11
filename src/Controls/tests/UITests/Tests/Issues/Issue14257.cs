@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -13,11 +14,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void ResizeScrollViewAndTapButtonTest()
 		{
 			// Tapping the Resize button will change the height of the ScrollView content
-			App.Tap("Resize");
+			App.Click("Resize");
 
 			// Scroll down to the Test button. When the bug is present, the button cannot be tapped.
-			App.ScrollDownTo("Test");
-			App.Tap("Test");
+			App.ScrollTo("Test");
+			App.Click("Test");
 
 			// If we can successfully tap the button, the Success label will be displayed
 			Assert.IsTrue(App.WaitForTextToBePresentInElement("Result", "Success"));

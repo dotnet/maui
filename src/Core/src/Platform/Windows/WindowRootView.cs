@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Platform
 		MauiToolbar? _toolbar;
 		MenuBar? _menuBar;
 		FrameworkElement? _appTitleBar;
-		bool _hasTitleBarImage = false;
+		bool _hasTitleBarImage;
 		ViewManagement.UISettings _viewSettings;
 		public event TypedEventHandler<NavigationView, NavigationViewBackRequestedEventArgs>? BackRequested;
 

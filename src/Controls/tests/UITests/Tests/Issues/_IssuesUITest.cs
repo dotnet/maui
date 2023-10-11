@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
-using OpenQA.Selenium.Support.UI;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public abstract class _IssuesUITest : UITestBase
+	public abstract class _IssuesUITest : UITest
 	{
 		public _IssuesUITest(TestDevice device) : base(device) { }
 
@@ -39,8 +39,8 @@ namespace Microsoft.Maui.AppiumTests
 			base.FixtureTeardown();
 			try
 			{
-				App.NavigateBack();
-				App.Tap("GoBackToGalleriesButton");
+				this.Back();
+				App.Click("GoBackToGalleriesButton");
 			}
 			catch (Exception e)
 			{
@@ -51,14 +51,14 @@ namespace Microsoft.Maui.AppiumTests
 
 		public abstract string Issue { get; }
 
-		private static void NavigateToIssue(string issue)
+		private void NavigateToIssue(string issue)
 		{
 			App.NavigateToIssues();
 
 			App.EnterText("SearchBarGo", issue);
 
 			App.WaitForElement("SearchButton");
-			App.Tap("SearchButton");
+			App.Click("SearchButton");
 		}
 	}
 }

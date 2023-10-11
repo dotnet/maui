@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -27,14 +28,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			Assert.AreEqual(GetExpectedCurrentOpacityStatus(0), thirdOpacity);
 		}
 
-		string ChangeOpacityAndGetCurrentStatus()
+		string? ChangeOpacityAndGetCurrentStatus()
 		{
-			App.Tap(buttonId);
+			App.Click(buttonId);
 
 			return GetCurrentOpacityStatus();
 		}
 
-		string GetCurrentOpacityStatus() => App.Query(x => x.Marked("CurrentOpacity"))[0].Text;
+		string? GetCurrentOpacityStatus() => App.FindElement("CurrentOpacity").GetText();
 
 		string GetExpectedCurrentOpacityStatus(double expectedOpacity) => $"Current opacity is {expectedOpacity}";
 	}

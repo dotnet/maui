@@ -2949,6 +2949,71 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			AssertArranged(view0, new Rect(0, top, 200, 200 - top - bottom));
 		}
 
+		// Test for https://github.com/dotnet/maui/issues/16815
+		// Because the padding is added to the grid's min possible size
+		// and then that size is used to calculate cell sizes, we need to
+		// remove the padding as the cells are not placed in the padding.
+		// This means the issue appears when:
+		//   grid width = view widths + (2 * padding)
+		[Theory, Category(GridStarSizing)]
+		[InlineData(40, 21, 24)]
+		[InlineData(39, 20, 23)]
+		[InlineData(38, 19, 22)]
+		[InlineData(37, 18, 21)]
+		public void StarRowsCalculateCorrectlyWhenGridWidthNearsMinWidth(double widthConstraint, double view0ExpectedWidth, double view1ExpectedX)
+		{
+			var heights = 100;
+
+			var paddingL = 3;
+			var paddingR = 6;
+			var viewWidth = 10;
+
+			var grid = CreateGridLayout(rows: "*", columns: "*, Auto");
+			grid.Padding.Returns(new Thickness(paddingL, 0, paddingR, 0));
+
+			var view0 = CreateTestView(new Size(viewWidth, heights));
+			var view1 = CreateTestView(new Size(viewWidth, heights));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, col: 0);
+			SetLocation(grid, view1, col: 1);
+
+			_ = MeasureAndArrangeFixed(grid, widthConstraint: widthConstraint, heightConstraint: heights);
+
+			AssertArranged(view0, new Rect(paddingL, 0, view0ExpectedWidth, heights));
+			AssertArranged(view1, new Rect(view1ExpectedX, 0, viewWidth, heights));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(40, 21, 24)]
+		[InlineData(39, 20, 23)]
+		[InlineData(38, 19, 22)]
+		[InlineData(37, 18, 21)]
+		public void StarColsCalculateCorrectlyWhenGridHeightNearsMinHeight(double widthConstraint, double view0ExpectedWidth, double view1ExpectedX)
+		{
+			var widths = 100;
+
+			var paddingT = 3;
+			var paddingB = 6;
+			var viewHeight = 10;
+
+			var grid = CreateGridLayout(rows: "*, Auto", columns: "*");
+			grid.Padding.Returns(new Thickness(0, paddingT, 0, paddingB));
+
+			var view0 = CreateTestView(new Size(widths, viewHeight));
+			var view1 = CreateTestView(new Size(widths, viewHeight));
+
+			SubstituteChildren(grid, view0, view1);
+			SetLocation(grid, view0, row: 0);
+			SetLocation(grid, view1, row: 1);
+
+			_ = MeasureAndArrangeFixed(grid, widthConstraint: widths, heightConstraint: widthConstraint);
+
+			AssertArranged(view0, new Rect(0, paddingT, widths, view0ExpectedWidth));
+			AssertArranged(view1, new Rect(0, view1ExpectedX, widths, viewHeight));
+		}
+
+
 		[Fact]
 		public void StarRowExpansionWorksWithDifferingScalars()
 		{

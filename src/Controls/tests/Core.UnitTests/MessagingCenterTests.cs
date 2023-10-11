@@ -262,7 +262,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			Assert.True(((TestSubcriber)wr.Target).Successful);  // Since it's still alive, the subscriber should still have received the message and updated the property
 		}
 
-		[Fact, Category(TestCategory.Memory)] 
+		[Fact, Category(TestCategory.Memory)]
 		public async Task SubscriberCollectableAfterUnsubscribeEvenIfHeldByClosure()
 		{
 			WeakReference CreateReference()
