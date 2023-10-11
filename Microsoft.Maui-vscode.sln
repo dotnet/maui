@@ -185,10 +185,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Xaml.UnitTests.Int
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.AppiumTests", "src\Controls\tests\UITests\Controls.AppiumTests.csproj", "{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.Appium", "src\TestUtils\src\TestUtils.Appium\TestUtils.Appium.csproj", "{FABB4FE3-AD90-479E-B7F1-BEF110181196}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestUtils.Appium.UITests", "src\TestUtils\src\TestUtils.Appium.UITests\TestUtils.Appium.UITests.csproj", "{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Controls.Sample.UITests", "src\Controls\samples\Controls.Sample.UITests\Controls.Sample.UITests.csproj", "{07C26A25-08C2-4C52-9574-1C33EC8E7919}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Maui.IntegrationTests", "src\TestUtils\src\Microsoft.Maui.IntegrationTests\Microsoft.Maui.IntegrationTests.csproj", "{A6976D43-B3A4-47AF-89D9-FA388B56B52B}"
@@ -214,6 +210,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.Android.UITests", "src\Compatibility\ControlGallery\test\Android.UITests\Compatibility.ControlGallery.Android.UITests.csproj", "{2E41CBBF-999A-40F1-BF65-EA68585CA070}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Compatibility.ControlGallery.iOS.UITests", "src\Compatibility\ControlGallery\test\iOS.UITests\Compatibility.ControlGallery.iOS.UITests.csproj", "{306C0B6E-B797-40A0-994C-4F923E91F31B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Core", "src\TestUtils\src\UITest.Core\UITest.Core.csproj", "{401CA2F5-EAD1-4414-AE8F-42444BF458EB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.Appium", "src\TestUtils\src\UITest.Appium\UITest.Appium.csproj", "{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -487,14 +489,6 @@ Global
 		{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2A0CB35C-ED05-4FCB-91BC-21B288B749B1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FABB4FE3-AD90-479E-B7F1-BEF110181196}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FABB4FE3-AD90-479E-B7F1-BEF110181196}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FABB4FE3-AD90-479E-B7F1-BEF110181196}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FABB4FE3-AD90-479E-B7F1-BEF110181196}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -528,6 +522,18 @@ Global
 		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{306C0B6E-B797-40A0-994C-4F923E91F31B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{401CA2F5-EAD1-4414-AE8F-42444BF458EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -612,8 +618,6 @@ Global
 		{B5F38A9E-1949-4779-6666-D682B09E0CB3} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{FB39FACE-BAF2-4F97-A249-E45BA63D77FE} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
 		{2A0CB35C-ED05-4FCB-91BC-21B288B749B1} = {25D0D27A-C5FE-443D-8B65-D6C987F4A80E}
-		{FABB4FE3-AD90-479E-B7F1-BEF110181196} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
-		{E06CEFD4-237C-49F0-BE0F-C5F80AD8F64C} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{07C26A25-08C2-4C52-9574-1C33EC8E7919} = {E1082E26-D700-4127-9329-66D673FD2D55}
 		{A6976D43-B3A4-47AF-89D9-FA388B56B52B} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{DA908446-C6A1-473C-BF5C-83E600F5C69E} = {0AF0E771-4E09-4F05-B187-B43A2B9F62B0}
@@ -626,6 +630,9 @@ Global
 		{E175485B-3C8C-47D7-8DD5-F7FED627EB25} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{2E41CBBF-999A-40F1-BF65-EA68585CA070} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
 		{306C0B6E-B797-40A0-994C-4F923E91F31B} = {CBC63DBF-892C-4F03-890E-D48F25509CC6}
+		{401CA2F5-EAD1-4414-AE8F-42444BF458EB} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{5BC29B1A-1EBC-41BF-A0B6-D1B73F8A4991} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{A7B4FF91-8AF6-4A36-805C-B73D888AC1BE} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}
@@ -637,7 +644,6 @@ Global
 		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{306c0b6e-b797-40a0-994c-4f923e91f31b}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{7a28bab3-4396-415f-8473-2700027e57a7}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{ae2513cb-4e5e-4e5c-8237-88954d4c9433}*SharedItemsImports = 13
-		src\Compatibility\ControlGallery\src\Issues.Shared\Compatibility.ControlGallery.Issues.Shared.projitems*{b111c308-8b8b-4679-a229-39f80013d51e}*SharedItemsImports = 5
 		src\Compatibility\ControlGallery\src\UITests.Shared\Compatibility.UITests.projitems*{e175485b-3c8c-47d7-8dd5-f7fed627eb25}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal

@@ -1,9 +1,9 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public abstract class CoreGalleryBasePageTest : UITestBase
+	public abstract class CoreGalleryBasePageTest : UITest
 	{
 		public CoreGalleryBasePageTest(TestDevice device) : base(device) { }
 
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.AppiumTests
 			base.FixtureTeardown();
 			try
 			{
-				App.NavigateBack();
+				this.Back();
 			}
 			catch (Exception e)
 			{
