@@ -144,6 +144,14 @@ namespace Microsoft.Maui.Platform
 			LoadUrlAsync(url).FireAndForget();
 		}
 
+		public override void LayoutSubviews()
+		{
+			base.LayoutSubviews();
+
+			// ensure that inner scrollview properly resizes when frame of webview updated
+			ScrollView.Frame = Bounds;
+		}
+
 		// https://developer.apple.com/forums/thread/99674
 		// WKWebView and making sure cookies synchronize is really quirky
 		// The main workaround I've found for ensuring that cookies synchronize 
