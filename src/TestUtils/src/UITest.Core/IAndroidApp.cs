@@ -1,6 +1,6 @@
 ﻿namespace UITest.Core
 {
-    public interface IAndroidApp : IApp
-    {
-    }
+	public interface IAndroidApp : IApp
+	{
+	}
 }

@@ -8,22 +8,22 @@ using UITest.Core;
 [SetUpFixture]
 public abstract class UITestContextSetupFixture
 {
-    protected static IServerContext? _serverContext;
+	protected static IServerContext? _serverContext;
 
-    public static IServerContext ServerContext { get { return _serverContext ?? throw new InvalidOperationException($"Trying to get the {nameof(ServerContext)} before setup has run"); } }
+	public static IServerContext ServerContext { get { return _serverContext ?? throw new InvalidOperationException($"Trying to get the {nameof(ServerContext)} before setup has run"); } }
 
-    [OneTimeSetUp]
-    public void RunBeforeAnyTests()
-    {
-        Initialize();
-    }
+	[OneTimeSetUp]
+	public void RunBeforeAnyTests()
+	{
+		Initialize();
+	}
 
-    [OneTimeTearDown]
-    public void RunAfterAnyTests()
-    {
-        _serverContext?.Dispose();
-        _serverContext = null;
-    }
+	[OneTimeTearDown]
+	public void RunAfterAnyTests()
+	{
+		_serverContext?.Dispose();
+		_serverContext = null;
+	}
 
-    public abstract void Initialize();
+	public abstract void Initialize();
 }
