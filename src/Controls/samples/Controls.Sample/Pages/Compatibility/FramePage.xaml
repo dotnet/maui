@@ -52,6 +52,31 @@
                         Text="Background" />
                 </Frame>
                 <Label
+                    Text="Background (Gradient using multiple transparent colors)"
+                    Style="{StaticResource Headline}"/>
+                <Frame>
+                    <Frame.Background>
+                        <LinearGradientBrush
+                            StartPoint="0,0"
+                            EndPoint="0,1">
+                            <GradientStop
+                                Color="Transparent"
+                                Offset="0.0"/>
+                            <GradientStop
+                                Color="Red"
+                                Offset="0.3"/>
+                            <GradientStop
+                                Color="Transparent"
+                                Offset="0.6"/>
+                            <GradientStop
+                                Color="Red"
+                                Offset="1.00"/>
+                        </LinearGradientBrush>
+                    </Frame.Background>
+                    <Label 
+                        Text="Background" />
+                </Frame>
+                <Label
                     Text="BorderColor"
                     Style="{StaticResource Headline}"/>
                 <Frame      
