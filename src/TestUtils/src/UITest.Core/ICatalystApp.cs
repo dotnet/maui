@@ -1,6 +1,6 @@
 ﻿namespace UITest.Core
 {
-    public interface ICatalystApp : IApp
-    {
-    }
+	public interface ICatalystApp : IApp
+	{
+	}
 }
