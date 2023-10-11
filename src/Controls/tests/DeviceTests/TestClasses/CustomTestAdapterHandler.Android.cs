@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			public override bool ContainsItem(long itemId)
 			{
-				return true;
+				return itemId >= 0 && itemId < ItemCount;
 			}
 		}
 	}
