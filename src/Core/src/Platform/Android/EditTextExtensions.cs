@@ -354,7 +354,7 @@ namespace Microsoft.Maui.Platform
 			if (buttonWidth <= 0)
 				return false;
 
-			var x = motionEvent.GetX();
+			var x = motionEvent.RawX;
 			var y = motionEvent.GetY();
 
 			var flowDirection = platformView.LayoutDirection;
