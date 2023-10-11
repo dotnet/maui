@@ -1,10 +1,10 @@
 ﻿namespace UITest.Core
 {
-    public enum TestDevice
-    {
-        Windows,
-        Android,
-        iOS,
-        Mac
-    }
+	public enum TestDevice
+	{
+		Windows,
+		Android,
+		iOS,
+		Mac
+	}
 }
