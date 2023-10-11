@@ -40,6 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 					SetupShellHandlers(handlers);
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handlers.AddHandler(typeof(Entry), typeof(EntryHandler));
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
 					handlers.AddHandler(typeof(CollectionView), typeof(CollectionViewHandler));
@@ -999,6 +1000,49 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AssertionExtensions.WaitForGC(pageReference);
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
+		}
+
+		[Fact(DisplayName = "HideSoftInputOnTapped Doesnt Crash If Entry Is Still Focused After Window Is Null")]
+		public async Task HideSoftInputOnTappedDoesntCrashIfEntryIsStillFocusedAfterWindowIsNull()
+		{
+			SetupBuilder();
+
+			Entry entry1;
+			Entry entry2;
+
+			var rootPage = CreatePage(out entry1);
+			var nextPage = CreatePage(out entry2);
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = rootPage;
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, async (handler) =>
+			{
+				entry1.Focus();
+				await entry1.WaitForFocused();
+
+				await rootPage.Navigation.PushAsync(nextPage);
+				entry2.Focus();
+				await entry2.WaitForFocused();
+
+				await shell.GoToAsync("..", false);
+			});
+
+			ContentPage CreatePage(out Entry entry)
+			{
+				entry = new Entry();
+
+				return new ContentPage()
+				{
+					HideSoftInputOnTapped = true,
+					Content = new VerticalStackLayout()
+					{
+						entry
+					}
+				};
+			}
 		}
 
 		[Fact(DisplayName = "Can Reuse Pages")]

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Platform
 
 		public static IServiceProvider GetApplicationServices(this IMauiContext mauiContext)
 		{
-			return MauiUIApplicationDelegate.Current.Services ??
+			return IPlatformApplication.Current?.Services ??
 				throw new InvalidOperationException("Unable to find Application Services");
 		}
 	}

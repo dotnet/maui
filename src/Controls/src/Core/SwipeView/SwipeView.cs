@@ -2,12 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/SwipeView.xml" path="Type[@FullName='Microsoft.Maui.Controls.SwipeView']/Docs/*" />
 	[ContentProperty(nameof(Content))]
-	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView
+	public partial class SwipeView : ContentView, IElementConfiguration<SwipeView>, ISwipeViewController, ISwipeView, IVisualTreeElement
 	{
 		readonly Lazy<PlatformConfigurationRegistry<SwipeView>> _platformConfigurationRegistry;
 
@@ -92,6 +94,40 @@ namespace Microsoft.Maui.Controls
 		{
 			get => ((ISwipeView)this).IsOpen;
 			set => ((ISwipeView)this).IsOpen = value;
+		}
+
+		IReadOnlyList<Maui.IVisualTreeElement> IVisualTreeElement.GetVisualChildren()
+		{
+			List<Maui.IVisualTreeElement> elements = new List<IVisualTreeElement>();
+
+			// I realize we are adding these all via AddLogicalChild but the base Compatibility.Layout
+			// Implements IVisualTreeElement.GetVisualChildren() and ruins that so we need to explicitly
+			// implement IVTE so we can collect up all the logical children for IVTE
+			// This is required for hot reload and live visual tree to work as well
+
+			elements.Add(LeftItems);
+			elements.Add(RightItems);
+			elements.Add(TopItems);
+			elements.Add(BottomItems);
+
+			foreach (var item in InternalChildren)
+			{
+				if (item is IVisualTreeElement vte)
+				{
+					elements.Add(vte);
+				}
+			}
+
+			return elements;
+		}
+
+		protected override void OnBindingContextChanged()
+		{
+			base.OnBindingContextChanged();
+			SetInheritedBindingContext(LeftItems, BindingContext);
+			SetInheritedBindingContext(RightItems, BindingContext);
+			SetInheritedBindingContext(TopItems, BindingContext);
+			SetInheritedBindingContext(BottomItems, BindingContext);
 		}
 
 		static void OnSwipeItemsChanged(BindableObject bindable, object oldValue, object newValue)

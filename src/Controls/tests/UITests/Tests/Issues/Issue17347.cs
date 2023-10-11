@@ -1,8 +1,6 @@
-﻿using System.Drawing;
-using Microsoft.Maui.Appium;
-using NUnit.Framework;
-using OpenQA.Selenium.Appium.MultiTouch;
-using TestUtils.Appium.UITests;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -15,14 +13,15 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Setting a new TitleView on an already created page crashes iOS";
 
 		[Test]
-		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage() {
+		public void AppDoesntCrashWhenSettingNewTitleViewOnExistingPage()
+		{
 			try
 			{
 				App.WaitForElement("TitleViewLabel4", timeout: TimeSpan.FromSeconds(4));
 			}
 			finally
 			{
-				App.Tap("PopMeButton");
+				App.WaitForElement("PopMeButton", timeout: TimeSpan.FromSeconds(4)).Click();
 			}
 		}
 	}

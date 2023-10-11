@@ -7,6 +7,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
+using Microsoft.UI.Windowing;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -123,6 +124,47 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task ToggleFullscreenTitleBarWorks()
+		{
+			SetupBuilder();
+
+			var mainPage = new NavigationPage(new ContentPage()
+			{
+				Title = "title",
+				ToolbarItems =
+				{
+					new ToolbarItem()
+					{
+						Text = "Item"
+					}
+				}
+			});
+
+			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, async (handler) =>
+			{
+				var mauiToolBar = GetPlatformToolbar(handler);
+				var presenter = handler.PlatformView.GetAppWindow()?.Presenter as OverlappedPresenter;
+				var rootView = GetWindowRootView(handler);
+				var defaultTitleBarHeight = rootView.AppTitleBarActualHeight;
+				Assert.True(defaultTitleBarHeight > 0);
+				Assert.True(mauiToolBar.GetLocationOnScreen().Value.Y == 32);
+
+				// Disable titlebar, maximize the window
+				presenter.SetBorderAndTitleBar(false, false);
+				presenter.Maximize();
+
+				// Wait for maximize animation to finish
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 0));
+
+				// Now restore the window
+				presenter.SetBorderAndTitleBar(true, true);
+				presenter.Restore();
+
+				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 32));
+			});
+		}
+
 		[Theory]
 		[ClassData(typeof(WindowPageSwapTestCases))]
 		public async Task HeaderCorrectlyOffsetsWhenSwappingMainPage(WindowPageSwapTestCase swapOrder)
@@ -167,6 +209,7 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Collection(ControlsHandlerTestBase.RunInNewWindowCollection)]
+		[Category(TestCategory.Lifecycle)]
 		public class WindowTestsRunInNewWindowCollection : ControlsHandlerTestBase
 		{
 			[Fact]

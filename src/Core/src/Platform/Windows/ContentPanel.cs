@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Numerics;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
@@ -38,7 +39,12 @@ namespace Microsoft.Maui.Platform
 
 			_borderPath?.Arrange(new global::Windows.Foundation.Rect(0, 0, finalSize.Width, finalSize.Height));
 
-			return new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
+			var size = new global::Windows.Foundation.Size(Math.Max(0, actual.Width), Math.Max(0, actual.Height));
+
+			// We need to update the clip since the content's position might have changed
+			UpdateClip(_borderStroke?.Shape, size.Width, size.Height);
+
+			return size;
 		}
 
 		public ContentPanel()
@@ -140,13 +146,13 @@ namespace Microsoft.Maui.Platform
 			var visual = ElementCompositionPreview.GetElementVisual(Content);
 			var compositor = visual.Compositor;
 
-
-			var pathSize = new Graphics.Rect(0, 0, width, height);
 			PathF? clipPath;
+			float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
+			// The path size should consider the space taken by the border (top and bottom, left and right)
+			var pathSize = new Graphics.Rect(0, 0, width - strokeThickness * 2, height - strokeThickness * 2);
 
 			if (clipGeometry is IRoundRectangle roundedRectangle)
 			{
-				float strokeThickness = (float)(_borderPath?.StrokeThickness ?? 0);
 				clipPath = roundedRectangle.InnerPathForBounds(pathSize, strokeThickness / 2);
 				IsInnerPath = true;
 			}
@@ -158,10 +164,12 @@ namespace Microsoft.Maui.Platform
 
 			var device = CanvasDevice.GetSharedDevice();
 			var geometry = clipPath.AsPath(device);
-
 			var path = new CompositionPath(geometry);
 			var pathGeometry = compositor.CreatePathGeometry(path);
 			var geometricClip = compositor.CreateGeometricClip(pathGeometry);
+
+			// The clip needs to consider the content's offset in case it is in a different position because of a different alignment.
+			geometricClip.Offset = new Vector2(strokeThickness - Content.ActualOffset.X, strokeThickness - Content.ActualOffset.Y);
 
 			visual.Clip = geometricClip;
 		}

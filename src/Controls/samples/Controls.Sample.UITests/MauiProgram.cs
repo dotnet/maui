@@ -61,8 +61,9 @@ namespace Maui.Controls.Sample
 			window.Width = desktopWindowWidth;
 			window.Height = desktopWindowHeight;
 
-			int screenWidth = (int)Microsoft.Maui.Devices.DeviceDisplay.MainDisplayInfo.Width;
-			int screenHeight = (int)Microsoft.Maui.Devices.DeviceDisplay.MainDisplayInfo.Height;
+			var info = Microsoft.Maui.Devices.DeviceDisplay.MainDisplayInfo;
+			int screenWidth = (int)(info.Width / info.Density);
+			int screenHeight = (int)(info.Height / info.Density);
 
 			// Center the window on the screen, to ensure no part of it goes off screen in CI
 			window.X = (screenWidth - desktopWindowWidth) / 2;

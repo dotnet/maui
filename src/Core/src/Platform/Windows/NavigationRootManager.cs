@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -18,25 +17,37 @@ namespace Microsoft.Maui.Platform
 			_platformWindow = platformWindow;
 			_rootView = new WindowRootView();
 			_rootView.BackRequested += OnBackRequested;
+			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
 
+			var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+			if (titleBar is not null)
+			{
+				SetTitleBarVisibility(titleBar.ExtendsContentIntoTitleBar);
+			}
+		}
+
+		internal void SetTitleBarVisibility(bool isVisible)
+		{
 			// https://learn.microsoft.com/en-us/windows/apps/design/basics/titlebar-design
 			// Standard title bar height is 32px
 			// This should always get set by the code after but
 			// we are setting it just in case
-			var appbarHeight = 32;
-			if (AppWindowTitleBar.IsCustomizationSupported())
+			var appbarHeight = isVisible ? 32 : 0;
+			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
-				var density = _platformWindow.GetDisplayDensity();
-				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
+				var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+				if (titleBar is not null)
+				{
+					var density = _platformWindow.GetDisplayDensity();
+					appbarHeight = (int)(titleBar.Height / density);
+				}
 			}
 
 			_rootView.UpdateAppTitleBar(
 					appbarHeight,
-					AppWindowTitleBar.IsCustomizationSupported() &&
-					_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar
+					UI.Windowing.AppWindowTitleBar.IsCustomizationSupported() &&
+					isVisible
 				);
-
-			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
 		}
 
 		void WindowRootViewOnWindowTitleBarContentSizeChanged(object? sender, EventArgs e)

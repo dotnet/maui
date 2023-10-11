@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
-using Microsoft.Maui.Devices;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.UI;
+using Microsoft.UI.Composition.SystemBackdrops;
 using Microsoft.UI.Windowing;
-using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Windows.Graphics;
+using ViewManagement = Windows.UI.ViewManagement;
 
 namespace Microsoft.Maui
 {
@@ -20,10 +22,12 @@ namespace Microsoft.Maui
 		IntPtr _windowIcon;
 		bool _enableResumeEvent;
 		bool _isActivated;
+		ViewManagement.UISettings _viewSettings;
 
 		public MauiWinUIWindow()
 		{
 			_windowManager = WindowMessageManager.Get(this);
+			_viewSettings = new ViewManagement.UISettings();
 
 			Activated += OnActivated;
 			Closed += OnClosedPrivate;
@@ -33,7 +37,22 @@ namespace Microsoft.Maui
 			// set to false we know the user toggled this to false 
 			// and then we can react accordingly
 			if (AppWindowTitleBar.IsCustomizationSupported())
-				base.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+			{
+				var titleBar = this.GetAppWindow()?.TitleBar;
+
+				if (titleBar is not null)
+				{
+					titleBar.ExtendsContentIntoTitleBar = true;
+				}
+
+				_viewSettings.ColorValuesChanged += _viewSettings_ColorValuesChanged;
+				SetTileBarButtonColors();
+			}
+
+			if (MicaController.IsSupported())
+			{
+				base.SystemBackdrop = new MicaBackdrop() { Kind = MicaKind.BaseAlt };
+			}
 
 			SubClassingWin32();
 			SetIcon();
@@ -67,6 +86,8 @@ namespace Microsoft.Maui
 		private void OnClosedPrivate(object sender, UI.Xaml.WindowEventArgs args)
 		{
 			OnClosed(sender, args);
+
+			_viewSettings.ColorValuesChanged -= _viewSettings_ColorValuesChanged;
 
 			if (_windowIcon != IntPtr.Zero)
 			{
@@ -134,6 +155,20 @@ namespace Microsoft.Maui
 						Marshal.StructureToPtr(rect, e.LParam, true);
 					}
 				}
+				else if (e.MessageId == PlatformMethods.MessageIds.WM_STYLECHANGING)
+				{
+					var styleChange = Marshal.PtrToStructure<PlatformMethods.STYLESTRUCT>(e.LParam);
+					if (e.WParam == (int)PlatformMethods.WindowLongFlags.GWL_STYLE)
+					{
+						bool hasTitleBar = (styleChange.StyleNew & (uint)PlatformMethods.WindowStyles.WS_CAPTION) != 0;
+
+						var rootManager = Window?.Handler?.MauiContext?.GetNavigationRootManager();
+						if (rootManager != null)
+						{
+							rootManager?.SetTitleBarVisibility(hasTitleBar);
+						}
+					}
+				}
 
 				Services?.InvokeLifecycleEvents<WindowsLifecycle.OnPlatformMessage>(
 					m => m.Invoke(this, new WindowsPlatformMessageEventArgs(e.Hwnd, e.MessageId, e.WParam, e.LParam)));
@@ -164,6 +199,26 @@ namespace Microsoft.Maui
 			}
 		}
 
+		private void _viewSettings_ColorValuesChanged(ViewManagement.UISettings sender, object args)
+		{
+			DispatcherQueue.TryEnqueue(SetTileBarButtonColors);
+		}
+
+		private void SetTileBarButtonColors()
+		{
+			if (AppWindowTitleBar.IsCustomizationSupported())
+			{
+				var titleBar = this.GetAppWindow()?.TitleBar;
+
+				if (titleBar is null)
+					return;
+
+				titleBar.ButtonBackgroundColor = Colors.Transparent;
+				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+				titleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
+			}
+		}
+
 		SizeInt32 IPlatformSizeRestrictedWindow.MinimumSize { get; set; } = DefaultMinimumSize;
 
 		SizeInt32 IPlatformSizeRestrictedWindow.MaximumSize { get; set; } = DefaultMaximumSize;
@@ -172,7 +227,7 @@ namespace Microsoft.Maui
 
 		internal IServiceProvider? Services =>
 			Window?.Handler?.GetServiceProvider() ??
-			MauiWinUIApplication.Current.Services;
+			IPlatformApplication.Current?.Services;
 
 		[DllImport("shell32.dll", CharSet = CharSet.Auto)]
 		static extern IntPtr ExtractAssociatedIcon(IntPtr hInst, string iconPath, ref IntPtr index);

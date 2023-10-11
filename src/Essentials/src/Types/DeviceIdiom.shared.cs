@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Devices
 				);
 
 		/// <summary>
-		/// Returns a string representation of the current value of <see cref="deviceIdiom"/>.
+		/// Returns a string representation of the current device idiom.
 		/// </summary>
 		/// <returns>A string representation of this instance in the format of <c>{device idiom}</c> or an empty string when no device idiom is set.</returns>
 		public override string ToString() =>

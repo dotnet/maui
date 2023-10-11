@@ -1,62 +1,19 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public abstract class _ViewUITests : UITestBase
+	public abstract class _ViewUITests : CoreGalleryBasePageTest
 	{
-		public string? PlatformViewType { get; protected set; }
-
 		public _ViewUITests(TestDevice device) : base(device) { }
-
-		protected override void FixtureSetup()
-		{
-			int retries = 0;
-			while (true)
-			{
-				try
-				{
-					base.FixtureSetup();
-					NavigateToGallery();
-					break;
-				}
-				catch (Exception e)
-				{
-					TestContext.Error.WriteLine($">>>>> The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
-					if (retries++ < SetupMaxRetries)
-					{
-						Reset();
-					}
-					else
-					{
-						throw;
-					}
-				}
-			}
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			try
-			{
-				App.NavigateBack();
-			}
-			catch (Exception e)
-			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
-			}
-		}
-
-		protected abstract void NavigateToGallery();
 
 		[Test]
 		public virtual void _IsEnabled()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled, PlatformViewType);
+			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled);
 			remote.GoTo();
 
 			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
@@ -69,30 +26,30 @@ namespace Microsoft.Maui.AppiumTests
 
 			remote.TapStateButton();
 
-			var isEnabled = remote.GetStateLabel().ReadText();
+			var isEnabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("True", isEnabled);
 
 			remote.TapStateButton();
 
-			var isDisabled = remote.GetStateLabel().ReadText();
+			var isDisabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("False", isDisabled);
 		}
 
 		[Test]
 		public virtual void _IsVisible()
 		{
-			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible, PlatformViewType);
+			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible);
 			remote.GoTo();
 
 			var viewPre = remote.GetViews();
 
-			Assert.AreEqual(1, viewPre.Length);
+			Assert.AreEqual(1, viewPre.Count);
 
 			remote.TapStateButton();
 
 			var viewPost = remote.GetViews();
 
-			Assert.AreEqual(0, viewPost.Length);
+			Assert.AreEqual(0, viewPost.Count);
 		}
 	}
 

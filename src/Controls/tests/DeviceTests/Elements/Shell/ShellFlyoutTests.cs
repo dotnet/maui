@@ -17,6 +17,30 @@ namespace Microsoft.Maui.DeviceTests
 {
 	public partial class ShellTests : ControlsHandlerTestBase
 	{
+		[Fact]
+		public async Task FlyoutContentUpdatesAfterChange()
+		{
+			var flyoutContent = new VerticalStackLayout()
+			{
+				new Label() { Text = "Flyout Content" }
+			};
+
+			await RunShellTest(shell =>
+			{
+				shell.FlyoutBehavior = FlyoutBehavior.Locked;
+			},
+			async (shell, handler) =>
+			{
+				Assert.False(flyoutContent.IsLoaded);
+
+				shell.FlyoutContent = flyoutContent;
+				await OnLoadedAsync(flyoutContent);
+
+				shell.FlyoutContent = null;
+				await OnUnloadedAsync(flyoutContent);
+			});
+		}
+
 #if !MACCATALYST
 		[Fact]
 		public async Task LogicalChildrenPropagateCorrectly()
@@ -303,6 +327,8 @@ namespace Microsoft.Maui.DeviceTests
 			return Thickness.Zero;
 #endif
 		}
+#endif
+
 		async Task RunShellTest(Action<Shell> action, Func<Shell, ShellHandler, Task> testAction)
 		{
 			SetupBuilder();
@@ -319,6 +345,5 @@ namespace Microsoft.Maui.DeviceTests
 				await testAction(shell, handler);
 			});
 		}
-#endif
 	}
 }

@@ -1,18 +1,18 @@
 using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
+using Microsoft.Maui.AppiumTests;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests;
 
 public class LabelUITests : _ViewUITests
 {
-	static readonly string Label = "android.widget.TextView";
-	const string LabelGallery = "* marked:'Label Gallery'";
+	const string LabelGallery = "Label Gallery";
 
 	public LabelUITests(TestDevice device)
 		: base(device)
 	{
-		PlatformViewType = Label;
 	}
 
 	protected override void NavigateToGallery() =>
@@ -33,18 +33,18 @@ public class LabelUITests : _ViewUITests
 			Assert.Ignore("This test is failing on iOS/Mac Catalyst/Windows because the feature is not yet implemented: https://github.com/dotnet/maui/issues/4734");
 		}
 
-		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped, PlatformViewType);
+		var remote = new EventViewContainerRemote(UITestContext, Test.FormattedString.SpanTapped);
 		remote.GoTo();
 
-		var textBeforeClick = remote.GetEventLabel().Text;
+		var textBeforeClick = remote.GetEventLabel().GetText();
 		Assert.AreEqual("Event: SpanTapped (none)", textBeforeClick);
 
 		// TODO: This will probably fail on desktops because the tap is in screen coordinates and the
 		//       view seems to either be in window or parent coordinates.
-		var r = remote.GetView().Rect;
-		App.TapCoordinates(r.X + (r.Height * 3), r.CenterY); // 3 "heights" in from the left
+		var r = remote.GetView().GetRect();
+		App.Click(r.X + (r.Height * 3), r.CenterY()); // 3 "heights" in from the left
 
-		var textAfterClick = remote.GetEventLabel().Text;
+		var textAfterClick = remote.GetEventLabel().GetText();
 		Assert.AreEqual("Event: SpanTapped (fired 1)", textAfterClick);
 	}
 }
