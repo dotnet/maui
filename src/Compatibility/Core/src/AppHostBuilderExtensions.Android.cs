@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 					// any UI has appeared.
 					// This creates a dummy MauiContext that wraps the Application.
 
-					var services = MauiApplication.Current.Services;
+					var services = IPlatformApplication.Current.Services;
 					var mauiContext = new MauiContext(services, app);
 					var state = new ActivationState(mauiContext);
 #pragma warning disable CS0612 // Type or member is obsolete

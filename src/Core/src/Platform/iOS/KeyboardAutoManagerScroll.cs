@@ -27,17 +27,17 @@ public static class KeyboardAutoManagerScroll
 	static CGPoint TopViewBeginOrigin = new(nfloat.MaxValue, nfloat.MaxValue);
 	static readonly CGPoint InvalidPoint = new(nfloat.MaxValue, nfloat.MaxValue);
 	static double AnimationDuration = 0.25;
-	static UIView? View = null;
-	static UIView? ContainerView = null;
-	static CGRect? CursorRect = null;
-	internal static bool IsKeyboardShowing = false;
+	static UIView? View;
+	static UIView? ContainerView;
+	static CGRect? CursorRect;
+	internal static bool IsKeyboardShowing;
 	static int TextViewTopDistance = 20;
-	static int DebounceCount = 0;
-	static NSObject? WillShowToken = null;
-	static NSObject? WillHideToken = null;
-	static NSObject? DidHideToken = null;
-	static NSObject? TextFieldToken = null;
-	static NSObject? TextViewToken = null;
+	static int DebounceCount;
+	static NSObject? WillShowToken;
+	static NSObject? WillHideToken;
+	static NSObject? DidHideToken;
+	static NSObject? TextFieldToken;
+	static NSObject? TextViewToken;
 
 	public static void Connect()
 	{

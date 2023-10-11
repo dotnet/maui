@@ -229,7 +229,11 @@ namespace Microsoft.Maui.DeviceTests
 			await ValidatePropertyInitValue(searchBar, () => searchBar.Placeholder, GetNativePlaceholder, searchBar.Placeholder);
 		}
 
-		[Theory(DisplayName = "MaxLength Initializes Correctly")]
+		[Theory(DisplayName = "MaxLength Initializes Correctly"
+#if WINDOWS
+			, Skip = "https://github.com/dotnet/maui/issues/7939"
+#endif
+		)]
 		[InlineData(2)]
 		[InlineData(5)]
 		[InlineData(8)]
@@ -250,7 +254,11 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedText, platformText);
 		}
 
-		[Fact(DisplayName = "CancelButtonColor Initialize Correctly")]
+		[Fact(DisplayName = "CancelButtonColor Initialize Correctly"
+#if WINDOWS
+		, Skip = "Fails on Windows"
+#endif
+		)]
 		public async Task CancelButtonColorInitializeCorrectly()
 		{
 			var searchBar = new SearchBarStub()
