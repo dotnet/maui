@@ -1,4 +1,4 @@
-﻿namespace TestUtils.Appium.UITests
+﻿namespace UITest.Core
 {
 	public enum ApplicationState
 	{
