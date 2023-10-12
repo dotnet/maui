@@ -250,7 +250,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			List<string> expectedEntitlements = config == "Release" ?
 				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
-				new() { "com.apple.security.get-task-allow" };
+				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client", "com.apple.security.get-task-allow" };
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
