@@ -1,6 +1,63 @@
-﻿<ContentPage
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    x:Class="Maui.Controls.Sample.MainPage"
-    xmlns:local="clr-namespace:Maui.Controls.Sample">
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.MainPage"
+             xmlns:local="clr-namespace:Maui.Controls.Sample">
+
+    <!-- TODO Turn this into a UI test -->
+    
+    <Grid RowDefinitions="*,*"
+          Padding="10,10">
+        
+        
+        <VerticalStackLayout FlowDirection="LeftToRight"
+                             Spacing="10">
+
+            <Label Text="#17453 (Entry inside a container with padding):" />
+
+            <VerticalStackLayout Padding="30,0">
+                <Entry Text="Simple text"
+                       ClearButtonVisibility="WhileEditing" />
+            </VerticalStackLayout>
+
+            <Label Text="#9954 (Entry inside a container with no padding):" />
+
+            <Border Stroke="black"
+                    StrokeThickness="1"
+                    BackgroundColor="Transparent">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10,10,10,10" />
+                </Border.StrokeShape>
+                <Entry ClearButtonVisibility="WhileEditing"
+                       Text="Simple Text" />
+            </Border>
+
+        </VerticalStackLayout>
+        
+        
+        <VerticalStackLayout Grid.Row="1"
+                             Spacing="10"
+                             FlowDirection="RightToLeft">
+
+            <Label Text="#17453 (Entry inside a container with padding):" />
+
+            <VerticalStackLayout Padding="30,0">
+                <Entry Text="Simple text"
+                       ClearButtonVisibility="WhileEditing" />
+            </VerticalStackLayout>
+
+            <Label Text="#9954 (Entry inside a container with no padding):"/>
+
+            <Border Stroke="black"
+                    StrokeThickness="1"
+                    BackgroundColor="Transparent">
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="10,10,10,10" />
+                </Border.StrokeShape>
+                <Entry ClearButtonVisibility="WhileEditing"
+                       Text="Simple Text" />
+            </Border>
+
+        </VerticalStackLayout>
+    </Grid>
+
 </ContentPage>
