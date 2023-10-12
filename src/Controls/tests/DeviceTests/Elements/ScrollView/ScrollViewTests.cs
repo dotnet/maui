@@ -113,15 +113,23 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact(DisplayName = "ScrollView inside layouts do not grow")]
 		public async Task DoesNotGrow()
 		{
+			var screenWidthConstraint = 600;
+			var screenHeightConstraint = 600;
+
 			var label = new Label() { Text = "Text inside a ScrollView" };
 			var scrollView = new ScrollView() { MaximumHeightRequest = 500, Content = label };
-			var parentLayout = new VerticalStackLayout { scrollView };
+			var parentLayout = new VerticalStackLayout { scrollView};
+			parentLayout.BackgroundColor = Colors.Blue;
 
-			await CreateHandlerAsync<LabelHandler>(label);
-			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
-			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
+			SetupBuilder();
 
-			await AttachAndRun(parentLayout, (layoutHandler) => {});
+			await CreateHandlerAndAddToWindow(parentLayout, () =>
+			{
+				var size = (parentLayout as IView).Measure(screenWidthConstraint, screenHeightConstraint);
+				var rect = new Rect(0, 0, size.Width, size.Height);
+				(parentLayout as IView).Arrange(rect); // Manual layout to prevent device test flakiness on Windows
+			});
+
 			Assert.True(parentLayout.Height > 0, "Parent layout should have non-zero height!");
 			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!"); 
 		}
@@ -133,6 +141,9 @@ namespace Microsoft.Maui.DeviceTests
 		)]
 		public async Task ShouldGrow()
 		{
+			var screenWidthConstraint = 600;
+			var screenHeightConstraint = 600;
+
 			var label = new Label() { Text = "Text inside a ScrollView"};
 			var childLayout = new VerticalStackLayout { label };
 			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
@@ -141,14 +152,16 @@ namespace Microsoft.Maui.DeviceTests
 			var expectedHeight = 100;
 			parentLayout.HeightRequest = expectedHeight;
 
-			await CreateHandlerAsync<LabelHandler>(label);
-			await CreateHandlerAsync<LayoutHandler>(childLayout);
-			await CreateHandlerAsync<ScrollViewHandler>(scrollView);
-			var layoutHandler = await CreateHandlerAsync<LayoutHandler>(parentLayout);
+			SetupBuilder();
 
-			await AttachAndRun(parentLayout, (layoutHandler) => {});
+			await CreateHandlerAndAddToWindow(parentLayout, () =>
+			{
+				var size = (parentLayout as IView).Measure(screenWidthConstraint, screenHeightConstraint);
+				var rect = new Rect(0, 0, size.Width, size.Height);
+				(parentLayout as IView).Arrange(rect); // Manual layout to prevent device test flakiness on Windows
+			});
 
-			// Android is usually off by one or two px. Hence that's why the condition has some tolerance
+			// Android is usually off by one or two px. Hence the tolerance
 			Assert.Equal(scrollView.Height, childLayout.Height, 2.0);
 			Assert.Equal(parentLayout.Height, scrollView.Height, 2.0);
 			Assert.Equal(expectedHeight, parentLayout.Height, 2.0);
@@ -163,6 +176,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<IScrollView, ScrollViewHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
+					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 				});
 			});
 		}
