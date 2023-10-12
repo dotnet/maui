@@ -121,10 +121,10 @@ parameters:
     default:
       - name: default
         tfm: default
-      - name: net6
-        tfm: net6.0
-      - name: net7
-        tfm: net7.0
+      # - name: net6
+      #   tfm: net6.0
+      - name: net8
+        tfm: net8.0
 
 resources:
   repositories:
