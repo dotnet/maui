@@ -29,22 +29,20 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact(Timeout = 3000)]
 		public async Task DisablingTickerFinishesAnimationInProgress()
 		{
-			SingleThreadSynchronizationContext.Run(async () =>
+			await SingleThreadSimulator.Run(async () =>
 			{
 				var view = AnimationReadyHandlerAsync.Prepare(new View { Opacity = 1 }, out var handler);
 
 				await Task.WhenAll(view.FadeTo(0, 2000), handler.DisableTicker());
 
 				Assert.Equal(0, view.Opacity);
-
-				return true;
 			});
 		}
 
 		[Fact(Timeout = 3000)]
 		public async Task DisablingTickerFinishesAllAnimationsInChain()
 		{
-			SingleThreadSynchronizationContext.Run(async () =>
+			await SingleThreadSimulator.Run(async () =>
 			{
 				var view1 = new View { Opacity = 1 };
 				var view2 = new View { Opacity = 0 };
@@ -55,8 +53,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 				Assert.Equal(0, view1.Opacity);
 				Assert.Equal(1, view2.Opacity);
-
-				return true;
 			});
 		}
 
@@ -66,9 +62,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			var fadeIn = new Animation(d => { view.Opacity = d; }, 0, 1);
 			var i = 0;
 
-			fadeIn.Commit(view, "fadeIn", length: 1000, repeat: () => ++i < 5, finished: (d, b) =>
+			fadeIn.Commit(view, "fadeIn", length: 1000, repeat: () => ++i < 5 , 
+			finished: (d, b) =>
 			{
-				if (!tcs.Task.IsCompleted)
+				if ((b || i >= 5) && !tcs.Task.IsCompleted)
 				{
 					tcs.SetResult(b);
 				}
@@ -77,12 +74,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			return tcs.Task;
 		}
 
-
 		[Fact(Timeout = 2000)]
 		public async Task DisablingTickerPreventsAnimationFromRepeating()
 		{
-			SingleThreadSynchronizationContext.Run(async () => {
-
+			await SingleThreadSimulator.Run(async () =>
+			{
 				var view = AnimationReadyHandlerAsync.Prepare(new View { Opacity = 0 }, out var handler);
 
 				// RepeatFade is set to repeat a 1-second animation 5 times; if it runs all the way through,
@@ -91,27 +87,28 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				await Task.WhenAll(RepeatFade(view), handler.DisableTicker());
 
 				Assert.Equal(1, view.Opacity);
-
-				return true;
 			});
 		}
 
 		[Fact(Timeout = 2000)]
 		public async Task NewAnimationsFinishImmediatelyWhenTickerDisabled()
 		{
-			var view = AnimationReadyHandlerAsync.Prepare(new View(), out var handler);
+			await SingleThreadSimulator.Run(async () =>
+			{
+				var view = AnimationReadyHandlerAsync.Prepare(new View(), out var handler);
 
-			await handler.DisableTicker();
+				await handler.DisableTicker();
 
-			await view.RotateYTo(200);
+				await view.RotateYTo(200);
 
-			Assert.Equal(200, view.RotationY);
+				Assert.Equal(200, view.RotationY);
+			});
 		}
 
 		[Fact(Timeout = 2000)]
 		public async Task AnimationExtensionsReturnTrueIfAnimationsDisabled()
 		{
-			SingleThreadSynchronizationContext.Run(async () =>
+			await SingleThreadSimulator.Run(async () =>
 			{
 				var label = AnimationReadyHandlerAsync.Prepare(new Label { Text = "Foo" }, out var handler);
 
@@ -120,15 +117,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				var result = await label.ScaleTo(2, 500);
 
 				Assert.True(result);
-
-				return true;
 			});
 		}
 
 		[Fact(Timeout = 2000)]
 		public async Task CanExitAnimationLoopIfAnimationsDisabled()
 		{
-			SingleThreadSynchronizationContext.Run(async () =>
+			await SingleThreadSimulator.Run(async () =>
 			{
 				var label = AnimationReadyHandlerAsync.Prepare(new Label { Text = "Foo" }, out var handler);
 
@@ -141,8 +136,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					await label.ScaleTo(2, 500);
 					run = !(await label.ScaleTo(0.5, 500));
 				}
-
-				return true;
 			});
 		}
 	}

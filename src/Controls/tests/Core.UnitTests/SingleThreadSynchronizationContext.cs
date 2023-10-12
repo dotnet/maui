@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	/// </summary>
 	/// <remarks>
 	/// Animations in an app run on the UI thread; all of the async operations synchronize back to the UI thread's context.
-	/// But async operations in unit tests don't have a single-threaded sychronization context by default, so they fall back
+	/// But async operations in unit tests don't have a single-threaded synchronization context by default, so they fall back
 	/// to the default behavior of scheduling their continuations on the thread pool. To accurately test animation operations
 	/// asynchronously (they way they behave when animating properties in an app), we need them to use a single-threaded
 	/// context. So we provide this one for testing. It queues operations up and executes them in order on the current thread,
@@ -24,10 +24,14 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		public override void Post(SendOrPostCallback d, object state)
 		{
 			ArgumentNullException.ThrowIfNull(d);
-			_queue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
+
+			if (!_queue.IsAddingCompleted)
+			{
+				_queue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
+			}
 		}
 
-		void RunOnCurrentThread()
+		public void RunOnCurrentThread()
 		{
 			foreach (var workItem in _queue.GetConsumingEnumerable())
 			{
@@ -35,34 +39,41 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 			}
 		}
 
-		void Complete()
+		public async Task Complete()
 		{
 			_queue.CompleteAdding();
 		}
 
-		public static T Run<T>(Func<Task<T>> asyncMethod)
+	}
+
+	internal static class SingleThreadSimulator 
+	{
+		public static async Task Run(Func<Task> asyncMethod)
 		{
 			ArgumentNullException.ThrowIfNull(asyncMethod);
 
-			var previousContext = Current;
+			// Save off the old context so we can restore it when we're done
+			var previousContext = SynchronizationContext.Current;
+
 			try
 			{
 				var context = new SingleThreadSynchronizationContext();
-				SetSynchronizationContext(context);
+				SynchronizationContext.SetSynchronizationContext(context);
 
 				// Invoke the function and alert the context when it's complete
 				var task = asyncMethod() ?? throw new InvalidOperationException("No task provided.");
-				task.ContinueWith(delegate { context.Complete(); }, TaskScheduler.Default);
+
+				task.ContinueWith(async (t, o) => await context.Complete(), TaskScheduler.Default);
 
 				// Start working through the queue				
 				context.RunOnCurrentThread();
-				return task.GetAwaiter().GetResult();
+
+				await task;
 			}
 			finally
 			{
-				SetSynchronizationContext(previousContext);
+				SynchronizationContext.SetSynchronizationContext(previousContext);
 			}
 		}
-
 	}
 }
