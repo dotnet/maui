@@ -37,16 +37,6 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				return new ScopedFragment(_tabbedPage.Children[p0], _tabbedPage.FindMauiContext());
 			}
-
-			public override long GetItemId(int position)
-			{
-				return position;
-			}
-
-			public override bool ContainsItem(long itemId)
-			{
-				return itemId >= 0 && itemId < ItemCount;
-			}
 		}
 	}
 }
