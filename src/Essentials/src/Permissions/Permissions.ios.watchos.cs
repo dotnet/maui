@@ -28,8 +28,15 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var eventStore = new EKEventStore();
 
-				var results = await eventStore.RequestAccessAsync(entityType);
-
+				Tuple<bool, NSError> results = null;
+#if NET7_0
+				results = await eventStore.RequestAccessAsync(entityType);
+#else
+				if (entityType == EKEntityType.Reminder)
+					results = await eventStore.RequestFullAccessToRemindersAsync();
+				if (entityType == EKEntityType.Event)
+					results = await eventStore.RequestFullAccessToEventsAsync();
+#endif
 				return results.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
