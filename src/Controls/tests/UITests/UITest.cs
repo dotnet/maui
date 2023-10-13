@@ -56,7 +56,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			IConfig config = new Config();
 			config.SetProperty("AppId", "com.microsoft.maui.uitests");
-			
+
 			switch (_testDevice)
 			{
 				case TestDevice.iOS:

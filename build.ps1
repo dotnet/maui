@@ -9,7 +9,11 @@ Param(
 )
 
 # Restore Cake tool
-& dotnet tool restore
+# & dotnet tool restore
+$tools = Get-Content ".config/dotnet-tools.json" | ConvertFrom-Json
+foreach ($tool in $tools.tools.PsObject.Properties) {
+    & dotnet tool install $tool.Name --version $tool.Value.version
+}
 
 # Build Cake arguments
 $cakeArguments = @("$Script");
