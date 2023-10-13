@@ -55,7 +55,6 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-
 			if (App.AppState == ApplicationState.Not_Running)
 			{
 				SaveDiagnosticLogs("UITestBaseTearDownNotRunning");

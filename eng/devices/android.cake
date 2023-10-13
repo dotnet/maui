@@ -314,8 +314,12 @@ Task("uitest")
 	
 	CleanDirectories(TEST_RESULTS);
 
+	AdbLogcat(new AdbLogcatOptions { Clear = true }, null, adbSettings);
+
 	InstallApk(TEST_APP, TEST_APP_PACKAGE_NAME, TEST_RESULTS);
-	
+
+	AdbLogcat(new AdbLogcatOptions { OutputFile = $"{BINLOG_DIR}/logcat_android-install-{DateTime.UtcNow.ToFileTimeUtc()}.log" }, null, adbSettings);
+
 	//we need to build tests first to pass ExtraDefineConstants
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
@@ -327,11 +331,13 @@ Task("uitest")
 				.Append("/bl:" + binlog),
 			ToolPath = DOTNET_PATH,
 	});
-	
-	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android.log");
+
+	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_android-{DateTime.UtcNow.ToFileTimeUtc()}.log");
 
 	Information("Run UITests project {0}", PROJECT.FullPath);
 	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION,	noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-android");
+
+	AdbLogcat(new AdbLogcatOptions { OutputFile = $"{BINLOG_DIR}/logcat_android-run-{DateTime.UtcNow.ToFileTimeUtc()}.log" }, null, adbSettings);
 });
 
 Task("cg-uitest")

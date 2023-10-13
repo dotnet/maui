@@ -23,7 +23,7 @@ namespace Microsoft.Maui.AppiumTests
 #endif
 	public abstract class UITest : UITestBase
 	{
-		protected const int SetupMaxRetries = 1;
+		protected const int SetupMaxRetries = 0;
 		readonly VisualRegressionTester _visualRegressionTester;
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
