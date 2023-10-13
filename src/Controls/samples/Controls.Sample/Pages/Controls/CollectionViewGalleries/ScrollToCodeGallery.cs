@@ -6,7 +6,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
 	internal class ScrollToCodeGallery : ContentPage
 	{
-		public ScrollToCodeGallery(IItemsLayout itemsLayout, ScrollToMode mode = ScrollToMode.Position, Func<DataTemplate> dataTemplate = null, Func<CollectionView> createCollectionView = null)
+		public ScrollToCodeGallery(IItemsLayout itemsLayout, ScrollToMode mode = ScrollToMode.Position, Func<DataTemplate>? dataTemplate = null, Func<CollectionView>? createCollectionView = null)
 		{
 			createCollectionView = createCollectionView ?? (() => new CollectionView());
 

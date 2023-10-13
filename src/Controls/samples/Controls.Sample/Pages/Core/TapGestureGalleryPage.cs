@@ -172,10 +172,10 @@ namespace Maui.Controls.Sample.Pages
 			Content = vertical;
 		}
 
-		void OnTapped(object sender, System.EventArgs e)
+		void OnTapped(object? sender, System.EventArgs e)
 		{
 			var args = (TappedEventArgs)e;
-			var view = (View)sender;
+			var view = (View)sender!;
 
 			windowPosition.Text = $"Position inside window: {args.GetPosition(null)}";
 			relativeToToggleButtonPosition.Text = $"Position relative to toggle button: {args.GetPosition(toggleButton)}";

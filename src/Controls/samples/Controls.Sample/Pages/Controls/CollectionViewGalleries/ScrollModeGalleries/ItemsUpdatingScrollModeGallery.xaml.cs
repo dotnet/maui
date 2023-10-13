@@ -8,8 +8,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 {
 	public class ItemsUpdatingScrollModeItem
 	{
-		public string Text1 { get; set; }
-		public string Text2 { get; set; }
+		public string? Text1 { get; set; }
+		public string? Text2 { get; set; }
 	}
 
 	public class ItemsUpdatingScrollModeViewModel : BindableObject
@@ -50,7 +50,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 
 		void OnItemsUpdatingScrollModeChanged(object sender, EventArgs e)
 		{
-			CollectionView.ItemsUpdatingScrollMode = (ItemsUpdatingScrollMode)(sender as EnumPicker).SelectedItem;
+			CollectionView.ItemsUpdatingScrollMode = (ItemsUpdatingScrollMode)(sender! as EnumPicker)!.SelectedItem;
 		}
 	}
 }
