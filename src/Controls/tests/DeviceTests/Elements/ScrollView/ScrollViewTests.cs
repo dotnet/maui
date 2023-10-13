@@ -118,7 +118,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var label = new Label() { Text = "Text inside a ScrollView" };
 			var scrollView = new ScrollView() { MaximumHeightRequest = 500, Content = label };
-			var parentLayout = new VerticalStackLayout { scrollView};
+			var parentLayout = new VerticalStackLayout { scrollView };
 			parentLayout.BackgroundColor = Colors.Blue;
 
 			SetupBuilder();
@@ -131,10 +131,10 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			Assert.True(parentLayout.Height > 0, "Parent layout should have non-zero height!");
-			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!"); 
+			Assert.True(parentLayout.Height < 500, "ScrollView should not make parent layout grow!");
 		}
 
-		[Fact (DisplayName = "ScrollView's viewport fills available space if set to fill"
+		[Fact(DisplayName = "ScrollView's viewport fills available space if set to fill"
 #if MACCATALYST || IOS
 			, Skip = "See: https://github.com/dotnet/maui/issues/17700. If the issue is solved, re-enable the tests"
 #endif
@@ -144,9 +144,9 @@ namespace Microsoft.Maui.DeviceTests
 			var screenWidthConstraint = 600;
 			var screenHeightConstraint = 600;
 
-			var label = new Label() { Text = "Text inside a ScrollView"};
+			var label = new Label() { Text = "Text inside a ScrollView" };
 			var childLayout = new VerticalStackLayout { label };
-			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout};
+			var scrollView = new ScrollView() { VerticalOptions = LayoutOptions.Fill, Content = childLayout };
 			var parentLayout = new Grid { scrollView };
 
 			var expectedHeight = 100;
