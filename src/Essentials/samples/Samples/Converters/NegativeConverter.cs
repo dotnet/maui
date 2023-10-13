@@ -7,7 +7,7 @@ namespace Samples.Converters
 {
 	public class NegativeConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (value is bool v)
 				return !v;
@@ -15,7 +15,7 @@ namespace Samples.Converters
 				return false;
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (value is bool v)
 				return !v;

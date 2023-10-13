@@ -80,7 +80,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 			Items.Add(CreateDrink());
 		}
 
-		void SetValue<T>(ref T backingField, in T value, [CallerMemberName] string callerName = null)
+		void SetValue<T>(ref T backingField, in T value, [CallerMemberName] string callerName = "")
 		{
 			if (Equals(backingField, value))
 				return;
@@ -134,9 +134,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.DataTemplateSelecto
 
 	class DrinkTemplateSelector : DataTemplateSelector
 	{
-		public DataTemplate CoffeeTemplate { get; set; }
-		public DataTemplate MilkTemplate { get; set; }
-		public DataTemplate LatteTemplate { get; set; }
+		public DataTemplate CoffeeTemplate { get; set; } = default!;
+		public DataTemplate MilkTemplate { get; set; } = default!;
+		public DataTemplate LatteTemplate { get; set; } = default!;
 
 		protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
 		{
