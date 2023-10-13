@@ -58,6 +58,8 @@ namespace UITest.Appium.NUnit
 
 			if (App.AppState == ApplicationState.Not_Running)
 			{
+				SaveDiagnosticLogs("UITestBaseTearDownNotRunning");
+
 				// Assert.Fail will immediately exit the test which is desirable as the app is not
 				// running anymore so we don't want to log diagnostic data as there is nothing to collect from
 				Reset();
