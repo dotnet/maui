@@ -38,9 +38,10 @@ else
 Console.WriteLine("Selected version: {0}", item.Version);
 item.XcodeSelect() 
         .SimulatorRuntime(SimRuntime.iOS)
-        .SimulatorRuntime(SimRuntime.watchOS)
-        .SimulatorRuntime(SimRuntime.tvOS)
-        .SimulatorRuntime(SimRuntime.visionOS);
+       // .SimulatorRuntime(SimRuntime.watchOS)
+     //   .SimulatorRuntime(SimRuntime.visionOS);
+        .SimulatorRuntime(SimRuntime.tvOS);
+       
 
 
 LogInstalledXcodes();
