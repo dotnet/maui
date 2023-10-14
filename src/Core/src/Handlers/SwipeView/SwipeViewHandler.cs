@@ -14,20 +14,19 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ISwipeViewHandler
 	{
-		public static IPropertyMapper<ISwipeView, ISwipeViewHandler> Mapper = new PropertyMapper<ISwipeView, ISwipeViewHandler>(ViewHandler.ViewMapper)
-		{
-			[nameof(ISwipeView.SwipeTransitionMode)] = MapSwipeTransitionMode,
-			[nameof(ISwipeView.LeftItems)] = MapLeftItems,
-			[nameof(ISwipeView.TopItems)] = MapTopItems,
-			[nameof(ISwipeView.RightItems)] = MapRightItems,
-			[nameof(ISwipeView.BottomItems)] = MapBottomItems,
+		public static IPropertyMapper<ISwipeView, ISwipeViewHandler> Mapper = 
+			new PropertyMapper<ISwipeView, ISwipeViewHandler>(ViewHandler.ViewMapper)
+				.ReplaceMapping(nameof(ISwipeView.SwipeTransitionMode), MapSwipeTransitionMode)
+				.ReplaceMapping(nameof(ISwipeView.LeftItems), MapLeftItems)
+				.ReplaceMapping(nameof(ISwipeView.TopItems), MapTopItems)
+				.ReplaceMapping(nameof(ISwipeView.RightItems), MapRightItems)
+				.ReplaceMapping(nameof(ISwipeView.BottomItems), MapBottomItems)
+				.ReplaceMapping(nameof(IContentView.Content), MapContent)
 #if ANDROID || IOS || TIZEN
-			[nameof(IView.IsEnabled)] = MapIsEnabled,
+				.ReplaceMapping(nameof(IView.IsEnabled), MapIsEnabled)
 #endif
-		}
-		.ReplaceMapping(nameof(IContentView.Content), MapContent)
 #if ANDROID
-		.ModifyMapping(nameof(IView.Background), MapBackground)
+				.ModifyMapping(nameof(IView.Background), MapBackground)
 #endif
 		;
 
