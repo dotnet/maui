@@ -25,9 +25,9 @@ namespace Microsoft.Maui.Handlers
 			[nameof(IView.IsEnabled)] = MapIsEnabled,
 #endif
 		}
-		.Replace(nameof(IContentView.Content), MapContent)
+		.ReplaceMapping(nameof(IContentView.Content), MapContent)
 #if ANDROID
-		.Modify(nameof(IView.Background), MapBackground)
+		.ModifyMapping(nameof(IView.Background), MapBackground)
 #endif
 		;
 
