@@ -53,12 +53,45 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="DragCompletedCommand"/>.</summary>
 		public static readonly BindableProperty DragCompletedCommandProperty = BindableProperty.Create(nameof(DragCompletedCommand), typeof(ICommand), typeof(Slider), default(ICommand));
 
+		/// <summary>Bindable property for <see cref="Orientation"/>.</summary>
+		public static readonly BindableProperty OrientationProperty = BindableProperty.Create(nameof(Orientation), typeof(ItemsLayoutOrientation), typeof(Slider), ItemsLayoutOrientation.Horizontal, coerceValue: (bindable, value) =>
+		{
+			var slider = (Slider)bindable;
+			if ((ItemsLayoutOrientation)value == ItemsLayoutOrientation.Vertical)
+			{
+				slider.Rotation = -90;
+			}
+			return value;
+		});
+
 		readonly Lazy<PlatformConfigurationRegistry<Slider>> _platformConfigurationRegistry;
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='.ctor'][1]/Docs/*" />
 		public Slider()
 		{
 			_platformConfigurationRegistry = new Lazy<PlatformConfigurationRegistry<Slider>>(() => new PlatformConfigurationRegistry<Slider>(this));
+		}
+
+		/// <summary>
+		/// If the orientation is set to <see cref="ItemsLayoutOrientation.Vertical"/>, the slider's position is translated to its original origin.
+		/// This is necessary because the rotation is performed in the middle of the slider./>
+		/// </summary>
+		/// <param name="width">The new width of the element.</param>
+		/// <param name="height">The new height of the element.</param>
+		protected override void OnSizeAllocated(double width, double height)
+		{
+			if (Orientation != ItemsLayoutOrientation.Vertical)
+			{
+				return;
+			}
+			if (HorizontalOptions == LayoutOptions.Start)
+			{
+				TranslationX = -width / 2;
+			}
+			if (HorizontalOptions == LayoutOptions.End)
+				TranslationX = width / 2;
+
+			TranslationY = height;
 		}
 
 		/// <include file="../../docs/Microsoft.Maui.Controls/Slider.xml" path="//Member[@MemberName='.ctor'][2]/Docs/*" />
@@ -141,6 +174,16 @@ namespace Microsoft.Maui.Controls
 		{
 			get { return (double)GetValue(ValueProperty); }
 			set { SetValue(ValueProperty, value); }
+		}
+
+		/// <summary>
+		/// Orientation of the Slider that can be "Horizontal" or "Vertical" <see cref="ItemsLayoutOrientation"/>.
+		/// This is a bindable property.
+		/// </summary>
+		public ItemsLayoutOrientation Orientation
+		{
+			get { return (ItemsLayoutOrientation)GetValue(OrientationProperty); }
+			set { SetValue(OrientationProperty, value); }
 		}
 
 		public event EventHandler<ValueChangedEventArgs> ValueChanged;
