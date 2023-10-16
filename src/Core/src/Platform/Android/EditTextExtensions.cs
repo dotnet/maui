@@ -85,24 +85,30 @@ namespace Microsoft.Maui.Platform
 
 		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
-			var keyboard = textInput.Keyboard;
+			var noSuggestions = InputTypes.TextVariationVisiblePassword | InputTypes.TextFlagNoSuggestions;
 
-			// TextFlagAutoCorrect will correct "Whats" -> "What's"
-			// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
-			// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
-			if (textInput.IsTextPredictionEnabled)
-				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+			// TextFlagNoSuggestions disables suggestions
+			if (!textInput.IsTextPredictionEnabled)
+				editText.InputType |= noSuggestions;
 			else
-				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+				editText.InputType &= ~noSuggestions;
 		}
 
 		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
 		{
-			// TextFlagNoSuggestions disables spellchecking (the red squiggly lines)
-			if (!textInput.IsSpellCheckEnabled)
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
-			else
+			// TextFlagAutoCorrect will correct "Whats" -> "What's"
+			// TextFlagAutoCorrect should not be confused with TextFlagAutocomplete
+			// Autocomplete property pertains to fields that will "self-fill" - like an "Address" input box that fills with your saved data
+			if (textInput.IsSpellCheckEnabled)
+			{
 				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+			}
+			else
+			{
+				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+			}
 		}
 
 		public static void UpdateMaxLength(this EditText editText, IEntry entry) =>
