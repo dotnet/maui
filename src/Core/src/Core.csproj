@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
@@ -32,13 +32,13 @@
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-android'))">
     <PackageReference Include="Xamarin.Android.Glide" Version="4.15.1.2" />
-    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.3" />
-    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.2" />
-    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.14" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.6.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.6.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.6.0.1" />
-    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.6.0.1" />
+    <PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.2.1" />
+    <PackageReference Include="Xamarin.Google.Android.Material" Version="1.10.0" />
+    <PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.15" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.UI" Version="2.7.4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Fragment" Version="2.7.4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Runtime" Version="2.7.4" />
+    <PackageReference Include="Xamarin.AndroidX.Navigation.Common" Version="2.7.4" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-tizen'))">
     <PackageReference Include="Tizen.UIExtensions.NUI" />
