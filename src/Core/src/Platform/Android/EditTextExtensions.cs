@@ -85,7 +85,11 @@ namespace Microsoft.Maui.Platform
 
 		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
-			var noSuggestions = InputTypes.TextVariationVisiblePassword | InputTypes.TextFlagNoSuggestions;
+			bool isTextVariationUri = editText.InputType.HasFlag(InputTypes.TextVariationUri);
+			var noSuggestions = InputTypes.TextFlagNoSuggestions;
+
+			if (!isTextVariationUri)
+				noSuggestions |= InputTypes.TextVariationVisiblePassword;
 
 			// TextFlagNoSuggestions disables suggestions
 			if (!textInput.IsTextPredictionEnabled)
