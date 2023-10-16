@@ -25,10 +25,10 @@
     <!-- xamarin/xamarin-android -->
     <MicrosoftAndroidSdkWindowsPackageVersion>34.0.0-rc.2.468</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
-    <MicrosoftMacCatalystSdkPackageVersion>16.4.8968-net8-rc2</MicrosoftMacCatalystSdkPackageVersion>
-    <MicrosoftmacOSSdkPackageVersion>13.3.8968-net8-rc2</MicrosoftmacOSSdkPackageVersion>
-    <MicrosoftiOSSdkPackageVersion>16.4.8968-net8-rc2</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>16.4.8968-net8-rc2</MicrosofttvOSSdkPackageVersion>
+    <MicrosoftMacCatalystSdkPackageVersion>17.0.8452-net8-rc2.1</MicrosoftMacCatalystSdkPackageVersion>
+    <MicrosoftmacOSSdkPackageVersion>14.0.8452-net8-rc2.1</MicrosoftmacOSSdkPackageVersion>
+    <MicrosoftiOSSdkPackageVersion>17.0.8452-net8-rc2.1</MicrosoftiOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>17.0.8452-net8-rc2.1</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.125</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
@@ -79,9 +79,9 @@
     <_HarfBuzzSharpVersion>7.3.0</_HarfBuzzSharpVersion>
     <_SkiaSharpNativeAssetsVersion>0.0.0-commit.e2c5c86249621857107c779af0f79b4d06613766.655</_SkiaSharpNativeAssetsVersion>
     <MicrosoftTemplateEngineTasksVersion>7.0.100-preview.5.22226.1</MicrosoftTemplateEngineTasksVersion>
-    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
-    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
-    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23471.1</MicrosoftDotNetXHarnessCLIVersion>
+    <MicrosoftDotNetXHarnessTestRunnersCommonVersion>8.0.0-prerelease.23516.1</MicrosoftDotNetXHarnessTestRunnersCommonVersion>
+    <MicrosoftDotNetXHarnessTestRunnersXunitVersion>8.0.0-prerelease.23516.1</MicrosoftDotNetXHarnessTestRunnersXunitVersion>
+    <MicrosoftDotNetXHarnessCLIVersion>8.0.0-prerelease.23516.1</MicrosoftDotNetXHarnessCLIVersion>
     <TizenUIExtensionsVersion>0.9.0</TizenUIExtensionsVersion>
     <SvgSkiaPackageVersion>0.5.13</SvgSkiaPackageVersion>
     <FizzlerPackageVersion>1.2.0</FizzlerPackageVersion>

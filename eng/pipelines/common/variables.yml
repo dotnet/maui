@@ -8,9 +8,9 @@ variables:
 - name: DOTNET_VERSION
   value: 7.0.401
 - name: REQUIRED_XCODE
-  value: 14.3.1
+  value: 15.0.0
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 14.3.1
+  value: 15.0.0
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: isMainBranch
