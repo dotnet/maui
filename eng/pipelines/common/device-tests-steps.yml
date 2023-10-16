@@ -28,6 +28,9 @@ steps:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
+  - pwsh: echo "##vso[task.prependpath]$(DotNet.Dir)"
+    displayName: 'Add .NET to PATH'
+
   - ${{ if eq(parameters.useArtifacts, true) }}:
 
     - task: DownloadBuildArtifacts@0
@@ -49,7 +52,7 @@ steps:
         PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ else }}:
-    - pwsh: dotnet cake --target=dotnet-buildtasks --configuration="Release"
+    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
   - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
