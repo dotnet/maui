@@ -100,6 +100,7 @@ namespace Maui.Controls.Sample
 				Add(gestureRecognizerEventViewContainer);
 
 			Add(new LayeredViewContainer<T>(Test.VisualElement.InputTransparent, new T { InputTransparent = true }));
+			Add(new LayeredViewContainer<T>(Test.VisualElement.NotInputTransparent, new T { InputTransparent = false }));
 			Add(IsEnabledStateViewContainer);
 			Add(focusedEventViewContainer);
 			Add(unfocusedEventViewContainer);

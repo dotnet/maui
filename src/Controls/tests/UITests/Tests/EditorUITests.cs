@@ -1,11 +1,11 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	public class EditorUITests : _ViewUITests
 	{
-		public const string EditorGallery = "* marked:'Editor Gallery'";
+		public const string EditorGallery = "Editor Gallery";
 
 		public EditorUITests(TestDevice device)
 			: base(device)

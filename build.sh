@@ -20,7 +20,7 @@ done
 dotnet tool restore
 
 if [ $? -ne 0 ]; then
-    echo "An error occured while installing Cake."
+    echo "An error occurred while installing Cake."
     exit 1
 fi
 

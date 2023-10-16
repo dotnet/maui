@@ -1,9 +1,8 @@
 ﻿using System.Runtime.CompilerServices;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
-using TestUtils.Appium.UITests;
-using Xamarin.UITest;
-using Xamarin.UITest.Queries;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
@@ -13,64 +12,57 @@ namespace Microsoft.Maui.AppiumTests
 
 		public string ViewQuery { get; private set; }
 
-		public string ContainerDescendants { get; private set; }
-
 		public string EventLabelQuery { get; set; }
 
 		public string StateLabelQuery { get; private set; }
 
 		public string StateButtonQuery { get; private set; }
 
-		protected IUITestContext _uiTestContext;
+		public string LayeredHiddenButtonQuery { get; private set; }
 
-		protected BaseViewContainerRemote(IUITestContext? testContext, Enum formsType)
+		public string LayeredLabelQuery { get; private set; }
+
+		protected IUIClientContext _uiTestContext;
+
+		protected BaseViewContainerRemote(IUIClientContext? testContext, Enum formsType)
 			: this(testContext, formsType.ToString())
 		{
 		}
 
-		protected BaseViewContainerRemote(IUITestContext? testContext, string formsType)
+		protected BaseViewContainerRemote(IUIClientContext? testContext, string formsType)
 		{
 			_uiTestContext = testContext ?? throw new ArgumentNullException(nameof(testContext));
 			App = testContext.App;
 
-			ContainerDescendants = string.Format("* marked:'{0}Container' child *", formsType);
-			ViewQuery = string.Format("* marked:'{0}VisualElement'", formsType);
-			EventLabelQuery = string.Format("* marked:'{0}EventLabel'", formsType);
-			StateLabelQuery = string.Format("* marked:'{0}StateLabel'", formsType);
-			StateButtonQuery = string.Format("* marked:'{0}StateButton'", formsType);
+			ViewQuery = string.Format("{0}VisualElement", formsType);
+			EventLabelQuery = string.Format("{0}EventLabel", formsType);
+			StateLabelQuery = string.Format("{0}StateLabel", formsType);
+			StateButtonQuery = string.Format("{0}StateButton", formsType);
+			LayeredHiddenButtonQuery = string.Format("{0}LayeredHiddenButton", formsType);
+			LayeredLabelQuery = string.Format("{0}LayeredLabel", formsType);
 		}
 
-		public AppResult GetView()
+		public IUIElement GetView()
 		{
-			return App.Query(q => q.Raw(ViewQuery)).First();
+			return App.FindElement(ViewQuery);
 		}
 
-		public AppResult[] GetViews()
+		public IReadOnlyCollection<IUIElement> GetViews()
 		{
-			return App.Query(q => q.Raw(ViewQuery));
+			return App.FindElements(ViewQuery);
 		}
 
 		public virtual void GoTo([CallerMemberName] string callerMemberName = "")
 		{
 			App.WaitForElement("TargetViewContainer");
-			App.Tap("TargetViewContainer");
+			App.Click("TargetViewContainer");
 			App.EnterText("TargetViewContainer", callerMemberName.Replace("_", "", StringComparison.OrdinalIgnoreCase) + "VisualElement");
-			App.Tap("GoButton");
+			App.Click("GoButton");
 		}
 
 		public void TapView()
 		{
-			App.Tap(q => q.Raw(ViewQuery));
-		}
-
-		public void TouchAndHoldView()
-		{
-			App.TouchAndHold(q => q.Raw(ViewQuery));
-		}
-
-		public AppResult[] GetContainerDescendants()
-		{
-			return App.Query(q => q.Raw(ContainerDescendants));
+			App.Click(ViewQuery);
 		}
 
 		public T? GetProperty<T>(BindableProperty formProperty)
@@ -95,13 +87,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		T? GetPropertyFromBindableProperty<T>(BindableProperty formProperty)
 		{
-			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery(_uiTestContext.TestConfig.TestDevice);
+			Tuple<string[], bool> property = formProperty.GetPlatformPropertyQuery(_uiTestContext.Config.GetProperty<TestDevice>("TestDevice"));
 			string[] propertyPath = property.Item1;
-			bool isOnParentRenderer = property.Item2;
 
-			var query = UpdateQueryForParent(ViewQuery, isOnParentRenderer);
+			var query = ViewQuery;
 
-			App.WaitForElement(q => q.Raw(query));
+			App.WaitForElement(query);
 
 			bool found = MaybeGetProperty<string>(App, query, propertyPath, out var prop) ||
 						 MaybeGetProperty<float>(App, query, propertyPath, out prop) ||
@@ -126,16 +117,6 @@ namespace Microsoft.Maui.AppiumTests
 			}
 
 			return result;
-		}
-
-		string UpdateQueryForParent(string query, bool isOnParentRenderer)
-		{
-			if (isOnParentRenderer)
-			{
-				query += " parent * index:0";
-			}
-
-			return query;
 		}
 
 		static bool TryConvertMatrix<T>(object prop, out T? result)
@@ -189,37 +170,19 @@ namespace Microsoft.Maui.AppiumTests
 			return false;
 		}
 
-		static bool MaybeGetProperty<T>(IApp app, string query, string[] propertyPath, out object? result)
+		readonly Dictionary<string, string> _translatePropertyAccessor = new Dictionary<string, string>
 		{
+			{ "getAlpha", "Opacity" },
+			{ "isEnabled", "IsEnabled" },
+		};
+
+		bool MaybeGetProperty<T>(IApp app, string query, string[] propertyPath, out object? result)
+		{
+			string attribute = _translatePropertyAccessor.TryGetValue(propertyPath[0], out var value) ? value : propertyPath[0];
+
 			try
 			{
-				switch (propertyPath.Length)
-				{
-					case 1:
-						result = app.Query(q => q.Raw(query).Invoke(propertyPath[0]).Value<T>()).First();
-						break;
-					case 2:
-						result = app.Query(q => q.Raw(query).Invoke(propertyPath[0]).Invoke(propertyPath[1]).Value<T>()).First();
-						break;
-					case 3:
-						result =
-							app.Query(q => q.Raw(query).Invoke(propertyPath[0]).Invoke(propertyPath[1]).Invoke(propertyPath[2]).Value<T>()).First();
-						break;
-					case 4:
-						result =
-							app.Query(
-								q =>
-									q.Raw(query)
-										.Invoke(propertyPath[0])
-										.Invoke(propertyPath[1])
-										.Invoke(propertyPath[2])
-										.Invoke(propertyPath[3])
-										.Value<T>()).First();
-						break;
-					default:
-						result = null;
-						return false;
-				}
+				result = app.FindElement(query).GetAttribute<T>(attribute);
 			}
 			catch
 			{

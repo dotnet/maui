@@ -1,10 +1,10 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
-using OpenQA.Selenium.Support.UI;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public abstract class _IssuesUITest : UITestBase
+	public abstract class _IssuesUITest : UITest
 	{
 		public _IssuesUITest(TestDevice device) : base(device) { }
 
@@ -21,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests
 				}
 				catch (Exception e)
 				{
-					TestContext.Error.WriteLine($">>>>> The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureSetup threw an exception. Attempt {retries}/{SetupMaxRetries}.{Environment.NewLine}Exception details: {e}");
 					if (retries++ < SetupMaxRetries)
 					{
 						Reset();
@@ -39,26 +39,26 @@ namespace Microsoft.Maui.AppiumTests
 			base.FixtureTeardown();
 			try
 			{
-				App.NavigateBack();
-				App.Tap("GoBackToGalleriesButton");
+				this.Back();
+				App.Click("GoBackToGalleriesButton");
 			}
 			catch (Exception e)
 			{
 				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
 			}
 		}
 
 		public abstract string Issue { get; }
 
-		private static void NavigateToIssue(string issue)
+		private void NavigateToIssue(string issue)
 		{
 			App.NavigateToIssues();
 
 			App.EnterText("SearchBarGo", issue);
 
 			App.WaitForElement("SearchButton");
-			App.Tap("SearchButton");
+			App.Click("SearchButton");
 		}
 	}
 }
