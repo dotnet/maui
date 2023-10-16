@@ -216,8 +216,8 @@ namespace Microsoft.Maui.DeviceTests
 			if (editText != null)
 			{
 				int currentHintTextColor = editText.CurrentHintTextColor;
-				AColor currentPlaceholderColorr = new AColor(currentHintTextColor);
-				return currentPlaceholderColorr.ToColor();
+				AColor currentPlaceholderColor = new AColor(currentHintTextColor);
+				return currentPlaceholderColor.ToColor();
 			}
 
 			return Colors.Transparent;
@@ -239,14 +239,14 @@ namespace Microsoft.Maui.DeviceTests
 		Android.Views.TextAlignment GetNativeTextAlignment(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 			return editText.TextAlignment;
 		}
 
 		bool GetNativeIsReadOnly(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -257,7 +257,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsNumericKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -271,7 +271,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsChatKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -284,7 +284,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsEmailKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -297,7 +297,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTelephoneKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -310,7 +310,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsUrlKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -323,7 +323,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextKeyboard(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -336,20 +336,7 @@ namespace Microsoft.Maui.DeviceTests
 		bool GetNativeIsTextPredictionEnabled(SearchBarHandler searchBarHandler)
 		{
 			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
-
-			if (editText is null)
-				return false;
-
-			var inputTypes = editText.InputType;
-
-			return inputTypes.HasFlag(InputTypes.TextFlagAutoCorrect);
-		}
-
-		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
-		{
-			var searchView = GetNativeSearchBar(searchBarHandler);
-			var editText = searchView.GetChildrenOfType<EditText>().First();
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
 
 			if (editText is null)
 				return false;
@@ -357,6 +344,19 @@ namespace Microsoft.Maui.DeviceTests
 			var inputTypes = editText.InputType;
 
 			return !inputTypes.HasFlag(InputTypes.TextFlagNoSuggestions);
+		}
+
+		bool GetNativeIsSpellCheckEnabled(SearchBarHandler searchBarHandler)
+		{
+			var searchView = GetNativeSearchBar(searchBarHandler);
+			var editText = searchView.GetChildrenOfType<EditText>().FirstOrDefault();
+
+			if (editText is null)
+				return false;
+
+			var inputTypes = editText.InputType;
+
+			return inputTypes.HasFlag(InputTypes.TextFlagAutoCorrect);
 		}
 	}
 }

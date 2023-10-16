@@ -247,10 +247,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		bool GetNativeIsTextPredictionEnabled(EntryHandler entryHandler) =>
-			GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagAutoCorrect);
+			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
 
 		bool GetNativeIsSpellCheckEnabled(EntryHandler entryHandler) =>
-			!GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagNoSuggestions);
+			GetNativeEntry(entryHandler).InputType.HasFlag(InputTypes.TextFlagAutoCorrect);
 
 		string GetNativePlaceholder(EntryHandler entryHandler) =>
 			GetNativeEntry(entryHandler).Hint;
