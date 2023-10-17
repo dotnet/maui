@@ -85,10 +85,9 @@ namespace Microsoft.Maui.Platform
 
 		private static void UpdateIsTextPredictionEnabled(this EditText editText, ITextInput textInput)
 		{
-			bool isTextVariationUri = editText.InputType.HasFlag(InputTypes.TextVariationUri);
 			var noSuggestions = InputTypes.TextFlagNoSuggestions;
 
-			if (!isTextVariationUri)
+			if (editText.RequireCustomInputType(textInput))
 				noSuggestions |= InputTypes.TextVariationVisiblePassword;
 
 			// TextFlagNoSuggestions disables suggestions
@@ -96,6 +95,18 @@ namespace Microsoft.Maui.Platform
 				editText.InputType |= noSuggestions;
 			else
 				editText.InputType &= ~noSuggestions;
+		}
+
+		private static bool RequireCustomInputType(this EditText editText, ITextInput textInput)
+		{
+			bool isTextVariationUri = editText.InputType.HasFlag(InputTypes.TextVariationUri);
+	
+			bool hasReturnType = false;
+
+			if (textInput is IEntry entry)
+				hasReturnType = entry.ReturnType != ReturnType.Default;
+
+			return !isTextVariationUri && !hasReturnType;
 		}
 
 		private static void UpdateIsSpellCheckEnabled(this EditText editText, ITextInput textInput)
