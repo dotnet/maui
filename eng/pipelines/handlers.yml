@@ -106,6 +106,7 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 13.5
       testName: RunOnAndroid
       artifact: templates-run-android
     - name: $(iosTestsVmPool)
@@ -113,6 +114,7 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 13.5
       testName: RunOniOS
       artifact: templates-run-ios
 
@@ -162,6 +164,7 @@ stages:
               demands:
                 - macOS.Name -equals Ventura
                 - macOS.Architecture -equals x64
+                - Agent.OSVersion -equals 13.5
             steps:
               - template: common/provision.yml
                 parameters:
@@ -204,8 +207,7 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
-              - Agent.HasDevices -equals False
-              - Agent.IsPaired -equals False
+              - Agent.OSVersion -equals 13.5
           steps:
             - template: common/pack.yml
               parameters:
@@ -231,6 +233,7 @@ stages:
             demands:
               - macOS.Name -equals Ventura
               - macOS.Architecture -equals x64
+              - Agent.OSVersion -equals 13.5
           steps:
             - template: common/provision.yml
               parameters:
