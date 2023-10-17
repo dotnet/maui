@@ -324,7 +324,11 @@ namespace Microsoft.Maui.Platform
 			if (platformView == null)
 				return new Rect();
 
-			var rootView = platformView.XamlRoot.Content;
+			var rootView = platformView.XamlRoot?.Content;
+
+			if (rootView is null)
+				return new Rect();
+
 			if (platformView == rootView)
 			{
 				if (rootView is not FrameworkElement el)

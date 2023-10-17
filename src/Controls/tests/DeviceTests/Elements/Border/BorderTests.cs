@@ -7,6 +7,7 @@ using Microsoft.Maui.DeviceTests.ImageAnalysis;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -86,6 +87,32 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(180, innerBlob.Height, 2d);
 		}
 #endif
+
+		[Fact(DisplayName = "Rounded Rectangle Has Handler")]
+		public async Task RoundedRectangleHasHandler()
+		{
+			Color stroke = Colors.Black;
+			const int strokeThickness = 4;
+			const int radius = 20;
+
+			var shape = new RoundRectangle()
+			{
+				CornerRadius = new CornerRadius(radius),
+			};
+
+			var border = new Border()
+			{
+				StrokeShape = shape,
+				Stroke = stroke,
+				StrokeThickness = strokeThickness,
+				BackgroundColor = Colors.Red,
+			};
+
+			await CreateHandlerAsync<BorderHandler>(border);
+
+			Assert.NotNull(border.Handler);
+			Assert.NotNull(shape.Handler);
+		}
 
 		[Fact(DisplayName = "Rounded Rectangle Border occupies correct space")]
 		public async Task RoundedRectangleBorderLayoutIsCorrect()

@@ -43,6 +43,9 @@ namespace Microsoft.Maui.Handlers
 
 			if (handler.VirtualView.PresentedContent is IView view)
 				handler.PlatformView.AddView(view.ToPlatform(handler.MauiContext));
+
+			if (handler.VirtualView.Shape is IView shapeView && shapeView.Handler is null)
+				shapeView.ToHandler(handler.MauiContext);
 		}
 
 		public static partial void MapHeight(IBorderHandler handler, IBorderView border)

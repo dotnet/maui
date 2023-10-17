@@ -59,6 +59,9 @@ namespace Microsoft.Maui.Handlers
 				platformContent.Tag = ContentView.ContentTag;
 				platformView.AddSubview(platformContent);
 			}
+
+			if (handler.VirtualView.Shape is IView shapeView && shapeView.Handler is null)
+				shapeView.ToHandler(handler.MauiContext);
 		}
 
 		public override void PlatformArrange(Rect rect)
