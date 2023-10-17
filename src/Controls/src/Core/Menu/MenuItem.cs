@@ -31,7 +31,26 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsDestructiveProperty = BindableProperty.Create(nameof(IsDestructive), typeof(bool), typeof(MenuItem), false);
 
 		/// <summary>Bindable property for <see cref="IconImageSource"/>.</summary>
-		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource));
+		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource),
+			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
+
+		static void OnImageSourceChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is ImageSource oldSource && bindable is MenuItem menuItem)
+				oldSource.SourceChanged -= menuItem.OnImageSourceSourceChanged;
+		}
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var newSource = (ImageSource)newValue;
+			if (newSource != null && bindable is MenuItem menuItem)
+				newSource.SourceChanged += menuItem.OnImageSourceSourceChanged;
+		}
+
+		private void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(nameof(IconImageSource));
+		}
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(

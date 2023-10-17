@@ -60,6 +60,12 @@ namespace Microsoft.Maui.Controls
 		{
 			var index = _menus.Count;
 			AddLogicalChild((Element)item);
+			// TODO I think this is where I need to trigger the re-rendering of the MenuBar
+			if (item is MenuItem menuItem) 
+				menuItem.PropertyChanged += (_, _) =>
+				{
+					Console.WriteLine();
+				};
 			NotifyHandler(nameof(IMenuBarItemHandler.Add), index, item);
 		}
 

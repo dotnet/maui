@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 
 namespace Microsoft.Maui.Controls
 {
@@ -88,6 +89,14 @@ namespace Microsoft.Maui.Controls
 		public void Insert(int index, IMenuBarItem item)
 		{
 			_menus.Insert(index, item);
+
+			// TODO I think this is where I need to trigger the re-rendering of the MenuBar
+			if (item is MenuItem menuItem)
+				menuItem.PropertyChanged += (_, _) =>
+				{
+					Console.WriteLine();
+				};
+
 			NotifyHandler(nameof(IMenuBarHandler.Insert), index, item);
 		}
 

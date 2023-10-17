@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Maui.Controls.Sample.ViewModels;
 
 namespace Maui.Controls.Sample.Pages
 {
@@ -11,20 +12,9 @@ namespace Maui.Controls.Sample.Pages
 		{
 			InitializeComponent();
 
-			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(
-				new KeyboardAccelerator()
-				{
-					Modifiers = KeyboardAcceleratorModifiers.Ctrl | KeyboardAcceleratorModifiers.Shift,
-					Key = "F"
-				}
-			);
-			CustomFileMenuFlyoutItem.KeyboardAccelerators.Add(
-				new KeyboardAccelerator()
-				{
-					Modifiers = KeyboardAcceleratorModifiers.Shift,
-					Key = "F"
-				}
-			);
+			this.BindingContext = new MenuBarViewModel();
+
+			
 		}
 
 		void ItemClicked(object sender, EventArgs e)
@@ -32,39 +22,16 @@ namespace Maui.Controls.Sample.Pages
 			if (sender is MenuFlyoutItem mfi)
 			{
 				menuLabel.Text = $"You clicked on Menu Item: {mfi.Text}";
+				
 			}
 		}
 
 		void OnToggleMenuBarItem(object sender, EventArgs e)
 		{
-			MenuBarItem barItem =
-				MenuBarItems.FirstOrDefault(x => x.Text == "Added Menu");
-
-			if (barItem == null)
+			var vm = BindingContext as MenuBarViewModel;
+			if (vm != null)
 			{
-				barItem = new MenuBarItem()
-				{
-					Text = "Added Menu"
-				};
-
-				barItem.Add(new MenuFlyoutItem()
-				{
-					Text = "Added Flyout Item",
-					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
-				});
-
-				barItem.Add(new MenuFlyoutItem()
-				{
-					Text = "Added Disabled Flyout Item",
-					IsEnabled = false,
-					Command = new Command(() => ItemClicked(barItem.First(), EventArgs.Empty))
-				});
-
-				MenuBarItems.Add(barItem);
-			}
-			else
-			{
-				MenuBarItems.Remove(barItem);
+				vm.SwapIcon();
 			}
 		}
 	}
