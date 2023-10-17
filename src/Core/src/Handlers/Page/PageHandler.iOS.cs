@@ -23,28 +23,18 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapBackground(IPageHandler handler, IContentView page)
 		{
-			if (handler is IPlatformViewHandler invh && invh.ViewController is not null)
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
-				if (page.Background is ImageSourcePaint image)
-				{
-					var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
-
-					invh.ViewController.View?.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
-						.FireAndForget(handler);
-				}
-				else
-					invh.ViewController.View?.UpdateBackground(page);
+				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				platformViewHandler.ViewController.View?.UpdateBackground(page, provider);
 			}
 		}
 
 		public static void MapTitle(IPageHandler handler, IContentView page)
 		{
-			if (handler is IPlatformViewHandler invh && invh.ViewController is not null)
+			if (handler is IPlatformViewHandler platformViewHandler && platformViewHandler.ViewController is not null)
 			{
-				if (page is ITitledElement titled)
-				{
-					invh.ViewController.Title = titled.Title;
-				}
+				platformViewHandler.ViewController.UpdateTitle(page);
 			}
 		}
 	}
