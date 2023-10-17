@@ -25,7 +25,6 @@ namespace Microsoft.Maui.Controls.Platform
 			DefaultStyleKey = typeof(FormsGridView);
 
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
-			Loaded += OnLoaded;
 		}
 
 		public int Span
@@ -120,11 +119,6 @@ namespace Microsoft.Maui.Controls.Platform
 			FindItemsWrapGrid();
 		}
 
-		void OnLoaded(object sender, RoutedEventArgs e)
-		{
-			FindItemsWrapGrid();
-		}
-
 		public void SetEmptyView(FrameworkElement emptyView, View formsEmptyView)
 		{
 			_emptyView = emptyView;
@@ -152,10 +146,10 @@ namespace Microsoft.Maui.Controls.Platform
 
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
-			if (_formsEmptyView != null)
-			{
-				_formsEmptyView.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
-			}
+			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
+
+			if (_wrapGrid is null)
+				FindItemsWrapGrid();
 
 			return base.ArrangeOverride(finalSize);
 		}
