@@ -87,8 +87,10 @@ namespace Microsoft.Maui.Platform
 		{
 			var noSuggestions = InputTypes.TextFlagNoSuggestions;
 
+			//  Some manufacturers or software like SwiftKey Keyboard intentionally
+			//  ignore Android's InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS.
 			if (editText.RequireCustomInputType(textInput))
-				noSuggestions |= InputTypes.TextVariationVisiblePassword;
+				noSuggestions |= InputTypes.TextVariationVisiblePassword; // Workaround use InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
 
 			// TextFlagNoSuggestions disables suggestions
 			if (!textInput.IsTextPredictionEnabled)
