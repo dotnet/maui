@@ -28,7 +28,6 @@ var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
 string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? $"");
-var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
 
 // other
 string CONFIGURATION = Argument("configuration", "Debug");
@@ -127,7 +126,7 @@ Setup(context =>
 		Information("Trying to boot the emulator...");
 
 		// delete the AVD first, if it exists
-		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);
+		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);	
 		try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
 		catch { }
 
