@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Maui.IntegrationTests
 {
 	public static class DotnetInternal
 	{
-		static readonly string DotnetTool = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet", "dotnet");
+		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet");
+		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 900;
 
 		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
@@ -51,7 +53,8 @@ namespace Microsoft.Maui.IntegrationTests
 					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
 							// Justification: It's OK for templates to have missing doc comments.
 				};
-				buildArgs += " " + string.Join(" ", csWarningsToIgnore.Select(csWarning => $"-p:nowarn={csWarning}"));
+				var csWarnings = string.Join("%3B", csWarningsToIgnore);
+				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
@@ -87,9 +90,9 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string framework = "")
+		public static bool New(string shortName, string outputDirectory, string projectName, string framework = "")
 		{
-			var args = $"{shortName} -o \"{outputDirectory}\"";
+			var args = $"{shortName} -o \"{outputDirectory}\" -n \"{projectName}\"";
 
 			if (!string.IsNullOrEmpty(framework))
 				args += $" -f {framework}";
@@ -116,8 +119,39 @@ namespace Microsoft.Maui.IntegrationTests
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			//Workaround: https://github.com/dotnet/linker/issues/3012
 			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
+
+			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
+
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}
 
+		/// <summary>
+		/// Takes the given <paramref name="projectDir"/> and creates a valid C# project file name that
+		/// is suitable for a cross-platform .NET MAUI project.
+		/// </summary>
+		/// <param name="projectDir"></param>
+		/// <returns></returns>
+		public static string GetProjectName(string projectDir)
+		{
+			// By default, the project name is the name of the folder the template is being created in.
+			// That project name is then used in the Windows AppX manifest, and that has a maximum
+			// length of 50 chars, including the default name prefix used in .NET MAUI. So, if it's too
+			// long, we chop off a bit and specify an explicit project name that is not too long.
+			// The error you'd otherwise get is:
+			//		MakeAppx : error : Error info: error C00CE169: App manifest validation error: The app manifest must be valid
+			//		as per schema: Line 10, Column 13, Reason: 'com.companyname.SomeUnfortunateNameThatIsTooLongToBeValid'
+			//		violates maxLength constraint of '50'.
+			const string AppXNamePrefix = "com.companyname.";
+
+			var projectName = Path.GetFileName(projectDir);
+			if ((AppXNamePrefix + projectName).Length >= 50)
+			{
+				return projectName.Substring(0, 50 - AppXNamePrefix.Length);
+			}
+			else
+			{
+				return projectName;
+			}
+		}
 	}
 }

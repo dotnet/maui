@@ -2,7 +2,7 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-const string dotnetVersion = "net7.0";
+const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
@@ -10,6 +10,7 @@ string TEST_DEVICE = Argument("device", EnvironmentVariable("MAC_TEST_DEVICE") ?
 
 // optional
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
+var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-maccatalyst");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("MAC_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
@@ -53,7 +54,15 @@ Task("Build")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-catalyst.binlog";
 
-	SetDotNetEnvironmentVariables(DOTNET_PATH);
+	Information($"Build target dotnet root: {DOTNET_ROOT}");
+	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+		
+	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	Information("new dotnet root: {0}", localDotnetRoot);
+
+	DOTNET_ROOT = localDotnetRoot.ToString();
+
+	SetDotNetEnvironmentVariables(DOTNET_ROOT);
 
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
 		Configuration = CONFIGURATION,
@@ -101,7 +110,10 @@ Task("Test")
 		// Because we retry on CI we don't want to delete the previous failures
 		// We want to publish those files for reference
 		DeleteFiles(Directory(TEST_RESULTS).Path.Combine("*.*").FullPath);
+
+		SetDotNetEnvironmentVariables("/Users/runner/hostedtoolcache/dotnet");
 	}
+
 
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,

@@ -275,7 +275,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static string ToBase64String(this Bitmap bitmap)
 		{
 			using var ms = new MemoryStream();
-			bitmap.Compress(Bitmap.CompressFormat.Png, 0, ms);
+			bitmap.Compress(Bitmap.CompressFormat.Png!, 0, ms);
 			return Convert.ToBase64String(ms.ToArray());
 		}
 

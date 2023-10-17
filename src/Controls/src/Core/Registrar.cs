@@ -446,8 +446,7 @@ namespace Microsoft.Maui.Controls.Internals
 						var attribute = a as HandlerAttribute;
 						if (attribute == null && (a is ExportFontAttribute fa))
 						{
-							if (fontRegistrar != null)
-								fontRegistrar.Register(fa.FontFileName, fa.Alias, assembly);
+							fontRegistrar?.Register(fa.FontFileName, fa.Alias, assembly);
 						}
 						else
 						{
