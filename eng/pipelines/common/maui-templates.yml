@@ -103,20 +103,19 @@ jobs:
       DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
       PRIVATE_BUILD: $(PrivateBuild)
 
-  - task: DotNetCoreCLI@2
-    inputs:
-      projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+  - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
     displayName: Build Microsoft.Maui.IntegrationTests
 
-  - task: DotNetCoreCLI@2
+  - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests" --resultsfilename="integration-tests" --verbosity=diagnostic
+    displayName: Run $(PLATFORM_NAME) templates build tests
+
+  - task: PublishTestResults@2
+    displayName: Publish the $(PLATFORM_NAME) templates build tests
+    condition: always()
     inputs:
-      command: test
-      projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-      arguments: --logger "console;verbosity=normal" --filter "FullyQualifiedName=Microsoft.Maui.IntegrationTests.TemplateTests"
-      publishTestResults: true
-      testRunTitle: $(PLATFORM_NAME) template build tests
-    displayName: $(PLATFORM_NAME) template build tests
-    continueOnError: true
+      testRunner: VSTest
+      testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+      testRunTitle: $(PLATFORM_NAME) templates build tests
 
   - pwsh: |
       Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
@@ -165,20 +164,20 @@ jobs:
     - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "1.0.0-prerelease*" -g
       displayName: install xharness
 
-    - task: DotNetCoreCLI@2
-      inputs:
-        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj
+    - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
       displayName: Build Microsoft.Maui.IntegrationTests
 
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: test
-        projects: ${{ parameters.checkoutDirectory }}/src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/Debug/net7.0/Microsoft.Maui.IntegrationTests.dll
-        arguments: --logger "console;verbosity=normal" --filter "Name=${{ RunPlatform.testName }}"
-        publishTestResults: true
-        testRunTitle: ${{ RunPlatform.testName }} template run tests
-      displayName: ${{ RunPlatform.testName }} template run tests
+    - pwsh: ./build.ps1 --target=dotnet-integration-test --filter="Name=${{ RunPlatform.testName }}" --resultsfilename="integration-run-${{ RunPlatform.testName }}" --verbosity=diagnostic
+      displayName: Run $(PLATFORM_NAME) templates run tests
       continueOnError: true
+
+    - task: PublishTestResults@2
+      displayName: Publish the $(PLATFORM_NAME) templates run tests
+      condition: always()
+      inputs:
+        testRunner: VSTest
+        testResultsFiles: '$(build.artifactstagingdirectory)/**/*.trx'
+        testRunTitle: $(PLATFORM_NAME) templates run tests
 
     - pwsh: |
         Write-Host "Current job status is: $env:AGENT_JOBSTATUS"
