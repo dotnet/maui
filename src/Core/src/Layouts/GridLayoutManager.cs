@@ -813,12 +813,20 @@ namespace Microsoft.Maui.Layouts
 
 				if (expandStarRows)
 				{
-					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight(), _rowSpacing, _rowStarCount);
+					// If the grid is constrained vertically, we will need to limit the upper size of * rows;
+					// if not, they can be whatever size makes sense for the content
+					var limitStarRowHeights = !double.IsInfinity(_gridHeightConstraint);
+					ExpandStarDefinitions(_rows, targetSize.Height - _padding.VerticalThickness, GridMinimumHeight() - _padding.VerticalThickness, 
+						_rowSpacing, _rowStarCount, limitStarRowHeights);
 				}
 
 				if (expandStarColumns)
 				{
-					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth(), _columnSpacing, _columnStarCount);
+					// If the grid is constrained horizontally, we will need to limit the upper size of * columns;
+					// if not, they can be whatever size makes sense for the content
+					var limitStarRowWidths = !double.IsInfinity(_gridWidthConstraint);
+					ExpandStarDefinitions(_columns, targetSize.Width - _padding.HorizontalThickness, GridMinimumWidth() - _padding.HorizontalThickness, 
+						_columnSpacing, _columnStarCount, limitStarRowWidths);
 				}
 			}
 
@@ -833,16 +841,40 @@ namespace Microsoft.Maui.Layouts
 				}
 			}
 
-			void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount)
+			static void ExpandStarDefinitions(Definition[] definitions, double targetSize, double currentSize, double spacing, double starCount, bool limitStarSizes)
 			{
 				// Figure out what the star value should be at this size
 				var starSize = ComputeStarSizeForTarget(targetSize, definitions, spacing, starCount);
 
+				if (limitStarSizes)
+				{
+					// Before we expand the star values, we need to ensure that the size and minimum size of
+					// each star row/column do not exceed the value for starSize at the arranged size 
+					// (which may be smaller than the measured size)
+					EnsureSizeLimit(definitions, starSize);
+				}
+
 				// Inflate the stars so that we fill up the space at this size
-				GridStructure.ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
+				ExpandStars(targetSize, currentSize, definitions, starSize, starCount);
 			}
 
-			double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
+			static void EnsureSizeLimit(Definition[] definitions, double starSize)
+			{
+				for (int n = 0; n < definitions.Length; n++)
+				{
+					var def = definitions[n];
+					if (!def.IsStar)
+					{
+						continue;
+					}
+
+					var maxSize = starSize * def.GridLength.Value;
+					def.Size = Math.Min(maxSize, def.Size);
+					def.MinimumSize = Math.Min(maxSize, def.MinimumSize);
+				}
+			}
+
+			static double ComputeStarSizeForTarget(double targetSize, Definition[] defs, double spacing, double starCount)
 			{
 				var sum = SumDefinitions(defs, spacing, true);
 

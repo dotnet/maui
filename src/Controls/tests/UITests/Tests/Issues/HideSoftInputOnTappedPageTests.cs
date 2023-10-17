@@ -1,10 +1,6 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Maui.Appium;
-using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -22,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[TestCase("SearchBar", true)]
 		public void HideSoftInputOnTappedPageTest(string control, bool hideOnTapped)
 		{
-			UITestContext.IgnoreIfPlatforms(new[]
+			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac, TestDevice.Windows
 			});
@@ -33,28 +29,28 @@ namespace Microsoft.Maui.AppiumTests.Issues
 					App.DismissKeyboard();
 
 				if (hideOnTapped)
-					App.Tap("HideSoftInputOnTappedTrue");
+					App.Click("HideSoftInputOnTappedTrue");
 				else
-					App.Tap("HideSoftInputOnTappedFalse");
+					App.Click("HideSoftInputOnTappedFalse");
 
-				App.Tap(control);
+				App.Click(control);
 
 				Assert.True(App.IsKeyboardShown());
 
-				App.Tap("EmptySpace");
+				App.Click("EmptySpace");
 				Assert.AreEqual(!hideOnTapped, App.IsKeyboardShown());
 			}
 			finally
 			{
 				App.DismissKeyboard();
-				App.NavigateBack();
+				this.Back();
 			}
 		}
 
 		[Test]
 		public void TogglingHideSoftInputOnTapped()
 		{
-			UITestContext.IgnoreIfPlatforms(new[]
+			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac, TestDevice.Windows
 			});
@@ -64,26 +60,26 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				if (App.IsKeyboardShown())
 					App.DismissKeyboard();
 
-				App.Tap("HideSoftInputOnTappedFalse");
+				App.Click("HideSoftInputOnTappedFalse");
 
 				// Switch between enabling/disabling feature
 				for (int i = 0; i < 2; i++)
 				{
-					App.Tap("HideKeyboardWhenTappingPage");
+					App.Click("HideKeyboardWhenTappingPage");
 					Assert.True(App.IsKeyboardShown());
-					App.Tap("EmptySpace");
+					App.Click("EmptySpace");
 					Assert.AreEqual(false, App.IsKeyboardShown());
 
-					App.Tap("DontHideKeyboardWhenTappingPage");
+					App.Click("DontHideKeyboardWhenTappingPage");
 					Assert.True(App.IsKeyboardShown());
-					App.Tap("EmptySpace");
+					App.Click("EmptySpace");
 					Assert.AreEqual(true, App.IsKeyboardShown());
 				}
 			}
 			finally
 			{
 				App.DismissKeyboard();
-				App.NavigateBack();
+				this.Back();
 			}
 		}
 	}
