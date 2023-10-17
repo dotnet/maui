@@ -16,17 +16,17 @@ namespace Microsoft.Maui.Handlers
 	{
 		public static IPropertyMapper<ISwipeView, ISwipeViewHandler> Mapper = 
 			new PropertyMapper<ISwipeView, ISwipeViewHandler>(ViewHandler.ViewMapper)
-				.ReplaceMapping(nameof(ISwipeView.SwipeTransitionMode), MapSwipeTransitionMode)
-				.ReplaceMapping(nameof(ISwipeView.LeftItems), MapLeftItems)
-				.ReplaceMapping(nameof(ISwipeView.TopItems), MapTopItems)
-				.ReplaceMapping(nameof(ISwipeView.RightItems), MapRightItems)
-				.ReplaceMapping(nameof(ISwipeView.BottomItems), MapBottomItems)
-				.ReplaceMapping(nameof(IContentView.Content), MapContent)
+				.Replace(nameof(ISwipeView.SwipeTransitionMode), MapSwipeTransitionMode)
+				.Replace(nameof(ISwipeView.LeftItems), MapLeftItems)
+				.Replace(nameof(ISwipeView.TopItems), MapTopItems)
+				.Replace(nameof(ISwipeView.RightItems), MapRightItems)
+				.Replace(nameof(ISwipeView.BottomItems), MapBottomItems)
+				.Replace(nameof(IContentView.Content), MapContent)
 #if ANDROID || IOS || TIZEN
-				.ReplaceMapping(nameof(IView.IsEnabled), MapIsEnabled)
+				.Replace(nameof(IView.IsEnabled), MapIsEnabled)
 #endif
 #if ANDROID
-				.ModifyMapping(nameof(IView.Background), MapBackground)
+				.Modify(nameof(IView.Background), MapBackground)
 #endif
 		;
 

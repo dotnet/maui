@@ -12,8 +12,7 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
-#pragma warning disable RS0016 // Add public types and members to the declared API
-		public static IPropertyMapper<TVirtualView, TViewHandler> ModifyMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+		public static void ModifyMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -25,7 +24,6 @@ namespace Microsoft.Maui
 			}
 
 			propertyMapper.Add(key, newMethod);
-			return propertyMapper;
 		}
 
 		/// <summary>
@@ -36,7 +34,7 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
-		public static IPropertyMapper<IElement, IElementHandler> ModifyMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void ModifyMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -51,7 +49,6 @@ namespace Microsoft.Maui
 			}
 
 			propertyMapper.Add(key, newMethod);
-			return propertyMapper;
 		}
 
 		/// <summary>
@@ -62,14 +59,14 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The modified method to call when the property is updated.</param>
-		public static IPropertyMapper<IElement, IElementHandler> ReplaceMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void ReplaceMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			return propertyMapper.ModifyMapping<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
+			propertyMapper.ModifyMapping<TVirtualView, TViewHandler>(key, (h, v, p) => method.Invoke(h, v));
 		}
 
-		internal static IPropertyMapper<TVirtualView, TViewHandler> ReplaceMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+		internal static void ReplaceMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
@@ -78,10 +75,10 @@ namespace Microsoft.Maui
 			if (previousMethod is null)
 			{
 				propertyMapper.Add(key, method);
-				return propertyMapper;
+				return;
 			}
 
-			return propertyMapper.ModifyMapping(key, (h, v, p) => method.Invoke(h, v));
+			propertyMapper.ModifyMapping(key, (h, v, p) => method.Invoke(h, v));
 		}
 
 		/// <summary>
@@ -92,11 +89,11 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call after the existing mapping is finished.</param>
-		public static IPropertyMapper<TVirtualView, TViewHandler> AppendToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+		public static void AppendToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			return propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
 			{
 				action?.Invoke(handler, view);
 				method(handler, view);
@@ -111,11 +108,11 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call after the existing mapping is finished.</param>
-		public static IPropertyMapper<IElement, IElementHandler> AppendToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void AppendToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			return propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
 			{
 				action?.Invoke(handler, view);
 
@@ -132,11 +129,11 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call before the existing mapping begins.</param>
-		public static IPropertyMapper<TVirtualView, TViewHandler> PrependToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+		public static void PrependToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			return propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
 			{
 				method(handler, view);
 				action?.Invoke(handler, view);
@@ -151,11 +148,11 @@ namespace Microsoft.Maui
 		/// <param name="propertyMapper">The property mapper in which to change the mapping.</param>
 		/// <param name="key">The name of the property.</param>
 		/// <param name="method">The method to call before the existing mapping begins.</param>
-		public static IPropertyMapper<IElement, IElementHandler> PrependToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
+		public static void PrependToMapping<TVirtualView, TViewHandler>(this IPropertyMapper<IElement, IElementHandler> propertyMapper,
 			string key, Action<TViewHandler, TVirtualView> method)
 			where TVirtualView : IElement where TViewHandler : IElementHandler
 		{
-			return propertyMapper.ModifyMapping(key, (handler, view, action) =>
+			propertyMapper.ModifyMapping(key, (handler, view, action) =>
 			{
 				if ((handler is null || handler is TViewHandler) && view is TVirtualView v)
 					method((TViewHandler)handler!, v);
@@ -163,6 +160,37 @@ namespace Microsoft.Maui
 				action?.Invoke(handler!, view);
 			});
 		}
-#pragma warning restore RS0016 // Add public types and members to the declared API
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> Replace<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			propertyMapper.ReplaceMapping(key, method);
+			return propertyMapper;
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> Modify<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView, Action<IElementHandler, IElement>?> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			propertyMapper.ModifyMapping(key, method);
+			return propertyMapper;
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> Prepend<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			propertyMapper.PrependToMapping(key, method);
+			return propertyMapper;
+		}
+
+		internal static IPropertyMapper<TVirtualView, TViewHandler> Append<TVirtualView, TViewHandler>(this IPropertyMapper<TVirtualView, TViewHandler> propertyMapper,
+			string key, Action<TViewHandler, TVirtualView> method)
+			where TVirtualView : IElement where TViewHandler : IElementHandler
+		{
+			propertyMapper.AppendToMapping(key, method);
+			return propertyMapper;
+		}
 	}
 }
