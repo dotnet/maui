@@ -34,7 +34,7 @@ var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFOR
 string CONFIGURATION = Argument("configuration", "Debug");
 string TEST_FRAMEWORK = "net472";
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
-string DEVICE_ID = "";
+string ANDROID_AVD_IMAGE = "";
 string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
@@ -107,15 +107,21 @@ Setup(context =>
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
-		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
+		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
-		Information("Going to run image: {0}", DEVICE_ID);
+		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
 		// we are not using a virtual device, so quit
 		if (!emulator)
+		{
+			Information("Not using a virtual device, skipping... and getting devices ");
+			
+			GetDevices(api);
+
 			return;
+		}
 	}
 
-	Information("Test Device ID: {0}", DEVICE_ID);
+	Information("Test Device ID: {0}", ANDROID_AVD_IMAGE);
 
 	if (DEVICE_BOOT) {
 		Information("Trying to boot the emulator...");
@@ -127,7 +133,7 @@ Setup(context =>
 
 		// create the new AVD
 		Information("Creating AVD: {0}...", ANDROID_AVD);
-		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
+		AndroidAvdCreate(ANDROID_AVD, ANDROID_AVD_IMAGE, DEVICE_NAME, force: true, settings: avdSettings);
 
 		// start the emulator
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
@@ -463,6 +469,23 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 			$"--package-name=\"{testAppPackageName}\" " +
 			$"--output-directory=\"{testResultsDirectory}\" " +
 			$"--verbosity=\"Debug\" ")
+	};
+	DotNetTool("tool", settings);
+}
+
+void GetDevices(int apiversion)
+{
+	var devices = AdbDevices(adbSettings);
+	foreach	(var device in devices)
+	{
+		Information("Found device: {0} {1} {2} {3}", device.Device, device.Model, device.Product, device.Serial, device.Usb);
+	}
+
+	//this will fail if there are no devices with this api attached
+	var settings = new DotNetToolSettings {
+			DiagnosticOutput = true,
+			ArgumentCustomization = args=>args.Append("run xharness android device " +
+			$"--api-version=\"{apiversion}\" " )
 	};
 	DotNetTool("tool", settings);
 }
