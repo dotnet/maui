@@ -261,12 +261,11 @@
 
         <!-- Invoke the GetMauiItems target on all project references -->
         <!-- This will accumulate images into our MauiImage group -->
-        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
         <MSBuild
             Targets="GetMauiItems"
-            Projects="@(ProjectReference)"
+            Projects="%(_ResolvedProjectReferencePaths.OriginalProjectReferenceItemSpec)"
             BuildInParallel="true"
-            Properties="TargetFramework=$(TargetFramework)"
+            Properties="TargetFramework=%(_ResolvedProjectReferencePaths.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
