@@ -197,6 +197,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void Draw(Canvas? canvas)
 		{
+			ArgumentNullException.ThrowIfNull(canvas);
 			Controls.Compatibility.Platform.Android.CanvasExtensions.ClipShape(canvas, Context, Element);
 
 			base.Draw(canvas);
