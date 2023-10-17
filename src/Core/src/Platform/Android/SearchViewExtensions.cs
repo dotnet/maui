@@ -122,26 +122,34 @@ namespace Microsoft.Maui.Platform
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
-			if (editText == null)
+			if (editText is null)
 				return;
 
-			if (searchBar.IsTextPredictionEnabled)
-				editText.InputType |= InputTypes.TextFlagAutoCorrect;
+			bool isTextVariationUri = editText.InputType.HasFlag(InputTypes.TextVariationUri);
+			var noSuggestions = InputTypes.TextFlagNoSuggestions;
+
+			if (!isTextVariationUri)
+				noSuggestions |= InputTypes.TextVariationVisiblePassword;
+
+			if (!searchBar.IsTextPredictionEnabled)
+				editText.InputType |= noSuggestions;
 			else
-				editText.InputType &= ~InputTypes.TextFlagAutoCorrect;
+				editText.InputType &= ~noSuggestions;
 		}
 
 		public static void UpdateIsSpellCheckEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
 		{
 			editText ??= searchView.GetFirstChildOfType<EditText>();
 
-			if (editText == null)
+			if (editText is null)
 				return;
 
-			if (!searchBar.IsSpellCheckEnabled)
-				editText.InputType |= InputTypes.TextFlagNoSuggestions;
+			var autoCorrect = InputTypes.TextFlagAutoCorrect;
+
+			if (searchBar.IsSpellCheckEnabled)
+				editText.InputType |= autoCorrect;
 			else
-				editText.InputType &= ~InputTypes.TextFlagNoSuggestions;
+				editText.InputType &= ~autoCorrect;
 		}
 
 		public static void UpdateIsEnabled(this SearchView searchView, ISearchBar searchBar, EditText? editText = null)
