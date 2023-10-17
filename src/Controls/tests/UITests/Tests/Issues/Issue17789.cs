@@ -15,9 +15,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void ContentPageBackgroundImageSourceWorks()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-					"The bug only happens on iOS; see https://github.com/dotnet/maui/pull/17789");
-
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}
