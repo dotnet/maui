@@ -32,5 +32,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 			Assert.Equal(current, thread);
 		}
+
+		[Fact]
+		public void Connection_WaitBackgroundThread()
+		{
+			var current = Connectivity.Current.NetworkAccess;
+
+			var thread = Task.Run(() => Connectivity.Current.NetworkAccess);
+			thread.Wait();
+
+			Assert.Equal(current, thread.Result);
+		}
 	}
 }
