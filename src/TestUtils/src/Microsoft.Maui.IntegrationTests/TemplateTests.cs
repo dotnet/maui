@@ -1,6 +1,6 @@
 using Microsoft.Maui.IntegrationTests.Apple;
 
-[assembly: LevelOfParallelism(2)]
+[assembly: LevelOfParallelism(1)]
 
 namespace Microsoft.Maui.IntegrationTests
 {
