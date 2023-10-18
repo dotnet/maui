@@ -49,7 +49,7 @@ namespace Microsoft.Maui.Controls
 
 		private void OnImageSourceSourceChanged(object sender, EventArgs e)
 		{
-			OnPropertyChanged(nameof(IconImageSource));
+			OnPropertyChanged(nameof(IImageSourcePart.Source));
 		}
 
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
