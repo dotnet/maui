@@ -1,16 +1,19 @@
 using Microsoft.Maui.IntegrationTests.Apple;
 
+[assembly: LevelOfParallelism(2)]
+
 namespace Microsoft.Maui.IntegrationTests
 {
+	[Parallelizable(scope: ParallelScope.All)]
 	public class TemplateTests : BaseBuildTest
 	{
 		[SetUp]
 		public void TemplateTestsSetUp()
 		{
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.props"),
-				Path.Combine(TestDirectory, "Directory.Build.props"), true);
+				Path.Combine(TestDirectory, "Directory.Build.props"), overwrite: true);
 			File.Copy(Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "tests", "Directory.Build.targets"),
-				Path.Combine(TestDirectory, "Directory.Build.targets"), true);
+				Path.Combine(TestDirectory, "Directory.Build.targets"), overwrite: true);
 		}
 
 		[Test]
@@ -30,9 +33,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public void Build(string id, string framework, string config, bool shouldPack)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -48,6 +52,46 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		// Parameters: short name, target framework, build config, use pack target
+		[TestCase("maui", DotNetPrevious, "Debug", false)]
+		[TestCase("maui", DotNetPrevious, "Release", false)]
+		[TestCase("maui", DotNetCurrent, "Debug", false)]
+		[TestCase("maui", DotNetCurrent, "Release", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Debug", false)]
+		[TestCase("maui-blazor", DotNetPrevious, "Release", false)]
+		[TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
+		[TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+		[TestCase("mauilib", DotNetPrevious, "Debug", true)]
+		[TestCase("mauilib", DotNetPrevious, "Release", true)]
+		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
+		[TestCase("mauilib", DotNetCurrent, "Release", true)]
+		public void BuildWithMauiVersion(string id, string framework, string config, bool shouldPack)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+
+			// set <MauiVersion> in the csproj as that is the reccommended place
+			var mv = framework == DotNetPrevious ? MauiVersionPrevious : MauiVersionCurrent;
+			FileUtilities.ReplaceInFile(projectFile,
+				"</Project>",
+				$"<PropertyGroup><MauiVersion>{mv}</MauiVersion></PropertyGroup></Project>");
+
+			string target = shouldPack ? "Pack" : "";
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", DotNetPrevious, "Debug")]
 		[TestCase("maui", DotNetPrevious, "Release")]
 		[TestCase("maui", DotNetCurrent, "Debug")]
@@ -59,9 +103,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public void BuildUnpackaged(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -81,9 +126,10 @@ namespace Microsoft.Maui.IntegrationTests
 				Assert.Ignore("Running Windows templates is only supported on Windows.");
 
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			BuildProps.Add("WindowsPackageType=None");
@@ -118,9 +164,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public void PackCoreLib(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -130,9 +177,9 @@ namespace Microsoft.Maui.IntegrationTests
 				{ "UseMaui", "UseMauiCore" }, // This is the key part of the test
 				{ "SingleProject", "EnablePreviewMsixTooling" },
 			};
-			if (framework != "net6.0")
+			if (framework != "net7.0")
 			{
-				// On versions after net6.0 this package reference also has to be updated to ensure the version of the MAUI Core package
+				// On versions after net7.0 this package reference also has to be updated to ensure the version of the MAUI Core package
 				// is specified and avoids the MA002 warning.
 				projectSectionsToReplace.Add("Include=\"Microsoft.Maui.Controls\"", "Include=\"Microsoft.Maui.Core\"");
 			}
@@ -151,9 +198,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public void BuildWithoutPackageReference(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -178,9 +226,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public void BuildWithDifferentVersionNumber(string id, string config, string display, string version)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			EnableTizen(projectFile);
@@ -204,11 +253,13 @@ namespace Microsoft.Maui.IntegrationTests
 				Assert.Ignore("Running MacCatalyst templates is only supported on Mac.");
 
 			string projectDir = TestDirectory;
-			string projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
 			// Note: Debug app is stored in the maccatalyst-x64 folder, while the Release is in parent directory
 			string appLocation = config == "Release" ?
-				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{Path.GetFileName(projectDir)}.app") :
-				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", "maccatalyst-x64", $"{Path.GetFileName(projectDir)}.app");
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", $"{projectName}.app") :
+				Path.Combine(projectDir, "bin", config, $"{framework}-maccatalyst", "maccatalyst-x64", $"{projectName}.app");
 			string entitlementsPath = Path.Combine(projectDir, "x.xml");
 
 			List<string> buildWithCodeSignProps = new List<string>(BuildProps)
@@ -216,7 +267,7 @@ namespace Microsoft.Maui.IntegrationTests
 				"EnableCodeSigning=true"
 			};
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework), $"Unable to create template {id}. Check test output for errors.");
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework), $"Unable to create template {id}. Check test output for errors.");
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 

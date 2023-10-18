@@ -27,7 +27,7 @@ namespace Microsoft.Maui.AppiumTests
 				testBase.App.FindElement("NavigationViewBackButton").Click();
 			}
 		}
-		
+
 		public static void NavigateToGallery(this IApp app, string page)
 		{
 			app.WaitForElement(goToTestButtonId, "Timed out waiting for Go To Test button to appear", TimeSpan.FromMinutes(2));
@@ -65,7 +65,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public static int CenterY(this Rectangle rect)
 		{
-			return rect.Y + rect.Height/ 2;
+			return rect.Y + rect.Height / 2;
 		}
 	}
 }
