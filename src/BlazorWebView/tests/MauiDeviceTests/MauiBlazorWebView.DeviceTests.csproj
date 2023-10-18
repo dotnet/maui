@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
@@ -7,6 +7,7 @@
     <RootNamespace>Microsoft.Maui.MauiBlazorWebView.DeviceTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.MauiBlazorWebView.DeviceTests</AssemblyName>
     <NoWarn>$(NoWarn),CA1416</NoWarn>
+    <IsTestProject>true</IsTestProject>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
@@ -51,6 +52,8 @@
   <ItemGroup Condition="!$(TargetFramework.Contains('-windows'))">
     <Compile Remove="**\*.Windows.cs" />
   </ItemGroup>
+
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.targets" />
 
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
 

@@ -86,47 +86,47 @@
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration"
-        Version="$(MicrosoftExtensionsConfigurationPackageVersion)"
+        Version="$(MicrosoftExtensionsConfigurationVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Abstractions"
-        Version="$(MicrosoftExtensionsConfigurationAbstractionsPackageVersion)"
+        Version="$(MicrosoftExtensionsConfigurationAbstractionsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Configuration.Json"
-        Version="$(MicrosoftExtensionsConfigurationJsonPackageVersion)"
+        Version="$(MicrosoftExtensionsConfigurationJsonVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection"
-        Version="$(MicrosoftExtensionsDependencyInjectionPackageVersion)"
+        Version="$(MicrosoftExtensionsDependencyInjectionVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.DependencyInjection.Abstractions"
-        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)"
+        Version="$(MicrosoftExtensionsDependencyInjectionAbstractionsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.FileProviders.Abstractions"
-        Version="$(MicrosoftExtensionsFileProvidersAbstractionsPackageVersion)"
+        Version="$(MicrosoftExtensionsFileProvidersAbstractionsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Abstractions"
-        Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)"
+        Version="$(MicrosoftExtensionsLoggingAbstractionsVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging"
-        Version="$(MicrosoftExtensionsLoggingPackageVersion)"
+        Version="$(MicrosoftExtensionsLoggingVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Console"
-        Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)"
+        Version="$(MicrosoftExtensionsLoggingConsoleVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Logging.Debug"
-        Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)"
+        Version="$(MicrosoftExtensionsLoggingDebugVersion)"
     />
     <PackageReference
         Update="Microsoft.Extensions.Primitives"
-        Version="$(MicrosoftExtensionsPrimitivesPackageVersion)"
+        Version="$(MicrosoftExtensionsPrimitivesVersion)"
     />
     <PackageReference
         Update="Microsoft.WindowsAppSDK"

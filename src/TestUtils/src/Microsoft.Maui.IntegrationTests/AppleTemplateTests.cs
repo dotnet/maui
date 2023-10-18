@@ -36,15 +36,16 @@ namespace Microsoft.Maui.IntegrationTests
 		public void RunOniOS(string id, string config, string framework)
 		{
 			var projectDir = TestDirectory;
-			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+			var projectName = DotnetInternal.GetProjectName(projectDir);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-ios", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", $"{Path.GetFileName(projectDir)}.app");
+			var appFile = Path.Combine(projectDir, "bin", config, $"{framework}-ios", "iossimulator-x64", $"{projectName}.app");
 
 			Assert.IsTrue(XHarness.RunAppleForTimeout(appFile, Path.Combine(projectDir, "xh-results"), TestSimulator.XHarnessID),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
