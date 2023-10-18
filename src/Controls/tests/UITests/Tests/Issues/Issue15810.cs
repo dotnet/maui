@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -17,9 +18,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void WhenTapCustomViewThenChangesColor()
 		{
 			App.WaitForElement(_customViewId);
-			App.Tap(_customViewId);
+			App.Click(_customViewId);
 
-			var infoText = App.Query("InfoLabel").First().Text;
+			var infoText = App.FindElement("InfoLabel").GetText();
 			Assert.IsNotEmpty(infoText);
 		}
 	}
