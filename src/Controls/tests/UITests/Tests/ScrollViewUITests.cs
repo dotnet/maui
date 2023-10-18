@@ -1,11 +1,12 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	class ScrollViewUITests : UITestBase
+	class ScrollViewUITests : UITest
 	{
-		const string ScrollViewGallery = "* marked:'ScrollView Gallery'";
+		const string ScrollViewGallery = "ScrollView Gallery";
 
 		public ScrollViewUITests(TestDevice device)
 			: base(device)
@@ -21,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			App.NavigateBack();
+			this.Back();
 		}
 
 		[Test]
@@ -30,8 +31,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Tap(c => c.Marked("Start"));
-				App.WaitForElement(c => c.Marked("the scrollto button"));
+				App.Click("Start");
+				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is  on the top");
 			}
 			else
@@ -46,10 +47,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Tap(c => c.Marked("Center"));
-				App.WaitForElement(c => c.Marked("the scrollto button"));
-				App.WaitForElement(c => c.Marked("the before"));
-				App.WaitForElement(c => c.Marked("the after"));
+				App.Click("Center");
+				App.WaitForElement("the scrollto button");
+				App.WaitForElement("the before");
+				App.WaitForElement("the after");
 				App.Screenshot("Element is in the center");
 			}
 			else
@@ -64,8 +65,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Tap(c => c.Marked("End"));
-				App.WaitForElement(c => c.Marked("the scrollto button"));
+				App.Click("End");
+				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is in the end");
 			}
 			else

@@ -55,7 +55,6 @@ namespace ContentPageExample
     }
 }
           ]]></code>
-        <para>The <format type="text/html"><a href="https://docs.microsoft.com/samples/xamarin/xamarin-forms-samples/formsgallery/" target="_blank">FormsGallery</a></format> sample, which can be found on the <format type="text/html"><a href="https://docs.microsoft.com/samples/browse/" target="_blank">Sample Applications</a></format> page, has a ContentPageDemoPage.cs file. This file contains a longer and more complicated example.</para>
       </example>
     </remarks>
   </Docs>

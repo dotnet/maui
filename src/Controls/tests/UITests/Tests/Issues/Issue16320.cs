@@ -1,5 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -17,12 +18,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// TODO: It looks like this test has never passed on Android, failing with 
 			// "System.TimeoutException : Timed out waiting for element". We (e.g. ema) should
 			// investigate and properly fix, but we'll ignore for now.
-			UITestContext.IgnoreIfPlatforms(new[]
+			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Android
 			});
 
-			App.Tap("Add");
+			App.Click("Add");
 
 			Assert.NotNull(App.WaitForElement("item: 1"));
 		}

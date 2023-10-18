@@ -1,11 +1,11 @@
 ﻿using System.Drawing;
-using Microsoft.Maui.Appium;
 using NUnit.Framework;
 using OpenQA.Selenium.Appium.Interactions;
 using OpenQA.Selenium.Appium.iOS;
 using OpenQA.Selenium.Appium.Windows;
 using OpenQA.Selenium.Interactions;
-using TestUtils.Appium.UITests;
+using UITest.Appium;
+using UITest.Core;
 using PointerInputDevice = OpenQA.Selenium.Appium.Interactions.PointerInputDevice;
 
 namespace Microsoft.Maui.AppiumTests.Issues
@@ -24,23 +24,23 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void TapTwoPlacesQuickly()
 		{
 			// https://github.com/dotnet/maui/issues/17435
-			UITestContext.IgnoreIfPlatforms(new[]
+			this.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac
 			});
 
-			if (App is not IApp2 app2 || app2 is null || app2.Driver is null)
+			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
 			{
 				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
 			}
 
 			var tapAreaResult = App.WaitForElement(_tapAreaId, $"Timed out waiting for {_tapAreaId}");
-			var tapArea = tapAreaResult[0].Rect;
+			var tapArea = tapAreaResult.GetRect();
 
 			// The test harness coordinates are absolute
 			var xOffset = 50;
-			var harnessCenterX = tapArea.CenterX;
-			var harnessCenterY = tapArea.CenterY;
+			var harnessCenterX = tapArea.CenterX();
+			var harnessCenterY = tapArea.CenterY();
 
 			var point1 = new PointF(harnessCenterX - xOffset, harnessCenterY);
 			var point2 = new PointF(harnessCenterX + xOffset, harnessCenterY);
@@ -56,13 +56,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// The results for each tap should show up in the labels on the screen; find the text
 			// of each tap result and check to see that it meets the expected values
 			var result = App.WaitForElement("Tap1Label", $"Timed out waiting for Tap1Label");
-			AssertCorrectTapLocation(result[0].Text, expectedX1, expectedY, "First");
+			AssertCorrectTapLocation(result.GetText()!, expectedX1, expectedY, "First");
 
 			result = App.WaitForElement("Tap2Label", $"Timed out waiting for Tap2Label");
-			AssertCorrectTapLocation(result[0].Text, expectedX2, expectedY, "Second");
+			AssertCorrectTapLocation(result.GetText()!, expectedX2, expectedY, "Second");
 		}
 
-		static void TapTwice(IApp2 app, PointF point1, PointF point2)
+		static void TapTwice(AppiumApp app, PointF point1, PointF point2)
 		{
 			var driver = app.Driver ?? throw new InvalidOperationException("The Appium driver is null; cannot perform taps.");
 
@@ -70,8 +70,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			{
 				// Windows will throw an error if we try to execute Taps with a TouchAction
 				// or if we try to use ExecuteScript, so we'll just use TapCoordinates instead
-				app.TapCoordinates(point1.X, point1.Y);
-				app.TapCoordinates(point2.X, point2.Y);
+				app.Click(point1.X, point1.Y);
+				app.Click(point2.X, point2.Y);
 			}
 			else if (driver is IOSDriver)
 			{
