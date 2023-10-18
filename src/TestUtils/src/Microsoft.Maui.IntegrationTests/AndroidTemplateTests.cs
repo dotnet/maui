@@ -58,29 +58,28 @@ namespace Microsoft.Maui.IntegrationTests
 		public void RunOnAndroid(string id, string framework, string config)
 		{
 			var projectDir = TestDirectory;
-			var projectName = DotnetInternal.GetProjectName(projectDir);
-			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
-			Assert.IsTrue(DotnetInternal.New(id, projectDir, projectName, framework),
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			AddInstrumentation(projectDir, projectName);
+			AddInstrumentation(projectDir);
 
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: "Install", framework: $"{framework}-android", properties: BuildProps),
 				$"Project {Path.GetFileName(projectFile)} failed to install. Check test output/attachments for errors.");
 
-			testPackage = $"com.companyname.{projectName.ToLowerInvariant()}";
+			testPackage = $"com.companyname.{Path.GetFileName(projectDir).ToLowerInvariant()}";
 			Assert.IsTrue(XHarness.RunAndroid(testPackage, Path.Combine(projectDir, "xh-results"), -1),
 				$"Project {Path.GetFileName(projectFile)} failed to run. Check test output/attachments for errors.");
 		}
 
-		void AddInstrumentation(string projectDir, string projectName)
+		void AddInstrumentation(string projectDir)
 		{
 			var androidDir = Path.Combine(projectDir, "Platforms", "Android");
 			var instDestination = Path.Combine(androidDir, "Instrumentation.cs");
 			FileUtilities.CreateFileFromResource("TemplateLaunchInstrumentation.cs", instDestination);
 			Assert.True(File.Exists(instDestination), "Failed to create Instrumentation.cs");
-			FileUtilities.ReplaceInFile(instDestination, "namespace mauitemplate", $"namespace {projectName}");
+			FileUtilities.ReplaceInFile(instDestination, "namespace mauitemplate", $"namespace {Path.GetFileName(projectDir)}");
 
 			FileUtilities.ReplaceInFile(Path.Combine(androidDir, "MainActivity.cs"),
 				"MainLauncher = true",
