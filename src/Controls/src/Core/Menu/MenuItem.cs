@@ -34,24 +34,6 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IconImageSourceProperty = BindableProperty.Create(nameof(IconImageSource), typeof(ImageSource), typeof(MenuItem), default(ImageSource),
 			propertyChanging: OnImageSourceChanging, propertyChanged: OnImageSourceChanged);
 
-		static void OnImageSourceChanging(BindableObject bindable, object oldValue, object newValue)
-		{
-			if (oldValue is ImageSource oldSource && bindable is MenuItem menuItem)
-				oldSource.SourceChanged -= menuItem.OnImageSourceSourceChanged;
-		}
-
-		static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
-		{
-			var newSource = (ImageSource)newValue;
-			if (newSource != null && bindable is MenuItem menuItem)
-				newSource.SourceChanged += menuItem.OnImageSourceSourceChanged;
-		}
-
-		private void OnImageSourceSourceChanged(object sender, EventArgs e)
-		{
-			OnPropertyChanged(nameof(IImageSourcePart.Source));
-		}
-
 		/// <summary>Bindable property for <see cref="IsEnabled"/>.</summary>
 		public static readonly BindableProperty IsEnabledProperty = BindableProperty.Create(
 			nameof(IsEnabled), typeof(bool), typeof(MenuItem), true,
@@ -221,6 +203,23 @@ namespace Microsoft.Maui.Controls
 			}
 
 			ppc.PropagatePropertyChanged(IsEnabledProperty.PropertyName);
+		}
+
+		static void OnImageSourceChanging(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (oldValue is ImageSource oldSource && bindable is MenuItem menuItem)
+				oldSource.SourceChanged -= menuItem.OnImageSourceSourceChanged;
+		}
+
+		static void OnImageSourceChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			if (newValue is ImageSource newSource && bindable is MenuItem menuItem)
+				newSource.SourceChanged += menuItem.OnImageSourceSourceChanged;
+		}
+
+		void OnImageSourceSourceChanged(object sender, EventArgs e)
+		{
+			OnPropertyChanged(nameof(IImageSourcePart.Source));
 		}
 	}
 }

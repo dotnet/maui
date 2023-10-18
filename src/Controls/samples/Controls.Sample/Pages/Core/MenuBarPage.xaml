@@ -6,22 +6,75 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     x:DataType="viewmodels:MenuBarViewModel"
-    x:Name="myPage">
+    x:Name="menuBarSamplePage">
     <views:BasePage.MenuBarItems>
-        <MenuBarItem x:Name="GlyphMenuBarItem" Text="Glyphs">
-            <MenuFlyoutItem Text="Glyph" >
+        <MenuBarItem Text="Before File">
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Before File Action">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Key="b" />
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+            <MenuFlyoutItem Text="Cool item 1"></MenuFlyoutItem>
+            <MenuFlyoutSeparator />
+            <MenuFlyoutItem Text="Cool item 2 (Disabled)" IsEnabled="False" />
+        </MenuBarItem>
+        <MenuBarItem Text="File">
+            <MenuFlyoutItem x:Name="CustomFileMenuFlyoutItem" Clicked="ItemClicked" Text="Custom File" >
                 <MenuFlyoutItem.IconImageSource>
-                    <FontImageSource  Glyph="{Binding BindingContext.Icon1,
-      Source={x:Reference myPage}}" FontFamily="IconsFont" Size="43" Color="Blue"/>
+                    <FontImageSource
+                            FontAutoScalingEnabled="False"
+                            FontFamily = "Ionicons" 
+                            Glyph = "&#xf30c;">
+                    </FontImageSource>
                 </MenuFlyoutItem.IconImageSource>
             </MenuFlyoutItem>
+        </MenuBarItem>
+        <MenuBarItem Text="Custom Menu">
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 1">
+                <MenuFlyoutItem.KeyboardAccelerators>
+                    <KeyboardAccelerator Modifiers="{OnPlatform WinUI=Ctrl, MacCatalyst=Cmd}" Key="1" />
+                </MenuFlyoutItem.KeyboardAccelerators>
+            </MenuFlyoutItem>
+            <MenuFlyoutSubItem Clicked="ItemClicked" Text="Sub Menu 1">
+                <MenuFlyoutItem IconImageSource="mic.png" Clicked="ItemClicked" Text="Flyout item 1">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Windows,Shift" Key="A" />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+                <MenuFlyoutItem IconImageSource="coffee.png" Clicked="ItemClicked" Text="Flyout item 2">
+                    <MenuFlyoutItem.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Alt" Key="C"  />
+                    </MenuFlyoutItem.KeyboardAccelerators>
+                </MenuFlyoutItem>
+            </MenuFlyoutSubItem>
+            <MenuFlyoutItem Clicked="ItemClicked" Text="Item 2 (Disabled)" IsEnabled="False" />
+        </MenuBarItem>
+        <MenuBarItem Text="Icons">
+            <MenuFlyoutItem Text="Icon 1" >
+                <MenuFlyoutItem.IconImageSource>
+                    <FontImageSource Glyph="{Binding BindingContext.Icon1, Source={x:Reference menuBarSamplePage}}"  FontFamily="IconsFont"/>
+                </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
+
+            <MenuFlyoutItem Text="Icon 2">
+                <MenuFlyoutItem.IconImageSource>
+                    <FontImageSource Glyph="{Binding BindingContext.Icon2, Source={x:Reference menuBarSamplePage}}" FontFamily="IconsFont"/>
+                </MenuFlyoutItem.IconImageSource>
+            </MenuFlyoutItem>
+
+            <MenuFlyoutItem Text="IconImage 1" IconImageSource="{Binding IconImage1}"/>
+            <MenuFlyoutItem Text="IconImage 2" IconImageSource="{Binding IconImage2}"/>
+
+            <MenuFlyoutSeparator/>
+
+            <MenuFlyoutItem Clicked="SwapIcons" Text="Swap Icons" />
+
         </MenuBarItem>
     </views:BasePage.MenuBarItems>
     <views:BasePage.Content>
         <VerticalStackLayout Margin="12">
             <Label x:Name="menuLabel" Text="You clicked on Menu Item:" />
             <Button Text="Toggle Menu Bar Item" Clicked="OnToggleMenuBarItem" />
-           
         </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
