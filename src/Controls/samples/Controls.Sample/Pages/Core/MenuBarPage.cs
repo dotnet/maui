@@ -64,7 +64,6 @@ namespace Maui.Controls.Sample.Pages
 				});
 
 				MenuBarItems.Add(barItem);
-				return;
 			}
 			else
 			{
