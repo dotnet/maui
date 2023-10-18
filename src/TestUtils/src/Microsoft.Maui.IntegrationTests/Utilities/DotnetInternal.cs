@@ -90,9 +90,9 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs} -bl:\"{binlogPath}\"");
 		}
 
-		public static bool New(string shortName, string outputDirectory, string projectName, string framework = "")
+		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
-			var args = $"{shortName} -o \"{outputDirectory}\" -n \"{projectName}\"";
+			var args = $"{shortName} -o \"{outputDirectory}\"";
 
 			if (!string.IsNullOrEmpty(framework))
 				args += $" -f {framework}";
@@ -125,33 +125,5 @@ namespace Microsoft.Maui.IntegrationTests
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}
 
-		/// <summary>
-		/// Takes the given <paramref name="projectDir"/> and creates a valid C# project file name that
-		/// is suitable for a cross-platform .NET MAUI project.
-		/// </summary>
-		/// <param name="projectDir"></param>
-		/// <returns></returns>
-		public static string GetProjectName(string projectDir)
-		{
-			// By default, the project name is the name of the folder the template is being created in.
-			// That project name is then used in the Windows AppX manifest, and that has a maximum
-			// length of 50 chars, including the default name prefix used in .NET MAUI. So, if it's too
-			// long, we chop off a bit and specify an explicit project name that is not too long.
-			// The error you'd otherwise get is:
-			//		MakeAppx : error : Error info: error C00CE169: App manifest validation error: The app manifest must be valid
-			//		as per schema: Line 10, Column 13, Reason: 'com.companyname.SomeUnfortunateNameThatIsTooLongToBeValid'
-			//		violates maxLength constraint of '50'.
-			const string AppXNamePrefix = "com.companyname.";
-
-			var projectName = Path.GetFileName(projectDir);
-			if ((AppXNamePrefix + projectName).Length >= 50)
-			{
-				return projectName.Substring(0, 50 - AppXNamePrefix.Length);
-			}
-			else
-			{
-				return projectName;
-			}
-		}
 	}
 }
