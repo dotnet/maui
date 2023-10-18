@@ -25,6 +25,8 @@ namespace Microsoft.Maui.Controls.Platform
 			DefaultStyleKey = typeof(FormsGridView);
 
 			RegisterPropertyChangedCallback(ItemsPanelProperty, ItemsPanelChanged);
+
+			ChoosingItemContainer += OnChoosingItemContainer;
 		}
 
 		public int Span
@@ -94,6 +96,11 @@ namespace Microsoft.Maui.Controls.Platform
 			UpdateItemSize();
 		}
 
+		void OnChoosingItemContainer(ListViewBase sender, ChoosingItemContainerEventArgs args)
+		{
+			FindItemsWrapGrid();
+		}
+
 		void WrapGridSizeChanged(object sender, SizeChangedEventArgs e)
 		{
 			UpdateItemSize();
@@ -147,9 +154,6 @@ namespace Microsoft.Maui.Controls.Platform
 		protected override global::Windows.Foundation.Size ArrangeOverride(global::Windows.Foundation.Size finalSize)
 		{
 			_formsEmptyView?.Layout(new Rect(0, 0, finalSize.Width, finalSize.Height));
-
-			if (_wrapGrid is null)
-				FindItemsWrapGrid();
 
 			return base.ArrangeOverride(finalSize);
 		}
