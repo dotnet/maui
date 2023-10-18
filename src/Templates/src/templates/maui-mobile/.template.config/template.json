@@ -53,11 +53,11 @@
         "description": "Overrides the $(ApplicationId) in the project",
         "datatype": "string"
       },
-      "msExtensionsVersion": {
+      "msExtensionsLoggingDebugVersion": {
         "type": "parameter",
         "dataType": "string",
-        "replaces": "MS_EXT_VERSION",
-        "defaultValue": "MS_EXT_VERSION_VALUE"
+        "replaces": "MS_EXT_LOG_DEBUG_VERSION",
+        "defaultValue": "MS_EXT_LOG_DEBUG_VERSION_VALUE"
       },
       "Framework": {
         "type": "parameter",

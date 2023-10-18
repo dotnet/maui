@@ -3217,7 +3217,6 @@
 ~static Microsoft.Maui.Controls.Region.FromLines(double[] lineHeights, double maxWidth, double startX, double endX, double startY) -> Microsoft.Maui.Controls.Region
 ~static Microsoft.Maui.Controls.RelativeBindingSource.Self.get -> Microsoft.Maui.Controls.RelativeBindingSource
 ~static Microsoft.Maui.Controls.RelativeBindingSource.TemplatedParent.get -> Microsoft.Maui.Controls.RelativeBindingSource
-~static Microsoft.Maui.Controls.Resource.Styleable.Toolbar -> int[]
 ~static Microsoft.Maui.Controls.Routing.FormatRoute(string route) -> string
 ~static Microsoft.Maui.Controls.Routing.FormatRoute(System.Collections.Generic.List<string> segments) -> string
 ~static Microsoft.Maui.Controls.Routing.GetOrCreateContent(string route, System.IServiceProvider services = null) -> Microsoft.Maui.Controls.Element
@@ -6391,25 +6390,7 @@ Microsoft.Maui.Controls.ReorderableItemsView.ReorderCompleted -> System.EventHan
 Microsoft.Maui.Controls.ReorderableItemsView.SendReorderCompleted() -> void
 Microsoft.Maui.Controls.ResolutionGroupNameAttribute
 Microsoft.Maui.Controls.Resource
-Microsoft.Maui.Controls.Resource.Animation
-Microsoft.Maui.Controls.Resource.Animation.Animation() -> void
-Microsoft.Maui.Controls.Resource.Attribute
-Microsoft.Maui.Controls.Resource.Attribute.Attribute() -> void
-Microsoft.Maui.Controls.Resource.Dimension
-Microsoft.Maui.Controls.Resource.Dimension.Dimension() -> void
-Microsoft.Maui.Controls.Resource.Drawable
-Microsoft.Maui.Controls.Resource.Drawable.Drawable() -> void
-Microsoft.Maui.Controls.Resource.Id
-Microsoft.Maui.Controls.Resource.Id.Id() -> void
-Microsoft.Maui.Controls.Resource.Layout
-Microsoft.Maui.Controls.Resource.Layout.Layout() -> void
 Microsoft.Maui.Controls.Resource.Resource() -> void
-Microsoft.Maui.Controls.Resource.String
-Microsoft.Maui.Controls.Resource.String.String() -> void
-Microsoft.Maui.Controls.Resource.Style
-Microsoft.Maui.Controls.Resource.Style.Style() -> void
-Microsoft.Maui.Controls.Resource.Styleable
-Microsoft.Maui.Controls.Resource.Styleable.Styleable() -> void
 Microsoft.Maui.Controls.ResourceDictionary
 Microsoft.Maui.Controls.ResourceDictionary.Clear() -> void
 Microsoft.Maui.Controls.ResourceDictionary.Count.get -> int
@@ -7680,34 +7661,6 @@ static Microsoft.Maui.Controls.Platform.FormattedStringExtensions.ToSpannableStr
 static Microsoft.Maui.Controls.Platform.SemanticExtensions.UpdateSemanticNodeInfo(this Microsoft.Maui.Controls.View! virtualView, AndroidX.Core.View.Accessibility.AccessibilityNodeInfoCompat? info) -> void
 static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.IRadioButtonHandler! handler, Microsoft.Maui.Controls.RadioButton! radioButton) -> void
 static Microsoft.Maui.Controls.RadioButton.MapContent(Microsoft.Maui.Handlers.RadioButtonHandler! handler, Microsoft.Maui.Controls.RadioButton! radioButton) -> void
-static Microsoft.Maui.Controls.Resource.Animation.enterfromleft -> int
-static Microsoft.Maui.Controls.Resource.Animation.enterfromright -> int
-static Microsoft.Maui.Controls.Resource.Animation.exittoleft -> int
-static Microsoft.Maui.Controls.Resource.Animation.exittoright -> int
-static Microsoft.Maui.Controls.Resource.Attribute.actionBarSize -> int
-static Microsoft.Maui.Controls.Resource.Attribute.appBarLayoutStyle -> int
-static Microsoft.Maui.Controls.Resource.Attribute.bottomNavigationViewStyle -> int
-static Microsoft.Maui.Controls.Resource.Attribute.toolbarStyle -> int
-static Microsoft.Maui.Controls.Resource.Dimension.design_bottom_navigation_height -> int
-static Microsoft.Maui.Controls.Resource.Drawable.abc_ic_clear_material -> int
-static Microsoft.Maui.Controls.Resource.Drawable.abc_ic_menu_overflow_material -> int
-static Microsoft.Maui.Controls.Resource.Drawable.abc_ic_search_api_material -> int
-static Microsoft.Maui.Controls.Resource.Id.bottomtab_navarea -> int
-static Microsoft.Maui.Controls.Resource.Id.bottomtab_tabbar -> int
-static Microsoft.Maui.Controls.Resource.Id.flyoutcontent_appbar -> int
-static Microsoft.Maui.Controls.Resource.Id.navigationlayout_bottomtabs -> int
-static Microsoft.Maui.Controls.Resource.Id.navigationlayout_content -> int
-static Microsoft.Maui.Controls.Resource.Id.navigationlayout_toptabs -> int
-static Microsoft.Maui.Controls.Resource.Id.shellcontent_appbar -> int
-static Microsoft.Maui.Controls.Resource.Id.shellcontent_toolbar -> int
-static Microsoft.Maui.Controls.Resource.Layout.flyoutcontent -> int
-static Microsoft.Maui.Controls.Resource.Layout.fragment_backstack -> int
-static Microsoft.Maui.Controls.Resource.Layout.shellcontent -> int
-static Microsoft.Maui.Controls.Resource.String.nav_app_bar_navigate_up_description -> int
-static Microsoft.Maui.Controls.Resource.String.nav_app_bar_open_drawer_description -> int
-static Microsoft.Maui.Controls.Resource.String.overflow_tab_title -> int
-static Microsoft.Maui.Controls.Resource.Style.ThemeOverlay_AppCompat_Light -> int
-static Microsoft.Maui.Controls.Resource.Styleable.Toolbar_titleTextColor -> int
 static Microsoft.Maui.Controls.Shapes.Matrix.Identity.get -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.Multiply(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix
 static Microsoft.Maui.Controls.Shapes.Matrix.operator *(Microsoft.Maui.Controls.Shapes.Matrix trans1, Microsoft.Maui.Controls.Shapes.Matrix trans2) -> Microsoft.Maui.Controls.Shapes.Matrix
