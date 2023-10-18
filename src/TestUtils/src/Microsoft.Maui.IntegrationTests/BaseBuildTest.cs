@@ -3,8 +3,11 @@ namespace Microsoft.Maui.IntegrationTests
 {
 	public class BaseBuildTest
 	{
-		public const string DotNetCurrent = "net7.0";
-		public const string DotNetPrevious = "net6.0";
+		public const string DotNetCurrent = "net8.0";
+		public const string DotNetPrevious = "net7.0";
+
+		public const string MauiVersionCurrent = "8.0.0-rc.1.9171"; // this should not be the same as the last release
+		public const string MauiVersionPrevious = "7.0.86"; // this should not be the same version as the default. aka: MicrosoftMauiPreviousDotNetReleasedVersion in eng/Versions.props
 
 		char[] invalidChars = { '{', '}', '(', ')', '$', ':', ';', '\"', '\'', ',', '=', '.', '-', };
 
@@ -12,7 +15,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			get
 			{
-				var result = TestContext.CurrentContext.Test.Name;
+				var result = "id_" + TestContext.CurrentContext.Test.ID + "_" + TestContext.CurrentContext.Test.Name;
 				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
 				{
 					result = result.Replace(c, '_');
@@ -98,25 +101,10 @@ namespace Microsoft.Maui.IntegrationTests
 		[TearDown]
 		public void BuildTestTearDown()
 		{
-			// Clean up test or attach content from failed tests
-			if (TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Passed ||
-				TestContext.CurrentContext.Result.Outcome.Status == NUnit.Framework.Interfaces.TestStatus.Skipped)
+			// Attach test content and logs as artifacts
+			foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
 			{
-				try
-				{
-					if (Directory.Exists(TestDirectory))
-						Directory.Delete(TestDirectory, recursive: true);
-				}
-				catch (IOException)
-				{
-				}
-			}
-			else
-			{
-				foreach (var log in Directory.GetFiles(Path.Combine(TestDirectory), "*log", SearchOption.AllDirectories))
-				{
-					TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
-				}
+				TestContext.AddTestAttachment(log, Path.GetFileName(TestDirectory));
 			}
 		}
 

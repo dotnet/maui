@@ -14,8 +14,8 @@
 
   <!-- platform version number information -->
   <PropertyGroup Condition="'$(_MauiTargetPlatformIsiOS)' == 'True'">
-    <SupportedOSPlatformVersion>10.0</SupportedOSPlatformVersion>
-    <TargetPlatformMinVersion>10.0</TargetPlatformMinVersion>
+    <SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>11.0</TargetPlatformMinVersion>
     <!-- Workaround: https://github.com/dotnet/roslyn-analyzers/issues/6158 -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
   </PropertyGroup>
@@ -54,13 +54,13 @@
     <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
-  <!--
-    Comment out this section if you need to update Resource.designer.cs files.
-    See .github/DEVELOPMENT.md#Android for details.
+<!--
+    Disable generation of obj/Debug/net8.0-android/__Microsoft.Android.Resource.Designer.cs
+    Enable this individually in projects that declare/use AndroidResource IDs.
   -->
-  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true'">
+  <PropertyGroup Condition="'$(_MauiTargetPlatformIsAndroid)' == 'True' AND '$(AndroidApplication)' != 'true' AND '$(MauiGenerateResourceDesigner)' != 'true'">
     <AndroidGenerateResourceDesigner>false</AndroidGenerateResourceDesigner>
-    <AndroidUseIntermediateDesignerFile>false</AndroidUseIntermediateDesignerFile>
+    <AndroidUseIntermediateDesignerFile Condition="$(TargetFramework.StartsWith('$(_MauiPreviousDotNetTfm)'))">false</AndroidUseIntermediateDesignerFile>
   </PropertyGroup>
 
   <!-- semi HACK: by default, WinUI includes all @(None) with .bmp/.png as @(Content) and adds that to the .pri -->

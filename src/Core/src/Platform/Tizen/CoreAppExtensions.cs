@@ -81,11 +81,11 @@ namespace Microsoft.Maui.Platform
 			{
 				foreach (var pair in state)
 				{
-					userInfo.AddItem(pair.Key, pair.Value);
+					userInfo?.AddItem(pair.Key, pair.Value);
 				}
 			}
 
-			return userInfo;
+			return userInfo!;
 		}
 
 		public static Window GetDefaultWindow()

@@ -88,9 +88,7 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		}
 	}
 #else
-	// For now I'm just ignoring any tests that fail on one platform on all the platforms
-	// this is mainly to get a set of tests green and then I can parse between the platforms
-	public class FailsOnMauiAndroid : IgnoreAttribute//CategoryAttribute
+	public class FailsOnMauiAndroid : CategoryAttribute
 	{
 		public FailsOnMauiAndroid() : base(nameof(FailsOnMauiAndroid))
 		{

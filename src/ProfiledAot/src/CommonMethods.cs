@@ -19,7 +19,9 @@ static class CommonMethods
 	// Returns '200 OK' if the caller wants to set that on the UI
 	public static async Task<string> Invoke()
 	{
-		var url = $"https://httpstat.us/{200}";
+		// NOTE: alternate web services if one of these is down
+		//var url = $"https://httpstat.us/{200}";
+		var url = $"https://httpbin.org/status/{200}";
 
 		var foo = "foo";
 		foo.StartsWith("f");

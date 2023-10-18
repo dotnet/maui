@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Platform
 		readonly IMauiContext _mauiContext;
 
 		public bool IsDestroyed { get; private set; }
-		public IView DetailView { get; private set; }		
+		public IView DetailView { get; private set; }
 
 		public ScopedFragment(IView detailView, IMauiContext mauiContext)
 		{

@@ -31,7 +31,7 @@ ProcessTFMSwitches();
 // Tasks for CI
 
 Task("dotnet")
-    .Description("Provisions .NET 6 into bin/dotnet based on eng/Versions.props")
+    .Description("Provisions the .NET SDK into bin/dotnet based on eng/Versions.props")
     .Does(() =>
     {
         if (!localDotnet) 
@@ -50,7 +50,7 @@ Task("dotnet")
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
+            MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration),
         });
@@ -65,9 +65,9 @@ Task("dotnet-local-workloads")
         //Workaround: https://github.com/dotnet/linker/issues/3012
         SetEnvironmentVariable("DOTNET_gcServer", "0");
 
-        DotNetCoreBuild("./src/DotNet/DotNet.csproj", new DotNetCoreBuildSettings
+        DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
+            MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithProperty("InstallWorkloadPacks", "false"),
@@ -75,7 +75,7 @@ Task("dotnet-local-workloads")
 
         DotNetBuild("./src/DotNet/DotNet.csproj", new DotNetBuildSettings
         {
-            MSBuildSettings = new DotNetCoreMSBuildSettings()
+            MSBuildSettings = new DotNetMSBuildSettings()
                 .EnableBinaryLogger($"{GetLogDirectory()}/dotnet-install-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog")
                 .SetConfiguration(configuration)
                 .WithTarget("Install"),
@@ -180,21 +180,23 @@ Task("dotnet-legacy-controlgallery-android")
         RunMSBuildWithDotNet("./src/Compatibility/ControlGallery/src/Android/Compatibility.ControlGallery.Android.csproj", properties, binlogPrefix: "controlgallery-android-");
     });
 
-Task("dotnet-samples-test")
+Task("dotnet-integration-build")
     .Does(() =>
     {
-        var buildSettings = new DotNetBuildSettings
-        {
-            MSBuildSettings = new DotNetMSBuildSettings()
-                .SetConfiguration(configuration)
-        };
-        DotNetBuild("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", buildSettings);
+        var properties = new Dictionary<string, string>();
+        RunMSBuildWithDotNet("./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj", properties, binlogPrefix: "integration-");
+    });
 
-        var testSettings = new DotNetTestSettings
-        {
-            Filter = "FullyQualifiedName=Microsoft.Maui.IntegrationTests.SampleTests"
-        };
-        DotNetTest($"./src/TestUtils/src/Microsoft.Maui.IntegrationTests/bin/{configuration}/net7.0/Microsoft.Maui.IntegrationTests.dll", testSettings);
+Task("dotnet-integration-test")
+    .Does(() =>
+    {
+        RunTestWithLocalDotNet(
+            "./src/TestUtils/src/Microsoft.Maui.IntegrationTests/Microsoft.Maui.IntegrationTests.csproj",
+            config: configuration,
+            pathDotnet: dotnetPath,
+            noBuild: true,
+            resultsFileNameWithoutExtension: Argument("resultsfilename", ""),
+            filter: Argument("filter", ""));
     });
 
 Task("dotnet-test")
@@ -709,21 +711,29 @@ void RunMSBuildWithDotNet(
 
 void RunTestWithLocalDotNet(string csproj)
 {
-    var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{configuration}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-    var results = $"{name}-{configuration}.trx";
-
     if(localDotnet)
         SetDotNetEnvironmentVariables();
 
-    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, null, true);
+    RunTestWithLocalDotNet(csproj, configuration, dotnetPath, argsExtra: null, noBuild: true, resultsFileNameWithoutExtension: null);
 }
 
-void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false)
+void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = null, Dictionary<string,string> argsExtra = null, bool noBuild = false, string resultsFileNameWithoutExtension = null, string filter = "")
 {
+    string binlog;
+    string results;
     var name = System.IO.Path.GetFileNameWithoutExtension(csproj);
-    var binlog = $"{GetLogDirectory()}/{name}-{config}.binlog";
-    var results = $"{name}-{config}.trx";
+    var logDirectory = GetLogDirectory();
+
+    if (string.IsNullOrWhiteSpace(resultsFileNameWithoutExtension))
+    {
+        binlog = $"{logDirectory}/{name}-{config}.binlog";
+        results = $"{name}-{config}.trx";   
+    }
+    else
+    {
+        binlog = $"{logDirectory}/{resultsFileNameWithoutExtension}.binlog";
+        results = $"{resultsFileNameWithoutExtension}.trx";
+    }
 
     Information("Run Test binlog: {0}", binlog);
 
@@ -731,8 +741,10 @@ void RunTestWithLocalDotNet(string csproj, string config, string pathDotnet = nu
         {
             Configuration = config,
             NoBuild = noBuild,
+            Filter = filter,
             Loggers = { 
-                $"trx;LogFileName={results}"  
+                $"trx;LogFileName={results}",
+                $"console;verbosity=normal"
             }, 
            	ResultsDirectory = GetTestResultsDirectory(),
             //Verbosity = Cake.Common.Tools.DotNetCore.DotNetCoreVerbosity.Diagnostic,
