@@ -57,6 +57,16 @@ steps:
       echo "##vso[task.setvariable variable=JI_JAVA_HOME]$(JAVA_HOME_11_X64)"
       echo "##vso[task.setvariable variable=JAVA_HOME]$(JAVA_HOME_11_X64)"
     displayName: 'Setup JDK Paths'
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))  
+  # Configure VS Mac for Xcode
+  # This seems to be needed or else it will pick other xcode for example on xharness
+  - bash: |
+      set -x
+      mkdir -p ~/Library/Preferences/Xamarin
+      rm -f ~/Library/Preferences/Xamarin/Settings.plist
+      /usr/libexec/PlistBuddy -c "add :AppleSdkRoot string $(dirname $(dirname $(xcode-select -p)))" ~/Library/Preferences/Xamarin/Settings.plist || true
+      cat ~/Library/Preferences/Xamarin/Settings.plist || true
+    displayName: 'Configure Visual Studio'
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   # Prepare Windows
@@ -170,4 +180,3 @@ steps:
   #       $xml.configuration.RemoveChild($xml.configuration.disabledPackageSources)
   #       $xml.Save($path)
   #     displayName: 'Add "wasdk-internal" to NuGet.config'
-
