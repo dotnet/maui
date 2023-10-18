@@ -138,13 +138,11 @@ namespace Microsoft.Maui.Controls
 			set { SetValue(PaddingElement.PaddingProperty, value); }
 		}
 
-		/// <inheritdoc/>
 		Thickness IPaddingElement.PaddingDefaultValueCreator()
 		{
 			return default(Thickness);
 		}
 
-		/// <inheritdoc/>
 		void IPaddingElement.OnPaddingPropertyChanged(Thickness oldValue, Thickness newValue)
 		{
 			UpdateChildrenLayout();
@@ -482,8 +480,8 @@ namespace Microsoft.Maui.Controls
 
 		/// <summary>
 		/// Called when the page's <see cref="Element.Parent"/> property has changed.
-		/// <exception cref="InvalidOperationException">Thrown when the page's <see cref="Element.RealParent"/> can't be casted to <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
 		/// </summary>
+		/// <exception cref="InvalidOperationException">Thrown when the page's <see cref="Element.RealParent"/> can't be casted to <see cref="Page"/> or <see cref="BaseShellItem"/>.</exception>
 		protected override void OnParentSet()
 		{
 			if (!Application.IsApplicationOrWindowOrNull(RealParent) && !(RealParent is Page) && !(RealParent is BaseShellItem))
@@ -782,7 +780,6 @@ namespace Microsoft.Maui.Controls
 
 		Toolbar _toolbar;
 
-		/// <inheritdoc/>
 		IToolbar IToolbarElement.Toolbar
 		{
 			get => _toolbar;

@@ -129,6 +129,9 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateUserInterfaceStyle(this IApplication application)
 		{
+			if (!OperatingSystem.IsIOSVersionAtLeast(13) && !OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
+				return;
+
 			if (application is null)
 				return;
 

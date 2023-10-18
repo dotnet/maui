@@ -105,7 +105,6 @@ public partial class App : Application
         <summary>Gets the object that developers use to register or unregister application links.</summary>
         <value>The object that developers use to register or unregister application links.</value>
         <remarks>It is not possible to unregister an app link on the Android platform.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="CleanUp">
@@ -438,7 +437,6 @@ public partial class App : Application
         <param name="uri">The URI for the request.</param>
         <summary>App developers override this method to respond when the user initiates an app link request.</summary>
         <remarks>To be added.</remarks>
-        <related type="article" href="https://developer.xamarin.com/guides/xamarin-forms/platform-features/deep-linking/">Application Indexing and Deep Linking</related>
       </Docs>
     </Member>
     <Member MemberName="OnParentSet">
