@@ -441,8 +441,8 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		}
 
 		Information("The platform version to run tests: {0}", iosVersionToRun);
-		SetEnvironmentVariable("IOS_SIMULATOR_UDID", deviceToRun);
-		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersionToRun);
+		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
+		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
 	}
 }
 
@@ -476,7 +476,7 @@ void GetDevices(string version)
 					processSettings.RedirectStandardOutput = true;
 					processSettings.RedirectStandardError = true;
 					processSettings.RedirectedStandardOutputHandler = (output) => {
-							Information("Apple State:", output);
+							Information("Apple State: {0}", output);
 							if (output == "Connected Devices:" )
 							{
 								isDevice = true;

@@ -47,7 +47,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		public override IConfig GetTestConfig()
 		{
-			var frameworkVersion = "net7.0";
+			var frameworkVersion = "net8.0";
 #if DEBUG
 			var configuration = "Debug";
 #else
@@ -59,10 +59,14 @@ namespace Microsoft.Maui.AppiumTests
 
 			switch (_testDevice)
 			{
+				case TestDevice.Android:
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
+					break;
 				case TestDevice.iOS:
 					config.SetProperty("DeviceName", "iPhone X");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4");
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "14.4");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
