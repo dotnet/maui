@@ -2,7 +2,7 @@
 
 namespace Microsoft.Maui.Platform
 {
-	public static class PageExtensions
+	internal static class PageExtensions
 	{
 		public static void UpdateTitle(this UIViewController viewController, IContentView page)
 		{

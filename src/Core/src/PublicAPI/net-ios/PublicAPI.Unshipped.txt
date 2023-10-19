@@ -44,7 +44,6 @@ Microsoft.Maui.Platform.KeyboardAutoManagerScroll
 Microsoft.Maui.Platform.MauiImageView.MauiImageView(Microsoft.Maui.Handlers.IImageHandler! handler) -> void
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.get -> Microsoft.Maui.ICrossPlatformLayout?
 Microsoft.Maui.Platform.MauiView.CrossPlatformLayout.set -> void
-Microsoft.Maui.Platform.PageExtensions
 Microsoft.Maui.SizeRequest.Equals(Microsoft.Maui.SizeRequest other) -> bool
 Microsoft.Maui.Platform.MauiScrollView
 Microsoft.Maui.Platform.MauiScrollView.MauiScrollView() -> void
@@ -110,8 +109,6 @@ static Microsoft.Maui.Layouts.LayoutExtensions.ArrangeContentUnbounded(this Micr
 static Microsoft.Maui.Handlers.SearchBarHandler.MapKeyboard(Microsoft.Maui.Handlers.ISearchBarHandler! handler, Microsoft.Maui.ISearchBar! searchBar) -> void
 static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Connect() -> void
 static Microsoft.Maui.Platform.KeyboardAutoManagerScroll.Disconnect() -> void
-static Microsoft.Maui.Platform.PageExtensions.UpdateBackground(this UIKit.UIView! platformView, Microsoft.Maui.IContentView! page, Microsoft.Maui.IImageSourceServiceProvider? provider) -> void
-static Microsoft.Maui.Platform.PageExtensions.UpdateTitle(this UIKit.UIViewController! viewController, Microsoft.Maui.IContentView! page) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsSpellCheckEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField = null) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateIsTextPredictionEnabled(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar, UIKit.UITextField? textField = null) -> void
 static Microsoft.Maui.Platform.SearchBarExtensions.UpdateKeyboard(this UIKit.UISearchBar! uiSearchBar, Microsoft.Maui.ISearchBar! searchBar) -> void
