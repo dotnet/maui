@@ -28,6 +28,22 @@ namespace Microsoft.Maui.Platform
 			return mutableAttributedString;
 		}
 
+		internal static NSMutableAttributedString? WithTextColor(this NSAttributedString attributedString, Graphics.Color color)
+		{
+			if (attributedString == null || attributedString.Length == 0)
+				return null;
+
+			var mutableAttributedString = new NSMutableAttributedString(attributedString);
+			mutableAttributedString.AddAttribute
+			(
+				UIStringAttributeKey.ForegroundColor,
+				Foundation.NSObject.FromObject(color.ToPlatform().CGColor),
+				new NSRange(0, mutableAttributedString.Length)
+			);
+			return mutableAttributedString;
+
+		}
+
 		public static NSMutableAttributedString? WithLineHeight(this NSAttributedString attributedString, double lineHeight)
 		{
 			if (attributedString == null || attributedString.Length == 0)
