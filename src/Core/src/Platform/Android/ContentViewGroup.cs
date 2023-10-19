@@ -117,10 +117,10 @@ namespace Microsoft.Maui.Platform
 
 			float density = _context.GetDisplayDensity();
 			float strokeThickness = (float)Clip.StrokeThickness;
-			float w = (width / density) - strokeThickness;
-			float h = (height / density) - strokeThickness;
-			float x = strokeThickness / 2;
-			float y = strokeThickness / 2;
+			float w = (width / density) - (strokeThickness * 2);
+			float h = (height / density) - (strokeThickness * 2);
+			float x = strokeThickness;
+			float y = strokeThickness;
 			IShape clipShape = Clip.Shape;
 
 			var bounds = new Graphics.RectF(x, y, w, h);
