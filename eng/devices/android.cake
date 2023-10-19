@@ -495,8 +495,20 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	{
 		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);
 		//this needs to be translated to android 10/11 for appium
-		
-		SetEnvironmentVariable("PLATFORM_VERSION", "11");
+		var realApi ="";
+		if(DEVICE_VERSION == "33")
+		{
+			realApi = "13";
+		}
+		if(DEVICE_VERSION == "32" || DEVICE_VERSION == "31")
+		{
+			realApi = "12";
+		}
+		else if(DEVICE_VERSION == "30")
+		{
+			realApi = "11";
+		}
+		SetEnvironmentVariable("PLATFORM_VERSION", realApi);
 	}
 
 	DotNetTool("tool", settings);
