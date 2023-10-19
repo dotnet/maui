@@ -261,11 +261,15 @@
 
         <!-- Invoke the GetMauiItems target on all project references -->
         <!-- This will accumulate images into our MauiImage group -->
+        <ItemGroup>
+            <ResizetizeCollectItemsProjectWithNTF Include="@(_ResolvedProjectReferencePaths->HasMetadata('NearestTargetFramework'))" />
+            <ResizetizeCollectItemsProject Include="@(ResizetizeCollectItemsProjectWithNTF->HasMetadata('OriginalProjectReferenceItemSpec'))" />
+        </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
-            Projects="%(_ResolvedProjectReferencePaths.OriginalProjectReferenceItemSpec)"
+            Projects="%(ResizetizeCollectItemsProject.OriginalProjectReferenceItemSpec)"
             BuildInParallel="true"
-            Properties="TargetFramework=%(_ResolvedProjectReferencePaths.NearestTargetFramework)"
+            Properties="TargetFramework=%(ResizetizeCollectItemsProject.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
