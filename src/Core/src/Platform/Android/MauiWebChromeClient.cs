@@ -115,10 +115,12 @@ namespace Microsoft.Maui.Platform
 			}
 			else
 			{
+#pragma warning disable CS0618 // Type or member is obsolete
 				_defaultSystemUiVisibility = (int)context.Window.DecorView.SystemUiVisibility;
 				int systemUiVisibility = _defaultSystemUiVisibility | (int)SystemUiFlags.LayoutStable | (int)SystemUiFlags.LayoutHideNavigation | (int)SystemUiFlags.LayoutHideNavigation |
 					(int)SystemUiFlags.LayoutFullscreen | (int)SystemUiFlags.HideNavigation | (int)SystemUiFlags.Fullscreen | (int)SystemUiFlags.Immersive;
 				context.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)systemUiVisibility;
+#pragma warning restore CS0618 // Type or member is obsolete
 			}
 
 			// Add the CustomView
@@ -148,7 +150,9 @@ namespace Microsoft.Maui.Platform
 					context.Window.InsetsController?.Show(WindowInsets.Type.SystemBars());
 			}
 			else
+#pragma warning disable CS0618 // Type or member is obsolete
 				context.Window.DecorView.SystemUiVisibility = (StatusBarVisibility)_defaultSystemUiVisibility;
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			_videoViewCallback.OnCustomViewHidden();
 			_customView = null;
