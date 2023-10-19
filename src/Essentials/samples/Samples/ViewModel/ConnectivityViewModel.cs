@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.Maui.Networking;
 
 namespace Samples.ViewModel
@@ -10,6 +11,9 @@ namespace Samples.ViewModel
 
 		public string NetworkAccess =>
 			Connectivity.NetworkAccess.ToString();
+
+		public string BackgroundThreadNetworkAccess =>
+			 Task.Run(Connectivity.NetworkAccess.ToString).GetAwaiter().GetResult();
 
 		public string ConnectionProfiles
 		{
