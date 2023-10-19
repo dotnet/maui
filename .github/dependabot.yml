@@ -6,7 +6,7 @@ registries:
 updates:
 - package-ecosystem: nuget
   directory: "/"
-  registries: "public"
+  registries: "*"
   schedule:
     interval: daily
   open-pull-requests-limit: 25
