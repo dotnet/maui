@@ -15,7 +15,7 @@ namespace Microsoft.Maui.IntegrationTests
 		{
 			get
 			{
-				var result = "id_" + TestContext.CurrentContext.Test.ID + "_" + TestContext.CurrentContext.Test.Name;
+				var result = TestContext.CurrentContext.Test.Name;
 				foreach (var c in invalidChars.Concat(Path.GetInvalidPathChars().Concat(Path.GetInvalidFileNameChars())))
 				{
 					result = result.Replace(c, '_');
