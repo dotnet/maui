@@ -262,20 +262,20 @@
         <!-- Invoke the GetMauiItems target on all project references. This will accumulate images into our MauiImage group -->
         <ItemGroup>
             <!-- Filter out the items missing the OriginalProjectReferenceItemSpec because this is essential -->
-            <ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
+            <_ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
             <!-- Convert the Identity from the final assembly path to the ProjectReference -->
-            <ResizetizeCollectItemsProjectWithItemSpec Include="@(ResizetizeCollectItemsProjectWithOIS->'%(OriginalProjectReferenceItemSpec)')" />
+            <_ResizetizeCollectItemsProjectWithItemSpec Include="@(_ResizetizeCollectItemsProjectWithOIS->'%(OriginalProjectReferenceItemSpec)')" />
             <!-- Add the resolved references if and only if they have NearestTargetFramework defined -->
-            <ResizetizeCollectItemsProject Include="@(ResizetizeCollectItemsProjectWithItemSpec->HasMetadata('NearestTargetFramework'))" />
+            <_ResizetizeCollectItemsProject Include="@(_ResizetizeCollectItemsProjectWithItemSpec->HasMetadata('NearestTargetFramework'))" />
             <!-- If any resolved paths were missing OriginalProjectReferenceItemSpec or NearestTargetFramework, fall back to the 
                  previous functionality with using the ProjectReference items and the CURRENT project's TargetFramework -->
-            <ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
+            <_ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(_ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
         </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
-            Projects="%(ResizetizeCollectItemsProject.Identity)"
+            Projects="%(_ResizetizeCollectItemsProject.Identity)"
             BuildInParallel="true"
-            Properties="TargetFramework=%(ResizetizeCollectItemsProject.NearestTargetFramework)"
+            Properties="TargetFramework=%(_ResizetizeCollectItemsProject.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
