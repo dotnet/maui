@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Validate Border using different shapes";
 
 		[Test]
-		public void Issue16094Test()
+		public void BorderWithDifferentShapesTest()
 		{
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
