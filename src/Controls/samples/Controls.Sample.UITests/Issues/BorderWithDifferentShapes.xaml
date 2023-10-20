@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.BorderWithDifferentShapes"
+             Title="Border Shape Test">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Label">
+                <Setter Property="FontSize" Value="10" />
+            </Style>
+
+            <Style TargetType="Border">
+                <Setter Property="Stroke" Value="Red" />
+                <Setter Property="HeightRequest" Value="80" />
+                <Setter Property="WidthRequest" Value="80" />
+            </Style>
+
+            <Style TargetType="Image">
+                <Setter Property="Aspect" Value="AspectFill" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <Grid
+        Padding="12"
+        ColumnDefinitions="*, *, *"
+        RowDefinitions="Auto, Auto, Auto, *">
+        <!-- NO STROKE -->
+        <StackLayout>
+            <Label 
+                Text="Rectangle without Stroke"/>
+            <Border
+                StrokeShape="Rectangle"
+                StrokeThickness="0">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="1">
+            <Label 
+                Text="RoundRectangle without Stroke"/>
+            <Border  
+                StrokeShape="RoundRectangle 12, 0, 0, 12"
+                StrokeThickness="0">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="2">
+            <Label 
+                Text="Ellipse without Stroke"/>
+            <Border
+                StrokeShape="Ellipse"
+                StrokeThickness="0">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <!-- SMALL STROKE -->
+        <StackLayout
+            Grid.Row="1">
+            <Label 
+                Text="Rectangle with Stroke"/>
+            <Border
+                StrokeShape="Rectangle"
+                StrokeThickness="1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="1"
+            Grid.Row="1">
+            <Label 
+                Text="RoundRectangle with Stroke"/>
+            <Border  
+                StrokeShape="RoundRectangle 12, 0, 0, 12"
+                StrokeThickness="1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="2"
+            Grid.Row="1">
+            <Label 
+                Text="Ellipse with Stroke"/>
+            <Border
+                StrokeShape="Ellipse"
+                StrokeThickness="1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <!-- BIG STROKE -->
+        <StackLayout
+            Grid.Row="2">
+            <Label 
+                Text="Rectangle with Stroke"/>
+            <Border
+                StrokeShape="Rectangle"
+                StrokeThickness="10">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="1"
+            Grid.Row="2">
+            <Label 
+                Text="RoundRectangle with Stroke"/>
+            <Border  
+                StrokeShape="RoundRectangle 12, 0, 0, 12"
+                StrokeThickness="10">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="2"
+            Grid.Row="2">
+            <Label 
+                Text="Ellipse with Stroke"/>
+            <Border
+                StrokeShape="Ellipse"
+                StrokeThickness="10">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <!-- STROKEDASHARRAY -->
+        <StackLayout
+            Grid.Row="3">
+            <Label 
+                Text="Rectangle with StrokeDashArray"/>
+            <Border
+                StrokeShape="Rectangle"
+                StrokeThickness="4"
+                StrokeDashArray="1, 1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="1"
+            Grid.Row="3">
+            <Label 
+                Text="RoundRectangle with StrokeDashArray"/>
+            <Border  
+                StrokeShape="RoundRectangle 12, 0, 0, 12"
+                StrokeThickness="4" 
+                StrokeDashArray="1, 1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+        <StackLayout
+            Grid.Column="2"
+            Grid.Row="3">
+            <Label 
+                Text="Ellipse with StrokeDashArray"/>
+            <Border
+                StrokeShape="Ellipse"
+                StrokeThickness="4" 
+                StrokeDashArray="1, 1">
+                <Image 
+                    Source="oasis.jpg"/>
+            </Border>
+        </StackLayout>
+    </Grid>
+</ContentPage>

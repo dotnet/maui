@@ -36,7 +36,7 @@ namespace Maui.Controls.Sample.Issues
 
 			Image image = new Image
 			{
-				Source = "dotnet_bot.png",
+				Source = "oasis.jpg",
 				Aspect = Aspect.AspectFill
 			};
 			abs.Add(image);

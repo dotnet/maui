@@ -115,13 +115,14 @@ namespace Microsoft.Maui.Platform
 			if (Clip is null || Clip?.Shape is null)
 				return null;
 
+			IShape clipShape = Clip.Shape;
+			bool isRoundRectangle = clipShape is IRoundRectangle;
 			float density = _context.GetDisplayDensity();
 			float strokeThickness = (float)Clip.StrokeThickness;
-			float w = (width / density) - (strokeThickness * 2);
-			float h = (height / density) - (strokeThickness * 2);
-			float x = strokeThickness;
-			float y = strokeThickness;
-			IShape clipShape = Clip.Shape;
+			float w = (width / density) - (isRoundRectangle ? (strokeThickness * 2) : strokeThickness);
+			float h = (height / density) - (isRoundRectangle ? (strokeThickness * 2) : strokeThickness);
+			float x = isRoundRectangle ? strokeThickness : strokeThickness / 2;
+			float y = isRoundRectangle ? strokeThickness : strokeThickness / 2;
 
 			var bounds = new Graphics.RectF(x, y, w, h);
 
