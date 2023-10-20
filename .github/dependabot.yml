@@ -1,12 +1,13 @@
 version: 2
 registries:
-  public:
+  custom-nuget:
     type: nuget-feed
     url: https://api.nuget.org/v3/index.json
 updates:
 - package-ecosystem: nuget
   directory: "/"
-  registries: "*"
+  registries:
+    - custom-nuget
   schedule:
     interval: daily
   open-pull-requests-limit: 25
