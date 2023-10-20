@@ -29,6 +29,7 @@
         <!-- NO STROKE -->
         <StackLayout>
             <Label 
+                AutomationId="WaitForStubControl"
                 Text="Rectangle without Stroke"/>
             <Border
                 StrokeShape="Rectangle"
