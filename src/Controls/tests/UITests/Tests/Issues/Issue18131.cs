@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Color changes are not reflected in the Rectangle shapes";
 
 		[Test]
-		public void Issue15330Test()
+		public void Issue18131Test()
 		{
 			App.WaitForElement("ChangeColorButton");
 			App.Click("ChangeColorButton");
