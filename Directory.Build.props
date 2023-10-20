@@ -157,17 +157,21 @@
     <GitDefaultBranch>main</GitDefaultBranch>
   </PropertyGroup>
   <PropertyGroup>
+    <!-- NuGet package information -->
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Authors>Microsoft</Authors>
     <NeutralLanguage>en</NeutralLanguage>
     <RepositoryUrl>https://github.com/dotnet/maui.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/dotnet/maui</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageVersion>$(DotNetVersionBand)-dev</PackageVersion>
     <PackageOutputPath>$(MSBuildThisFileDirectory)artifacts</PackageOutputPath>
     <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
+    <PackageIconFile>$(MSBuildThisFileDirectory)Assets\icon.png</PackageIconFile>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
+    <DefaultPackageTags>dotnet-maui;dotnet;maui;cross-platform;ios;android;macos;maccatalyst;windows;winui;tizen</DefaultPackageTags>
     <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
