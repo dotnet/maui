@@ -10,7 +10,7 @@ variables:
 - name: REQUIRED_XCODE
   value: 14.3.1
 - name: DEVICETESTS_REQUIRED_XCODE
-  value: 14.3.1
+  value: 15.0.0
 - name: LocBranchPrefix
   value: 'loc-hb'
 - name: isMainBranch
