@@ -1,6 +1,7 @@
 #nullable disable
 using System;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -8,7 +9,7 @@ namespace Microsoft.Maui.Controls
 	public partial class VisualElement
 	{
 		[Obsolete("Use ViewHandler.ViewMapper instead.")]
-		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper = new PropertyMapper<IView, IViewHandler>(Element.ControlsElementMapper);
+		public static IPropertyMapper<IView, IViewHandler> ControlsVisualElementMapper = new ControlsMapper<IView, IViewHandler>(Element.ControlsElementMapper);
 
 		internal static new void RemapForControls()
 		{
