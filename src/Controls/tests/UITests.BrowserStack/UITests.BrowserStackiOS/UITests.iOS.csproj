@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<!-- Use net6.0 for now as the BrowserStack SDK currently has some issues with net7.0 -->
+	<TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+	<PackageReference Include="BrowserStack.TestAdapter" Version="0.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<Compile Include="..\UITests-Shared\*.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+</Project>

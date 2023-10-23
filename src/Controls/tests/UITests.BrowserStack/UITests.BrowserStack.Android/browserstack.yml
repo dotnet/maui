@@ -1,0 +1,66 @@
+# =============================
+# Set BrowserStack Credentials
+# =============================
+# Add your BrowserStack userName and acccessKey here or set BROWSERSTACK_USERNAME and
+# BROWSERSTACK_ACCESS_KEY as env variables
+#userName:
+#accessKey:
+
+# ======================
+# BrowserStack Reporting
+# ======================
+# The following capabilities are used to set up reporting on BrowserStack:
+# Set 'projectName' to the name of your project. Example, Marketing Website
+projectName: BasicAppiumSample
+# Set `buildName` as the name of the job / testsuite being run
+buildName: basic-appium-sample android
+# `buildIdentifier` is a unique id to differentiate every execution that gets appended to
+# buildName. Choose your buildIdentifier format from the available expressions:
+# ${BUILD_NUMBER} (Default): Generates an incremental counter with every execution
+# ${DATE_TIME}: Generates a Timestamp with every execution. Eg. 05-Nov-19:30
+# Read more about buildIdentifiers here -> https://www.browserstack.com/docs/automate/selenium/organize-tests
+buildIdentifier: '#${BUILD_NUMBER}' # Supports strings along with either/both ${expression}
+
+source: 'nunit:appium-sample-sdk:v1.0'
+
+# Set `app` to define the app that is to be used for testing. 
+# It can either take the id of any uploaded app or the path of the app directly.
+app: "../MauiApp/bin/Debug/net7.0-android/com.companyname.basicappiumsample.apk"
+
+# =======================================
+# Platforms (Browsers / Devices to test)
+# =======================================
+# Platforms object contains all the browser / device combinations you want to test on.
+# Entire list available here -> (https://www.browserstack.com/list-of-browsers-and-platforms/automate)
+
+platforms:
+  - deviceName: Samsung Galaxy S22 Ultra
+    osVersion: 12.0
+    platformName: android
+  - deviceName: Samsung Galaxy S21
+    osVersion: 11.0
+    platformName: android
+  - deviceName: Google Pixel 6 Pro
+    osVersion: 12.0
+    platformName: android
+
+# ==========================================
+# BrowserStack Local
+# (For localhost, staging/private websites)
+# ==========================================
+# Set browserStackLocal to true if your website under test is not accessible publicly over the internet
+# Learn more about how BrowserStack Local works here -> https://www.browserstack.com/docs/automate/selenium/local-testing-introduction
+#browserstackLocal: true # <boolean> (Default false)
+#browserStackLocalOptions:
+#Options to be passed to BrowserStack local in-case of advanced configurations
+#  localIdentifier: # <string> (Default: null) Needed if you need to run multiple instances of local.
+#  forceLocal: true  # <boolean> (Default: false) Set to true if you need to resolve all your traffic via BrowserStack Local tunnel.
+# Entire list of arguments available here -> https://www.browserstack.com/docs/automate/selenium/manage-incoming-connections
+
+# ===================
+# Debugging features
+# ===================
+debug: false # <boolean> # Set to true if you need screenshots for every selenium command ran
+networkLogs: false # <boolean> Set to true to enable HAR logs capturing
+consoleLogs: errors # <string> Remote browser's console debug levels to be printed (Default: errors)
+# Available options are `disable`, `errors`, `warnings`, `info`, `verbose` (Default: errors)

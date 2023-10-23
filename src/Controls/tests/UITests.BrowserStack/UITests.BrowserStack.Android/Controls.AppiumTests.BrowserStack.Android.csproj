@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<!-- Use net6.0 for now as the BrowserStack SDK currently has some issues with net7.0 -->
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsTestProject>true</IsTestProject>
+    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Appium.WebDriver" Version="5.0.0-rc.1" />
+	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageReference Include="NUnit" Version="3.13.3" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\UITests\**\*.cs" Exclude="..\..\UITests\obj\**\*.cs" LinkBase="Shared" />
+    <Compile Include="..\..\..\samples\Controls.Sample.UITests\Test.cs" Link="Shared\Test.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+  </ItemGroup>
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
+  </ItemGroup>
+
+</Project>
