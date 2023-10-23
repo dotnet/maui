@@ -629,6 +629,29 @@ namespace Microsoft.Maui.Controls.Platform
 
 				var nativeRecognizers = GetPlatformRecognizer(recognizer);
 
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
+				{
+					dragFound = true;
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+					if (uIDragInteraction == null && PlatformView != null)
+					{
+						var interaction = new UIDragInteraction(_dragAndDropDelegate);
+						interaction.Enabled = true;
+						PlatformView.AddInteraction(interaction);
+					}
+				}
+
+				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
+				{
+					dropFound = true;
+					_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
+					if (uIDropInteraction == null && PlatformView != null)
+					{
+						var interaction = new UIDropInteraction(_dragAndDropDelegate);
+						PlatformView.AddInteraction(interaction);
+					}
+				}
+
 				if (nativeRecognizers is null)
 					continue;
 
@@ -640,29 +663,6 @@ namespace Microsoft.Maui.Controls.Platform
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
 						_gestureRecognizers[recognizer] = nativeRecognizer;
-					}
-
-					if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
-					{
-						dragFound = true;
-						_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-						if (uIDragInteraction == null && PlatformView != null)
-						{
-							var interaction = new UIDragInteraction(_dragAndDropDelegate);
-							interaction.Enabled = true;
-							PlatformView.AddInteraction(interaction);
-						}
-					}
-
-					if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DropGestureRecognizer)
-					{
-						dropFound = true;
-						_dragAndDropDelegate = _dragAndDropDelegate ?? new DragAndDropDelegate(_handler);
-						if (uIDropInteraction == null && PlatformView != null)
-						{
-							var interaction = new UIDropInteraction(_dragAndDropDelegate);
-							PlatformView.AddInteraction(interaction);
-						}
 					}
 				}
 			}
