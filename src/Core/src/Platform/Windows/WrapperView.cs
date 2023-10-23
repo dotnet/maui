@@ -194,6 +194,9 @@ namespace Microsoft.Maui.Platform
 			double width = _shadowHostSize.Width;
 			double height = _shadowHostSize.Height;
 
+			if (height <= 0 && width <= 0)
+				return;
+
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
 
@@ -213,7 +216,9 @@ namespace Microsoft.Maui.Platform
 			var compositor = hostVisual.Compositor;
 
 			_dropShadow = compositor.CreateDropShadow();
-			await SetShadowPropertiesAsync(_dropShadow, Shadow);
+			SetShadowProperties(_dropShadow, Shadow);
+
+			_dropShadow.Mask = await Child.GetAlphaMaskAsync();
 
 			_shadowVisual = compositor.CreateSpriteVisual();
 			_shadowVisual.Size = new Vector2((float)width, (float)height);
@@ -225,10 +230,13 @@ namespace Microsoft.Maui.Platform
 
 		async Task UpdateShadowAsync()
 		{
-			if (_dropShadow != null)
-				await SetShadowPropertiesAsync(_dropShadow, Shadow);
-
-			UpdateShadowSize();
+			if (_dropShadow is null)
+				await CreateShadowAsync();
+			else
+			{
+				SetShadowProperties(_dropShadow, Shadow);
+				UpdateShadowSize();
+			}
 		}
 
 		void UpdateShadowSize()
@@ -254,21 +262,21 @@ namespace Microsoft.Maui.Platform
 				{
 					_shadowHost.Width = width;
 					_shadowHost.Height = height;
-
+									
 					Canvas.SetLeft(_shadowHost, Child.ActualOffset.X);
 					Canvas.SetTop(_shadowHost, Child.ActualOffset.Y);
 				}
 			}
 		}
 
-		async Task SetShadowPropertiesAsync(DropShadow dropShadow, IShadow? mauiShadow)
+		void SetShadowProperties(DropShadow dropShadow, IShadow? mauiShadow)
 		{
 			float blurRadius = 10f;
 			float opacity = 1f;
 			Graphics.Color? shadowColor = Colors.Black;
 			Graphics.Point offset = Graphics.Point.Zero;
 
-			if (mauiShadow != null)
+			if (mauiShadow is not null)
 			{
 				blurRadius = mauiShadow.Radius * 2;
 				opacity = mauiShadow.Opacity;
@@ -279,11 +287,10 @@ namespace Microsoft.Maui.Platform
 			dropShadow.BlurRadius = blurRadius;
 			dropShadow.Opacity = opacity;
 
-			if (shadowColor != null)
+			if (shadowColor is not null)
 				dropShadow.Color = shadowColor.ToWindowsColor();
 
 			dropShadow.Offset = new Vector3((float)offset.X, (float)offset.Y, 0);
-			dropShadow.Mask = await Child.GetAlphaMaskAsync();
 		}
 	}
 }
