@@ -79,6 +79,14 @@ namespace Microsoft.Maui.Controls
 				return null;
 			}
 
+			if (ve.Window is null)
+			{
+				// This means the xplat IsFocused value has lagged behind navigation events.
+				// This might happen if navigated has fired on the incoming page but the
+				// "LostFocus" event hasn't propagated from the previous one
+				return null;
+			}
+
 			IDisposable? platformToken = SetupHideSoftInputOnTapped(platformView);
 
 #if ANDROID

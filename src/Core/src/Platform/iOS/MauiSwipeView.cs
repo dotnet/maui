@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Platform
 				if (subview.UserInteractionEnabled)
 				{
 					CGPoint subPoint = subview.ConvertPointFromView(point, this);
-					UIView result = subview.HitTest(subPoint, uievent);
+					UIView? result = subview.HitTest(subPoint, uievent);
 
 					if (result != null)
 					{

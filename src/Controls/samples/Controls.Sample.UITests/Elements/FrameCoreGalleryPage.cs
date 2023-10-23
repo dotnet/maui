@@ -9,9 +9,9 @@ internal class FrameCoreGalleryPage : CoreGalleryPage<Frame>
 
 	protected override void InitializeElement(Frame element)
 	{
-			element.HeightRequest = 50;
-			element.WidthRequest = 100;
-			element.BorderColor = Colors.Olive;
+		element.HeightRequest = 50;
+		element.WidthRequest = 100;
+		element.BorderColor = Colors.Olive;
 	}
 
 	protected override void Build()

@@ -172,8 +172,6 @@ namespace Microsoft.Maui.Controls
 		}
 
 		ObservableCollection<IGestureRecognizer> _compositeGestureRecognizers;
-
-		/// <inheritdoc/>
 		IList<IGestureRecognizer> IGestureController.CompositeGestureRecognizers
 		{
 			get
@@ -292,7 +290,6 @@ namespace Microsoft.Maui.Controls
 		internal protected PropertyMapper<T> GetRendererOverrides<T>() where T : IView =>
 			(PropertyMapper<T>)(propertyMapper as PropertyMapper<T> ?? (propertyMapper = new PropertyMapper<T>()));
 
-		/// <inheritdoc/>
 		PropertyMapper IPropertyMapperView.GetPropertyMapperOverrides() => propertyMapper;
 
 		/// <inheritdoc/>
@@ -303,14 +300,11 @@ namespace Microsoft.Maui.Controls
 
 		#region HotReload
 
-		/// <inheritdoc/>
 		IView IReplaceableView.ReplacedView =>
 			MauiHotReloadHelper.GetReplacedView(this) ?? this;
 
-		/// <inheritdoc/>
 		IReloadHandler IHotReloadableView.ReloadHandler { get; set; }
 
-		/// <inheritdoc/>
 		void IHotReloadableView.TransferState(IView newView)
 		{
 			//TODO: LEt you hot reload the the ViewModel
@@ -318,7 +312,6 @@ namespace Microsoft.Maui.Controls
 				v.BindingContext = BindingContext;
 		}
 
-		/// <inheritdoc/>
 		void IHotReloadableView.Reload()
 		{
 			Dispatcher.Dispatch(() =>

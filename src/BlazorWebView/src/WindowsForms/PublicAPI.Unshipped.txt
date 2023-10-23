@@ -1,3 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.StartPath.get -> string!
 Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.StartPath.set -> void
+virtual Microsoft.AspNetCore.Components.WebView.WindowsForms.BlazorWebView.TryDispatchAsync(System.Action<System.IServiceProvider!>! workItem) -> System.Threading.Tasks.Task<bool>!
