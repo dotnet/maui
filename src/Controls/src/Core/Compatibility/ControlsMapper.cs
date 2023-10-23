@@ -40,25 +40,5 @@ namespace Microsoft.Maui.Controls.Compatibility
 		{
 			_propertyMapper.UpdateProperty(elementHandler, virtualView, property);
 		}
-
-		/*protected override void SetPropertyCore(string key, Action<IElementHandler, IElement> action)
-		{
-			_propertyMapper.ReplaceMapping(key, action);
-		}
-
-		public override Action<IElementHandler, IElement>? GetProperty(string key)
-		{
-			return _propertyMapper?.GetProperty(key);
-		}
-
-		public override IEnumerable<string> GetKeys()
-		{
-			return _propertyMapper.GetKeys();
-		}
-
-		protected override void UpdatePropertyCore(string key, IElementHandler viewHandler, IElement virtualView)
-		{
-			_propertyMapper.UpdateProperty(viewHandler, virtualView, key);
-		}*/
 	}
 }
