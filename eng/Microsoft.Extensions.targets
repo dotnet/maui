@@ -233,5 +233,9 @@
         Update="Fizzler"
         Version="$(FizzlerPackageVersion)"
     />
+    <PackageReference
+        Update="GtkSharp"
+        Version="$(GtkSharpPackageVersion)"
+    />
   </ItemGroup>
 </Project>

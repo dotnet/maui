@@ -263,6 +263,13 @@ namespace Microsoft.Maui.Media
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Tizen.NUI.BaseComponents.View view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
+#elif GTK
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Gtk.Window window) =>
+			screenshot.AsPlatform().CaptureAsync(window);
+
+		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Gtk.Widget view) =>
+			screenshot.AsPlatform().CaptureAsync(view);
 #endif
 	}
 

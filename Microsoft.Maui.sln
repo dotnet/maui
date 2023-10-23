@@ -197,6 +197,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Skia", "src\Graphi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Win2D", "src\Graphics\src\Graphics.Win2D\Graphics.Win2D.csproj", "{291F634A-2D8D-48B6-A1A0-BB9BC265D6E4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Graphics.Gtk", "src\Graphics\src\Graphics.Gtk\Graphics.Gtk.csproj", "{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Text.Markdig", "src\Graphics\src\Text.Markdig\Graphics.Text.Markdig.csproj", "{375B22F5-9D79-4D17-B759-F8220DFB8B70}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Graphics.Tests", "src\Graphics\tests\Graphics.Tests\Graphics.Tests.csproj", "{56BBFDBD-254F-42B6-9984-46E19C53FB00}"
@@ -210,6 +212,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Mac", "src\Graphics\samples\GraphicsTester.Mac\GraphicsTester.Mac.csproj", "{0A44978B-81FD-4565-9997-3E7218C66596}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.MacCatalyst", "src\Graphics\samples\GraphicsTester.MacCatalyst\GraphicsTester.MacCatalyst.csproj", "{B3DD0741-2EC3-4A54-82B7-73923DE4CF48}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GraphicsTester.Gtk", "src\Graphics\samples\GraphicsTester.Gtk\GraphicsTester.Gtk.csproj", "{624D161D-762C-45F7-9CBC-9929BA5D13EF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GraphicsTester.Portable", "src\Graphics\samples\GraphicsTester.Portable\GraphicsTester.Portable.csproj", "{546614BB-07AA-4E8E-B6AE-EBDC183C4DAB}"
 EndProject
@@ -254,6 +258,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.Appium", "src\TestUtils\src\UITest.Appium\UITest.Appium.csproj", "{8C8CD467-11F9-4A14-8AF3-047B2CFD19A7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UITest.NUnit", "src\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj", "{8050448A-E08F-4972-9B47-16042A5DFE82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Controls.Sample.Gtk", "src\Controls\samples\Controls.Sample.Gtk\Controls.Sample.Gtk.csproj", "{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -644,6 +650,18 @@ Global
 		{8050448A-E08F-4972-9B47-16042A5DFE82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8050448A-E08F-4972-9B47-16042A5DFE82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8050448A-E08F-4972-9B47-16042A5DFE82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974}.Release|Any CPU.Build.0 = Release|Any CPU
+		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{624D161D-762C-45F7-9CBC-9929BA5D13EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -762,6 +780,9 @@ Global
 		{352C2381-1DEC-4487-819D-340D1EA98FBE} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{8C8CD467-11F9-4A14-8AF3-047B2CFD19A7} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
 		{8050448A-E08F-4972-9B47-16042A5DFE82} = {7AC28763-9C68-4BF9-A1BA-25CBFFD2D15C}
+		{4EDE89FC-7C84-4855-8DD8-D7C8B128A974} = {42AB9AE1-631D-4AD4-85B7-910FF0940BDB}
+		{624D161D-762C-45F7-9CBC-9929BA5D13EF} = {1BA0121E-0B83-4C8F-81BE-C293E7E35DCE}
+		{E3FD165E-E0BE-4263-AC0E-260BA6713AD3} = {E1082E26-D700-4127-9329-66D673FD2D55}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0B8ABEAD-D2B5-4370-A187-62B5ABE4EE50}

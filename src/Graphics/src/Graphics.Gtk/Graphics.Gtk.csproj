@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk/">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm)</TargetFrameworks>
+    <RootNamespace>Microsoft.Maui.Graphics.Gtk</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);CA1307;CA1309;CS8603;CS8618;CS0162</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Graphics\Graphics.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="GtkSharp" />
+  </ItemGroup>
+
+</Project>

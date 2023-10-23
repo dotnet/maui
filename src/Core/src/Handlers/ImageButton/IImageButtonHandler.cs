@@ -6,6 +6,8 @@ using PlatformView = Google.Android.Material.ImageView.ShapeableImageView;
 using PlatformView = Microsoft.UI.Xaml.Controls.Button;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
+#elif GTK
+using PlatformView = Microsoft.Maui.Platform.MauiImageButton;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

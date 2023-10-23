@@ -21,6 +21,9 @@ using ParentView = Microsoft.UI.Xaml.DependencyObject;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
 using ParentView = Tizen.NUI.BaseComponents.View;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using ParentView = Gtk.Widget;
 #else
 using PlatformView = System.Object;
 using ParentView = System.Object;
@@ -40,8 +43,8 @@ namespace Microsoft.Maui.Platform
 		internal static double ExtractAngleInDegrees(this Matrix4x4 matrix) => ExtractAngleInRadians(matrix) * 180 / Math.PI;
 
 
-		public static IPlatformViewHandler ToHandler(this IView view, IMauiContext context) =>
-			(IPlatformViewHandler)ElementExtensions.ToHandler(view, context);
+		public static IViewHandler ToHandler(this IView view, IMauiContext context) =>
+			(IViewHandler)ElementExtensions.ToHandler(view, context);
 
 		internal static T? GetParentOfType<T>(this ParentView? view)
 #if ANDROID

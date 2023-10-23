@@ -20,6 +20,11 @@ using PlatformView = Tizen.NUI.BaseComponents.View;
 using BasePlatformType = System.Object;
 using PlatformWindow = Tizen.NUI.Window;
 using PlatformApplication = Tizen.Applications.CoreApplication;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using BasePlatformType = System.Object;
+using PlatformWindow = Gtk.Window;
+using PlatformApplication = Gtk.Application;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 using BasePlatformType = System.Object;
@@ -165,7 +170,7 @@ namespace Microsoft.Maui.Platform
 		public static void SetWindowHandler(this PlatformWindow platformWindow, IWindow window, IMauiContext context) =>
 			SetHandler(platformWindow, window, context);
 
-#if WINDOWS || IOS || ANDROID || TIZEN
+#if WINDOWS || IOS || ANDROID || TIZEN || GTK
 		internal static IWindow GetWindow(this IElement element) =>
 			element.Handler?.MauiContext?.GetPlatformWindow()?.GetWindow() ??
 			throw new InvalidOperationException("IWindow not found");

@@ -6,6 +6,8 @@ using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
 using PlatformView = Microsoft.UI.Xaml.Controls.SwipeControl;
 #elif TIZEN
 using PlatformView = Microsoft.Maui.Platform.MauiSwipeView;
+#elif GTK
+using PlatformView = Gtk.Widget;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

@@ -51,6 +51,11 @@ namespace Microsoft.Maui
 		public abstract Task<IImageSourceServiceResult<MauiImageSource>?> GetImageAsync(
 			IImageSource imageSource,
 			CancellationToken cancellationToken = default);
+#elif GTK
+		public abstract Task<IImageSourceServiceResult<Gdk.Pixbuf>?> GetImageAsync(
+			IImageSource imageSource,
+			float scale = 1,
+			CancellationToken cancellationToken = default);
 #elif WINDOWS
 		public abstract Task<IImageSourceServiceResult<UI.Xaml.Media.ImageSource>?> GetImageSourceAsync(
 			IImageSource imageSource,

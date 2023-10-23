@@ -15,6 +15,9 @@ using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
 using PlatformView = Tizen.NUI.BaseComponents.View;
+#elif GTK
+using PlatformImage = Gdk.Pixbuf;
+using PlatformView = Gtk.Image;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 using PlatformView = System.Object;
@@ -24,7 +27,7 @@ namespace Microsoft.Maui.Platform
 {
 	public partial class ImageSourcePartLoader
 	{
-#if IOS || ANDROID || WINDOWS || TIZEN
+#if IOS || ANDROID || WINDOWS || TIZEN || GTK
 		IImageSourceServiceProvider? _imageSourceServiceProvider;
 #endif
 
@@ -61,7 +64,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource?.Source is not null)
 			{
-#if IOS || ANDROID || WINDOWS || TIZEN
+#if IOS || ANDROID || WINDOWS || TIZEN || GTK
 				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
 #endif
 

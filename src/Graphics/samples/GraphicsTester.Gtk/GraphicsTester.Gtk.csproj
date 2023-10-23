@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <RootNamespace>GraphicsTester.Gtk</RootNamespace>
+
+    <PackageId>GraphicsTester.Gtk</PackageId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Graphics.Gtk\Graphics.Gtk.csproj"/>
+    <ProjectReference Include="..\..\src\Graphics\Graphics.csproj"/>
+    <ProjectReference Include="..\GraphicsTester.Portable\GraphicsTester.Portable.csproj"/>
+
+  </ItemGroup>
+
+
+</Project>

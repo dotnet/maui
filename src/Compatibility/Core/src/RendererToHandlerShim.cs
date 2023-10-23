@@ -24,6 +24,10 @@ using static Microsoft.Maui.Controls.Compatibility.Platform.Tizen.Platform;
 using PlatformView = Tizen.NUI.BaseComponents.View;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Tizen.NUI.BaseComponents.View>;
+#elif GTK
+using PlatformView = Gtk.Widget;
+using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, Gtk.Widget>;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 #elif (NETSTANDARD || !PLATFORM)
 using PlatformView = System.Object;
 using ViewHandler = Microsoft.Maui.Handlers.ViewHandler<Microsoft.Maui.IView, System.Object>;
