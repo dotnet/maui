@@ -38,7 +38,7 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken;
 	static NSObject? TextFieldToken;
 	static NSObject? TextViewToken;
-	static bool? ShouldConnect;
+	internal static bool ShouldDisconnectLifecycle;
 
 	/// <summary>
 	/// Enables automatic scrolling with keyboard interactions on iOS devices.
@@ -50,16 +50,6 @@ public static class KeyboardAutoManagerScroll
 	/// </remarks>
 	public static void Connect()
 	{
-		// if Disconnect was called prior to the first Connect
-		// call in the Created Lifecycle event, do not connect
-		if (ShouldConnect is false)
-		{
-			ShouldConnect = true;
-			return;
-		}
-
-		ShouldConnect = true;
-
 		if (TextFieldToken is not null)
 			return;
 
@@ -84,8 +74,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		// if Disconnect is called prior to Connect, signal to not
 		// Connect during the Created Lifecycle event
-		if (ShouldConnect is null)
-			ShouldConnect = false;
+		ShouldDisconnectLifecycle = true;
 
 		if (WillShowToken is not null)
 		{
