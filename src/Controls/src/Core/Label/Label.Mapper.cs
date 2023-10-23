@@ -1,5 +1,7 @@
 #nullable disable
 using System;
+using System.Collections.Generic;
+using Microsoft.Maui.Controls.Compatibility;
 using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
@@ -8,7 +10,8 @@ namespace Microsoft.Maui.Controls
 	public partial class Label
 	{
 		[Obsolete("Use LabelHandler.Mapper instead.")]
-		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = new PropertyMapper<Label, LabelHandler>(LabelHandler.Mapper);
+		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = 
+			new ControlsMapper<ILabel, LabelHandler>(LabelHandler.Mapper);
 
 		internal static new void RemapForControls()
 		{
