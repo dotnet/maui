@@ -10,11 +10,11 @@
     <_IncludeIos></_IncludeIos>
     <_IncludeMacCatalyst></_IncludeMacCatalyst>
     <_IncludeMacOS></_IncludeMacOS>
+    <_IncludeNoPlatforms>true</_IncludeNoPlatforms>
   </PropertyGroup>
 
   <PropertyGroup>
-    <_SpecificPlatformRequested Condition="'$(_IncludeAndroid)' == 'true' OR '$(_IncludeWindows)' == 'true' OR '$(_IncludeTizen)' == 'true' OR '$(_IncludeIos)' == 'true' OR '$(_IncludeMacCatalyst)' == 'true' OR '$(_IncludeMacOS)' == 'true'">true</_SpecificPlatformRequested>
-    <_SpecificPlatformRequested>true</_SpecificPlatformRequested>
+    <_SpecificPlatformRequested Condition="'$(_IncludeNoPlatforms)' == 'true' OR '$(_IncludeAndroid)' == 'true' OR '$(_IncludeWindows)' == 'true' OR '$(_IncludeTizen)' == 'true' OR '$(_IncludeIos)' == 'true' OR '$(_IncludeMacCatalyst)' == 'true' OR '$(_IncludeMacOS)' == 'true'">true</_SpecificPlatformRequested>
     <IncludeAndroidTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeAndroid)' != 'true'">false</IncludeAndroidTargetFrameworks>
     <IncludeWindowsTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeWindows)' != 'true'">false</IncludeWindowsTargetFrameworks>
     <IncludeTizenTargetFrameworks Condition="'$(_SpecificPlatformRequested)' == 'true' AND '$(_IncludeTizen)' != 'true'">false</IncludeTizenTargetFrameworks>
