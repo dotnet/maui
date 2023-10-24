@@ -627,8 +627,6 @@ namespace Microsoft.Maui.Controls.Platform
 					continue;
 				}
 
-				var nativeRecognizers = GetPlatformRecognizer(recognizer);
-
 				if (OperatingSystem.IsIOSVersionAtLeast(11) && recognizer is DragGestureRecognizer)
 				{
 					dragFound = true;
@@ -637,6 +635,7 @@ namespace Microsoft.Maui.Controls.Platform
 					{
 						var interaction = new UIDragInteraction(_dragAndDropDelegate);
 						interaction.Enabled = true;
+						_interactions.Add(interaction);
 						PlatformView.AddInteraction(interaction);
 					}
 				}
@@ -648,9 +647,12 @@ namespace Microsoft.Maui.Controls.Platform
 					if (uIDropInteraction == null && PlatformView != null)
 					{
 						var interaction = new UIDropInteraction(_dragAndDropDelegate);
+						_interactions.Add(interaction);
 						PlatformView.AddInteraction(interaction);
 					}
 				}
+
+				var nativeRecognizers = GetPlatformRecognizer(recognizer);
 
 				if (nativeRecognizers is null)
 					continue;
