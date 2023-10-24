@@ -200,7 +200,9 @@ namespace UITest.Appium
 					throw new TimeoutException($"Timed out scrolling to {toElementId}");
 				}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 				var scrollAction = new TouchAction(_appiumApp.Driver).Press(x, startY).MoveTo(x, endY).Release();
+#pragma warning restore CS0618 // Type or member is obsolete
 				scrollAction.Perform();
 			}
 		}
