@@ -11,7 +11,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiTextView : UITextView, IUIViewLifeCycleEvents
 	{
 		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
-		readonly UILabel _placeholderLabel;
+		readonly MauiLabel _placeholderLabel;
 		nfloat? _defaultPlaceholderSize;
 
 		public MauiTextView()
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Platform
 			ShouldCenterVertically();
 		}
 
-		UILabel InitPlaceholderLabel()
+		MauiLabel InitPlaceholderLabel()
 		{
 			var placeholderLabel = new MauiLabel
 			{
