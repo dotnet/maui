@@ -16,7 +16,7 @@ namespace Maui.Controls.Sample.Issues
 
 		void OnButtonClicked(object sender, System.EventArgs e)
 		{
-			RectangleTest.BackgroundColor = Colors.Green;
+			RectangleTest.BackgroundColor = EllipseTest.BackgroundColor = Colors.Green;
 		}
 	}
 }
