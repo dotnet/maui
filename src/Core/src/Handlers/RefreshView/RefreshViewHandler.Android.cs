@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 
 		void OnSwipeRefresh(object? sender, System.EventArgs e)
 		{
-			VirtualView.IsRefreshing = true;
+			((IElementController)VirtualView).SetValueFromRenderer(RefreshView.IsRefreshingProperty, true);
 		}
 
 		protected override void DisconnectHandler(MauiSwipeRefreshLayout platformView)
