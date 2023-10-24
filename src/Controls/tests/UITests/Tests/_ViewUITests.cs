@@ -1,5 +1,7 @@
 ﻿using Maui.Controls.Sample;
+#if !USE_BROWSERSTACK
 using Microsoft.Maui.Controls;
+#endif
 using NUnit.Framework;
 using UITest.Appium;
 using UITest.Core;
@@ -16,13 +18,17 @@ namespace Microsoft.Maui.AppiumTests
 			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled);
 			remote.GoTo();
 
+#if !USE_BROWSERSTACK
 			var enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
 			Assert.IsTrue(enabled);
+#endif
 
 			remote.TapStateButton();
 
+#if !USE_BROWSERSTACK
 			enabled = remote.GetProperty<bool>(View.IsEnabledProperty);
 			Assert.IsFalse(enabled);
+#endif
 
 			remote.TapStateButton();
 

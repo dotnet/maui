@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
-    <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+    <DefineConstants>$(DefineConstants);ANDROID;USE_BROWSERSTACK</DefineConstants>
 
     <!-- BrowserStackPatch.cs, which is added by BrowserStack.TestAdapter, has warnings; ensure those don't fail build -->
     <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
@@ -26,7 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Controls\src\Xaml\Controls.Xaml.csproj" />
     <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
