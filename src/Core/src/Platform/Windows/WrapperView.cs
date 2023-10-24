@@ -43,6 +43,7 @@ namespace Microsoft.Maui.Platform
 			{
 				if (_child != null)
 				{
+					_child.Loaded -= OnChildLoaded;
 					_child.SizeChanged -= OnChildSizeChanged;
 					_child.UnregisterPropertyChangedCallback(VisibilityProperty, _visibilityDependencyPropertyCallbackToken);
 					Children.Remove(_child);
@@ -52,6 +53,7 @@ namespace Microsoft.Maui.Platform
 					return;
 
 				_child = value;
+				_child.Loaded += OnChildLoaded;
 				_child.SizeChanged += OnChildSizeChanged;
 				_visibilityDependencyPropertyCallbackToken = _child.RegisterPropertyChangedCallback(VisibilityProperty, OnChildVisibilityChanged);
 				Children.Add(_child);
@@ -136,6 +138,11 @@ namespace Microsoft.Maui.Platform
 				UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 			else
 				CreateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
+		}
+
+		void OnChildLoaded(object sender, RoutedEventArgs e)
+		{
+			UpdateShadowAsync().FireAndForget(IPlatformApplication.Current?.Services?.CreateLogger(nameof(WrapperView)));
 		}
 
 		void OnChildSizeChanged(object sender, SizeChangedEventArgs e)
