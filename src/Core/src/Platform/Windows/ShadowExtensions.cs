@@ -24,17 +24,20 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
+				var visual = ElementCompositionPreview.GetElementVisual(element);
+				bool isClipped = visual.Clip is not null;
+
 				//For some reason, using  TextBlock and getting the AlphaMask
 				//generates a shadow with a size more smaller than the control size. 
-				if (element is TextBlock textElement)
+				if (!isClipped && element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();
 				}
-				if (element is Image image)
+				if (!isClipped && element is Image image)
 				{
 					return image.GetAlphaMask();
 				}
-				if (element is Shape shape)
+				if (!isClipped && element is Shape shape)
 				{
 					return shape.GetAlphaMask();
 				}
@@ -45,7 +48,6 @@ namespace Microsoft.Maui.Platform
 
 					if (height > 0 && width > 0)
 					{
-						var visual = ElementCompositionPreview.GetElementVisual(element);
 						var elementVisual = visual.Compositor.CreateSpriteVisual();
 						elementVisual.Size = element.RenderSize.ToVector2();
 						var bitmap = new RenderTargetBitmap();

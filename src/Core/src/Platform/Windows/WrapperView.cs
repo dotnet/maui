@@ -183,12 +183,12 @@ namespace Microsoft.Maui.Platform
 
 		async Task CreateShadowAsync()
 		{
-			if (Child == null || Shadow == null || Shadow.Paint == null)
+			if (Child is null || !Child.IsLoaded || Shadow is null || Shadow.Paint is null)
 				return;
 
 			var visual = ElementCompositionPreview.GetElementVisual(Child);
 
-			if (Clip != null && visual.Clip == null)
+			if (Clip is not null && visual.Clip is null)
 				return;
 
 			double width = _shadowHostSize.Width;
@@ -196,6 +196,9 @@ namespace Microsoft.Maui.Platform
 
 			if (height <= 0 && width <= 0)
 				return;
+
+			if (Clip is not null)
+				await Task.Delay(500);
 
 			var ttv = Child.TransformToVisual(_shadowCanvas);
 			global::Windows.Foundation.Point offset = ttv.TransformPoint(new global::Windows.Foundation.Point(0, 0));
