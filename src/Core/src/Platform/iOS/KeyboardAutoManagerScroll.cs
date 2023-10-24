@@ -30,6 +30,7 @@ public static class KeyboardAutoManagerScroll
 	static UIView? View;
 	static UIView? ContainerView;
 	static CGRect? CursorRect;
+	static CGRect? StartingContainerViewFrame;
 	internal static bool IsKeyboardShowing;
 	static int TextViewTopDistance = 20;
 	static int DebounceCount;
@@ -38,7 +39,7 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken;
 	static NSObject? TextFieldToken;
 	static NSObject? TextViewToken;
-  static bool? ShouldConnect;
+	static bool? ShouldConnect;
 
 	public static void Connect()
 	{
