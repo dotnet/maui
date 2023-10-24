@@ -11,9 +11,9 @@
 # ======================
 # The following capabilities are used to set up reporting on BrowserStack:
 # Set 'projectName' to the name of your project. Example, Marketing Website
-projectName: BasicAppiumSample
+projectName: MAUI UITests
 # Set `buildName` as the name of the job / testsuite being run
-buildName: basic-appium-sample android
+buildName: maui-uitests android
 # `buildIdentifier` is a unique id to differentiate every execution that gets appended to
 # buildName. Choose your buildIdentifier format from the available expressions:
 # ${BUILD_NUMBER} (Default): Generates an incremental counter with every execution
@@ -25,7 +25,7 @@ source: 'nunit:appium-sample-sdk:v1.0'
 
 # Set `app` to define the app that is to be used for testing. 
 # It can either take the id of any uploaded app or the path of the app directly.
-app: "../MauiApp/bin/Debug/net7.0-android/com.companyname.basicappiumsample.apk"
+app: "../../../samples/Controls.Sample.UITests/bin/Debug/net8.0-android/com.microsoft.maui.uitests-Signed.apk"
 
 # =======================================
 # Platforms (Browsers / Devices to test)
