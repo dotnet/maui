@@ -1,12 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-	<!-- Use net6.0 for now as the BrowserStack SDK currently has some issues with net7.0 -->
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
     <DefineConstants>$(DefineConstants);ANDROID</DefineConstants>
+
+    <!-- BrowserStackPatch.cs, which is added by BrowserStack.TestAdapter, has warnings; ensure those don't fail build -->
+    <TreatWarningsAsErrors>False</TreatWarningsAsErrors>
+    <NoWarn>CA1307;CA1311</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +17,7 @@
 	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="BrowserStack.TestAdapter" Version="0.*" />
   </ItemGroup>
 
   <ItemGroup>
