@@ -94,7 +94,7 @@ namespace Microsoft.Maui
 			return state;
 		}
 #elif TIZEN
-		static IPersistedState GetPersistedState(Tizen.Applications.Bundle? state)
+		static PersistedState GetPersistedState(Tizen.Applications.Bundle? state)
 		{
 			var dict = new PersistedState();
 
