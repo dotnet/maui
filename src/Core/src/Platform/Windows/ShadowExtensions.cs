@@ -26,8 +26,6 @@ namespace Microsoft.Maui.Platform
 				var visual = ElementCompositionPreview.GetElementVisual(element);
 				bool isClipped = visual.Clip is not null;
 
-				//For some reason, using  TextBlock and getting the AlphaMask
-				//generates a shadow with a size more smaller than the control size. 
 				if (!isClipped && element is TextBlock textElement)
 				{
 					return textElement.GetAlphaMask();

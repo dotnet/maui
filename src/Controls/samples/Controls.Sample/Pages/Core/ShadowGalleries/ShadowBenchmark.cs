@@ -83,7 +83,6 @@ namespace Maui.Controls.Sample.Pages
 				{
 					borders[i].HeightRequest = height;
 				}
-				//abs2.HeightRequest = height;
 			};
 
 			SizeChanged += delegate 
