@@ -85,6 +85,20 @@
           "toLower": true
         }
       },
+      "nameToAppId": {
+        "type": "generated",
+        "generator": "regex",
+        "dataType": "string",
+        "parameters": {
+          "source": "nameToLower",
+          "steps": [
+            {
+              "regex": "[^a-z0-9_\\.]",
+              "replacement": "_"
+            }
+          ]
+        }
+      },
       "defaultAppId":{
         "type": "generated",
         "generator": "join",
@@ -96,7 +110,7 @@
             },
             {
               "type": "ref",
-              "value": "nameToLower"
+              "value": "nameToAppId"
             }
           ]
         }
