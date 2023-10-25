@@ -2,3 +2,4 @@ M:Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescripto
 M:Android.Content.Res.ColorStateList.#ctor(System.Int32[][],System.Int32[]);Use Microsoft.Maui.PlatformInterop.Get*ColorStateList() Java methods instead
 P:Microsoft.Maui.MauiWinUIApplication.Services;Use the IPlatformApplication.Current.Services instead
 P:Microsoft.Maui.MauiWinUIApplication.Application;Use the IPlatformApplication.Current.Application instead
+P:Microsoft.UI.Xaml.Window.AppWindow;This API doesn't have null safety. Use GetAppWindow() and make sure to account for the possibility that GetAppWindow() might be null.
