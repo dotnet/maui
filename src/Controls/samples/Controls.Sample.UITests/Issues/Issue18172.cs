@@ -21,6 +21,13 @@ namespace Maui.Controls.Sample.Issues
 			VerticalStackLayout verticalStackLayout = new VerticalStackLayout();
 			Content = verticalStackLayout;
 
+			Label infoLabel = new Label
+			{
+				AutomationId = "WaitForStubControl",
+				Text = string.Empty
+			};
+			verticalStackLayout.Add(infoLabel);
+
 			AbsoluteLayout absoluteLayout = new AbsoluteLayout();
 			verticalStackLayout.Add(absoluteLayout);
 			absoluteLayout.Add(TopObjectWithShadow.Instance);

@@ -15,7 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18172Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },	
 				"Issue only happens on Windows");
 
 			App.WaitForElement("BorderControl");
