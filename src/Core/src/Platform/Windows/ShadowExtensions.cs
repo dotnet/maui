@@ -13,7 +13,6 @@ using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
 
-
 namespace Microsoft.Maui.Platform
 {
 	internal static class ShadowExtensions
@@ -40,6 +39,11 @@ namespace Microsoft.Maui.Platform
 				if (!isClipped && element is Shape shape)
 				{
 					return shape.GetAlphaMask();
+				}
+				if (!isClipped && element is ContentPanel contentPanel)
+				{
+					var borderPath = contentPanel.BorderPath;
+					return borderPath?.GetAlphaMask();
 				}
 				else if (element is FrameworkElement frameworkElement)
 				{
