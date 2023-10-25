@@ -40,14 +40,29 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
+string DOTNET_TOOL_PATH = "dotnet";
+
+var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
+if (localDotnetiOS)
+{
+	Information("Using local dotnet");
+	DOTNET_TOOL_PATH = $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet";
+}
+else
+{
+	Information("Using system dotnet");
+}
+
 Setup(context =>
 {
 	Cleanup();
 
+	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
+	
 	// only install when an explicit version is specified
 	if (TEST_DEVICE.IndexOf("_") != -1) {
 		var settings = new DotNetToolSettings {
-			ToolPath = DOTNET_PATH,
+			ToolPath = DOTNET_TOOL_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{TEST_DEVICE}\" " +
@@ -96,52 +111,19 @@ Task("Build")
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
-
-	if (USE_DOTNET)
-	{
-		Information($"Build target dotnet root: {DOTNET_ROOT}");
-		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-		Information("new dotnet root: {0}", localDotnetRoot);
-
-		DOTNET_ROOT = localDotnetRoot.ToString();
-
-		SetDotNetEnvironmentVariables(DOTNET_ROOT);
-		
-		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
 			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
-			},
-			ToolPath = DOTNET_PATH,
+			},	
 			ArgumentCustomization = args => args
 				.Append("/p:BuildIpa=true")
 				.Append("/bl:" + binlog)
-				//.Append("/tl")
-			
+				.Append("/tl")
 		});
-	}
-	else
-	{
-		MSBuild(PROJECT.FullPath, c => {
-			c.Configuration = CONFIGURATION;
-			c.MaxCpuCount = 0;
-			c.Restore = true;
-			c.Properties["Platform"] = new List<string> { PLATFORM };
-			c.Properties["BuildIpa"] = new List<string> { "true" };
-			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
-				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
-			c.Targets.Clear();
-			c.Targets.Add("Build");
-			c.BinaryLogger = new MSBuildBinaryLogSettings {
-				Enabled = true,
-				FileName = binlog,
-			};
-		});
-	}
 });
 
 Task("Test")
@@ -191,6 +173,7 @@ Task("Test")
 	Information("XCODE PATH: {0}", XCODE_PATH);
 
 	var settings = new DotNetToolSettings {
+		ToolPath = DOTNET_TOOL_PATH,
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
@@ -245,12 +228,12 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
-			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
 				.Append("/bl:" + binlog)
-				//.Append("/tl")
+				.Append("/tl")
 			
 	});
 
@@ -279,10 +262,11 @@ Task("cg-uitest")
 	var binlog = $"{binDir}/{name}-{CONFIGURATION}-ios.binlog";
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				.Append("/tl"),
 	});
 	
 	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.iOS.UITests.dll";
@@ -324,24 +308,25 @@ void SetupAppPackageNameAndResult()
 		TEST_RESULTS =  GetTestResultsDirectory().FullPath;
 	}
 
-	Information($"Build target dotnet root: {DOTNET_ROOT}");
-	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
+	// Information($"Build target dotnet root: {DOTNET_ROOT}");
+	// Information($"Build target set dotnet tool path: {DOTNET_PATH}");
 		
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
+	// var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
+	// Information("new dotnet root: {0}", localDotnetRoot);
 
-	DOTNET_ROOT = localDotnetRoot.ToString();
+	// DOTNET_ROOT = localDotnetRoot.ToString();
 
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
+	// Information("Test Device: {0}", TEST_DEVICE);
+	// Information("Test App: {0}", TEST_APP);
+	// Information("Test Results Directory: {0}", TEST_RESULTS);
 }
 
 void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version)
 {
 	Information("Install with xharness: {0}",testApp);
 	var settings = new DotNetToolSettings {
-		DiagnosticOutput = true,
+		ToolPath = DOTNET_TOOL_PATH,
+		DiagnosticOutput = true,	
 		ArgumentCustomization = args => args.Append("run xharness apple install " +
 		$"--app=\"{testApp}\" " +
 		$"--targets=\"{testDevice}\" " +
