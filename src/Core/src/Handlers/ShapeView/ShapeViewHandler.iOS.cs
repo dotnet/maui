@@ -13,7 +13,11 @@
 		{
 			handler.UpdateValue(nameof(IViewHandler.ContainerView));
 			handler.ToPlatform().UpdateBackground(shapeView);
-			handler.PlatformView?.InvalidateShape(shapeView);
+
+			// If Fill and Background are not null, will use Fill for the Shape background
+			// and Background for the ShapeView background.
+			if (shapeView.Background is not null && shapeView.Fill is not null)
+				handler.PlatformView?.InvalidateShape(shapeView);
 		}
 
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)

@@ -5,6 +5,13 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class RectangleHandler
 	{
+		public static void MapBackground(IShapeViewHandler handler, Rectangle rectangle)
+		{
+			handler.UpdateValue(nameof(IViewHandler.ContainerView));
+			handler.ToPlatform().UpdateBackground(rectangle);
+			handler.PlatformView?.InvalidateShape(rectangle);
+		}
+
 		public static void MapRadiusX(IShapeViewHandler handler, Rectangle rectangle)
 		{
 			handler.PlatformView?.InvalidateShape(rectangle);

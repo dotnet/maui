@@ -15,6 +15,7 @@
             HeightRequest="100"
             WidthRequest="100"
             BackgroundColor="Red"
+            Fill="Yellow"
             Margin="0, 12"/>
         <Button
             AutomationId="ChangeColorButton"
