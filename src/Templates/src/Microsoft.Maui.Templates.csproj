@@ -77,8 +77,8 @@
     <ReplaceFileText
         InputFilename="%(TemplateJsonInput.IntermediateLocation)"
         OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
-        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_VERSION_VALUE"
-        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />

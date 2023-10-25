@@ -21,7 +21,6 @@
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_VERSION_NO_DOT" PropertyName="_MauiPreviousDotNetVersionNoDot" />
     <_ValuesToReplace Include="MAUI_PREVIOUS_DOTNET_RELEASED_NUGET_VERSION" PropertyName="MicrosoftMauiPreviousDotNetReleasedVersion" />
     <_ValuesToReplace Include="MicrosoftWindowsAppSDKPackageVersion" PropertyName="MicrosoftWindowsAppSDKPackageVersion" />
-    <_ValuesToReplace Include="MicrosoftExtensionsLoggingDebugPackageVersion" PropertyName="MicrosoftExtensionsLoggingDebugPackageVersion" />
     <_ValuesToReplace Include="TizenUIExtensionsVersion" PropertyName="TizenUIExtensionsVersion" />
     <_ValuesToReplace Include="_XamarinAndroidGlideVersion" PropertyName="_XamarinAndroidGlideVersion" />
     <_ValuesToReplace Include="_XamarinAndroidXSecurityVersion" PropertyName="_XamarinAndroidXSecurityVersion" />

@@ -1,10 +1,12 @@
 ﻿using System.Diagnostics;
+using System.IO;
 
 namespace Microsoft.Maui.IntegrationTests
 {
 	public static class DotnetInternal
 	{
-		static readonly string DotnetTool = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet", "dotnet");
+		static readonly string DotnetRoot = Path.Combine(TestEnvironment.GetMauiDirectory(), "bin", "dotnet");
+		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 900;
 
 		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
@@ -51,7 +53,8 @@ namespace Microsoft.Maui.IntegrationTests
 					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
 							// Justification: It's OK for templates to have missing doc comments.
 				};
-				buildArgs += " " + string.Join(" ", csWarningsToIgnore.Select(csWarning => $"-p:nowarn={csWarning}"));
+				var csWarnings = string.Join("%3B", csWarningsToIgnore);
+				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
 			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
@@ -116,6 +119,9 @@ namespace Microsoft.Maui.IntegrationTests
 			pinfo.EnvironmentVariables["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 			//Workaround: https://github.com/dotnet/linker/issues/3012
 			pinfo.EnvironmentVariables["DOTNET_gcServer"] = "0";
+
+			pinfo.EnvironmentVariables["DOTNET_ROOT"] = DotnetRoot;
+
 			return ToolRunner.Run(pinfo, out exitCode, timeoutInSeconds: timeoutInSeconds);
 		}
 
