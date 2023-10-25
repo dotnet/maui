@@ -38,7 +38,13 @@ namespace Microsoft.Maui
 			// and then we can react accordingly
 			if (AppWindowTitleBar.IsCustomizationSupported())
 			{
-				base.AppWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+				var titleBar = this.GetAppWindow()?.TitleBar;
+
+				if (titleBar is not null)
+				{
+					titleBar.ExtendsContentIntoTitleBar = true;
+				}
+
 				_viewSettings.ColorValuesChanged += _viewSettings_ColorValuesChanged;
 				SetTileBarButtonColors();
 			}
@@ -202,9 +208,14 @@ namespace Microsoft.Maui
 		{
 			if (AppWindowTitleBar.IsCustomizationSupported())
 			{
-				base.AppWindow.TitleBar.ButtonBackgroundColor = Colors.Transparent;
-				base.AppWindow.TitleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
-				base.AppWindow.TitleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
+				var titleBar = this.GetAppWindow()?.TitleBar;
+
+				if (titleBar is null)
+					return;
+
+				titleBar.ButtonBackgroundColor = Colors.Transparent;
+				titleBar.ButtonInactiveBackgroundColor = Colors.Transparent;
+				titleBar.ButtonForegroundColor = _viewSettings.GetColorValue(ViewManagement.UIColorType.Foreground);
 			}
 		}
 

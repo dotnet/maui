@@ -60,7 +60,6 @@ public class App : Application
     };
 }
 ]]></code>
-        <para>The FormsGallery sample, which can be found on the <format type="text/html"><a href="https://developer.xamarin.com/samples/tag/Microsoft.Maui.Controls/" target="_blank">Sample Applications</a></format> page, has a LabelDemoPage.cs file. This file contains a longer and more complete example.</para>
       </example>
     </remarks>
   </Docs>
@@ -225,7 +224,7 @@ public class App : Application
       <Docs>
         <summary>Gets or sets the font family to which the font for the label belongs.</summary>
         <value>The font family, or null for the platform default font family.</value>
-        <remarks>The font family can refer to a system font or a <a href="https://docs.microsoft.com/en-us/xamarin/xamarin-forms/user-interface/text/fonts#use-a-custom-font">custom font</a>.</remarks>
+        <remarks>The font family can refer to a system font or a custom font.</remarks>
       </Docs>
     </Member>
     <Member MemberName="FontFamilyProperty">

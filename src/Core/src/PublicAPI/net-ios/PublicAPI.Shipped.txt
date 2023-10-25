@@ -2137,7 +2137,7 @@ override Microsoft.Maui.Platform.ContainerViewController.ViewDidLayoutSubviews()
 override Microsoft.Maui.Platform.ContentView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.ContentView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize
-override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView!
+override Microsoft.Maui.Platform.LayoutView.HitTest(CoreGraphics.CGPoint point, UIKit.UIEvent? uievent) -> UIKit.UIView?
 override Microsoft.Maui.Platform.LayoutView.LayoutSubviews() -> void
 override Microsoft.Maui.Platform.LayoutView.SetNeedsLayout() -> void
 override Microsoft.Maui.Platform.LayoutView.SizeThatFits(CoreGraphics.CGSize size) -> CoreGraphics.CGSize

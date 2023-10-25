@@ -4,8 +4,7 @@ using NView = Tizen.NUI.BaseComponents.View;
 namespace Microsoft.Maui.Controls.Compatibility.Platform.Tizen
 {
 	/// <summary>
-	/// Extension class, provides native embedding functionalities:
-	/// https://developer.xamarin.com/guides/xamarin-forms/user-interface/layouts/add-platform-controls/
+	/// Extension class, provides native embedding functionalities.
 	/// </summary>
 	/// <remarks>
 	/// This code is not used in the Microsoft.Maui.Controls.Compatibility.Platform.Tizen implementation, however it should not
