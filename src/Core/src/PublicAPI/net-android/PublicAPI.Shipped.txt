@@ -2068,7 +2068,7 @@ override Microsoft.Maui.Animations.LerpingAnimation.Update(double percent) -> vo
 override Microsoft.Maui.Animations.PlatformTicker.IsRunning.get -> bool
 override Microsoft.Maui.Animations.PlatformTicker.Start() -> void
 override Microsoft.Maui.Animations.PlatformTicker.Stop() -> void
-
+override Microsoft.Maui.Animations.PlatformTicker.SystemEnabled.get -> bool
 override Microsoft.Maui.Converters.CornerRadiusTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Type! sourceType) -> bool
 override Microsoft.Maui.Converters.CornerRadiusTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext? context, System.Type? destinationType) -> bool
 override Microsoft.Maui.Converters.CornerRadiusTypeConverter.ConvertFrom(System.ComponentModel.ITypeDescriptorContext? context, System.Globalization.CultureInfo? culture, object? value) -> object!
