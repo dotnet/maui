@@ -195,7 +195,17 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
 
+		
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
+
+			if (view.Frame.Width == 0 && view.Frame.Height == 0)
+			{
+				UIGraphicsImageRenderer renderer = new UIGraphicsImageRenderer(imageRect.Size);
+				return Task.FromResult(renderer.CreateImage(c =>
+				{
+					view.Layer.RenderInContext(c.CGContext);
+				}));
+			}
 
 			UIGraphics.BeginImageContext(imageRect.Size);
 
