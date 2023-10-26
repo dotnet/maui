@@ -5,8 +5,8 @@
 
     <ScrollView>
         <VerticalStackLayout
-        Padding="30,0"
-        Spacing="25">
+            Padding="30,0"
+            Spacing="25">
             <Image
                 Source="dotnet_bot.png"
                 HeightRequest="300"
