@@ -41,7 +41,7 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
 
-				Assert.True(isEmulator);
+				Assert.True(isEmulator, DeviceInfo.Model);
 			}
 #else
 			throw new PlatformNotSupportedException();
