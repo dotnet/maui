@@ -20,7 +20,7 @@ namespace Microsoft.Maui.Controls.Platform
 	{
 		readonly NotifyCollectionChangedEventHandler _collectionChangedHandler;
 
-		readonly Dictionary<IGestureRecognizer, UIGestureRecognizer> _gestureRecognizers = new Dictionary<IGestureRecognizer, UIGestureRecognizer>();
+		readonly Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>> _gestureRecognizers = new Dictionary<IGestureRecognizer, List<UIGestureRecognizer?>>();
 		readonly List<INativeObject> _interactions = new List<INativeObject>();
 		readonly IPlatformViewHandler _handler;
 
@@ -88,10 +88,16 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
-				if (PlatformView != null)
-					PlatformView.RemoveGestureRecognizer(kvp.Value);
-				kvp.Value.ShouldReceiveTouch = null;
-				kvp.Value.Dispose();
+				foreach(var uiGestureRecognizer in kvp.Value)
+				{
+					if (uiGestureRecognizer is null)
+						continue;
+
+					if (PlatformView != null)
+						PlatformView.RemoveGestureRecognizer(uiGestureRecognizer);
+					uiGestureRecognizer.ShouldReceiveTouch = null;
+					uiGestureRecognizer.Dispose();
+				}
 			}
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
@@ -429,7 +435,8 @@ namespace Microsoft.Maui.Controls.Platform
 								pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 							else
 							{
-								if (view.ToPlatform().Bounds.Contains(originPoint))
+								var bounds = eventTracker?.PlatformView?.Bounds;
+								if (bounds is not null && bounds.Value.Contains(originPoint))
 									pointerGestureRecognizer.SendPointerMoved(view, (relativeTo) => CalculatePosition(relativeTo, originPoint, weakRecognizer, weakEventTracker), platformPointerArgs);
 								else
 								{
@@ -657,6 +664,7 @@ namespace Microsoft.Maui.Controls.Platform
 				if (nativeRecognizers is null)
 					continue;
 
+				_gestureRecognizers[recognizer] = nativeRecognizers;
 				foreach (UIGestureRecognizer? nativeRecognizer in nativeRecognizers)
 				{
 					if (nativeRecognizer != null && PlatformView != null)
@@ -664,7 +672,6 @@ namespace Microsoft.Maui.Controls.Platform
 						nativeRecognizer.ShouldReceiveTouch = _shouldReceiveTouch;
 						PlatformView.AddGestureRecognizer(nativeRecognizer);
 
-						_gestureRecognizers[recognizer] = nativeRecognizer;
 					}
 				}
 			}
@@ -689,19 +696,27 @@ namespace Microsoft.Maui.Controls.Platform
 			for (int i = 0; i < toRemove.Count; i++)
 			{
 				IGestureRecognizer gestureRecognizer = toRemove[i];
-				var uiRecognizer = _gestureRecognizers[gestureRecognizer];
+				var uiRecognizers = _gestureRecognizers[gestureRecognizer];
 				_gestureRecognizers.Remove(gestureRecognizer);
 
-				if (PlatformView != null)
-					PlatformView.RemoveGestureRecognizer(uiRecognizer);
-
-				if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
-					tapGestureRecognizer != null)
+				foreach (var uiRecognizer in uiRecognizers)
 				{
-					gestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
-				}
+					if (uiRecognizer is null)
+						continue;
 
-				uiRecognizer.Dispose();
+					if (PlatformView != null)
+					{
+						PlatformView.RemoveGestureRecognizer(uiRecognizer);
+					}
+
+					if (TryGetTapGestureRecognizer(gestureRecognizer, out TapGestureRecognizer? tapGestureRecognizer) &&
+						tapGestureRecognizer != null)
+					{
+						gestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
+					}
+
+					uiRecognizer.Dispose();
+				}
 			}
 
 			if (PlatformView != null && OperatingSystem.IsIOSVersionAtLeast(11))
