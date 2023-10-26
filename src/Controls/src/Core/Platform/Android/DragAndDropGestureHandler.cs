@@ -339,6 +339,7 @@ namespace Microsoft.Maui.Controls.Platform
 				var dragShadowBuilder = args.PlatformArgs?.DragShadowBuilder ?? new AView.DragShadowBuilder(v);
 				var localData = args.PlatformArgs?.LocalData ?? customLocalStateData;
 
+#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 				int dragFlags;
 				if (args.PlatformArgs?.DragFlags is ADragFlags d)
 					dragFlags = (int)d;
@@ -350,7 +351,6 @@ namespace Microsoft.Maui.Controls.Platform
 				if (OperatingSystem.IsAndroidVersionAtLeast(24))
 					v.StartDragAndDrop(data, dragShadowBuilder, localData, dragFlags);
 				else
-#pragma warning disable CS0618, CA1416 // DragFlags.Global added in API 24: https://developer.android.com/reference/android/view/View#DRAG_FLAG_GLOBAL
 					v.StartDrag(data, dragShadowBuilder, localData, dragFlags);
 #pragma warning restore CS0618, CA1416
 			});

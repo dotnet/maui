@@ -19,7 +19,11 @@ namespace Microsoft.Maui.Platform
 			_rootView.BackRequested += OnBackRequested;
 			_rootView.OnApplyTemplateFinished += WindowRootViewOnApplyTemplateFinished;
 
-			SetTitleBarVisibility(_platformWindow.AppWindow.TitleBar.ExtendsContentIntoTitleBar);
+			var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+			if (titleBar is not null)
+			{
+				SetTitleBarVisibility(titleBar.ExtendsContentIntoTitleBar);
+			}
 		}
 
 		internal void SetTitleBarVisibility(bool isVisible)
@@ -32,11 +36,15 @@ namespace Microsoft.Maui.Platform
 			var appbarHeight = isVisible ? 32 : 0;
 			if (isVisible && UI.Windowing.AppWindowTitleBar.IsCustomizationSupported())
 			{
-				var density = _platformWindow.GetDisplayDensity();
-				appbarHeight = (int)(_platformWindow.AppWindow.TitleBar.Height / density);
-				titlebarMargins = new UI.Xaml.Thickness(
-					_platformWindow.AppWindow.TitleBar.LeftInset, 0,
-					_platformWindow.AppWindow.TitleBar.RightInset, 0);
+				var titleBar = _platformWindow.GetAppWindow()?.TitleBar;
+				if (titleBar is not null)
+				{
+					var density = _platformWindow.GetDisplayDensity();
+					appbarHeight = (int)(titleBar.Height / density);
+          titlebarMargins = new UI.Xaml.Thickness(
+					  _platformWindow.AppWindow.TitleBar.LeftInset, 0,
+					  _platformWindow.AppWindow.TitleBar.RightInset, 0);
+				}
 			}
 
 			_rootView.UpdateAppTitleBar(

@@ -1,6 +1,6 @@
-﻿using Microsoft.Maui.Appium;
-using Microsoft.Maui.AppiumTests;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -14,8 +14,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			App.WaitForElement("collectionView");
 
-			var headerText = App.Query("headerLabel").First().Text;
-			var footerText = App.Query("footerLabel").First().Text;
+			var headerText = App.FindElement("headerLabel").GetText();
+			var footerText = App.FindElement("footerLabel").GetText();
 
 			Assert.IsNotEmpty(headerText);
 			Assert.IsNotEmpty(footerText);

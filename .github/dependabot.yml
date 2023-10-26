@@ -1,10 +1,16 @@
 version: 2
+registries:
+  custom-nuget:
+    type: nuget-feed
+    url: https://api.nuget.org/v3/index.json
 updates:
 - package-ecosystem: nuget
   directory: "/"
+  registries:
+    - custom-nuget
   schedule:
     interval: daily
-  open-pull-requests-limit: 25
+  open-pull-requests-limit: 0
   groups:
     AndroidX:
       patterns:
@@ -12,6 +18,8 @@ updates:
         - "Xamarin.Build.Download"
         - "Xamarin.Google.Android.Material"
         - "Xamarin.Google.Crypto.Tink.Android"
+        - "Xamarin.GooglePlayServices.Maps"
+        - "Xamarin.Android.Glide*"
     AspNetCore:
       patterns:
         - "Microsoft.AspNetCore.*"

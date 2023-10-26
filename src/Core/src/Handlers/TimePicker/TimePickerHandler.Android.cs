@@ -9,7 +9,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class TimePickerHandler : ViewHandler<ITimePicker, MauiTimePicker>
 	{
 		MauiTimePicker? _timePicker;
-		AlertDialog? _dialog;
+		TimePickerDialog? _dialog;
 
 		protected override MauiTimePicker CreatePlatformView()
 		{

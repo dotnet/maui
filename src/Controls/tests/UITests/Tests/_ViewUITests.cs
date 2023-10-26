@@ -1,7 +1,8 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
 using Microsoft.Maui.Controls;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
@@ -25,12 +26,12 @@ namespace Microsoft.Maui.AppiumTests
 
 			remote.TapStateButton();
 
-			var isEnabled = remote.GetStateLabel().ReadText();
+			var isEnabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("True", isEnabled);
 
 			remote.TapStateButton();
 
-			var isDisabled = remote.GetStateLabel().ReadText();
+			var isDisabled = remote.GetStateLabel().GetText();
 			Assert.AreEqual("False", isDisabled);
 		}
 
@@ -42,13 +43,13 @@ namespace Microsoft.Maui.AppiumTests
 
 			var viewPre = remote.GetViews();
 
-			Assert.AreEqual(1, viewPre.Length);
+			Assert.AreEqual(1, viewPre.Count);
 
 			remote.TapStateButton();
 
 			var viewPost = remote.GetViews();
 
-			Assert.AreEqual(0, viewPost.Length);
+			Assert.AreEqual(0, viewPost.Count);
 		}
 	}
 
