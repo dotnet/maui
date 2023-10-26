@@ -374,5 +374,13 @@ namespace Microsoft.Maui.Animations
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
 			Dispose(true);
 		}
+
+		internal virtual void ForceFinish()
+		{
+			if (Progress < 1.0)
+			{
+				Update(1.0);
+			}
+		}
 	}
 }

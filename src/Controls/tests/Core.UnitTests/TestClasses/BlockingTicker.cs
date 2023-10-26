@@ -7,6 +7,8 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		bool _enabled;
 
+		public override bool IsRunning => _enabled; 
+
 		public override void Start()
 		{
 			_enabled = true;

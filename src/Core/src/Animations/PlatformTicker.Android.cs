@@ -1,5 +1,6 @@
 ﻿using System;
 using Android.Animation;
+using Java.Interop;
 
 namespace Microsoft.Maui.Animations
 {
@@ -8,9 +9,8 @@ namespace Microsoft.Maui.Animations
 	{
 		readonly IEnergySaverListenerManager _manager;
 		readonly ValueAnimator _val;
-
-		bool _systemEnabled;
 		bool _disposedValue;
+		readonly DurationScaleListener? _durationScaleListener;
 
 		/// <summary>
 		/// Creates a new Android <see cref="PlatformTicker"/> object. 
@@ -24,14 +24,19 @@ namespace Microsoft.Maui.Animations
 			_val.RepeatCount = ValueAnimator.Infinite;
 			_val.Update += (s, e) => Fire?.Invoke();
 
+			CheckAnimationEnabledStatus();
+
 			_manager.Add(this);
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(33))
+			{
+				_durationScaleListener = new DurationScaleListener(CheckAnimationEnabledStatus);
+				ValueAnimator.RegisterDurationScaleChangeListener(_durationScaleListener);
+			}
 		}
 
 		/// <inheritdoc/>
 		public override bool IsRunning => _val.IsStarted;
-
-		/// <inheritdoc/>
-		public override bool SystemEnabled => _systemEnabled;
 
 		/// <inheritdoc/>
 		public override void Start() => _val.Start();
@@ -45,7 +50,14 @@ namespace Microsoft.Maui.Animations
 			if (!_disposedValue)
 			{
 				if (disposing)
+				{
 					_manager.Remove(this);
+
+					if (OperatingSystem.IsAndroidVersionAtLeast(33) && _durationScaleListener != null)
+					{
+						ValueAnimator.UnregisterDurationScaleChangeListener(_durationScaleListener);
+					}
+				}
 
 				_disposedValue = true;
 			}
@@ -58,7 +70,56 @@ namespace Microsoft.Maui.Animations
 			GC.SuppressFinalize(this);
 		}
 
-		void IEnergySaverListener.OnStatusUpdated(bool energySaverEnabled) =>
-			_systemEnabled = !energySaverEnabled;
+		void IEnergySaverListener.OnStatusUpdated(bool energySaverEnabled)
+		{
+			// Moving in and out of power saving mode may enable/disable animations, depending on
+			// some other settings; we should check 
+			SystemEnabled = AreAnimationsEnabled();
+		}
+
+		internal void CheckAnimationEnabledStatus()
+		{
+			SystemEnabled = AreAnimationsEnabled();
+		}
+
+		static bool AreAnimationsEnabled()
+		{
+			if (OperatingSystem.IsAndroidVersionAtLeast(26))
+			{
+				// For more recent API levels, we can just check this method and be done with it
+				// https://developer.android.com/reference/android/animation/ValueAnimator#areAnimatorsEnabled()
+				return ValueAnimator.AreAnimatorsEnabled();
+			}
+
+			if (OperatingSystem.IsAndroidVersionAtLeast(21))
+			{
+				// For API levels which support power saving but not AreAnimatorsEnabled, we can check the
+				// power save mode; for these API levels, power saving == ON will mean that animations are disabled
+
+				return Devices.Battery.EnergySaverStatus switch
+				{
+					Devices.EnergySaverStatus.On => false,
+					_ => true,
+				};
+			}
+
+			// We don't support anything below 21
+			return false;
+		}
+
+		class DurationScaleListener : Java.Lang.Object, ValueAnimator.IDurationScaleChangeListener
+		{
+			readonly Action _check;
+
+			public DurationScaleListener(Action check) 
+			{
+				_check = check;
+			}
+
+			public void OnChanged(float scale)
+			{
+				_check.Invoke();
+			}
+		}
 	}
 }
