@@ -53,5 +53,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		{
 			Assert.Equal(EnergySaverStatus.Off, Battery.EnergySaverStatus);
 		}
+
+		[Fact]
+		public void No_Unsubscribe_Crash()
+		{   
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasBattery)
+				return;
+
+			Battery.BatteryInfoChanged -= (sender, args) => { };	
+		}
 	}
 }

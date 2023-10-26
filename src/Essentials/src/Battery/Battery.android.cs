@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Devices
 			{
 				System.Diagnostics.Debug.WriteLine("Battery receiver already unregistered. Disposing of it.");
 			}
-			batteryReceiver.Dispose();
+			batteryReceiver?.Dispose();
 			batteryReceiver = null;
 		}
 
