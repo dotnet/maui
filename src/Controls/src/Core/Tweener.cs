@@ -72,7 +72,6 @@ namespace Microsoft.Maui.Controls
 			Value = 0.0f;
 			Length = length;
 			_animationManager = animationManager;
-			Rate = 1;
 			Loop = false;
 		}
 

@@ -89,11 +89,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 				if (serviceType == typeof(IAnimationManager))
 					return _animationManager;
 
-				if (serviceType == typeof(IDispatcherProvider))
-				{
-					return DispatcherProvider.Current;
-				}
-
 				throw new NotSupportedException($"Attempting to get service type {serviceType}");
 			}
 		}
