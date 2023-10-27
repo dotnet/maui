@@ -59,7 +59,7 @@ else
 
 Setup(context =>
 {
-	//Cleanup();
+	Cleanup();
 
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
 	
@@ -141,24 +141,6 @@ Task("Build")
 				return args;
 			}
 		});
-
-		// MSBuild(PROJECT.FullPath, c => {
-		// 	c.Configuration = CONFIGURATION;
-		// 	c.MaxCpuCount = 0;
-		// 	c.Restore = true;
-		// 	c.Properties["Platform"] = new List<string> { PLATFORM };
-		// 	c.Properties["BuildIpa"] = new List<string> { "true" };
-		// 	c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-		// 	if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
-		// 		c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
-		// 	c.Targets.Clear();
-		// 	c.Targets.Add("Build");
-		// 	c.BinaryLogger = new MSBuildBinaryLogSettings {
-		// 		Enabled = true,
-		// 		FileName = binlog,
-		// 	};
-		// 		.Append("/tl")
-		// });
 });
 
 Task("Test")
@@ -392,9 +374,11 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			var simulatorName = "XHarness";
 			if(iosVersionToRun.Contains("17"))
 				simulatorName = "iPhone 15";	
+			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
 			var sims = ListAppleSimulators();
-			var xharness = sims.Where(s => s.Name.Contains(simulatorName)).ToArray();
-			var simXH = xharness.First();
+			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
+			if(simXH == null)
+				throw new Exception("No simulator was found to run tests on.");
 			deviceToRun = simXH.UDID;
 			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
 		}
