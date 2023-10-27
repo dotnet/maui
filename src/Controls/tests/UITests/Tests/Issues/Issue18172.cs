@@ -13,10 +13,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Shadows not drawing/updating correctly in Windows & cover entire screen";
 
 		[Test]
-		public void Issue18172Test()
+		public async Task Issue18172Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS },	
 				"Issue only happens on Windows");
+
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}
