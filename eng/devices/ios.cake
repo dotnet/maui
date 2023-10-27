@@ -380,10 +380,12 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			if(simXH == null)
 				throw new Exception("No simulator was found to run tests on.");
 			deviceToRun = simXH.UDID;
+			DEVICE_NAME = simXH.Name;
 			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
 		}
 		Information("The platform version to run tests: {0}", iosVersionToRun);
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
+		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
 	}
 }

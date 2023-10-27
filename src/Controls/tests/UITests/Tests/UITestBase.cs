@@ -144,9 +144,9 @@ namespace Microsoft.Maui.AppiumTests
 			switch (_testDevice)
 			{
 				case TestDevice.iOS:
-					testConfig.DeviceName = "iPhone X";
-					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4";
-					testConfig.Udid = Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "";
+					testConfig.DeviceName = Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone X";
+					testConfig.PlatformVersion = Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.0";
+					testConfig.Udid = Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "";
 					break;
 				case TestDevice.Windows:
 					testConfig.DeviceName = "WindowsPC";
