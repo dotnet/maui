@@ -124,8 +124,8 @@ namespace Microsoft.Maui.Platform
 			}
 
 			var flowDirectionSetting = ResourceContext.GetForViewIndependentUse().QualifierValues["LayoutDirection"];
-			WindowTitleBarFlowDirection = flowDirectionSetting == "LTR" ?
-				UI.Xaml.FlowDirection.LeftToRight : UI.Xaml.FlowDirection.RightToLeft;
+			WindowTitleBarFlowDirection = flowDirectionSetting == "RTL" ?
+				UI.Xaml.FlowDirection.RightToLeft : UI.Xaml.FlowDirection.LeftToRight;
 
 			WindowTitleMargin = margin;
 			UpdateRootNavigationViewMargins(topMargin);
