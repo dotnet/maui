@@ -170,6 +170,13 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
 			}
 
+			if (_testDevice == TestDevice.iOS && GetTestConfig().DeviceName == "iPhone 15")
+			{
+				// For now, ignore visual tests on iPhone 15 devices, only running visual tests with iPhone X.
+				// Later, when we have a way to screenshot just the control being tested that should remove this dependency.
+				Assert.Ignore("iPhone15 isn't currently used for visual tests, just iPhone X");
+			}
+
 			if (name == null)
 				name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
