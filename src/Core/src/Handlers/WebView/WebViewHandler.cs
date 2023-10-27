@@ -12,7 +12,7 @@ using PlatformView = System.Object;
 
 #if __ANDROID__
 using Android.Webkit;
-#elif __IOS__
+#elif __IOS__ || MACCATALYST
 using WebKit;
 #endif
 
@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(WebViewClient)] = MapWebViewClient,
 			[nameof(WebChromeClient)] = MapWebChromeClient,
 			[nameof(WebView.Settings)] =  MapWebViewSettings
-#elif __IOS__
+#elif __IOS__ && MACCATALYST
 			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 #endif
 		};
