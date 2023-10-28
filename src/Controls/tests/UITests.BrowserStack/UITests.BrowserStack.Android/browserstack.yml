@@ -25,7 +25,7 @@ source: 'nunit:appium-sample-sdk:v1.0'
 
 # Set `app` to define the app that is to be used for testing. 
 # It can either take the id of any uploaded app or the path of the app directly.
-app: "../../../samples/Controls.Sample.UITests/bin/Debug/net8.0-android/com.microsoft.maui.uitests-Signed.apk"
+app: "../../../samples/Controls.Sample.UITests/bin/Debug/net8.0-android/com.microsoft.maui.uitests.apk"
 
 # =======================================
 # Platforms (Browsers / Devices to test)
@@ -34,12 +34,6 @@ app: "../../../samples/Controls.Sample.UITests/bin/Debug/net8.0-android/com.micr
 # Entire list available here -> (https://www.browserstack.com/list-of-browsers-and-platforms/automate)
 
 platforms:
-  - deviceName: Samsung Galaxy S22 Ultra
-    osVersion: 12.0
-    platformName: android
-  - deviceName: Samsung Galaxy S21
-    osVersion: 11.0
-    platformName: android
   - deviceName: Google Pixel 6 Pro
     osVersion: 12.0
     platformName: android
@@ -63,4 +57,5 @@ platforms:
 debug: false # <boolean> # Set to true if you need screenshots for every selenium command ran
 networkLogs: false # <boolean> Set to true to enable HAR logs capturing
 consoleLogs: errors # <string> Remote browser's console debug levels to be printed (Default: errors)
+logLevel: debug
 # Available options are `disable`, `errors`, `warnings`, `info`, `verbose` (Default: errors)
