@@ -89,6 +89,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static string ToBase64String(this UIImage bitmap)
 		{
 			var data = bitmap.AsPNG();
+
+			ArgumentNullException.ThrowIfNull(data);
+			
 			return data.GetBase64EncodedString(NSDataBase64EncodingOptions.None);
 		}
 
