@@ -8,13 +8,13 @@ using VisualTestUtils.MagickNet;
 namespace Microsoft.Maui.AppiumTests
 {
 #if ANDROID
-		[TestFixture(TestDevice.Android)]
+	[TestFixture(TestDevice.Android)]
 #elif IOSUITEST
-		[TestFixture(TestDevice.iOS)]
+	[TestFixture(TestDevice.iOS)]
 #elif MACUITEST
-		[TestFixture(TestDevice.Mac)]
+	[TestFixture(TestDevice.Mac)]
 #elif WINTEST
-		[TestFixture(TestDevice.Windows)]
+	[TestFixture(TestDevice.Windows)]
 #else
 	[TestFixture(TestDevice.iOS)]
 	[TestFixture(TestDevice.Mac)]
@@ -28,7 +28,12 @@ namespace Microsoft.Maui.AppiumTests
 		readonly IImageEditorFactory _imageEditorFactory;
 		readonly VisualTestContext _visualTestContext;
 
-		protected UITest(TestDevice testDevice) : base(testDevice)
+		protected UITest(TestDevice testDevice) :
+#if USE_BROWSERSTACK
+			base(testDevice, useBrowserStack:true)
+#else
+			base(testDevice, useBrowserStack:false)
+#endif
 		{
 			string? ciArtifactsDirectory = Environment.GetEnvironmentVariable("BUILD_ARTIFACTSTAGINGDIRECTORY");
 			if (ciArtifactsDirectory != null)

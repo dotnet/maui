@@ -7,10 +7,12 @@ namespace UITest.Appium.NUnit
 		static IUIClientContext? _uiTestContext;
 		IServerContext? _context;
 		protected TestDevice _testDevice;
+		protected bool _useBrowserStack;
 
-		public UITestContextBase(TestDevice testDevice)
+		public UITestContextBase(TestDevice testDevice, bool useBrowserStack)
 		{
 			_testDevice = testDevice;
+			_useBrowserStack = useBrowserStack;
 		}
 
 		public static IUIClientContext? UITestContext { get { return _uiTestContext; } }
@@ -57,6 +59,7 @@ namespace UITest.Appium.NUnit
 		{
 			var testConfig = GetTestConfig();
 			testConfig.SetProperty("TestDevice", _testDevice);
+			testConfig.SetProperty("UseBrowserStack", _useBrowserStack);
 
 			// Check to see if we have a context already from a previous test and re-use it as creating the driver is expensive
 			if (reset || _uiTestContext == null)
@@ -69,6 +72,16 @@ namespace UITest.Appium.NUnit
 			{
 				throw new InvalidOperationException("Failed to get the driver.");
 			}
+		}
+
+		public bool IsSetup => _uiTestContext != null;
+
+		// Dispose of the driver. This is currently only used for BrowserStack, where the driver is recreated for each test
+		// so each test has its own session.
+		public void TearDown()
+		{
+			_uiTestContext?.Dispose();
+			_uiTestContext = null;
 		}
 	}
 }
