@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 {
 	public class MauiWKWebView : WKWebView, IWebViewDelegate, IUIViewLifeCycleEvents
 	{
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Used to persist cookies across WebView instances. Not a leak.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Used to persist cookies across WebView instances. Not a leak.")]
 		static WKProcessPool? SharedPool;
 
 		string? _pendingUrl;
@@ -200,7 +200,7 @@ namespace Microsoft.Maui.Platform
 			return false;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{

@@ -13,13 +13,9 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IElementHandler> _handler;
 
-		// Store a reference to the platform delegate so that it is not garbage collected
-		IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
-
 		public MauiUIContextMenuInteraction(IElementHandler handler)
 			: base(new FlyoutUIContextMenuInteractionDelegate())
 		{
-			_uiContextMenuInteractionDelegate = Delegate;
 			_handler = new WeakReference<IElementHandler>(handler);
 		}
 
