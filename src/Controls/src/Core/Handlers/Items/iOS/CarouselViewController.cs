@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	public class CarouselViewController : ItemsViewController<CarouselView>
 	{
 		[Obsolete("Use ItemsView property instead")]
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "Unused")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Unused")]
 		protected readonly CarouselView Carousel;
 
 		CarouselViewLoopManager _carouselViewLoopManager;
@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return indexPath.Row;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CarouselViewScrolled(object sender, ItemsViewScrolledEventArgs e)
 		{
 			if (_updatingScrollOffset)
@@ -224,7 +224,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		int _positionAfterUpdate = -1;
 
-		[UnconditionalSuppressMessage("Memory", "MA0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdating(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (ItemsView is not CarouselView carousel)
@@ -245,7 +245,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				_positionAfterUpdate = GetPositionWhenAddingItems(carouselPosition, currentItemPosition);
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CollectionViewUpdated(object sender, NotifyCollectionChangedEventArgs e)
 		{
 			if (_positionAfterUpdate == -1)
