@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Current previous .NET SDK major version's stable release of MAUI packages -->
-    <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.96</MicrosoftMauiPreviousDotNetReleasedVersion>
+    <MicrosoftMauiPreviousDotNetReleasedVersion>7.0.101</MicrosoftMauiPreviousDotNetReleasedVersion>
     <!-- dotnet/installer -->
     <MicrosoftDotnetSdkInternalPackageVersion>8.0.100-rtm.23526.1</MicrosoftDotnetSdkInternalPackageVersion>
     <!-- dotnet/runtime -->
@@ -23,7 +23,7 @@
     <MicrosoftExtensionsLoggingDebugVersion>8.0.0</MicrosoftExtensionsLoggingDebugVersion>
     <MicrosoftExtensionsPrimitivesVersion>8.0.0</MicrosoftExtensionsPrimitivesVersion>
     <!-- xamarin/xamarin-android -->
-    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.40</MicrosoftAndroidSdkWindowsPackageVersion>
+    <MicrosoftAndroidSdkWindowsPackageVersion>34.0.42</MicrosoftAndroidSdkWindowsPackageVersion>
     <!-- xamarin/xamarin-macios -->
     <MicrosoftMacCatalystSdkPackageVersion>17.0.8478</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>14.0.8478</MicrosoftmacOSSdkPackageVersion>
