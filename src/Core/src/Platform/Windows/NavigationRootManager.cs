@@ -41,9 +41,9 @@ namespace Microsoft.Maui.Platform
 				{
 					var density = _platformWindow.GetDisplayDensity();
 					appbarHeight = (int)(titleBar.Height / density);
-          titlebarMargins = new UI.Xaml.Thickness(
-					  _platformWindow.AppWindow.TitleBar.LeftInset, 0,
-					  _platformWindow.AppWindow.TitleBar.RightInset, 0);
+					titlebarMargins = new UI.Xaml.Thickness(
+                      titleBar.LeftInset, 0,
+                      titleBar.RightInset, 0);
 				}
 			}
 

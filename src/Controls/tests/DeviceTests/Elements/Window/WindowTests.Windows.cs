@@ -8,6 +8,7 @@ using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Windowing;
+using Microsoft.UI.Xaml.Controls;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
 
@@ -124,7 +125,27 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+        [Fact]
+        public async Task TitlebarMarginsAreCorrect()
+        {
+            SetupBuilder();
+
+            var mainPage = new NavigationPage(new ContentPage()
+            {
+                Title = "title"
+            });
+
+            await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
+            {
+				var rootView = GetWindowRootView(handler);
+				var title = rootView.AppTitle;
+
+                var titleXPos = rootView.AppTitle.GetLocationOnScreen().Value.X;
+                Assert.True(titleXPos == 16);
+            });
+        }
+
+        [Fact]
 		public async Task ToggleFullscreenTitleBarWorks()
 		{
 			SetupBuilder();
