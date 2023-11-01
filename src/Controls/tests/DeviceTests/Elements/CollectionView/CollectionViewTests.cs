@@ -34,6 +34,10 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+
+#if IOS
+					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
+#endif
 				});
 			});
 		}
