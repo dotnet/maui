@@ -15,13 +15,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void RotateYToNoCrashTest()
 		{
 			// Wait the Counter button
-			App.WaitForElement("CounterBtn");
+			App.WaitForElement("CounterButton");
 
 			// Tapping the Counter button will update the counter and also animate RotateY
-			App.Click("CounterBtn");
+			App.Click("CounterButton");
 
 			// If we can successfully tap the button (without a crash), the Counter label will be displayed
-			Assert.IsTrue(App.WaitForTextToBePresentInElement("CounterLbl", "Clicked 1 time"));
+			Assert.IsTrue(App.WaitForTextToBePresentInElement("CounterLabel", "Clicked 1 time"));
 		}
 	}
 }
