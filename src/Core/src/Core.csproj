@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
@@ -16,7 +16,7 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
-    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.3" PrivateAssets="All" />
+    <PackageReference Include="MemoryAnalyzers" Version="0.1.0-beta.4" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Configuration" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
