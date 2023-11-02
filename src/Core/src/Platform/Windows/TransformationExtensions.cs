@@ -8,15 +8,15 @@ namespace Microsoft.Maui.Platform
 	{
 		public static void UpdateTransformation(this FrameworkElement frameworkElement, IView view)
 		{
-			double anchorX = view.AnchorX;
-			double anchorY = view.AnchorY;
-			double rotationX = view.RotationX;
-			double rotationY = view.RotationY;
-			double rotation = view.Rotation;
-			double translationX = view.TranslationX;
-			double translationY = view.TranslationY;
-			double scaleX = view.Scale * view.ScaleX;
-			double scaleY = view.Scale * view.ScaleY;
+			double anchorX = double.IsFinite(view.AnchorX) ? view.AnchorX : default;
+			double anchorY = double.IsFinite(view.AnchorY) ? view.AnchorY : default;
+			double rotationX = double.IsFinite(view.RotationX) ? view.RotationX : default;
+			double rotationY = double.IsFinite(view.RotationY) ? view.RotationY : default;
+			double rotation = double.IsFinite(view.Rotation) ? view.Rotation : default;
+			double translationX = double.IsFinite(view.TranslationX) ? view.TranslationX : default;
+			double translationY = double.IsFinite(view.TranslationY) ? view.TranslationY : default;
+			double scaleX = double.IsFinite(view.ScaleX) ? view.Scale * view.ScaleX : default;
+			double scaleY = double.IsFinite(view.ScaleY) ? view.Scale * view.ScaleY : default;
 
 			frameworkElement.RenderTransformOrigin = new global::Windows.Foundation.Point(anchorX, anchorY);
 			frameworkElement.RenderTransform = new ScaleTransform { ScaleX = scaleX, ScaleY = scaleY };

@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18420">
+    <StackLayout>
+        <Button
+            x:Name="CounterBtn"
+            AutomationId="CounterButton"
+            Text="Click me"
+            Clicked="OnCounterClicked"
+            HorizontalOptions="Center" />
+        <Label   
+            x:Name="CounterLbl"
+            AutomationId="CounterLabel"
+            HorizontalOptions="Center"/>
+    </StackLayout>
+</ContentPage>
