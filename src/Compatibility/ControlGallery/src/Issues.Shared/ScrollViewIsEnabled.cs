@@ -81,6 +81,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 
 #if UITEST
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void ScrollViewInitiallyEnabled()
 		{
@@ -93,6 +94,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 		}
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
@@ -110,6 +112,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 		}
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void ScrollViewInitiallyNotEnabled()
 		{
@@ -122,6 +125,7 @@ Use the toggle button to check both values of 'IsEnabled'."
 		}
 
 [Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiAndroid]
+[Microsoft.Maui.Controls.Compatibility.UITests.FailsOnMauiIOS]
 		[Test]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{

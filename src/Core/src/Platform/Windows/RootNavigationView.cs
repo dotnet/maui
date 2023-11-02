@@ -54,6 +54,7 @@ namespace Microsoft.Maui.Platform
 				}
 
 				UpdateToolbarPlacement();
+				UpdateHeaderPropertyBinding();
 			}
 		}
 

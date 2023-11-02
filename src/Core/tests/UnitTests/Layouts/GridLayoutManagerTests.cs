@@ -3170,5 +3170,67 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			// Ensure that the * Column width was updated to include the wider view
 			AssertArranged(view0, new Rect(0, 0, 40, 20));
 		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(926, 845)]
+		[InlineData(926, 926)]
+		[InlineData(926, 1026)]
+		public void StarsAdjustWhenArrangeAndMeasureHeightDiffer(double heightConstraint, double arrangedHeight)
+		{
+			var grid = CreateGridLayout(rows: "*, *", columns: "*");
+
+			var smallerView = CreateTestView(new Size(20, 20));
+			var largerView = CreateTestView(new Size(20, 500));
+
+			SubstituteChildren(grid, largerView, smallerView);
+
+			SetLocation(grid, smallerView, col: 0, row: 0);
+			SetLocation(grid, largerView, row: 1, col: 0);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+
+			double widthConstraint = 400;
+
+			_ = gridLayoutManager.Measure(widthConstraint, heightConstraint);
+
+			// Arranging at a different size than the measurement constraints
+			gridLayoutManager.ArrangeChildren(new Rect(0, 0, widthConstraint, arrangedHeight));
+
+			double expectedHeight = arrangedHeight / 2;
+
+			AssertArranged(smallerView, new Rect(0, 0, widthConstraint, expectedHeight));
+			AssertArranged(largerView, new Rect(0, expectedHeight, widthConstraint, expectedHeight));
+		}
+
+		[Theory, Category(GridStarSizing)]
+		[InlineData(926, 845)]
+		[InlineData(926, 926)]
+		[InlineData(926, 1026)]
+		public void StarsAdjustWhenArrangeAndMeasureWidthDiffer(double widthConstraint, double arrangedWidth)
+		{
+			var grid = CreateGridLayout(rows: "*", columns: "*, *");
+
+			var smallerView = CreateTestView(new Size(20, 20));
+			var largerView = CreateTestView(new Size(500, 20));
+
+			SubstituteChildren(grid, largerView, smallerView);
+
+			SetLocation(grid, smallerView, col: 0, row: 0);
+			SetLocation(grid, largerView, row: 0, col: 1);
+
+			var gridLayoutManager = new GridLayoutManager(grid);
+
+			double heightConstraint = 400;
+
+			_ = gridLayoutManager.Measure(widthConstraint, heightConstraint);
+
+			// Arranging at a different size than the measurement constraints
+			gridLayoutManager.ArrangeChildren(new Rect(0, 0, arrangedWidth, heightConstraint));
+
+			double expectedWidth = arrangedWidth / 2;
+
+			AssertArranged(smallerView, new Rect(0, 0, expectedWidth, heightConstraint));
+			AssertArranged(largerView, new Rect(expectedWidth, 0, expectedWidth, heightConstraint));
+		}
 	}
 }

@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls
 				return false;
 			}
 
-			public bool OnFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY)
+			public bool OnFling(MotionEvent? e1, MotionEvent e2, float velocityX, float velocityY)
 			{
 				return false;
 			}
@@ -102,7 +102,7 @@ namespace Microsoft.Maui.Controls
 			{
 			}
 
-			public bool OnScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
+			public bool OnScroll(MotionEvent? e1, MotionEvent e2, float distanceX, float distanceY)
 			{
 				return false;
 			}
