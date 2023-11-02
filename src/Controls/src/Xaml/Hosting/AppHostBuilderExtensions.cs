@@ -196,8 +196,9 @@ namespace Microsoft.Maui.Controls.Hosting
 			public void Initialize(IServiceProvider services)
 			{
 #if WINDOWS
+				using var scope = services.CreateScope();
 				var dispatcher =
-					services.GetService<IDispatcher>() ??
+					scope.ServiceProvider.GetService<IDispatcher>() ??
 					MauiWinUIApplication.Current.Services.GetRequiredService<IDispatcher>();
 
 				dispatcher
@@ -211,8 +212,8 @@ namespace Microsoft.Maui.Controls.Hosting
 						}
 					});
 #endif
-			}
-		}
+            }
+        }
 
 
 		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)

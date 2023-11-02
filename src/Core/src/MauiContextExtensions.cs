@@ -70,7 +70,8 @@ namespace Microsoft.Maui
 
 		public static void InitializeScopedServices(this IMauiContext scopedContext)
 		{
-			var scopedServices = scopedContext.Services.GetServices<IMauiInitializeScopedService>();
+            using var scope = scopedContext.Services.CreateScope();
+            var scopedServices = scope.ServiceProvider.GetServices<IMauiInitializeScopedService>();
 
 			foreach (var service in scopedServices)
 				service.Initialize(scopedContext.Services);

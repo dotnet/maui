@@ -55,7 +55,8 @@ namespace Microsoft.Maui.Hosting
 #if WINDOWS
 				// WORKAROUND: use the MAUI dispatcher instead of the OS dispatcher to
 				// avoid crashing: https://github.com/microsoft/WindowsAppSDK/issues/2451
-				var dispatcher = services.GetRequiredService<IDispatcher>();
+				using var scope = services.CreateScope();
+				var dispatcher = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 				if (dispatcher.IsDispatchRequired)
 					dispatcher.Dispatch(() => SetupResources());
 				else
@@ -148,7 +149,7 @@ namespace Microsoft.Maui.Hosting
 
 			IServiceProvider serviceProvider = _createServiceProvider != null
 				? _createServiceProvider()
-				: _services.BuildServiceProvider();
+				: _services.BuildServiceProvider(validateScopes: true);
 
 			MauiApp builtApplication = new MauiApp(serviceProvider);
 

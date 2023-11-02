@@ -105,10 +105,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new AndroidWebKitWebViewManager(
+            using var scope = Services!.CreateScope();
+            _webviewManager = new AndroidWebKitWebViewManager(
 				PlatformView,
 				Services!,
-				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				new MauiDispatcher(scope.ServiceProvider.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
 				contentRootDir,

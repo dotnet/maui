@@ -68,10 +68,11 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 			logger.CreatingFileProvider(contentRootDir, hostPageRelativePath);
 			var fileProvider = VirtualView.CreateFileProvider(contentRootDir);
 
-			_webviewManager = new WinUIWebViewManager(
+            using var scope = Services!.CreateScope();
+            _webviewManager = new WinUIWebViewManager(
 				PlatformView,
 				Services!,
-				new MauiDispatcher(Services!.GetRequiredService<IDispatcher>()),
+				new MauiDispatcher(scope.ServiceProvider.GetRequiredService<IDispatcher>()),
 				fileProvider,
 				VirtualView.JSComponents,
 				contentRootDir,

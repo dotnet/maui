@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.DeviceTests.Stubs;
+using Microsoft.Maui.Dispatching;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Win2D;
 using Microsoft.Maui.Handlers;
@@ -29,6 +30,8 @@ namespace Microsoft.Maui.DeviceTests
 				BackgroundColor = Colors.Green
 			};
 
+			bool did = false;
+
 			await CreateHandlerAndAddToWindow<IWindowHandler>(mainPage, (handler) =>
 			{
 				var mainWindow = handler.VirtualView as Window;
@@ -36,12 +39,22 @@ namespace Microsoft.Maui.DeviceTests
 				mainWindow.Page = secondaryPage;
 				Assert.Equal(mainWindow.Page, secondaryPage);
 
-				mainWindow.Page = mainPage;
+                mainPage.FindDispatcher()
+                    .DispatchAsync(async () =>
+                    {
+                        await Task.Delay(50);
+						did = true;
+                    });
+
+                mainWindow.Page = mainPage;
 				// Without exceptions, the test has passed.
 				Assert.Equal(mainWindow.Page, mainPage);
 
 				Assert.NotNull(mainWindow.Page);
-			});
+
+				Assert.True(did);
+
+            });
 		}
 
 		[Fact]

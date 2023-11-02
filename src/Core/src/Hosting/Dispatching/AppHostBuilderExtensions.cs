@@ -32,7 +32,8 @@ namespace Microsoft.Maui.Hosting
 		{
 			public void Initialize(IServiceProvider services)
 			{
-				_ = services.GetRequiredService<IDispatcher>();
+                using var scope = services.CreateScope();
+                _ = scope.ServiceProvider.GetRequiredService<IDispatcher>();
 			}
 		}
 	}

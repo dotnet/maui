@@ -65,7 +65,8 @@ namespace Microsoft.Maui
 					return getter.Invoke(state);
 				}
 
-				return Inner.GetService(serviceType);
+                using var innerScope = Inner.CreateScope();
+                return innerScope.ServiceProvider.GetService(serviceType);
 			}
 
 			public void AddSpecific(Type type, Func<object, object?> getter, object state)
