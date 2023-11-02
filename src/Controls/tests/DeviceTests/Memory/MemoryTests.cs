@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -17,7 +19,9 @@ public class MemoryTests : ControlsHandlerTestBase
 		{
 			builder.ConfigureMauiHandlers(handlers =>
 			{
+				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 				handlers.AddHandler<Border, BorderHandler>();
+				handlers.AddHandler<BoxView, BoxViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
@@ -26,18 +30,24 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
 				handlers.AddHandler<Picker, PickerHandler>();
+				handlers.AddHandler<Polygon, PolygonHandler>();
+				handlers.AddHandler<Polyline, PolylineHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
+				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
+				handlers.AddHandler<WebView, WebViewHandler>();
 			});
 		});
 	}
 
 	[Theory("Handler Does Not Leak")]
+	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
+	[InlineData(typeof(BoxView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
 	[InlineData(typeof(DatePicker))]
@@ -45,12 +55,16 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Editor))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
+	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(Picker))]
+	[InlineData(typeof(Polygon))]
+	[InlineData(typeof(Polyline))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(SwipeView))]
 	[InlineData(typeof(TimePicker))]
+	[InlineData(typeof(WebView))]
 	public async Task HandlerDoesNotLeak(Type type)
 	{
 		SetupBuilder();
