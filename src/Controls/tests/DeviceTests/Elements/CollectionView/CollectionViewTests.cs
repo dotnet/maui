@@ -35,7 +35,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
 
-#if IOS
+#if IOS && !MACCATALYST
 					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
 #endif
 				});

@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
+#if !MACCATALYST
 	public partial class CollectionViewTests
 	{
 		public class CacheTestCollectionView : CollectionView { }
@@ -147,4 +148,5 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 	}
+#endif
 }
