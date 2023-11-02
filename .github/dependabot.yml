@@ -10,7 +10,7 @@ updates:
     - custom-nuget
   schedule:
     interval: daily
-  open-pull-requests-limit: 25
+  open-pull-requests-limit: 0
   groups:
     AndroidX:
       patterns:

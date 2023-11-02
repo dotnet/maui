@@ -548,6 +548,12 @@ namespace Microsoft.Maui.Controls
 					{
 						w.Toolbar = null;
 					}
+					
+					var flyoutPage = _toolbar.FindParentOfType<FlyoutPage>();
+					if (flyoutPage != null && flyoutPage.Parent is IWindow)
+					{
+						flyoutPage.Toolbar = null;
+					}
 
 					_toolbar.Disconnect();
 					_toolbar = null;

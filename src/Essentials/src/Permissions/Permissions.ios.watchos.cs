@@ -28,7 +28,9 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var eventStore = new EKEventStore();
 
+#pragma warning disable CA1422 // Validate platform compatibility
 				var results = await eventStore.RequestAccessAsync(entityType);
+#pragma warning restore CA1422 // Validate platform compatibility
 
 				return results.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}

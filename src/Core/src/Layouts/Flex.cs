@@ -239,7 +239,7 @@ namespace Microsoft.Maui.Layouts.Flex
 		/// <summary>The parent item.</summary>
 		/// <value>The parent item, or null if the item is a root item.</value>
 		public Item? Parent { get; private set; }
-		IList<Item>? Children { get; set; }
+		List<Item>? Children { get; set; }
 		bool ShouldOrderChildren { get; set; }
 
 		///<summary>This property defines how the layout engine will distribute space between and around child items that have been laid out on multiple lines. This property is ignored if the root item does not have its <see cref="P:Microsoft.Maui.Controls.Flex.Item.Wrap" /> property set to Wrap or WrapReverse.</summary>
