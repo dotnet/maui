@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using CoreGraphics;
 using Foundation;
@@ -13,11 +14,19 @@ namespace Microsoft.Maui.Platform
 	{
 		WeakReference<IElementHandler> _handler;
 
+		// Store a reference to the platform delegate so that it is not garbage collected
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Delegate is weak on Objective-C side")]
+		readonly IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
+
 		public MauiUIContextMenuInteraction(IElementHandler handler)
-			: base(new FlyoutUIContextMenuInteractionDelegate())
+			: base(CreateDelegate (out var del))
 		{
+			_uiContextMenuInteractionDelegate = del;
 			_handler = new WeakReference<IElementHandler>(handler);
 		}
+
+		static IUIContextMenuInteractionDelegate CreateDelegate (out IUIContextMenuInteractionDelegate del) =>
+			del = new FlyoutUIContextMenuInteractionDelegate();
 
 		public UIContextMenuConfiguration? GetConfigurationForMenu()
 		{
