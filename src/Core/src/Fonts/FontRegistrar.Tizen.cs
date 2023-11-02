@@ -13,7 +13,7 @@ namespace Microsoft.Maui
 			return LoadEmbeddedFont(font, filename, alias, stream);
 		}
 
-		Stream GetNativeFontStream(string filename, string? alias)
+		FileStream GetNativeFontStream(string filename, string? alias)
 		{
 			// TODO: check other folders as well
 			var resDirPath = Tizen.Applications.Application.Current.DirectoryInfo.Resource;
