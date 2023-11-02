@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Hosting
 
 			IServiceProvider serviceProvider = _createServiceProvider != null
 				? _createServiceProvider()
-				: _services.BuildServiceProvider(validateScopes: true);
+				: _services.BuildServiceProvider();
 
 			var appScope = serviceProvider.CreateScope();
 
