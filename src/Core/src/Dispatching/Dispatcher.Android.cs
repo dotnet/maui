@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Dispatching
 		bool DispatchDelayedImplementation(TimeSpan delay, Action action) =>
 			_handler.PostDelayed(() => action(), (long)delay.TotalMilliseconds);
 
-		IDispatcherTimer CreateTimerImplementation()
+		DispatcherTimer CreateTimerImplementation()
 		{
 			return new DispatcherTimer(_handler);
 		}
@@ -147,7 +147,7 @@ namespace Microsoft.Maui.Dispatching
 	/// <inheritdoc/>
 	public partial class DispatcherProvider
 	{
-		static IDispatcher? GetForCurrentThreadImplementation()
+		static Dispatcher? GetForCurrentThreadImplementation()
 		{
 			var q = Looper.MyLooper();
 			if (q == null || q != Looper.MainLooper)
