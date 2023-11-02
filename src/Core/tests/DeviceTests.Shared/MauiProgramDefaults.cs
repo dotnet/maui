@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
@@ -69,11 +70,29 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			appBuilder.UseVisualRunner();
 
+			appBuilder.ConfigureContainer(new TestServiceCollection(appBuilder.Services));
+
 			var mauiApp = appBuilder.Build();
 
 			DefaultTestApp = mauiApp.Services.GetRequiredService<IApplication>();
 
 			return mauiApp;
+		}
+
+		private class TestServiceCollection : IServiceProviderFactory<ServiceCollection>
+		{
+			private IServiceCollection _services;
+
+			public TestServiceCollection(IServiceCollection services)
+			{
+				_services = services;
+			}
+
+			public ServiceCollection CreateBuilder(IServiceCollection services)
+				=> new ServiceCollection { _services };
+
+			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
+				=> containerBuilder.BuildServiceProvider(validateScopes: true);
 		}
 	}
 }
