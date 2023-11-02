@@ -186,7 +186,7 @@ namespace Microsoft.Maui
 			return base.Deinitialize();
 		}
 
-		IList<IScrollView> GetScrollViews()
+		List<IScrollView> GetScrollViews()
 		{
 			if (Window == null)
 				return new List<IScrollView>();
