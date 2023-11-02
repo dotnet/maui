@@ -148,9 +148,11 @@ namespace Microsoft.Maui.Hosting
 
 			IServiceProvider serviceProvider = _createServiceProvider != null
 				? _createServiceProvider()
-				: _services.BuildServiceProvider();
+				: _services.BuildServiceProvider(validateScopes: true);
 
-			MauiApp builtApplication = new MauiApp(serviceProvider);
+			var appScope = serviceProvider.CreateScope();
+
+			MauiApp builtApplication = new MauiApp(appScope.ServiceProvider);
 
 			// Mark the service collection as read-only to prevent future modifications
 			_services.MakeReadOnly();
