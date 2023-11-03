@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Maui.Controls.Sample.Pages.ShapesGalleries.UpdateSizeShapesGallery"
+    Title="Update Shapes size Gallery">
+    <ContentPage.Content>
+        <VerticalStackLayout 
+            Spacing="5" 
+            Padding="20">
+            <Border 
+                StrokeThickness="2"
+                Stroke="Green">
+                <Line 
+                    x:Name="TestLine" 
+                    StrokeThickness="4" 
+                    Stroke="Red"
+                    X2="100" 
+                    Y2="50" />
+            </Border>
+            <HorizontalStackLayout>
+                <Button
+                    Text="Increase Line Height"
+                    Clicked="OnIncreaseButtonClicked" />
+                <Button
+                    Text="Decrease Line Height" 
+                    Clicked="OnDecreaseButtonClicked" />
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+    </ContentPage.Content>
+</ContentPage>

@@ -26,6 +26,7 @@ namespace Maui.Controls.Sample.Pages.ShapesGalleries
 						GalleryBuilder.NavButton("LineJoin Gallery", () => new LineJoinGallery(), Navigation),
 						GalleryBuilder.NavButton("Shape Background Gallery", () => new ShapeBackgroundGallery(), Navigation),
 						GalleryBuilder.NavButton("AutoSize Shapes Gallery", () => new AutoSizeShapesGallery(), Navigation),
+						GalleryBuilder.NavButton("Update Shapes size Gallery", () => new UpdateSizeShapesGallery(), Navigation),
 						GalleryBuilder.NavButton("Path Gallery", () => new PathGallery(), Navigation),
 						GalleryBuilder.NavButton("Path Aspect Gallery", () => new PathAspectGallery(), Navigation),
 						GalleryBuilder.NavButton("Path LayoutOptions Gallery", () => new PathLayoutOptionsGallery(), Navigation),

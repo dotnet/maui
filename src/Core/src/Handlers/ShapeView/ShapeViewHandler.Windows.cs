@@ -1,5 +1,4 @@
-﻿using Microsoft.Maui.Graphics.Platform;
-using Microsoft.Maui.Graphics.Win2D;
+﻿using Microsoft.Maui.Graphics.Win2D;
 
 namespace Microsoft.Maui.Handlers
 {
@@ -28,6 +27,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapShape(IShapeViewHandler handler, IShapeView shapeView)
 		{
 			handler.PlatformView?.UpdateShape(shapeView);
+			handler.PlatformView?.InvalidateMeasure(shapeView);
 		}
 
 		public static void MapAspect(IShapeViewHandler handler, IShapeView shapeView)
