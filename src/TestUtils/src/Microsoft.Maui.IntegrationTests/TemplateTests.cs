@@ -49,6 +49,42 @@ namespace Microsoft.Maui.IntegrationTests
 
 		[Test]
 		// Parameters: short name, target framework, build config, use pack target
+		[TestCase("maui", DotNetCurrent, "Debug", false)]
+		[TestCase("maui", DotNetCurrent, "Release", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Debug", false)]
+		// [TestCase("maui-blazor", DotNetCurrent, "Release", false)]
+		[TestCase("mauilib", DotNetCurrent, "Debug", true)]
+		[TestCase("mauilib", DotNetCurrent, "Release", true)]
+		public void BuildWithProjectSdk(string id, string framework, string config, bool shouldPack)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, framework),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			// switch to the new project SDK
+			FileUtilities.ReplaceInFile(projectFile,
+				"<UseMaui>true</UseMaui>",
+				"");
+			FileUtilities.ReplaceInFile(projectFile,
+				"<Project Sdk=\"Microsoft.NET.Sdk\">",
+				"<Project Sdk=\"Microsoft.NET.Sdk.Maui\">");
+
+			if (shouldPack)
+				FileUtilities.ReplaceInFile(projectFile,
+					"</Project>",
+					"<PropertyGroup><Version>1.0.0-preview.1</Version></PropertyGroup></Project>");
+
+			string target = shouldPack ? "Pack" : "";
+			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		// Parameters: short name, target framework, build config, use pack target
 		[TestCase("maui", DotNetPrevious, "Debug", false)]
 		[TestCase("maui", DotNetPrevious, "Release", false)]
 		[TestCase("maui", DotNetCurrent, "Debug", false)]

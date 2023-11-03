@@ -27,6 +27,7 @@
       "abstract": true,
       "description": ".NET MAUI SDK Core Packages",
       "packs": [
+          "Microsoft.NET.Sdk.Maui",
           "Microsoft.Maui.Sdk.net@MAUI_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@",
           "Microsoft.Maui.Graphics",
@@ -142,6 +143,10 @@
       "alias-to": {
         "any": "Microsoft.Maui.Sdk"
       }
+    },
+    "Microsoft.NET.Sdk.Maui": {
+      "kind": "sdk",
+      "version": "@VERSION@"
     },
     "Microsoft.Maui.Sdk.net@MAUI_PREVIOUS_DOTNET_VERSION_MAJOR@": {
       "kind": "sdk",

@@ -1,0 +1,15 @@
+<Project>
+
+  <PropertyGroup>
+    <MauiWorkloadVersion>@VERSION@</MauiWorkloadVersion>
+    <MauiWorkloadTargetFramework>@TFM@</MauiWorkloadTargetFramework>
+    <MauiWorkloadTargetFrameworkVersion>@MAUI_DOTNET_VERSION@</MauiWorkloadTargetFrameworkVersion>
+    <MauiVersion Condition=" '$(MauiVersion)' == '' ">$(MauiWorkloadVersion)</MauiVersion>
+  </PropertyGroup>
+
+  <!-- .NET MAUI version for telemetry: this is the installed workload in use, not the final version in the app -->
+  <ItemGroup>
+    <ProjectCapability Include="Microsoft.Maui.NETSdk.Version.@VERSION@" />
+  </ItemGroup>
+
+</Project>
