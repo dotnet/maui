@@ -230,8 +230,8 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact(
-#if IOS
-		Skip = "Fails on iOS: https://github.com/dotnet/maui/issues/18517"
+#if IOS || MACCATALYST
+		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
 #endif
 		)]
 		public async Task CollectionViewItemsWithFixedWidthAndDifferentHeight() 
