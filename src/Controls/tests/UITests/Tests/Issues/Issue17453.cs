@@ -21,11 +21,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Windows
 			});
 
-			if (App is not AppiumApp app2 || app2 is null || app2.Driver is null)
-			{
-				throw new InvalidOperationException("Cannot run test. Missing driver to run quick tap actions.");
-			}
-
 			App.WaitForElement("WaitForStubControl");
 			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
 
@@ -36,7 +31,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var margin = 30;
 			App.Click(rtlEntryRect.Width + margin, rtlEntryRect.Y + margin);
 
-			var ltrEntryText = App.FindElement("RtlEntry").GetText();
+			string? ltrEntryText = App.FindElement("RtlEntry").GetText();
 
 			Assert.IsEmpty(ltrEntryText);
 		}
