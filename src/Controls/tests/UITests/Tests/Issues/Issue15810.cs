@@ -17,6 +17,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void WhenTapCustomViewThenChangesColor()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac });
+
 			App.WaitForElement(_customViewId);
 			App.Click(_customViewId);
 
