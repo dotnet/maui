@@ -268,6 +268,9 @@ namespace Microsoft.Maui.Platform
 
 		void OnTouchDown(float x, float y)
 		{
+			if (!HasRipple())
+				return;
+
 			_rippleX = x;
 			_rippleY = y;
 
@@ -304,6 +307,16 @@ namespace Microsoft.Maui.Platform
 			_rippleAnimator.SetInterpolator(new AccelerateDecelerateInterpolator());
 			_rippleAnimator.SetDuration(RippleDurationTime).Start();
 			_rippleAnimator.AddUpdateListener(this);
+		}
+
+		void StopAnimation()
+		{
+			if (_rippleAnimator is null || _rippleAnimator.IsDisposed())
+				return;
+			
+			_rippleAnimator.RemoveAllListeners();
+			_rippleAnimator.Dispose();
+			_rippleAnimator = null;
 		}
 
 		public void OnAnimationUpdate(ValueAnimator animation)
@@ -452,11 +465,7 @@ namespace Microsoft.Maui.Platform
 					_clipPath = null;
 				}
 
-				if (_rippleAnimator is not null)
-				{
-					_rippleAnimator.Dispose();
-					_rippleAnimator = null;
-				}
+				StopAnimation();
 			}
 
 			DisposeBorder(disposing);
