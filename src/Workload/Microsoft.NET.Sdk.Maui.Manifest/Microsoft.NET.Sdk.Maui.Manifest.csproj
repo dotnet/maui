@@ -3,7 +3,7 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
-    <PackageId>$(PackageId).Manifest-$(DotNetMauiManifestVersionBand)</PackageId>
+    <PackageId>$(PackageId)-$(DotNetMauiManifestVersionBand)</PackageId>
     <Description>.NET MAUI workload manifest</Description>
   </PropertyGroup>
 
@@ -128,7 +128,7 @@
     <ItemGroup>
       <_Files Include="$(OutputPath)WorkloadManifest.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)$(MSBuildProjectName.ToLowerInvariant())" />
+    <Copy SourceFiles="@(_Files)" DestinationFolder="$(DotNetSdkManifestsDirectory)microsoft.net.sdk.maui" />
   </Target>
 
 </Project>
