@@ -26,6 +26,18 @@ namespace Microsoft.Maui.ApplicationModel
 			return requestCode;
 		}
 
+		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter, bool exported)
+		{
+#if ANDROID34_0_OR_GREATER
+			if (OperatingSystem.IsAndroidVersionAtLeast(34))
+			{
+				var flags = exported ? ReceiverFlags.Exported : ReceiverFlags.NotExported;
+				return Application.Context.RegisterReceiver(receiver, filter, flags);
+			}
+#endif
+			return Application.Context.RegisterReceiver(receiver, filter);
+		}
+
 		internal static bool HasSystemFeature(string systemFeature)
 		{
 			var packageManager = Application.Context.PackageManager;
@@ -54,18 +66,6 @@ namespace Microsoft.Maui.ApplicationModel
 				return false;
 
 			return intent.ResolveActivity(pm) is ComponentName c && c.PackageName == expectedPackageName;
-		}
-
-		internal static Intent? RegisterBroadcastReceiver(BroadcastReceiver? receiver, IntentFilter filter, bool exported)
-		{
-#if ANDROID34_0_OR_GREATER
-			if (OperatingSystem.IsAndroidVersionAtLeast(34))
-			{
-				var flags = exported ? ReceiverFlags.Exported : ReceiverFlags.NotExported;
-				return Application.Context.RegisterReceiver(receiver, filter, flags);
-			}
-#endif
-			return Application.Context.RegisterReceiver(receiver, filter);
 		}
 	}
 }
