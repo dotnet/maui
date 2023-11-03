@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Devices
 		void StartEnergySaverListeners()
 		{
 			powerReceiver = new EnergySaverBroadcastReceiver(OnEnergySaverChanged);
-			Application.Context.RegisterReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged));
+			PlatformUtils.RegisterBroadcastReceiver(powerReceiver, new IntentFilter(PowerManager.ActionPowerSaveModeChanged), false);
 		}
 
 		void StopEnergySaverListeners()
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Devices
 			Permissions.EnsureDeclared<Permissions.Battery>();
 
 			batteryReceiver = new BatteryBroadcastReceiver(OnBatteryInfoChanged);
-			Application.Context.RegisterReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged));
+			PlatformUtils.RegisterBroadcastReceiver(batteryReceiver, new IntentFilter(Intent.ActionBatteryChanged), false);
 		}
 
 		void StopBatteryListeners()
@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Application.Context.RegisterReceiver(null, filter))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
 				{
 					var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);
 					var scale = battery.GetIntExtra(BatteryManager.ExtraScale, -1);
@@ -94,7 +94,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Application.Context.RegisterReceiver(null, filter))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
 				{
 					var status = battery.GetIntExtra(BatteryManager.ExtraStatus, -1);
 					switch (status)
@@ -121,7 +121,7 @@ namespace Microsoft.Maui.Devices
 				Permissions.EnsureDeclared<Permissions.Battery>();
 
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
-				using (var battery = Application.Context.RegisterReceiver(null, filter))
+				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
 				{
 					var chargePlug = battery.GetIntExtra(BatteryManager.ExtraPlugged, -1);
 
