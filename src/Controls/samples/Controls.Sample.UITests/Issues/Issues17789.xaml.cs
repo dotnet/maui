@@ -10,6 +10,6 @@ namespace Maui.Controls.Sample.Issues
 		public Issue17789()
 		{
 			InitializeComponent();
-		}	
+		}
 	}
 }
