@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
 
@@ -191,6 +193,65 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ButtonCommandDoesNotOverrideExplicitIsEnabled()
+		{
+			var canExecute = false;
+			var command = new Command(() => { }, canExecute: () => canExecute);
+			var button = new Button
+			{
+				Command = command
+			};
+
+			Assert.False(button.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+			Assert.True(button.IsEnabled);
+
+			button.IsEnabled = false;
+			Assert.False(button.IsEnabled);
+			
+			canExecute = false;
+			command.ChangeCanExecute();
+			Assert.False(button.IsEnabled);
+			
+			canExecute = true;
+			command.ChangeCanExecute();
+			Assert.False(button.IsEnabled);
+		}
+		
+		[Fact]
+		public void ButtonCommandDoesNotOverrideBoundIsEnabled()
+		{
+			var canExecute = false;
+			var command = new Command(() => { }, canExecute: () => canExecute);
+			var button = new Button()
+			{
+				Command = command
+			};
+			button.SetBinding(VisualElement.IsEnabledProperty, new Binding(nameof(TestContext.IsEnabled)));
+			var context = new TestContext { IsEnabled = true };
+
+			button.BindingContext = context;
+			Assert.False(button.IsEnabled);
+
+			canExecute = true;
+			command.ChangeCanExecute();
+			Assert.True(button.IsEnabled);
+			
+			context.IsEnabled = false;
+			Assert.False(button.IsEnabled);
+
+			canExecute = false;
+			command.ChangeCanExecute();
+			Assert.False(button.IsEnabled);
+			
+			canExecute = true;
+			command.ChangeCanExecute();
+			Assert.False(button.IsEnabled);
+		}
+
+		[Fact]
 		public void ButtonCornerRadiusSetToFive()
 		{
 			var button = new Button();
@@ -200,14 +261,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			button.CornerRadius = 5;
 			Assert.Equal(5, button.CornerRadius);
-		}
-
-		private void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
-		{
-			var bcl = (Button.ButtonContentLayout)layout2;
-
-			Assert.Equal(layout1.Position, bcl.Position);
-			Assert.Equal(layout1.Spacing, bcl.Spacing);
 		}
 
 		[Fact]
@@ -223,6 +276,35 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			element.SendReleased();
 			Assert.NotEqual(PressedStateName, stateGroup.CurrentState.Name);
+		}
+		
+		void AssertButtonContentLayoutsEqual(Button.ButtonContentLayout layout1, object layout2)
+		{
+			var bcl = (Button.ButtonContentLayout)layout2;
+
+			Assert.Equal(layout1.Position, bcl.Position);
+			Assert.Equal(layout1.Spacing, bcl.Spacing);
+		}
+		
+		class TestContext : INotifyPropertyChanged
+		{
+			bool _isEnabled;
+			public event PropertyChangedEventHandler PropertyChanged;
+
+			public bool IsEnabled
+			{
+				get => _isEnabled;
+				set
+				{
+					_isEnabled = value;
+					OnPropertyChanged();
+				}
+			}
+
+			void OnPropertyChanged([CallerMemberName] string propertyName = null)
+			{
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+			}
 		}
 	}
 }
