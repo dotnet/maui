@@ -7,6 +7,7 @@ using Windows.Foundation;
 using ViewManagement = Windows.UI.ViewManagement;
 using WThickness = Microsoft.UI.Xaml.Thickness;
 using ResourceContext = Windows.ApplicationModel.Resources.Core.ResourceContext;
+using Microsoft.UI.Xaml.Data;
 
 namespace Microsoft.Maui.Platform
 {
@@ -218,14 +219,23 @@ namespace Microsoft.Maui.Platform
 
 		void LoadAppTitleBarControls()
 		{
-			if (AppTitleBar == null)
+			if (AppTitleBar is null)
 				return;
 
-			if (AppFontIcon != null)
+			if (AppFontIcon is not null)
 				return;
 
-			AppFontIcon = (Image?)AppTitleBar?.FindName("AppFontIcon");
-			AppTitle = (TextBlock?)AppTitleBar?.FindName("AppTitle");
+			if (AppTitleBarContentControl is null)
+				return;
+
+			// If the user resource to override our title bar doesn't exist then continue with the default
+			if (!AppTitleBarContentControl.Resources.TryGetValue("MauiAppTitleBarTemplate", out _))
+			{
+				// We bypass our default XAML template (MauiAppTitleBarTemplateDefault) because modifying
+				// the default XAML styles causes pain for customer libraries due to a .pri exception
+				AppTitleBarContentControl.ContentTemplateSelector = null;
+				AppTitleBarContentControl.Content = CreateAppTitleBar();
+			}
 
 			if (AppFontIcon != null)
 			{
@@ -236,7 +246,91 @@ namespace Microsoft.Maui.Platform
 			ApplyTitlebarColorPrevalence();
 			UpdateAppTitleBarMargins();
 		}
-    
+
+		/// <summary>
+		/// This is the default app title bar, which overrides `MauiAppTitleBarTemplateDefault` in `WindowRootViewStyle.xaml`
+		/// </summary>
+		/// <returns></returns>
+		private Grid CreateAppTitleBar()
+		{
+			var rootPanel = new Grid()
+			{
+				HorizontalAlignment = HorizontalAlignment.Stretch,
+				VerticalAlignment = VerticalAlignment.Stretch,
+				ColumnDefinitions =
+				{
+					new ColumnDefinition() { Width = UI.Xaml.GridLength.Auto },
+					new ColumnDefinition() { Width = new UI.Xaml.GridLength(1, UI.Xaml.GridUnitType.Star) }
+				}
+			};
+			Canvas.SetZIndex(rootPanel, 1);
+
+			var rootPanelMarginBinding = new Binding()
+			{
+				Source = this,
+				Path = new (nameof(WindowTitleMargin)),
+				Mode = BindingMode.OneWay,
+			};
+			rootPanel.SetBinding(MarginProperty, rootPanelMarginBinding);
+
+			var rootPanelFlowBinding = new Binding()
+			{
+				Source = this,
+				Path = new(nameof(WindowTitleBarFlowDirection)),
+				Mode = BindingMode.OneWay,
+			};
+			rootPanel.SetBinding(FlowDirectionProperty, rootPanelFlowBinding);
+
+			AppFontIcon = new()
+			{
+				HorizontalAlignment = HorizontalAlignment.Left,
+				VerticalAlignment = VerticalAlignment.Center,
+				Width = 16,
+				Height = 16,
+				Margin = new WThickness(8, 0, 0, 0)
+			};
+			Grid.SetColumn(AppFontIcon, 0);
+			rootPanel.Children.Add(AppFontIcon);
+
+			var appFontIconVisibilityBinding = new Binding()
+			{
+				Source = this,
+				Path = new(nameof(WindowTitleIconVisibility)),
+				Mode = BindingMode.OneWay,
+			};
+			AppFontIcon.SetBinding(VisibilityProperty, appFontIconVisibilityBinding);
+
+			AppTitle = new()
+			{
+				VerticalAlignment = VerticalAlignment.Center,
+				Margin = new WThickness(16, 0, 0, 0),
+				MinWidth = 48,
+				TextTrimming = TextTrimming.CharacterEllipsis,
+				TextWrapping = TextWrapping.NoWrap,
+				Style = (Style)Resources["CaptionTextBlockStyle"]
+			};
+			Grid.SetColumn(AppTitle, 1);
+			rootPanel.Children.Add(AppTitle);
+
+			var titleTextBinding = new Binding()
+			{
+				Source = this,
+				Path = new(nameof(WindowTitle)),
+				Mode = BindingMode.OneWay,
+			};
+			AppTitle.SetBinding(TextBlock.TextProperty, titleTextBinding);
+
+			var titleForegroundBinding = new Binding()
+			{
+				Source = this,
+				Path = new(nameof(WindowTitleForeground)),
+				Mode = BindingMode.OneWay,
+			};
+			AppTitle.SetBinding(ForegroundProperty, titleForegroundBinding);
+
+			return rootPanel;
+		}
+
 		private void ViewSettingsColorValuesChanged(ViewManagement.UISettings sender, object args)
 		{
 			ApplyTitlebarColorPrevalence();
@@ -251,16 +345,16 @@ namespace Microsoft.Maui.Platform
 				var enableAccentColor = dwmSubKey?.GetValue("ColorPrevalence");
 				if (enableAccentColor != null &&
 					int.TryParse(enableAccentColor.ToString(), out var enableValue) &&
-					_appTitleBar is Border border)
+					_appTitleBar is Panel titleBarPanel)
 				{
 					DispatcherQueue.TryEnqueue(() =>
 					{
-						border.Background = enableValue == 1 ?
+						titleBarPanel.Background = enableValue == 1 ?
 							new SolidColorBrush(_viewSettings.GetColorValue(ViewManagement.UIColorType.Accent)) :
 							new SolidColorBrush(UI.Colors.Transparent);
 
 						if (NavigationViewControl != null && NavigationViewControl.ButtonHolderGrid != null)
-							NavigationViewControl.ButtonHolderGrid.Background = border.Background;
+							NavigationViewControl.ButtonHolderGrid.Background = titleBarPanel.Background;
 					});
 				}
 			}
