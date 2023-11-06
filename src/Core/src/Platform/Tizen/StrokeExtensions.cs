@@ -13,6 +13,21 @@ namespace Microsoft.Maui.Platform
 			wrapperView.UpdateMauiDrawable(border);
 		}
 
+		internal static void UpdateStrokeShape(this NView platformView, IBorderStroke border, IMauiContext context)
+		{
+			var wrapperView = platformView.GetParent() as WrapperView;
+
+			if (wrapperView == null)
+				return;
+
+			IShape? borderShape = border.Shape;
+
+			if (borderShape is IView shapeView && shapeView.Handler is null)
+				shapeView.Handler = shapeView.ToHandler(context);
+
+			platformView.UpdateStrokeShape(border);
+		}
+	
 		public static void UpdateStroke(this NView platformView, IBorderStroke border)
 		{
 			var wrapperView = platformView.GetParent() as WrapperView;
