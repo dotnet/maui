@@ -25,9 +25,11 @@
 
   <ItemGroup>
     <Compile Remove="GTK\**" />
+    <Compile Remove="Gtk2\**" />
     <Compile Remove="MacOS\**" />
     <Compile Remove="WPF\**" />
     <EmbeddedResource Remove="GTK\**" />
+    <EmbeddedResource Remove="Gtk2\**" />
     <EmbeddedResource Remove="MacOS\**" />
     <EmbeddedResource Remove="WPF\**" />
     <None Remove="GTK\**" />
