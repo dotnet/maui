@@ -137,5 +137,52 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.True(data.Count == 30);
 			});
 		}
+
+		[Fact]
+		public async Task CollectionViewContentHeightChanged()
+		{
+			// Tests that when a control's HeightRequest is changed, the control is rendered using the new value https://github.com/dotnet/maui/issues/18078
+
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() => {
+					var label = new Label { WidthRequest = 450 };
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+				}
+			};
+
+			var layout = new Grid
+			{
+				collectionView
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				frame = collectionView.Frame;
+
+				var labels = collectionView.LogicalChildrenInternal;
+				var originalHeight = ((Label)labels[0]).Height;
+				var expectedHeight = originalHeight + 10;
+
+				((Label)labels[0]).HeightRequest = expectedHeight;
+				
+				await WaitForUIUpdate(frame, collectionView);
+
+				var finalHeight = ((Label)labels[0]).Height;
+
+				// The first label's height should be smaller than the second one since the text won't wrap
+				Assert.Equal(expectedHeight, finalHeight);
+			});
+		}
 	}
 }

@@ -289,7 +289,17 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var width = ItemWidth == default ? availableSize.Width : ItemWidth;
 			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
-			var measuredSize = base.MeasureOverride(new WSize(width, height));
+			var size = new WSize(width, height);
+
+			if (this.Content is FrameworkElement content 
+				&& CanMeasureContent(content) 
+				&& (content.DesiredSize.Height != content.Height || content.DesiredSize.Width != content.Width))
+			{
+				// Measure content to update its desired size if its Height/Width just changed
+				content.Measure(size);
+			}
+
+			var measuredSize = base.MeasureOverride(size);
 			var finalWidth = Max(measuredSize.Width, ItemWidth);
 			var finalHeight = Max(measuredSize.Height, ItemHeight);
 			var finalSize = new WSize(finalWidth, finalHeight);
