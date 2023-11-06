@@ -158,7 +158,8 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 				return false;
 			}
 
-			return await _webviewManager.TryDispatchAsync(workItem);
+			// TODO: revert this change on net8
+			return await Task.FromResult(false); // await _webviewManager.TryDispatchAsync(workItem);
 		}
 	}
 }
