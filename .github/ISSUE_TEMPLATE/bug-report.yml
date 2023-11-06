@@ -44,6 +44,8 @@ body:
       label: Version with bug
       description: In what version do you see this issue? Run `dotnet workload list` to find your version.
       options:
+        - 7.0.101
+        - 7.0.100
         - 7.0.96
         - 7.0.92
         - 7.0.86
@@ -94,6 +96,8 @@ body:
         - 7.0.86
         - 7.0.92
         - 7.0.96
+        - 7.0.100
+        - 7.0.101
         - 8.0.0-preview.1.7762
         - 8.0.0-preview.2.7871
         - 8.0.0-preview.3.8149
