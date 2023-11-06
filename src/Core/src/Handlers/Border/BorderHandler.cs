@@ -77,7 +77,8 @@ namespace Microsoft.Maui.Handlers
 		/// <param name="border">The associated <see cref="IBorderView"/> instance.</param>
 		public static void MapStrokeShape(IBorderHandler handler, IBorderView border)
 		{
-			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border);
+			((PlatformView?)handler.PlatformView)?.UpdateStrokeShape(border, handler.MauiContext!);
+
 			MapBackground(handler, border);
 		}
 

@@ -9,6 +9,17 @@
 
 			platformView.UpdateBorderStroke(border);
 		}
+		
+		// TODO: Consider making this public for .NET 9
+		internal static void UpdateStrokeShape(this ContentPanel platformView, IBorderStroke border, IMauiContext context)
+		{
+			Graphics.IShape? borderShape = border.Shape;
+
+			if (borderShape is IView shapeView && shapeView.Handler is null)
+				shapeView.Handler = shapeView.ToHandler(context);
+
+			platformView.UpdateStrokeShape(border);
+		}
 
 		public static void UpdateStroke(this ContentPanel platformView, IBorderStroke border)
 		{

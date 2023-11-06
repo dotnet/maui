@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue16919">
+    <StackLayout>
+        <Border
+            x:Name="TestBorder"
+            Stroke="Black" 
+            StrokeThickness="4">
+            <Border.StrokeShape>
+                <RoundRectangle CornerRadius="10" />
+            </Border.StrokeShape>
+            <Label
+                 Text="Issue 16919"
+                 FontSize="32"
+                 HorizontalOptions="Center" />
+        </Border>
+        <Button
+            x:Name="TestButton"
+            AutomationId="TestButton"
+            Text="Test"
+            Clicked="OnTestClicked"
+            HorizontalOptions="Center" />
+    </StackLayout>
+</ContentPage>

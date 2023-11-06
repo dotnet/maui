@@ -37,6 +37,17 @@ namespace Microsoft.Maui.Platform
 			platformView.UpdateMauiDrawable(border);
 		}
 
+		// TODO: Consider making this public for .NET 9
+		internal static void UpdateStrokeShape(this AView platformView, IBorderStroke border, IMauiContext context)
+		{
+			IShape? borderShape = border.Shape;
+
+			if (borderShape is IView shapeView && shapeView.Handler is null)
+				shapeView.Handler = shapeView.ToHandler(context);
+
+			platformView.UpdateStrokeShape(border);
+		}
+		
 		public static void UpdateStroke(this AView platformView, IBorderStroke border)
 		{
 			var stroke = border.Stroke;

@@ -4,6 +4,8 @@
 	{
 		public static void UpdateStrokeShape(this object platformView, IBorderStroke border) { }
 
+		internal static void UpdateStrokeShape(this object platformView, IBorderStroke border, IMauiContext context) { }
+
 		public static void UpdateStroke(this object platformView, IBorderStroke border) { }
 
 		public static void UpdateStrokeThickness(this object platformView, IBorderStroke border) { }
