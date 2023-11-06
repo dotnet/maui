@@ -142,7 +142,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			var appBar = _root.FindViewById<AppBarLayout>(Resource.Id.shellcontent_appbar);
 			appBar.AddView(_toolbar);
-			_viewhandler = _page.ToHandler(shellContentMauiContext);
+			_viewhandler = (IPlatformViewHandler)_page.ToHandler(shellContentMauiContext);
 
 			_shellPageContainer = new ShellPageContainer(Context, _viewhandler);
 
