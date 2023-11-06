@@ -8,10 +8,9 @@
             Padding="30,0"
             Spacing="25">
             <Image
-                Source="dotnet_bot.png"
-                HeightRequest="300"
+                Source="dotnet_car.png"
+                HeightRequest="185"
                 Aspect="AspectFit"
-                Margin="-30,0"
                 SemanticProperties.Description="dot net bot in a race car number eight" />
 
             <Label
