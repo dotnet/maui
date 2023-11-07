@@ -9,6 +9,8 @@ using Xunit;
 using System.Collections.Generic;
 using ContentView = Microsoft.Maui.Controls.ContentView;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Shapes;
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
@@ -45,11 +47,17 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task GetVisualTreeElements()
 		{
 			SetupBuilder();
+
+			var border = new Border() { StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
+			var borderLabel = new Label() { Text = "Border Label" };
+			border.AddLogicalChild(borderLabel);
+
 			var label = new Label() { Text = "Find Me" };
 			var page = new ContentPage() { Title = "Title Page" };
 			page.Content = new VerticalStackLayout()
 			{
-				label
+				label,
+				border
 			};
 
 			var rootPage = await InvokeOnMainThreadAsync(() =>
