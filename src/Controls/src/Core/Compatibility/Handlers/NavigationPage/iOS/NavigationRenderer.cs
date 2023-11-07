@@ -677,6 +677,12 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			var barBackgroundColor = NavPage.BarBackgroundColor;
 
+			if (barBackgroundColor == Colors.Transparent)
+			{
+				ApplyTransparentBarBackground();
+				return;
+			}
+
 			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
 			{
 				var navigationBarAppearance = NavigationBar.StandardAppearance;
@@ -712,6 +718,24 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				var backgroundImage = NavigationBar.GetBackgroundImage(barBackgroundBrush);
 				NavigationBar.SetBackgroundImage(backgroundImage, UIBarMetrics.Default);
 			}
+		}
+
+		void ApplyTransparentBarBackground()
+		{
+			if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
+			{
+				var navBar = new UINavigationBarAppearance();
+				navBar.ConfigureWithTransparentBackground();
+				NavigationBar.CompactAppearance = NavigationBar.StandardAppearance = NavigationBar.ScrollEdgeAppearance = navBar;
+			}
+			else
+			{
+				NavigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+				NavigationBar.ShadowImage = new UIImage();
+				NavigationBar.BackgroundColor = UIColor.Clear;
+				NavigationBar.TintColor = UIColor.Clear;
+				NavigationBar.BarTintColor = UIColor.Clear;
+			}		
 		}
 
 		void UpdateBarTextColor()
@@ -1153,6 +1177,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 					!n._navigating
 					)
 				{
+					// if the NavigationBar is translucent, we do not want add an offset to the Frame
+					if (n.NavigationBar.Translucent)
+						return;
+
 					nfloat offset = 0;
 
 					if (n._hasNavigationBar)
