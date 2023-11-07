@@ -25,7 +25,7 @@ source: 'nunit:appium-sample-sdk:v1.0'
 
 # Set `app` to define the app that is to be used for testing. 
 # It can either take the id of any uploaded app or the path of the app directly.
-app: "../MauiApp/bin/Debug/net7.0-ios/com.companyname.basicappiumsample.ipa"
+app: "../../../samples/Controls.Sample.UITests/bin/Release/net8.0-ios/ios-arm64/publish/Controls.Sample.UITests.ipa"
 
 # =======================================
 # Platforms (Browsers / Devices to test)

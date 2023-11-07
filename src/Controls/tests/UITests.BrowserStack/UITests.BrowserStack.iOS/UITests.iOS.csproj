@@ -2,10 +2,11 @@
 
   <PropertyGroup>
 	<!-- Use net6.0 for now as the BrowserStack SDK currently has some issues with net7.0 -->
-	<TargetFramework>net6.0</TargetFramework>
+	<TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsTestProject>true</IsTestProject>
+    <DefineConstants>$(DefineConstants);IOS;USE_BROWSERSTACK</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,7 +18,23 @@
   </ItemGroup>
 
   <ItemGroup>
-	<Compile Include="..\UITests-Shared\*.cs" LinkBase="Shared" />
+    <Compile Include="..\..\UITests\**\*.cs" Exclude="..\..\UITests\obj\**\*.cs" LinkBase="Shared" />
+    <Compile Include="..\..\..\samples\Controls.Sample.UITests\Test.cs" Link="Shared\Test.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) == ''">
+    <PackageReference Include="VisualTestUtils.MagickNet" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+  </ItemGroup>
+  <ItemGroup Condition="$(UseLocalVisualTestUtils) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.MagickNet\VisualTestUtils.MagickNet.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
   </ItemGroup>
 
 </Project>
