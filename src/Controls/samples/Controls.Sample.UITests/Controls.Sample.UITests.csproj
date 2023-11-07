@@ -8,6 +8,10 @@
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst')) and '$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)' == 'arm64'">maccatalyst-arm64</RuntimeIdentifier>
+
+    <!-- TODO: Maybe rework this but for now ensure that the Debug APK we build here can be used on BrowserStack physical devices -->
+    <RuntimeIdentifiers Condition="$(TargetFramework.Contains('-android'))">android-arm64;android-x64</RuntimeIdentifiers>
+    <EmbedAssembliesIntoApk Condition="$(TargetFramework.Contains('-android'))">True</EmbedAssembliesIntoApk>
   </PropertyGroup>
 
   <PropertyGroup>
