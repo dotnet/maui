@@ -49,14 +49,12 @@ namespace Microsoft.Maui.DeviceTests
 			SetupBuilder();
 
 			var border = new Border() { StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
-			var borderLabel = new Label() { Text = "Border Label" };
-			border.AddLogicalChild(borderLabel);
-
 			var label = new Label() { Text = "Find Me" };
+			border.AddLogicalChild(label);
+
 			var page = new ContentPage() { Title = "Title Page" };
 			page.Content = new VerticalStackLayout()
 			{
-				label,
 				border
 			};
 
@@ -66,6 +64,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
 			{
+				await OnFrameSetToNotEmpty(border);
 				await OnFrameSetToNotEmpty(label);
 				var locationOnScreen = label.GetLocationOnScreen().Value;
 				var labelFrame = label.Frame;
