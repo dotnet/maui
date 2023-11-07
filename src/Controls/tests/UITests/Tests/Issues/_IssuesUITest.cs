@@ -37,15 +37,19 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureTeardown()
 		{
 			base.FixtureTeardown();
-			try
+
+			if (!RunTestsInIsolation)
 			{
-				this.Back();
-				App.Click("GoBackToGalleriesButton");
-			}
-			catch (Exception e)
-			{
-				var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-				TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				try
+				{
+					this.Back();
+					App.Click("GoBackToGalleriesButton");
+				}
+				catch (Exception e)
+				{
+					var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+					TestContext.Error.WriteLine($">>>>> {DateTime.Now} The FixtureTeardown threw an exception during {name}.{Environment.NewLine}Exception details: {e}");
+				}
 			}
 		}
 

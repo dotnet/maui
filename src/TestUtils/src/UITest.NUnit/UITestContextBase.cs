@@ -37,6 +37,12 @@ namespace UITest.Appium.NUnit
 			}
 		}
 
+		/// <summary>
+		/// If true, the app will be restarted for each test. In that case, there's no need, for instance,
+		/// for FixtureTeardown to reset the app state, going back to the home screen.
+		/// </summary>
+		public bool RunTestsInIsolation => _useBrowserStack;
+
 		public abstract IConfig GetTestConfig();
 
 		public void InitialSetup(IServerContext context)
