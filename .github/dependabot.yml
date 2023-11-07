@@ -10,6 +10,9 @@ updates:
     - custom-nuget
   schedule:
     interval: daily
+    # Run at 10pm Pacific time
+    time: "22:00"
+    timezone: "America/Los_Angeles"
   open-pull-requests-limit: 25
   groups:
     AndroidX:
