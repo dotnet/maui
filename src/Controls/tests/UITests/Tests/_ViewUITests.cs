@@ -12,12 +12,7 @@ namespace Microsoft.Maui.AppiumTests
 	{
 		public _ViewUITests(TestDevice device) : base(device) { }
 
-		// BrowserStack currently doesn't support [Test] methods in base classes, producing this error at runtime:
-		// "System.ArgumentException : You can only patch implemented methods/constructors. Patch the declared method System.Void Microsoft.Maui.AppiumTests._ViewUITests::_IsEnabled() instead.
-		// Work around this for now by removing the [Test] attribute, so it's not tested by default.
-#if !USE_BROWSERSTACK
 		[Test]
-#endif
 		public virtual void _IsEnabled()
 		{
 			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsEnabled);
@@ -46,12 +41,7 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.AreEqual("False", isDisabled);
 		}
 
-		// BrowserStack currently doesn't support [Test] methods in base classes, producing this error at runtime:
-		// "System.ArgumentException : You can only patch implemented methods/constructors. Patch the declared method System.Void Microsoft.Maui.AppiumTests._ViewUITests::_IsVisible() instead.
-		// Work around this for now by removing the [Test] attribute, so it's not tested by default.
-#if !USE_BROWSERSTACK
 		[Test]
-#endif
 		public virtual void _IsVisible()
 		{
 			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible);
