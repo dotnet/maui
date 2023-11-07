@@ -20,13 +20,14 @@ namespace Microsoft.Maui.Handlers
 					var found = false;
 					var zIndex = view.ZIndex;
 					var lowerViews = 0;
-					
+
 					for (int i = 0; i < count; i++)
 					{
 						var child = layout[i];
 						var childZIndex = child.ZIndex;
 
-						if (child == view) {
+						if (child == view)
+						{
 							found = true;
 						}
 
