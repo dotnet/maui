@@ -12,14 +12,14 @@ namespace Microsoft.Maui.Benchmarks
 			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border(),
 			new Border(), new Border(), new Border(), new Border(), new Border(), new Border(), new Border()
 		};
-		
+
 		static readonly int Iterations = Views.Length;
 
 		[Benchmark]
 		public void GetLayoutHandlerIndex()
 		{
 			var layout = new VerticalStackLayout();
-			
+
 			for (int i = 0; i < Iterations; i++)
 			{
 				var view = Views[i];

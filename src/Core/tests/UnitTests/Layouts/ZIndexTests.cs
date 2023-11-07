@@ -200,7 +200,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			Assert.Equal(2, layout.GetLayoutHandlerIndex(view2));
 			Assert.Equal(3, layout.GetLayoutHandlerIndex(view3));
 		}
-		
+
 		[Fact]
 		public void LayoutHandlerIndexIsNegativeWhenChildIsNotFound()
 		{
@@ -208,11 +208,11 @@ namespace Microsoft.Maui.UnitTests.Layouts
 			var view0 = CreateTestView(zIndex: 0);
 
 			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
-			
+
 			layout.Add(CreateTestView(zIndex: 0));
 			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
-			
-			
+
+
 			layout.Add(CreateTestView(zIndex: 0));
 			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
 		}
