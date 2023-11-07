@@ -163,11 +163,8 @@ namespace Microsoft.Maui.Controls
 
 		static void TimePropertyChanged(BindableObject bindable, object oldValue, object newValue)
 		{
-			var timePicker = (TimePicker)bindable;
-			EventHandler<TimeChangedEventArgs> selected = timePicker.TimeSelected;
-
-			if (selected != null)
-				selected(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
+			if (bindable is TimePicker timePicker)
+				timePicker.TimeSelected?.Invoke(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
 		}
 	}
 }

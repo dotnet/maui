@@ -45,13 +45,13 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var picker = new TimePicker();
 
-			bool selected = false;
-			picker.TimeSelected += (sender, arg) => selected = true;
+			int selected = 0;
+			picker.TimeSelected += (sender, arg) => selected++;
 
 			// we can be fairly sure it wont ever be 2008 again
 			picker.Time = new TimeSpan(12, 30, 15);
 
-			Assert.True(selected);
+			Assert.Equal(1, selected);
 		}
 
 		public static object[] TimeSpans = {
