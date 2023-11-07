@@ -335,7 +335,7 @@ namespace Microsoft.Maui.Handlers
 			// for the ScrollView orientation
 			var viewportBounds = GetViewportBounds(platformScrollView);
 
-			var contentSize = crossPlatformLayout.CrossPlatformArrange(viewportBounds.ToRectangle());
+			var contentSize = crossPlatformLayout.CrossPlatformArrange(bounds);
 
 			var viewportHeight = viewportBounds.Height;
 			var viewportWidth = viewportBounds.Width;
