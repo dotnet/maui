@@ -8,6 +8,7 @@
     <iOSRoot>iOS\</iOSRoot>
     <WindowsRoot>Windows\</WindowsRoot>
     <TizenRoot>Tizen\</TizenRoot>
+    <GtkRoot>Gtk\</GtkRoot>
     <IsPackable>true</IsPackable>
     <IsTrimmable Condition="!$(TargetFramework.StartsWith('netstandard'))">true</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
@@ -24,18 +25,16 @@
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />
 
   <ItemGroup>
-    <Compile Remove="GTK\**" />
     <Compile Remove="Gtk2\**" />
     <Compile Remove="MacOS\**" />
     <Compile Remove="WPF\**" />
-    <EmbeddedResource Remove="GTK\**" />
     <EmbeddedResource Remove="Gtk2\**" />
     <EmbeddedResource Remove="MacOS\**" />
     <EmbeddedResource Remove="WPF\**" />
-    <None Remove="GTK\**" />
+    <None Remove="Gtk2\**" />
     <None Remove="MacOS\**" />
     <None Remove="WPF\**" />
-    <Content Remove="GTK\**" />
+    <Content Remove="Gtk2\**" />
     <Content Remove="MacOS\**" />
     <Content Remove="WPF\**" />
     <Page Remove="**\WPF\**\*.xaml" />
