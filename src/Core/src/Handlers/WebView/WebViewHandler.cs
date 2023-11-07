@@ -28,7 +28,7 @@ namespace Microsoft.Maui.Handlers
 			[nameof(WebViewClient)] = MapWebViewClient,
 			[nameof(WebChromeClient)] = MapWebChromeClient,
 			[nameof(WebView.Settings)] =  MapWebViewSettings
-#elif __IOS__ && MACCATALYST
+#elif __IOS__ || MACCATALYST
 			[nameof(WKUIDelegate)] = MapWKUIDelegate,
 #endif
 		};
