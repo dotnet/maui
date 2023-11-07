@@ -93,6 +93,21 @@ namespace Microsoft.Maui.Media
 		/// <param name="view">The view to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
 		Task<IScreenshotResult?> CaptureAsync(Tizen.NUI.BaseComponents.View view);
+#elif GTK
+
+		/// <summary>
+		/// Captures a screenshot of the specified window.
+		/// </summary>
+		/// <param name="window">The window to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult> CaptureAsync(Gtk.Window window);
+
+		/// <summary>
+		/// Captures a screenshot of the specified view.
+		/// </summary>
+		/// <param name="view">The view to capture.</param>
+		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
+		Task<IScreenshotResult?> CaptureAsync(Gtk.Widget view);		
 #endif
 	}
 
@@ -280,7 +295,7 @@ namespace Microsoft.Maui.Media
 		/// <param name="screenshot">The object this method is invoked on.</param>
 		/// <param name="view">The widget to capture.</param>
 		/// <returns>An instance of <see cref="IScreenshotResult"/> with information about the captured screenshot.</returns>
-		public static Task<IScreenshotResult> CaptureAsync(this IScreenshot screenshot, Gtk.Widget view) =>
+		public static Task<IScreenshotResult?> CaptureAsync(this IScreenshot screenshot, Gtk.Widget view) =>
 			screenshot.AsPlatform().CaptureAsync(view);
 #endif
 	}
