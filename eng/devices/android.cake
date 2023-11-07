@@ -12,7 +12,7 @@ const string dotnetVersion = "net8.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
-string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
+string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "pixel_5");
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -95,6 +95,17 @@ Setup(context =>
 		// arch/bits
 		Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
 		Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
+		// If the requested emulator was 32 bits but the hosting build agent is 64 bits, this won't work. In that case, switch to 64 bits and continue
+		if (parts[2] == "32"
+			&& (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64
+			|| System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)) {
+
+			Information("Android device to be used specified as 32-bits, but hosting OS only supports 64-bits, switching to 64-bits.");
+
+			parts[2] = "64";
+		}
+
 		if (parts[2] == "32") {
 			if (emulator)
 				DEVICE_ARCH = "x86";
@@ -127,6 +138,14 @@ Setup(context =>
 	}
 
 	Information("Test Device ID: {0}", ANDROID_AVD_IMAGE);
+
+	Information("Listing available Android devices.");
+
+	// List available Android devices
+	foreach (var device in AndroidAvdListDevices(avdSettings))
+	{
+		Information(device.Name);
+	}
 
 	if (DEVICE_BOOT) {
 		Information("Trying to boot the emulator...");

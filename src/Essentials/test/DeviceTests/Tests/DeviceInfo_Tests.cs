@@ -29,7 +29,15 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 #elif __IOS__
 			if (DeviceInfo.DeviceType == DeviceType.Virtual)
 			{
-				Assert.Equal("x86_64", DeviceInfo.Model);
+				// The architecture of the Simulator is linked to what actual architecture the Mac is running on
+				if (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.X64)
+				{
+					Assert.Equal("x86_64", DeviceInfo.Model);
+				}
+				else
+				{
+					Assert.Equal("arm64", DeviceInfo.Model);
+				}
 			}
 #elif __ANDROID__
 
@@ -38,6 +46,9 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 				var isEmulator =
 					DeviceInfo.Model.Contains("sdk_gphone_x86", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("sdk_gphone64_x86_64", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("sdk_gphone64_arm64", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("sdk_gphone_arm64", StringComparison.Ordinal) ||
+					DeviceInfo.Model.Contains("Android SDK built for arm64", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("google_sdk", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("Emulator", StringComparison.Ordinal) ||
 					DeviceInfo.Model.Contains("Android SDK built for x86", StringComparison.Ordinal);
