@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using CoreGraphics;
+using Microsoft.Maui.Graphics;
 using ObjCRuntime;
 using UIKit;
 
@@ -115,6 +116,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (titleColor != null)
 				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
 
+			// if the BackgroundColor is set to transparent, let's apply translucence as well
+			// since we cannot call this directly in .NET 8
+			if (appearance.BackgroundColor == Colors.Transparent)
+			{
+				navigationBarAppearance.ConfigureWithTransparentBackground();
+				navBar.Translucent = true;
+			}
+
 			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
 		}
 
@@ -136,6 +145,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				{
 					ForegroundColor = titleColor.ToPlatform()
 				};
+			}
+
+			if (appearance.BackgroundColor == Colors.Transparent)
+			{
+				navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+				navBar.ShadowImage = new UIImage();
+				navBar.BackgroundColor = UIColor.Clear;
+				navBar.TintColor = UIColor.Clear;
+				navBar.BarTintColor = UIColor.Clear;
+				navBar.Translucent = true;
 			}
 		}
 	}
