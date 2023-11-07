@@ -9,11 +9,11 @@ namespace Microsoft.Maui.Controls
 	{
 
 		[MissingMapper]
-		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, Element element)
+		public static void MapAutomationPropertiesIsInAccessibleTree(IElementHandler handler, IElement element)
 		{ }
 
 		[MissingMapper]
-		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, Element element)
+		public static void MapAutomationPropertiesExcludedWithChildren(IElementHandler handler, IElement element)
 		{ }
 
 	}
