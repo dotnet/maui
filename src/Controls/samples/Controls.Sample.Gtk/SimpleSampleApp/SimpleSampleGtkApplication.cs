@@ -25,7 +25,6 @@ namespace Maui.SimpleSampleApp
 		{
 			var b = new Box(Orientation.Vertical, 0)
 			{
-				Fill = true,
 				Expand = true,
 				Margin = 5,
 
