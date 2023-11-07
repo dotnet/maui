@@ -126,8 +126,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// since we cannot call this directly in .NET 8
 			if (appearance.BackgroundColor == Colors.Transparent)
 			{
-				// save the shadow image
-				_defaultNavBarShadowImage = navBar.ShadowImage;
 				navigationBarAppearance.ConfigureWithTransparentBackground();
 				navBar.Translucent = true;
 			}
@@ -155,13 +153,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				};
 			}
 
-			// if the BackgroundColor is set to transparent, let's apply translucence as well
-			// since we cannot call this directly in .NET 8
 			if (appearance.BackgroundColor == Colors.Transparent)
 			{
-				// save the shadow image
-				_defaultNavBarShadowImage = navBar.ShadowImage;
-				Handlers.Compatibility.NavigationRenderer.SetTransparentNavigationBar(navBar);
+				navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+				navBar.ShadowImage = new UIImage();
+				navBar.BackgroundColor = UIColor.Clear;
+				navBar.TintColor = UIColor.Clear;
+				navBar.BarTintColor = UIColor.Clear;
 				navBar.Translucent = true;
 			}
 		}
