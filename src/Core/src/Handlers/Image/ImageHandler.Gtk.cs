@@ -6,10 +6,8 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class ImageHandler : ViewHandler<IImage, ImageView>
 	{
-
 		protected override ImageView CreatePlatformView()
 		{
 			var img = new ImageView();
@@ -32,14 +30,11 @@ namespace Microsoft.Maui.Handlers
 				return;
 
 			await handler.SourceLoader.UpdateImageSourceAsync();
-
 		}
 
-		void OnSetImageSource(Pixbuf? obj)
+		partial class ImageImageSourcePartSetter
 		{
-			PlatformView.Image = obj;
+			public override void SetImageSource(object? platformImage) { }
 		}
-
 	}
-
 }

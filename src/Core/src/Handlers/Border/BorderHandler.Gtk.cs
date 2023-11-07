@@ -7,9 +7,5 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		protected override NotImplementedView CreatePlatformView() => new();
 
-		[MissingMapper]
-		public static void MapContent(IBorderHandler handler, IBorderView border)
-		{
-		}
 	}
 }

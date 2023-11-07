@@ -6,10 +6,8 @@ using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	public partial class LayoutHandler : ViewHandler<ILayout, LayoutView>
 	{
-
 		protected override LayoutView CreatePlatformView()
 		{
 			if (VirtualView == null)
@@ -17,11 +15,7 @@ namespace Microsoft.Maui.Handlers
 				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(LayoutView)}");
 			}
 
-			return new LayoutView
-			{
-				CrossPlatformVirtualView = () => VirtualView,
-
-			};
+			return new LayoutView { CrossPlatformVirtualView = () => VirtualView, };
 		}
 
 		public override void SetVirtualView(IView view)
@@ -40,7 +34,6 @@ namespace Microsoft.Maui.Handlers
 			{
 				if (child.ToPlatform(MauiContext) is { } nativeChild)
 					PlatformView.Add(child, nativeChild);
-
 			}
 
 			PlatformView.QueueAllocate();
@@ -92,7 +85,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Insert(child, nativeChild, index);
 
 			PlatformView.QueueAllocate();
-
 		}
 
 		public void Update(int index, IView child)
@@ -105,7 +97,6 @@ namespace Microsoft.Maui.Handlers
 				PlatformView.Update(child, nativeChild, index);
 
 			PlatformView.QueueAllocate();
-
 		}
 
 #if DEBUG
@@ -126,7 +117,11 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public void UpdateZIndex(IView view) => throw new NotImplementedException();
-		
-	}
 
+		[MissingMapper]
+		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
+		{
+			
+		}
+	}
 }

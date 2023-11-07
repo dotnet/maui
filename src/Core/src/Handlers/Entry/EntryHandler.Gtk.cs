@@ -217,6 +217,13 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler"> The associated handler.</param>
+		/// <param name="entry"> The associated <see cref="IEntry"/> instance.</param>
+		[MissingMapper]
+		public static void MapIsSpellCheckEnabled(IEntryHandler handler, IEntry entry) { }
 	}
 
 }

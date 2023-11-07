@@ -228,7 +228,7 @@ namespace Microsoft.Maui.Platform
 				PlatformView? child;
 				while ((child = descendantView?.GetChildAt<PlatformView>(i)) is not null)
 				{
-#if TIZEN
+#if TIZEN || GTK
 					// I had to add this check for Tizen to compile.
 					// I think Tizen isn't accounting for the null check
 					// in the while loop correctly

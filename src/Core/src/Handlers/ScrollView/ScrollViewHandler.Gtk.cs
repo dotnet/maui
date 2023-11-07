@@ -102,12 +102,12 @@ namespace Microsoft.Maui.Handlers
 			DisconnectButtonEvents(nativeView.HScrollbar);
 		}
 
-		bool _scrolling = false;
+		bool _scrolling;
 		Point _lastscroll = Point.Zero;
 		Point _lastMotion = Point.Zero;
-		double _lastDelta = 0d;
+		double _lastDelta;
 
-		bool _valueChanged = false;
+		bool _valueChanged;
 		bool _intermediate = true;
 
 		void EndScrolling()

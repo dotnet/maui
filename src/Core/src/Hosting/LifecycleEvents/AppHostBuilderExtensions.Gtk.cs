@@ -64,6 +64,8 @@ namespace Microsoft.Maui.LifecycleEvents
 
 		}
 
+		internal static MauiAppBuilder ConfigureWindowEvents(this MauiAppBuilder builder) =>
+			builder;
 	}
 
 }

@@ -2,7 +2,7 @@
 {
 	public partial class WindowOverlay
 	{
-		Gtk.Widget? _graphicsView = null;
+		Gtk.Widget? _graphicsView;
 
 		/// <inheritdoc/>
 		public void Invalidate()

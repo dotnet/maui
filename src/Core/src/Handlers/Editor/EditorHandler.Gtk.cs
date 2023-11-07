@@ -114,6 +114,14 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapSelectionLength(IEditorHandler handler, ITextInput editor) { }
+		
+		/// <summary>
+		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler"> The associated handler.</param>
+		/// <param name="editor"> The associated <see cref="IEditor"/> instance.</param>
+		[MissingMapper]
+		public static void MapIsSpellCheckEnabled(IEditorHandler handler, IEditor editor) { }
 
 	}
 

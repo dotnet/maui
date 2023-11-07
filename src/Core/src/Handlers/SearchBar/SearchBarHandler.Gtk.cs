@@ -95,6 +95,18 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapCancelButtonColor(IViewHandler handler, ISearchBar searchBar) { }
+		
+		/// <summary>
+		/// Maps the abstract <see cref="ITextInput.IsSpellCheckEnabled"/> property to the platform-specific implementations.
+		/// </summary>
+		/// <param name="handler"> The associated handler.</param>
+		/// <param name="searchBar"> The associated <see cref="ISearchBar"/> instance.</param>
+		[MissingMapper]
+		public static void MapIsSpellCheckEnabled(IViewHandler handler, ISearchBar searchBar) { }
+		
+		[MissingMapper]
+		public static void MapKeyboard(IViewHandler handler, ISearchBar searchBar) { }
+
 
 	}
 

@@ -176,7 +176,7 @@
     <LicenseFile>$(MSBuildThisFileDirectory)LICENSE.TXT</LicenseFile>
     <PackageThirdPartyNoticesFile>$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.TXT</PackageThirdPartyNoticesFile>
     <ContinuousIntegrationBuild Condition=" '$(CI)' == 'true' ">true</ContinuousIntegrationBuild>
-    <NoWarn>$(NoWarn);RS0016;RS0017</NoWarn>
+    <NoWarn>$(NoWarn);RS0016;RS0017;CA1822;CA1805;CS0649</NoWarn>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
   <Target Name="GitVersion" />

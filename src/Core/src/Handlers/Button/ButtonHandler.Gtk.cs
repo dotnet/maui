@@ -4,12 +4,10 @@ using Microsoft.Maui.Graphics.Platform.Gtk;
 
 namespace Microsoft.Maui.Handlers
 {
-
 	// https://docs.gtk.org/gtk3/class.Button.html
 
 	public partial class ButtonHandler : ViewHandler<IButton, Button>
 	{
-
 		protected override Button CreatePlatformView()
 		{
 			return Button.NewWithLabel(string.Empty);
@@ -82,7 +80,9 @@ namespace Microsoft.Maui.Handlers
 			InvokeEvent(() => VirtualView?.Clicked());
 		}
 
-		void OnSetImageSource(object? obj) { }
+		partial class ButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(object? platformImage) { }
+		}
 	}
-
 }

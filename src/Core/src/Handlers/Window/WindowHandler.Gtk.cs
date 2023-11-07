@@ -20,6 +20,18 @@ namespace Microsoft.Maui.Handlers
 
 		[MissingMapper]
 		public static void MapRequestDisplayDensity(IWindowHandler handler, IWindow window, object? args) { }
+		
+		[MissingMapper]
+		public static void MapX(IWindowHandler handler, IWindow view) { }
+
+		[MissingMapper]
+		public static void MapY(IWindowHandler handler, IWindow view) { }
+
+		[MissingMapper]
+		public static void MapWidth(IWindowHandler handler, IWindow view) { }
+
+		[MissingMapper]
+		public static void MapHeight(IWindowHandler handler, IWindow view) { }
 	}
 
 }

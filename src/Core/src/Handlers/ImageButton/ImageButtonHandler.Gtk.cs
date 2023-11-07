@@ -18,7 +18,9 @@ namespace Microsoft.Maui.Handlers
 		[MissingMapper]
 		public static void MapPadding(IImageButtonHandler handler, IImageButton imageButton) { }
 
-		[MissingMapper]
-		void OnSetImageSource(object? obj) { }
+		partial class ImageButtonImageSourcePartSetter
+		{
+			public override void SetImageSource(object? platformImage) { }
+		}
 	}
 }

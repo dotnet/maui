@@ -12,5 +12,7 @@ namespace Microsoft.Maui.Handlers
 		public static void MapReload(IWebViewHandler handler, IWebView webView, object? arg) { }
 		public static void MapEval(IWebViewHandler handler, IWebView webView, object? arg) { }
 		public static void MapEvaluateJavaScriptAsync(IWebViewHandler handler, IWebView webView, object? arg) { }
+		
+		public static void MapUserAgent(IWebViewHandler handler, IWebView webView) { }
 	}
 }
