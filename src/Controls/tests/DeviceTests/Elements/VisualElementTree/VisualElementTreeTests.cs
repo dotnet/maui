@@ -39,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
 		}
@@ -48,13 +49,13 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			var border = new Border() { StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
+			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
-			border.AddLogicalChild(label);
 
 			var page = new ContentPage() { Title = "Title Page" };
 			page.Content = new VerticalStackLayout()
 			{
+				label,
 				border
 			};
 
@@ -64,6 +65,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
 			{
+				await OnFrameSetToNotEmpty(rootPage);
 				await OnFrameSetToNotEmpty(border);
 				await OnFrameSetToNotEmpty(label);
 				var locationOnScreen = label.GetLocationOnScreen().Value;
