@@ -8,12 +8,9 @@ using Action = System.Action;
 
 namespace Microsoft.Maui.Platform
 {
-
 	public static partial class ViewExtensions
 	{
-
-		public static void UpdateAutomationId(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateAutomationId(this Widget nativeView, IView view) { }
 
 		public static void UpdateBackground(this Widget nativeView, IView view)
 		{
@@ -109,7 +106,6 @@ namespace Microsoft.Maui.Platform
 
 					break;
 			}
-
 		}
 
 		public static void UpdateIsEnabled(this Widget nativeView, IView view) =>
@@ -129,7 +125,6 @@ namespace Microsoft.Maui.Platform
 			{
 				accessible.Description = semantics.Description;
 			}
-
 		}
 
 		public static void UpdateOpacity(this Widget nativeView, IView view)
@@ -141,19 +136,17 @@ namespace Microsoft.Maui.Platform
 		{
 			nativeView.Opacity = opacity;
 		}
-		
+
 		public static void UpdateClip(this WrapperView nativeView, IView view)
 		{
 			nativeView.Clip = view.Clip;
 		}
 
 		[MissingMapper]
-		public static void UpdateClip(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateClip(this Widget nativeView, IView view) { }
 
 		[MissingMapper]
-		public static void UpdateFlowDirection(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateFlowDirection(this Widget nativeView, IView view) { }
 
 		internal static Rect GetBoundingBox(this IView view)
 			=> view.ToPlatform().GetBoundingBox();
@@ -163,7 +156,6 @@ namespace Microsoft.Maui.Platform
 			var w = view.ToPlatform();
 
 			return w.GetPlatformViewBounds();
-
 		}
 
 		internal static Rect GetPlatformViewBounds(this Gtk.Widget? platformView)
@@ -219,8 +211,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateInputTransparent(this Widget? platformView, IViewHandler handler, IView view) { }
 
-		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip)
-		{ }
+		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip) { }
 
 		[MissingMapper]
 		internal static IDisposable OnLoaded(this Widget? platformView, Action action)
@@ -242,6 +233,35 @@ namespace Microsoft.Maui.Platform
 			return platformView.IsRealized;
 		}
 
-	}
+		[MissingMapper]
+		public static bool HideSoftInput(this Widget platformView)
+		{
+			return false;
+		}
 
+		[MissingMapper]
+		public static bool ShowSoftInput(this Widget platformView)
+		{
+			return false;
+		}
+
+		[MissingMapper]
+		public static bool IsSoftInputShowing(this Widget platformView)
+		{
+			return false;
+		}
+
+		internal static T? GetChildAt<T>(this Widget view, int index) where T : Widget
+		{
+			if (view is Gtk.Container container && container.Children.Length < index)
+			{
+				return (T)container.Children[index];
+			}
+
+			if (view is Gtk.Bin bin && index == 0 && bin.Child is T child)
+				return child;
+
+			return default;
+		}
+	}
 }
