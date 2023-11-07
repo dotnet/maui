@@ -202,6 +202,41 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Fact]
+		public void LayoutHandlerIndexIsNegativeWhenChildIsNotFound()
+		{
+			var layout = new FakeLayout();
+			var view0 = CreateTestView(zIndex: 0);
+
+			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
+
+			layout.Add(CreateTestView(zIndex: 0));
+			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
+
+
+			layout.Add(CreateTestView(zIndex: 0));
+			Assert.Equal(-1, layout.GetLayoutHandlerIndex(view0));
+		}
+
+		[Fact]
+		public void LayoutHandlerIndexPreservesAddOrderForEqualZIndexes()
+		{
+			var layout = new FakeLayout();
+			var view0 = CreateTestView(zIndex: 10);
+			var view1 = CreateTestView(zIndex: 10);
+			var view2 = CreateTestView(zIndex: 10);
+			var view3 = CreateTestView(zIndex: 5);
+			layout.Add(view0);
+			layout.Add(view1);
+			layout.Add(view2);
+			layout.Add(view3);
+
+			Assert.Equal(1, layout.GetLayoutHandlerIndex(view0));
+			Assert.Equal(2, layout.GetLayoutHandlerIndex(view1));
+			Assert.Equal(3, layout.GetLayoutHandlerIndex(view2));
+			Assert.Equal(0, layout.GetLayoutHandlerIndex(view3));
+		}
+
+		[Fact]
 		public void ItemsOrderByZIndex()
 		{
 			var layout = new FakeLayout();

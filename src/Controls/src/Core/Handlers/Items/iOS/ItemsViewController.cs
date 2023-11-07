@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
@@ -15,15 +16,17 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 	where TItemsView : ItemsView
 	{
 		public const int EmptyTag = 333;
+		readonly WeakReference<TItemsView> _itemsView;
 
 		public IItemsViewSource ItemsSource { get; protected set; }
-		public TItemsView ItemsView { get; }
+		public TItemsView ItemsView => _itemsView.GetTargetOrDefault();
 
 		// ItemsViewLayout provides an accessor to the typed UICollectionViewLayout. It's also important to note that the
 		// initial UICollectionViewLayout which is passed in to the ItemsViewController (and accessed via the Layout property)
 		// _does not_ get updated when the layout is updated for the CollectionView. That property only refers to the
 		// original layout. So it's unlikely that you would ever want to use .Layout; use .ItemsViewLayout instead.
 		// See https://developer.apple.com/documentation/uikit/uicollectionviewcontroller/1623980-collectionviewlayout
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected ItemsViewLayout ItemsViewLayout { get; set; }
 
 		bool _initialized;
@@ -31,19 +34,22 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _emptyViewDisplayed;
 		bool _disposed;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		Func<UICollectionViewCell> _getPrototype;
 		CGSize _previousContentSize = CGSize.Empty;
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		UIView _emptyUIView;
 		VisualElement _emptyViewFormsElement;
 		Dictionary<object, TemplatedCell> _measurementCells = new Dictionary<object, TemplatedCell>();
 		List<string> _cellReuseIds = new List<string>();
 
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		protected UICollectionViewDelegateFlowLayout Delegator { get; set; }
 
 		protected ItemsViewController(TItemsView itemsView, ItemsViewLayout layout) : base(layout)
 		{
-			ItemsView = itemsView;
+			_itemsView = new(itemsView);
 			ItemsViewLayout = layout;
 		}
 
@@ -368,6 +374,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return ItemsSource[index];
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CellContentSizeChanged(object sender, EventArgs e)
 		{
 			if (_disposed)
@@ -390,6 +397,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			}
 		}
 
+		[UnconditionalSuppressMessage("Memory", "MEM0003", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		void CellLayoutAttributesChanged(object sender, LayoutAttributesChangedEventArgs args)
 		{
 			CacheCellAttributes(args.NewAttributes.IndexPath, args.NewAttributes.Size);
