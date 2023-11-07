@@ -328,7 +328,7 @@ namespace Microsoft.Maui.Platform
 			return
 				actionId == ImeAction.Done ||
 				actionId == currentInputImeFlag ||
-				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Up);
+				(actionId == ImeAction.ImeNull && evt?.KeyCode == Keycode.Enter && evt?.Action == KeyEventActions.Down);
 		}
 
 		/// <summary>
