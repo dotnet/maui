@@ -107,6 +107,8 @@ namespace Microsoft.Maui.Controls
 			set { }
 		}
 
+		public event EventHandler<TimeChangedEventArgs> TimeSelected;
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/TimePicker.xml" path="//Member[@MemberName='UpdateFormsText']/Docs/*" />
 		public virtual string UpdateFormsText(string source, TextTransform textTransform)
 			=> TextTransformUtilites.GetTransformedText(source, textTransform);
@@ -156,6 +158,15 @@ namespace Microsoft.Maui.Controls
 		{
 			get => Time;
 			set => SetValue(TimeProperty, value, SetterSpecificity.FromHandler);
+		}
+
+		static void TimePropertyChanged(BindableObject bindable, object oldValue, object newValue)
+		{
+			var timePicker = (TimePicker)bindable;
+			EventHandler<TimeChangedEventArgs> selected = timePicker.TimeSelected;
+
+			if (selected != null)
+				selected(timePicker, new TimeChangedEventArgs((TimeSpan)oldValue, (TimeSpan)newValue));
 		}
 	}
 }
