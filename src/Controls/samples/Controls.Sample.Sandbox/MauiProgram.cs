@@ -11,7 +11,7 @@ namespace Maui.Controls.Sample
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
-				.UseMauiApp<App>()
+				.UseMauiApp<acat.App>()
 				.Build();
 	}
 
