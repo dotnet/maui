@@ -20,10 +20,11 @@ namespace Microsoft.Maui.Controls
 		/// <summary>Bindable property for <see cref="Time"/>.</summary>
 		public static readonly BindableProperty TimeProperty = BindableProperty.Create(nameof(Time), typeof(TimeSpan), typeof(TimePicker), new TimeSpan(0), BindingMode.TwoWay,
 			validateValue: (bindable, value) =>
-		{
-			var time = (TimeSpan)value;
-			return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
-		});
+			{
+				var time = (TimeSpan)value;
+				return time.TotalHours < 24 && time.TotalMilliseconds >= 0;
+			},
+			propertyChanged: TimePropertyChanged);
 
 		/// <summary>Bindable property for <see cref="FontFamily"/>.</summary>
 		public static readonly BindableProperty FontFamilyProperty = FontElement.FontFamilyProperty;
