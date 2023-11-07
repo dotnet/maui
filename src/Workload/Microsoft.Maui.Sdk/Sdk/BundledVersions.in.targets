@@ -20,6 +20,11 @@
     <DisableMauiImplicitPackageReferences Condition=" '$(ManagePackageVersionsCentrally)' == 'true' and '$(DisableMauiImplicitPackageReferences)' == '' ">true</DisableMauiImplicitPackageReferences>
   </PropertyGroup>
 
+  <!-- .NET MAUI version for telemetry: this is the installed workload in use, not the final version in the app -->
+  <ItemGroup>
+    <ProjectCapability Include="Microsoft.Maui.Workload.Version.@VERSION@" />
+  </ItemGroup>
+
   <!--
     These implicit <PackageReference/> pull dependencies from NuGet transitively.
     They are first added to the <_MauiImplicitPackageReference/> item group to list the the desired

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
@@ -22,6 +24,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<ActivityIndicator, ActivityIndicatorHandler>();
 				handlers.AddHandler<Border, BorderHandler>();
 				handlers.AddHandler<BoxView, BoxViewHandler>();
+				handlers.AddHandler<CarouselView, CarouselViewHandler>();
 				handlers.AddHandler<CheckBox, CheckBoxHandler>();
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
@@ -48,6 +51,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ActivityIndicator))]
 	[InlineData(typeof(Border))]
 	[InlineData(typeof(BoxView))]
+	[InlineData(typeof(CarouselView))]
 	[InlineData(typeof(ContentView))]
 	[InlineData(typeof(CheckBox))]
 	[InlineData(typeof(DatePicker))]
@@ -79,11 +83,22 @@ public class MemoryTests : ControlsHandlerTestBase
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
 
+		var observable = new ObservableCollection<int> { 1, 2, 3 };
+
 		await InvokeOnMainThreadAsync(() =>
 		{
 			var layout = new Grid();
 			var view = (View)Activator.CreateInstance(type);
 			layout.Add(view);
+			if (view is ContentView content)
+			{
+				content.Content = new Label();
+			}
+			else if (view is ItemsView items)
+			{
+				items.ItemTemplate = new DataTemplate(() => new Label());
+				items.ItemsSource = observable;
+			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
 			handlerReference = new WeakReference(view.Handler);
