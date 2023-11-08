@@ -419,7 +419,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 void GetSimulators(string version)
 {
 	DotNetTool("tool", new DotNetToolSettings {
-			ToolPath = DOTNET_PATH,
+			ToolPath = DOTNET_TOOL_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{version}\" " +
@@ -439,6 +439,7 @@ void GetDevices(string version)
 	// print the apple state of the machine
 	// this will print the connected devices
 	DotNetTool("tool", new DotNetToolSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple state --verbosity=\"Debug\" "),
 			SetupProcessSettings = processSettings =>
