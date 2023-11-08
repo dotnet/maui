@@ -213,17 +213,63 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip) { }
 
-		[MissingMapper]
-		internal static IDisposable OnLoaded(this Widget? platformView, Action action)
+		internal static IDisposable OnLoaded(this Widget? view, Action action)
 		{
-			throw new NotImplementedException();
+			if (view is not { })
+				return new ActionDisposable(() => { });
+
+			if (view.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			EventHandler? routedEventHandler = null;
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				if (routedEventHandler != null)
+					view.Realized -= routedEventHandler;
+			});
+
+			routedEventHandler = (_, __) =>
+			{
+				disposable?.Dispose();
+				disposable = null;
+				action();
+			};
+
+			view.Realized += routedEventHandler;
+			return disposable;
 		}
 
 		[MissingMapper]
-		internal static IDisposable OnUnloaded(this Widget? platformView, Action action)
+		internal static IDisposable OnUnloaded(this Widget? view, Action action)
 		{
-			throw new NotImplementedException();
-		}
+			if (view is not { })
+				return new ActionDisposable(() => { });
+
+			if (!view.IsLoaded())
+			{
+				action();
+				return new ActionDisposable(() => { });
+			}
+
+			EventHandler? routedEventHandler = null;
+			ActionDisposable? disposable = new ActionDisposable(() =>
+			{
+				if (routedEventHandler != null)
+					view.Unrealized -= routedEventHandler;
+			});
+
+			routedEventHandler = (_, __) =>
+			{
+				disposable?.Dispose();
+				disposable = null;
+				action();
+			};
+
+			view.Unrealized += routedEventHandler;
+			return disposable;		}
 
 		public static bool IsLoaded(this Widget? platformView)
 		{
