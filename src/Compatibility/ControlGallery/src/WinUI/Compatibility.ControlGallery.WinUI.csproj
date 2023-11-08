@@ -102,6 +102,7 @@
   <ItemGroup>
     <None Include="Compatibility\**\*.cs" />
     <Compile Remove="Compatibility\**\*.cs" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.22621.31" TargetingPackVersion="10.0.22621.31" />
   </ItemGroup>
   
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
