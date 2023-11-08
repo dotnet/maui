@@ -34,8 +34,8 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				builder => builder.Configured = true);
 
 			var mauiApp = builder.Build();
-			Assert.IsType<MyServiceProvider>(mauiApp.Services);
-			Assert.True(((MyServiceProvider)mauiApp.Services).Builder.Configured);
+			Assert.IsType<MyServiceProvider>(mauiApp.RootServices);
+			Assert.True(((MyServiceProvider)mauiApp.RootServices).Builder.Configured);
 		}
 
 		private class MyServiceProviderFactory : IServiceProviderFactory<MyServiceBuilder>

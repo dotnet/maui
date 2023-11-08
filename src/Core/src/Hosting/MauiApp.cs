@@ -11,11 +11,15 @@ namespace Microsoft.Maui.Hosting
 	public sealed class MauiApp : IDisposable, IAsyncDisposable
 	{
 		private readonly IServiceProvider _services;
+		private readonly IServiceProvider _rootServices;
 
-		internal MauiApp(IServiceProvider services)
+		internal MauiApp(IServiceProvider services, IServiceProvider rootServiceProvider)
 		{
 			_services = services;
+			_rootServices = rootServiceProvider;
 		}
+
+		internal IServiceProvider RootServices => _rootServices;
 
 		/// <summary>
 		/// The application's configured services.
@@ -40,6 +44,7 @@ namespace Microsoft.Maui.Hosting
 			DisposeConfiguration();
 
 			(_services as IDisposable)?.Dispose();
+			(_rootServices as IDisposable)?.Dispose();
 		}
 
 		/// <inheritdoc />

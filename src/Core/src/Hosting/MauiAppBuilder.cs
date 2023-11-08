@@ -152,7 +152,7 @@ namespace Microsoft.Maui.Hosting
 
 			var appScope = serviceProvider.CreateScope();
 
-			MauiApp builtApplication = new MauiApp(appScope.ServiceProvider);
+			MauiApp builtApplication = new MauiApp(appScope.ServiceProvider, serviceProvider);
 
 			// Mark the service collection as read-only to prevent future modifications
 			_services.MakeReadOnly();
