@@ -1,13 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Drawing;
-using System.Text;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
-using Microsoft.Maui.Platform;
-using ObjCRuntime;
 using UIKit;
 using Size = Microsoft.Maui.Graphics.Size;
 
@@ -338,14 +332,12 @@ namespace Microsoft.Maui.Handlers
 			var crossPlatformLayout = scrollView as ICrossPlatformLayout;
 			var platformScrollView = PlatformView;
 
-			var contentSize = crossPlatformLayout.CrossPlatformArrange(bounds);
-
 			// The UIScrollView's bounds are available, so we can use them to make sure the ContentSize makes sense
 			// for the ScrollView orientation
 			var viewportSize = GetViewportSize(platformScrollView);
 
 			// Get a Rect for doing the CrossPlatformArrange of the Content
-			var viewportRect = new Rect(Point.Zero, viewportSize.ToSize());
+			var viewportRect = new Rect(Graphics.Point.Zero, viewportSize.ToSize());
 
 			var contentSize = crossPlatformLayout.CrossPlatformArrange(viewportRect);
 
