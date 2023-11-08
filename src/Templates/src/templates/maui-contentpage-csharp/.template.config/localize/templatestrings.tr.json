@@ -1,6 +1,7 @@
 {
   "author": "Microsoft",
   "name": ".NET MAUI ContentPage (C#)",
+  "description": "A page for displaying content using C#.",
   "postActions/openInEditor/description": "Düzenleyicide NewPage1.cs dosyasını açar.",
   "symbols/namespace/description": "Oluşturulan kod için ad alanı."
 }

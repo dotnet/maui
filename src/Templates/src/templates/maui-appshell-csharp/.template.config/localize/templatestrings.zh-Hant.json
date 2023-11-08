@@ -1,0 +1,7 @@
+{
+  "author": "Microsoft",
+  "name": ".NET MAUI AppShell (C#)",
+  "description": "An appshell to enable navigation using C#.",
+  "postActions/openInEditor/description": "Opens NewAppshell1.cs in the editor.",
+  "symbols/namespace/description": "Namespace for the generated code."
+}
