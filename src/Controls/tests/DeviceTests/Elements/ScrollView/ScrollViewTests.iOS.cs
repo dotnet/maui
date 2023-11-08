@@ -7,6 +7,7 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using UIKit;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
