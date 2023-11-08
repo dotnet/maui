@@ -20,16 +20,16 @@ namespace Maui.Controls.Sample
 			Tapped += OnTapped;
 		}
 
-		async void OnTapped(object sender, WindowOverlayTappedEventArgs e)
+		async void OnTapped(object? sender, WindowOverlayTappedEventArgs e)
 		{
 			if (!e.WindowOverlayElements.Contains(_testWindowDrawable))
 				return;
 
-			var window = Application.Current.Windows.FirstOrDefault(w => w == Window);
+			var window = Application.Current!.Windows.FirstOrDefault(w => w == Window);
 
 			System.Diagnostics.Debug.WriteLine($"Tapped the test overlay button.");
 
-			var result = await window.Page.DisplayActionSheet(
+			var result = await window!.Page!.DisplayActionSheet(
 				"Greetings from Visual Studio Client Experiences!",
 				"Goodbye!",
 				null,

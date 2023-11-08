@@ -28,10 +28,22 @@ namespace Microsoft.Maui.ApplicationModel
 			{
 				var eventStore = new EKEventStore();
 
+				Tuple<bool, NSError> results = null;
+#if NET8_0_OR_GREATER
+				if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+				{
+					if (entityType == EKEntityType.Reminder)
+						results = await eventStore.RequestFullAccessToRemindersAsync();
+					if (entityType == EKEntityType.Event)
+						results = await eventStore.RequestFullAccessToEventsAsync();
+				}
+				else
+#endif
+				{
 #pragma warning disable CA1422 // Validate platform compatibility
-				var results = await eventStore.RequestAccessAsync(entityType);
+					results = await eventStore.RequestAccessAsync(entityType);
 #pragma warning restore CA1422 // Validate platform compatibility
-
+				}
 				return results.Item1 ? PermissionStatus.Granted : PermissionStatus.Denied;
 			}
 		}
