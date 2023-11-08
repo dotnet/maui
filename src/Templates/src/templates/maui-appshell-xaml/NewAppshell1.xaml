@@ -1,0 +1,8 @@
+﻿<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:controls="clr-namespace:MauiApp1.Controls"
+       xmlns:views="clr-namespace:MauiApp1.Views"
+       x:Class="MauiApp1.NewAppShell1">
+    <FlyoutItem Title="Cats"/>
+    <FlyoutItem Title="Dogs"/>
+</Shell>
