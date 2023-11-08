@@ -1,4 +1,5 @@
-﻿using CoreGraphics;
+﻿using System;
+using CoreGraphics;
 using Foundation;
 using UIKit;
 
@@ -13,14 +14,9 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var nsString = new NSString(value);
 			var uiFont = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont();
-
-			var attributes = new NSMutableDictionary
-			{
-				{ new NSString("NSFontAttributeName"), uiFont }
-			};
-
+			
 			CGSize size;
-			if (!UIDevice.CurrentDevice.CheckSystemVersion(14, 0))
+			if (OperatingSystem.IsIOSVersionAtLeast(14) || OperatingSystem.IsMacCatalystVersionAtLeast(13, 1))
 			{
 				size = nsString.GetBoundingRect(
 					CGSize.Empty,
