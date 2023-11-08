@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <_MauiTargetPlatformIdentifier>$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))</_MauiTargetPlatformIdentifier>
+    <_MauiTargetPlatformIsWindows>false</_MauiTargetPlatformIsWindows>
+    <_MauiTargetPlatformIsWindows Condition="$(_MauiTargetPlatformIdentifier.Contains('windows')) == 'True'">True</_MauiTargetPlatformIsWindows>
   </PropertyGroup>
 
 </Project>

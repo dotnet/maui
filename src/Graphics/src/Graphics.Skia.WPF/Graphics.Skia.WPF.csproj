@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="SkiaSharp.Views.WPF" />
+    <FrameworkReference Update="Microsoft.Windows.SDK.NET.Ref" RuntimeFrameworkVersion="10.0.22621.31" TargetingPackVersion="10.0.22621.31" />
   </ItemGroup>
 
   <ItemGroup>
