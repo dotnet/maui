@@ -45,15 +45,15 @@ namespace Microsoft.Maui.DeviceTests
 
 			var flyoutPage = new FlyoutPage();
 			flyoutPage.Title = "Hello world";
-            flyoutPage.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
+			flyoutPage.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
 			flyoutPage.Flyout = new ContentPage() { Title = "Hello world" };
 
 			var first = new NavigationPage(new ContentPage());
 			var second = new NavigationPage(new ContentPage());
 
-            flyoutPage.Detail = first;
+			flyoutPage.Detail = first;
 
-            await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
 				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
 				Assert.False(navView.IsBackEnabled);

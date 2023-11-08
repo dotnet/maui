@@ -72,7 +72,7 @@
       "src\\TestUtils\\src\\Microsoft.Maui.IntegrationTests\\Microsoft.Maui.IntegrationTests.csproj",
       "src\\TestUtils\\src\\TestUtils\\TestUtils.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
-      "src\\Workload\\Microsoft.NET.Sdk.Maui\\Microsoft.NET.Sdk.Maui.csproj"
+      "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj"
     ]
   }
 }
