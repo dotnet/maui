@@ -142,6 +142,8 @@ static Microsoft.Maui.SoftInputExtensions.ShowSoftInputAsync(this Microsoft.Maui
 *REMOVED*Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 *REMOVED*Microsoft.Maui.Handlers.SwipeItemMenuItemHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
+virtual Microsoft.Maui.Animations.Ticker.OnSystemEnabledChanged() -> void
+virtual Microsoft.Maui.Animations.Ticker.SystemEnabled.set -> void
 virtual Microsoft.Maui.Handlers.ButtonHandler.ImageSourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.ImageButtonHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
 virtual Microsoft.Maui.Handlers.ImageHandler.SourceLoader.get -> Microsoft.Maui.Platform.ImageSourcePartLoader!
