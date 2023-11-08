@@ -49,7 +49,6 @@ namespace Microsoft.Maui.Handlers
 		public static void MapIsEnabled(ISwipeViewHandler handler, ISwipeView swipeView)
 		{
 			handler.PlatformView.UpdateIsSwipeEnabled(swipeView.IsEnabled);
-			ViewHandler.MapIsEnabled(handler, swipeView);
 		}
 
 		static void MapBackground(ISwipeViewHandler handler, ISwipeView view, System.Action<IElementHandler, IElement>? action)
