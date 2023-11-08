@@ -403,10 +403,17 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		}
 		else
 		{
+			var simulatorName = "XHarness";
+			if(iosVersionToRun.Contains("17"))
+				simulatorName = "iPhone 15";	
+			Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersionToRun);
 			var sims = ListAppleSimulators();
-			var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
-			var simXH = xharness.First();
+			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
+			if(simXH == null)
+				throw new Exception("No simulator was found to run tests on.");
+
 			deviceToRun = simXH.UDID;
+			DEVICE_NAME = simXH.Name;
 			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
 		}
 
