@@ -83,8 +83,7 @@ namespace Microsoft.Maui.DeviceTests
 				HeightRequest = 200,
 			};
 
-			_ = await CreateHandlerAsync<LabelHandler>(label);
-			_ = await CreateHandlerAsync<ScrollViewHandler>(scrollView);
+			SetupBuilder();
 
 			await AttachAndRun(scrollView, async (handler) =>
 			{
