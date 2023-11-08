@@ -390,8 +390,6 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
-        SetEnvironmentVariable("IOS_SIMULATOR_UDID", deviceToRun);
-		SetEnvironmentVariable("IOS_PLATFORM_VERSION", iosVersionToRun);
 	}
 }
 
