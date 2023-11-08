@@ -32,9 +32,9 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
+		[MissingMapper]
 		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
 		{
-			throw new NotImplementedException();
 		}
 	}
 
