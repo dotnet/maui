@@ -60,11 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(
-#if ANDROID
-			Skip = "Fails on Android"
-#endif
-		)]
+		[Fact]
 		public async Task TestContentHorizontalOptionsChanged()
 		{
 			var label = new Label
@@ -87,8 +83,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(scrollView, async (handler) =>
 			{
-				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Left, 0.0));
+				// Without this delay, the UI didn't render and the bug didn't repro
+				await Task.Delay(100);
 
+				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Left, 0.0));
 				scrollView.Content.HorizontalOptions = LayoutOptions.End;
 				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Right, 300.0));
 			});
