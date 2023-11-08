@@ -40,17 +40,17 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 		{
 			var rect = new CGRect(0, 0, 100, 100);
 
-			UIGraphics.BeginImageContextWithOptions(rect.Size, false, scale);
-			var context = UIGraphics.GetCurrentContext();
+			var renderer = new UIGraphicsImageRenderer(rect.Size, new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = scale,
+			});
 
-			color.SetFill();
-			context.FillRect(rect);
-
-			var image = UIGraphics.GetImageFromCurrentImageContext();
-
-			UIGraphics.EndImageContext();
-
-			return image.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+			return renderer.CreateImage((context) =>
+			{
+				color.SetFill();
+				context.FillRect(rect);
+			}).ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 		}
 
 		class Result : ImageSourceServiceResult

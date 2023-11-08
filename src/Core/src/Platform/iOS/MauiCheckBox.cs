@@ -177,63 +177,69 @@ namespace Microsoft.Maui.Platform
 
 		UIImage CreateCheckBox(UIImage? check)
 		{
-			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
-			var context = UIGraphics.GetCurrentContext();
-			context.SaveState();
-
-			var checkedColor = CheckBoxTintUIColor;
-
-			if (checkedColor != null)
+			var renderer = new UIGraphicsImageRenderer(new CGSize(DefaultSize, DefaultSize), new UIGraphicsImageRendererFormat()
 			{
-				checkedColor.SetFill();
-				checkedColor.SetStroke();
-			}
+				Opaque = false,
+				Scale = 0,
+			});
 
-			var vPadding = LineWidth / 2;
-			var hPadding = LineWidth / 2;
-			var diameter = DefaultSize - LineWidth;
-
-			var backgroundRect = new CGRect(hPadding, vPadding, diameter, diameter);
-			var boxPath = CreateBoxPath(backgroundRect);
-			boxPath.LineWidth = LineWidth;
-			boxPath.Stroke();
-
-			if (check != null)
+			return renderer.CreateImage((context) =>
 			{
-				boxPath.Fill();
-				check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
-			}
+				context.CGContext.SaveState();
 
-			context.RestoreState();
-			var img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
+				var checkedColor = CheckBoxTintUIColor;
 
-			return img;
+				if (checkedColor != null)
+				{
+					checkedColor.SetFill();
+					checkedColor.SetStroke();
+				}
+
+				var vPadding = LineWidth / 2;
+				var hPadding = LineWidth / 2;
+				var diameter = DefaultSize - LineWidth;
+
+				var backgroundRect = new CGRect(hPadding, vPadding, diameter, diameter);
+				var boxPath = CreateBoxPath(backgroundRect);
+				boxPath.LineWidth = LineWidth;
+				boxPath.Stroke();
+
+				if (check != null)
+				{
+					boxPath.Fill();
+					check.Draw(new CGPoint(0, 0), CGBlendMode.DestinationOut, 1);
+				}
+
+				context.CGContext.RestoreState();
+			});
 		}
 
 		static UIImage CreateCheckMark()
 		{
-			UIGraphics.BeginImageContextWithOptions(new CGSize(DefaultSize, DefaultSize), false, 0);
-			var context = UIGraphics.GetCurrentContext();
-			context.SaveState();
+			var renderer = new UIGraphicsImageRenderer(new CGSize(DefaultSize, DefaultSize), new UIGraphicsImageRendererFormat()
+			{
+				Opaque = false,
+				Scale = 0,
+			});
 
-			var vPadding = LineWidth / 2;
-			var hPadding = LineWidth / 2;
-			var diameter = DefaultSize - LineWidth;
+			return renderer.CreateImage((context) =>
+			{
+				context.CGContext.SaveState();
+				
+				var vPadding = LineWidth / 2;
+				var hPadding = LineWidth / 2;
+				var diameter = DefaultSize - LineWidth;
 
-			var checkPath = CreateCheckPath();
+				var checkPath = CreateCheckPath();
 
-			context.TranslateCTM(hPadding + (nfloat)(0.05 * diameter), vPadding + (nfloat)(0.1 * diameter));
-			context.ScaleCTM(diameter, diameter);
-			DrawCheckMark(checkPath);
-			UIColor.White.SetStroke();
-			checkPath.Stroke();
+				context.CGContext.TranslateCTM(hPadding + (nfloat)(0.05 * diameter), vPadding + (nfloat)(0.1 * diameter));
+				context.CGContext.ScaleCTM(diameter, diameter);
+				DrawCheckMark(checkPath);
+				UIColor.White.SetStroke();
+				checkPath.Stroke();
 
-			context.RestoreState();
-			var img = UIGraphics.GetImageFromCurrentImageContext();
-			UIGraphics.EndImageContext();
-
-			return img;
+				context.CGContext.RestoreState();
+			});
 		}
 
 		public override CGSize SizeThatFits(CGSize size)
