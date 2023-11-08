@@ -74,7 +74,7 @@ namespace Microsoft.Maui.Platform
 					.ConfigureAwait(false);
 
 				SourceManager.CompleteLoad(result);
-#elif ANDROID || TIZEN
+#elif ANDROID || TIZEN || GTK
 				var result = await imageSource.UpdateSourceAsync(platformView, _imageSourceServiceProvider, Setter.SetImageSource, token)
 					.ConfigureAwait(false);
 #else

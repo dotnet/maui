@@ -82,7 +82,13 @@ namespace Microsoft.Maui.Handlers
 
 		partial class ButtonImageSourcePartSetter
 		{
-			public override void SetImageSource(object? platformImage) { }
+			public override void SetImageSource(Gdk.Pixbuf? platformImage)
+			{
+				if (Handler?.PlatformView is not Button button)
+					return;
+
+				button.Image = new Image(platformImage);
+			}
 		}
 	}
 }

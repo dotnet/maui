@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Handlers
 
 		partial class SwipeItemMenuItemImageSourcePartSetter
 		{
-			public override void SetImageSource(object? platformImage) { }
+			public override void SetImageSource(Gdk.Pixbuf? platformImage) { }
 		}
 	}
 }

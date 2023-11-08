@@ -7,6 +7,8 @@ using PlatformImage = Android.Graphics.Drawables.Drawable;
 using PlatformImage = Microsoft.UI.Xaml.Media.ImageSource;
 #elif TIZEN
 using PlatformImage = Microsoft.Maui.Platform.MauiImageSource;
+#elif GTK
+using PlatformImage = Gdk.Pixbuf;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0_OR_GREATER && !IOS && !ANDROID && !TIZEN)
 using PlatformImage = System.Object;
 #endif
