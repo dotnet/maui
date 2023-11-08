@@ -12,10 +12,9 @@ FilePath PROJECT = Argument("project", EnvironmentVariable("IOS_TEST_PROJECT") ?
 string TEST_DEVICE = Argument("device", EnvironmentVariable("IOS_TEST_DEVICE") ?? $"ios-simulator-64_{defaultVersion}"); // comma separated in the form <platform>-<device|simulator>[-<32|64>][_<version>] (eg: ios-simulator-64_13.4,[...])
 
 // optional
-var USE_DOTNET = Argument("dotnet", true);
 var DOTNET_ROOT = Argument("dotnet-root", EnvironmentVariable("DOTNET_ROOT"));
 var DOTNET_PATH = Argument("dotnet-path", EnvironmentVariable("DOTNET_PATH"));
-var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? (USE_DOTNET ? $"{dotnetVersion}-ios" : ""));
+var TARGET_FRAMEWORK = Argument("tfm", EnvironmentVariable("TARGET_FRAMEWORK") ?? $"{dotnetVersion}-ios");
 var BINLOG_ARG = Argument("binlog", EnvironmentVariable("IOS_TEST_BINLOG") ?? "");
 DirectoryPath BINLOG_DIR = string.IsNullOrEmpty(BINLOG_ARG) && !string.IsNullOrEmpty(PROJECT.FullPath) ? PROJECT.GetDirectory() : BINLOG_ARG;
 var TEST_APP = Argument("app", EnvironmentVariable("IOS_TEST_APP") ?? "");
@@ -45,10 +44,25 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
+string DOTNET_TOOL_PATH = "dotnet";
+
+var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
+if (localDotnetiOS)
+{
+	Information("Using local dotnet");
+	DOTNET_TOOL_PATH = $"{MakeAbsolute(Directory("../../bin/dotnet/")).ToString()}/dotnet";
+}
+else
+{
+	Information("Using system dotnet");
+}
+
 Setup(context =>
 {
 	Cleanup();
 
+	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
+	
 	// only grab attached iOS devices if we are trying to test on device
 	if (TEST_DEVICE.Contains("device")) 
 	{ 
@@ -104,61 +118,29 @@ Task("Build")
 {
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
-
-	if (USE_DOTNET)
-	{
-		Information($"Build target dotnet root: {DOTNET_ROOT}");
-		Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-		var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-		Information("new dotnet root: {0}", localDotnetRoot);
-
-		DOTNET_ROOT = localDotnetRoot.ToString();
-
-		SetDotNetEnvironmentVariables(DOTNET_ROOT);
-		
-		DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+	
+	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
 			Framework = TARGET_FRAMEWORK,
 			MSBuildSettings = new DotNetMSBuildSettings {
 				MaxCpuCount = 0
-			},
-			ToolPath = DOTNET_PATH,
+			},	
 			ArgumentCustomization = args =>
 			{ 	
 				args
 				.Append("/p:BuildIpa=true")
-				.Append("/bl:" + binlog);
+				.Append("/bl:" + binlog)
+				.Append("/tl");
 				
 				// if we building for a device
 				if(TEST_DEVICE.ToLower().Contains("device"))
 				{
 					args.Append("/p:RuntimeIdentifier=ios-arm64");
 				}
-
 				return args;
 			}
 		});
-	}
-	else
-	{
-		MSBuild(PROJECT.FullPath, c => {
-			c.Configuration = CONFIGURATION;
-			c.MaxCpuCount = 0;
-			c.Restore = true;
-			c.Properties["Platform"] = new List<string> { PLATFORM };
-			c.Properties["BuildIpa"] = new List<string> { "true" };
-			c.Properties["ContinuousIntegrationBuild"] = new List<string> { "false" };
-			if (!string.IsNullOrEmpty(TARGET_FRAMEWORK))
-				c.Properties["TargetFramework"] = new List<string> { TARGET_FRAMEWORK };
-			c.Targets.Clear();
-			c.Targets.Add("Build");
-			c.BinaryLogger = new MSBuildBinaryLogSettings {
-				Enabled = true,
-				FileName = binlog,
-			};
-		});
-	}
 });
 
 Task("uitest-build")
@@ -197,9 +179,7 @@ Task("Test")
 	if (string.IsNullOrEmpty(TEST_APP)) {
 		if (string.IsNullOrEmpty(PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = USE_DOTNET
-			? PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
-			: PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+		var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath;
 		var apps = GetDirectories(binDir + "/*.app");
 		if (apps.Any()) {
 			TEST_APP = apps.First().FullPath;
@@ -237,6 +217,7 @@ Task("Test")
 	Information("XCODE PATH: {0}", XCODE_PATH);
 
 	var settings = new DotNetToolSettings {
+		ToolPath = DOTNET_TOOL_PATH,
 		DiagnosticOutput = true,
 		ArgumentCustomization = args => args.Append("run xharness apple test " +
 		$"--app=\"{TEST_APP}\" " +
@@ -292,19 +273,19 @@ Task("uitest")
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
-			ToolPath = DOTNET_PATH,
 			ArgumentCustomization = args => args
 				.Append("/p:ExtraDefineConstants=IOSUITEST")
 				.Append("/bl:" + binlog)
-				//.Append("/tl")
+				.Append("/tl")
 			
 	});
 
 	SetEnvironmentVariable("APPIUM_LOG_FILE", $"{BINLOG_DIR}/appium_ios.log");
 
 	Information("Run UITests project {0}",PROJECT.FullPath);
-	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-ios");
+	RunTestWithLocalDotNet(PROJECT.FullPath, CONFIGURATION, pathDotnet: DOTNET_TOOL_PATH, noBuild: true, resultsFileNameWithoutExtension: $"{name}-{CONFIGURATION}-ios");
 });
 
 Task("cg-uitest")
@@ -322,14 +303,16 @@ Task("cg-uitest")
 	// build the test library
 	var binDir = PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TEST_FRAMEWORK).FullPath;
 	Information("BinDir: {0}", binDir);
+	Information("PROJECT: {0}", PROJECT);
 	var name = System.IO.Path.GetFileNameWithoutExtension(PROJECT.FullPath);
 	var binlog = $"{binDir}/{name}-{CONFIGURATION}-ios.binlog";
 	Information("Build UITests project {0}", PROJECT.FullPath);
 	DotNetBuild(PROJECT.FullPath, new DotNetBuildSettings {
+			ToolPath = DOTNET_TOOL_PATH,
 			Configuration = CONFIGURATION,
 			ArgumentCustomization = args => args
-				.Append("/bl:" + binlog),
-			ToolPath = DOTNET_PATH,
+				.Append("/bl:" + binlog)
+				.Append("/tl"),
 	});
 	
 	var testLibDllPath = $"{binDir}/Microsoft.Maui.Controls.iOS.UITests.dll";
@@ -360,9 +343,7 @@ void SetupAppPackageNameAndResult()
    if (string.IsNullOrEmpty(TEST_APP) ) {
 		if (string.IsNullOrEmpty(TEST_APP_PROJECT.FullPath))
 			throw new Exception("If no app was specified, an app must be provided.");
-		var binDir = USE_DOTNET
-			? TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION + "/" + TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM).FullPath
-			: TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(PLATFORM).Combine(CONFIGURATION).FullPath;
+		var binDir =  MakeAbsolute(TEST_APP_PROJECT.GetDirectory().Combine("bin").Combine(CONFIGURATION).Combine(TARGET_FRAMEWORK).Combine(DOTNET_PLATFORM));
 		Information("BinDir: {0}", binDir);
 		var apps = GetDirectories(binDir + "/*.app");
 		if(apps.Count == 0)
@@ -373,25 +354,14 @@ void SetupAppPackageNameAndResult()
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
 		TEST_RESULTS =  GetTestResultsDirectory().FullPath;
 	}
-
-	Information($"Build target dotnet root: {DOTNET_ROOT}");
-	Information($"Build target set dotnet tool path: {DOTNET_PATH}");
-		
-	var localDotnetRoot = MakeAbsolute(Directory("../../bin/dotnet/"));
-	Information("new dotnet root: {0}", localDotnetRoot);
-
-	DOTNET_ROOT = localDotnetRoot.ToString();
-
-	Information("Test Device: {0}", TEST_DEVICE);
-	Information("Test App: {0}", TEST_APP);
-	Information("Test Results Directory: {0}", TEST_RESULTS);
 }
 
 void InstallIpa(string testApp, string testAppPackageName, string testDevice, string testResultsDirectory, string version)
 {
 	Information("Install with xharness: {0}",testApp);
 	var settings = new DotNetToolSettings {
-		DiagnosticOutput = true,
+		ToolPath = DOTNET_TOOL_PATH,
+		DiagnosticOutput = true,	
 		ArgumentCustomization = args => { 
 			args.Append("run xharness apple install " +
 							$"--app=\"{testApp}\" " +

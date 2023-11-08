@@ -24,15 +24,10 @@ parameters:
     - name: Windows
       poolName: $(windowsNet6VmPool)
       vmImage: $(windowsNet6VmImage)
-      bootsAndroid: $(Android.Msi)
-      bootsiOS: $(iOS.Msi)
       artifact: templates-windows
     - name: macOS
       poolName: $(macOSXNet6VmPool)
       vmImage: $(macOSXNet6VmImage)
-      bootsAndroid: $(Android.Pkg)
-      bootsiOS: $(iOS.Pkg)
-      bootsMacCatalyst: $(MacCatalyst.Pkg)
       artifact: templates-macos
 
   - name: RunPlatforms
@@ -75,6 +70,7 @@ jobs:
     demands:
       - macOS.Name -equals Ventura
       - macOS.Architecture -equals x64
+      - Agent.OSVersion -equals 13.5
   steps:
 
   - ${{ each step in parameters.prepareSteps }}:

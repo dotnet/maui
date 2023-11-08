@@ -2,6 +2,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="Maui.Controls.Sample.Pages.EntryPage"
+    xmlns:controls="clr-namespace:Maui.Controls.Sample.Pages"
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     xmlns:viewmodels="clr-namespace:Maui.Controls.Sample.ViewModels"
     Title="Entry">
@@ -184,6 +185,19 @@
                     Text="BackgroundColor"
                     BackgroundColor="Orange"/>
                 <Label
+                   Text="BackgroundColor"
+                   Style="{StaticResource Headline}" />
+                <Entry 
+                    x:Name="BackgroundColorEntry"/>
+                <Button
+                    x:Name="UpdateBackgroundColorButton"
+                    Text="Update Background Color"
+                    Clicked="OnUpdateBackgroundColorButtonClicked"/>
+                <Button
+                    x:Name="ClearBackgroundColorButton"
+                    Text="Clear Background Color"
+                    Clicked="OnClearBackgroundColorButtonClicked"/>
+                <Label
                     Text="Background"
                     Style="{StaticResource Headline}" />
                 <Entry 
@@ -215,6 +229,10 @@
                     Style="{StaticResource Headline}" />
                 <Entry 
                     Style="{StaticResource EntryVisualStatesStyle}" />
+                <Label
+                    Text="Custom Entry (Transparent)"
+                    Style="{StaticResource Headline}" />
+                <controls:TransparentEntry />
                 <Label
                     Text="Keyboard Numeric"
                     Style="{StaticResource Headline}" />

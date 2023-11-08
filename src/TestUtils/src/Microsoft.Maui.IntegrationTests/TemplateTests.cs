@@ -260,9 +260,8 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-			List<string> expectedEntitlements = config == "Release" ?
-				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
-				new() { "com.apple.security.get-task-allow" };
+			List<string> expectedEntitlements =
+				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" };
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");

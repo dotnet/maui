@@ -1,4 +1,5 @@
 #nullable enable
+Microsoft.Maui.Controls.Handlers.Items.CarouselViewHandler.~CarouselViewHandler() -> void
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.Sender.get -> Microsoft.UI.Xaml.UIElement!
 Microsoft.Maui.Controls.PlatformDragStartingEventArgs.DragStartingEventArgs.get -> Microsoft.UI.Xaml.DragStartingEventArgs!
@@ -86,7 +87,6 @@ Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.get -> bool
 Microsoft.Maui.Controls.InputView.IsTextPredictionEnabled.set -> void
 Microsoft.Maui.Controls.IWindowCreator
 Microsoft.Maui.Controls.IWindowCreator.CreateWindow(Microsoft.Maui.Controls.Application! app, Microsoft.Maui.IActivationState? activationState) -> Microsoft.Maui.Controls.Window!
-Microsoft.Maui.Controls.Platform.CollectionViewExtensions
 Microsoft.Maui.Controls.Platform.ShapesExtensions
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerEnteredCommandParameter.get -> object!
 Microsoft.Maui.Controls.PointerGestureRecognizer.PointerExitedCommandParameter.get -> object!
@@ -113,9 +113,6 @@ static Microsoft.Maui.Controls.LayoutOptions.operator !=(Microsoft.Maui.Controls
 static Microsoft.Maui.Controls.LayoutOptions.operator ==(Microsoft.Maui.Controls.LayoutOptions left, Microsoft.Maui.Controls.LayoutOptions right) -> bool
 static Microsoft.Maui.Controls.Picker.MapHorizontalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
 static Microsoft.Maui.Controls.Picker.MapVerticalOptions(Microsoft.Maui.Handlers.IPickerHandler! handler, Microsoft.Maui.Controls.Picker! picker) -> void
-static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.GridItemsLayout? layout) -> Microsoft.UI.Xaml.Style?
-static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.GetItemContainerStyle(this Microsoft.Maui.Controls.LinearItemsLayout? layout) -> Microsoft.UI.Xaml.Style?
-static Microsoft.Maui.Controls.Platform.CollectionViewExtensions.ToPlatform(this Microsoft.Maui.Controls.ItemsLayout! layout) -> Microsoft.UI.Xaml.Controls.Orientation
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateHorizontalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
 static Microsoft.Maui.Controls.Platform.PickerExtensions.UpdateVerticalOptions(this Microsoft.UI.Xaml.FrameworkElement! platformView, Microsoft.Maui.Controls.View! view) -> void
 static Microsoft.Maui.Controls.Platform.ShapesExtensions.UpdatePath(this Microsoft.Maui.Graphics.Win2D.W2DGraphicsView! platformView, Microsoft.Maui.IShapeView! shapeView) -> void

@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		bool _disposed;
 
 		List<View> _oldViews;
-		CarouselViewwOnGlobalLayoutListener _carouselViewLayoutListener;
+		CarouselViewOnGlobalLayoutListener _carouselViewLayoutListener;
 
 		protected CarouselView Carousel => ItemsView as CarouselView;
 
@@ -516,13 +516,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (_carouselViewLayoutListener != null)
 				return;
 
-			_carouselViewLayoutListener = new CarouselViewwOnGlobalLayoutListener();
-			_carouselViewLayoutListener.LayoutReady += LayoutReady;
-
+			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
 			ViewTreeObserver.AddOnGlobalLayoutListener(_carouselViewLayoutListener);
 		}
 
-		void LayoutReady(object sender, EventArgs e)
+		void LayoutReady()
 		{
 			if (!_initialized)
 			{
@@ -546,7 +544,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return;
 
 			ViewTreeObserver?.RemoveOnGlobalLayoutListener(_carouselViewLayoutListener);
-			_carouselViewLayoutListener.LayoutReady -= LayoutReady;
 			_carouselViewLayoutListener = null;
 		}
 
@@ -594,14 +591,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
 		}
-	}
 
-	class CarouselViewwOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
-	{
-		public EventHandler<EventArgs> LayoutReady;
-		public void OnGlobalLayout()
+		class CarouselViewOnGlobalLayoutListener : Java.Lang.Object, ViewTreeObserver.IOnGlobalLayoutListener
 		{
-			LayoutReady?.Invoke(this, new EventArgs());
+			readonly WeakReference<MauiCarouselRecyclerView> _recyclerView;
+
+			public CarouselViewOnGlobalLayoutListener(MauiCarouselRecyclerView recyclerView)
+			{
+				_recyclerView = new(recyclerView);
+			}
+
+			public void OnGlobalLayout()
+			{
+				if (_recyclerView.TryGetTarget(out var recyclerView))
+				{
+					recyclerView.LayoutReady();
+				}
+			}
 		}
 	}
 }
