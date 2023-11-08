@@ -44,8 +44,9 @@ namespace Microsoft.Maui.Media
 				// TODO: test/handle this case
 			}
 
-			var image = renderer?.CreateImage((context) =>
+			var image = renderer?.CreateImage((_) =>
 			{
+				window.DrawViewHierarchy(window.Bounds, true);
 			});
 
 			var result = new ScreenshotResult(image ?? new UIImage());
@@ -70,8 +71,9 @@ namespace Microsoft.Maui.Media
 				// TODO: test/handle this case
 			}
 
-			var image = renderer?.CreateImage((context) =>
+			var image = renderer?.CreateImage((_) =>
 			{
+				view.DrawViewHierarchy(view.Bounds, true);
 			});
 
 			var result = image is null ? null : new ScreenshotResult(image);
@@ -102,6 +104,8 @@ namespace Microsoft.Maui.Media
 				{
 					// TODO: test/handle this case
 				}
+
+				layer.RenderInContext(context.CGContext);
 			});
 
 			var result = image is null ? null : new ScreenshotResult(image);
