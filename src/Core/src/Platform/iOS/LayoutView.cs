@@ -21,12 +21,12 @@ namespace Microsoft.Maui.Platform
 			Superview?.SetNeedsLayout();
 		}
 
-		public override UIView HitTest(CGPoint point, UIEvent? uievent)
+		public override UIView? HitTest(CGPoint point, UIEvent? uievent)
 		{
 			var result = base.HitTest(point, uievent);
 
 			if (result is null)
-				return null!;
+				return null;
 
 			if (!_userInteractionEnabled && this.Equals(result))
 			{
@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Platform
 				// then we exclude the LayoutView itself from hit testing. But it's children are valid
 				// hit testing targets.
 
-				return null!;
+				return null;
 			}
 
 			if (!result.UserInteractionEnabled)
@@ -42,7 +42,7 @@ namespace Microsoft.Maui.Platform
 				// If the child also has user interaction disabled (IOW the child is InputTransparent),
 				// then we also want to exclude it from the hit testing.
 
-				return null!;
+				return null;
 			}
 
 			if (result is LayoutView layoutView && !layoutView.UserInteractionEnabledOverride)
@@ -50,7 +50,7 @@ namespace Microsoft.Maui.Platform
 				// If the child is a layout then we need to check the UserInteractionEnabledOverride
 				// since layouts always have user interaction enabled.
 
-				return null!;
+				return null;
 			}
 
 			return result;

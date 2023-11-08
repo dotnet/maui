@@ -8,7 +8,7 @@ namespace Maui.Controls.Sample.Controls
 {
 	static class BordelessEntryAppHostBuilderExtensions
 	{
-		public static MauiAppBuilder UseBordelessEntry(this MauiAppBuilder builder, Action<BordelessEntryServiceBuilder> configureDelegate = null)
+		public static MauiAppBuilder UseBordelessEntry(this MauiAppBuilder builder, Action<BordelessEntryServiceBuilder>? configureDelegate = null)
 		{
 			builder.Services.TryAddSingleton<IMauiInitializeService, BorderlessEntryInitializer>();
 

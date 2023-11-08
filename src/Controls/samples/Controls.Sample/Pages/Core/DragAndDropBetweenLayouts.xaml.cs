@@ -36,11 +36,11 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragStarting(object sender, DragStartingEventArgs e)
 		{
-			var boxView = (View)(sender as Element).Parent;
+			var boxView = (View)(sender as Element)!.Parent;
 			DragStartingTitle.IsVisible = true;
-			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(boxView).Value.X}, Y:{(int)e.GetPosition(boxView).Value.Y}";
-			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragStartingRelativePositionLabel.Text = $"- This label X:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel).Value.Y}";
+			DragStartingPositionLabel.Text = $"- Self X:{(int)e.GetPosition(boxView)!.Value.X}, Y:{(int)e.GetPosition(boxView)!.Value.Y}";
+			DragStartingScreenPositionLabel.Text = $"- Screen X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
+			DragStartingRelativePositionLabel.Text = $"- This label X:{(int)e.GetPosition(DragStartingRelativePositionLabel)!.Value.X}, Y:{(int)e.GetPosition(DragStartingRelativePositionLabel)!.Value.Y}";
 
 			var sl = boxView.Parent as StackLayout;
 			e.Data.Properties.Add("Color", boxView.Background);
@@ -54,7 +54,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDropCompleted(object sender, DropCompletedEventArgs e)
 		{
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = (sender as Element)!.Parent as StackLayout;
 
 			if (sl == SLAllColors)
 				SLRainbow.Background = SolidColorBrush.White;
@@ -65,15 +65,15 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragOver(object sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)(sender as Element).Parent;
+			var sl = (StackLayout)(sender as Element)!.Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
 			DragTitle.IsVisible = true;
-			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
-			DragScreenPositionLabel.Text = $"- Screen X: {(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragRelativePositionLabel.Text = $"- This label X: {(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
+			DragPositionLabel.Text = $"- Receiving layout X: {(int)e.GetPosition(sl)!.Value.X}, Y:{(int)e.GetPosition(sl)!.Value.Y}";
+			DragScreenPositionLabel.Text = $"- Screen X: {(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
+			DragRelativePositionLabel.Text = $"- This label X: {(int)e.GetPosition(DragRelativePositionLabel)!.Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel)!.Value.Y}";
 
 			if (e.Data.Properties["Source"] == sl)
 			{
@@ -86,15 +86,15 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDragLeave(object sender, DragEventArgs e)
 		{
-			var sl = (StackLayout)(sender as Element).Parent;
+			var sl = (StackLayout)(sender as Element)!.Parent;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
 
 			DragTitle.IsVisible = true;
-			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
-			DragScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DragRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DragRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel).Value.Y}";
+			DragPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl)!.Value.X}, Y:{(int)e.GetPosition(sl)!.Value.Y}";
+			DragScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
+			DragRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DragRelativePositionLabel)!.Value.X}, Y:{(int)e.GetPosition(DragRelativePositionLabel)!.Value.Y}";
 
 			if (e.Data.Properties["Source"] == sl)
 			{
@@ -107,7 +107,7 @@ namespace Maui.Controls.Sample.Pages
 
 		private void OnDrop(object sender, DropEventArgs e)
 		{
-			var sl = (sender as Element).Parent as StackLayout;
+			var sl = (sender as Element)!.Parent as StackLayout;
 
 			if (!e.Data.Properties.ContainsKey("Source"))
 				return;
@@ -118,11 +118,11 @@ namespace Maui.Controls.Sample.Pages
 			}
 
 			DropTitle.IsVisible = true;
-			DropPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl).Value.X}, Y:{(int)e.GetPosition(sl).Value.Y}";
-			DropScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null).Value.X}, Y:{(int)e.GetPosition(null).Value.Y}";
-			DropRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DropRelativePositionLabel).Value.X}, Y:{(int)e.GetPosition(DropRelativePositionLabel).Value.Y}";
+			DropPositionLabel.Text = $"- Receiving layout: Y:{(int)e.GetPosition(sl)!.Value.X}, Y:{(int)e.GetPosition(sl)!.Value.Y}";
+			DropScreenPositionLabel.Text = $"- Screen: X:{(int)e.GetPosition(null)!.Value.X}, Y:{(int)e.GetPosition(null)!.Value.Y}";
+			DropRelativePositionLabel.Text = $"- This label: X:{(int)e.GetPosition(DropRelativePositionLabel)!.Value.X}, Y:{(int)e.GetPosition(DropRelativePositionLabel)!.Value.Y}";
 
-			var color = e.Data.Properties["Color"] as SolidColorBrush;
+			var color = (e.Data.Properties["Color"] as SolidColorBrush)!;
 
 			if (AllColors.Contains(color))
 			{
