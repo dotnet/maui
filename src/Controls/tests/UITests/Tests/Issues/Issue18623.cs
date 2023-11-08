@@ -13,7 +13,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Entry IsPassword obscure the text";
 
 		[Test]
-		public void EntryIsPasswordObscureText()
+		public async Task EntryIsPasswordObscureText()
 		{
 			App.WaitForElement("WaitForStubControl");
 
@@ -22,6 +22,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 2. In the Entry control below, input some text. The test passes if the text is obscured.
 			App.EnterText("PasswordEntry", "Test");
+
+			await Task.Delay(500);
 
 			// 3. Verify the result  comparing snapshots.
 			VerifyScreenshot();
