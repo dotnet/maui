@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Reflection;
 
 namespace Microsoft.Maui.ApplicationModel
@@ -12,13 +13,13 @@ namespace Microsoft.Maui.ApplicationModel
 
 		public string PackageName => _launchingAssembly.GetAppInfoValue("PackageName") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
-		public string Name => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string Name => _launchingAssembly.GetAppInfoValue("Name") ?? _launchingAssembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? string.Empty;
 
-		public System.Version Version => Utils.ParseVersion(VersionString);
+		public System.Version Version => _launchingAssembly.GetAppInfoVersionValue("Version") ?? _launchingAssembly.GetName().Version;
 
-		public string VersionString => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string VersionString => Version?.ToString() ?? string.Empty;
 
-		public string BuildString => throw ExceptionUtils.NotSupportedOrImplementedException;
+		public string BuildString => Version.Revision.ToString(CultureInfo.InvariantCulture);
 
 		public void ShowSettingsUI() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
