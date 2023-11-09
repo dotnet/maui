@@ -111,7 +111,7 @@ namespace Microsoft.Maui.Animations
 		{
 			readonly Action _check;
 
-			public DurationScaleListener(Action check) 
+			public DurationScaleListener(Action check)
 			{
 				_check = check;
 			}

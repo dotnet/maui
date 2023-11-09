@@ -43,9 +43,9 @@ namespace Microsoft.Maui.DeviceTests
 			EnsureHandlerCreated(builder => { builder.ConfigureMauiHandlers(handlers => { handlers.AddHandler<Entry, EntryHandler>(); }); });
 
 			var scrollView = new ScrollView();
-	
+
 			var entry = new Entry() { Text = "In a ScrollView", HeightRequest = 10 };
-			
+
 
 			static CoreGraphics.CGSize getViewportSize(UIScrollView scrollView)
 			{

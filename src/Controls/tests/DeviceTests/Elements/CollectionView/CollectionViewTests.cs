@@ -234,15 +234,16 @@ namespace Microsoft.Maui.DeviceTests
 		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
 #endif
 		)]
-		public async Task CollectionViewItemsWithFixedWidthAndDifferentHeight() 
+		public async Task CollectionViewItemsWithFixedWidthAndDifferentHeight()
 		{
 			// This tests a CollectionView that has items that have different heights based on https://github.com/dotnet/maui/issues/16234
 
 			SetupBuilder();
-			
+
 			var collectionView = new CollectionView
 			{
-				ItemTemplate = new DataTemplate(() => {
+				ItemTemplate = new DataTemplate(() =>
+				{
 					var label = new Label { WidthRequest = 450 };
 					label.SetBinding(Label.TextProperty, new Binding("."));
 					return label;
@@ -253,9 +254,9 @@ namespace Microsoft.Maui.DeviceTests
 					"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
 				}
 			};
-			
+
 			var frame = collectionView.Frame;
-			
+
 			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
 			{
 				await WaitForUIUpdate(frame, collectionView);
@@ -267,7 +268,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				var firstLabelHeight = ((Label)labels[0]).Height;
 				var secondLabelHeight = ((Label)labels[1]).Height;
-				
+
 				// The first label's height should be smaller than the second one since the text won't wrap
 				Assert.True(0 < firstLabelHeight && firstLabelHeight < secondLabelHeight);
 			});

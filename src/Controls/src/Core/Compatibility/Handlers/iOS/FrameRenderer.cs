@@ -76,7 +76,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 #pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
 #pragma warning restore CA1422 // Validate platform compatibility
-							  // Make sure the control adheres to changes in UI theme
+			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 		}
