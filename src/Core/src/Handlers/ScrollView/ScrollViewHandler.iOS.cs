@@ -352,8 +352,6 @@ namespace Microsoft.Maui.Handlers
 				// Ensure the container is at least the size of the UIScrollView itself, so that the 
 				// cross-platform layout logic makes sense and the contents don't arrange outside the 
 				// container. (Everything will look correct if they do, but hit testing won't work properly.)
-
-				var scrollViewBounds = uiScrollView.Bounds;
 				var containerBounds = contentSize;
 
 				container.Bounds = new CGRect(0, 0,
