@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Maui.Handlers;
 
@@ -16,10 +17,15 @@ namespace Microsoft.AspNetCore.Components.WebView.Maui
 		public virtual IFileProvider CreateFileProvider(string contentRootDir) => throw new NotSupportedException();
 
 		private void StartWebViewCoreIfPossible() { }
-		
+
 #pragma warning disable CS0649
 		private WebViewManager? _webviewManager;
 #pragma warning restore CS0649
 
+		/// <inheritdoc />
+		public virtual async Task<bool> TryDispatchAsync(Action<IServiceProvider> workItem)
+		{
+			return await Task.FromResult(false);
+		}
 	}
 }
