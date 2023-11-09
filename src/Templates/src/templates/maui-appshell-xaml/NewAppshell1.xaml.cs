@@ -2,8 +2,8 @@
 
 public partial class NewAppshell1 : Shell
 {
-    public NewAppshell1()
-    {
+	public NewAppshell1()
+	{
 		InitializeComponent();
 	}
 }

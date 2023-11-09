@@ -4,12 +4,12 @@ public class NewAppshell1 : Shell
 {
 	public NewAppshell1()
 	{
-		shell = new Shell()
+		var shell = new Shell()
 		{
 			Children =
 			{
-				new FlyoutItem{ Title = "Cats" }
-				new FlyoutItem{ Title = "Dogs" }
+				new FlyoutItem{ Title = "Main" }
+				new FlyoutItem{ Title = "Other" }
 			}
 		}
 	}
