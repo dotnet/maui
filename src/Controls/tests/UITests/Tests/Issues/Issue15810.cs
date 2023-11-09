@@ -17,7 +17,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void WhenTapCustomViewThenChangesColor()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac });
+			// FindElement is not able to get a ContentView on Windows
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
 
 			App.WaitForElement(_customViewId);
 			App.Click(_customViewId);
