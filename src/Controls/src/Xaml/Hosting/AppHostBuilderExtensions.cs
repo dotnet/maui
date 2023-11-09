@@ -23,6 +23,9 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 #elif TIZEN
 using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Compatibility.Platform.Tizen;
+#elif GTK
+using Microsoft.Maui.Controls.Handlers.Compatibility;
+using Microsoft.Maui.Controls.Compatibility.Platform.Gtk;
 #endif
 
 namespace Microsoft.Maui.Controls.Hosting
@@ -163,7 +166,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 		static MauiAppBuilder SetupDefaults(this MauiAppBuilder builder)
 		{
-#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN
+#if WINDOWS || ANDROID || IOS || MACCATALYST || TIZEN || GTK
 			// initialize compatibility DependencyService
 			DependencyService.SetToInitialized();
 			DependencyService.Register<Xaml.ResourcesLoader>();
