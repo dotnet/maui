@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Platform
 
 			// In cases where we the image must fit its given constraints, we must shrink based on the smallest dimension (scale factor)
 			// that can fit it
-			if(imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
+			if (imageView.ContentMode == UIViewContentMode.ScaleAspectFit)
 			{
 				var scaleFactor = Math.Min(widthRatio, heightRatio);
 				return new CGSize(imageSize.Width * scaleFactor, imageSize.Height * scaleFactor);

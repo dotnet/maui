@@ -4,8 +4,8 @@ using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
-using static Microsoft.Maui.Primitives.Dimension;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {

@@ -1,7 +1,7 @@
 #nullable disable
 using System;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Controls.Compatibility;
+using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls
 {
@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Controls
 		}
 
 		internal static void RemapForControls(
-			IPropertyMapper<IView, IViewHandler> viewMapper, 
+			IPropertyMapper<IView, IViewHandler> viewMapper,
 			CommandMapper<IView, IViewHandler> commandMapper)
 		{
 #if WINDOWS

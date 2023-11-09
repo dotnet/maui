@@ -7,7 +7,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 	{
 		bool _running;
 
-		public override bool IsRunning => _running; 
+		public override bool IsRunning => _running;
 
 		public void SetEnabled(bool enabled)
 		{
