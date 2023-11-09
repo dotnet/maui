@@ -14,16 +14,21 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void CommandDisableButton()
 		{
 			App.WaitForElement("WaitForStubControl");
-			var button = App.FindElement("ButtonControl");
 
-			if (button is not null)
+			// Appium cannot find a disable Button using FindElement
+			if (Device != TestDevice.iOS && Device != TestDevice.Mac)
 			{
-				button.Click();
+				var button = App.FindElement("ButtonControl");
 
-				// If clicking the Button we do not have a counter result in
-				// the Label, the command has not been executed.
-				var counter = App.FindElement("CounterLabel").GetText();
-				Assert.True(string.IsNullOrEmpty(counter));
+				if (button is not null)
+				{
+					button.Click();
+
+					// If clicking the Button we do not have a counter result in
+					// the Label, the command has not been executed.
+					var counter = App.FindElement("CounterLabel").GetText();
+					Assert.True(string.IsNullOrEmpty(counter));
+				}
 			}
 
 			// Verify the visual status of the disabled Button.
