@@ -33,7 +33,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			Content = layout;
 		}
 
-		void ButtonOnClicked(object sender, EventArgs e)
+		void ButtonOnClicked(object? sender, EventArgs e)
 		{
 			OnButtonClicked();
 		}

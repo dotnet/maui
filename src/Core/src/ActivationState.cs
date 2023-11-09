@@ -55,7 +55,7 @@ namespace Microsoft.Maui
 #endif
 
 #if __ANDROID__
-		static IPersistedState GetPersistedState(Android.OS.Bundle? state)
+		static PersistedState GetPersistedState(Android.OS.Bundle? state)
 		{
 			var dict = new PersistedState();
 
@@ -73,7 +73,7 @@ namespace Microsoft.Maui
 			return dict;
 		}
 #elif __IOS__
-		static IPersistedState GetPersistedState(Foundation.NSDictionary[]? states)
+		static PersistedState GetPersistedState(Foundation.NSDictionary[]? states)
 		{
 			var state = new PersistedState();
 
@@ -94,7 +94,7 @@ namespace Microsoft.Maui
 			return state;
 		}
 #elif TIZEN
-		static IPersistedState GetPersistedState(Tizen.Applications.Bundle? state)
+		static PersistedState GetPersistedState(Tizen.Applications.Bundle? state)
 		{
 			var dict = new PersistedState();
 

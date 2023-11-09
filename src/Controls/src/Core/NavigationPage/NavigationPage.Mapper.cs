@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		[Obsolete("Use NavigationViewHandler.Mapper instead.")]
 		public static IPropertyMapper<IStackNavigationView, NavigationViewHandler> ControlsNavigationPageMapper =
-			new PropertyMapper<NavigationPage, NavigationViewHandler>(NavigationViewHandler.Mapper);
+			new ControlsMapper<NavigationPage, NavigationViewHandler>(NavigationViewHandler.Mapper);
 
 		internal static new void RemapForControls()
 		{
