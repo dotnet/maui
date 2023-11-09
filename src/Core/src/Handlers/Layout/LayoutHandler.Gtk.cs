@@ -116,15 +116,14 @@ namespace Microsoft.Maui.Handlers
 #endif
 
 		[MissingMapper]
-		public void UpdateZIndex(IView view) 
+		public void UpdateZIndex(IView view)
 		{
 			
 		}
 
-		[MissingMapper]
 		public static partial void MapBackground(ILayoutHandler handler, ILayout layout)
 		{
-			
+			handler.PlatformView?.UpdateBackground(layout);
 		}
 	}
 }
