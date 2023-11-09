@@ -146,7 +146,7 @@ namespace Microsoft.Maui
 			if (uiElement != null)
 			{
 				var uniqueElements = findChildren(uiElement).Distinct();
-				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToPlatform()));
+				var viewTree = visualElement.GetVisualTreeDescendants().Where(n => n is IView view && view.Handler is not null).Select(n => new Tuple<IView, object?>((IView)n, ((IView)n).ToPlatform()));
 				var testList = viewTree.Where(n => uniqueElements.Contains(n.Item2)).Select(n => n.Item1);
 				if (testList != null && testList.Any())
 					visualElements.AddRange(testList.Select(n => (IVisualTreeElement)n));
@@ -299,7 +299,7 @@ namespace Microsoft.Maui
 
 			static void Impl(IVisualTreeElement visualElement, Predicate<Rect> intersectElementBounds, List<IVisualTreeElement> elements)
 			{
-				if (visualElement is IView view)
+				if (visualElement is IView view && view.Handler is not null)
 				{
 					Rect bounds = view.GetBoundingBox();
 					if (intersectElementBounds(bounds))

@@ -3,6 +3,7 @@ using System.Data.Common;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Primitives;
 using Xunit;
 using static Microsoft.Maui.Controls.Core.UnitTests.VisualStateTestHelpers;
@@ -91,7 +92,11 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[Fact]
 		public void ContainerChangedFiresWhenMapContainerIsCalled()
 		{
-			var handlerStub = new HandlerStub((PropertyMapper)VisualElement.ControlsVisualElementMapper);
+			var mapper = new PropertyMapper<IView, IViewHandler>(ViewHandler.ViewMapper);
+			var commandMapper = new CommandMapper<IView, IViewHandler>(ViewHandler.ViewCommandMapper);
+
+			VisualElement.RemapForControls(mapper, commandMapper);
+			var handlerStub = new HandlerStub(mapper);
 			var button = new Button();
 			button.Handler = handlerStub;
 

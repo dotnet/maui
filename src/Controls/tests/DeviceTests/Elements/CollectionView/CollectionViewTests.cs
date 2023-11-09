@@ -229,6 +229,51 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(
+#if IOS || MACCATALYST
+		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517"
+#endif
+		)]
+		public async Task CollectionViewItemsWithFixedWidthAndDifferentHeight()
+		{
+			// This tests a CollectionView that has items that have different heights based on https://github.com/dotnet/maui/issues/16234
+
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 450 };
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Lorem ipsum dolor sit amet.",
+					"Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				}
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+
+				var labels = collectionView.LogicalChildrenInternal;
+
+				// There should be only 2 items/labels
+				Assert.Equal(2, labels.Count);
+
+				var firstLabelHeight = ((Label)labels[0]).Height;
+				var secondLabelHeight = ((Label)labels[1]).Height;
+
+				// The first label's height should be smaller than the second one since the text won't wrap
+				Assert.True(0 < firstLabelHeight && firstLabelHeight < secondLabelHeight);
+			});
+		}
+
 		public static IEnumerable<object[]> GenerateLayoutOptionsCombos()
 		{
 			var layoutOptions = new LayoutOptions[] { LayoutOptions.Center, LayoutOptions.Start, LayoutOptions.End, LayoutOptions.Fill };

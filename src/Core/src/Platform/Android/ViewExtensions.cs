@@ -186,7 +186,7 @@ namespace Microsoft.Maui.Platform
 
 		internal static void UpdateBackground(this EditText platformView, IView view)
 		{
-			if (platformView is null || platformView.Context is null)
+			if (platformView is null || platformView.Background is null || platformView.Context is null)
 			{
 				return;
 			}
@@ -223,7 +223,15 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				if (backgroundDrawable is null)
-					platformView.Background = previousDrawable;
+				{
+					// The default Drawable of EditText is an InsetDrawable and setting the background we use a LayerDrawable
+					// to compose the custom background with the default behavior (bottom line).
+					//
+					// If the Background is null or is a ColorDrawable, a Custom Handler is being created, removing the default behavior.
+					// In this case, we don't want to reset the Drawable to the default one.
+					if (platformView.Background is not ColorDrawable)
+						platformView.Background = previousDrawable;
+				}
 				else
 				{
 

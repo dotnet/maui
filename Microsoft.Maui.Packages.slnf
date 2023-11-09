@@ -25,7 +25,7 @@
       "src\\SingleProject\\Resizetizer\\src\\Resizetizer.csproj",
       "src\\Templates\\src\\Microsoft.Maui.Templates.csproj",
       "src\\Workload\\Microsoft.Maui.Sdk\\Microsoft.Maui.Sdk.csproj",
-      "src\\Workload\\Microsoft.NET.Sdk.Maui\\Microsoft.NET.Sdk.Maui.csproj"
+      "src\\Workload\\Microsoft.NET.Sdk.Maui.Manifest\\Microsoft.NET.Sdk.Maui.Manifest.csproj"
     ]
   }
 }
