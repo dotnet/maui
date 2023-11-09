@@ -30,11 +30,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
-    <PackageType>Template</PackageType>
-    <PackageId>Microsoft.Maui.Templates.net$(_MauiDotNetVersionMajor)</PackageId>
-    <Title>.NET MAUI Templates</Title>
-    <Authors>Microsoft</Authors>
-    <Description>Templates for .NET MAUI.</Description>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IncludeContentInPack>true</IncludeContentInPack>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -43,6 +38,15 @@
     <ContentTargetFolders>content</ContentTargetFolders>
     <!-- This project has no .NET assemblies, so disable the warning for that -->
     <NoWarn>$(NoWarn);NU5128</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Templates.net$(_MauiDotNetVersionMajor)</PackageId>
+    <PackageType>Template</PackageType>
+    <Title>.NET MAUI Templates</Title>
+    <Description>.NET Multi-platform App UI (.NET MAUI) project and item templates.</Description>
   </PropertyGroup>
 
   <ItemGroup>

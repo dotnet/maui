@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample.Controls
 
 	class BordelessEntryServiceBuilder
 	{
-		internal static IMauiHandlersCollection HandlersCollection;
+		internal static IMauiHandlersCollection? HandlersCollection;
 		internal static readonly Dictionary<Type, Type> PendingHandlers = new();
 
 		public static void TryAddHandler<TType, TTypeRender>()
