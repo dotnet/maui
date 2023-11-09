@@ -6,6 +6,8 @@ using PlatformView = Android.Gms.Maps.MapView;
 using PlatformView = Microsoft.UI.Xaml.FrameworkElement;
 #elif TIZEN
 using PlatformView = Tizen.NUI.BaseComponents.View;
+#elif GTK
+using PlatformView = Microsoft.Maui.Platform.NotImplementedView;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif

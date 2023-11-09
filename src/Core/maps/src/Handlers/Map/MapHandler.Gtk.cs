@@ -1,12 +1,13 @@
 ﻿using System;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 
 namespace Microsoft.Maui.Maps.Handlers
 {
-	public partial class MapHandler : ViewHandler<IMap, Gtk.Widget>
+	public partial class MapHandler : ViewHandler<IMap, NotImplementedView>
 	{
 
-		protected override Gtk.Widget CreatePlatformView() => throw new NotImplementedException();
+		protected override NotImplementedView CreatePlatformView() =>  new ();
 
 		public static void MapMapType(IMapHandler handler, IMap map) => throw new NotImplementedException();
 

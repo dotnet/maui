@@ -6,6 +6,8 @@ using PlatformView = Java.Lang.Object;
 using PlatformView = System.Object;
 #elif TIZEN
 using PlatformView = System.Object;
+#elif GTK
+using PlatformView = System.Object;
 #elif (NETSTANDARD || !PLATFORM) || (NET6_0 && !IOS && !ANDROID && !TIZEN)
 using PlatformView = System.Object;
 #endif
