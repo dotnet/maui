@@ -279,6 +279,8 @@ namespace Microsoft.Maui.Platform
 
 		void StartRippleAnimation()
 		{
+			StopAnimation();
+
 			_rippleRadius = 0;
 			_rippleOpacity = 1;
 
@@ -315,6 +317,7 @@ namespace Microsoft.Maui.Platform
 				return;
 			
 			_rippleAnimator.RemoveAllListeners();
+			_rippleAnimator.Cancel();
 			_rippleAnimator.Dispose();
 			_rippleAnimator = null;
 		}
