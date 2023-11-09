@@ -58,16 +58,27 @@
     <BeforePack>_UpdateTemplateVersions</BeforePack>
   </PropertyGroup>
 
-  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild" Inputs="@(TemplateJsonInput)" Outputs="%(TemplateJsonInput.IntermediateLocation)">
+  <Target Name="_UpdateTemplateVersions" DependsOnTargets="SetVersions;LocalizeTemplatesAfterBuild"
+      Inputs="@(TemplateJsonInput)"
+      Outputs="%(TemplateJsonInput.IntermediateLocation)">
 
      <!-- Copy files to their output name -->
-    <Copy SourceFiles="%(TemplateJsonInput.Fullpath)" DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="%(TemplateJsonInput.IntermediateLocation)" />
 
      <!-- Copy the templatestrings.en.json to templatestrings.json -->
-    <Copy SourceFiles="%(TemplateJsonInput.Fullpath)" DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json" Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
+    <Copy
+        SourceFiles="%(TemplateJsonInput.Fullpath)"
+        DestinationFiles="%(TemplateJsonInput.RelativeDir)templatestrings.json"
+        Condition="'%(TemplateJsonInput.Filename)%(TemplateJsonInput.Extension)' == 'templatestrings.en.json'" />
 
     <!-- Replace .NET TFM versions -->
-    <ReplaceFileText InputFilename="%(TemplateJsonInput.IntermediateLocation)" OutputFilename="%(TemplateJsonInput.IntermediateLocation)" MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE" ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion)" />
+    <ReplaceFileText
+        InputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        OutputFilename="%(TemplateJsonInput.IntermediateLocation)"
+        MatchExpression="DOTNET_TFM_VALUE;DOTNET_TFM_VERSION_VALUE;DOTNET_TFM_VERSION_MAJOR_VALUE;MS_EXT_LOG_DEBUG_VERSION_VALUE"
+        ReplacementText="$(_MauiDotNetTfm);$(_MauiDotNetVersion);$(_MauiDotNetVersionMajor)000;$(MicrosoftExtensionsLoggingDebugVersion)" />
 
     <ItemGroup>
       <FileWrites Include="%(TemplateJsonInput.IntermediateLocation)" />
@@ -80,21 +91,15 @@
     <ItemGroup>
       <_PackagesToCopy Include="$(PackageOutputPath)/$(PackageId).*.nupkg" />
     </ItemGroup>
-    <Copy SourceFiles="@(_PackagesToCopy)" DestinationFolder="$(DotNetTemplatePacksDirectory)" SkipUnchangedFiles="true" />
+    <Copy
+        SourceFiles="@(_PackagesToCopy)"
+        DestinationFolder="$(DotNetTemplatePacksDirectory)"
+        SkipUnchangedFiles="true"
+    />
   </Target>
 
   <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
     <PackageReference Include="Microsoft.TemplateEngine.Tasks" Version="$(MicrosoftTemplateEngineTasksVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="templates\maui-appshell-xaml\NewAppshell1.xaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="templates\maui-appshell-xaml\NewAppshell1.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Content>
   </ItemGroup>
 
   <!-- this target will get replaced by the nuget -->
