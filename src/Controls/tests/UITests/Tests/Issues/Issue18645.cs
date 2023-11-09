@@ -10,10 +10,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 		}
 
-		public override string Issue => "Editor MaxLines property works as expected";
+		public override string Issue => "Editor MaxLength property works as expected";
 
 		[Test]
-		public void EditorMaxLinesWorks()
+		public void EditorMaxLengthWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
 
