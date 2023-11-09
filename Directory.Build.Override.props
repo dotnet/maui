@@ -7,7 +7,7 @@
     <_IncludeWindows></_IncludeWindows>
     <_IncludeTizen></_IncludeTizen>
     <_IncludeGtk>true</_IncludeGtk>
-    <_IncludeAndroid></_IncludeAndroid>
+    <_IncludeAndroid>true</_IncludeAndroid>
     <_IncludeIos></_IncludeIos>
     <_IncludeMacCatalyst></_IncludeMacCatalyst>
     <_IncludeMacOS></_IncludeMacOS>
