@@ -443,8 +443,8 @@ namespace Microsoft.Maui.Platform
 
 			if (HasRipple())
 			{
-				if (_clipPath is not null && _ripplePaint is not null)
-					canvas.DrawPath(_clipPath, _ripplePaint);
+				if (_clipPath is not null)
+					canvas.ClipPath(_clipPath);
 
 				if (_ripplePaint is not null)
 					canvas.DrawCircle(_rippleX, _rippleY, _rippleRadius, _ripplePaint);

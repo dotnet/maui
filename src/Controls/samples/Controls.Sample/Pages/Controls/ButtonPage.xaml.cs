@@ -111,8 +111,8 @@ namespace Maui.Controls.Sample.Pages
 				EndPoint = new Point(1, 0),
 				GradientStops = new GradientStopCollection
 				{
-					new GradientStop { Color = Colors.Orange, Offset = 0.2f },
-					new GradientStop { Color = Colors.OrangeRed, Offset = 0.8f }
+					new GradientStop { Color = Colors.Violet, Offset = 0.2f },
+					new GradientStop { Color = Colors.Blue, Offset = 0.8f }
 				}
 			};
 
