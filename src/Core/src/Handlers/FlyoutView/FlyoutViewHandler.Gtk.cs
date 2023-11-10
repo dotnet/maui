@@ -4,6 +4,6 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class FlyoutViewHandler : ViewHandler<IFlyoutView, NotImplementedView>
 	{
-		protected override NotImplementedView CreatePlatformView() => new();
+		protected override NotImplementedView CreatePlatformView() => new(nameof(IFlyoutView));
 	}
 }

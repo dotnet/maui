@@ -2,10 +2,10 @@ namespace Microsoft.Maui.Platform
 {
 
 	[MissingMapper]
-	public class RefreshView : Gtk.Box
+	public class RefreshView : NotImplementedView
 	{
 
-		public RefreshView() : base(Gtk.Orientation.Horizontal, 0) { }
+		public RefreshView() : base(nameof(RefreshView)) { }
 
 	}
 

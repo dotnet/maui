@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeItemMenuItemHandler : ElementHandler<ISwipeItemMenuItem, NotImplementedView>
 	{
-		protected override NotImplementedView CreatePlatformElement() => new();
+		protected override NotImplementedView CreatePlatformElement() => new(nameof(ISwipeItemMenuItem));
 
 		public static void MapTextColor(ISwipeItemMenuItemHandler handler, ITextStyle view) { }
 

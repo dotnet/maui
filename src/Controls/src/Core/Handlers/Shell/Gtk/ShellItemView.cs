@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls.Platform
 {
 	public class ShellItemView : NotImplementedView
 	{
-		public ShellItemView(object view) { }
+		public ShellItemView(object view):base(nameof(ShellItemView)) { }
 
 		[MissingMapper]
 		public void UpdateTabBar(bool b) { }

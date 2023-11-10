@@ -33,7 +33,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		protected override WFrame CreatePlatformElement()
 		{
 			_navigationManager = CreateNavigationManager();
-			return new WFrame();
+			return new WFrame(nameof(ShellSection));
 		}
 		public static void MapTitle(ShellSectionHandler handler, ShellSection item)
 		{

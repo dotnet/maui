@@ -5,7 +5,7 @@ namespace Microsoft.Maui.Handlers
 	[MissingMapper]
 	public partial class IndicatorViewHandler : ViewHandler<IIndicatorView, NotImplementedView>
 	{
-		protected override NotImplementedView CreatePlatformView() => new();
+		protected override NotImplementedView CreatePlatformView() => new(nameof(IIndicatorView));
 
 		public static void MapCount(IIndicatorViewHandler handler, IIndicatorView indicator) { }
 		public static void MapPosition(IIndicatorViewHandler handler, IIndicatorView indicator) { }

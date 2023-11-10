@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		protected override Gtk.Widget CreatePlatformView()
 		{
-			throw new NotImplementedException();
+			return new NotImplementedView(nameof(Shell));
 		}
 
 	}

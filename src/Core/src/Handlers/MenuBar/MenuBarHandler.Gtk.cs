@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class MenuBarHandler : ElementHandler<IMenuBar, NotImplementedView>, IMenuBarHandler
 	{
-		protected override NotImplementedView CreatePlatformElement() => new();
+		protected override NotImplementedView CreatePlatformElement() => new(nameof(IMenuBar));
 
 		public void Add(IMenuBarItem view)
 		{

@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwipeViewHandler : ViewHandler<ISwipeView, Gtk.Widget>
 	{
-		protected override Gtk.Widget CreatePlatformView() => new NotImplementedView();
+		protected override Gtk.Widget CreatePlatformView() => new NotImplementedView(nameof(ISwipeView));
 
 		public static void MapContent(ISwipeViewHandler handler, ISwipeView view)
 		{

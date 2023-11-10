@@ -4,7 +4,7 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class WebViewHandler : ViewHandler<IWebView, Gtk.Widget>
 	{
-		protected override Gtk.Widget CreatePlatformView() => new NotImplementedView();
+		protected override Gtk.Widget CreatePlatformView() => new NotImplementedView(nameof(IWebView));
 
 		public static void MapSource(IWebViewHandler handler, IWebView webView) { }
 		public static void MapGoBack(IWebViewHandler handler, IWebView webView, object? arg) { }
