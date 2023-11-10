@@ -4,16 +4,16 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
-	class Issue18647 : _IssuesUITest
+	class Issue18673 : _IssuesUITest
 	{
-		public Issue18647(TestDevice device)
+		public Issue18673(TestDevice device)
 			: base(device)
 		{ }
 
 		public override string Issue => "Editor font properties";
 
 		[Test]
-		public void Issue18647Test()
+		public void Issue18673Test()
 		{
 			App.WaitForElement("WaitForStubControl");
 
