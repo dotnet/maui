@@ -5,11 +5,11 @@ using Microsoft.Maui.Handlers;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
 {
-	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, Gtk.Container> where TItemsView : ItemsView
+	public abstract partial class ItemsViewHandler<TItemsView> : ViewHandler<TItemsView, NotImplementedView> where TItemsView : ItemsView
 	{
-		protected override Gtk.Container CreatePlatformView()
+		protected override NotImplementedView CreatePlatformView()
 		{
-			throw new NotImplementedException();
+			return new(nameof(TItemsView));
 		}
 
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
