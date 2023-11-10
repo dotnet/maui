@@ -41,6 +41,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<Slider, SliderHandler>();
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
@@ -69,6 +70,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Polyline))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(Slider))]
 	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
 	[InlineData(typeof(TimePicker))]
