@@ -11,8 +11,10 @@ namespace Microsoft.Maui.Controls.Shapes
 	public partial class Shape
 	{
 
-		[MissingMapper]
-		public static void MapStrokeDashArray(IShapeViewHandler handler, IShapeView shapeView) { }
+		public static void MapStrokeDashArray(IShapeViewHandler handler, IShapeView shapeView)
+		{
+			handler.PlatformView?.InvalidateShape(shapeView);
+		}
 
 	}
 
