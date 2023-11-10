@@ -4,25 +4,28 @@ using System.Collections.Specialized;
 using System.Linq;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Gtk;
-using Color=Microsoft.Maui.Graphics.Color;
+using Color = Microsoft.Maui.Graphics.Color;
 
 namespace Microsoft.Maui.Controls.Platform
 {
+
 	public class ShellItemView : NotImplementedView
 	{
-		public ShellItemView(object view):base(nameof(ShellItemView)) { }
+
+		public ShellItemView(object view) : base(nameof(ShellItemView)) { }
 
 		[MissingMapper]
-		public void UpdateTabBar(bool b) { }
+		public void UpdateTabBar(bool b)
+		{ }
 
 		[MissingMapper]
-		public void UpdateCurrentItem(object current){ }
+		public void UpdateCurrentItem(object current)
+		{ }
 
 		[MissingMapper]
 		public void UpdateBottomTabBarColors(Color tabBarBackgroudColor, Color tabBarTitleColor, Color tabBarUnselectedColor)
-		{
-			
-		}
+		{ }
 
 	}
+
 }

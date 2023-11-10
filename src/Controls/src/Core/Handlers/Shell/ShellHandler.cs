@@ -1,5 +1,5 @@
 ﻿#nullable disable
-#if WINDOWS || TIZEN
+#if WINDOWS || TIZEN || GTK
 using System;
 using System.Collections.Generic;
 using System.Text;
