@@ -1,10 +1,14 @@
-﻿namespace Microsoft.Maui.Controls
+﻿using System;
+
+namespace Microsoft.Maui.Controls
 {
+
 	public partial class Layout
 	{
-		[MissingMapper]
-		public static void MapInputTransparent(LayoutHandler handler, Layout layout)
-		{
-		}
+
+		[Obsolete]
+		public static void MapInputTransparent(ILayoutHandler handler, Layout layout) { }
+
 	}
+
 }
