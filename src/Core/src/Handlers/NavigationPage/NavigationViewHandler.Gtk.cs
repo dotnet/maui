@@ -11,8 +11,15 @@ namespace Microsoft.Maui.Handlers
 	public partial class NavigationViewHandler : ViewHandler<IStackNavigationView, NavigationView>
 	{
 
+		StackNavigationManager? _stackNavigationManager;
+
+		StackNavigationManager NavigationManager
+			=> _stackNavigationManager ??= new StackNavigationManager(MauiContext);
+
 		protected override NavigationView CreatePlatformView()
 		{
+			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
+
 			return new();
 		}
 
@@ -20,22 +27,28 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.ConnectHandler(nativeView);
 
-			var virtualView = VirtualView;
-
+			NavigationManager.Connect(VirtualView, nativeView);
 		}
 
 		protected override void DisconnectHandler(NavigationView nativeView)
 		{
+
+			NavigationManager.Disconnect(VirtualView, nativeView);
+
 			base.DisconnectHandler(nativeView);
-
-			var virtualView = VirtualView;
-
 		}
 
-		[MissingMapper]
-		public static void RequestNavigation(INavigationViewHandler arg1, IStackNavigation arg2, object? arg3)
+		void RequestNavigation(NavigationRequest request)
 		{
+			NavigationManager.NavigateTo(request);
 		}
+
+		static void RequestNavigation(INavigationViewHandler viewHandler, IStackNavigation navigation, object? request)
+		{
+			if (viewHandler is NavigationViewHandler platformHandler && request is NavigationRequest ea)
+				platformHandler.RequestNavigation(ea);
+		}
+
 	}
 
 }

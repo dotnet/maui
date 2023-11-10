@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Maui.Controls.Internals;
-using WFrame = Microsoft.Maui.Platform.NotImplementedView;
+using NavigationView = Microsoft.Maui.Platform.NavigationView;
 
 
 namespace Microsoft.Maui.Controls.Handlers
 {
-	public partial class ShellSectionHandler : ElementHandler<ShellSection, WFrame>, IAppearanceObserver
+	public partial class ShellSectionHandler : ElementHandler<ShellSection, NavigationView>, IAppearanceObserver
 	{
 		public static PropertyMapper<ShellSection, ShellSectionHandler> Mapper =
 				new PropertyMapper<ShellSection, ShellSectionHandler>(ElementMapper)
@@ -30,10 +30,10 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 		}
 
-		protected override WFrame CreatePlatformElement()
+		protected override NavigationView CreatePlatformElement()
 		{
 			_navigationManager = CreateNavigationManager();
-			return new WFrame(nameof(ShellSection));
+			return new NavigationView();
 		}
 		public static void MapTitle(ShellSectionHandler handler, ShellSection item)
 		{
@@ -133,15 +133,15 @@ namespace Microsoft.Maui.Controls.Handlers
 
 		// this should move to a factory method
 		protected virtual StackNavigationManager CreateNavigationManager() =>
-			_navigationManager ??= new StackNavigationManager();
+			_navigationManager ??= new StackNavigationManager(MauiContext);
 
-		protected override void ConnectHandler(WFrame platformView)
+		protected override void ConnectHandler(NavigationView platformView)
 		{
 			_navigationManager?.Connect(VirtualView, platformView);
 			base.ConnectHandler(platformView);
 		}
 
-		protected override void DisconnectHandler(WFrame platformView)
+		protected override void DisconnectHandler(NavigationView platformView)
 		{
 			_navigationManager?.Disconnect(VirtualView, platformView);
 			base.DisconnectHandler(platformView);

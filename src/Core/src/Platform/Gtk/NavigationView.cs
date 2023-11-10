@@ -1,10 +1,33 @@
+using Gtk;
+
 namespace Microsoft.Maui.Platform
 {
 
-	public class NavigationView : NotImplementedView
+	public class NavigationView : Gtk.Box
 	{
 
-		public NavigationView() : base(nameof(NavigationView)) { }
+		public NavigationView() : base()
+		{
+			Orientation = Orientation.Horizontal;
+		}
+
+		Widget? _content;
+
+		public Widget? Content
+		{
+			get => _content;
+			set
+			{
+				_content?.Unparent();
+
+				_content = value;
+
+				if (_content is { })
+				{
+					PackStart(_content, true, true, 0);
+				}
+			}
+		}
 
 	}
 
