@@ -138,7 +138,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler(typeof(FlyoutPage), typeof(Handlers.Compatibility.PhoneFlyoutPageRenderer));
 #endif
 
-#if ANDROID || IOS || MACCATALYST || TIZEN
+#if ANDROID || IOS || MACCATALYST || TIZEN || GTK
 			handlersCollection.AddHandler<SwipeItemView, SwipeItemViewHandler>();
 #if ANDROID || IOS || MACCATALYST
 			handlersCollection.AddHandler<Shell, ShellRenderer>();
@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Hosting
 			handlersCollection.AddHandler<ShellSection, ShellSectionHandler>();
 #endif
 #endif
-#if WINDOWS || ANDROID || TIZEN
+#if WINDOWS || ANDROID || TIZEN || GTK
 			handlersCollection.AddHandler<NavigationPage, NavigationViewHandler>();
 			handlersCollection.AddHandler<Toolbar, ToolbarHandler>();
 			handlersCollection.AddHandler<FlyoutPage, FlyoutViewHandler>();
