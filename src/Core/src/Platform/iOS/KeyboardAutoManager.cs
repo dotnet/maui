@@ -10,9 +10,9 @@ using UIKit;
 
 namespace Microsoft.Maui.Platform;
 
-internal static class KeyboardAutoManager
+public static class KeyboardAutoManager
 {
-	internal static void GoToNextResponderOrResign(UIView view, UIView? customSuperView = null)
+	public static void GoToNextResponderOrResign(UIView view, UIView? customSuperView = null)
 	{
 		if (!view.CheckIfEligible())
 		{
