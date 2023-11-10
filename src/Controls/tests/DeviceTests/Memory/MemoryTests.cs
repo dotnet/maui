@@ -43,6 +43,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
 				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
+				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 			});
@@ -71,6 +72,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(ScrollView))]
 	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
+	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(WebView))]
 	public async Task HandlerDoesNotLeak(Type type)
