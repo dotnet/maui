@@ -66,8 +66,12 @@ namespace Microsoft.Maui.Controls
 
 		public int CompareTo(SetterSpecificity other)
 		{
-			//VSM setters somehow supersedes Styles
-			if (Vsm != other.Vsm)
+			//VSM setters win over Manual value, except for implicit style VSMs
+			if (Vsm != other.Vsm && (
+				   Style != 0 && Style <= StyleImplicit + 99 && other.Manual <= 0
+				|| other.Style != 0 && other.Style <= StyleImplicit + 99 && Manual <= 0
+				|| Style >= 200 || other.Style >= 200
+				|| Style <= 0 && other.Style <= 0))
 				return Vsm.CompareTo(other.Vsm);
 
 			//everything coming from Style has lower priority than something that does not
