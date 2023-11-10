@@ -12,38 +12,47 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return new(nameof(TItemsView));
 		}
 
+		[MissingMapper]
 		public static void MapItemsSource(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapHorizontalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapVerticalScrollBarVisibility(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapItemTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapEmptyView(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapEmptyViewTemplate(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapFlowDirection(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapIsVisible(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
 
+		[MissingMapper]
 		public static void MapItemsUpdatingScrollMode(ItemsViewHandler<TItemsView> handler, ItemsView itemsView)
 		{
 		}
