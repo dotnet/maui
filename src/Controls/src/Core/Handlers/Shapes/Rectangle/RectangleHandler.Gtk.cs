@@ -4,7 +4,15 @@ namespace Microsoft.Maui.Controls.Handlers
 {
 	public partial class RectangleHandler
 	{
-		public static void MapRadiusX(IShapeViewHandler handler, Rectangle rectangle) { }
-		public static void MapRadiusY(IShapeViewHandler handler, Rectangle rectangle) { }
+
+		public static void MapRadiusX(IShapeViewHandler handler, Rectangle rectangle)
+		{
+			handler.PlatformView?.UpdateShape(rectangle);
+		}
+
+		public static void MapRadiusY(IShapeViewHandler handler, Rectangle rectangle)
+		{
+			handler.PlatformView?.UpdateShape(rectangle);
+		}
 	}
 }
