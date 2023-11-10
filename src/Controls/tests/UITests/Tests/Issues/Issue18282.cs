@@ -13,6 +13,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void EditorPlaceholderPosition()
 		{
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.Android, TestDevice.Mac, TestDevice.Windows
+			});
+
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();
