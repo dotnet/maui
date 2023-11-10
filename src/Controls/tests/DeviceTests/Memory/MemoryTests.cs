@@ -37,6 +37,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Polyline, PolylineHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
+				handlers.AddHandler<ImageButton, ImageButtonHandler>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
@@ -60,6 +61,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Editor))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
+	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(Picker))]
