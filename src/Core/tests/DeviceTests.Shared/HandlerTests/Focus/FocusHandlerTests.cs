@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 using Xunit;
@@ -58,8 +59,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		// TODO: Android is not unfocusing
-#if IOS || MACCATALYST || WINDOWS
 		[Fact]
 		public async Task UnfocusAndIsFocusedIsWorking()
 		{
@@ -103,9 +102,15 @@ namespace Microsoft.Maui.DeviceTests
 				// assert
 				await inputControl1.WaitForUnFocused();
 				Assert.False(inputControl1.IsFocused);
-				Assert.False(inputControl2.IsFocused);
+
+				// Something always has to be focused in windows
+				// So if you unfocus one control it'll just focus the other one on the screen
+				if (!OperatingSystem.IsWindows())
+				{
+					await Task.Yield();
+					Assert.False(inputControl2.IsFocused);
+				}
 			});
 		}
-#endif
 	}
 }

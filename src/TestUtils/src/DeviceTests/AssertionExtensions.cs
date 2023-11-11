@@ -196,7 +196,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			await view.ToPlatform().WaitForUnFocused(timeout);
 
-			// make sure the focused event has had time to propagate up to the xplat control
+			// make sure the unfocus event has had time to propagate up to the xplat control
 			await Wait(() => !view.IsFocused);
 		}
 
