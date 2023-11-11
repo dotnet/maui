@@ -192,14 +192,26 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task HideKeyboardForView(this IView view, int timeout = 1000, string? message = null) =>
 			view.ToPlatform().HideKeyboardForView(timeout, message);
 
-		public static Task WaitForUnFocused(this IView view, int timeout = 1000) =>
-			view.ToPlatform().WaitForUnFocused(timeout);
+		public static async Task WaitForUnFocused(this IView view, int timeout = 1000)
+		{
+			await view.ToPlatform().WaitForUnFocused(timeout);
 
-		public static Task WaitForFocused(this IView view, int timeout = 1000) =>
-			view.ToPlatform().WaitForFocused(timeout);
+			// make sure the focused event has had time to propagate up to the xplat control
+			await Wait(() => !view.IsFocused);
+		}
 
-		public static Task FocusView(this IView view, int timeout = 1000) =>
-			view.ToPlatform().FocusView(timeout);
+		public static async Task WaitForFocused(this IView view, int timeout = 1000)
+		{
+			await view.ToPlatform().WaitForFocused(timeout);
+
+			// make sure the focused event has had time to propagate up to the xplat control
+			await Wait(() => view.IsFocused);
+		}
+
+		public static Task FocusView(this IView view, int timeout = 1000)
+		{
+			return view.ToPlatform().FocusView(timeout);
+		}
 
 		public static bool IsAccessibilityElement(this IView view) =>
 			(view.Handler as IPlatformViewHandler)?.PlatformView?.IsAccessibilityElement() == true;
