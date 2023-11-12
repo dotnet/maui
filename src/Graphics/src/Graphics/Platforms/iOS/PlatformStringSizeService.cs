@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Graphics.Platform
 
 			var nsString = new NSString(value);
 			var uiFont = font?.ToPlatformFont(fontSize) ?? FontExtensions.GetDefaultPlatformFont();
-			
+
 			CGSize size = nsString.GetBoundingRect(
 				CGSize.Empty,
 				NSStringDrawingOptions.UsesLineFragmentOrigin,
