@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18711">
+    <VerticalStackLayout
+        Padding="20">
+        <Label 
+            AutomationId="WaitForStubControl"
+            Text="1. Enter the text 'qweqw hi hi' in the editor below." />
+        <Label 
+            Text="2. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error." />
+        <Label 
+            Text="3. Uncheck the 'IsSpellCheckEnabled' checkbox to disable spellcheck." />
+        <Label 
+            Text="4. The test fails if the red underline under the string 'qweqw' is still visible." />
+        <Label 
+            Text="5. Check the 'IsSpellCheckEnabled' checkbox to enable spellcheck." />
+        <Label 
+            Text="6. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error." />
+        <HorizontalStackLayout>
+            <CheckBox 
+                x:Name="Checkbox"
+                AutomationId="TestCheckbox"
+                IsChecked="True" />
+            <Label 
+                Text="IsSpellCheckEnabled"
+                VerticalTextAlignment="Center" />
+        </HorizontalStackLayout>
+        <Editor 
+            AutomationId="TestEditor"
+            BindingContext="{x:Reference Checkbox}"
+            IsSpellCheckEnabled="{Binding IsChecked}" />
+    </VerticalStackLayout>
+</ContentPage>
