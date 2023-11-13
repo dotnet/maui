@@ -68,9 +68,9 @@ namespace Microsoft.Maui.Controls
 		{
 			//VSM setters win over Manual value, except for implicit style VSMs
 			if (Vsm != other.Vsm && (
-				   Style != 0 && Style <= StyleImplicit + 99 && other.Manual <= 0
-				|| other.Style != 0 && other.Style <= StyleImplicit + 99 && Manual <= 0
-				|| Style >= 200 || other.Style >= 200
+				   Style != 0 && Style < StyleRD && other.Manual <= 0
+				|| other.Style != 0 && other.Style < StyleRD && Manual <= 0
+				|| Style >= StyleRD || other.Style >= StyleRD
 				|| Style <= 0 && other.Style <= 0))
 				return Vsm.CompareTo(other.Vsm);
 
