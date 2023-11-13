@@ -201,16 +201,22 @@ namespace Microsoft.Maui.Platform
 			return view?.Parent;
 		}
 
+		[MissingMapper]
 		public static void UpdateShadow(this Widget? platformView, IView view) { }
 
+		[MissingMapper]
 		public static void UpdateBorder(this Widget? platformView, IView view) { }
 
+		[MissingMapper]
 		public static void Focus(this Widget? platformView, FocusRequest request) { }
 
+		[MissingMapper]
 		public static void Unfocus(this Widget? platformView, IView view) { }
 
+		[MissingMapper]
 		public static void UpdateInputTransparent(this Widget? platformView, IViewHandler handler, IView view) { }
 
+		[MissingMapper]
 		public static void UpdateToolTip(this Widget? platformView, ToolTip? tooltip) { }
 
 		internal static IDisposable OnLoaded(this Widget? view, Action action)
