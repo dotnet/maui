@@ -103,6 +103,16 @@ namespace Microsoft.Maui.DeviceTests
 				await inputControl1.WaitForUnFocused();
 				Assert.False(inputControl1.IsFocused);
 
+
+				if (OperatingSystem.IsAndroid() &&
+					!OperatingSystem.IsAndroidVersionAtLeast(28))
+				{
+					// After API 28 Android is able to unfocus all controls.
+					// Before API 28 Android is not able to unfocus all controls.
+					// It will always keep something focused.
+					return;
+				}
+
 				// Something always has to be focused in windows
 				// So if you unfocus one control it'll just focus the other one on the screen
 				if (!OperatingSystem.IsWindows())
