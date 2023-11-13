@@ -8,10 +8,12 @@
                 AutomationId="WaitForStubControl"
                 Text="1. The test fails if you are able to interact with the editor below." />
             <Editor 
+                BackgroundColor="LightGray"
                 IsEnabled="False" />
             <Label 
                 Text="2. The test fails if the editor below is visible." />
             <Editor 
+                BackgroundColor="LightGray"
                 IsVisible="False" />
         </VerticalStackLayout>
     </ScrollView>
