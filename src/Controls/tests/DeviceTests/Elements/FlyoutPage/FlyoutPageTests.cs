@@ -260,12 +260,14 @@ namespace Microsoft.Maui.DeviceTests
 				Assert.False(IsBackButtonVisible(handler));
 
 				await first.PushAsync(new ContentPage());
+				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
 				Assert.True(IsBackButtonVisible(handler));
 
 				flyoutPage.Detail = second;
 				Assert.False(IsBackButtonVisible(handler));
 
 				await second.PushAsync(new ContentPage());
+				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
 				Assert.True(IsBackButtonVisible(handler));
 			});
 		}
