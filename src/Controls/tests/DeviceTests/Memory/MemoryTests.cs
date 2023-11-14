@@ -29,6 +29,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<Frame, FrameRenderer>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
@@ -37,10 +38,14 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<Polyline, PolylineHandler>();
 				handlers.AddHandler<IContentView, ContentViewHandler>();
 				handlers.AddHandler<Image, ImageHandler>();
+				handlers.AddHandler<ImageButton, ImageButtonHandler>();
 				handlers.AddHandler<IndicatorView, IndicatorViewHandler>();
 				handlers.AddHandler<RefreshView, RefreshViewHandler>();
 				handlers.AddHandler<IScrollView, ScrollViewHandler>();
+				handlers.AddHandler<Slider, SliderHandler>();
+				handlers.AddHandler<Stepper, StepperHandler>();
 				handlers.AddHandler<SwipeView, SwipeViewHandler>();
+				handlers.AddHandler<Switch, SwitchHandler>();
 				handlers.AddHandler<TimePicker, TimePickerHandler>();
 				handlers.AddHandler<WebView, WebViewHandler>();
 			});
@@ -57,8 +62,10 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(Frame))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
+	[InlineData(typeof(ImageButton))]
 	[InlineData(typeof(IndicatorView))]
 	[InlineData(typeof(Label))]
 	[InlineData(typeof(Picker))]
@@ -66,7 +73,10 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(Polyline))]
 	[InlineData(typeof(RefreshView))]
 	[InlineData(typeof(ScrollView))]
+	[InlineData(typeof(Slider))]
+	[InlineData(typeof(Stepper))]
 	[InlineData(typeof(SwipeView))]
+	[InlineData(typeof(Switch))]
 	[InlineData(typeof(TimePicker))]
 	[InlineData(typeof(WebView))]
 	public async Task HandlerDoesNotLeak(Type type)
