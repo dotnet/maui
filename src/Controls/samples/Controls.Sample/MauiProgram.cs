@@ -17,6 +17,7 @@ using Microsoft.Maui.Devices;
 using Microsoft.Maui.Foldable;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
+
 #if COMPATIBILITY_ENABLED
 using Microsoft.Maui.Controls.Compatibility.Hosting;
 #endif
@@ -287,6 +288,19 @@ namespace Maui.Controls.Sample
 #endif
 				}
 			});
+
+#if MACCATALYST
+			Microsoft.Maui.Handlers.WebViewHandler.Mapper.Add(nameof(WebKit.WKUIDelegate), (handler, view) =>
+			{
+				if (UIKit.UIDevice.CurrentDevice.CheckSystemVersion(15, 0))
+				{
+					MainThread.BeginInvokeOnMainThread(() =>
+					{
+						handler.PlatformView.UIDelegate = new Platforms.MacCatalyst.CustomWebViewUIDelegate();
+					});
+				}
+			});
+#endif
 
 			return appBuilder.Build();
 		}
