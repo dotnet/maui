@@ -16,8 +16,8 @@ namespace Maui.Controls.Sample.Pages
 			RectangleSelectionPickSecond
 		}
 
-		Microsoft.Maui.Controls.Window _window;
-		WindowOverlay _overlay;
+		Microsoft.Maui.Controls.Window? _window;
+		WindowOverlay? _overlay;
 		double _firstPosX;
 		double _firstPosY;
 		double _currentMousePosX;
@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages
 		State _state = State.SingleSelection;
 		bool _tappedWithoutMove;
 
-		Microsoft.Maui.Controls.View[] _allChildren = null;
+		Microsoft.Maui.Controls.View[]? _allChildren = null;
 
 		public HitTestingPage()
 		{
@@ -49,7 +49,7 @@ namespace Maui.Controls.Sample.Pages
 				.Where(x => x != RectangleSelectionCheckBox)
 				.ToArray();
 #if WINDOWS
-			var platformChildren = _allChildren.Select(v => v.Handler.PlatformView).OfType<Microsoft.UI.Xaml.UIElement>();
+			var platformChildren = _allChildren.Select(v => v.Handler!.PlatformView).OfType<Microsoft.UI.Xaml.UIElement>();
 			foreach (var element in platformChildren)
 			{
 				Debug.Print(element.GetType().FullName);
@@ -73,10 +73,10 @@ namespace Maui.Controls.Sample.Pages
 			RectangleSelectionCheckBox.IsEnabled = false;
 			_overlay.Tapped += DoHandleOverlayTapped;
 
-			void DoHandleOverlayTapped(object sender, WindowOverlayTappedEventArgs e)
+			void DoHandleOverlayTapped(object? sender, WindowOverlayTappedEventArgs e)
 			{
 				var p = e.Point;
-				Debug.Print($"{sender.GetType().Name} tapped! ({p.X};{p.Y})");
+				Debug.Print($"{sender!.GetType().Name} tapped! ({p.X};{p.Y})");
 				_tappedWithoutMove = false; // No mouse move on iOS/Android
 				HandleTapped(p.X, p.Y);
 			}
@@ -87,8 +87,8 @@ namespace Maui.Controls.Sample.Pages
 
 		private void ContentPage_Unloaded(object sender, EventArgs e)
 		{
-			_overlay.RemoveWindowElement(this);
-			_window.RemoveOverlay(_overlay);
+			_overlay!.RemoveWindowElement(this);
+			_window!.RemoveOverlay(_overlay);
 		}
 
 		private void HandlePointerMoved(double x, double y)
@@ -99,7 +99,7 @@ namespace Maui.Controls.Sample.Pages
 
 			if (_state == State.RectangleSelectionPickSecond)
 			{
-				_overlay.Invalidate();
+				_overlay!.Invalidate();
 			}
 		}
 
@@ -109,7 +109,7 @@ namespace Maui.Controls.Sample.Pages
 				return;
 
 			_tappedWithoutMove = true;
-			IEnumerable<IVisualTreeElement> elements = null;
+			IEnumerable<IVisualTreeElement>? elements = null;
 
 			if (_state == State.SingleSelection)
 			{
@@ -127,16 +127,16 @@ namespace Maui.Controls.Sample.Pages
 				var rect = GetCurrentRect();
 				elements = VisualTreeElementExtensions.GetVisualTreeElements(this.Window, rect.Left, rect.Top, rect.Right, rect.Bottom);
 				_state = State.RectangleSelectionPickFirst;
-				_overlay.Invalidate();
+				_overlay!.Invalidate();
 			}
 
-			foreach (var c in _allChildren)
+			foreach (var c in _allChildren!)
 			{
 				c.BackgroundColor = null;
 			}
 
-			SelectionLabel.Text = "Selected: " + string.Join(" <- ", elements.Select(x => x.GetType().Name));
-			var e = elements.FirstOrDefault() as Microsoft.Maui.Controls.View;
+			SelectionLabel.Text = "Selected: " + string.Join(" <- ", elements!.Select(x => x.GetType().Name));
+			var e = elements!.FirstOrDefault() as Microsoft.Maui.Controls.View;
 
 			if (e != null)
 			{

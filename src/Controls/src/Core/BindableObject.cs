@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls
 
 		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
 
-		internal class LocalValueEnumerator : IEnumerator<LocalValueEntry>
+		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
 		{
 			Dictionary<BindableProperty, BindablePropertyContext>.Enumerator _propertiesEnumerator;
 			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.GetEnumerator();
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal class LocalValueEntry
+		internal sealed class LocalValueEntry
 		{
 			internal LocalValueEntry(BindableProperty property, object value, BindableContextAttributes attributes)
 			{
@@ -779,7 +779,7 @@ namespace Microsoft.Maui.Controls
 			IsDefaultValueCreated = 1 << 5,
 		}
 
-		internal class BindablePropertyContext
+		internal sealed class BindablePropertyContext
 		{
 			public BindableContextAttributes Attributes;
 
@@ -801,7 +801,7 @@ namespace Microsoft.Maui.Controls
 			Default = None
 		}
 
-		internal class SetValueArgs
+		internal sealed class SetValueArgs
 		{
 			public readonly SetValueFlags Attributes;
 			public readonly BindablePropertyContext Context;

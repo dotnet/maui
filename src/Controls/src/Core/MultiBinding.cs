@@ -238,6 +238,7 @@ namespace Microsoft.Maui.Controls
 
 				_bpProxies = null;
 				_proxyObject = null;
+				_targetObject = null;
 			}
 
 			base.Unapply(fromBindingContextChanged: fromBindingContextChanged);

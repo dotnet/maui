@@ -476,7 +476,6 @@ namespace Microsoft.Maui.Controls.Handlers
 			var paneDisplayMode = GetNavigationViewPaneDisplayMode(item);
 			mauiNavView.PaneDisplayMode = paneDisplayMode;
 			mauiNavView.PinPaneDisplayModeTo = paneDisplayMode;
-			mauiNavView.IsPaneVisible = item.ShowTabs;
 		}
 
 		public static void MapTabBarIsVisible(ShellItemHandler handler, ShellItem item)
