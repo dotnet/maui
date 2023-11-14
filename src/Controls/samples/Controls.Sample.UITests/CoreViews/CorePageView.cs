@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ExampleFramework.Tooling;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Internals;
 
@@ -80,6 +81,12 @@ namespace Maui.Controls.Sample
 			_titleToPage = _pages.ToDictionary(o => o.Title.ToLowerInvariant());
 
 			_pages.Sort((x, y) => string.Compare(x.Title, y.Title, StringComparison.OrdinalIgnoreCase));
+
+			UIComponents exampleUIComponents = AppUIExamplesManager.Instance.UIComponents;
+			foreach (UIComponent component in exampleUIComponents.Components)
+			{
+				_pages.Add(new GalleryPageFactory(() => new ExamplesGalleryPage(component), $"{component.Title} Visual Tests"));
+			}
 
 			var template = new DataTemplate(() =>
 			{

@@ -17,6 +17,9 @@
     <ApplicationVersion>1</ApplicationVersion>
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
+
+    <!-- To use a local version of example-framework instead of the NuGets, clone the repo as a sibling to the maui directory, uncomment this, and add projects to the solution -->
+    <UseLocalExampleFramework>true</UseLocalExampleFramework>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
@@ -38,6 +41,18 @@
     <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="$(MauiVersion)" />
   </ItemGroup>
 
+  <ItemGroup Condition="$(UseLocalExampleFramework) == ''">
+    <PackageReference Include="ExampleFramework" Version="0.9.44-beta" />
+    <PackageReference Include="VisualTestUtils" Version="0.9.44-beta" />
+  </ItemGroup>
+  <ItemGroup Condition="$(UseLocalExampleFramework) != ''">
+    <ProjectReference Include="$(MauiRootDirectory)..\example-framework\src\ExampleFramework\ExampleFramework.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\example-framework\src\ExampleFramework.Tooling\ExampleFramework.Tooling.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\example-framework\src\ExampleFramework.Tooling.Maui\ExampleFramework.Tooling.Maui.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils\VisualTestUtils.csproj" />
+    <ProjectReference Include="$(MauiRootDirectory)..\visual-test-utils\src\VisualTestUtils.AppConnector\VisualTestUtils.AppConnector.csproj" />
+  </ItemGroup>
+
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
@@ -45,10 +60,13 @@
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
   </ItemGroup>
-
+  
   <ItemGroup>
     <Compile Update="Elements\BordersWithVariousShapes.xaml.cs">
       <DependentUpon>BordersWithVariousShapes.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="VisualExamples\CarouselViewExample.xaml.cs">
+      <DependentUpon>CarouselViewExample.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
 
@@ -56,6 +74,9 @@
 
   <ItemGroup>
     <MauiXaml Update="Elements\BordersWithVariousShapes.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="VisualExamples\CarouselViewExample.xaml">
       <Generator>MSBuild:Compile</Generator>
     </MauiXaml>
   </ItemGroup>

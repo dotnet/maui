@@ -14,7 +14,7 @@
     <ApplicationVersion>1</ApplicationVersion>
      
      <!-- To use a local version of visual-test-utils instead of the NuGets, clone the repo as a sibling to the maui directory, uncomment this, and add projects to the solution -->
-     <!-- <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils> -->
+     <UseLocalVisualTestUtils>true</UseLocalVisualTestUtils>
    </PropertyGroup>
 
   <PropertyGroup>

@@ -3,17 +3,30 @@ using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.Hosting;
+using VisualTestUtils.AppConnector.App;
 
 namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{
+		private static AppConnectorApp? _appConnectorApp;
+
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
 				.CreateBuilder()
 				.UseMauiMaps()
 				.UseMauiApp<App>()
+				//.EnableExamplesMode<App>()
 				.Build();
+
+		public static void StartAppConnectorApp()
+		{
+			if (_appConnectorApp == null)
+			{
+				_appConnectorApp = new AppConnectorApp(new AppService());
+				_ = _appConnectorApp.StartClientAsync();
+			}
+		}
 	}
 
 	class App : Application

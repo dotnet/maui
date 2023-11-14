@@ -36,9 +36,9 @@ namespace Maui.Controls.Sample
 		/// </summary>
 		protected virtual bool SupportsScroll => true;
 
-		internal CoreGalleryBasePage()
+		internal CoreGalleryBasePage(object initData = null)
 		{
-			Initialize();
+			Initialize(initData);
 
 			Root = new StackLayout
 			{
@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample
 		/// <summary>
 		/// Code that needs to run before the page is created goes here.
 		/// </summary>
-		protected virtual void Initialize() { }
+		protected virtual void Initialize(object initData) { }
 
 		/// <summary>
 		/// Add a test case to the gallery page.
