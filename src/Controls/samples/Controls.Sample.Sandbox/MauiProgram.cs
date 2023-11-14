@@ -17,7 +17,7 @@ namespace Maui.Controls.Sample
 
 	class App : Application
 	{
-		protected override Window CreateWindow(IActivationState activationState)
+		protected override Window CreateWindow(IActivationState? activationState)
 		{
 			// To test shell scenarios, change this to true
 			bool useShell = false;

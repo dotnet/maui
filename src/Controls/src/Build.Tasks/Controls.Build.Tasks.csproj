@@ -4,9 +4,7 @@
 		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
 		<AssemblyName>Microsoft.Maui.Controls.Build.Tasks</AssemblyName>
 		<RootNamespace>Microsoft.Maui.Controls.Build.Tasks</RootNamespace>
-		<Description>.NET MAUI MSBuild tasks. Enabled via &lt;UseMaui&gt;true&lt;/UseMaui&gt;.</Description>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<IsPackable>true</IsPackable>
 		<!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
 		<NoPackageAnalysis>true</NoPackageAnalysis>
 		<!-- Do not include any assemblies from this project as we will do it manually -->
@@ -15,6 +13,13 @@
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<!-- ILRepack this assembly and add a strong name and version -->
 		<ILRepackBeforePack>true</ILRepackBeforePack>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- NuGet package information -->
+		<IsPackable>true</IsPackable>
+		<PackageId>Microsoft.Maui.Controls.Build.Tasks</PackageId>
+		<Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the MSBuild tasks and other tooling. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
 	</PropertyGroup>
 
 	<ItemGroup>

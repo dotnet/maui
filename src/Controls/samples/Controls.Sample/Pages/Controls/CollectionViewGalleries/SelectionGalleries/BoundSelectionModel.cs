@@ -9,11 +9,11 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 	[Preserve(AllMembers = true)]
 	internal class BoundSelectionModel : INotifyPropertyChanged
 	{
-		private CollectionViewGalleryTestItem _selectedItem;
-		private ObservableCollection<CollectionViewGalleryTestItem> _items;
-		private ObservableCollection<object> _selectedItems;
+		private CollectionViewGalleryTestItem? _selectedItem;
+		private ObservableCollection<CollectionViewGalleryTestItem>? _items;
+		private ObservableCollection<object>? _selectedItems;
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
 		public BoundSelectionModel()
 		{
@@ -32,17 +32,17 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			};
 		}
 
-		private void SelectedItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+		private void SelectedItemsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
 		{
 			OnPropertyChanged(nameof(SelectedItemsText));
 		}
 
-		void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 
-		public CollectionViewGalleryTestItem SelectedItem
+		public CollectionViewGalleryTestItem? SelectedItem
 		{
 			get => _selectedItem;
 			set
@@ -52,7 +52,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 			}
 		}
 
-		public ObservableCollection<object> SelectedItems
+		public ObservableCollection<object>? SelectedItems
 		{
 			get => _selectedItems;
 			set
@@ -64,19 +64,19 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 
 				_selectedItems = value;
 
-				_selectedItems.CollectionChanged += SelectedItemsCollectionChanged;
+				_selectedItems!.CollectionChanged += SelectedItemsCollectionChanged;
 
 				OnPropertyChanged();
 				OnPropertyChanged(nameof(SelectedItemsText));
 			}
 		}
 
-		public ObservableCollection<CollectionViewGalleryTestItem> Items
+		public ObservableCollection<CollectionViewGalleryTestItem>? Items
 		{
 			get => _items;
 			set { _items = value; OnPropertyChanged(); }
 		}
 
-		public string SelectedItemsText => SelectedItems.ToCommaSeparatedList();
+		public string SelectedItemsText => SelectedItems!.ToCommaSeparatedList();
 	}
 }

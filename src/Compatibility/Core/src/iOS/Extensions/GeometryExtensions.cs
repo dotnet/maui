@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 							for (int i = 0; i < points.Count; i++)
 								pathData.Data.AddLineToPoint(transform, points[i].ToPointF());
 
-							lastPoint = points[points.Count - 1];
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
 						}
 
 						// BezierSegment
@@ -127,7 +127,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 								}
 							}
 
-							lastPoint = points[points.Count - 1];
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
 						}
 
 						// QuadraticBezierSegment
@@ -163,7 +163,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.MacOS
 								}
 							}
 
-							lastPoint = points[points.Count - 1];
+							lastPoint = points.Count > 0 ? points[points.Count - 1] : Point.Zero;
 						}
 						// ArcSegment
 						else if (pathSegment is ArcSegment)

@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		Stream GetNativeFontStream(string filename, string? alias)
+		FileStream GetNativeFontStream(string filename, string? alias)
 		{
 			var resolvedFilename = ResolveFileSystemFont(filename);
 
