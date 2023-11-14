@@ -3172,7 +3172,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 		}
 
 		[Theory, Category(GridStarSizing)]
-		[InlineData(926, 845)] 
+		[InlineData(926, 845)]
 		[InlineData(926, 926)]
 		[InlineData(926, 1026)]
 		public void StarsAdjustWhenArrangeAndMeasureHeightDiffer(double heightConstraint, double arrangedHeight)

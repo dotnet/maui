@@ -1066,7 +1066,7 @@ namespace Microsoft.Maui.Platform
 					return (controller as UINavigationController);
 				}
 
-				if (controller.ChildViewControllers.Any())
+				if (controller.ChildViewControllers.Length != 0)
 				{
 					var childs = controller.ChildViewControllers.Length;
 

@@ -10,6 +10,8 @@
     <!--<DefineConstants>$(DefineConstants);HAVE_OPENTK</DefineConstants>-->
     <!--<MtouchLink Condition="'$(CI)' == 'true'">Full</MtouchLink>-->
     <NoWarn>0612</NoWarn>
+    <SupportedOSPlatformVersion>11.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion>11.0</TargetPlatformMinVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">

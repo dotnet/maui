@@ -24,15 +24,10 @@ parameters:
     - name: Windows
       poolName: $(windowsNet6VmPool)
       vmImage: $(windowsNet6VmImage)
-      bootsAndroid: $(Android.Msi)
-      bootsiOS: $(iOS.Msi)
       artifact: templates-windows
     - name: macOS
       poolName: $(macOSXNet6VmPool)
       vmImage: $(macOSXNet6VmImage)
-      bootsAndroid: $(Android.Pkg)
-      bootsiOS: $(iOS.Pkg)
-      bootsMacCatalyst: $(MacCatalyst.Pkg)
       artifact: templates-macos
 
   - name: RunPlatforms
@@ -75,6 +70,7 @@ jobs:
     demands:
       - macOS.Name -equals Ventura
       - macOS.Architecture -equals x64
+      - Agent.OSVersion -equals 13.5
   steps:
 
   - ${{ each step in parameters.prepareSteps }}:
@@ -161,7 +157,7 @@ jobs:
         DOTNET_TOKEN: $(dotnetbuilds-internal-container-read-token)
         PRIVATE_BUILD: $(PrivateBuild)
 
-    - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "1.0.0-prerelease*" -g
+    - script: dotnet tool update Microsoft.DotNet.XHarness.CLI --add-source https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json --version "8.0.0-prerelease*" -g
       displayName: install xharness
 
     - pwsh: ./build.ps1 --target=dotnet-integration-build --verbosity=diagnostic
