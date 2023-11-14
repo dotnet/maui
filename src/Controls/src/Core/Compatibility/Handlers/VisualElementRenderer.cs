@@ -45,13 +45,22 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public static CommandMapper<TElement, IPlatformViewHandler> VisualElementRendererCommandMapper = new CommandMapper<TElement, IPlatformViewHandler>(ViewHandler.ViewCommandMapper);
 
+#if IOS || MACCATALYST
+		WeakReference<TElement>? _virtualView;
+		TElement? _tempElement;
+#else
 		TElement? _virtualView;
+#endif
 		IMauiContext? _mauiContext;
 		internal IPropertyMapper _mapper;
 		internal readonly CommandMapper? _commandMapper;
 		internal readonly IPropertyMapper _defaultMapper;
 		protected IMauiContext MauiContext => _mauiContext ?? throw new InvalidOperationException("MauiContext not set");
+#if IOS || MACCATALYST
+		public TElement? Element => _tempElement ?? (_virtualView is not null && _virtualView.TryGetTarget(out var target) ? target : null);
+#else
 		public TElement? Element => _virtualView;
+#endif
 		protected bool AutoPackage { get; set; } = true;
 
 #if ANDROID
@@ -104,8 +113,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		protected virtual void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
 		{
-			if (Element != null && e.PropertyName != null)
-				_mapper.UpdateProperty(this, Element, e.PropertyName);
+			if (Element is TElement element && e.PropertyName != null)
+				_mapper.UpdateProperty(this, element, e.PropertyName);
 
 			ElementPropertyChanged?.Invoke(sender, e);
 			ElementPropertyChangedPartial(sender, e);
@@ -172,8 +181,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void UpdateBackgroundColor()
 #endif
 		{
-			if (Element != null)
-				ViewHandler.MapBackground(this, Element);
+			if (Element is TElement element)
+				ViewHandler.MapBackground(this, element);
 		}
 
 #if IOS
@@ -182,21 +191,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void UpdateBackground()
 #endif
 		{
-			if (Element != null)
-				ViewHandler.MapBackground(this, Element);
+			if (Element is TElement element)
+				ViewHandler.MapBackground(this, element);
 		}
 
 
 		protected virtual void SetAutomationId(string id)
 		{
-			if (Element != null)
-				ViewHandler.MapAutomationId(this, Element);
+			if (Element is TElement element)
+				ViewHandler.MapAutomationId(this, element);
 		}
 
 		protected virtual void SetIsEnabled()
 		{
-			if (Element != null)
-				ViewHandler.MapIsEnabled(this, Element);
+			if (Element is TElement element)
+				ViewHandler.MapIsEnabled(this, element);
 		}
 
 #if WINDOWS
@@ -205,8 +214,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		protected virtual void SetImportantForAccessibility()
 #endif
 		{
-			if (Element != null)
-				VisualElement.MapAutomationPropertiesIsInAccessibleTree(this, Element);
+			if (Element is TElement element)
+				VisualElement.MapAutomationPropertiesIsInAccessibleTree(this, element);
 		}
 
 
@@ -283,14 +292,27 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		static partial void ProcessAutoPackage(Maui.IElement element);
 
+#if IOS || MACCATALYST
+		void IElementHandler.SetVirtualView(Maui.IElement view)
+		{
+			// _tempElement is used here, because the Element property is accessed before SetVirtualView() returns
+			_tempElement = Element;
+			SetVirtualView(view, this, OnElementChanged, ref _tempElement, ref _mapper, _defaultMapper, AutoPackage);
+
+			// We use _virtualView as a WeakReference, and clear _tempElement
+			_virtualView = _tempElement is null ? null : new(_tempElement);
+			_tempElement = null;
+		}
+#else
 		void IElementHandler.SetVirtualView(Maui.IElement view) =>
 			SetVirtualView(view, this, OnElementChanged, ref _virtualView, ref _mapper, _defaultMapper, AutoPackage);
+#endif
 
 		void IElementHandler.UpdateValue(string property)
 		{
-			if (Element != null)
+			if (Element is IElement element)
 			{
-				OnElementPropertyChanged(Element, new PropertyChangedEventArgs(property));
+				OnElementPropertyChanged(element, new PropertyChangedEventArgs(property));
 			}
 		}
 
@@ -302,8 +324,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		void IElementHandler.DisconnectHandler()
 		{
 			DisconnectHandlerCore();
-			if (Element != null && Element.Handler == (IPlatformViewHandler)this)
-				Element.Handler = null;
+			if (Element is IElement element && element.Handler == (IPlatformViewHandler)this)
+				element.Handler = null;
 
 			_virtualView = null;
 		}
