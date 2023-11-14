@@ -36,12 +36,11 @@ else
     item = Xcode(desiredXcode);
 
 Console.WriteLine("Selected version: {0}", item.Version);
-item.XcodeSelect();
-
-// if(desiredXcode == "13.3")
-// {
-//     XcodeSimulator ("iOS", "15.4");
-// }
+item.XcodeSelect() 
+        .SimulatorRuntime(SimRuntime.iOS)
+       // .SimulatorRuntime(SimRuntime.watchOS)
+     //   .SimulatorRuntime(SimRuntime.visionOS);
+        .SimulatorRuntime(SimRuntime.tvOS);
 
 LogInstalledXcodes();
 

@@ -7,6 +7,7 @@ namespace Microsoft.Maui.Animations
 	public class Ticker : ITicker
 	{
 		Timer? _timer;
+		bool _systemEnabled = true;
 
 		/// <inheritdoc/>
 		public virtual int MaxFps { get; set; } = 60;
@@ -18,7 +19,21 @@ namespace Microsoft.Maui.Animations
 		public virtual bool IsRunning => _timer?.Enabled ?? false;
 
 		/// <inheritdoc/>
-		public virtual bool SystemEnabled => true;
+		public virtual bool SystemEnabled
+		{
+			get
+			{
+				return _systemEnabled;
+			}
+			protected set
+			{
+				if (_systemEnabled != value)
+				{
+					_systemEnabled = value;
+					OnSystemEnabledChanged();
+				}
+			}
+		}
 
 		/// <inheritdoc/>
 		public virtual void Start()
@@ -52,5 +67,17 @@ namespace Microsoft.Maui.Animations
 
 		void OnTimerElapsed(object? sender, ElapsedEventArgs e) =>
 			Fire?.Invoke();
+
+		protected virtual void OnSystemEnabledChanged()
+		{
+			if (IsRunning && !_systemEnabled)
+			{
+				// Animations are disabled for some reason; we need to 
+				// force the AnimationManager to process them again now
+				// that the ticker is disabled. This will give it a chance
+				// to force-finish any animations in progress.
+				Fire?.Invoke();
+			}
+		}
 	}
 }
