@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using CoreGraphics;
 using Foundation;
 using UIKit;
@@ -9,9 +8,9 @@ namespace Microsoft.Maui.Graphics.Platform
 	[Register(nameof(PlatformGraphicsView))]
 	public class PlatformGraphicsView : UIView
 	{
-		private IGraphicsRenderer _renderer;
+		private WeakReference<IGraphicsRenderer> _renderer;
 		private CGColorSpace _colorSpace;
-		private IDrawable _drawable;
+		private WeakReference<IDrawable> _drawable;
 		private CGRect _lastBounds;
 
 		public PlatformGraphicsView(CGRect frame, IDrawable drawable = null, IGraphicsRenderer renderer = null) : base(frame)
@@ -35,57 +34,53 @@ namespace Microsoft.Maui.Graphics.Platform
 
 		public IGraphicsRenderer Renderer
 		{
-			get => _renderer;
+			get => _renderer is not null && _renderer.TryGetTarget(out var r) ? r : null;
 
 			set
 			{
-				if (_renderer != null)
+				var renderer = Renderer;
+				if (renderer != null)
 				{
-					_renderer.Drawable = null;
-					_renderer.GraphicsView = null;
-					_renderer.Dispose();
+					renderer.Drawable = null;
+					renderer.GraphicsView = null;
+					renderer.Dispose();
 				}
 
-				_renderer = value ?? new DirectRenderer();
+				renderer = value ?? new DirectRenderer();
+				_renderer = new(renderer);
 
-				_renderer.GraphicsView = this;
-				_renderer.Drawable = _drawable;
+				renderer.GraphicsView = this;
+				renderer.Drawable = Drawable;
 				var bounds = Bounds;
-				_renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
+				renderer.SizeChanged((float)bounds.Width, (float)bounds.Height);
 			}
 		}
 
 		public IDrawable Drawable
 		{
-			get => _drawable;
+			get => _drawable is not null && _drawable.TryGetTarget(out var d) ? d : null;
 			set
 			{
-				_drawable = value;
-				if (_renderer != null)
+				_drawable = new(value);
+				if (Renderer is IGraphicsRenderer renderer)
 				{
-					_renderer.Drawable = _drawable;
-					_renderer.Invalidate();
+					renderer.Drawable = value;
+					renderer.Invalidate();
 				}
 			}
 		}
 
-		public void InvalidateDrawable()
-		{
-			_renderer.Invalidate();
-		}
+		public void InvalidateDrawable() => Renderer?.Invalidate();
 
-		public void InvalidateDrawable(float x, float y, float w, float h)
-		{
-			_renderer.Invalidate(x, y, w, h);
-		}
+		public void InvalidateDrawable(float x, float y, float w, float h) => Renderer?.Invalidate(x, y, w, h);
 
 		public override void WillMoveToSuperview(UIView newSuperview)
 		{
 			base.WillMoveToSuperview(newSuperview);
 
-			if (newSuperview == null)
+			if (newSuperview == null && Renderer is IGraphicsRenderer renderer)
 			{
-				_renderer.Detached();
+				renderer.Detached();
 			}
 		}
 
@@ -107,7 +102,10 @@ namespace Microsoft.Maui.Graphics.Platform
 			coreGraphics.SetStrokeColorSpace(_colorSpace);
 			coreGraphics.SetPatternPhase(PatternPhase);
 
-			_renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());
+			if (Renderer is IGraphicsRenderer renderer)
+			{
+				renderer.Draw(coreGraphics, dirtyRect.AsRectangleF());
+			}
 		}
 
 		public override CGRect Bounds
@@ -120,8 +118,12 @@ namespace Microsoft.Maui.Graphics.Platform
 				if (_lastBounds.Width != newBounds.Width || _lastBounds.Height != newBounds.Height)
 				{
 					base.Bounds = value;
-					_renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
-					_renderer.Invalidate();
+
+					if (Renderer is IGraphicsRenderer renderer)
+					{
+						renderer.SizeChanged((float)newBounds.Width, (float)newBounds.Height);
+						renderer.Invalidate();
+					}
 
 					_lastBounds = newBounds;
 				}

@@ -73,7 +73,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
 			// Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
@@ -83,8 +85,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		{
 			if (_actualView == null)
 				return;
+			if (Element is not Frame element)
+				return;
 
-			float cornerRadius = Element.CornerRadius;
+			float cornerRadius = element.CornerRadius;
 
 			if (cornerRadius == -1f)
 				cornerRadius = 5f; // default corner radius
@@ -92,21 +96,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			_actualView.Layer.CornerRadius = cornerRadius;
 			_actualView.Layer.MasksToBounds = cornerRadius > 0;
 
-			if (Element.BackgroundColor == null)
+			if (element.BackgroundColor == null)
 				_actualView.Layer.BackgroundColor = Microsoft.Maui.Platform.ColorExtensions.BackgroundColor.CGColor;
 			else
 			{
 				// BackgroundColor gets set on the base class too which messes with
 				// the corner radius, shadow, etc. so override that behaviour here
 				BackgroundColor = UIColor.Clear;
-				_actualView.Layer.BackgroundColor = Element.BackgroundColor.ToCGColor();
+				_actualView.Layer.BackgroundColor = element.BackgroundColor.ToCGColor();
 			}
 
 			_actualView.Layer.RemoveBackgroundLayer();
 
-			if (!Brush.IsNullOrEmpty(Element.Background))
+			if (!Brush.IsNullOrEmpty(element.Background))
 			{
-				var backgroundLayer = this.GetBackgroundLayer(Element.Background);
+				var backgroundLayer = this.GetBackgroundLayer(element.Background);
 
 				if (backgroundLayer != null)
 				{
@@ -116,17 +120,17 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				}
 			}
 
-			if (Element.BorderColor == null)
+			if (element.BorderColor == null)
 			{
 				_actualView.Layer.BorderColor = UIColor.Clear.CGColor;
 				_actualView.Layer.BorderWidth = 0;
 			}
 			else
 			{
-				var borderWidth = (int)(Element is IBorderElement be ? be.BorderWidth : 1);
+				var borderWidth = (int)(element is IBorderElement be ? be.BorderWidth : 1);
 				borderWidth = Math.Max(1, borderWidth);
 
-				_actualView.Layer.BorderColor = Element.BorderColor.ToCGColor();
+				_actualView.Layer.BorderColor = element.BorderColor.ToCGColor();
 				_actualView.Layer.BorderWidth = borderWidth;
 			}
 
@@ -136,7 +140,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 			_actualView.Layer.RasterizationScale = UIScreen.MainScreen.Scale;
 			_actualView.Layer.ShouldRasterize = true;
-			_actualView.Layer.MasksToBounds = Element.IsClippedToBoundsSet(true);
+			_actualView.Layer.MasksToBounds = element.IsClippedToBoundsSet(true);
 		}
 
 		void UpdateShadow()

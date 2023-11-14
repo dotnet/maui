@@ -13,15 +13,9 @@ steps:
 
   - template: provision.yml
     parameters:
-      ${{ if eq(parameters.platform, 'windows') }}:
-        skipProvisioning: true
-      ${{ if ne(parameters.platform, 'windows') }}:
-        skipProvisioning: false
-      ${{ if eq(parameters.platform, 'android') }}:
-        skipAndroidSdks : false
-      ${{ if ne(parameters.platform, 'android') }}:
-        skipAndroidSdks: false
-      skipXcode: false
+      skipProvisioning:  ${{ eq(parameters.platform, 'windows') }}
+      skipAndroidSdks: ${{ ne(parameters.platform, 'android') }}
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - task: PowerShell@2

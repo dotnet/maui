@@ -74,6 +74,7 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+        - Agent.OSVersion -equals 13.5
 
   - name: catalystPool
     type: object
@@ -105,15 +106,13 @@ stages:
       windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
-        androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23 ]
-        # androidApiLevels: [ 30, 29, 28, 27, 26, 25, 24, 23, 22, 21 ] # fix the issue of getting the test results off
-        iosVersions: [ '16.4', '15.5', '14.5', '13.7']
+        androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
+        iosVersions: [ '16.4', '15.5', '14.5']
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 30, 23 ]
-        # androidApiLevels: [ 30, 21 ] # fix the issue of getting the test results off
         iosVersions: [ '16.4' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']

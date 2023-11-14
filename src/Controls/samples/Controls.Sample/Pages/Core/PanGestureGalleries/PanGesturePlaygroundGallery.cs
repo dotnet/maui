@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages
 			double _x, _y;
 			double _currentScale = 1;
 
-			public EventHandler<PanCompleteArgs> PanCompleted;
+			public EventHandler<PanCompleteArgs>? PanCompleted;
 
 			public PanContainer()
 			{
