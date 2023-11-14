@@ -235,11 +235,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Back Button Enabled Changes with push/pop + page change"
-#if MACCATALYST
-			, Skip = "Fails on Mac Catalyst, fixme"
-#endif
-		)]
+		[Fact(DisplayName = "Back Button Enabled Changes with push/pop + page change")]
 		public async Task BackButtonEnabledChangesWithPushPopAndPageChanges()
 		{
 			SetupBuilder();
