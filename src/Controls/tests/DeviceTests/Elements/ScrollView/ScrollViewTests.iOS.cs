@@ -84,7 +84,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		internal class TestStackLayout : VerticalStackLayout 
+		internal class TestStackLayout : VerticalStackLayout
 		{
 			public Rect LastArrangeBounds { get; set; }
 
