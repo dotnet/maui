@@ -15,16 +15,19 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18711Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },
+				"The test is failing on Android. https://github.com/dotnet/maui/issues/17690");
+
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Enter the text 'qweqw hi hi' in the editor below.
 			App.EnterText("TestEditor", "qweqw hi hi");
 			// 2. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error.
-			VerifyScreenshot("IsSpellCheckEnabledEnabled");
+			VerifyScreenshot("Issue18711IsSpellCheckEnabled");
 			// 3. Uncheck the 'IsSpellCheckEnabled' checkbox to disable spellcheck.
 			App.Click("TestCheckbox");
 			// 4. The test fails if the red underline under the string 'qweqw' is still visible.
-			VerifyScreenshot("IsSpellCheckEnabledDisabled");
+			VerifyScreenshot("Issue18711IsSpellCheckDisabled");
 		}
 	}
 }
