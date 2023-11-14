@@ -703,7 +703,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool HasBackButton(this UINavigationBar uINavigationBar)
 		{
-			return uINavigationBar.BackItem is not null;
+			return uINavigationBar.BackItem is not null && uINavigationBar.Items.Last().LeftBarButtonItem is null;
 		}
 
 		public static UIView GetBackButton(this UINavigationBar uINavigationBar)
