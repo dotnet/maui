@@ -15,6 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void EditorCustomKeyboardWorks()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows },
+				"Currently fails on all the platforms; see https://github.com/dotnet/maui/issues/17784");
+
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Enter the string 'hi my name is james. nice to meet you.' exactly (case-sensitive).
