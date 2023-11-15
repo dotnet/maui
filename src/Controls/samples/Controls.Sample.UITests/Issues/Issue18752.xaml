@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue18752">
+    <ScrollView>
+        <VerticalStackLayout>
+            <Label 
+                AutomationId="WaitForStubControl"
+                Text="1. Enter the string 'qweqw hi hi' exactly (case-sensitive) in the editor below." />
+            <Label 
+                Text="2. The test fails if there is a red underline under the string 'qweqw' to indicate a spelling error." />
+            <Editor
+                AutomationId="EditorIsSpellCheckDisabled"
+                IsSpellCheckEnabled="False" />
+            <Label
+                Text="3. Enter the string 'qweqw hi hi' exactly (case-sensitive) in the editor below." />
+            <Label 
+                Text="4. The test fails if there is no red underline under the string 'qweqw' to indicate a spelling error." />
+            <Editor 
+                AutomationId="EditorIsSpellCheckEnabled"
+                IsSpellCheckEnabled="True" />
+            <Label 
+                Text="5. The test fails if there is no red underline under the string 'qweqw' in the editor below to indicate a spelling error." />
+            <Editor 
+                AutomationId="FilledEditorIsSpellCheckEnabled"
+                IsSpellCheckEnabled="True"
+                Text="qweqw hi hi" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
