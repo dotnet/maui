@@ -209,6 +209,22 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		public void BuildHandlesBadFilesInImages()
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+				$"Unable to create template maui. Check test output for errors.");
+
+			EnableTizen(projectFile);
+			File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
 		[TestCase("maui", "Debug", "2.0", "2")]
 		[TestCase("maui", "Release", "2.0", "2")]
 		[TestCase("maui", "Release", "0.3", "3")]
