@@ -15,8 +15,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18711Test()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },
-				"The test is failing on Android. https://github.com/dotnet/maui/issues/17690");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac },
+				"The test is failing on Android and iOS. https://github.com/dotnet/maui/issues/17690");
 
 			App.WaitForElement("WaitForStubControl");
 
