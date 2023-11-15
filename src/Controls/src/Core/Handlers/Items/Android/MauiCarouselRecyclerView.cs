@@ -90,6 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		{
 			base.SetUpNewElement(newElement);
 
+			AddLayoutListener();
 			UpdateItemSpacing();
 			UpdateInitialPosition();
 		}
@@ -103,6 +104,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ItemsView != null)
 				ItemsView.Scrolled -= CarouselViewScrolled;
 
+			ClearLayoutListener();
 			base.TearDownOldElement(oldElement);
 		}
 
@@ -523,7 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void AddLayoutListener()
 		{
-			if (_carouselViewLayoutListener != null)
+			if (_carouselViewLayoutListener is not null)
 				return;
 
 			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
