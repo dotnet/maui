@@ -603,7 +603,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void OnGlobalLayout()
 			{
-				if (_recyclerView.TryGetTarget(out var recyclerView))
+				if (_recyclerView.TryGetTarget(out var recyclerView) &&
+					recyclerView.IsAlive())
 				{
 					recyclerView.LayoutReady();
 				}
