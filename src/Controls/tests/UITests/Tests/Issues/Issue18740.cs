@@ -20,20 +20,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1.Make sure keyboard starts out closed.
-			if (!App.IsKeyboardShown())
-			{
-				VerifyScreenshot("Issue18740Unfocused");
-			}
+			Assert.IsFalse(App.IsKeyboardShown());
 
 			// 2. Focus the Entry.
 			App.EnterText("TestEntry", "test");
 			App.Click("TestEntry");
 
 			// 3. Verify that the virtual keyboard appears.
-			if (App.IsKeyboardShown())
-			{
-				VerifyScreenshot("Issue18740Focused");
-			}
+			Assert.IsTrue(App.IsKeyboardShown());
 		}
 	}
 }
