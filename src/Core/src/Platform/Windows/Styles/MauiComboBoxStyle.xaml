@@ -5,9 +5,9 @@
 
     <DataTemplate x:Key="ComboBoxHeader">
         <TextBlock
-            Text="{Binding Title}" 
+            Text="{Binding Title}" Tag="This will break us!"
             CharacterSpacing="{Binding Path=CharacterSpacing, ElementName=HeaderContentPresenter}"
-            Foreground="{Binding TitleColor, Converter={StaticResource ColorConverter}, ConverterParameter=DefaultTextForegroundThemeBrush}" />
+            Foreground="Red" />
     </DataTemplate>
 
 </ResourceDictionary> 
