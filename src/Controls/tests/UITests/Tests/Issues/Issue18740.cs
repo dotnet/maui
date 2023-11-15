@@ -22,7 +22,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 1.Make sure keyboard starts out closed.
 			if (!App.IsKeyboardShown())
 			{
-				//VerifyScreenshot("Issue18740Unfocused");
+				VerifyScreenshot("Issue18740Unfocused");
 			}
 
 			// 2. Focus the Entry.
