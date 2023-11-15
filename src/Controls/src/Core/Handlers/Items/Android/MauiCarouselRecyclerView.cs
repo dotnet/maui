@@ -532,6 +532,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void LayoutReady()
 		{
+			if (ItemsView is null)
+				return;
+
 			if (!_initialized)
 			{
 				ItemsView.Scrolled += CarouselViewScrolled;
