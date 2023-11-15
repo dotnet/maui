@@ -7,11 +7,20 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SearchBarHandler : ViewHandler<ISearchBar, MauiSearchBar>
 	{
+		UITextField? _editor;
 		readonly MauiSearchBarProxy _proxy = new();
 
-		public UITextField? QueryEditor => _proxy.QueryEditor;
+		public UITextField? QueryEditor => _editor;
 
-		protected override MauiSearchBar CreatePlatformView() => new() { BarStyle = UIBarStyle.Default };
+		protected override MauiSearchBar CreatePlatformView()
+		{
+			var searchBar = new MauiSearchBar() { BarStyle = UIBarStyle.Default };
+
+			_editor = searchBar.GetSearchTextField();
+
+
+			return searchBar;
+		}
 
 		protected override void ConnectHandler(MauiSearchBar platformView)
 		{
@@ -22,7 +31,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void DisconnectHandler(MauiSearchBar platformView)
 		{
-			_proxy.Disconnect(platformView);
+			_proxy.Disconnect(platformView, _editor);
 
 			base.DisconnectHandler(platformView);
 		}
@@ -146,18 +155,14 @@ namespace Microsoft.Maui.Handlers
 		class MauiSearchBarProxy
 		{
 			WeakReference<SearchBarHandler>? _handler;
-			UITextField? _editor;
 			WeakReference<ISearchBar>? _virtualView;
 
 			ISearchBar? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
-
-			public UITextField? QueryEditor => _editor;
 
 			public void Connect(SearchBarHandler handler, ISearchBar virtualView, MauiSearchBar platformView)
 			{
 				_handler = new(handler);
 				_virtualView = new(virtualView);
-				_editor = platformView.GetSearchTextField();
 
 				platformView.CancelButtonClicked += OnCancelClicked;
 				platformView.SearchButtonClicked += OnSearchButtonClicked;
@@ -167,11 +172,11 @@ namespace Microsoft.Maui.Handlers
 				platformView.OnEditingStarted += OnEditingStarted;
 				platformView.OnEditingStopped += OnEditingStopped;
 
-				if (_editor is not null)
-					_editor.EditingChanged += OnEditingChanged;
+				if (handler.QueryEditor is UITextField editor)
+					editor.EditingChanged += OnEditingChanged;
 			}
 
-			public void Disconnect(MauiSearchBar platformView)
+			public void Disconnect(MauiSearchBar platformView, UITextField? editor)
 			{
 				_virtualView = null;
 
@@ -183,9 +188,8 @@ namespace Microsoft.Maui.Handlers
 				platformView.OnEditingStarted -= OnEditingStarted;
 				platformView.OnEditingStopped -= OnEditingStopped;
 
-				if (_editor is not null)
-					_editor.EditingChanged -= OnEditingChanged;
-				_editor = null;
+				if (editor is not null)
+					editor.EditingChanged -= OnEditingChanged;
 			}
 
 			void OnMovedToWindow(object? sender, EventArgs e)
