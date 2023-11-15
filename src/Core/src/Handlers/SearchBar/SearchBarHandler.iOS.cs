@@ -159,6 +159,8 @@ namespace Microsoft.Maui.Handlers
 
 			ISearchBar? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
 
+			SearchBarHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+
 			public void Connect(SearchBarHandler handler, ISearchBar virtualView, MauiSearchBar platformView)
 			{
 				_handler = new(handler);
@@ -179,6 +181,7 @@ namespace Microsoft.Maui.Handlers
 			public void Disconnect(MauiSearchBar platformView, UITextField? editor)
 			{
 				_virtualView = null;
+				_handler = null;
 
 				platformView.CancelButtonClicked -= OnCancelClicked;
 				platformView.SearchButtonClicked -= OnSearchButtonClicked;
@@ -196,7 +199,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				// The cancel button doesn't exist until the control has moved to the window
 				// so we fire this off again so it can set the color
-				if (_handler is not null && _handler.TryGetTarget(out var handler))
+				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateValue(nameof(ISearchBar.CancelButtonColor));
 				}
@@ -219,7 +222,7 @@ namespace Microsoft.Maui.Handlers
 				{
 					virtualView.UpdateText(a.SearchText);
 
-					if (_handler is not null && _handler.TryGetTarget(out var handler))
+					if (Handler is SearchBarHandler handler)
 					{
 						handler.UpdateCancelButtonVisibility();
 					}
@@ -240,7 +243,7 @@ namespace Microsoft.Maui.Handlers
 
 			void OnEditingChanged(object? sender, EventArgs e)
 			{
-				if (_handler is not null && _handler.TryGetTarget(out var handler))
+				if (Handler is SearchBarHandler handler)
 				{
 					handler.UpdateCancelButtonVisibility();
 				}
