@@ -110,14 +110,14 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		protected override void OnAttachedToWindow()
 		{
-			base.OnAttachedToWindow();
 			AddLayoutListener();
+			base.OnAttachedToWindow();
 		}
 
 		protected override void OnDetachedFromWindow()
 		{
-			base.OnDetachedFromWindow();
 			ClearLayoutListener();
+			base.OnDetachedFromWindow();
 		}
 
 		public override void UpdateAdapter()
