@@ -29,6 +29,7 @@ public class MemoryTests : ControlsHandlerTestBase
 				handlers.AddHandler<DatePicker, DatePickerHandler>();
 				handlers.AddHandler<Entry, EntryHandler>();
 				handlers.AddHandler<Editor, EditorHandler>();
+				handlers.AddHandler<Frame, FrameRenderer>();
 				handlers.AddHandler<GraphicsView, GraphicsViewHandler>();
 				handlers.AddHandler<Label, LabelHandler>();
 				handlers.AddHandler<ListView, ListViewRenderer>();
@@ -61,6 +62,7 @@ public class MemoryTests : ControlsHandlerTestBase
 	[InlineData(typeof(DatePicker))]
 	[InlineData(typeof(Entry))]
 	[InlineData(typeof(Editor))]
+	[InlineData(typeof(Frame))]
 	[InlineData(typeof(GraphicsView))]
 	[InlineData(typeof(Image))]
 	[InlineData(typeof(ImageButton))]
