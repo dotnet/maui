@@ -19,7 +19,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.EnterText("EditorIsTextPredictionDisabled", "hi my name is james");
 			// 2. The test fails if the keyboard presents word suggestions.
 
-			if(App.IsKeyboardShown())
+			App.Click("EditorIsTextPredictionDisabled");
+
+			if (App.IsKeyboardShown())
 			{
 				VerifyScreenshot("Issue18753IsTextPredictionDisabled");
 				App.DismissKeyboard();
@@ -28,7 +30,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 3. Enter the string 'hi my name is james' exactly (case-sensitive).
 			App.EnterText("EditorIsTextPredictionEnabled", "hi my name is james");
 			// 4. The test fails if the keyboard does not present word suggestions.
-			
+
+			App.Click("EditorIsTextPredictionEnabled");
+
 			if (App.IsKeyboardShown())
 			{
 				VerifyScreenshot("Issue18753IsTextPredictionEnabled");
