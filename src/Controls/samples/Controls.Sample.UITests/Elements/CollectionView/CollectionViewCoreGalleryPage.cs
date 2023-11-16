@@ -36,6 +36,13 @@ namespace Controls.Sample.UITests.Elements
 							new ObservableCodeCollectionViewGallery(grid: false), Navigation),
 						TestBuilder.NavButton("Add Remove Items (Grid)", () =>
 							new ObservableCodeCollectionViewGallery(), Navigation),
+						new Label { Text= "EmptyView" },
+						TestBuilder.NavButton("EmptyView (String)", () =>
+							new EmptyViewStringGallery(), Navigation),
+						TestBuilder.NavButton("EmptyView (View)", () =>
+							new EmptyViewViewGallery(), Navigation),
+						TestBuilder.NavButton("EmptyView (Template View)", () =>
+							new EmptyViewTemplateGallery(), Navigation),
 					}
 				}
 			};

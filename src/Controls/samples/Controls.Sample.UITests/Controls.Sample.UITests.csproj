@@ -57,4 +57,19 @@
   
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
   
+  <ItemGroup>
+    <MauiXaml Update="Elements\CollectionView\EmptyView\EmptyViewTemplateGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Elements\CollectionView\EmptyView\EmptyViewViewGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Elements\CollectionView\Layouts\DataTemplateSelectorGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+    <MauiXaml Update="Elements\CollectionView\EmptyView\EmptyViewStringGallery.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </MauiXaml>
+  </ItemGroup>
+  
 </Project>

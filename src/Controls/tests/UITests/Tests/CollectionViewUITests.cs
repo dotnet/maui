@@ -109,8 +109,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryRemove", "0");
-			App.Click("btnRemove");  
-			
+			App.Click("btnRemove");
+
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("RemoveItemsCollectionViewListAfter");
 		}
@@ -126,8 +126,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryReplace", "0");
-			App.Click("btnReplace");   
-			
+			App.Click("btnReplace");
+
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewListAfter");
 		}
@@ -182,6 +182,93 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewGridAfter");
+		}
+
+		[Test]
+		public void StringEmptyViewAfterFilter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewString");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+
+			// 2. Check if the String EmptyView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void RemoveStringEmptyView()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewString");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+			
+			// 2. Clear filter .
+			App.EnterText("FilterSearchBar", "");
+
+			// 3. Check if the CollectionView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void ViewEmptyViewAfterFilter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewView");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+
+			// 2. Check if the View EmptyView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void RemoveViewEmptyView()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewView");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+
+			// 2. Clear filter .
+			App.EnterText("FilterSearchBar", "");
+
+			// 3. Check if the CollectionView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void TemplateEmptyViewAfterFilter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewTemplateView");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+
+			// 2. Check if the Templated EmptyView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void RemoveTemplateViewEmptyView()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewTemplateView");
+
+			// 1. Filter the items with a non existing term.
+			App.EnterText("FilterSearchBar", "no exist");
+
+			// 2. Clear filter .
+			App.EnterText("FilterSearchBar", "");
+
+			// 3. Check if the CollectionView is visible.
+			VerifyScreenshot();
 		}
 	}
 }

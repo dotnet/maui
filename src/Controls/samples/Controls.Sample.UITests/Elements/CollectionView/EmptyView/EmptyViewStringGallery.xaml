@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Controls.Sample.UITests.Elements.EmptyViewStringGallery">
+    <ContentPage.Content>
+		<Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <SearchBar
+                x:Name="SearchBar"
+                AutomationId="FilterSearchBar"
+                Placeholder="Filter" />
+                <CollectionView 
+                    x:Name="CollectionView" 
+                    Grid.Row="1">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout
+                        Orientation="Vertical" />
+                </CollectionView.ItemsLayout>
+				<CollectionView.EmptyView>
+					No items match your filter.
+				</CollectionView.EmptyView>
+			</CollectionView>
+		</Grid>
+    </ContentPage.Content>
+</ContentPage>
