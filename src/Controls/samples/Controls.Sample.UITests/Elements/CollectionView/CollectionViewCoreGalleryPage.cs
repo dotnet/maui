@@ -47,7 +47,12 @@ namespace Controls.Sample.UITests.Elements
 						TestBuilder.NavButton("Preselected Item", () =>
 							new PreselectedItemGallery(), Navigation),
 						TestBuilder.NavButton("Preselected Items", () =>
-							new PreselectedItemsGallery(), Navigation),
+							new PreselectedItemsGallery(), Navigation),   
+						new Label { Text= "Grouping" },
+						TestBuilder.NavButton("List Grouping", () =>
+							new ListGrouping(), Navigation),
+						TestBuilder.NavButton("Grid Grouping", () =>
+							new GridGrouping(), Navigation),
 					}
 				}
 			};

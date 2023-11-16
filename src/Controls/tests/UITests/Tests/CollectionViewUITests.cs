@@ -292,5 +292,27 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}
+
+		[Test]
+		public void ListGrouping()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.ScrollTo("ListGrouping", true);
+			App.Click("ListGrouping");
+
+			// 1. Check the grouped CollectionView layout.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void GridGrouping()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.ScrollTo("GridGrouping", true);
+			App.Click("GridGrouping");
+
+			// 1. Check the grouped CollectionView layout.
+			VerifyScreenshot();
+		}
 	}
 }

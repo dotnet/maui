@@ -17,8 +17,8 @@ namespace Controls.Sample.UITests
 				FontSize = 10,
 				HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30,
 				HorizontalOptions = LayoutOptions.Fill,
-				Margin = 5,
-				Padding = 5
+				Margin = 2,
+				Padding = 2
 			};
 
 			button.Clicked += async (sender, args) =>
