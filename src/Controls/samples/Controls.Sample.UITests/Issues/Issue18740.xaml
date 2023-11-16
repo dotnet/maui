@@ -12,5 +12,9 @@
             Text="3. Verify that the virtual keyboard appears."/>
         <Entry 
             AutomationId="TestEntry"/>
+        <Editor 
+            AutomationId="TestEditor"/>
+        <SearchBar 
+            AutomationId="TestSearchBar"/>
     </StackLayout>
 </ContentPage>

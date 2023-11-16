@@ -28,6 +28,16 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 3. Verify that the virtual keyboard appears.
 			Assert.IsTrue(App.IsKeyboardShown());
+
+			// Repeat the steps 2 and 3 with Editor and SearchBar
+
+			App.EnterText("TestEditor", "test");
+			App.Click("TestEditor");
+			Assert.IsTrue(App.IsKeyboardShown());
+
+			App.EnterText("TestSearchBar", "test");
+			App.Click("TestSearchBar");
+			Assert.IsTrue(App.IsKeyboardShown());
 		}
 	}
 }
