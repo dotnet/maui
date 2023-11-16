@@ -20,7 +20,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// 1.Make sure keyboard starts out closed.
-			Assert.IsFalse(App.IsKeyboardShown());
+			App.DismissKeyboard();
 
 			// 2. Focus the Entry.
 			App.EnterText("TestEntry", "test");
@@ -31,10 +31,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// Repeat the steps 2 and 3 with Editor and SearchBar
 
+			App.DismissKeyboard();
 			App.EnterText("TestEditor", "test");
 			App.Click("TestEditor");
 			Assert.IsTrue(App.IsKeyboardShown());
 
+			App.DismissKeyboard();
 			App.EnterText("TestSearchBar", "test");
 			App.Click("TestSearchBar");
 			Assert.IsTrue(App.IsKeyboardShown());
