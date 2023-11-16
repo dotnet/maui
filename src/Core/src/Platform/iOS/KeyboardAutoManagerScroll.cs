@@ -39,8 +39,20 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken;
 	static NSObject? TextFieldToken;
 	static NSObject? TextViewToken;
+<<<<<<< HEAD
 	static bool? ShouldConnect;
+=======
+	internal static bool ShouldDisconnectLifecycle;
+>>>>>>> origin/main
 
+	/// <summary>
+	/// Enables automatic scrolling with keyboard interactions on iOS devices.
+	/// </summary>
+	/// <remarks>
+	/// This method is being called by default on iOS and will scroll the page when the keyboard
+	/// comes up. Call the method 'KeyboardAutoManagerScroll.Disconnect()'
+	/// to remove this scrolling behavior.
+	/// </remarks>
 	public static void Connect()
 	{
 		// if Disconnect was called prior to the first Connect
@@ -67,12 +79,22 @@ public static class KeyboardAutoManagerScroll
 		DidHideToken = NSNotificationCenter.DefaultCenter.AddObserver(new NSString("UIKeyboardDidHideNotification"), DidHideKeyboard);
 	}
 
+	/// <summary>
+	/// Disables automatic scrolling with keyboard interactions on iOS devices.
+	/// </summary>
+	/// <remarks>
+	/// When this method is called, scrolling will not automatically happen when the keyboard comes up.
+	/// </remarks>
 	public static void Disconnect()
 	{
 		// if Disconnect is called prior to Connect, signal to not
 		// Connect during the Created Lifecycle event
+<<<<<<< HEAD
 		if (ShouldConnect is null)
 			ShouldConnect = false;
+=======
+		ShouldDisconnectLifecycle = true;
+>>>>>>> origin/main
 
 		if (WillShowToken is not null)
 		{

@@ -31,11 +31,13 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler(typeof(NavigationPage), typeof(NavigationViewHandler));
 					handlers.AddHandler(typeof(TabbedPage), typeof(TabbedViewHandler));
 #endif
+					handlers.AddHandler(typeof(FlyoutPage), typeof(FlyoutViewHandler));
 					handlers.AddHandler<Page, PageHandler>();
 					handlers.AddHandler<Window, WindowHandlerStub>();
 					handlers.AddHandler<Frame, FrameRenderer>();
 					handlers.AddHandler<Label, LabelHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<CarouselView, CarouselViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
 					handlers.AddHandler(typeof(Controls.ContentView), typeof(ContentViewHandler));
 					handlers.AddHandler(typeof(ScrollView), typeof(ScrollViewHandler));
@@ -314,11 +316,12 @@ namespace Microsoft.Maui.DeviceTests
 					Title = "Page 2",
 					Content = new VerticalStackLayout
 					{
-						new Label(),
 						new Button(),
+						new CarouselView(),
 						new CollectionView(),
+						new ContentView(),
+						new Label(),
 						new ScrollView(),
-						new ContentView()
 					}
 				};
 				pageReference = new WeakReference(page);

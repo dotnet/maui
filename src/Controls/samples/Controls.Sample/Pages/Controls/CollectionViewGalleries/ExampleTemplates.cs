@@ -570,14 +570,14 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				_highValue = highValue;
 			}
 
-			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 			{
-				var index = (int)value;
+				var index = (int)value!;
 
 				return index < _cutoff ? _lowValue : (object)_highValue;
 			}
 
-			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+			public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
 
 		class IndexRequestRandomConverter : IValueConverter
@@ -594,9 +594,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				_random = new Random(DateTime.UtcNow.Millisecond);
 			}
 
-			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 			{
-				var index = (int)value;
+				var index = (int)value!;
 				if (!_dictionary.ContainsKey(index))
 				{
 					_dictionary[index] = _random.Next(_lowValue, _highValue);
@@ -605,20 +605,20 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 				return _dictionary[index];
 			}
 
-			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+			public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
 
 		class IndexColorConverter : IValueConverter
 		{
 			Color[] _colors = new Color[] { Colors.Red, Colors.Green, Colors.Blue, Colors.Orange, Colors.BlanchedAlmond };
 
-			public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+			public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 			{
-				var index = (int)value;
+				var index = (int)value!;
 				return _colors[index % _colors.Length];
 			}
 
-			public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
+			public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture) => throw new NotImplementedException();
 		}
 	}
 }
