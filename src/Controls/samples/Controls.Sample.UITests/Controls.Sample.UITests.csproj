@@ -18,7 +18,11 @@
     <_FastDeploymentDiagnosticLogging>True</_FastDeploymentDiagnosticLogging>
     <WindowsPackageType>None</WindowsPackageType>
   </PropertyGroup>
-
+  
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+  </ItemGroup>
+  
   <ItemGroup Condition=" '$(UseMaui)' != 'true' ">
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
   </ItemGroup>
@@ -40,24 +44,17 @@
 
   <ItemGroup>
     <MauiImage Include="Resources\Images\*" />
+    <None Remove="Resources\Images\cover1.jpg" />
+    <None Remove="Resources\Images\flowerbuds.jpg" />
+    <None Remove="Resources\Images\fruits.jpg" />
+    <None Remove="Resources\Images\legumes.jpg" />
+    <None Remove="Resources\Images\vegetables.jpg" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
     <MauiImage Include="Resources\AppIcons\appicon.svg" ForegroundFile="Resources\AppIcons\appicon_foreground.svg" IsAppIcon="true" />
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="Elements\BordersWithVariousShapes.xaml.cs">
-      <DependentUpon>BordersWithVariousShapes.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
+  
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-
-  <ItemGroup>
-    <MauiXaml Update="Elements\BordersWithVariousShapes.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
-
+  
 </Project>
