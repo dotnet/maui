@@ -48,6 +48,7 @@
     <None Remove="Resources\Images\flowerbuds.jpg" />
     <None Remove="Resources\Images\fruits.jpg" />
     <None Remove="Resources\Images\legumes.jpg" />
+    <None Remove="Resources\Images\photo.jpg" />
     <None Remove="Resources\Images\vegetables.jpg" />
     <MauiImage Update="Resources\Images\dotnet_bot.svg" Color="#FFFFFF" BaseSize="168,208" />
     <MauiImage Include="Resources\Images\dotnet_bot.svg" Link="Resources\Images\small_dotnet_bot.svg" Color="#FFFFFF" BaseSize="64,64" />
