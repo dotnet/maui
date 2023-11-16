@@ -43,6 +43,11 @@ namespace Controls.Sample.UITests.Elements
 							new EmptyViewViewGallery(), Navigation),
 						TestBuilder.NavButton("EmptyView (Template View)", () =>
 							new EmptyViewTemplateGallery(), Navigation),
+						new Label { Text= "Selection" },
+						TestBuilder.NavButton("Preselected Item", () =>
+							new PreselectedItemGallery(), Navigation),
+						TestBuilder.NavButton("Preselected Items", () =>
+							new PreselectedItemsGallery(), Navigation),
 					}
 				}
 			};
