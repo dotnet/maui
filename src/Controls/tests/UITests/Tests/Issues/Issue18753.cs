@@ -13,6 +13,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18753Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows },
+				"Currently IsKeyboardShown is not implemented.");
+
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. Enter the string 'hi my name is james' exactly (case-sensitive).
