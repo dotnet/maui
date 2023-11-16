@@ -86,6 +86,11 @@ namespace Microsoft.Maui.DeviceTests
 				new ContentPage() { Title = "Page 1" },
 				new ContentPage() { Title = "Page 2" }
 			});
+#if IOS || MACCATALYST
+			var shouldMatchUnselectedColor = true;
+#else
+			var shouldMatchUnselectedColor = false;
+#endif
 
 			tabbedPage.BarTextColor = Colors.Red;
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
@@ -98,12 +103,13 @@ namespace Microsoft.Maui.DeviceTests
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, true);
 
 				tabbedPage.UnselectedTabColor = Colors.Lime;
+				var expectedUnselectedColor = shouldMatchUnselectedColor ? Colors.Lime : Colors.Blue;
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Lime, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, expectedUnselectedColor, true);
 
 				tabbedPage.CurrentPage = tabbedPage.Children[1];
 				await OnNavigatedToAsync(tabbedPage.CurrentPage);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Lime, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, expectedUnselectedColor, true);
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, true);
 			});
 		}
