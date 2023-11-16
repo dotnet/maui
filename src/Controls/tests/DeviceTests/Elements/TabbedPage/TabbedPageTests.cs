@@ -90,20 +90,21 @@ namespace Microsoft.Maui.DeviceTests
 			tabbedPage.BarTextColor = Colors.Red;
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
-				// Pre iOS15 you couldn't set the text color of the unselected tab
-				// so only android/windows currently set the color of both
-
-#if IOS
-				bool unselectedMatchesSelected = false;
-#else
-				bool unselectedMatchesSelected = true;
-#endif
-
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesSelected);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
+
 				tabbedPage.BarTextColor = Colors.Blue;
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, unselectedMatchesSelected);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, true);
+
+				tabbedPage.UnselectedTabColor = Colors.Lime;
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Blue, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Lime, true);
+
+				tabbedPage.CurrentPage = tabbedPage.Children[1];
+				await OnNavigatedToAsync(tabbedPage.CurrentPage);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Lime, true);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Blue, true);
 			});
 		}
 
@@ -123,15 +124,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<TabbedViewHandler>(tabbedPage, async handler =>
 			{
-				// Pre iOS15 you couldn't set the text color of the unselected tab
-				// so only android/windows currently set the color of both
-#if IOS
-				bool unselectedMatchesTabColor = false;
-#else
-				bool unselectedMatchesTabColor = true;
-#endif
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, unselectedMatchesTabColor);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Red, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Purple, true);
 
@@ -139,7 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OnNavigatedToAsync(tabbedPage.CurrentPage);
 
 				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
-				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, unselectedMatchesTabColor);
+				await ValidateTabBarTextColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[0].Title, Colors.Purple, true);
 				await ValidateTabBarIconColor(tabbedPage, tabbedPage.Children[1].Title, Colors.Red, true);
 			});
