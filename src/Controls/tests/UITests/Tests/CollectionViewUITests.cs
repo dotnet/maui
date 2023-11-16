@@ -131,5 +131,57 @@ namespace Microsoft.Maui.AppiumTests
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewListAfter");
 		}
+
+		[Test]
+		public void AddItemsCollectionViewGrid()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsGrid");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			VerifyScreenshot("AddItemsCollectionViewGridBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryInsert", "0");
+			App.Click("btnInsert");
+
+			// 3. Check if the item has been added correctly.
+			VerifyScreenshot("AddItemsCollectionViewGridAfter");
+		}
+
+		[Test]
+		public void RemoveItemsCollectionViewGrid()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsGrid");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			VerifyScreenshot("RemoveItemsCollectionViewGridBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryRemove", "0");
+			App.Click("btnRemove");
+
+			// 3. Check if the item has been added correctly.			
+			VerifyScreenshot("RemoveItemsCollectionViewGridAfter");
+		}
+
+
+		[Test]
+		public void ReplaceItemsCollectionViewGrid()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsGrid");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			VerifyScreenshot("ReplaceItemsCollectionViewGridBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryReplace", "0");
+			App.Click("btnReplace");
+
+			// 3. Check if the item has been added correctly.			
+			VerifyScreenshot("ReplaceItemsCollectionViewGridAfter");
+		}
 	}
 }
