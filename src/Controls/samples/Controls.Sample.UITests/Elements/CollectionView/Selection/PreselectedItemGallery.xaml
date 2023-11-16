@@ -5,14 +5,22 @@
     <ContentPage.Content>
 		<Grid x:Name="Grid">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="*"></RowDefinition>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Label x:Name="SelectedItemsEvent" Grid.Row="1"/>
-            <Label x:Name="SelectedItemsCommand" Grid.Row="2"/>
-            <CollectionView x:Name="CollectionView" Grid.Row="3" Header="This is the header" />
+            <Label 
+                x:Name="SelectedItemsEvent" 
+                AutomationId="WaitForStubControl"
+                Grid.Row="1"/>
+            <Label
+                x:Name="SelectedItemsCommand" 
+                Grid.Row="2"/>
+            <CollectionView
+                x:Name="CollectionView"
+                Grid.Row="3"
+                Header="This is the header" />
         </Grid>
     </ContentPage.Content>
 </ContentPage>

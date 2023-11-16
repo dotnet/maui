@@ -205,7 +205,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
-			
+
 			// 2. Clear filter .
 			App.EnterText("FilterSearchBar", "");
 
@@ -268,6 +268,28 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("FilterSearchBar", "");
 
 			// 3. Check if the CollectionView is visible.
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void PreselectedItemCollectionView()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("PreselectedItem");
+
+			// 1. Check the preselected item.
+			App.WaitForElement("WaitForStubControl");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void PreselectedItemsCollectionView()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("PreselectedItems");
+
+			// 1. Check the preselected items.
+			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
 		}
 	}
