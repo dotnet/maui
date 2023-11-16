@@ -80,5 +80,56 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. With a snapshot we verify that the CollectionView is rendered with the correct size.
 			VerifyScreenshot();
 		}
+
+		[Test]
+		public void AddItemsCollectionViewList()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsList");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			//VerifyScreenshot("AddItemsCollectionViewListBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryInsert", "0");
+			App.Click("btnInsert");
+
+			// 3. Check if the item has been added correctly.
+			VerifyScreenshot("AddItemsCollectionViewListAfter");
+		}
+
+		[Test]
+		public void RemoveItemsCollectionViewList()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsList");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			VerifyScreenshot("RemoveItemsCollectionViewListBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryRemove", "0");
+			App.Click("btnRemove");  
+			
+			// 3. Check if the item has been added correctly.			
+			VerifyScreenshot("RemoveItemsCollectionViewListAfter");
+		}
+
+		[Test]
+		public void ReplaceItemsCollectionViewList()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("AddRemoveItemsList");
+
+			// 1. With a snapshot we verify the CollectionView items.
+			VerifyScreenshot("ReplaceItemsCollectionViewListBefore");
+
+			// 2. Add a new Item in the Index 0
+			App.EnterText("entryReplace", "0");
+			App.Click("btnReplace");   
+			
+			// 3. Check if the item has been added correctly.			
+			VerifyScreenshot("ReplaceItemsCollectionViewListAfter");
+		}
 	}
 }

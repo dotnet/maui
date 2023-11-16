@@ -20,7 +20,7 @@ namespace Controls.Sample.UITests.Elements
 					Children =
 					{
 						descriptionLabel,
-						new Label{ Text = "Layouts" },
+						new Label { Text = "Layouts" },
 						TestBuilder.NavButton("Vertical List", () =>
 							new TemplateCodeCollectionViewGallery(LinearItemsLayout.Vertical), Navigation),
 						TestBuilder.NavButton("Horizontal List", () =>
@@ -31,6 +31,11 @@ namespace Controls.Sample.UITests.Elements
 							new TemplateCodeCollectionViewGridGallery (ItemsLayoutOrientation.Horizontal), Navigation),
 						TestBuilder.NavButton("DataTemplateSelector", () =>
 							new DataTemplateSelectorGallery(), Navigation),
+						new Label { Text= "Add Remove Items" },
+						TestBuilder.NavButton("Add Remove Items (List)", () =>
+							new ObservableCodeCollectionViewGallery(grid: false), Navigation),
+						TestBuilder.NavButton("Add Remove Items (Grid)", () =>
+							new ObservableCodeCollectionViewGallery(), Navigation),
 					}
 				}
 			};
