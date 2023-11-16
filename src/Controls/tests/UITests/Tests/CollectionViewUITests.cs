@@ -88,7 +88,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.Click("AddRemoveItemsList");
 
 			// 1. With a snapshot we verify the CollectionView items.
-			//VerifyScreenshot("AddItemsCollectionViewListBefore");
+			VerifyScreenshot("AddItemsCollectionViewListBefore");
 
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryInsert", "0");
