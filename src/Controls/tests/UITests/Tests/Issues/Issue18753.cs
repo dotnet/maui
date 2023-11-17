@@ -27,7 +27,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// Focus the Editor.
 			App.Click("EditorIsTextPredictionDisabled");
-			await Task.Delay(250);
+
+			// Delay to auto hide popups with suggestions to copy etc.
+			await Task.Delay(500);
 
 			if (App.IsKeyboardShown())
 			{
@@ -41,7 +43,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// Focus the Editor.
 			App.Click("EditorIsTextPredictionEnabled");
-			await Task.Delay(250);
+
+			// Delay to auto hide popups with suggestions to copy etc.
+			await Task.Delay(500);
 
 			if (App.IsKeyboardShown())
 			{
