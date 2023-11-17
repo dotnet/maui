@@ -28,7 +28,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void CollectionViewVerticalList()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("VerticalList");
 
 			// 1. Refresh the data source to verify that it works.
@@ -42,7 +41,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void CollectionViewHorizontalList()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("HorizontalList");
 
 			// 1. Refresh the data source to verify that it works.
@@ -56,7 +54,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void CollectionViewVerticalGrid()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("VerticalGrid");
 
 			// 1. Refresh the data source to verify that it works.
@@ -70,7 +67,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void CollectionViewHorizontalGrid()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("HorizontalGrid");
 
 			// 1. Refresh the data source to verify that it works.
@@ -84,7 +80,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void AddItemsCollectionViewList()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsList");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -101,7 +96,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void RemoveItemsCollectionViewList()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsList");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -118,7 +112,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ReplaceItemsCollectionViewList()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsList");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -135,7 +128,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void AddItemsCollectionViewGrid()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsGrid");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -152,7 +144,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void RemoveItemsCollectionViewGrid()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsGrid");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -170,7 +161,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ReplaceItemsCollectionViewGrid()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("AddRemoveItemsGrid");
 
 			// 1. With a snapshot we verify the CollectionView items.
@@ -187,7 +177,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void StringEmptyViewAfterFilter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewString");
 
 			// 1. Filter the items with a non existing term.
@@ -200,7 +189,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void FilterCollectionViewNoCrash()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewString");
 
 			// 1. Filter the items with an existing term.
@@ -213,7 +201,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void RemoveStringEmptyView()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewString");
 
 			// 1. Filter the items with a non existing term.
@@ -229,7 +216,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ViewEmptyViewAfterFilter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewView");
 
 			// 1. Filter the items with a non existing term.
@@ -242,7 +228,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void RemoveViewEmptyView()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewView");
 
 			// 1. Filter the items with a non existing term.
@@ -258,7 +243,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void TemplateEmptyViewAfterFilter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewTemplateView");
 
 			// 1. Filter the items with a non existing term.
@@ -271,7 +255,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void RemoveTemplateViewEmptyView()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("EmptyViewTemplateView");
 
 			// 1. Filter the items with a non existing term.
@@ -287,7 +270,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void PreselectedItemCollectionView()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("PreselectedItem");
 
 			// 1. Check the preselected item.
@@ -298,7 +280,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void PreselectedItemsCollectionView()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.Click("PreselectedItems");
 
 			// 1. Check the preselected items.
@@ -309,7 +290,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ListGrouping()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.ScrollTo("ListGrouping", true);
 			App.Click("ListGrouping");
 
@@ -320,7 +300,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void GridGrouping()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.ScrollTo("GridGrouping", true);
 			App.Click("GridGrouping");
 
@@ -331,7 +310,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void StringHeaderFooter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.ScrollTo("HeaderFooterString", true);
 			App.Click("HeaderFooterString");
 
@@ -343,7 +321,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ViewHeaderFooter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.ScrollTo("HeaderFooterView", true);
 			App.Click("HeaderFooterView");
 
@@ -366,7 +343,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void TemplateHeaderFooter()
 		{
-			App.WaitForElement("WaitForStubControl");
 			App.ScrollTo("HeaderFooterTemplate", true);
 			App.Click("HeaderFooterTemplate");
 
