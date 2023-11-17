@@ -609,8 +609,12 @@
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
+        <ItemGroup>
+            <_MauiImageToProcess Include="@(MauiImage)" Exclude="$(DefaultItemExcludes)" />
+        </ItemGroup>
+
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage)"
+            Items="@(_MauiImageToProcess)"
             ThrowsError="$(_ResizetizerThrowsErrorOnInvalidFilename)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
@@ -622,7 +626,7 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage)">
+            Images="@(_MauiImageToProcess)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 
