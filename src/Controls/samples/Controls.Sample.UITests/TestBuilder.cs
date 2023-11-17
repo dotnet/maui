@@ -15,7 +15,7 @@ namespace Controls.Sample.UITests
 				Text = $"{galleryName}",
 				AutomationId = automationId,
 				FontSize = 10,
-				HeightRequest = DeviceInfo.Platform == DevicePlatform.Android ? 40 : 30,
+				HeightRequest = 30,
 				HorizontalOptions = LayoutOptions.Fill,
 				Margin = 2,
 				Padding = 2

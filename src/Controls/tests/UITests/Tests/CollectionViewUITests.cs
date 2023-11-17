@@ -327,5 +327,52 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Check the grouped CollectionView layout.
 			VerifyScreenshot();
 		}
+
+		[Test]
+		public void StringHeaderFooter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.ScrollTo("HeaderFooterString", true);
+			App.Click("HeaderFooterString");
+
+			// 1. Check CollectionView header and footer using a string.
+			App.WaitForElement("TestCollectionView");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void ViewHeaderFooter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.ScrollTo("HeaderFooterView", true);
+			App.Click("HeaderFooterView");
+
+			// 1. Both Header and Footer must be visible with or without items.
+			// Let's add items.
+			App.Click("AddButton");
+
+			// 2. Clear the items.
+			App.Click("ClearButton");
+
+			// 3. Repeat the previous steps.
+			App.Click("AddButton");
+			App.Click("ClearButton");
+
+			// 3. Check CollectionView header and footer using a View.
+			App.WaitForElement("TestCollectionView");
+			VerifyScreenshot();
+		}
+
+		[Test]
+		public void TemplateHeaderFooter()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.ScrollTo("HeaderFooterTemplate", true);
+			App.Click("HeaderFooterTemplate");
+
+			// 1. Check CollectionView header and footer using a TemplatedView.
+			App.WaitForElement("TestCollectionView");
+			VerifyScreenshot();
+		}
 	}
 }

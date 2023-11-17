@@ -53,6 +53,13 @@ namespace Controls.Sample.UITests.Elements
 							new ListGrouping(), Navigation),
 						TestBuilder.NavButton("Grid Grouping", () =>
 							new GridGrouping(), Navigation),
+						new Label { Text= "Header Footer" },
+						TestBuilder.NavButton("Header Footer (String)", () => 
+							new HeaderFooterString(), Navigation),
+						TestBuilder.NavButton("Header Footer (View)", () => 
+							new HeaderFooterView(), Navigation),
+						TestBuilder.NavButton("Header Footer (Template)", () => 
+							new HeaderFooterTemplate(), Navigation),
 					}
 				}
 			};
