@@ -11,7 +11,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "[D8] Editor IsTextPredictionEnabled works";
 
 		[Test]
-		public void Issue18753Test()
+		public async Task Issue18753Test()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows },
 				"Currently IsKeyboardShown is not implemented.");
@@ -25,7 +25,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.EnterText("EditorIsTextPredictionDisabled", "hi my name is james");
 			// 2. The test fails if the keyboard presents word suggestions.
 
+			// Focus the Editor.
 			App.Click("EditorIsTextPredictionDisabled");
+			await Task.Delay(250);
 
 			if (App.IsKeyboardShown())
 			{
@@ -37,7 +39,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.EnterText("EditorIsTextPredictionEnabled", "hi my name is james");
 			// 4. The test fails if the keyboard does not present word suggestions.
 
+			// Focus the Editor.
 			App.Click("EditorIsTextPredictionEnabled");
+			await Task.Delay(250);
 
 			if (App.IsKeyboardShown())
 			{
