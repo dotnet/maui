@@ -194,6 +194,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void StringEmptyViewAfterFilter()
 		{
 			App.Click("EmptyViewString");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
@@ -218,6 +219,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void RemoveStringEmptyView()
 		{
 			App.Click("EmptyViewString");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
