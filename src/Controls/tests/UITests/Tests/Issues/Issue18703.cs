@@ -11,9 +11,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Editor TextAlignment properties works";
 
 		[Test]
-		public void EditorTextAlignmentWorks()
+		public async Task EditorTextAlignmentWorks()
 		{
 			App.WaitForElement("WaitForStubControl");
+
+			// Wait for scrollbars to hide.
+			await Task.Delay(500);
 
 			VerifyScreenshot();
 		}
