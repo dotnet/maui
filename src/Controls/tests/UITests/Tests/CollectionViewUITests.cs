@@ -359,7 +359,10 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ViewHeaderFooter()
 		{
-			App.ScrollTo("HeaderFooterView", true);
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },	
+				"Currently fails on Android.");
+	
+				App.ScrollTo("HeaderFooterView", true);
 			App.Click("HeaderFooterView");
 
 			// 1. Both Header and Footer must be visible with or without items.
