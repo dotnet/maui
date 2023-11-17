@@ -198,6 +198,19 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		public void FilterCollectionViewNoCrash()
+		{
+			App.WaitForElement("WaitForStubControl");
+			App.Click("EmptyViewString");
+
+			// 1. Filter the items with an existing term.
+			App.EnterText("FilterSearchBar", "a");
+
+			// 2. Without exceptions, the test has passed.
+			Assert.NotNull(App.AppState);
+		}
+
+		[Test]
 		public void RemoveStringEmptyView()
 		{
 			App.WaitForElement("WaitForStubControl");
