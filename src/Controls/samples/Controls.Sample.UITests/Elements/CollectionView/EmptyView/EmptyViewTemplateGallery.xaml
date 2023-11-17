@@ -14,6 +14,7 @@
                 Placeholder="Filter" />
             <CollectionView 
                 x:Name="CollectionView" 
+                AutomationId="TestCollectionView"
                 Grid.Row="1">
 				<CollectionView.ItemsLayout>
                     <GridItemsLayout 

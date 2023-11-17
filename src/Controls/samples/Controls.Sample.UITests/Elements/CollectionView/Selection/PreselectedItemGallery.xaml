@@ -19,6 +19,7 @@
                 Grid.Row="2"/>
             <CollectionView
                 x:Name="CollectionView"
+                AutomationId="TestCollectionView"
                 Grid.Row="3"
                 Header="This is the header" />
         </Grid>

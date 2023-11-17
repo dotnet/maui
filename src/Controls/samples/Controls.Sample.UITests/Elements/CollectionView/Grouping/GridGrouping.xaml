@@ -8,6 +8,7 @@
     <ContentPage.Content>
         <CollectionView 
             x:Name="CollectionView" IsGrouped="True" 
+            AutomationId="TestCollectionView"
             Header="This is a header" Footer="This is a footer.">
             <CollectionView.ItemsLayout>
                 <GridItemsLayout 

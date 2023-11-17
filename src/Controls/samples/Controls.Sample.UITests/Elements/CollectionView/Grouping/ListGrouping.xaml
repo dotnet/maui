@@ -5,6 +5,7 @@
 	<ContentPage.Content>
         <CollectionView 
             x:Name="CollectionView" IsGrouped="True" 
+            AutomationId="TestCollectionView"
             Header="This is a header" Footer="Hey, a footer.">
             <CollectionView.ItemTemplate>
                 <DataTemplate>

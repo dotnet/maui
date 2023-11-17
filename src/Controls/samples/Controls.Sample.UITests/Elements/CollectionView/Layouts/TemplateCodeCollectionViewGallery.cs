@@ -27,7 +27,7 @@ namespace Controls.Sample.UITests.Elements
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				AutomationId = "collectionview",
+				AutomationId = "TestCollectionView",
 			};
 
 			var generator = new ItemsSourceGenerator(collectionView, initialItems: 2);

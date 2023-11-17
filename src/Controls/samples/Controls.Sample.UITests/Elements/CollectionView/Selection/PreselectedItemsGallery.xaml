@@ -9,7 +9,8 @@
                 AutomationId="WaitForStubControl"
                 Text="The CollectionView below should have several items already selected."/>
             <CollectionView 
-                x:Name="CollectionView" 
+                x:Name="CollectionView"
+                AutomationId="TestCollectionView"
                 Grid.Row="3" 
                 Header="This is the header">
                 <CollectionView.ItemsLayout>

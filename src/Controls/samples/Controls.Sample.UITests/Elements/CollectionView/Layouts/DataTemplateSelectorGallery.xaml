@@ -43,7 +43,10 @@
         <Grid RowDefinitions="Auto,*">
             <SearchBar x:Name="SearchBar" Placeholder="Day of Week Filter" Grid.Row="0" />
             <CollectionView 
-                Grid.Row="1" x:Name="CollectionView" ItemTemplate="{StaticResource WeekendSelector}"     
+                Grid.Row="1"
+                x:Name="CollectionView"
+                AutomationId="TestCollectionView"
+                ItemTemplate="{StaticResource WeekendSelector}"     
                 EmptyViewTemplate="{StaticResource SearchTermSelector}"/>
         </Grid>
     </ContentPage.Content>

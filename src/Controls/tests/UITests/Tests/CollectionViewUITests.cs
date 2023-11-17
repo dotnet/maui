@@ -29,6 +29,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void CollectionViewVerticalList()
 		{
 			App.Click("VerticalList");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Refresh the data source to verify that it works.
 			App.EnterText("entryUpdate", "0");
@@ -42,6 +43,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void CollectionViewHorizontalList()
 		{
 			App.Click("HorizontalList");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Refresh the data source to verify that it works.
 			App.EnterText("entryUpdate", "0");
@@ -55,6 +57,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void CollectionViewVerticalGrid()
 		{
 			App.Click("VerticalGrid");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Refresh the data source to verify that it works.
 			App.EnterText("entryUpdate", "0");
@@ -68,6 +71,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void CollectionViewHorizontalGrid()
 		{
 			App.Click("HorizontalGrid");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Refresh the data source to verify that it works.
 			App.EnterText("entryUpdate", "0");
@@ -78,9 +82,10 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void AddItemsCollectionViewList()
+		public async Task AddItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("AddItemsCollectionViewListBefore");
@@ -88,6 +93,9 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryInsert", "0");
 			App.Click("btnInsert");
+			
+			// Wait for the animation to finish when adding item
+			await Task.Delay(1000);
 
 			// 3. Check if the item has been added correctly.
 			VerifyScreenshot("AddItemsCollectionViewListAfter");
@@ -97,6 +105,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void RemoveItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("RemoveItemsCollectionViewListBefore");
@@ -113,6 +122,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void ReplaceItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("ReplaceItemsCollectionViewListBefore");
@@ -126,9 +136,10 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void AddItemsCollectionViewGrid()
+		public async Task AddItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("AddItemsCollectionViewGridBefore");
@@ -136,6 +147,9 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryInsert", "0");
 			App.Click("btnInsert");
+
+			// Wait for the animation to finish when adding item
+			await Task.Delay(1000);
 
 			// 3. Check if the item has been added correctly.
 			VerifyScreenshot("AddItemsCollectionViewGridAfter");
@@ -145,6 +159,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void RemoveItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("RemoveItemsCollectionViewGridBefore");
@@ -162,6 +177,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void ReplaceItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. With a snapshot we verify the CollectionView items.
 			VerifyScreenshot("ReplaceItemsCollectionViewGridBefore");
@@ -292,6 +308,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.ScrollTo("ListGrouping", true);
 			App.Click("ListGrouping");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Check the grouped CollectionView layout.
 			VerifyScreenshot();
@@ -302,6 +319,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.ScrollTo("GridGrouping", true);
 			App.Click("GridGrouping");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Check the grouped CollectionView layout.
 			VerifyScreenshot();

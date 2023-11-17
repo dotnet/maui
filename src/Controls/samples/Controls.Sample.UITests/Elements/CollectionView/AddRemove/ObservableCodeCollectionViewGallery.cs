@@ -32,7 +32,7 @@ namespace Controls.Sample.UITests.Elements
 			{
 				ItemsLayout = itemsLayout,
 				ItemTemplate = itemTemplate,
-				AutomationId = "collectionview",
+				AutomationId = "TestCollectionView",
 				Header = "This is the header",
 				ItemsUpdatingScrollMode = scrollMode
 			};

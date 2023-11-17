@@ -21,7 +21,7 @@ namespace Controls.Sample.UITests.Elements
 
 			var itemTemplate = ExampleTemplates.PhotoTemplate();
 
-			var collectionView = new CollectionView { ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "collectionview" };
+			var collectionView = new CollectionView { ItemsLayout = itemsLayout, ItemTemplate = itemTemplate, AutomationId = "TestCollectionView" };
 
 			var generator = new ItemsSourceGenerator(collectionView, 100);
 			var spanSetter = new SpanSetter(collectionView);
