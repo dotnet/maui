@@ -102,7 +102,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void RemoveItemsCollectionViewList()
+		public async Task RemoveItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
 			App.WaitForElement("TestCollectionView");
@@ -113,13 +113,16 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryRemove", "0");
 			App.Click("btnRemove");
+			
+			// Wait for the animation to finish when remove item
+			await Task.Delay(1000);
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("RemoveItemsCollectionViewListAfter");
 		}
 
 		[Test]
-		public void ReplaceItemsCollectionViewList()
+		public async Task ReplaceItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
 			App.WaitForElement("TestCollectionView");
@@ -130,6 +133,9 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryReplace", "0");
 			App.Click("btnReplace");
+			
+			// Wait for the animation to finish when replacing items
+			await Task.Delay(1000);
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewListAfter");
@@ -156,7 +162,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void RemoveItemsCollectionViewGrid()
+		public async Task RemoveItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
 			App.WaitForElement("TestCollectionView");
@@ -168,13 +174,16 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("entryRemove", "0");
 			App.Click("btnRemove");
 
+			// Wait for the animation to finish when removing item
+			await Task.Delay(1000);
+
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("RemoveItemsCollectionViewGridAfter");
 		}
 
 
 		[Test]
-		public void ReplaceItemsCollectionViewGrid()
+		public async Task ReplaceItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
 			App.WaitForElement("TestCollectionView");
@@ -185,6 +194,9 @@ namespace Microsoft.Maui.AppiumTests
 			// 2. Add a new Item in the Index 0
 			App.EnterText("entryReplace", "0");
 			App.Click("btnReplace");
+
+			// Wait for the animation to finish when replacing items
+			await Task.Delay(1000);
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewGridAfter");
@@ -235,6 +247,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void ViewEmptyViewAfterFilter()
 		{
 			App.Click("EmptyViewView");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
@@ -247,6 +260,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void RemoveViewEmptyView()
 		{
 			App.Click("EmptyViewView");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
@@ -262,6 +276,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void TemplateEmptyViewAfterFilter()
 		{
 			App.Click("EmptyViewTemplateView");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
@@ -274,6 +289,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void RemoveTemplateViewEmptyView()
 		{
 			App.Click("EmptyViewTemplateView");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Filter the items with a non existing term.
 			App.EnterText("FilterSearchBar", "no exist");
@@ -289,6 +305,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void PreselectedItemCollectionView()
 		{
 			App.Click("PreselectedItem");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Check the preselected item.
 			App.WaitForElement("WaitForStubControl");
@@ -299,6 +316,7 @@ namespace Microsoft.Maui.AppiumTests
 		public void PreselectedItemsCollectionView()
 		{
 			App.Click("PreselectedItems");
+			App.WaitForElement("TestCollectionView");
 
 			// 1. Check the preselected items.
 			App.WaitForElement("WaitForStubControl");
