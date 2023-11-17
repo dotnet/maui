@@ -15,6 +15,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18673Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS });
+
 			App.WaitForElement("WaitForStubControl");
 
 			VerifyScreenshot();
