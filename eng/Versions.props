@@ -34,7 +34,7 @@
     <!-- emsdk -->
     <MicrosoftNETWorkloadEmscriptenPackageVersion>8.0.0</MicrosoftNETWorkloadEmscriptenPackageVersion>
     <!-- wasdk -->
-    <MicrosoftWindowsAppSDKPackageVersion>1.4.231008000</MicrosoftWindowsAppSDKPackageVersion>
+    <MicrosoftWindowsAppSDKPackageVersion>1.4.231115000</MicrosoftWindowsAppSDKPackageVersion>
     <MicrosoftWindowsSDKBuildToolsPackageVersion>10.0.22621.2428</MicrosoftWindowsSDKBuildToolsPackageVersion>
     <MicrosoftGraphicsWin2DPackageVersion>1.1.0</MicrosoftGraphicsWin2DPackageVersion>
     <!-- Everything else -->
