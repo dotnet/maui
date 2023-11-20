@@ -140,6 +140,10 @@ namespace UITest.Appium.NUnit
 				{
 					throw new FileNotFoundException($"{e.Message}: {filePath}");
 				}
+				else
+				{
+					throw;
+				}
 			}
 		}
 	}
