@@ -119,11 +119,27 @@ namespace UITest.Appium.NUnit
 
 				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot.png");
 				_ = App.Screenshot(screenshotPath);
-				TestContext.AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
 
 				var pageSourcePath = Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt");
 				File.WriteAllText(pageSourcePath, App.ElementTree);
-				TestContext.AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+			}
+		}
+
+		void AddTestAttachment(string filePath, string? description = null)
+		{
+			try
+			{
+				TestContext.AddTestAttachment(filePath, description);
+			}
+			catch(FileNotFoundException e)
+			{
+				// Add the file path to better troubleshoot when these errors occur
+				if (e.Message == "Test attachment file path could not be found.")
+				{
+					throw new FileNotFoundException($"{e.Message}: {filePath}");
+				}
 			}
 		}
 	}
