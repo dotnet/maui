@@ -6,7 +6,7 @@ namespace Microsoft.Maui.AppiumTests
 {
 	class CollectionViewUITests : UITest
 	{
-		const string CarouselViewGallery = "CollectionView Gallery";
+		const string CollectionViewGallery = "CollectionView Gallery";
 
 		public CollectionViewUITests(TestDevice device)
 			: base(device)
@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests
 		protected override void FixtureSetup()
 		{
 			base.FixtureSetup();
-			App.NavigateToGallery(CarouselViewGallery);
+			App.NavigateToGallery(CollectionViewGallery);
 		}
 
 		protected override void FixtureTeardown()
