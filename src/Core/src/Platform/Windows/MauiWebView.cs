@@ -181,10 +181,7 @@ namespace Microsoft.Maui.Platform
 
 		static bool IsDataUri(string? uri)
 		{
-			return uri?
-				.StartsWith(
-					"data:text/html",
-					StringComparison.OrdinalIgnoreCase) ?? false;
+			return uri?.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) ?? false;
 		}
 	}
 }
