@@ -55,7 +55,6 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-
 			if (App.AppState == ApplicationState.Not_Running)
 			{
 				// Assert.Fail will immediately exit the test which is desirable as the app is not

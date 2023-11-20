@@ -26,7 +26,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void CollectionViewVerticalList()
+		public async Task CollectionViewVerticalList()
 		{
 			App.Click("VerticalList");
 			App.WaitForElement("TestCollectionView");
@@ -35,8 +35,13 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("entryUpdate", "0");
 			App.Click("btnUpdate");
 
+			// Wait for the collection to update
+			await Task.Delay(1000);
+
 			// 2. With a snapshot we verify that the CollectionView is rendered with the correct size.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -51,6 +56,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. With a snapshot we verify that the CollectionView is rendered with the correct size.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -65,6 +72,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. With a snapshot we verify that the CollectionView is rendered with the correct size.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -79,6 +88,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. With a snapshot we verify that the CollectionView is rendered with the correct size.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -99,6 +110,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.
 			VerifyScreenshot("AddItemsCollectionViewListAfter");
+		
+			this.Back();
 		}
 
 		[Test]
@@ -119,6 +132,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("RemoveItemsCollectionViewListAfter");
+		
+			this.Back();
 		}
 
 		[Test]
@@ -139,6 +154,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewListAfter");
+
+			this.Back();
 		}
 
 		[Test]
@@ -159,6 +176,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.
 			VerifyScreenshot("AddItemsCollectionViewGridAfter");
+
+			this.Back();
 		}
 
 		[Test]
@@ -179,6 +198,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("RemoveItemsCollectionViewGridAfter");
+
+			this.Back();
 		}
 
 
@@ -200,6 +221,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the item has been added correctly.			
 			VerifyScreenshot("ReplaceItemsCollectionViewGridAfter");
+
+			this.Back();
 		}
 
 		[Test]
@@ -213,6 +236,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Check if the String EmptyView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -225,6 +250,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Without exceptions, the test has passed.
 			Assert.NotNull(App.AppState);
+
+			this.Back();
 		}
 
 		[Test]
@@ -241,6 +268,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the CollectionView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -254,6 +283,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Check if the View EmptyView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -270,6 +301,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the CollectionView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -283,6 +316,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Check if the Templated EmptyView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -299,6 +334,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 3. Check if the CollectionView is visible.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -310,6 +347,8 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Check the preselected item.
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -321,6 +360,8 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Check the preselected items.
 			App.WaitForElement("WaitForStubControl");
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -332,6 +373,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Check the grouped CollectionView layout.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -343,6 +386,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 1. Check the grouped CollectionView layout.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -354,6 +399,8 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Check CollectionView header and footer using a string.
 			App.WaitForElement("TestCollectionView");
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -379,6 +426,8 @@ namespace Microsoft.Maui.AppiumTests
 			// 3. Check CollectionView header and footer using a View.
 			App.WaitForElement("TestCollectionView");
 			VerifyScreenshot();
+
+			this.Back();
 		}
 
 		[Test]
@@ -390,6 +439,8 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Check CollectionView header and footer using a TemplatedView.
 			App.WaitForElement("TestCollectionView");
 			VerifyScreenshot();
+
+			this.Back();
 		}
 	}
 }
