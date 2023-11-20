@@ -119,6 +119,7 @@ namespace UITest.Appium.NUnit
 
 				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot");
 				_ = App.Screenshot(screenshotPath);
+				// App.Screenshot appends a ".png" extension always, so include that here
 				var screenshotPathWithExtension = screenshotPath + ".png";
 				AddTestAttachment(screenshotPathWithExtension, Path.GetFileName(screenshotPathWithExtension));
 
@@ -134,7 +135,7 @@ namespace UITest.Appium.NUnit
 			{
 				TestContext.AddTestAttachment(filePath, description);
 			}
-			catch(FileNotFoundException e)
+			catch (FileNotFoundException e)
 			{
 				// Add the file path to better troubleshoot when these errors occur
 				if (e.Message == "Test attachment file path could not be found.")
