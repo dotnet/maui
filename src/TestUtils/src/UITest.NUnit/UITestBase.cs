@@ -117,9 +117,10 @@ namespace UITest.Appium.NUnit
 			{
 				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 
-				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot.png");
+				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot");
 				_ = App.Screenshot(screenshotPath);
-				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+				var screenshotPathWithExtension = screenshotPath + ".png";
+				AddTestAttachment(screenshotPathWithExtension, Path.GetFileName(screenshotPathWithExtension));
 
 				var pageSourcePath = Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt");
 				File.WriteAllText(pageSourcePath, App.ElementTree);
