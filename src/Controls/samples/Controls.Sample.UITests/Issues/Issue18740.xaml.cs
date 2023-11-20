@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
@@ -10,6 +11,21 @@ namespace Maui.Controls.Sample.Issues
 		public Issue18740()
 		{
 			InitializeComponent();
+		}
+				
+		void OnEntryButtonClicked(object sender, EventArgs e)
+		{
+			Navigation.PushAsync(new Issue18740Entry());
+		}
+
+		void OnEditorButtonClicked(object sender, EventArgs e)
+		{
+			Navigation.PushAsync(new Issue18740Editor());
+		}
+
+		void OnSearchBarButtonClicked(object sender, EventArgs e)
+		{
+			Navigation.PushAsync(new Issue18740SearchBar());
 		}
 	}
 }

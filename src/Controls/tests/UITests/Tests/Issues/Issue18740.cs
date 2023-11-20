@@ -13,33 +13,29 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Virtual keyboard appears with focus on Entry";
 
 		[Test]
-		public void Issue18740Test()
+		[TestCase("Entry")]
+		[TestCase("Editor")]
+		[TestCase("SearchBar")]
+		public void Issue18740Test(string view)
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
 
+			// Navigate to the specific View test
 			App.WaitForElement("WaitForStubControl");
+			App.Click($"{view}Button");
 
-			// 1.Make sure keyboard starts out closed.
+			// 1.Make sure keyboard starts out closed.	
+			App.WaitForElement("WaitForStubControl");
 			App.DismissKeyboard();
 
 			// 2. Focus the Entry.
-			App.EnterText("TestEntry", "test");
-			App.Click("TestEntry");
+			App.EnterText($"Test{view}", "test");
+			App.Click($"Test{view}");
 
 			// 3. Verify that the virtual keyboard appears.
 			Assert.IsTrue(App.IsKeyboardShown());
 
-			// Repeat the steps 2 and 3 with Editor and SearchBar
-
-			App.DismissKeyboard();
-			App.EnterText("TestEditor", "test");
-			App.Click("TestEditor");
-			Assert.IsTrue(App.IsKeyboardShown());
-
-			App.DismissKeyboard();
-			App.EnterText("TestSearchBar", "test");
-			App.Click("TestSearchBar");
-			Assert.IsTrue(App.IsKeyboardShown());
+			this.Back();
 		}
 	}
 }
