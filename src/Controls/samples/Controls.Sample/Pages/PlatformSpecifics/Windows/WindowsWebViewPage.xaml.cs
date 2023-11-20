@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages
 		{
 			_webView.Source = new HtmlWebViewSource
 			{
-				Html = "<html><body><video muted loop playsinline autoplay><source src=\"webview-test-video.mp4\" type=\"video/mp4\"></video></body></html>",
+				Html = """<html><body><video muted loop playsinline autoplay><source src="webview-test-video.mp4" type="video/mp4"></video></body></html>""",
 				BaseUrl = "https://appdir/",
 			};
 		}
