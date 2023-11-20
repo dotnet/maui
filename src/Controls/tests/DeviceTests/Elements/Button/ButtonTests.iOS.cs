@@ -46,13 +46,13 @@ namespace Microsoft.Maui.DeviceTests
 			var gridHeight = 300;
 			var gridWidth = 300;
 
-			var button = new Button {BackgroundColor = Colors.Yellow, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center};
+			var button = new Button { BackgroundColor = Colors.Yellow, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center };
 			if (includeText)
 			{
 				button.Text = "Hello world!";
 			}
 
-			var layout = new Grid() {HeightRequest = gridHeight, WidthRequest = gridWidth, BackgroundColor = Colors.Blue };
+			var layout = new Grid() { HeightRequest = gridHeight, WidthRequest = gridWidth, BackgroundColor = Colors.Blue };
 			layout.Add(button);
 
 			var buttonHandler = await CreateHandlerAsync<ButtonHandler>(button);
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				button.ImageSource = ImageSource.FromFile("red.png"); 
+				button.ImageSource = ImageSource.FromFile("red.png");
 
 				// Wait for image to load and force the grid to measure itself again
 				await Task.Delay(1000);
