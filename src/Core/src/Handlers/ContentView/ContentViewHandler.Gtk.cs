@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Handlers
 			_ = MauiContext ?? throw new InvalidOperationException($"{nameof(MauiContext)} should have been set by base class.");
 			_ = VirtualView ?? throw new InvalidOperationException($"{nameof(VirtualView)} should have been set by base class.");
 
-			if (VirtualView is { Content: IView view })
+			if (VirtualView is { PresentedContent: IView view })
 				PlatformView.Content = view.ToPlatform(MauiContext);
 		}
 
