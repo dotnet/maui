@@ -13,10 +13,6 @@ namespace Maui.Controls.Sample
 				.CreateBuilder()
 				.UseMauiMaps()
 				.UseMauiApp<App>()
-				.ConfigureFonts(fonts =>
-				{
-					fonts.AddFont("Lobster-Regular.ttf", "Lobster");
-				})
 				.Build();
 	}
 
