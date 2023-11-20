@@ -1,19 +1,12 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
 using NUnit.Framework;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Enums;
-using TestUtils.Appium.UITests;
-using Xamarin.UITest;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public class KeyboardScrollingNonScrollingPageLargeTitlesTests : UITestBase
+	public class KeyboardScrollingNonScrollingPageLargeTitlesTests : UITest
 	{
-		const string KeyboardScrollingGallery = "* marked:'Keyboard Scrolling Gallery - NonScrolling Page / Large Titles'";
+		const string KeyboardScrollingGallery = "Keyboard Scrolling Gallery - NonScrolling Page / Large Titles";
 		public KeyboardScrollingNonScrollingPageLargeTitlesTests(TestDevice device)
 			: base(device)
 		{
@@ -25,28 +18,25 @@ namespace Microsoft.Maui.AppiumTests
 			App.NavigateToGallery(KeyboardScrollingGallery);
 		}
 
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			App.NavigateBack();
-		}
-
 		[Test]
 		public void EntriesScrollingPageTest()
 		{
-			KeyboardScrolling.EntriesScrollingTest(App, UITestContext, KeyboardScrollingGallery);
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+			KeyboardScrolling.EntriesScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
 		public void EditorsScrollingPageTest()
 		{
-			KeyboardScrolling.EditorsScrollingTest(App, UITestContext, KeyboardScrollingGallery);
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+			KeyboardScrolling.EditorsScrollingTest(App, KeyboardScrollingGallery);
 		}
 
 		[Test]
 		public void EntryNextEditorTest()
 		{
-			KeyboardScrolling.EntryNextEditorScrollingTest(App, UITestContext, KeyboardScrollingGallery);
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, KeyboardScrolling.IgnoreMessage);
+			KeyboardScrolling.EntryNextEditorScrollingTest(App, KeyboardScrollingGallery);
 		}
 	}
 }

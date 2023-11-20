@@ -1,63 +1,64 @@
-﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
-using Microsoft.Maui.Controls.Xaml;
-using Microsoft.Maui.Graphics;
-using NUnit.Framework;
-using OpenQA.Selenium;
+﻿using NUnit.Framework;
 using OpenQA.Selenium.Appium;
-using OpenQA.Selenium.Appium.Enums;
-using TestUtils.Appium.UITests;
-using VisualTestUtils;
-using Xamarin.UITest;
-using Xamarin.UITest.Queries;
+using OpenQA.Selenium.Appium.MultiTouch;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	internal static class KeyboardScrolling
 	{
-		internal static void EntriesScrollingTest(IApp app, IUITestContext? testContext, string galleryName)
+		internal static readonly string IgnoreMessage = "These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.";
+
+		internal static void EntriesScrollingTest(IApp app, string galleryName)
 		{
-			BeginScrollingTest(app, testContext, galleryName, false);
+			RunScrollingTest(app, galleryName, false);
 		}
 
-		internal static void EditorsScrollingTest(IApp app, IUITestContext? testContext, string galleryName)
+		internal static void EditorsScrollingTest(IApp app, string galleryName)
 		{
-			BeginScrollingTest(app, testContext, galleryName, true);
+			RunScrollingTest(app, galleryName, true);
 		}
 
-		static void BeginScrollingTest(IApp app, IUITestContext? testContext, string galleryName, bool isEditor)
+		static void RunScrollingTest(IApp app, string galleryName, bool isEditor)
 		{
-			testContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-				"These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.");
+			var App = (app as AppiumApp);
+			if (App is null)
+				return;
+
+			app.WaitForElement("TargetView");
+			if (isEditor)
+				app.EnterText("TargetView", "KeyboardScrollingEditorsPage");
+			else
+				app.EnterText("TargetView", "KeyboardScrollingEntriesPage");
+
+			app.Click("GoButton");
 
 			// Entries 6 - 14 hit a group of interesting areas on scrolling
 			// depending on the type of iOS device.
 			for (int i = 6; i <= 14; i++)
 			{
-				var shouldContinue = false;
+				var didReachEndofPage = false;
 				if (isEditor)
-					shouldContinue = NavigateTest(app, $"Editor{i}", "KeyboardScrollingEditorsPage", isEditor);
+					ClickText(app, $"Editor{i}", isEditor, out didReachEndofPage);
 				else
-					shouldContinue = NavigateTest(app, $"Entry{i}", "KeyboardScrollingEntriesPage", isEditor);
+					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
 
-				app.NavigateToGallery(galleryName);
+				// Scroll to the top of the page
+				var actions = new TouchAction(App.Driver);
+				actions.LongPress(null, 5, 300).MoveTo(null, 5, 650).Release().Perform();
 
-				if (!shouldContinue)
+				if (!didReachEndofPage)
 					break;
 			}
 		}
 
-		static bool NavigateTest(IApp app, string marked, string pageName, bool isEditor)
+		static void ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
 		{
-			app.WaitForElement("TargetView");
-			app.EnterText("TargetView", pageName);
-			app.Tap("GoButton");
-			app.Tap(marked);
-			var shouldContinue = CheckIfViewAboveKeyboard(app, marked, isEditor);
-			if (shouldContinue)
-				HideKeyboard(app, (app as AppiumUITestApp)?.Driver, isEditor);
-			app.NavigateBack();
-			return shouldContinue;
+			app.Click(marked);
+			didReachEndofPage = CheckIfViewAboveKeyboard(app, marked, isEditor);
+			if (didReachEndofPage)
+				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
 		}
 
 		// will return a bool showing if the view is visible
@@ -70,10 +71,10 @@ namespace Microsoft.Maui.AppiumTests
 			if (!app.IsKeyboardShown())
 				return false;
 
-			Assert.IsNotEmpty(views);
-			var rect = views[0].Rect;
+			Assert.NotNull(views);
+			var rect = views.GetRect();
 
-			var testApp = app as AppiumUITestApp;
+			var testApp = app as AppiumApp;
 			var keyboardPositionNullable = FindiOSKeyboardLocation(testApp?.Driver);
 			Assert.NotNull(keyboardPositionNullable);
 
@@ -86,7 +87,7 @@ namespace Microsoft.Maui.AppiumTests
 				keyboardPosition.Y -= defaultSizeAccessoryView;
 
 			}
-			Assert.Less(rect.CenterY, keyboardPosition.Y);
+			Assert.Less(rect.CenterY(), keyboardPosition.Y);
 
 			return true;
 		}
@@ -115,25 +116,22 @@ namespace Microsoft.Maui.AppiumTests
 			keyboardDoneButton?.Click();
 		}
 
-		internal static void EntryNextEditorScrollingTest(IApp app, IUITestContext? testContext, string galleryName)
+		internal static void EntryNextEditorScrollingTest(IApp app, string galleryName)
 		{
-			testContext.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows },
-				"These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.");
-
 			app.WaitForElement("TargetView");
 			app.EnterText("TargetView", "KeyboardScrollingEntryNextEditorPage");
-			app.Tap("GoButton");
+			app.Click("GoButton");
 
 			app.WaitForElement("Entry1");
-			app.Tap("Entry1");
+			app.Click("Entry1");
 			CheckIfViewAboveKeyboard(app, "Entry1", false);
-			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
 			CheckIfViewAboveKeyboard(app, "Entry2", false);
-			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
 			CheckIfViewAboveKeyboard(app, "Entry3", false);
-			NextiOSKeyboardPress((app as AppiumUITestApp)?.Driver);
+			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
 			CheckIfViewAboveKeyboard(app, "Editor", true);
 		}

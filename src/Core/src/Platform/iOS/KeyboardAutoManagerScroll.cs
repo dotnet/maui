@@ -39,11 +39,9 @@ public static class KeyboardAutoManagerScroll
 	static NSObject? DidHideToken;
 	static NSObject? TextFieldToken;
 	static NSObject? TextViewToken;
-<<<<<<< HEAD
-	static bool? ShouldConnect;
-=======
 	internal static bool ShouldDisconnectLifecycle;
->>>>>>> origin/main
+	internal static bool ShouldIgnoreSafeAreaAdjustment;
+	internal static bool ShouldScrollAgain;
 
 	/// <summary>
 	/// Enables automatic scrolling with keyboard interactions on iOS devices.
@@ -55,16 +53,6 @@ public static class KeyboardAutoManagerScroll
 	/// </remarks>
 	public static void Connect()
 	{
-		// if Disconnect was called prior to the first Connect
-		// call in the Created Lifecycle event, do not connect
-		if (ShouldConnect is false)
-		{
-			ShouldConnect = true;
-			return;
-		}
-
-		ShouldConnect = true;
-
 		if (TextFieldToken is not null)
 			return;
 
@@ -89,12 +77,7 @@ public static class KeyboardAutoManagerScroll
 	{
 		// if Disconnect is called prior to Connect, signal to not
 		// Connect during the Created Lifecycle event
-<<<<<<< HEAD
-		if (ShouldConnect is null)
-			ShouldConnect = false;
-=======
 		ShouldDisconnectLifecycle = true;
->>>>>>> origin/main
 
 		if (WillShowToken is not null)
 		{
@@ -211,6 +194,8 @@ public static class KeyboardAutoManagerScroll
 	static void DidHideKeyboard(NSNotification notification)
 	{
 		IsKeyboardAutoScrollHandling = false;
+		ShouldIgnoreSafeAreaAdjustment = false;
+		ShouldScrollAgain = false;
 	}
 
 	static NSObject? FindValue(this NSDictionary dict, string key)
@@ -320,7 +305,14 @@ public static class KeyboardAutoManagerScroll
 		}
 
 		if (entranceCount == DebounceCount)
+		{
 			AdjustPosition();
+			if (ShouldScrollAgain)
+			{
+				await Task.Delay(10);
+				AdjustPosition();
+			}
+		}
 	}
 
 	// main method to calculate and animate the scrolling
@@ -570,20 +562,8 @@ public static class KeyboardAutoManagerScroll
 							var actualScrolledAmount = superScrollView.ContentOffset.Y - origContentOffsetY;
 							var amountNotScrolled = requestedMove - actualScrolledAmount;
 
-							if (prefersLargeTitles && amountNotScrolled != 0)
-							{
-								UIView.Animate(AnimationDuration, 0, UIViewAnimationOptions.CurveEaseOut, () =>
-								{
-									newContentOffset.Y += (nfloat)amountNotScrolled;
-									innerScrollValue = 0;
-									ScrolledView = superScrollView;
-
-									if (View?.FindResponder<UIStackView>() is not null)
-										superScrollView.SetContentOffset(newContentOffset, UIView.AnimationsEnabled);
-									else
-										superScrollView.ContentOffset = newContentOffset;
-								}, () => { });
-							}
+							if (prefersLargeTitles && amountNotScrolled > 1)
+								ShouldScrollAgain = true;
 						}
 
 						else
@@ -636,6 +616,7 @@ public static class KeyboardAutoManagerScroll
 
 			if (ContainerView.Frame.X != rootViewOrigin.X || ContainerView.Frame.Y != rootViewOrigin.Y)
 			{
+				ShouldIgnoreSafeAreaAdjustment = true;
 				var rect = ContainerView.Frame;
 				rect.X = rootViewOrigin.X;
 				rect.Y = rootViewOrigin.Y;
@@ -721,8 +702,12 @@ public static class KeyboardAutoManagerScroll
 	// this collapsable height difference from the calculated move distance.
 	static nfloat AdjustForLargeTitles(nfloat move, UIScrollView superScrollView, UINavigationController navController)
 	{
+		// These values are not publicly available but can be tested.
+		// It is possible that these can change in the future.
 		var navBarCollapsedHeight = 44;
-		var minPageMoveToCollapseNavBar = 52;
+		var navBarExpandedHeight = 96;
+
+		var minPageMoveToCollapseNavBar = navBarExpandedHeight - navBarCollapsedHeight;
 		var amountScrolled = superScrollView.ContentOffset.Y;
 		var amountLeftToCollapseNavBar = minPageMoveToCollapseNavBar - amountScrolled;
 		var navBarCollapseDifference = navController.NavigationBar.Frame.Height - navBarCollapsedHeight;
@@ -767,6 +752,8 @@ public static class KeyboardAutoManagerScroll
 		TopViewBeginOrigin = InvalidPoint;
 		CursorRect = null;
 		StartingContainerViewFrame = null;
+		ShouldIgnoreSafeAreaAdjustment = false;
+		ShouldScrollAgain = false;
 	}
 
 	static NSIndexPath? GetPreviousIndexPath(this UIScrollView scrollView, NSIndexPath indexPath)
