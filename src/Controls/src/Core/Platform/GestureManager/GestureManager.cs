@@ -49,6 +49,7 @@ namespace Microsoft.Maui.Controls.Platform
 			GesturePlatformManager?.Dispose();
 			GesturePlatformManager = null;
 			_handler = null;
+			_window = null;
 			_containerView = null;
 			_platformView = null;
 		}
