@@ -310,27 +310,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
 			var measureSize = base.MeasureOverride(new WSize(width, height));
 
-			width = measureSize.Width;
-			height = measureSize.Height;
-
-			if (ItemHeight == default && ItemWidth == default)
-			{
-				if(double.IsFinite(availableSize.Width))
-					width = Max(width, availableSize.Width);
-
-				if (double.IsFinite(availableSize.Height))
-					height = Max(height, availableSize.Height);
-			}
-			else
-			{
-				if (ItemHeight != default)
-					height = ItemHeight;
-
-				if (ItemWidth != default)
-					width = ItemWidth;
-			}
-
-			return new WSize(width, height);
+			return new WSize(Max(measureSize.Width, width), Max(measureSize.Height, height));
 		}
 
 		double Max(double requested, double available)
