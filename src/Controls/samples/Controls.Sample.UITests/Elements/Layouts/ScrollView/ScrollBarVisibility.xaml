@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:Controls.Sample.UITests.Elements"
+    x:Class="Controls.Sample.UITests.Elements.ScrollBarVisibility"
+    Title="ScrollBar Visibility">
+    <StackLayout 
+      Margin="20">
+        <ScrollView 
+            x:Name="TestScrollView"
+            VerticalScrollBarVisibility="Never"
+            Margin="20">
+            <StackLayout 
+                BindableLayout.ItemsSource="{x:Static local:NamedColor.All}">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout 
+                            Orientation="Horizontal">
+                            <BoxView 
+                                Color="{Binding Color}"      
+                                HeightRequest="32"
+                                WidthRequest="32"    
+                                VerticalOptions="Center" />
+                            <Label 
+                                Text="{Binding FriendlyName}"
+                                FontSize="24"
+                                VerticalOptions="Center" />
+                        </StackLayout>
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </StackLayout>
+        </ScrollView>
+        <Button
+            Text="Change ScrollBar Visibility"
+            Clicked="OnButtonClicked" />
+    </StackLayout>
+</ContentPage>

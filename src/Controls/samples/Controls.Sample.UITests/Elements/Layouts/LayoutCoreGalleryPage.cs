@@ -21,6 +21,8 @@ namespace Controls.Sample.UITests.Elements
 					{
 						descriptionLabel,
 						new Label { Text = "AbsoluteLayout" },   
+						TestBuilder.NavButton("AbsoluteLayout Position Proportional", () =>
+							new PositionProportional(), Navigation),
 						TestBuilder.NavButton("Chessboard", () =>
 							new ChessboardPage(), Navigation), 
 						TestBuilder.NavButton("Stylish Header", () =>
@@ -38,6 +40,13 @@ namespace Controls.Sample.UITests.Elements
 							new StackLayoutExpansion(), Navigation),
 						TestBuilder.NavButton("StackLayout Spacing", () =>
 							new StackLayoutSpacing(), Navigation),
+						new Label { Text = "ScrollView" },
+						TestBuilder.NavButton("ScrollView Layout", () =>
+							new ScrollViewLayout(), Navigation),
+						TestBuilder.NavButton("ScrollView ScrollBar Visibility", () =>
+							new ScrollBarVisibility(), Navigation),
+						TestBuilder.NavButton("ScrollView ScrollTo", () =>
+							new ScrollTo(), Navigation),
 					}
 				}
 			};
