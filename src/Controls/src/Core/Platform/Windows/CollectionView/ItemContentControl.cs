@@ -158,12 +158,12 @@ namespace Microsoft.Maui.Controls.Platform
 				itemsView.RemoveLogicalChild(e);
 			}
 
-			if (dataContext == null || formsTemplate == null || container == null || mauiContext == null)
+			if (dataContext is null || formsTemplate is null || container is null || mauiContext is null)
 			{
 				return;
 			}
 
-			if (_renderer?.ContainerView == null || _currentTemplate != formsTemplate)
+			if (_renderer?.ContainerView is null || _currentTemplate != formsTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
@@ -190,8 +190,30 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.BindingContext = dataContext;
 			}
 
-			Content = _renderer.ToPlatform();
+			if (_renderer.VirtualView is ICrossPlatformLayout)
+			{
+				Content = _renderer.ToPlatform();
+			}
+			else
+			{
+				Content = new ItemPanel(_renderer.VirtualView);
+			}
+
 			itemsView?.AddLogicalChild(_visualElement);
+		}
+
+		class ItemPanel : Panel
+		{
+			IView _view;
+			public ItemPanel(IView view)
+			{
+				_view = view;
+				this.Children.Add(view.ToPlatform());
+			}
+
+			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+
+			protected override WSize MeasureOverride(WSize availableSize) => _view.Measure(availableSize.Width, availableSize.Height).ToPlatform();
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)
@@ -267,22 +289,13 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <inheritdoc/>
 		protected override WSize ArrangeOverride(WSize finalSize)
 		{
-			if (_renderer == null)
-			{
-				return base.ArrangeOverride(finalSize);
-			}
-
-			var width = ItemWidth == default ? finalSize.Width : ItemWidth;
-			var height = ItemHeight == default ? finalSize.Height : ItemHeight;
-			var size = new WSize(width, height);
-
-			return base.ArrangeOverride(size);
+			return base.ArrangeOverride(finalSize);
 		}
 
 		/// <inheritdoc/>
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
-			if (_renderer == null)
+			if (_renderer is null)
 			{
 				// Make sure we supply a real number for sizes otherwise virtualization won't function
 				if (double.IsFinite(availableSize.Width) && !double.IsFinite(availableSize.Height))
@@ -295,33 +308,21 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var width = ItemWidth == default ? availableSize.Width : ItemWidth;
 			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
-			var size = new WSize(width, height);
+			var measureSize = base.MeasureOverride(new WSize(width, height));
 
-			if (this.Content is FrameworkElement content 
-				&& CanMeasureContent(content) 
-				&& (content.DesiredSize.Height != content.Height || content.DesiredSize.Width != content.Width))
+			width = measureSize.Width;
+			height = measureSize.Height;
+
+			if (ItemHeight == default && ItemWidth == default)
 			{
-				// Measure content to update its desired size if its Height/Width just changed
-				content.Measure(size);
+				if(double.IsFinite(availableSize.Width))
+					width = Max(width, availableSize.Width);
+
+				if (double.IsFinite(availableSize.Height))
+					height = Max(height, availableSize.Height);
 			}
 
-			var measuredSize = base.MeasureOverride(size);
-			var finalWidth = Max(measuredSize.Width, ItemWidth);
-			var finalHeight = Max(measuredSize.Height, ItemHeight);
-			var finalSize = new WSize(finalWidth, finalHeight);
-			var frameworkElement = Content as FrameworkElement;
-			var visualElement = _renderer.VirtualView as VisualElement;
-			var margin = _renderer.VirtualView.Margin;
-
-			frameworkElement.Margin = WinUIHelpers.CreateThickness(margin.Left, margin.Top, margin.Right, margin.Bottom);
-			visualElement.Layout(new Rect(0, 0, finalWidth, finalHeight));
-
-			if (CanMeasureContent(frameworkElement))
-			{
-				frameworkElement.Measure(finalSize);
-			}
-
-			return finalSize;
+			return new WSize(width, height);
 		}
 
 		double Max(double requested, double available)
@@ -332,15 +333,6 @@ namespace Microsoft.Maui.Controls.Platform
 		double ClampInfinity(double value)
 		{
 			return double.IsInfinity(value) ? 0 : value;
-		}
-
-		bool CanMeasureContent(FrameworkElement frameworkElement)
-		{
-			// Measure the SwipeControl before has loaded causes a crash on the first layout pass
-			if (frameworkElement is SwipeControl swipeControl && !swipeControl.IsLoaded)
-				return false;
-
-			return true;
 		}
 
 		internal VisualElement GetVisualElement() => _visualElement;
