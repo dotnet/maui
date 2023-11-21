@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return imageView.SizeThatFitsImage(size);
 			}
-			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null)
+			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
 			{
 				return imageButton.ImageView.SizeThatFitsImage(size);
 			}
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
-			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null))
+			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
 				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
 				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;

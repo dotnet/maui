@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Handlers
 		protected override void DisconnectHandler(UISlider platformView)
 		{
 			base.DisconnectHandler(platformView);
-			_proxy.Disconnect(platformView);	
+			_proxy.Disconnect(platformView);
 		}
 
 		public static void MapMinimum(ISliderHandler handler, ISlider slider)
