@@ -21,7 +21,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_viewHandler = viewHandler;
 		}
 
-		public void Disconnect ()
+		public void Disconnect()
 		{
 			_viewHandler = null;
 		}
