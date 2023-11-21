@@ -15,9 +15,21 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <StackLayout
+        x:Name="TestStackLayout"
         AutomationId="TestStackLayout"
         Margin="20"     
-        Spacing="20">
+        Spacing="0">
+        <StackLayout
+            Orientation="Horizontal">
+            <Button 
+                AutomationId="NoSpacingButton"
+                Text="Spacing 0"
+                Clicked="NoSpacingButtonClicked"/>
+            <Button
+                AutomationId="SpacingButton"
+                Text="Spacing 40"
+                Clicked="SpacingButtonClicked"/>
+        </StackLayout>
         <Label
             Text="Primary colors" />
         <Rectangle 

@@ -68,6 +68,59 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Align child elements in the X axis works")]
+		public void StackLayoutAlignment()
+		{
+			App.Click("StackLayoutAlignment");
+			App.WaitForElement("TestStackLayout");
+
+			// 1. With a snapshot we verify that align child elements in
+			// the X axis works.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
+		[Description("Align child elements in the Y axis works")]
+		public void StackLayoutExpansion()
+		{
+			App.Click("StackLayoutExpansion");
+			App.WaitForElement("TestStackLayout");
+
+			// 1. With a snapshot we verify that align child elements in
+			// the Y axis works.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
+		[Description("Can apply space between each child")]
+		public void StackLayoutSpacing()
+		{
+			App.Click("StackLayoutSpacing");
+			App.WaitForElement("TestStackLayout");
+
+			// 1. With a snapshot we verify that child elements has not
+			// space between them.
+			VerifyScreenshot("StackLayoutNoSpacing");
+
+			// 2. Apply spacing (40) between items.
+			App.Click("SpacingButton");
+
+			// 3. With a snapshot we verify that can apply space
+			// between each child.
+			VerifyScreenshot("StackLayoutSpacing");
+
+			// 4. Remove the spacing.
+			App.Click("NoSpacingButton");
+			VerifyScreenshot("StackLayoutNoSpacing");
+
+			this.Back();
+		}
+
+		[Test]
 		[Description("Modify the visibility of the ScrollBars")]
 		public void ScrollBarVisibility()
 		{

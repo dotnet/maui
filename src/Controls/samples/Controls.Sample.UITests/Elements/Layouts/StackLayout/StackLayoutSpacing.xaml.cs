@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 
 namespace Controls.Sample.UITests.Elements
 {
@@ -8,5 +9,15 @@ namespace Controls.Sample.UITests.Elements
         {
             InitializeComponent();
         }
-    }
+
+		void NoSpacingButtonClicked(object sender, EventArgs e)
+		{
+			TestStackLayout.Spacing = 0;
+		}
+
+		void SpacingButtonClicked(object sender, EventArgs e)
+		{
+			TestStackLayout.Spacing = 40;
+		}
+	}
 }
