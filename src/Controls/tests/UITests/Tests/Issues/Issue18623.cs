@@ -23,7 +23,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 2. In the Entry control below, input some text. The test passes if the text is obscured.
 			App.EnterText("PasswordEntry", "Test");
 
-			await Task.Delay(500);
+			// Wait to capture the snapshot after enter the text and
+			// closed the keyboard.
+			await Task.Delay(1000);
 
 			// 3. Verify the result  comparing snapshots.
 			VerifyScreenshot();
