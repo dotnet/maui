@@ -557,8 +557,7 @@ public static class KeyboardAutoManagerScroll
 							}, () => { });
 
 							// after this scroll finishes, there is an edge case where if we have Large Titles,
-							// the entire requeseted scroll amount may not be allowed. If so, we need to scroll
-							// the rest of the distance afterwards
+							// the entire requeseted scroll amount may not be allowed. If so, we need to scroll again.
 							var actualScrolledAmount = superScrollView.ContentOffset.Y - origContentOffsetY;
 							var amountNotScrolled = requestedMove - actualScrolledAmount;
 
