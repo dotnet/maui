@@ -39,6 +39,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2.With a snapshot we verify that the ScrollView scrolled to the end.
 			VerifyScreenshot();
+
+			this.Back();
 		}
 	}
 }
