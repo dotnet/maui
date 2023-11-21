@@ -15,6 +15,7 @@
         </ResourceDictionary>
     </ContentPage.Resources>
     <StackLayout
+        AutomationId="TestStackLayout"
         Margin="20"     
         Spacing="20">
         <Label

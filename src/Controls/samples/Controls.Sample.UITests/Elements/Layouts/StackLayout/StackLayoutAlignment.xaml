@@ -5,6 +5,7 @@
     x:Class="Controls.Sample.UITests.Elements.StackLayoutAlignment"
     Title="StackLayout Alignment">
     <StackLayout
+        AutomationId="TestStackLayout"
         Margin="20">
         <Label 
             Text="Start"

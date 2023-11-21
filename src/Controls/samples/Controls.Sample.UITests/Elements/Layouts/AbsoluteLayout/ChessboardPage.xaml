@@ -5,6 +5,7 @@
     x:Class="Controls.Sample.UITests.Elements.ChessboardPage"
     Title="Chessboard">
     <ContentPage.Resources>
+        
         <Style TargetType="BoxView">
             <Setter Property="Color"
                     Value="Black" />
@@ -16,10 +17,12 @@
 
     <ContentView Margin="20"
                  SizeChanged="OnContentViewSizeChanged">
-        <AbsoluteLayout x:Name="absoluteLayout"
-                        BackgroundColor="WhiteSmoke"
-                        HorizontalOptions="Center"
-                        VerticalOptions="Center">
+        <AbsoluteLayout
+            x:Name="TestAbsoluteLayout"
+            AutomationId="TestAbsoluteLayout"
+            BackgroundColor="WhiteSmoke"
+            HorizontalOptions="Center"
+            VerticalOptions="Center">
             <BoxView AbsoluteLayout.LayoutBounds="0.00, 0.00, 0.125, 0.125" />
             <BoxView AbsoluteLayout.LayoutBounds="0.29, 0.00, 0.125, 0.125" />
             <BoxView AbsoluteLayout.LayoutBounds="0.57, 0.00, 0.125, 0.125" />

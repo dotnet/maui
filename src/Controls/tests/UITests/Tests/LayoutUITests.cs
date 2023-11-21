@@ -26,6 +26,48 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("The AbsoluteLayout is able of positioning its child elements with proportional positions")]
+		public void PositionProportional()
+		{
+			App.Click("AbsoluteLayoutPositionProportional");
+			App.WaitForElement("TestAbsoluteLayout");
+
+			// 1. With a snapshot we verify that The AbsoluteLayout is able
+			// of positioning its child elements with proportional positions.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
+		[Description("Organizes child views in a vertical one-dimensional stack")]
+		public void VerticalStackLayout()
+		{
+			App.Click("VerticalStackLayout");
+			App.WaitForElement("TestStackLayout");
+
+			// 1. With a snapshot we verify that The StackLayout
+			// organizes child views in a vertical one-dimensional stack.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
+		[Description("Organizes child views in a horizontal one-dimensional stack")]
+		public void HorizontalStackLayout()
+		{
+			App.Click("HorizontalStackLayout");
+			App.WaitForElement("TestStackLayout");
+
+			// 1. With a snapshot we verify that The StackLayout
+			// organizes child views in a horizontal one-dimensional stack.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
 		[Description("Modify the visibility of the ScrollBars")]
 		public void ScrollBarVisibility()
 		{

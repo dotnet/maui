@@ -14,7 +14,8 @@
 
         </ResourceDictionary>
     </ContentPage.Resources>
-    <StackLayout 
+    <StackLayout
+        AutomationId="TestStackLayout"
         Margin="20">
         <Label 
             Text="Primary colors" />

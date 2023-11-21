@@ -14,8 +14,8 @@ namespace Controls.Sample.UITests.Elements
         {
             ContentView contentView = sender as ContentView;
             double boardSize = Math.Min(contentView.Width, contentView.Height);
-            absoluteLayout.WidthRequest = boardSize;
-            absoluteLayout.HeightRequest = boardSize;
+			TestAbsoluteLayout.WidthRequest = boardSize;
+			TestAbsoluteLayout.HeightRequest = boardSize;
         }
     }
 }
