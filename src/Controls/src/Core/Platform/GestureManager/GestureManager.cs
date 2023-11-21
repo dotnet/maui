@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform
 		object? _containerView;
 		object? _platformView;
 		object? _handler;
+		object? _window;
 
 		public bool IsConnected => GesturePlatformManager != null;
 		public GesturePlatformManager? GesturePlatformManager { get; private set; }
@@ -56,17 +57,19 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			var handler = _view.Handler;
 			var window = _view.Window;
-
-			if (handler == null ||
-				window == null)
+			
+			if (handler == null || 
+			    // Window disconnected
+			    (_window != null && window == null))
 			{
 				DisconnectGestures();
 				return;
 			}
 
 			if (_containerView != handler.ContainerView ||
-				_platformView != handler.PlatformView ||
-				_handler != handler)
+			    _platformView != handler.PlatformView ||
+			    _handler != handler ||
+			    _window != window)
 			{
 				DisconnectGestures();
 			}
@@ -79,6 +82,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_handler = handler;
 			_containerView = handler.ContainerView;
 			_platformView = handler.PlatformView;
+			_window = window;
 		}
 	}
 }
