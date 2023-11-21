@@ -9,6 +9,7 @@
       Margin="20">
         <ScrollView 
             x:Name="TestScrollView"
+            AutomationId="TestScrollView"
             VerticalScrollBarVisibility="Never"
             Margin="20">
             <StackLayout 

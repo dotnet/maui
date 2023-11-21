@@ -6,6 +6,7 @@
     x:Class="Controls.Sample.UITests.Elements.ScrollViewLayout"
     Title="ScrollView">
     <ScrollView 
+        AutomationId="TestScrollView"
         Margin="20">
         <StackLayout 
             BindableLayout.ItemsSource="{x:Static local:NamedColor.All}">

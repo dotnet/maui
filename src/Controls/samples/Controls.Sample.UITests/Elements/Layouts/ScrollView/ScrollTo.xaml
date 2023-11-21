@@ -13,6 +13,7 @@
             HorizontalOptions="Center" />
         <ScrollView 
             x:Name="TestScrollView"
+            AutomationId="TestScrollView"
             VerticalOptions="FillAndExpand"
             Scrolled="OnScrollViewScrolled">
             <StackLayout>
@@ -38,6 +39,7 @@
             </StackLayout>
         </ScrollView>
         <Button
+            AutomationId="ScrollToEndButton"
             Text="Scroll to End"
             Clicked="OnButtonClicked" />
     </StackLayout>
