@@ -89,6 +89,9 @@ namespace Microsoft.Maui.DeviceTests
 		public static string ToBase64String(this UIImage bitmap)
 		{
 			var data = bitmap.AsPNG();
+
+			ArgumentNullException.ThrowIfNull(data);
+
 			return data.GetBase64EncodedString(NSDataBase64EncodingOptions.None);
 		}
 
@@ -195,7 +198,17 @@ namespace Microsoft.Maui.DeviceTests
 			if (view.Superview is WrapperView wrapper)
 				view = wrapper;
 
+
 			var imageRect = new CGRect(0, 0, view.Frame.Width, view.Frame.Height);
+
+			if (view.Frame.Width == 0 && view.Frame.Height == 0)
+			{
+				UIGraphicsImageRenderer renderer = new UIGraphicsImageRenderer(imageRect.Size);
+				return Task.FromResult(renderer.CreateImage(c =>
+				{
+					view.Layer.RenderInContext(c.CGContext);
+				}));
+			}
 
 			UIGraphics.BeginImageContext(imageRect.Size);
 
@@ -690,12 +703,13 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static bool HasBackButton(this UINavigationBar uINavigationBar)
 		{
-			var item = uINavigationBar.FindDescendantView<UIView>(result =>
-			{
-				return result.Class.Name?.Contains("UIButtonBarButton", StringComparison.OrdinalIgnoreCase) == true;
-			});
+			var currentNavItem = uINavigationBar.Items.LastOrDefault();
 
-			return item is not null;
+			return
+				uINavigationBar.BackItem is not null &&
+				currentNavItem is not null &&
+				currentNavItem.LeftBarButtonItem is null &&
+				!currentNavItem.HidesBackButton;
 		}
 
 		public static UIView GetBackButton(this UINavigationBar uINavigationBar)

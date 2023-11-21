@@ -3,8 +3,10 @@
   <Import Project="../Shared/Common.targets" />
 
   <PropertyGroup>
-    <PackageId>$(PackageId)-$(DotNetMauiManifestVersionBand)</PackageId>
-    <Description>.NET MAUI workload manifest</Description>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.NET.Sdk.Maui.Manifest-$(DotNetMauiManifestVersionBand)</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) workload manifest. Please do not reference this package directly.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiRootDirectory)eng/ReplaceText.targets" />

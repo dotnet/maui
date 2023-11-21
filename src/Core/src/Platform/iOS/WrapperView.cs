@@ -5,6 +5,7 @@ using CoreGraphics;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform;
 using UIKit;
+using static Microsoft.Maui.Primitives.Dimension;
 
 namespace Microsoft.Maui.Platform
 {
@@ -119,7 +120,35 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
+			// Calling SizeThatFits on an ImageView always returns the image's dimensions, so we need to call the extension method
+			// This also affects ImageButtons
+			if (child is UIImageView imageView)
+			{
+				return imageView.SizeThatFitsImage(size);
+			}
+			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
+			{
+				return imageButton.ImageView.SizeThatFitsImage(size);
+			}
+
 			return child.SizeThatFits(size);
+		}
+
+		internal CGSize SizeThatFitsWrapper(CGSize originalSpec, double virtualViewWidth, double virtualViewHeight)
+		{
+			if (Subviews.Length == 0)
+				return base.SizeThatFits(originalSpec);
+
+			var child = Subviews[0];
+
+			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
+			{
+				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
+				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
+				return SizeThatFits(new CGSize(widthConstraint, heightConstraint));
+			}
+
+			return SizeThatFits(originalSpec);
 		}
 
 		public override void SetNeedsLayout()
