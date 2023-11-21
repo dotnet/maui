@@ -321,6 +321,14 @@ namespace Microsoft.Maui.Controls.Platform
 				if (double.IsFinite(availableSize.Height))
 					height = Max(height, availableSize.Height);
 			}
+			else
+			{
+				if (ItemHeight != default)
+					height = ItemHeight;
+
+				if (ItemWidth != default)
+					width = ItemWidth;
+			}
 
 			return new WSize(width, height);
 		}
