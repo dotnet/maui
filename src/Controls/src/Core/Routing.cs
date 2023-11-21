@@ -119,8 +119,15 @@ namespace Microsoft.Maui.Controls
 		}
 
 		/// <summary>Bindable property for attached property <c>Route</c>.</summary>
-		public static readonly BindableProperty RouteProperty =
-			BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
+		public static readonly BindableProperty RouteProperty = CreateRouteProperty();
+
+		[UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:ReflectionToDynamicallyAccessedMembers",
+			Justification = "The CreateAttached method has a DynamicallyAccessedMembers annotation for all public methods"
+			+ "on the declaring type. This includes the Routing.RegisterRoute(string, Type) method which also has a "
+			+ "DynamicallyAccessedMembers annotation and the trimmer can't guarantee the availability of the requirements"
+			+ "of the method. The RegisterRoute method is never used via reflection so we can safely ignore the warning.")]
+		private static BindableProperty CreateRouteProperty()
+			=> BindableProperty.CreateAttached("Route", typeof(string), typeof(Routing), null,
 				defaultValueCreator: CreateDefaultRoute);
 
 		static object CreateDefaultRoute(BindableObject bindable)
