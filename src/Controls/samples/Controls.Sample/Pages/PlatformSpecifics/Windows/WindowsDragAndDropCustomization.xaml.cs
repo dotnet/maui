@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 		void DropGestureRecognizer_DragOver(System.Object sender, Microsoft.Maui.Controls.DragEventArgs e)
 		{
 #if WINDOWS
-			var dragUI = e.PlatformArgs.DragEventArgs.DragUIOverride;
+			var dragUI = e.PlatformArgs!.DragEventArgs.DragUIOverride;
 			dragUI.IsCaptionVisible = ShowCaptionSwitch.IsToggled;
 			dragUI.IsGlyphVisible = ShowGlyphSwitch.IsToggled;
 			dragUI.IsContentVisible = ShowContentSwitch.IsToggled;

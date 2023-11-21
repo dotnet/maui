@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.Maui.Devices;
 using Xunit;
 
@@ -52,6 +53,38 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void App_Is_Not_Lower_Power_mode()
 		{
 			Assert.Equal(EnergySaverStatus.Off, Battery.EnergySaverStatus);
+		}
+
+		[Fact]
+		public async Task EnergySaverStatusChanged_Does_Not_Crash()
+		{
+			Battery.EnergySaverStatusChanged += Battery_EnergySaverStatusChanged;
+
+			// just ensure there is no need for the OS to "respond" to a new subscription
+			await Task.Delay(1000);
+
+			Battery.EnergySaverStatusChanged -= Battery_EnergySaverStatusChanged;
+
+			static void Battery_EnergySaverStatusChanged(object sender, EnergySaverStatusChangedEventArgs e)
+			{
+				// do nothing
+			}
+		}
+
+		[Fact]
+		public async Task BatteryInfoChanged_Does_Not_Crash()
+		{
+			Battery.BatteryInfoChanged += Battery_BatteryInfoChanged;
+
+			// just ensure there is no need for the OS to "respond" to a new subscription
+			await Task.Delay(1000);
+
+			Battery.BatteryInfoChanged -= Battery_BatteryInfoChanged;
+
+			static void Battery_BatteryInfoChanged(object sender, BatteryInfoChangedEventArgs e)
+			{
+				// do nothing
+			}
 		}
 	}
 }
