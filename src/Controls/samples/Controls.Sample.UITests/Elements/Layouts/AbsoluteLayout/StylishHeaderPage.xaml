@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Controls.Sample.UITests.Elements.StylishHeaderPage"
+    Title="Stylish header">
+    <AbsoluteLayout Margin="20">
+        <BoxView Color="Silver"
+                 AbsoluteLayout.LayoutBounds="0, 10, 200, 5" />
+        <BoxView Color="Silver"
+                 AbsoluteLayout.LayoutBounds="0, 20, 200, 5" />
+        <BoxView Color="Silver"
+                 AbsoluteLayout.LayoutBounds="10, 0, 5, 65" />
+        <BoxView Color="Silver"
+                 AbsoluteLayout.LayoutBounds="20, 0, 5, 65" />
+        <Label Text="Stylish Header"
+               FontSize="24"
+               AbsoluteLayout.LayoutBounds="30, 25" />
+        <Label AbsoluteLayout.LayoutBounds="0, 80">
+            <Label.FormattedText>
+                <FormattedString>
+                    <Span Text="Although " />
+                    <Span Text="AbsoluteLayout"
+                          FontAttributes="Italic" />
+                    <Span Text=" is usually employed for purposes other than the display of text using " />
+                    <Span Text="Label"
+                          FontAttributes="Italic" />
+                    <Span Text=", obviously it can be used in that way. The text continues to wrap nicely within the bounds of the container and any margin that might be applied." />
+                </FormattedString>
+            </Label.FormattedText>
+        </Label>
+    </AbsoluteLayout>
+</ContentPage>

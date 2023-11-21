@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="Controls.Sample.UITests.Elements.ChessboardPage"
+    Title="Chessboard">
+    <ContentPage.Resources>
+        <Style TargetType="BoxView">
+            <Setter Property="Color"
+                    Value="Black" />
+            <Setter Property="AbsoluteLayout.LayoutFlags"
+                    Value="All" />
+        </Style>
+
+    </ContentPage.Resources>
+
+    <ContentView Margin="20"
+                 SizeChanged="OnContentViewSizeChanged">
+        <AbsoluteLayout x:Name="absoluteLayout"
+                        BackgroundColor="WhiteSmoke"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center">
+            <BoxView AbsoluteLayout.LayoutBounds="0.00, 0.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.29, 0.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.57, 0.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.86, 0.00, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.14, 0.14, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.43, 0.14, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.71, 0.14, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="1.00, 0.14, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.00, 0.29, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.29, 0.29, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.57, 0.29, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.86, 0.29, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.14, 0.43, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.43, 0.43, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.71, 0.43, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="1.00, 0.43, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.00, 0.57, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.29, 0.57, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.57, 0.57, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.86, 0.57, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.14, 0.71, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.43, 0.71, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.71, 0.71, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="1.00, 0.71, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.00, 0.86, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.29, 0.86, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.57, 0.86, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.86, 0.86, 0.125, 0.125" />
+
+            <BoxView AbsoluteLayout.LayoutBounds="0.14, 1.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.43, 1.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="0.71, 1.00, 0.125, 0.125" />
+            <BoxView AbsoluteLayout.LayoutBounds="1.00, 1.00, 0.125, 0.125" />
+        </AbsoluteLayout>
+    </ContentView>
+</ContentPage>
