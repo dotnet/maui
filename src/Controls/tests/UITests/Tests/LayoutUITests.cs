@@ -40,6 +40,37 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("The AbsoluteLayout is able of positioning its child elements with absolute positions")]
+		public void PositionAbsolute()
+		{
+			App.Click("Chessboard");
+			App.WaitForElement("TestAbsoluteLayout");
+
+			// 1. With a snapshot we verify that The AbsoluteLayout is able
+			// of positioning its child elements with absolute positions.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
+		[Description("Labels inside an AbsoluteLayout is sized correctly wrapping the text.")]
+		public void LabelWrappingInsideAbsoluteLayout()
+		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },			
+				"Currently fails on Android; see https://github.com/dotnet/maui/issues/18930");
+
+			App.Click("StylishHeader");
+			App.WaitForElement("TestAbsoluteLayout");
+
+			// 1. Labels inside an AbsoluteLayout is sized correctly wrapping
+			// the text.
+			VerifyScreenshot();
+
+			this.Back();
+		}
+
+		[Test]
 		[Description("Organizes child views in a vertical one-dimensional stack")]
 		public void VerticalStackLayout()
 		{
