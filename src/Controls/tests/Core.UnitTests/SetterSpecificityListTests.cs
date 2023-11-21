@@ -63,9 +63,9 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		{
 			var list = new SetterSpecificityList();
 			list.SetValue(SetterSpecificity.DefaultValue, nameof(SetterSpecificity.DefaultValue));
-			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue());
+			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue(SetterSpecificity.DefaultValue));
 			list.SetValue(SetterSpecificity.ManualValueSetter, nameof(SetterSpecificity.ManualValueSetter));
-			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue());
+			Assert.Equal(nameof(SetterSpecificity.DefaultValue), list.GetClearedValue(SetterSpecificity.ManualValueSetter));
 		}
 	}
 }

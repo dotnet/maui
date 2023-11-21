@@ -256,25 +256,35 @@
         <CallTarget Targets="GetMauiItems" Condition="'$(ResizetizerIncludeSelfProject)' == 'True'">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedMauiItem" />
+                ItemName="_ImportedMauiItem" />
         </CallTarget>
 
-        <!-- Invoke the GetMauiItems target on all project references -->
-        <!-- This will accumulate images into our MauiImage group -->
-        <!--<MSBuild Targets="GetMauiItems" Projects="@(_MSBuildProjectReferenceExistent)">-->
+        <!-- Invoke the GetMauiItems target on all project references. This will accumulate images into our MauiImage group -->
+        <ItemGroup>
+            <!-- Filter out the items missing the OriginalProjectReferenceItemSpec because this is essential -->
+            <_ResizetizeCollectItemsProjectWithOIS Include="@(_ResolvedProjectReferencePaths->HasMetadata('OriginalProjectReferenceItemSpec'))" />
+            <!-- Convert the Identity from the final assembly path to the ProjectReference -->
+            <_ResizetizeCollectItemsProjectWithItemSpec Include="@(_ResizetizeCollectItemsProjectWithOIS->'%(OriginalProjectReferenceItemSpec)')" />
+            <!-- Add the resolved references if and only if they have NearestTargetFramework defined -->
+            <_ResizetizeCollectItemsProject Include="@(_ResizetizeCollectItemsProjectWithItemSpec->HasMetadata('NearestTargetFramework'))" />
+            <!-- If any resolved paths were missing OriginalProjectReferenceItemSpec or NearestTargetFramework, fall back to the 
+                 previous functionality with using the ProjectReference items and the CURRENT project's TargetFramework -->
+            <_ResizetizeCollectItemsProject Include="@(ProjectReference)" Exclude="@(_ResizetizeCollectItemsProject)" NearestTargetFramework="$(TargetFramework)" />
+        </ItemGroup>
         <MSBuild
             Targets="GetMauiItems"
-            Projects="@(ProjectReference)"
+            Projects="%(_ResizetizeCollectItemsProject.Identity)"
             BuildInParallel="true"
-            Properties="TargetFramework=$(TargetFramework)"
+            Properties="TargetFramework=%(_ResizetizeCollectItemsProject.NearestTargetFramework)"
             SkipNonexistentProjects="true"
             SkipNonexistentTargets="true">
             <Output
                 TaskParameter="TargetOutputs"
-                ItemName="ImportedMauiItem" />
+                ItemName="_ImportedMauiItem" />
         </MSBuild>
 
         <ItemGroup>
+            <ImportedMauiItem Include="@(_ImportedMauiItem)" />
             <MauiImage
                 Include="@(ImportedMauiItem)"
                 Condition="'%(ImportedMauiItem.ItemGroupName)' == 'MauiImage'" />
@@ -599,8 +609,12 @@
         BeforeTargets="$(ResizetizeBeforeTargets)"
         DependsOnTargets="$(ResizetizeDependsOnTargets)">
 
+        <ItemGroup>
+            <_MauiImageToProcess Include="@(MauiImage)" Exclude="$(DefaultItemExcludes)" />
+        </ItemGroup>
+
         <DetectInvalidResourceOutputFilenamesTask
-            Items="@(MauiImage)"
+            Items="@(_MauiImageToProcess)"
             ThrowsError="$(_ResizetizerThrowsErrorOnInvalidFilename)"
             ErrorMessage="$(_ResizetizerDefaultInvalidFilenamesErrorMessage)">
         </DetectInvalidResourceOutputFilenamesTask>
@@ -612,7 +626,7 @@
             PlatformType="$(ResizetizerPlatformType)"
             IntermediateOutputPath="$(_MauiIntermediateImages)"
             InputsFile="$(_ResizetizerInputsFile)"
-            Images="@(MauiImage)">
+            Images="@(_MauiImageToProcess)">
               <Output TaskParameter="CopiedResources" ItemName="_CopiedResources" />
         </ResizetizeImages>
 

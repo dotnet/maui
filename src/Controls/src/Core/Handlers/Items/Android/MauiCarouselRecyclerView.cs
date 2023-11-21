@@ -108,6 +108,18 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			base.TearDownOldElement(oldElement);
 		}
 
+		protected override void OnAttachedToWindow()
+		{
+			AddLayoutListener();
+			base.OnAttachedToWindow();
+		}
+
+		protected override void OnDetachedFromWindow()
+		{
+			ClearLayoutListener();
+			base.OnDetachedFromWindow();
+		}
+
 		public override void UpdateAdapter()
 		{
 			// By default the CollectionViewAdapter creates the items at whatever size the template calls for
@@ -513,7 +525,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void AddLayoutListener()
 		{
-			if (_carouselViewLayoutListener != null)
+			if (_carouselViewLayoutListener is not null)
 				return;
 
 			_carouselViewLayoutListener = new CarouselViewOnGlobalLayoutListener(this);
@@ -522,6 +534,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void LayoutReady()
 		{
+			if (ItemsView is null)
+				return;
+
 			if (!_initialized)
 			{
 				ItemsView.Scrolled += CarouselViewScrolled;
@@ -603,7 +618,8 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			public void OnGlobalLayout()
 			{
-				if (_recyclerView.TryGetTarget(out var recyclerView))
+				if (_recyclerView.TryGetTarget(out var recyclerView) &&
+					recyclerView.IsAlive())
 				{
 					recyclerView.LayoutReady();
 				}

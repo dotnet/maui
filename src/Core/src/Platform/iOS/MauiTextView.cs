@@ -127,7 +127,8 @@ namespace Microsoft.Maui.Platform
 			{
 				BackgroundColor = UIColor.Clear,
 				TextColor = ColorExtensions.PlaceholderColor,
-				Lines = 0
+				Lines = 0,
+				VerticalAlignment = UIControlContentVerticalAlignment.Top
 			};
 
 			AddSubview(placeholderLabel);
