@@ -12,7 +12,7 @@ namespace Controls.Sample.UITests.Elements
 
         async void OnButtonClicked(object sender, EventArgs e)
         {
-            await TestScrollView.ScrollToAsync(finalLabel, ScrollToPosition.End, true);
+            await TestScrollView.ScrollToAsync(FinalLabel, ScrollToPosition.End, true);
         }
 
         void OnScrollViewScrolled(object sender, ScrolledEventArgs e)
