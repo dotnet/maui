@@ -307,11 +307,11 @@ public static class KeyboardAutoManagerScroll
 		if (entranceCount == DebounceCount)
 		{
 			AdjustPosition();
+
+			// See if the layout requests to scroll again after our initial scroll
+			await Task.Delay(5);
 			if (ShouldScrollAgain)
-			{
-				await Task.Delay(10);
 				AdjustPosition();
-			}
 		}
 	}
 

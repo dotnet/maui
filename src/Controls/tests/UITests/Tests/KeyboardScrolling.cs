@@ -142,6 +142,18 @@ namespace Microsoft.Maui.AppiumTests
 			var keyboard = driver?.FindElement(MobileBy.ClassName("UIAKeyboard"));
 			keyboard?.SendKeys("\n");
 		}
+
+		internal static void GridStarRowScrollingTest (IApp app)
+		{
+			for (int i = 1; i <= 7; i++)
+			{
+				var entry = $"Entry{i}";
+				app.WaitForElement(entry);
+				app.Click(entry);
+				CheckIfViewAboveKeyboard(app, entry, false);
+				HideKeyboard(app, (app as AppiumApp)?.Driver, false);
+			}
+		}
 	}
 }
 
