@@ -7,9 +7,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 	[Preserve(AllMembers = true)]
 	public class EmptyViewGalleryFilterInfo : INotifyPropertyChanged
 	{
-		string _filter;
+		string? _filter;
 
-		public string Filter
+		public string? Filter
 		{
 			get => _filter;
 			set
@@ -19,9 +19,9 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.EmptyViewGalleries
 			}
 		}
 
-		public event PropertyChangedEventHandler PropertyChanged;
+		public event PropertyChangedEventHandler? PropertyChanged;
 
-		void OnPropertyChanged([CallerMemberName] string propertyName = null)
+		void OnPropertyChanged([CallerMemberName] string propertyName = "")
 		{
 			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}

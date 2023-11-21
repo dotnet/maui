@@ -56,7 +56,7 @@ namespace Maui.Controls.Sample.Pages
 			laterLabel.Text = "Started!";
 		}
 
-		IDispatcherTimer _timer;
+		IDispatcherTimer? _timer;
 
 		void OnTimerClicked(object sender, EventArgs e)
 		{

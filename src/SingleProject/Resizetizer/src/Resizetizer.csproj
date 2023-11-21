@@ -5,15 +5,19 @@
     <RootNamespace>Microsoft.Maui.Resizetizer</RootNamespace>
     <AssemblyName>Microsoft.Maui.Resizetizer</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
-    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
-    <Description>.NET MAUI SDK support for images, fonts, etc. Enabled via &lt;UseMauiAssets&gt;true&lt;/UseMauiAssets&gt;.</Description>
-    <IsPackable>true</IsPackable>
     <!-- Suppresses the warnings about the package not having assemblies in lib/*/.dll.-->
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- Do not include any assemblies from this project as we will do it manually -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- ILRepack this assembly and add a strong name and version -->
     <ILRepackBeforePack>true</ILRepackBeforePack>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Resizetizer</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package contains image, font and raw asset processing tools.</Description>
   </PropertyGroup>
 
   <ItemGroup>

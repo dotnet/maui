@@ -120,6 +120,17 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public async Task ShellCurrentPageReturnsLastPageInModalStack()
+		{
+			Shell shell = new TestShell();
+			shell.Items.Add(CreateShellItem(shellContentRoute: "MainContent"));
+
+			await shell.GoToAsync($"ModalTestPage/ModalTestPage");
+			var navStack = shell.Items[0].Items[0].Navigation;
+			Assert.Equal(shell.CurrentPage, navStack.ModalStack.Last());
+		}
+
+		[Fact]
 		public async Task PoppingEntireModalStackDoesntFireAppearingOnMiddlePages()
 		{
 			Shell shell = new TestShell();

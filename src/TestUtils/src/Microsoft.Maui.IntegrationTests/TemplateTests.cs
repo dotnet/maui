@@ -260,12 +260,27 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, framework: $"{framework}-maccatalyst", properties: buildWithCodeSignProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 
-			List<string> expectedEntitlements = config == "Release" ?
-				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" } :
-				new() { "com.apple.security.get-task-allow" };
+			List<string> expectedEntitlements =
+				new() { "com.apple.security.app-sandbox", "com.apple.security.network.client" };
 			List<string> foundEntitlements = Codesign.SearchForExpectedEntitlements(entitlementsPath, appLocation, expectedEntitlements);
 
 			CollectionAssert.AreEqual(expectedEntitlements, foundEntitlements, "Entitlements missing from executable.");
+		}
+
+		[Test]
+		public void BuildHandlesBadFilesInImages()
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New("maui", projectDir, DotNetCurrent),
+				$"Unable to create template maui. Check test output for errors.");
+
+			EnableTizen(projectFile);
+			File.WriteAllText(Path.Combine(projectDir, "Resources", "Images", ".DS_Store"), "Boom!");
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
 		void EnableTizen(string projectFile)

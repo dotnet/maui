@@ -25,7 +25,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			SizeChanged -= OnAdaptiveCollectionViewSizeChanged;
 		}
 
-		void OnAdaptiveCollectionViewSizeChanged(object sender, System.EventArgs e)
+		void OnAdaptiveCollectionViewSizeChanged(object? sender, System.EventArgs e)
 		{
 			CollectionView.ItemsLayout = Width > 600
 				? new GridItemsLayout(3, ItemsLayoutOrientation.Vertical)

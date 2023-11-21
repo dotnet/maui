@@ -22,7 +22,7 @@ steps:
       ${{ if ne(parameters.platform, 'windows') }}:
         platform: macos
         skipProvisioning: false
-      skipXcode: false
+      skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
  
   - pwsh: ./build.ps1 --target=dotnet --configuration="${{ parameters.configuration }}" --verbosity=diagnostic

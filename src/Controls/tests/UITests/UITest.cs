@@ -60,9 +60,9 @@ namespace Microsoft.Maui.AppiumTests
 			switch (_testDevice)
 			{
 				case TestDevice.iOS:
-					config.SetProperty("DeviceName", "iPhone X");
-					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("IOS_PLATFORM_VERSION") ?? "14.4");
-					config.SetProperty("Udid", Environment.GetEnvironmentVariable("IOS_SIMULATOR_UDID") ?? "");
+					config.SetProperty("DeviceName", Environment.GetEnvironmentVariable("DEVICE_NAME") ?? "iPhone X");
+					config.SetProperty("PlatformVersion", Environment.GetEnvironmentVariable("PLATFORM_VERSION") ?? "17.0");
+					config.SetProperty("Udid", Environment.GetEnvironmentVariable("DEVICE_UDID") ?? "");
 					break;
 				case TestDevice.Windows:
 					var appProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "..\\..\\..\\..\\..\\samples\\Controls.Sample.UITests");
@@ -89,6 +89,13 @@ namespace Microsoft.Maui.AppiumTests
 				// send a message to the MAUI app to get the screenshot, we can use that to just screenshot
 				// the app.
 				Assert.Ignore("MacCatalyst isn't supported yet for visual tests");
+			}
+
+			if (_testDevice == TestDevice.iOS && GetTestConfig().GetProperty<string>("DeviceName") == "iPhone 15")
+			{
+				// For now, ignore visual tests on iPhone 15 devices, only running visual tests with iPhone X.
+				// Later, when we have a way to screenshot just the control being tested that should remove this dependency.
+				Assert.Ignore("iPhone15 isn't currently used for visual tests, just iPhone X");
 			}
 
 			name ??= TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
