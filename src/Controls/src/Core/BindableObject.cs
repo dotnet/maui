@@ -125,9 +125,9 @@ namespace Microsoft.Maui.Controls
 				return;
 
 			var original = bpcontext.Values.GetSpecificityAndValue();
-			if (original.Key == SetterSpecificity.FromHandler)			
+			if (original.Key == SetterSpecificity.FromHandler)
 				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
-			
+
 
 			var newValue = bpcontext.Values.GetClearedValue(specificity);
 			var changed = !Equals(original.Value, newValue);
