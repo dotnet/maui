@@ -3,7 +3,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public class LayoutUITests : UITest
+	public abstract class LayoutUITests : UITest
 	{
 		const string LayoutGallery = "Layout Gallery";
 

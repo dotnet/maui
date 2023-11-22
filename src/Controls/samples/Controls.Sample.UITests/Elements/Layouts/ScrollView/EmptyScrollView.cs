@@ -11,7 +11,7 @@ namespace Controls.Sample.UITests.Elements
 
 		public EmptyScrollView()
 		{
-			StackLayout sl = new StackLayout() { VerticalOptions = LayoutOptions.FillAndExpand };
+			StackLayout sl = new StackLayout() { VerticalOptions = LayoutOptions.Fill };
 			sl.Children.Add(_sv = new ScrollView() { HeightRequest = 100 });
 			Content = sl;
 
