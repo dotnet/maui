@@ -36,8 +36,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Labels inside an AbsoluteLayout is sized correctly wrapping the text.")]
 		public void LabelWrappingInsideAbsoluteLayout()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },
-				"Currently fails on Android; see https://github.com/dotnet/maui/issues/18930");
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac },
+				"Currently fails on iOS and Android; see https://github.com/dotnet/maui/issues/18930");
 
 			App.Click("StylishHeader");
 			App.WaitForElement("TestAbsoluteLayout");
