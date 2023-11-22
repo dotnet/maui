@@ -4,7 +4,7 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-#tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
+#tool nuget:?package=NUnit.ConsoleRunner&version=3.15.2
 
 const string defaultVersion = "30";
 const string dotnetVersion = "net8.0";
