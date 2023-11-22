@@ -46,6 +46,8 @@ namespace Controls.Sample.UITests.Elements
 						TestBuilder.NavButton("ScrollView ScrollBar Visibility", () =>
 							new ScrollBarVisibility(), Navigation),
 						TestBuilder.NavButton("ScrollView ScrollTo", () =>
+							new ScrollTo(), Navigation),   
+						TestBuilder.NavButton("Empty ScrollView", () =>
 							new ScrollTo(), Navigation),
 					}
 				}
