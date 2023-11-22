@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("A grouped list works and renders")]
 		public void ListGrouping()
 		{
 			App.ScrollTo("ListGrouping", true);

@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Can use a View as EmptyView")]
 		public void ViewEmptyViewAfterFilter()
 		{
 			App.Click("EmptyViewView");

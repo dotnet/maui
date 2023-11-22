@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 				
 		[Test]
+		[Description("Insert new items in the List works")]
 		public async Task AddItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Remove an existing item from the List works")]
 		public async Task RemoveItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");
@@ -53,6 +55,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Replace an existing item from the List works")]
 		public async Task ReplaceItemsCollectionViewList()
 		{
 			App.Click("AddRemoveItemsList");

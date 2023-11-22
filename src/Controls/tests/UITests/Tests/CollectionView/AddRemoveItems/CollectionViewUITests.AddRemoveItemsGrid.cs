@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Insert new items in the Grid works")]
 		public async Task AddItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
@@ -33,6 +34,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Remove an existing item from the Grid works")]
 		public async Task RemoveItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
@@ -54,6 +56,7 @@ namespace Microsoft.Maui.AppiumTests
 
 
 		[Test]
+		[Description("Replace an existing item from the Grid works")]
 		public async Task ReplaceItemsCollectionViewGrid()
 		{
 			App.Click("AddRemoveItemsGrid");
