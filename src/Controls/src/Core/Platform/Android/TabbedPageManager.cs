@@ -116,6 +116,7 @@ namespace Microsoft.Maui.Controls.Handlers
 
 			if (Element != null)
 			{
+				Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
 				Element.Appearing -= OnTabbedPageAppearing;
 				Element.Disappearing -= OnTabbedPageDisappearing;
