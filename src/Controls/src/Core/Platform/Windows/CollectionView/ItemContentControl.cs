@@ -196,24 +196,10 @@ namespace Microsoft.Maui.Controls.Platform
 			}
 			else
 			{
-				Content = new ItemPanel(_renderer.VirtualView);
+				Content = new ContentLayoutPanel(_renderer.VirtualView);
 			}
 
 			itemsView?.AddLogicalChild(_visualElement);
-		}
-
-		class ItemPanel : Panel
-		{
-			IView _view;
-			public ItemPanel(IView view)
-			{
-				_view = view;
-				this.Children.Add(view.ToPlatform());
-			}
-
-			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
-
-			protected override WSize MeasureOverride(WSize availableSize) => _view.Measure(availableSize.Width, availableSize.Height).ToPlatform();
 		}
 
 		void SetNativeStateConsistent(VisualElement visualElement)
@@ -324,5 +310,19 @@ namespace Microsoft.Maui.Controls.Platform
 		}
 
 		internal VisualElement GetVisualElement() => _visualElement;
+
+		class ContentLayoutPanel : Panel
+		{
+			IView _view;
+			public ContentLayoutPanel(IView view)
+			{
+				_view = view;
+				Children.Add(view.ToPlatform());
+			}
+
+			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
+
+			protected override WSize MeasureOverride(WSize availableSize) => _view.Measure(availableSize.Width, availableSize.Height).ToPlatform();
+		}
 	}
 }
