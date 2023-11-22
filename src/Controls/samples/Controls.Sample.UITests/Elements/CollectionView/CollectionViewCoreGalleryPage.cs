@@ -2,8 +2,8 @@
 using Microsoft.Maui.Controls;
 
 namespace Controls.Sample.UITests.Elements
-{ 
-	class CollectionViewCoreGalleryPage : ContentPage
+{
+	public abstract class CollectionViewCoreGalleryPage : ContentPage
 	{
 		public CollectionViewCoreGalleryPage()
 		{
