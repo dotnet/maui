@@ -20,22 +20,28 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac, TestDevice.Windows });
 
-			// Navigate to the specific View test
-			App.WaitForElement("WaitForStubControl");
-			App.Click($"{view}Button");
+			try
+			{
+				// Navigate to the specific View test
+				App.WaitForElement("WaitForStubControl");
+				App.Click($"{view}Button");
 
-			// 1.Make sure keyboard starts out closed.	
-			App.WaitForElement("WaitForStubControl");
-			App.DismissKeyboard();
+				// 1.Make sure keyboard starts out closed.	
+				App.WaitForElement("WaitForStubControl");
+				App.DismissKeyboard();
 
-			// 2. Focus the Entry.
-			App.EnterText($"Test{view}", "test");
-			App.Click($"Test{view}");
+				// 2. Focus the Entry.
+				App.EnterText($"Test{view}", "test");
+				App.Click($"Test{view}");
 
-			// 3. Verify that the virtual keyboard appears.
-			Assert.IsTrue(App.IsKeyboardShown());
+				// 3. Verify that the virtual keyboard appears.
+				Assert.IsTrue(App.IsKeyboardShown());
 
-			this.Back();
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 	}
 }

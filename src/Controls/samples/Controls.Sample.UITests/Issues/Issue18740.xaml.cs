@@ -13,9 +13,9 @@ namespace Maui.Controls.Sample.Issues
 			InitializeComponent();
 		}
 				
-		void OnEntryButtonClicked(object sender, EventArgs e)
+		async void OnEntryButtonClicked(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new Issue18740Entry());
+			await Navigation.PushAsync(new Issue18740Entry());
 		}
 
 		void OnEditorButtonClicked(object sender, EventArgs e)
