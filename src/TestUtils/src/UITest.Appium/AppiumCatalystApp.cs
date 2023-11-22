@@ -21,9 +21,9 @@ namespace UITest.Appium
 				{
 					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
 					var state = _driver?.ExecuteScript("macos: queryAppState", new Dictionary<string, object>
-						{
-							{ "bundleId", appId },
-						});
+					{
+						{ "bundleId", appId },
+					});
 
 					// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
 					return Convert.ToInt32(state) switch
