@@ -294,6 +294,12 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var width = ItemWidth == default ? availableSize.Width : ItemWidth;
 			var height = ItemHeight == default ? availableSize.Height : ItemHeight;
+
+			// I realize if ItemWidth and ItemHeight are set that this call seems pointless, but it's not.
+			// From what I can tell, calling `base.MeasureOverride` causes the `ContentControl` to realize its content
+			// and build its visual tree. So, in order to just play nice with the WinUI `ContentControl` we always
+			// call base.MeasureOverride, so that we don't short circuit whatever bookkeeping it needs to do.
+. 
 			var measureSize = base.MeasureOverride(new WSize(width, height));
 
 			return new WSize(Max(measureSize.Width, width), Max(measureSize.Height, height));
