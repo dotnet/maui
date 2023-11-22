@@ -114,7 +114,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			var activity = _context.GetActivity();
 			var themeContext = activity;
 
-			if (Element != null)
+			if (Element is not null)
 			{
 				Element.InternalChildren.ForEach(page => TeardownPage(page as Page));
 				((IPageController)Element).InternalChildren.CollectionChanged -= OnChildrenCollectionChanged;
@@ -125,7 +125,7 @@ namespace Microsoft.Maui.Controls.Handlers
 			}
 
 			Element = tabbedPage;
-			if (Element != null)
+			if (Element is not null)
 			{
 				_viewPager.LayoutChange += OnLayoutChanged;
 				Element.Appearing += OnTabbedPageAppearing;

@@ -28,6 +28,9 @@ public class Issue18457 : TestContentPage
             await Navigation.PushAsync(_tabbedPage);
             await Navigation.PopAsync();
             _tabbedPage.Children.Add(new ContentPage());
+            _tabbedPage.Children[0].Background = SolidColorBrush.Purple;
+            _tabbedPage.Children[0].Title = "update title";
+            _tabbedPage.Children[0].IconImageSource = "dotnet_bot.png";
             await Task.Yield();
             Content = new VerticalStackLayout(){
                 Children =
