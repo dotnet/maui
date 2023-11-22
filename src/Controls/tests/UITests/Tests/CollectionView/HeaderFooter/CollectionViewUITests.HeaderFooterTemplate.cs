@@ -5,7 +5,7 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(TestCategory.CollectionView)]
-	class CollectionViewHeaderFooterTemplateUITests : CollectionViewUITests
+	public class CollectionViewHeaderFooterTemplateUITests : CollectionViewUITests
 	{
 		public CollectionViewHeaderFooterTemplateUITests(TestDevice device)
 			: base(device)
