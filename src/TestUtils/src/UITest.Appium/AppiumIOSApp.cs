@@ -19,28 +19,21 @@ namespace UITest.Appium
 		{
 			get
 			{
-				try
-				{
-					var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
-					var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
+				var appId = Config.GetProperty<string>("AppId") ?? throw new InvalidOperationException($"{nameof(AppState)} could not get the appid property");
+				var state = _driver?.ExecuteScript("mobile: queryAppState", new Dictionary<string, object>
 						{
 							{ "bundleId", appId },
 						});
 
-					// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
-					return Convert.ToInt32(state) switch
-					{
-						1 => ApplicationState.Not_Running,
-						2 or
-						3 or
-						4 => ApplicationState.Running,
-						_ => ApplicationState.Unknown,
-					};
-				}
-				catch
+				// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
+				return Convert.ToInt32(state) switch
 				{
-					return ApplicationState.Unknown;
-				}
+					1 => ApplicationState.Not_Running,
+					2 or
+					3 or
+					4 => ApplicationState.Running,
+					_ => ApplicationState.Unknown,
+				};
 			}
 		}
 
