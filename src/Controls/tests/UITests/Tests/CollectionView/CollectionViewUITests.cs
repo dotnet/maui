@@ -3,7 +3,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	public class CollectionViewUITests : UITest
+	public abstract class CollectionViewUITests : UITest
 	{
 		const string CollectionViewGallery = "CollectionView Gallery";
 

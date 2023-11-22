@@ -3,7 +3,7 @@ using Microsoft.Maui.Controls;
 
 namespace Controls.Sample.UITests.Elements
 {
-	public abstract class CollectionViewCoreGalleryPage : ContentPage
+	public class CollectionViewCoreGalleryPage : ContentPage
 	{
 		public CollectionViewCoreGalleryPage()
 		{
