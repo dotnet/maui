@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("CollectionView using horizontal grid layout works")]
 		public void CollectionViewHorizontalGrid()
 		{
 			App.Click("HorizontalGrid");

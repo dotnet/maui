@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("CollectionView using vertical list layout works")]
 		public async Task CollectionViewVerticalList()
 		{
 			App.Click("VerticalList");

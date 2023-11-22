@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("The preselected Item have a background color")]
 		public void PreselectedItemCollectionView()
 		{
 			App.Click("PreselectedItem");
