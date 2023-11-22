@@ -74,5 +74,36 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
 		}
+
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToY()
+		{
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			{
+				App.Click("Scroll to 100");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
+
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToYTwice()
+		{
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			{
+				App.Click("Scroll to 100");
+				App.WaitForElement("completed");
+				App.Click("Scroll to 100");
+				App.WaitForElement("completed");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
 	}
 }
