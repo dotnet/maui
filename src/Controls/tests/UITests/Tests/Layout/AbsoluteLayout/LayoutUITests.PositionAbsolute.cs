@@ -36,6 +36,9 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("The AbsoluteLayout is able of positioning its child elements with absolute positions")]
 		public void PositionAbsolute()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
+				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/18956");
+
 			App.Click("Chessboard");
 			App.WaitForElement("TestAbsoluteLayout");
 
