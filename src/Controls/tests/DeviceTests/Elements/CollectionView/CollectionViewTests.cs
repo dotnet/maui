@@ -34,6 +34,8 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<SwipeView, SwipeViewHandler>();
+					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 
 #if IOS && !MACCATALYST
 					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
@@ -275,6 +277,36 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The first label's height should be smaller than the second one since the text won't wrap
 				Assert.True(0 < firstLabelHeight && firstLabelHeight < secondLabelHeight);
+			});
+		}
+
+		[Fact(DisplayName = "SwipeView in CollectionView does not crash")]
+		public async Task SwipeViewInCollectionViewDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var swipeItem = new SwipeItem { BackgroundColor = Colors.Red };
+					swipeItem.SetBinding(SwipeItem.TextProperty, new Binding("."));
+					var swipeView = new SwipeView { RightItems = [swipeItem] };
+
+					return swipeView;
+				}),
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2",
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(collectionView.Frame, collectionView);
+
+				Assert.NotNull(handler.PlatformView);
 			});
 		}
 
