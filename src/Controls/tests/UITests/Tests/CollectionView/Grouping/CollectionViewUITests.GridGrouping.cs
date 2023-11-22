@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("A grouped grid works and renders")]
 		public void GridGrouping()
 		{
 			App.ScrollTo("GridGrouping", true);

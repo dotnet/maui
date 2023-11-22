@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Can use a TemplatedView as Header and Footer")]
 		public void TemplateHeaderFooter()
 		{
 			App.ScrollTo("HeaderFooterTemplate", true);

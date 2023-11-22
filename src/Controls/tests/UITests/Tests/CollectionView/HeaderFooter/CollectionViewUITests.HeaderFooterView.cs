@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Can use a View as Header and Footer")]
 		public void ViewHeaderFooter()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },

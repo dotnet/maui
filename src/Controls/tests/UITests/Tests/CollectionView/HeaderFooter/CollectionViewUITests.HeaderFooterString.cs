@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 				
 		[Test]
+		[Description("Can use a String as Header and Footer")]
 		public void StringHeaderFooter()
 		{
 			App.ScrollTo("HeaderFooterString", true);

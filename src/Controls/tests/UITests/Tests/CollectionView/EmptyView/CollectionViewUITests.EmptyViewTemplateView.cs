@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
+		[Description("Can use a TemplatedView as EmptyView")]
 		public void TemplateEmptyViewAfterFilter()
 		{
 			App.Click("EmptyViewTemplateView");
