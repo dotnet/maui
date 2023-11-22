@@ -78,7 +78,7 @@ namespace UITest.Appium.NUnit
 			InitialSetup(UITestContextSetupFixture.ServerContext);
 			try
 			{
-				//SaveDiagnosticLogs("BeforeFixtureSetup");
+				SaveDiagnosticLogs("BeforeFixtureSetup");
 				FixtureSetup();
 			}
 			catch

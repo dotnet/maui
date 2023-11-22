@@ -25,6 +25,12 @@ namespace Microsoft.Maui.AppiumTests
 			this.Back();
 		}
 
+		[TearDown]
+		public void LayoutUITestTearDown()
+		{
+			this.Back();
+		}
+
 		[Test]
 		[Description("The AbsoluteLayout is able of positioning its child elements with proportional positions")]
 		public void PositionProportional()
@@ -35,8 +41,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that The AbsoluteLayout is able
 			// of positioning its child elements with proportional positions.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -49,8 +53,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that The AbsoluteLayout is able
 			// of positioning its child elements with absolute positions.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -66,8 +68,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. Labels inside an AbsoluteLayout is sized correctly wrapping
 			// the text.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -80,8 +80,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that The StackLayout
 			// organizes child views in a vertical one-dimensional stack.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -94,8 +92,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that The StackLayout
 			// organizes child views in a horizontal one-dimensional stack.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -108,8 +104,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that align child elements in
 			// the X axis works.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -122,8 +116,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 1. With a snapshot we verify that align child elements in
 			// the Y axis works.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 
 		[Test]
@@ -147,8 +139,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 4. Remove the spacing.
 			App.Click("NoSpacingButton");
 			VerifyScreenshot("StackLayoutNoSpacing");
-
-			this.Back();
 		}
 
 		[Test]
@@ -177,8 +167,6 @@ namespace Microsoft.Maui.AppiumTests
 			// 3. The ScrollView use ScrollBarVisibility.Always and
 			// the scrollbars should always appear.
 			VerifyScreenshot("ScrollBarVisibilityAlways");
-
-			this.Back();
 		}
 		
 		[Test]
@@ -196,8 +184,6 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2.With a snapshot we verify that the ScrollView scrolled to the end.
 			VerifyScreenshot();
-
-			this.Back();
 		}
 	}
 }
