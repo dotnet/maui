@@ -5,33 +5,13 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(TestCategory.Layout)]
-	public class VerticalStackLayoutUITests : UITest
+	public class VerticalStackLayoutUITests : LayoutUITests
 	{
-		const string LayoutGallery = "Layout Gallery";
-
 		public VerticalStackLayoutUITests(TestDevice device)
 			: base(device)
 		{
 		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(LayoutGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
-		[TearDown]
-		public void LayoutUITestTearDown()
-		{
-			this.Back();
-		}
-				
+	
 		[Test]
 		[Description("Organizes child views in a vertical one-dimensional stack")]
 		public void VerticalStackLayout()

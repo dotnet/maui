@@ -5,31 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(TestCategory.Layout)]
-	public class LabelWrappingInsideAbsoluteLayoutUITests : UITest
+	public class LabelWrappingInsideAbsoluteLayoutUITests : LayoutUITests
 	{
-		const string LayoutGallery = "Layout Gallery";
-
 		public LabelWrappingInsideAbsoluteLayoutUITests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(LayoutGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
-		[TearDown]
-		public void LayoutUITestTearDown()
-		{
-			this.Back();
 		}
 
 		[Test]

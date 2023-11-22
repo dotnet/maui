@@ -5,33 +5,13 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(TestCategory.Layout)]
-	public class ScrollViewScrollToUITests : UITest
+	public class ScrollViewScrollToUITests : LayoutUITests
 	{
-		const string LayoutGallery = "Layout Gallery";
-
 		public ScrollViewScrollToUITests(TestDevice device)
 			: base(device)
 		{
 		}
 
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(LayoutGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
-		[TearDown]
-		public void LayoutUITestTearDown()
-		{
-			this.Back();
-		}
-		
 		[Test]
 		[Description("Scroll to the end using ScrollToAsync method")]
 		public async Task ScrollViewScrollTo()

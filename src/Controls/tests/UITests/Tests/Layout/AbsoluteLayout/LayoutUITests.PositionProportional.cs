@@ -5,31 +5,11 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(TestCategory.Layout)]
-	public class AbsoluteLayoutPositionProportionalUITests : UITest
+	public class AbsoluteLayoutPositionProportionalUITests : LayoutUITests
 	{
-		const string LayoutGallery = "Layout Gallery";
-
 		public AbsoluteLayoutPositionProportionalUITests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(LayoutGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
-		}
-
-		[TearDown]
-		public void LayoutUITestTearDown()
-		{
-			this.Back();
 		}
 
 		[Test]
