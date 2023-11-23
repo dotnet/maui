@@ -15,6 +15,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public async Task EntryIsPasswordObscureText()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
+				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/18981");
+
 			App.WaitForElement("WaitForStubControl");
 
 			// 1. In the Entry control below, input some text. The test passes if the text is not obscured.
