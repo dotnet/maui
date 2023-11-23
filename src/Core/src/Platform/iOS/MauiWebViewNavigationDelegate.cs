@@ -93,8 +93,12 @@ namespace Microsoft.Maui.Platform
 		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
+		
 			if (handler == null)
+			{
+				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);
 				return;
+			}
 
 			var navEvent = WebNavigationEvent.NewPage;
 			var navigationType = navigationAction.NavigationType;
@@ -130,7 +134,10 @@ namespace Microsoft.Maui.Platform
 			var virtualView = handler.VirtualView;
 
 			if (virtualView == null)
+			{
+				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);
 				return;
+			}
 
 			var request = navigationAction.Request;
 			var lastUrl = request.Url.ToString();
