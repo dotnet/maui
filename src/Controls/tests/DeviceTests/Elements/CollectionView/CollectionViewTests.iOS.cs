@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Reflection;
 using System.Threading.Tasks;
-using System.Windows.Input;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
