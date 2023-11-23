@@ -9,13 +9,34 @@ namespace Microsoft.Maui.Graphics
 	[TypeConverter(typeof(Converters.RectTypeConverter))]
 	public partial struct Rect
 	{
+		double _Height;
+		double _Width;
+
 		public double X { get; set; }
 
 		public double Y { get; set; }
 
-		public double Width { get; set; }
+		public double Width
+		{
+			get => _Width;
+			set
+			{
+				if (double.IsNaN(value))
+					throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot be NaN");
+				_Width = value;
+			}
+		}
 
-		public double Height { get; set; }
+		public double Height
+		{
+			get => _Height;
+			set
+			{
+				if (double.IsNaN(value))
+					throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot be NaN");
+				_Height = value;
+			}
+		}
 
 		public static Rect Zero = new Rect();
 
@@ -27,6 +48,10 @@ namespace Microsoft.Maui.Graphics
 		// constructors
 		public Rect(double x, double y, double width, double height) : this()
 		{
+			if (double.IsNaN(width))
+				throw new ArgumentOutOfRangeException(nameof(width), width, "Cannot be NaN");
+			if (double.IsNaN(height))
+				throw new ArgumentOutOfRangeException(nameof(height), height, "Cannot be NaN");
 			X = x;
 			Y = y;
 			Width = width;

@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls
 			var y = Y;
 			var width = Width;
 			var height = Height;
-			if (new Rect(x, y, width, height) == frame)
+			if (!double.IsNaN(width) && !double.IsNaN(height) && new Rect(x, y, width, height) == frame)
 				return;
 
 			_batchFrameUpdate++;
