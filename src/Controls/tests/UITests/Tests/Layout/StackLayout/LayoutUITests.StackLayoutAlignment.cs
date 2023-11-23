@@ -14,10 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("Align child elements in the X axis works")]
-		public void StackLayoutAlignment()
+		public async Task StackLayoutAlignment()
 		{
 			App.Click("StackLayoutAlignment");
 			App.WaitForElement("TestStackLayout");
+
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that align child elements in
 			// the X axis works.

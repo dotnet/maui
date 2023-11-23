@@ -14,10 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("Can apply space between each child")]
-		public void StackLayoutSpacing()
+		public async Task StackLayoutSpacing()
 		{
 			App.Click("StackLayoutSpacing");
 			App.WaitForElement("TestStackLayout");
+			
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that child elements has not
 			// space between them.

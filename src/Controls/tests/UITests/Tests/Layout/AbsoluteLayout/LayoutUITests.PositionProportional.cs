@@ -14,10 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("The AbsoluteLayout is able of positioning its child elements with proportional positions")]
-		public void PositionProportional()
+		public async Task PositionProportional()
 		{
 			App.Click("AbsoluteLayoutPositionProportional");
 			App.WaitForElement("TestAbsoluteLayout");
+			
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that The AbsoluteLayout is able
 			// of positioning its child elements with proportional positions.

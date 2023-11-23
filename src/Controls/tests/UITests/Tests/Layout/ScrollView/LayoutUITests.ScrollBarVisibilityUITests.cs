@@ -14,7 +14,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("Modify the visibility of the ScrollBars")]
-		public void ScrollBarVisibility()
+		public async Task ScrollBarVisibility()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },
 				"Currently fails on Android; see https://github.com/dotnet/maui/issues/12028");
@@ -27,6 +27,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			App.Click("ScrollViewScrollBarVisibility");
 			App.WaitForElement("TestScrollView");
+			
+			await Task.Delay(500);
 
 			// 1. The ScrollView use ScrollBarVisibility.Never and
 			// the scrollbars should not appear.

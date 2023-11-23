@@ -14,10 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 		
 		[Test]
 		[Description("Organizes child views in a horizontal one-dimensional stack")]
-		public void HorizontalStackLayout()
+		public async Task HorizontalStackLayout()
 		{
 			App.Click("HorizontalStackLayout");
 			App.WaitForElement("TestStackLayout");
+			
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that The StackLayout
 			// organizes child views in a horizontal one-dimensional stack.

@@ -14,13 +14,15 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("The AbsoluteLayout is able of positioning its child elements with absolute positions")]
-		public void PositionAbsolute()
+		public async Task PositionAbsolute()
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
 				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/18956");
 
 			App.Click("Chessboard");
 			App.WaitForElement("TestAbsoluteLayout");
+
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that The AbsoluteLayout is able
 			// of positioning its child elements with absolute positions.

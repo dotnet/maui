@@ -14,10 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("Align child elements in the Y axis works")]
-		public void StackLayoutExpansion()
+		public async Task StackLayoutExpansion()
 		{
 			App.Click("StackLayoutExpansion");
 			App.WaitForElement("TestStackLayout");
+
+			await Task.Delay(500);
 
 			// 1. With a snapshot we verify that align child elements in
 			// the Y axis works.
