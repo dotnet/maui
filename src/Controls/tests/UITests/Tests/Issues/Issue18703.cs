@@ -16,7 +16,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			App.WaitForElement("WaitForStubControl");
 
 			// Wait for scrollbars to hide.
-			await Task.Delay(500);
+			await Task.Delay(1000);
 
 			VerifyScreenshot();
 		}
