@@ -18,8 +18,7 @@
 ![.NET MAUI Weather App on all platforms](Assets/maui-weather-hero-sm.png)
 
 ## Current News
-* October 10, 2023 - [Announcing .NET MAUI in .NET 8 Release Candidate 2: More Quality](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8-rc-2/)
-* September 12, 2023 - [Announcing .NET MAUI in .NET 8 Release Candidate 1: Quality](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8-rc-1)
+* November 14, 2023 - [Announcing .NET MAUI in .NET 8](https://devblogs.microsoft.com/dotnet/announcing-dotnet-maui-in-dotnet-8/)
 
 Follow the [.NET MAUI Blog](https://devblogs.microsoft.com/dotnet/category/net-maui/) and visit the [News](https://github.com/dotnet/maui/wiki/News) wiki page for more news and updates.
 

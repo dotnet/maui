@@ -12,7 +12,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		}
 
 		public override string Issue => "Editor TextTransform property works as expected";
-		
+
 		[Test]
 		public void EditorTextTransformWorks()
 		{

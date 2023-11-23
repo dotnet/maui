@@ -284,6 +284,12 @@ namespace Microsoft.Maui.Controls.Platform
 		{
 			if (_renderer == null)
 			{
+				// Make sure we supply a real number for sizes otherwise virtualization won't function
+				if (double.IsFinite(availableSize.Width) && !double.IsFinite(availableSize.Height))
+					return new WSize(availableSize.Width, 32);
+				else if (!double.IsFinite(availableSize.Width) && double.IsFinite(availableSize.Height))
+					return new WSize(88, availableSize.Height);
+
 				return base.MeasureOverride(availableSize);
 			}
 
