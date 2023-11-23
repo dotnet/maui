@@ -26,7 +26,7 @@ namespace Maui.Controls.Sample.Pages
 				deltaTime = (DateTime.Now - currentTickDateTime).TotalSeconds;
 				currentTickDateTime = DateTime.Now;
 				time += deltaTime;
-				timerUpdateEvent.Invoke();
+				timerUpdateEvent?.Invoke();
 			};
 
 			timer.Start();
