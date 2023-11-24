@@ -81,7 +81,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("Scroll to 100");
+				App.Click("Scroll100");
 			}
 			else
 			{
@@ -95,10 +95,10 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("Scroll to 100");
-				App.WaitForElement("completed");
-				App.Click("Scroll to 100");
-				App.WaitForElement("completed");
+				App.Click("Scroll100");
+				App.WaitForNoElement("completed");
+				App.Click("Scroll100");
+				App.WaitForNoElement("completed");
 			}
 			else
 			{

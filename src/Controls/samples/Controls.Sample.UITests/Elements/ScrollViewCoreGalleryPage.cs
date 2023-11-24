@@ -31,8 +31,8 @@ namespace Maui.Controls.Sample
 			var btnStack2 = new StackLayout { Orientation = StackOrientation.Horizontal };
 			var btnStack3 = new StackLayout { Orientation = StackOrientation.Horizontal };
 
-			var btn = new Button { Text = "Scroll to 100" };
-			var btn4 = new Button { Text = "Scroll to 100 no anim" };
+			var btn = new Button { AutomationId = "Scroll100", Text = "Scroll to 100" };
+			var btn4 = new Button { AutomationId = "Scroll100Anim", Text = "Scroll to 100 no anim" };
 			var btn1 = new Button { Text = "Start" };
 			var btn2 = new Button { Text = "Center" };
 			var btn3 = new Button { Text = "End" };
