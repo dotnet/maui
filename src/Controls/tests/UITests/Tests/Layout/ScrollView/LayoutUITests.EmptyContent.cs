@@ -14,12 +14,12 @@ namespace Microsoft.Maui.AppiumTests
 
 		[Test]
 		[Description("No crash measuring empty ScrollView")]
-		public void EmptyScrollView()
+		public async Task EmptyScrollView()
 		{
 			App.Click("EmptyScrollView");
 			App.WaitForElement("TestScrollView");
 
-			Task.Delay(1000).Wait();
+			await Task.Delay(1000);
 			App.WaitForElement("Foo");
 		}
 	}

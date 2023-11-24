@@ -27,6 +27,7 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 2. Apply spacing (40) between items.
 			App.Click("SpacingButton");
+			await Task.Delay(500);
 
 			// 3. With a snapshot we verify that can apply space
 			// between each child.
@@ -34,6 +35,8 @@ namespace Microsoft.Maui.AppiumTests
 
 			// 4. Remove the spacing.
 			App.Click("NoSpacingButton");
+			await Task.Delay(500);
+
 			VerifyScreenshot("StackLayoutNoSpacing");
 		}
 	}
