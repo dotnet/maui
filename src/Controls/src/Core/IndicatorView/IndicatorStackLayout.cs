@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.Linq;
 using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Controls
@@ -125,6 +126,7 @@ namespace Microsoft.Maui.Controls
 			var indicatorTemplate = _indicatorView.IndicatorTemplate;
 
 			var oldCount = Children.Count;
+			var items = _indicatorView.ItemsSource.Cast<object>().ToArray();
 			for (var i = 0; i < indicatorCount - oldCount && i < indicatorMaximumVisible - oldCount; i++)
 			{
 				var size = indicatorSize > 0 ? indicatorSize : 10;
@@ -139,6 +141,7 @@ namespace Microsoft.Maui.Controls
 					HeightRequest = size,
 					CornerRadius = _indicatorView.IndicatorsShape == IndicatorShape.Circle ? (float)size / 2 : 0
 				};
+				indicator.BindingContext = items[i];
 				var tapGestureRecognizer = new TapGestureRecognizer();
 				tapGestureRecognizer.Tapped += (sender, args) => _indicatorView.Position = Children.IndexOf(sender as View);
 				indicator.GestureRecognizers.Add(tapGestureRecognizer);
