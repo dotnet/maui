@@ -46,7 +46,8 @@ namespace Microsoft.Maui.DeviceTests
 				Y2 = 100,
 				HeightRequest = 100,
 				WidthRequest = 100,
-				Stroke = Colors.Black
+				Stroke = Colors.Black,
+				StrokeThickness = 4
 			};
 
 			var button = new Button()
@@ -73,8 +74,10 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(async () =>
 			{
-				await CreateHandlerAndAddToWindow<LineHandler>(line, (handler) =>
+				await CreateHandlerAndAddToWindow<LineHandler>(line, async (handler) =>
 				{
+					await Task.Delay(100);
+
 					var mauiShapeView = handler.PlatformView;
 					Assert.NotNull(mauiShapeView);
 					var shapeDrawable = mauiShapeView.Drawable as ShapeDrawable;
@@ -84,8 +87,6 @@ namespace Microsoft.Maui.DeviceTests
 
 					var shapeStroke = shape.Stroke as SolidColorBrush;
 					Assert.Equal(expected, shapeStroke?.Color);
-
-					return Task.CompletedTask;
 				});
 			});
 		}
