@@ -1,0 +1,45 @@
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
+
+namespace Microsoft.Maui.AppiumTests.Issues
+{
+	public class Issue18961 : _IssuesUITest
+	{
+		public Issue18961(TestDevice device) : base(device) { }
+
+		public override string Issue => "Modal Page margin correct after Keyboard opens";
+
+		[Test]
+		public async Task ModalPageMarginCorrectAfterKeyboardOpens()
+		{
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.iOS, TestDevice.Mac, TestDevice.Windows
+			});
+
+			App.WaitForElement("WaitForStubControl");
+
+			// 1. Ensure that the keyboard is closed before we start.
+			App.DismissKeyboard();
+
+			// 2. Focus latest Entry
+			App.Click("ScrollButton");
+			App.EnterText("TestEntry20", "test");
+			App.Click("TestEntry20");
+
+			await Task.Delay(500);
+
+			// 3. The keyboard has opened and the Entry have been translated above the keyboard.
+			VerifyScreenshot("Issue18961KeyboardOpened");
+
+			// 4. Close the keyboard to see if sizes adjust back.
+			App.DismissKeyboard();
+			
+			await Task.Delay(500);
+
+			// 5. Make sure that everything has returned to the initial size once the keyboard has closed.
+			VerifyScreenshot("Issue18961KeyboardClosed");
+		}
+	}
+}
