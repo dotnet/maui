@@ -4,25 +4,11 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
-	class ScrollViewUITests : UITest
+	public class ScrollToUITests : ScrollViewUITests
 	{
-		const string ScrollViewGallery = "ScrollView Gallery";
-
-		public ScrollViewUITests(TestDevice device)
+		public ScrollToUITests(TestDevice device)
 			: base(device)
 		{
-		}
-
-		protected override void FixtureSetup()
-		{
-			base.FixtureSetup();
-			App.NavigateToGallery(ScrollViewGallery);
-		}
-
-		protected override void FixtureTeardown()
-		{
-			base.FixtureTeardown();
-			this.Back();
 		}
 
 		[Test]
@@ -68,6 +54,37 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("End");
 				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is in the end");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
+
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToY()
+		{
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			{
+				App.Click("Scroll100");
+			}
+			else
+			{
+				Assert.Ignore("This test is failing, likely due to product issue");
+			}
+		}
+
+		[Test]
+		[Description("ScrollTo Y = 100")]
+		public void ScrollToYTwice()
+		{
+			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			{
+				App.Click("Scroll100");
+				App.WaitForNoElement("completed");
+				App.Click("Scroll100");
+				App.WaitForNoElement("completed");
 			}
 			else
 			{
