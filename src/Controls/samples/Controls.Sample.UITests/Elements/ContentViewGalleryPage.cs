@@ -88,8 +88,7 @@ namespace Maui.Controls.Sample
 
 			stackLayout.Children.Add(_layout);
 		}
-
-
+				
 		void GoClicked(object sender, EventArgs e)
 		{
 			if (!_contentViews.Any())
@@ -120,7 +119,12 @@ namespace Maui.Controls.Sample
 				return;
 			}
 
-			var targetContainer = _contentViews[index];
+			SetSelection(index);
+		}
+
+		public void SetSelection(int index)
+		{
+			ContentView targetContainer = _contentViews[index];
 
 			if (_layout.Children.Count == 4)
 			{
@@ -131,6 +135,15 @@ namespace Maui.Controls.Sample
 			_picker.SelectedIndexChanged -= PickerSelectedIndexChanged;
 			_picker.SelectedIndex = index;
 			_picker.SelectedIndexChanged += PickerSelectedIndexChanged;
+		}
+
+		public ContentView GetSelectedContentView()
+		{
+			if (_layout.Children.Count != 4)
+			{
+				return null;
+			}
+			return (ContentView)_layout.Children[3];
 		}
 
 		void PickerSelectedIndexChanged(object sender, EventArgs eventArgs)
