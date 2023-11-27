@@ -19,6 +19,8 @@ namespace Microsoft.Maui.AppiumTests
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },		
 				"This test is failing, likely due to product issue");
 
+			App.Click("ScrollViewNoObjectDisposed");
+
 			App.Click("TestButtonId");
 			App.WaitForElement("Success");
 		}

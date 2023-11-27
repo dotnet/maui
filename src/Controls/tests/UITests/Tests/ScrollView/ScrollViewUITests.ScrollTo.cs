@@ -33,6 +33,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
+				App.Click("ScrollViewScrollTo");
+
 				App.Click("Center");
 				App.WaitForElement("the scrollto button");
 				App.WaitForElement("the before");
@@ -51,6 +53,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
+				App.Click("ScrollViewScrollTo");
+
 				App.Click("End");
 				App.WaitForElement("the scrollto button");
 				App.Screenshot("Element is in the end");
@@ -65,8 +69,10 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToY()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
+				App.Click("ScrollViewScrollTo");
+
 				App.Click("Scroll100");
 			}
 			else
@@ -80,8 +86,10 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToYTwice()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
+				App.Click("ScrollViewScrollTo");
+
 				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
 				App.Click("Scroll100");
