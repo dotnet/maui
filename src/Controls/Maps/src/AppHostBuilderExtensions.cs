@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Controls.Hosting
 
 #if WINDOWS
 			throw new NotImplementedException(".NET MAUI Maps is currently not implemented for Windows. For more information, please see: https://aka.ms/maui-maps-no-windows");
-#elif
+#else
 			return handlersCollection;
 #endif
 		}
