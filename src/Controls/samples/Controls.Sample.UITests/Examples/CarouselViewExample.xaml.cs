@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using Microsoft.Maui.Controls;
-using Maui.Controls.Sample.VisualExamples.Models;
+using Maui.Controls.Sample.Models;
 using ExampleFramework;
 
-namespace Maui.Controls.Sample.VisualExamples
+namespace Maui.Controls.Sample
 {
     [UIExample(typeof(CarouselView))]
     public partial class CarouselViewExample : ContentPage

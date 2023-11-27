@@ -1,4 +1,4 @@
-﻿namespace Maui.Controls.Sample.VisualExamples.Models
+﻿namespace Maui.Controls.Sample.Models
 {
     public class Monkey
     {

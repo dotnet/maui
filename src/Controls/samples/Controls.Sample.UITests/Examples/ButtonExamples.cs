@@ -1,7 +1,7 @@
 ﻿using ExampleFramework;
 using Microsoft.Maui.Controls;
 
-namespace Maui.Controls.Sample.VisualExamples
+namespace Maui.Controls.Sample
 {
     public static class ButtonExamples
     {

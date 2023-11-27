@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.Maui.Graphics;
 
-namespace Maui.Controls.Sample.VisualExamples.Models
+namespace Maui.Controls.Sample.Models
 {
     // Used in CollectionViewDemoPage and ListViewDemoPage
     public class Person
