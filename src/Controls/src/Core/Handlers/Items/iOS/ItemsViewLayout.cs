@@ -5,6 +5,8 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Internals;
+using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -19,7 +21,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _currentSize;
 		WeakReference<Func<UICollectionViewCell>> _getPrototype;
 
-		readonly Dictionary<object, CGSize> _cellSizeCache = new();
+		const double ConstraintSizeTolerance = 0.00001;
+
+		Dictionary<object, CGSize> _cellSizeCache = new Dictionary<object, CGSize>();
 
 		public ItemsUpdatingScrollMode ItemsUpdatingScrollMode { get; set; }
 
@@ -98,7 +102,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void UpdateConstraints(CGSize size)
 		{
-			if (size.IsCloseTo(_currentSize))
+			if (!RequiresConstraintUpdate(size, _currentSize))
 			{
 				return;
 			}
@@ -564,12 +568,23 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
 		{
-			if(newBounds.Size == _currentSize)
+			if (newBounds.Size == _currentSize)
 			{
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
+			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
+#if TVOS
+				|| OperatingSystem.IsTvOSVersionAtLeast(11)
+#endif
+			)
+			{
+				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
+			}
+			else
+			{
+				UpdateConstraints(CollectionView.Bounds.Size);
+			}
 
 			return true;
 		}
@@ -594,6 +609,21 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void ClearCellSizeCache()
 		{
 			_cellSizeCache.Clear();
+		}
+
+		bool RequiresConstraintUpdate(CGSize newSize, CGSize current)
+		{
+			if (Math.Abs(newSize.Width - current.Width) > ConstraintSizeTolerance)
+			{
+				return true;
+			}
+
+			if (Math.Abs(newSize.Height - current.Height) > ConstraintSizeTolerance)
+			{
+				return true;
+			}
+
+			return false;
 		}
 	}
 }
