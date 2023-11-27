@@ -9,7 +9,7 @@ namespace Maui.Controls.Sample
 {
 	public static class MauiProgram
 	{
-		private static AppConnectorApp? _appConnectorApp;
+		private static AppConnectorApp _appConnectorApp;
 
 		public static MauiApp CreateMauiApp() =>
 			MauiApp
@@ -23,7 +23,7 @@ namespace Maui.Controls.Sample
 		{
 			if (_appConnectorApp == null)
 			{
-				_appConnectorApp = new AppConnectorApp(new AppService());
+				_appConnectorApp = new AppConnectorApp(new TestAppExampleAppService());
 				_ = _appConnectorApp.StartClientAsync();
 			}
 		}

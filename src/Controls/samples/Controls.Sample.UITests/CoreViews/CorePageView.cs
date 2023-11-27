@@ -85,7 +85,7 @@ namespace Maui.Controls.Sample
 			UIComponents exampleUIComponents = AppUIExamplesManager.Instance.UIComponents;
 			foreach (UIComponent component in exampleUIComponents.Components)
 			{
-				_pages.Add(new GalleryPageFactory(() => new ExamplesGalleryPage(component), $"{component.Title} Visual Tests"));
+				_pages.Add(new GalleryPageFactory(() => new ExamplesGalleryPage(component), $"{component.Title} Examples"));
 			}
 
 			var template = new DataTemplate(() =>
