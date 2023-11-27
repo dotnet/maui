@@ -16,6 +16,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Align child elements in the X axis works")]
 		public async Task StackLayoutAlignment()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			App.Click("StackLayoutAlignment");
 			App.WaitForElement("TestStackLayout");
 

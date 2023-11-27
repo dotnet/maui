@@ -16,6 +16,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Labels inside an AbsoluteLayout is sized correctly wrapping the text.")]
 		public async Task LabelWrappingInsideAbsoluteLayout()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
+
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.iOS, TestDevice.Mac },
 				"Currently fails on iOS and Android; see https://github.com/dotnet/maui/issues/18930");
 

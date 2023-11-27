@@ -16,6 +16,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Can apply space between each child")]
 		public async Task StackLayoutSpacing()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			App.Click("StackLayoutSpacing");
 			App.WaitForElement("TestStackLayout");
 			

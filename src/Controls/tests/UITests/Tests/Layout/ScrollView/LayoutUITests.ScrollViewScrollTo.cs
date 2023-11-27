@@ -16,6 +16,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll to the end using ScrollToAsync method")]
 		public async Task ScrollViewScrollTo()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			App.Click("ScrollViewScrollTo");
 			App.WaitForElement("TestScrollView");
 

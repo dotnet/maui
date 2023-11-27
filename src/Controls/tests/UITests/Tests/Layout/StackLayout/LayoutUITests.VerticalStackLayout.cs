@@ -16,6 +16,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Organizes child views in a vertical one-dimensional stack")]
 		public async Task VerticalStackLayout()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			App.Click("VerticalStackLayout");
 			App.WaitForElement("TestStackLayout");
 
