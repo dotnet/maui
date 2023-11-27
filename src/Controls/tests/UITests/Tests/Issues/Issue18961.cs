@@ -23,22 +23,23 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 1. Ensure that the keyboard is closed before we start.
 			App.DismissKeyboard();
 
-			// 2. Focus latest Entry
+			// 2. Scroll to the end.
 			App.Click("ScrollButton");
+			await Task.Delay(500);
+
+			// 3. Focus latest Entry
 			App.EnterText("TestEntry20", "test");
 			App.Click("TestEntry20");
-
 			await Task.Delay(500);
 
-			// 3. The keyboard has opened and the Entry have been translated above the keyboard.
+			// 4. The keyboard has opened and the Entry have been translated above the keyboard.
 			VerifyScreenshot("Issue18961KeyboardOpened");
 
-			// 4. Close the keyboard to see if sizes adjust back.
-			App.DismissKeyboard();
-			
+			// 5. Close the keyboard to see if sizes adjust back.
+			App.DismissKeyboard();	
 			await Task.Delay(500);
 
-			// 5. Make sure that everything has returned to the initial size once the keyboard has closed.
+			// 6. Make sure that everything has returned to the initial size once the keyboard has closed.
 			VerifyScreenshot("Issue18961KeyboardClosed");
 		}
 	}
