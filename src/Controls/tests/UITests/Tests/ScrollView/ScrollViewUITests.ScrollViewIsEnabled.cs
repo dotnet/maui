@@ -4,6 +4,7 @@ using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
+	[Category(UITestCategories.ScrollView)]
 	public class ScrollViewIsEnabledTests : ScrollViewUITests
 	{
 		const string InitiallyEnabled = "InitiallyEnabled";
