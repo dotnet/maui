@@ -114,7 +114,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (view is WebView webView)
 			{
 				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
-				await Task.Delay(1000);
+				await Task.Delay(3000);
 			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
