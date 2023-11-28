@@ -13,6 +13,7 @@ namespace Microsoft.Maui.AppiumTests
 
 		// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
 		[Test]
+		[Description("Measuring empty ScrollView does not crash")]
 		public async Task MeasuringEmptyScrollViewDoesNotCrash()
 		{
 			await Task.Delay(1000);

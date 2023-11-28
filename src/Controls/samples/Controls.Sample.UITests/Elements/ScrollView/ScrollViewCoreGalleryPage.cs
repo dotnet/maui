@@ -32,7 +32,13 @@ namespace Controls.Sample.UITests
 							new ScrollViewNoContent(), Navigation),
 						// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
 						TestBuilder.NavButton("ScrollView No ObjectDisposed", () =>
-							new ScrollViewObjectDisposed(), Navigation),
+							new ScrollViewObjectDisposed(), Navigation), 
+						// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
+						// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
+						// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
+						// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
+						TestBuilder.NavButton("ScrollView IsEnabled", () =>
+							new ScrollViewIsEnabled(), Navigation),
 					}
 				}
 			};
