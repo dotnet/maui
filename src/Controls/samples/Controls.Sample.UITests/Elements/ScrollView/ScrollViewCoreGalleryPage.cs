@@ -22,7 +22,11 @@ namespace Controls.Sample.UITests
 						descriptionLabel,
 						// ScrollToYTwice (src\Compatibility\ControlGallery\src\UITests.Shared\Tests\ScrollViewUITests.cs)
 						TestBuilder.NavButton("ScrollView ScrollTo", () =>
-							new ScrollTo(), Navigation),
+							new ScrollTo(), Navigation),         
+						// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
+						TestBuilder.NavButton("ScrollView delayed Content", () =>
+							new ScrollViewDelayedContent(), Navigation),	
+						// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
 						TestBuilder.NavButton("ScrollView No Content", () =>
 						// NullContentOnScrollViewDoesntCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue3507.cs)
 							new ScrollViewNoContent(), Navigation),
