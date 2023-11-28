@@ -41,10 +41,16 @@ namespace Microsoft.Maui.DeviceTests
 
 		internal class CacheMissCountingDelegate : ItemsViewDelegator<CacheTestCollectionView, ItemsViewController<CacheTestCollectionView>>
 		{
+			bool _trackCacheMisses;
 			public int CacheMissCount { get; set; }
 
 			public CacheMissCountingDelegate(ItemsViewLayout itemsViewLayout, ItemsViewController<CacheTestCollectionView> itemsViewController) : base(itemsViewLayout, itemsViewController)
 			{
+			}
+
+			public override void WillDisplayCell(UICollectionView collectionView, UICollectionViewCell cell, NSIndexPath indexPath)
+			{
+				_trackCacheMisses = true;
 			}
 
 			public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
@@ -62,7 +68,7 @@ namespace Microsoft.Maui.DeviceTests
 					
 					// If the size comes back as EstimatedItemSize, we'll know that the actual value was not found in the cache.
 
-					if (itemSize == flowLayout.EstimatedItemSize)
+					if (_trackCacheMisses && itemSize == flowLayout.EstimatedItemSize)
 					{
 						CacheMissCount += 1;
 					}
