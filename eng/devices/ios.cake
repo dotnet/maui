@@ -44,7 +44,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
-string DOTNET_TOOL_PATH = "dotnet";
+string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
 
 var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
 if (localDotnetiOS)
