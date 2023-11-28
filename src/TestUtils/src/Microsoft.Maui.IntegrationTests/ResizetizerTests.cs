@@ -14,15 +14,15 @@ public class ResizetizerTests : BaseBuildTest
 
 	[Test]
 	// windows unpackaged/exe
-	[TestCase("maui", "classlib", true)] // net8.0
-	[TestCase("maui", "mauilib", true)] // net8.0-xxx
-	[TestCase("maui-blazor", "classlib", true)] // net8.0
-	[TestCase("maui-blazor", "mauilib", true)] // net8.0-xxx
+	[TestCase("maui", "classlib", true)] // net9.0
+	[TestCase("maui", "mauilib", true)] // net9.0-xxx
+	[TestCase("maui-blazor", "classlib", true)] // net9.0
+	[TestCase("maui-blazor", "mauilib", true)] // net9.0-xxx
 											   // windows packaged/msix
-	[TestCase("maui", "classlib", false)] // net8.0
-	[TestCase("maui", "mauilib", false)] // net8.0-xxx
-	[TestCase("maui-blazor", "classlib", false)] // net8.0
-	[TestCase("maui-blazor", "mauilib", false)] // net8.0-xxx
+	[TestCase("maui", "classlib", false)] // net9.0
+	[TestCase("maui", "mauilib", false)] // net9.0-xxx
+	[TestCase("maui-blazor", "classlib", false)] // net9.0
+	[TestCase("maui-blazor", "mauilib", false)] // net9.0-xxx
 	public void CollectsAssets(string id, string libid, bool unpackaged)
 	{
 		// new app

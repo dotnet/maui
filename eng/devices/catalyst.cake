@@ -2,7 +2,7 @@
 #load "../cake/dotnet.cake"
 #load "./devices-shared.cake"
 
-const string dotnetVersion = "net8.0";
+const string dotnetVersion = "net9.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("MAC_TEST_PROJECT") ?? DEFAULT_PROJECT);
