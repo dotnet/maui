@@ -91,6 +91,12 @@ public class MemoryTests : ControlsHandlerTestBase
 				return;
 #endif
 
+#if IOS
+		// NOTE: skip certain controls on older iOS devices
+		if (type == typeof (WebView) && !OperatingSystem.IsIOSVersionAtLeast(16))
+				return;
+#endif
+
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
@@ -114,7 +120,7 @@ public class MemoryTests : ControlsHandlerTestBase
 			else if (view is WebView webView)
 			{
 				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
-				await Task.Delay(3000);
+				await Task.Delay(1000);
 			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
