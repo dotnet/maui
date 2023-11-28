@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
 using WSetter = Microsoft.UI.Xaml.Setter;
@@ -99,6 +100,66 @@ namespace Microsoft.Maui.DeviceTests
 				.FirstOrDefault(X => X.Property == FrameworkElement.MinHeightProperty).Value;
 
 			Assert.Equal(0d, minHeight);
+		}
+
+		[Fact]
+		public async Task ValidateItemsVirtualize()
+		{
+			SetupBuilder();
+
+			const int listItemCount = 1000;
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var template = new Grid()
+					{
+						ColumnDefinitions = new ColumnDefinitionCollection(
+						[
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+						])
+					};
+
+					for (int i = 0; i < 5; i++)
+					{
+						var label = new Label();
+						label.SetBinding(Label.TextProperty, new Binding("Symbol"));
+						Grid.SetColumn(label, i);
+						template.Add(label);
+					}
+
+					return template;
+				}),
+				ItemsSource = Enumerable.Range(0, listItemCount)
+					.Select(x => new { Symbol = x })
+					.ToList()
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var listView = (UI.Xaml.Controls.ListView)collectionView.Handler.PlatformView;
+
+				int childCount = 0;
+				int prevChildCount = -1;
+
+				await Task.Delay(2000);
+
+				await AssertionExtensions.Wait(() =>
+				{
+					// Wait until the list stops growing
+					prevChildCount = childCount;
+					childCount = listView.GetChildren<UI.Xaml.Controls.TextBlock>().Count();
+					return childCount == prevChildCount;
+				}, 10000);
+
+				// If this is broken we'll get way more than 1000 elements
+				Assert.True(childCount < 1000);
+			});
 		}
 
 		[Fact]

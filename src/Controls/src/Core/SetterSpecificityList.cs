@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Controls
 			if (_values is not null)
 			{
 				var index = _values.IndexOfKey(clearedSpecificity);
-				if (index == _values.Count -1) //last value will be cleared
+				if (index == _values.Count - 1) //last value will be cleared
 					return _values.Count >= 2 ? _values[_values.Keys[_values.Count - 2]] : null;
 				return _values.Last().Value;
 			}
@@ -108,7 +108,7 @@ namespace Microsoft.Maui.Controls
 			{
 				if (_first.Value.Key == clearedSpecificity)
 					return _second.Value.Value;
-				return _first.Value.Value;				
+				return _first.Value.Value;
 			}
 			else if (_first is not null)
 			{
