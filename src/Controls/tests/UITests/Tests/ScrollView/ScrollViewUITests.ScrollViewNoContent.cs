@@ -18,6 +18,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			App.Click("ScrollViewNoContent");
 
+			// 1. If the ScrollView is created without having Content, the test has passed.
 			App.WaitForNoElement("Success");
 		}
 	}

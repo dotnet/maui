@@ -20,8 +20,11 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
+				// 1. Tap a button to scroll to the start position.
 				App.Click("Start");
 				App.WaitForNoElement("the scrollto button");
+
+				// 2. Verify that the scroll has moved to the correct position.
 				App.Screenshot("Element is on the top");
 			}
 			else
@@ -39,10 +42,14 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
+				// 1. Tap a button to scroll to the center position.
 				App.Click("Center");
 				App.WaitForNoElement("the scrollto button");
+
+				// 2. Verify that the scroll has moved to the correct position.
 				App.WaitForNoElement("the before");
 				App.WaitForNoElement("the after");
+
 				App.Screenshot("Element is in the center");
 			}
 			else
@@ -60,7 +67,10 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
+				// 1. Tap a button to scroll to the end.
 				App.Click("End");
+
+				// 2. Verify that the scroll has moved to the correct position.
 				App.WaitForNoElement("the scrollto button");
 				App.Screenshot("Element is in the end");
 			}
@@ -79,6 +89,7 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
+				// 1. Tap a button to scroll 100 px.
 				App.Click("Scroll100");
 			}
 			else
@@ -97,8 +108,11 @@ namespace Microsoft.Maui.AppiumTests
 				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
+				// 1. Tap a button to scroll 100 px.
 				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
+
+				// 2. Repeat.
 				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
 			}

@@ -21,7 +21,10 @@ namespace Microsoft.Maui.AppiumTests
 
 			App.Click("ScrollViewNoObjectDisposed");
 
+			// 1. Tap the button.
 			App.Click("TestButtonId");
+
+			// 2. Verify does not cause an exception.
 			App.WaitForElement("Success");
 		}
 	}
