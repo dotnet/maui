@@ -18,6 +18,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 		}
 
+		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabled()
 		{
@@ -31,6 +32,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
 		}
 
+		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
@@ -51,6 +53,7 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.IsEmpty(success);
 		}
 
+		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyNotEnabled()
 		{
@@ -66,6 +69,7 @@ namespace Microsoft.Maui.AppiumTests
 			Assert.IsEmpty(success);
 		}
 
+		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
