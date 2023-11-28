@@ -15,11 +15,14 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
+				App.Click("ScrollViewScrollTo");
+				App.WaitForElement("WaitForStubControl");
+
 				App.Click("Start");
-				App.WaitForElement("the scrollto button");
-				App.Screenshot("Element is  on the top");
+				App.WaitForNoElement("the scrollto button");
+				App.Screenshot("Element is on the top");
 			}
 			else
 			{
@@ -31,14 +34,15 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Click("ScrollViewScrollTo");
+				App.WaitForElement("WaitForStubControl");
 
 				App.Click("Center");
-				App.WaitForElement("the scrollto button");
-				App.WaitForElement("the before");
-				App.WaitForElement("the after");
+				App.WaitForNoElement("the scrollto button");
+				App.WaitForNoElement("the before");
+				App.WaitForNoElement("the after");
 				App.Screenshot("Element is in the center");
 			}
 			else
@@ -51,12 +55,13 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
-			if (Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Click("ScrollViewScrollTo");
+				App.WaitForElement("WaitForStubControl");
 
 				App.Click("End");
-				App.WaitForElement("the scrollto button");
+				App.WaitForNoElement("the scrollto button");
 				App.Screenshot("Element is in the end");
 			}
 			else
@@ -72,6 +77,7 @@ namespace Microsoft.Maui.AppiumTests
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Click("ScrollViewScrollTo");
+				App.WaitForElement("WaitForStubControl");
 
 				App.Click("Scroll100");
 			}
@@ -89,6 +95,7 @@ namespace Microsoft.Maui.AppiumTests
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
 				App.Click("ScrollViewScrollTo");
+				App.WaitForElement("WaitForStubControl");
 
 				App.Click("Scroll100");
 				App.WaitForNoElement("completed");
