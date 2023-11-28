@@ -24,7 +24,7 @@ namespace Controls.Sample.UITests
 						TestBuilder.NavButton("ScrollView ScrollTo", () =>
 							new ScrollTo(), Navigation),         
 						// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
-						TestBuilder.NavButton("ScrollView delayed Content", () =>
+						TestBuilder.NavButton("ScrollView Delayed Content", () =>
 							new ScrollViewDelayedContent(), Navigation),	
 						// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
 						TestBuilder.NavButton("ScrollView No Content", () =>
@@ -39,6 +39,9 @@ namespace Controls.Sample.UITests
 						// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 						TestBuilder.NavButton("ScrollView IsEnabled", () =>
 							new ScrollViewIsEnabled(), Navigation),
+						// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
+						TestBuilder.NavButton("ScrollView Orientation", () =>
+							new ScrollChangeOrientation(), Navigation),
 					}
 				}
 			};

@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Controls.Sample.UITests
 {
-	class ScrollTo : ContentPage
+	public class ScrollTo : ContentPage
 	{
 		readonly ScrollView _scrollview;
 		readonly StackLayout _stack;

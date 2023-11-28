@@ -174,6 +174,16 @@ namespace UITest.Appium
 			}
 		}
 
+		public static void SetOrientationLandscape(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationLandscape", ImmutableDictionary<string, object>.Empty);
+		}
+
+		public static void SetOrientationPortrait(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationPortrait", ImmutableDictionary<string, object>.Empty);
+		}
+		
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
