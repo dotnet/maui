@@ -174,6 +174,24 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Presses the volume up button on the device.
+		/// </summary>
+		/// <param name="app"></param>
+		public static void PressVolumeUp(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressVolumeUp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Presses the volume down button on the device.
+		/// </summary>
+		/// <param name="app"></param>
+		public static void PressVolumeDown(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
