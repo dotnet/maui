@@ -1,20 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Maui.Controls.Sample.Issues.Issue18712">
+             x:Class="Maui.Controls.Sample.Issues.Issue18712"
+             Title="D24">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+
+            <Style TargetType="Button">
+                <Setter Property="Margin" Value="12" />
+            </Style>
+
+        </ResourceDictionary>
+    </ContentPage.Resources>
     <ScrollView>
         <VerticalStackLayout>
-            <Label 
-                AutomationId="WaitForStubControl"
-                Text="1. The test fails if you are able to interact with the editor below." />
-            <Editor 
-                BackgroundColor="LightGray"
-                IsEnabled="False" />
-            <Label 
-                Text="2. The test fails if the editor below is visible." />
-            <Editor 
-                BackgroundColor="LightGray"
-                IsVisible="False" />
+            <Button 
+                AutomationId="IsEnabledButton"
+                Text="IsEnabled"
+                Clicked="OnIsEnabledButtonClicked"/>
+            <Button 
+                AutomationId="IsVisibleButton"
+                Text="IsVisible"
+                Clicked="OnIsVisibleButtonClicked"/>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

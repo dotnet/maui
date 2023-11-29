@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using System;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Xaml;
 
 namespace Maui.Controls.Sample.Issues
@@ -10,6 +11,16 @@ namespace Maui.Controls.Sample.Issues
 		public Issue18712()
 		{
 			InitializeComponent();
+		}
+
+		async void OnIsEnabledButtonClicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new Issue18712IsEnabled());
+		}
+
+		async void OnIsVisibleButtonClicked(object sender, EventArgs e)
+		{
+			await Navigation.PushAsync(new Issue18712IsVisible());
 		}
 	}
 }
