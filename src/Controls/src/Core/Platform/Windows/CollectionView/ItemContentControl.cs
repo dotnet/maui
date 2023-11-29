@@ -299,7 +299,7 @@ namespace Microsoft.Maui.Controls.Platform
 			// From what I can tell, calling `base.MeasureOverride` causes the `ContentControl` to realize its content
 			// and build its visual tree. So, in order to just play nice with the WinUI `ContentControl` we always
 			// call base.MeasureOverride, so that we don't short circuit whatever bookkeeping it needs to do.
-. 
+
 			var measureSize = base.MeasureOverride(new WSize(width, height));
 
 			return new WSize(Max(measureSize.Width, width), Max(measureSize.Height, height));
