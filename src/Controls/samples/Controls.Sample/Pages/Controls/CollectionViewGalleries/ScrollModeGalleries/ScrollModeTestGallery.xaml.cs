@@ -10,7 +10,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.ScrollModeGalleries
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(20);
 		CollectionView _collectionView;
 
-		public ScrollModeTestGallery(IItemsLayout itemsLayout = null, Func<DataTemplate> dataTemplate = null, Func<CollectionView> createCollectionView = null)
+		public ScrollModeTestGallery(IItemsLayout? itemsLayout = null, Func<DataTemplate>? dataTemplate = null, Func<CollectionView>? createCollectionView = null)
 		{
 			InitializeComponent();
 

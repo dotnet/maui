@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 {
 	public partial class ShellChromeGallery
 	{
-		AppShell AppShell => Application.Current.MainPage as AppShell;
+		AppShell? AppShell => Application.Current!.MainPage as AppShell;
 
 		public ShellChromeGallery()
 		{
@@ -60,25 +60,25 @@ namespace Maui.Controls.Sample.Pages.ShellGalleries
 
 
 
-		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object sender, EventArgs e)
+		void OnFlyoutHeaderBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
-			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
+			AppShell!.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
-		void OnFlyoutBehaviorSelectedIndexChanged(object sender, EventArgs e)
+		void OnFlyoutBehaviorSelectedIndexChanged(object? sender, EventArgs e)
 		{
-			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
+			AppShell!.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
 		}
 
 		protected override void OnAppearing()
 		{
-			AppShell.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
-			AppShell.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
+			AppShell!.FlyoutBehavior = (FlyoutBehavior)flyoutBehavior.SelectedIndex;
+			AppShell!.FlyoutHeaderBehavior = (FlyoutHeaderBehavior)flyoutHeaderBehavior.SelectedIndex;
 		}
 
 		void OnToggleFlyoutBackgroundColor(object sender, EventArgs e)
 		{
-			AppShell.RemoveBinding(Shell.FlyoutBackgroundProperty);
+			AppShell!.RemoveBinding(Shell.FlyoutBackgroundProperty);
 			if (AppShell.FlyoutBackground.IsEmpty ||
 				AppShell.FlyoutBackground == SolidColorBrush.Purple)
 			{

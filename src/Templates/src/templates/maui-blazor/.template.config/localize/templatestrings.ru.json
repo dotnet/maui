@@ -2,7 +2,7 @@
   "author": "Майкрософт",
   "name": "Приложение .NET MAUI Blazor",
   "description": "Проект по созданию приложения .NET MAUI для iOS, Android, Mac Catalyst, Tizen и WinUI с использованием Blazor",
-  "postActions/openInEditor/description": "Открывает Pages/Index.razor в редакторе.",
+  "postActions/openInEditor/description": "Открывает Components/Pages/Home.razor в редакторе.",
   "symbols/applicationId/description": "Переопределяет $(ApplicationId) в проекте",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/DOTNET_TFM_VALUE/description": "Target DOTNET_TFM_VALUE"

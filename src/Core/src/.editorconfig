@@ -2,8 +2,16 @@
 # We can gradually add to this list until we're ready to activate enforcement
 # for the entire project
 # To run the performance CA on all files, replace the list of files with [*.cs]
-[{Flex.cs,PlatformTouchGraphicsView.cs,MauiScrollView.cs,MauiSwipeView.cs,MauiWebViewClient.cs}]
+[{PlatformTouchGraphicsView.cs,MauiScrollView.cs,MauiSwipeView.cs,MauiWebViewClient.cs,Layouts/*.cs,Animations/*.cs,Primitives/*.cs}]
 dotnet_analyzer_diagnostic.category-Performance.severity = warning
 
 [*.cs]
 dotnet_diagnostic.CA1805.severity = error
+dotnet_diagnostic.CA1806.severity = error
+dotnet_diagnostic.CA1825.severity = error
+dotnet_diagnostic.CA1834.severity = error
+dotnet_diagnostic.CA1845.severity = error
+dotnet_diagnostic.CA1846.severity = error
+dotnet_diagnostic.CA1847.severity = error
+dotnet_diagnostic.CA1859.severity = error
+dotnet_diagnostic.CA1860.severity = error

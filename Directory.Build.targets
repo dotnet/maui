@@ -78,7 +78,15 @@
   -->
   <Import Project="src\Core\src\nuget\buildTransitive\WinUI.Unpackaged.targets" Condition=" '$(WindowsPackageType)' == 'None' and '$(_MauiTargetPlatformIsWindows)' == 'True' " />
 
-    <!-- Packaging -->
+  <!-- NuGet package information -->
+  <PropertyGroup Condition="'$(IsPackable)' == 'true'">
+    <PackageTags Condition="'$(PackageTags)' == ''">$(DefaultPackageTags)</PackageTags>
+    <PackageIcon>$([System.IO.Path]::GetFileName('$(PackageIconFile)'))</PackageIcon>
+    <GenerateNuspecDependsOn>
+      _MauiPackReadmeFile;
+      $(GenerateNuspecDependsOn);
+    </GenerateNuspecDependsOn>
+  </PropertyGroup>
   <ItemGroup Condition="'$(IsPackable)' == 'true'">
     <None Include="$(LicenseFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(LicenseFile)'))"
@@ -86,5 +94,22 @@
     <None Include="$(PackageThirdPartyNoticesFile)"
           PackagePath="$([System.IO.Path]::GetFileName('$(PackageThirdPartyNoticesFile)'))"
           Pack="true" />
+    <None Include="$(PackageIconFile)"
+          PackagePath="$([System.IO.Path]::GetFileName('$(PackageIconFile)'))"
+          Pack="true" />
   </ItemGroup>
+  <Target Name="_MauiPackReadmeFile" Condition="'$(IsPackable)' == 'true' and '$(PackageReadmeFile)' == ''">
+    <PropertyGroup>
+      <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    <WriteLinesToFile File="$(IntermediateOutputPath)\$(PackageReadmeFile)"
+                      Lines="$(Description)"
+                      Overwrite="true" />
+    <ItemGroup>
+      <_PackageFiles Include="$(IntermediateOutputPath)\$(PackageReadmeFile)"
+                     PackagePath="$(PackageReadmeFile)"
+                     Pack="true" />
+    </ItemGroup>
+  </Target>
+
 </Project>
