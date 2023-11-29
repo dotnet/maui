@@ -333,7 +333,7 @@ namespace Microsoft.Maui.Platform
 			return disposable;
 		}
 
-		internal static bool NeedsContainer(this IView? view)
+		internal static bool NeedsContainer(this IView? view, IViewHandler handler)
 		{
 			if (view is IBorderView border)
 				return border?.Shape != null || border?.Stroke != null;

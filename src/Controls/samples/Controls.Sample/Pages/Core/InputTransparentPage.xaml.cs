@@ -22,5 +22,11 @@ namespace Maui.Controls.Sample.Pages
 			Debug.WriteLine("Success; That should have worked, and it did!");
 			DisplayAlert("Success", "That should have worked, and it did!", "OK");
 		}
+
+		void ClickBottom(object sender, EventArgs e)
+		{
+			Debug.WriteLine("Click; You clicked a bottom button.");
+			DisplayAlert("Click", "You clicked a bottom button.", "OK");
+		}
 	}
 }

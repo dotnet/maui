@@ -118,10 +118,17 @@ namespace Microsoft.Maui.Platform
 			if (platformView is WrapperView wrapper)
 				wrapper.Shadow = view.Shadow;
 		}
+
 		public static void UpdateBorder(this AView platformView, IView view)
 		{
 			if (platformView is WrapperView wrapper)
 				wrapper.Border = (view as IBorder)?.Border;
+		}
+
+		public static void UpdateInputTransparent(this AView platformView, IViewHandler handler, IView view)
+		{
+			if (platformView is IInputTransparentCapable itc)
+				itc.InputTransparent = view.InputTransparent;
 		}
 
 		public static ViewStates ToPlatformVisibility(this Visibility visibility)

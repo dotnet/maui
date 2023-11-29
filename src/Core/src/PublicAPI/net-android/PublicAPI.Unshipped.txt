@@ -63,8 +63,11 @@ override Microsoft.Maui.Handlers.RadioButtonHandler.PlatformArrange(Microsoft.Ma
 override Microsoft.Maui.Handlers.ShapeViewHandler.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Layouts.FlexBasis.Equals(object? obj) -> bool
 override Microsoft.Maui.Layouts.FlexBasis.GetHashCode() -> int
+override Microsoft.Maui.Platform.LayoutViewGroup.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
+override Microsoft.Maui.Platform.LayoutViewGroup.SetOnTouchListener(Android.Views.View.IOnTouchListener? l) -> void
 override Microsoft.Maui.MauiAppCompatActivity.DispatchTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.ContentViewGroup.GetClipPath(int width, int height) -> Android.Graphics.Path?
+override Microsoft.Maui.Platform.MauiTextView.OnTouchEvent(Android.Views.MotionEvent? e) -> bool
 override Microsoft.Maui.Platform.NavigationViewFragment.OnDestroy() -> void
 override Microsoft.Maui.PlatformContentViewGroup.JniPeerMembers.get -> Java.Interop.JniPeerMembers!
 override Microsoft.Maui.PlatformContentViewGroup.ThresholdClass.get -> nint
@@ -108,6 +111,7 @@ Microsoft.Maui.IWebView.UserAgent.set -> void
 static Microsoft.Maui.Handlers.WebViewHandler.MapUserAgent(Microsoft.Maui.Handlers.IWebViewHandler! handler, Microsoft.Maui.IWebView! webView) -> void
 static Microsoft.Maui.Platform.ApplicationExtensions.UpdateNightMode(this Microsoft.Maui.IApplication! application) -> void
 static Microsoft.Maui.Platform.ShapeExtensions.ToPlatform(this Microsoft.Maui.Graphics.IShape! shape, Microsoft.Maui.Graphics.Rect bounds, float strokeThickness, float density, bool innerPath = false) -> Android.Graphics.Path!
+static Microsoft.Maui.Platform.ViewExtensions.UpdateInputTransparent(this Android.Views.View! platformView, Microsoft.Maui.IViewHandler! handler, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewGroupExtensions.TryGetFirstChildOfType<T>(this Android.Views.ViewGroup! viewGroup, out T? result) -> bool
 static Microsoft.Maui.Platform.WebViewExtensions.UpdateUserAgent(this Android.Webkit.WebView! platformWebView, Microsoft.Maui.IWebView! webView) -> void
 *REMOVED*Microsoft.Maui.WeakEventManager.HandleEvent(object! sender, object! args, string! eventName) -> void
@@ -118,6 +122,8 @@ static Microsoft.Maui.PropertyMapperExtensions.PrependToMapping<TVirtualView, TV
 static Microsoft.Maui.PropertyMapperExtensions.ReplaceMapping<TVirtualView, TViewHandler>(this Microsoft.Maui.IPropertyMapper<Microsoft.Maui.IElement!, Microsoft.Maui.IElementHandler!>! propertyMapper, string! key, System.Action<TViewHandler, TVirtualView>! method) -> void
 static Microsoft.Maui.SizeRequest.operator !=(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
 static Microsoft.Maui.SizeRequest.operator ==(Microsoft.Maui.SizeRequest left, Microsoft.Maui.SizeRequest right) -> bool
+~override Microsoft.Maui.Platform.WrapperView.OnTouchEvent(Android.Views.MotionEvent e) -> bool
+~override Microsoft.Maui.Platform.WrapperView.SetOnTouchListener(Android.Views.View.IOnTouchListener l) -> void
 *REMOVED*override Microsoft.Maui.Handlers.ViewHandler.SetVirtualView(Microsoft.Maui.IElement! element) -> void
 override Microsoft.Maui.Platform.WrapperView.Visibility.get -> Android.Views.ViewStates
 override Microsoft.Maui.Platform.WrapperView.Visibility.set -> void

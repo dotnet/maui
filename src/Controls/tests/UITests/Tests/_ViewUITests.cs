@@ -51,6 +51,49 @@ namespace Microsoft.Maui.AppiumTests
 
 			Assert.AreEqual(0, viewPost.Count);
 		}
-	}
 
+		[Test]
+		public virtual void _InputTransparent()
+		{
+			var remote = new LayeredViewContainerRemote (UITestContext, Test.VisualElement.InputTransparent);
+			remote.GoTo ();
+
+			var hiddenButtonClickedLabelTextPre = remote.GetLayeredLabel ().Text;
+			Assert.AreEqual ("Hidden Button (Not Clicked)", hiddenButtonClickedLabelTextPre);
+
+			remote.TapHiddenButton ();
+
+			var hiddenButtonClickedLabelTextPost = remote.GetLayeredLabel ().Text;
+			var hiddenButtonClicked = hiddenButtonClickedLabelTextPost == "Hidden Button (Clicked)";
+
+			// // Allow tests to continue by dismissing DatePicker that should not show
+			// // Remove when InputTransparency works
+			// if (!hiddenButtonClicked && PlatformViewType == PlatformViews.DatePicker)
+			// 	remote.DismissPopOver ();
+
+			Assert.True (hiddenButtonClicked);
+		}
+
+		[Test]
+		public virtual void _NotInputTransparent()
+		{
+			var remote = new LayeredViewContainerRemote (UITestContext, Test.VisualElement.NotInputTransparent);
+			remote.GoTo ();
+
+			var hiddenButtonClickedLabelTextPre = remote.GetLayeredLabel ().Text;
+			Assert.AreEqual ("Hidden Button (Not Clicked)", hiddenButtonClickedLabelTextPre);
+
+			remote.TapHiddenButton ();
+
+			var hiddenButtonClickedLabelTextPost = remote.GetLayeredLabel ().Text;
+			var hiddenButtonClicked = hiddenButtonClickedLabelTextPost == "Hidden Button (Not Clicked)";
+
+			// // Allow tests to continue by dismissing DatePicker that should not show
+			// // Remove when InputTransparency works
+			// if (!hiddenButtonClicked && PlatformViewType == PlatformViews.DatePicker)
+			// 	remote.DismissPopOver ();
+
+			Assert.True (hiddenButtonClicked);
+		}
+	}
 }
