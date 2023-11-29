@@ -60,6 +60,38 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact]
+		public async Task TestContentHorizontalOptionsChanged()
+		{
+			var label = new Label
+			{
+				BackgroundColor = Colors.LightBlue,
+				HorizontalOptions = LayoutOptions.Start,
+				Text = "Hello",
+				WidthRequest = 50,
+			};
+
+			var scrollView = new ScrollView
+			{
+				BackgroundColor = Colors.DarkBlue,
+				Content = label,
+				WidthRequest = 300,
+				HeightRequest = 200,
+			};
+
+			SetupBuilder();
+
+			await AttachAndRun(scrollView, async (handler) =>
+			{
+				// Without this delay, the UI didn't render and the bug didn't repro
+				await Task.Delay(100);
+
+				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Left, 0.0));
+				scrollView.Content.HorizontalOptions = LayoutOptions.End;
+				await WaitAssert(() => CloseEnough(scrollView.Content.Frame.Right, 300.0));
+			});
+		}
+
 		[Theory]
 		[InlineData(ScrollOrientation.Vertical, 100, 300, 0, 100)]
 		[InlineData(ScrollOrientation.Horizontal, 0, 100, 100, 300)]
@@ -188,22 +220,17 @@ namespace Microsoft.Maui.DeviceTests
 
 		static async Task AssertContentSize(Func<Size> actual, Size expected)
 		{
-			await WaitAssert(() => CloseEnough(actual(), expected, 0.2), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
+			await WaitAssert(() => CloseEnough(actual(), expected), timeout: 5000, message: $"ContentSize was {actual()}, expected {expected}");
 		}
 
-		static bool CloseEnough(Size a, Size b, double tolerance)
+		static bool CloseEnough(double a, double b, double tolerance = 0.2)
 		{
-			if (System.Math.Abs(a.Width - b.Width) > tolerance)
-			{
-				return false;
-			}
+			return System.Math.Abs(a - b) <= tolerance;
+		}
 
-			if (System.Math.Abs(a.Height - b.Height) > tolerance)
-			{
-				return false;
-			}
-
-			return true;
+		static bool CloseEnough(Size a, Size b, double tolerance = 0.2)
+		{
+			return CloseEnough(a.Width, b.Width, tolerance) && CloseEnough(a.Height, b.Height, tolerance);
 		}
 
 		static Task<bool> WatchContentSizeChanged(ScrollView scrollView)
