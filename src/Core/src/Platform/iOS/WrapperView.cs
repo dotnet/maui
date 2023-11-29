@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "_borderView is a SubView")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "_borderView is a SubView")]
 		UIView? _borderView;
 
 		public WrapperView()
@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Platform
 			return Layer;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{
