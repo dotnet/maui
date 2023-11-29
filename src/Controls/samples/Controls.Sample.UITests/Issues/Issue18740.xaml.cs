@@ -18,14 +18,14 @@ namespace Maui.Controls.Sample.Issues
 			await Navigation.PushAsync(new Issue18740Entry());
 		}
 
-		void OnEditorButtonClicked(object sender, EventArgs e)
+		async void OnEditorButtonClicked(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new Issue18740Editor());
+			await Navigation.PushAsync(new Issue18740Editor());
 		}
 
-		void OnSearchBarButtonClicked(object sender, EventArgs e)
+		async void OnSearchBarButtonClicked(object sender, EventArgs e)
 		{
-			Navigation.PushAsync(new Issue18740SearchBar());
+			await Navigation.PushAsync(new Issue18740SearchBar());
 		}
 	}
 }
