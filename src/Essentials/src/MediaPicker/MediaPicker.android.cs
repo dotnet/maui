@@ -98,7 +98,7 @@ namespace Microsoft.Maui.Media
 
 				// Start the capture process
 				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
-				
+
 				// Return the file that we just captured
 				return new FileResult(path);
 			}

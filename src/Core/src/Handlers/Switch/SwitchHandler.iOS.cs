@@ -8,6 +8,8 @@ namespace Microsoft.Maui.Handlers
 {
 	public partial class SwitchHandler : ViewHandler<ISwitch, UISwitch>
 	{
+		readonly SwitchProxy _proxy = new();
+
 		// the UISwitch control becomes inaccessible if it grows to a width > 101
 		// An issue has been logged with Apple
 		// This ensures that the UISwitch remains the natural size that iOS expects
@@ -22,15 +24,13 @@ namespace Microsoft.Maui.Handlers
 		protected override void ConnectHandler(UISwitch platformView)
 		{
 			base.ConnectHandler(platformView);
-
-			platformView.ValueChanged += OnControlValueChanged;
+			_proxy.Connect(VirtualView, platformView);
 		}
 
 		protected override void DisconnectHandler(UISwitch platformView)
 		{
 			base.DisconnectHandler(platformView);
-
-			platformView.ValueChanged -= OnControlValueChanged;
+			_proxy.Disconnect(platformView);
 		}
 
 		public static void MapIsOn(ISwitchHandler handler, ISwitch view)
@@ -49,17 +49,33 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateThumbColor(view);
 		}
 
-		void OnControlValueChanged(object? sender, EventArgs e)
-		{
-			if (VirtualView is null || PlatformView is null || VirtualView.IsOn == PlatformView.On)
-				return;
-
-			VirtualView.IsOn = PlatformView.On;
-		}
-
 		static void UpdateIsOn(ISwitchHandler handler)
 		{
 			handler.UpdateValue(nameof(ISwitch.TrackColor));
+		}
+
+		class SwitchProxy
+		{
+			WeakReference<ISwitch>? _virtualView;
+
+			ISwitch? VirtualView => _virtualView is not null && _virtualView.TryGetTarget(out var v) ? v : null;
+
+			public void Connect(ISwitch virtualView, UISwitch platformView)
+			{
+				_virtualView = new(virtualView);
+				platformView.ValueChanged += OnControlValueChanged;
+			}
+
+			public void Disconnect(UISwitch platformView)
+			{
+				platformView.ValueChanged -= OnControlValueChanged;
+			}
+
+			void OnControlValueChanged(object? sender, EventArgs e)
+			{
+				if (VirtualView is ISwitch virtualView && sender is UISwitch platformView && virtualView.IsOn != platformView.On)
+					virtualView.IsOn = platformView.On;
+			}
 		}
 	}
 }

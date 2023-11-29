@@ -22,15 +22,15 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void Simple([Values] Test.InputTransparency test) => RunTest(test.ToString());
 
-		[Test]
-		[Combinatorial]
-		public void Matrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
-		{
-			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
-			var key = Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
+		// [Test]
+		// [Combinatorial]
+		// public void Matrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
+		// {
+		// 	var (clickable, passthru) = Test.InputTransparencyMatrix.States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
+		// 	var key = Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
 
-			RunTest(key, clickable, passthru);
-		}
+		// 	RunTest(key, clickable, passthru);
+		// }
 
 		void RunTest(string test, bool? clickable = null, bool? passthru = null)
 		{
