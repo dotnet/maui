@@ -564,7 +564,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		public override bool ShouldInvalidateLayoutForBoundsChange(CGRect newBounds)
 		{
-			if(newBounds.Size == _currentSize)
+			if (newBounds.Size == _currentSize)
 			{
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
