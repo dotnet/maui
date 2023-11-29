@@ -32,6 +32,7 @@
     <ProjectReference Include="..\..\..\Controls\Maps\src\Controls.Maps.csproj" />
     <ProjectReference Include="..\..\..\Controls\Foldable\src\Controls.Foldable.csproj" />
     <ProjectReference Include="..\..\..\Core\src\Core.csproj" />
+    <ProjectReference Include="..\..\..\TestUtils\src\DeviceTests\TestUtils.DeviceTests.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Appium\UITest.Appium.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.Core\UITest.Core.csproj" />
     <ProjectReference Include="..\..\..\TestUtils\src\UITest.NUnit\UITest.NUnit.csproj" />
