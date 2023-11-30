@@ -10,16 +10,16 @@ namespace Microsoft.Maui.Hosting
 	/// </summary>
 	public sealed class MauiApp : IDisposable, IAsyncDisposable
 	{
-		private readonly IServiceProvider _services;
+		private readonly IServiceProvider _applicationScopedServices;
 		private readonly IServiceProvider _rootServices;
 
 		internal MauiApp(IServiceProvider services, IServiceProvider rootServiceProvider)
 		{
-			_services = services;
+			_applicationScopedServices = services;
 			_rootServices = rootServiceProvider;
 		}
 
-		internal IServiceProvider ScopedServices => _services;
+		internal IServiceProvider ScopedServices => _applicationScopedServices;
 
 		/// <summary>
 		/// The application's configured services.
@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// The application's configured <see cref="IConfiguration"/>.
 		/// </summary>
-		public IConfiguration Configuration => _services.GetRequiredService<IConfiguration>();
+		public IConfiguration Configuration => _applicationScopedServices.GetRequiredService<IConfiguration>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MauiAppBuilder"/> class with optional defaults.
@@ -43,7 +43,7 @@ namespace Microsoft.Maui.Hosting
 		{
 			DisposeConfiguration();
 
-			(_services as IDisposable)?.Dispose();
+			(_applicationScopedServices as IDisposable)?.Dispose();
 			(_rootServices as IDisposable)?.Dispose();
 		}
 
@@ -51,25 +51,20 @@ namespace Microsoft.Maui.Hosting
 		public async ValueTask DisposeAsync()
 		{
 			DisposeConfiguration();
+			await DisposeService(_applicationScopedServices);
+			await DisposeService(_rootServices);
 
-			if (_services is IAsyncDisposable asyncDisposable)
+			async ValueTask DisposeService(IServiceProvider serviceProvider)
 			{
-				// Fire and forget because this is called from a sync context
-				await asyncDisposable.DisposeAsync();
-			}
-			else
-			{
-				(_services as IDisposable)?.Dispose();
-			}
-
-			if (_rootServices is IAsyncDisposable rootAsyncDisposable)
-			{
-				// Fire and forget because this is called from a sync context
-				await rootAsyncDisposable.DisposeAsync();
-			}
-			else
-			{
-				(_rootServices as IDisposable)?.Dispose();
+				if (serviceProvider is IAsyncDisposable rootAsyncDisposable)
+				{
+					// Fire and forget because this is called from a sync context
+					await rootAsyncDisposable.DisposeAsync();
+				}
+				else
+				{
+					(serviceProvider as IDisposable)?.Dispose();
+				}
 			}
 		}
 
