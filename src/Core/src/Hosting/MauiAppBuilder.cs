@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Hosting
 			{
 				foreach (var instance in initServices)
 				{
-					instance.Initialize(builtApplication.Services);
+					instance.Initialize(appScope.ServiceProvider);
 				}
 			}
 

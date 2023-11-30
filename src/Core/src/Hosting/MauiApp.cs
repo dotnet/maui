@@ -19,12 +19,12 @@ namespace Microsoft.Maui.Hosting
 			_rootServices = rootServiceProvider;
 		}
 
-		internal IServiceProvider RootServices => _rootServices;
+		internal IServiceProvider ScopedServices => _services;
 
 		/// <summary>
 		/// The application's configured services.
 		/// </summary>
-		public IServiceProvider Services => _services;
+		public IServiceProvider Services => _rootServices;
 
 		/// <summary>
 		/// The application's configured <see cref="IConfiguration"/>.
@@ -60,6 +60,16 @@ namespace Microsoft.Maui.Hosting
 			else
 			{
 				(_services as IDisposable)?.Dispose();
+			}
+
+			if (_rootServices is IAsyncDisposable rootAsyncDisposable)
+			{
+				// Fire and forget because this is called from a sync context
+				await rootAsyncDisposable.DisposeAsync();
+			}
+			else
+			{
+				(_rootServices as IDisposable)?.Dispose();
 			}
 		}
 

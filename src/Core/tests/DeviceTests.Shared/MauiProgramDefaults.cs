@@ -70,29 +70,17 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 			appBuilder.UseVisualRunner();
 
-			appBuilder.ConfigureContainer(new TestServiceCollection(appBuilder.Services));
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
 
 			var mauiApp = appBuilder.Build();
 
 			DefaultTestApp = mauiApp.Services.GetRequiredService<IApplication>();
 
 			return mauiApp;
-		}
-
-		private class TestServiceCollection : IServiceProviderFactory<ServiceCollection>
-		{
-			private IServiceCollection _services;
-
-			public TestServiceCollection(IServiceCollection services)
-			{
-				_services = services;
-			}
-
-			public ServiceCollection CreateBuilder(IServiceCollection services)
-				=> new ServiceCollection { _services };
-
-			public IServiceProvider CreateServiceProvider(ServiceCollection containerBuilder)
-				=> containerBuilder.BuildServiceProvider(validateScopes: true);
 		}
 	}
 }
