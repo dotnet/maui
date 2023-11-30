@@ -85,7 +85,7 @@ public partial class PlatformCanvas {
 				break;
 			}
 
-			case ImagePaint {Image: GtkImage image} imagePaint: {
+			case ImagePaint {Image: PlatformImage image} imagePaint: {
 				var pixbuf = image.NativeImage;
 
 				if (pixbuf?.CreatePattern(DisplayScale) is { } pattern) {

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-public class GtkImage : IImage
+public class PlatformImage : IImage
 {
-	public GtkImage(Gdk.Pixbuf pix)
+	public PlatformImage(Gdk.Pixbuf pix)
 	{
 		_pixbuf = pix;
 	}
@@ -62,7 +62,7 @@ public class GtkImage : IImage
 
 	public IImage ToImage(int width, int height, float scale = 1f)
 	{
-		using var context = new GtkBitmapExportContext(width, height, scale);
+		using var context = new PlatformBitmapExportContext(width, height, scale);
 		context.Canvas.Scale(scale, scale);
 		Draw(context.Canvas, new RectF(0, 0, (float)width / scale, (float)height / scale));
 		return context.Image;
@@ -74,6 +74,6 @@ public class GtkImage : IImage
 	{
 		var platformHint = formatHint.ToImageExtension();
 		var pix = new Gdk.Pixbuf(stream);
-		return new GtkImage(pix);
+		return new PlatformImage(pix);
 	}
 }

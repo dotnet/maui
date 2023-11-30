@@ -2,11 +2,11 @@
 
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-	public class GtkImageLoadingService : IImageLoadingService
+	public class PlatformImageLoadingService : IImageLoadingService
 	{
 		public IImage FromStream(Stream stream, ImageFormat formatHint = ImageFormat.Png)
 		{
-			return GtkImage.FromStream(stream, formatHint);
+			return PlatformImage.FromStream(stream, formatHint);
 		}
 	}
 

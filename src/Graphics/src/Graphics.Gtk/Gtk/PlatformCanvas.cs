@@ -247,7 +247,7 @@ public partial class PlatformCanvas : AbstractCanvas<PlatformCanvasState>
 
 	public override void DrawImage(IImage image, float x, float y, float width, float height)
 	{
-		if (image is GtkImage { NativeImage: { } pixbuf })
+		if (image is PlatformImage { NativeImage: { } pixbuf })
 		{
 			DrawPixbuf(Context, pixbuf, x, y, width, height);
 		}

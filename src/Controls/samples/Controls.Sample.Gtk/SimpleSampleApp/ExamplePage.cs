@@ -234,7 +234,7 @@ namespace Maui.SimpleSampleApp
 
 			using (var stream = File.OpenRead("dotnet_bot.png"))
 			{
-				image = new GtkImageLoadingService().FromStream(stream);
+				image = new PlatformImageLoadingService().FromStream(stream);
 			}
 
 			var paint = image.AsPaint();

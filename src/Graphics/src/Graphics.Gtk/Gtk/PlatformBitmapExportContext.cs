@@ -3,14 +3,14 @@ using System.Threading;
 
 namespace Microsoft.Maui.Graphics.Platform.Gtk;
 
-public class GtkBitmapExportContext : BitmapExportContext {
+public class PlatformBitmapExportContext : BitmapExportContext {
 
 	private PlatformCanvas _canvas;
 	private Cairo.ImageSurface _surface;
 	private Cairo.Context _context;
 	private Gdk.Pixbuf? _pixbuf;
 
-	public GtkBitmapExportContext(int width, int height, float dpi) : base(width, height, dpi) {
+	public PlatformBitmapExportContext(int width, int height, float dpi) : base(width, height, dpi) {
 		_surface = new Cairo.ImageSurface(Cairo.Format.Argb32, width, height);
 		_context = new Cairo.Context(_surface);
 
@@ -35,13 +35,13 @@ public class GtkBitmapExportContext : BitmapExportContext {
 		}
 	}
 
-	private GtkImage? _image;
+	private PlatformImage? _image;
 
 	public override IImage? Image {
 		get {
 			_pixbuf ??= _surface.CreatePixbuf();
 
-			if (_pixbuf != null) return _image ??= new GtkImage(_pixbuf);
+			if (_pixbuf != null) return _image ??= new PlatformImage(_pixbuf);
 
 			return _image;
 		}

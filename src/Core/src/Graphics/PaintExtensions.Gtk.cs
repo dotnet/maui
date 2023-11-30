@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Graphics
 
 			switch (paint)
 			{
-				case ImagePaint { Image: GtkImage image } imagePaint:
+				case ImagePaint { Image: PlatformImage image } imagePaint:
 				{
 					var pixbuf = image.NativeImage;
 
