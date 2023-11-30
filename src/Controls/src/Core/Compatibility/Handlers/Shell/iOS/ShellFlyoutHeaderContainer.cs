@@ -30,7 +30,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					safeArea.Left,
 					safeArea.Top,
 					safeArea.Right,
-					0); 
+					0);
 			}
 		}
 
