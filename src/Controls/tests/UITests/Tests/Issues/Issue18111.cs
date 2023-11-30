@@ -15,6 +15,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void SettingMaximumTrackColorOnSliderWorks()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Windows }, "Regression test validating the design differences between iOS and Mac specifically");
 			App.WaitForElement("WaitForSliderControl");
 			VerifyScreenshot();
 		}
