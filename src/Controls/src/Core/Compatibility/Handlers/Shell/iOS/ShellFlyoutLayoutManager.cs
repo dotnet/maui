@@ -302,7 +302,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithNoMargin))
 			{
-				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderTopMargin, parent.Frame.Width, ArrangedHeaderViewHeightWithNoMargin + HeaderTopMargin);
+				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderTopMargin, parent.Frame.Width, ArrangedHeaderViewHeightWithNoMargin);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderTopMargin > 0 && _headerOffset < 0)
 				{
