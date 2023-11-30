@@ -39,7 +39,9 @@ namespace UITest.Appium
 
 		CommandResponse SwipeLeftToRight(IDictionary<string, object> parameters)
 		{
-			var element = GetAppiumElement(parameters["element"]);
+			parameters.TryGetValue("element", out var value);
+			var element = GetAppiumElement(value);
+
 			double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
@@ -51,7 +53,9 @@ namespace UITest.Appium
 
 		CommandResponse SwipeRightToLeft(IDictionary<string, object> parameters)
 		{
-			var element = GetAppiumElement(parameters["element"]);
+			parameters.TryGetValue("element", out var value);
+			var element = GetAppiumElement(value);
+
 			double swipePercentage = (double)parameters["swipePercentage"];
 			int swipeSpeed = (int)parameters["swipeSpeed"];
 			bool withInertia = (bool)parameters["withInertia"];
@@ -61,7 +65,7 @@ namespace UITest.Appium
 			return CommandResponse.SuccessEmptyResponse;
 		}
 
-		static AppiumElement? GetAppiumElement(object element)
+		static AppiumElement? GetAppiumElement(object? element)
 		{
 			if (element is AppiumElement appiumElement)
 			{
