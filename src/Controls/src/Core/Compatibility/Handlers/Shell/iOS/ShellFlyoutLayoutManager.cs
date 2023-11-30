@@ -1,17 +1,11 @@
 #nullable disable
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CoreAnimation;
 using CoreGraphics;
-using Foundation;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Primitives;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -270,43 +264,40 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (FooterView is not null)
 				footerHeight = FooterView.Frame.Height;
 
-			var contentViewYOffset = HeaderView?.Frame.Height ?? 0;
-
 			if (ScrollView is not null)
 			{
+				var contentFrame = new Rect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
 				if (Content is null)
 				{
-					ContentView.Frame =
-							new CGRect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
+					ContentView.Frame = contentFrame.AsCGRect();
 				}
 				else
 				{
-					var contentFrame = new Rect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
 					(Content as IView)?.Arrange(contentFrame);
 				}
 			}
 			else
 			{
-				float topMargin = 0;
+				var contentViewYOffset = (HeaderView?.Frame.Height ?? 0) + HeaderViewVerticalOffset + ContentTopMargin;
 				if (!Content.IsSet(View.MarginProperty))
 				{
+					// If HeaderView is null, we need to offset the content by SafeArea.Top. 
+					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
 					if (HeaderView is null)
-						topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+						contentViewYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
-				else
-					contentViewYOffset -= (nfloat)ContentTopMargin;
 
-				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
+				var contentFrame = new Rect(parent.Bounds.X, contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - footerHeight - contentViewYOffset);
 				(Content as IView)?.Arrange(contentFrame);
 			}
 
 			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithMargin))
 			{
-				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderTopMargin, parent.Frame.Width, ArrangedHeaderViewHeightWithMargin);
+				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderViewVerticalOffset, parent.Frame.Width, ArrangedHeaderViewHeightWithMargin);
 
-				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderTopMargin > 0 && _headerOffset < 0)
+				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewVerticalOffset > 0 && _headerOffset < 0)
 				{
-					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithMargin + _headerOffset + HeaderTopMargin);
+					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithMargin + _headerOffset);
 					CAShapeLayer shapeLayer = new CAShapeLayer();
 					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
@@ -410,7 +401,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		double HeaderTopMargin => HeaderView?.Margin.Top ?? 0;
+		/// <summary>
+		/// This represents the header's vertical offset caused by either Margin.Top or SafeArea.Top.
+		/// It should not be assumed as margin, because if Margin.Top = 0, it will return SafeAre.Top.
+		/// </summary>
+		double HeaderViewVerticalOffset => HeaderView?.Margin.Top ?? 0;
 
 		double ContentTopMargin => HeaderView?.Margin.Bottom ?? 0 + Content?.Margin.Top ?? 0;
 
