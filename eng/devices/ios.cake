@@ -158,7 +158,7 @@ Task("uitest-build")
 		{ 	
 			args
 			.Append("/p:BuildIpa=true")
-			.Append("/bl:" + binlog);
+			.Append("/bl:" + binlog)
 			.Append("/tl");
 			
 			// if we building for a device
