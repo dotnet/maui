@@ -277,11 +277,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (Content is null)
 				{
 					ContentView.Frame =
-							new CGRect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
+							new CGRect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
 				}
 				else
 				{
-					var contentFrame = new Rect(parent.Bounds.X, HeaderTopMargin, parent.Bounds.Width, parent.Bounds.Height - HeaderTopMargin - footerHeight);
+					var contentFrame = new Rect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
 					(Content as IView)?.Arrange(contentFrame);
 				}
 			}
@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 						topMargin = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 				else
-					contentViewYOffset -= (nfloat)HeaderTopMargin;
+					contentViewYOffset -= (nfloat)ContentTopMargin;
 
 				var contentFrame = new Rect(parent.Bounds.X, topMargin + contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - topMargin - footerHeight - contentViewYOffset);
 				(Content as IView)?.Arrange(contentFrame);
@@ -410,8 +410,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 		}
 
-		double HeaderTopMargin => (HeaderView is not null) ?
-			HeaderView.Margin.Top - HeaderView.Margin.Bottom : 0;
+		double HeaderTopMargin => HeaderView?.Margin.Top ?? 0;
+
+		double ContentTopMargin => HeaderView?.Margin.Bottom ?? 0 + Content?.Margin.Top ?? 0;
 
 		public void TearDown()
 		{

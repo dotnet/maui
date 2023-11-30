@@ -9,6 +9,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellFlyoutHeaderContainer : UIContainerView
 	{
 		Thickness _safearea = Thickness.Zero;
+		
 		public ShellFlyoutHeaderContainer(View view) : base(view)
 		{
 			UpdateSafeAreaMargin();
@@ -23,11 +24,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				var safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
+				// As the safe area is for the entire window, we should not account for the bottom area for the header, 
+				// otherwise it will be treated as margin added in between the header and content
 				return new Thickness(
 					safeArea.Left,
 					safeArea.Top,
 					safeArea.Right,
-					safeArea.Bottom);
+					0); 
 			}
 		}
 
