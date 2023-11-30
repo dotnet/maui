@@ -49,8 +49,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class CalendarRead : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSCalendarsUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSCalendarsFullAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSCalendarsUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
@@ -76,8 +88,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class CalendarWrite : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSCalendarsUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSCalendarsWriteOnlyAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSCalendarsUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
@@ -103,8 +127,20 @@ namespace Microsoft.Maui.ApplicationModel
 		public partial class Reminders : BasePlatformPermission
 		{
 			/// <inheritdoc/>
-			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys =>
-				() => new string[] { "NSRemindersUsageDescription" };
+			protected override Func<IEnumerable<string>> RequiredInfoPlistKeys
+			{
+				get
+				{
+					if (OperatingSystem.IsIOSVersionAtLeast(17) || OperatingSystem.IsMacCatalystVersionAtLeast(17))
+					{
+						return () => new string[] { "NSRemindersFullAccessUsageDescription" };
+					}
+					else
+					{
+						return () => new string[] { "NSRemindersUsageDescription" };
+					}
+				}
+			}
 
 			/// <inheritdoc/>
 			public override Task<PermissionStatus> CheckStatusAsync()
