@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-<Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
+  <Import Condition=" '$(UseMaui)' != 'true' " Project="..\..\src\Maui\build\Microsoft.AspNetCore.Components.WebView.Maui.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(MauiDeviceTestsPlatforms)</TargetFrameworks>
