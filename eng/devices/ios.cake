@@ -158,8 +158,8 @@ Task("uitest-build")
 		{ 	
 			args
 			.Append("/p:BuildIpa=true")
-			.Append("/p:RuntimeIdentifier=ios-arm64")
 			.Append("/bl:" + binlog);
+			.Append("/tl");
 			
 			// if we building for a device
 			if(TEST_DEVICE.ToLower().Contains("device"))
@@ -419,6 +419,7 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 
 		Information("The platform version to run tests: {0}", iosVersionToRun);
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
+		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
 		SetEnvironmentVariable("PLATFORM_VERSION", iosVersionToRun);
 	}
 }
