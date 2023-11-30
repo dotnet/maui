@@ -19,13 +19,13 @@ namespace Microsoft.Maui.Platform
 		readonly IUIContextMenuInteractionDelegate? _uiContextMenuInteractionDelegate;
 
 		public MauiUIContextMenuInteraction(IElementHandler handler)
-			: base(CreateDelegate (out var del))
+			: base(CreateDelegate(out var del))
 		{
 			_uiContextMenuInteractionDelegate = del;
 			_handler = new WeakReference<IElementHandler>(handler);
 		}
 
-		static IUIContextMenuInteractionDelegate CreateDelegate (out IUIContextMenuInteractionDelegate del) =>
+		static IUIContextMenuInteractionDelegate CreateDelegate(out IUIContextMenuInteractionDelegate del) =>
 			del = new FlyoutUIContextMenuInteractionDelegate();
 
 		public UIContextMenuConfiguration? GetConfigurationForMenu()
