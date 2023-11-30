@@ -56,10 +56,10 @@ namespace Microsoft.Maui.Hosting
 
 			async ValueTask DisposeService(IServiceProvider serviceProvider)
 			{
-				if (serviceProvider is IAsyncDisposable rootAsyncDisposable)
+				if (serviceProvider is IAsyncDisposable asyncDisposable)
 				{
 					// Fire and forget because this is called from a sync context
-					await rootAsyncDisposable.DisposeAsync();
+					await asyncDisposable.DisposeAsync();
 				}
 				else
 				{
