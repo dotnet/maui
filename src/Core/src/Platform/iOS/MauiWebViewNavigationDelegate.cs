@@ -93,7 +93,7 @@ namespace Microsoft.Maui.Platform
 		public void DecidePolicy(WKWebView webView, WKNavigationAction navigationAction, Action<WKNavigationActionPolicy> decisionHandler)
 		{
 			var handler = Handler;
-		
+
 			if (handler == null)
 			{
 				decisionHandler.Invoke(WKNavigationActionPolicy.Cancel);

@@ -5,7 +5,6 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -66,7 +65,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			var preferredSize = preferredAttributes.Frame.Size;
 
-			if (SizesAreSame(preferredSize, _size)
+			if (preferredSize.IsCloseTo(_size)
 				&& AttributesConsistentWithConstrainedDimension(preferredAttributes))
 			{
 				return preferredAttributes;
@@ -78,8 +77,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			preferredAttributes.Frame = new CGRect(preferredAttributes.Frame.Location, size);
 
 			OnLayoutAttributesChanged(preferredAttributes);
-
-			//_isMeasured = true;
 
 			return preferredAttributes;
 		}
@@ -289,23 +286,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		}
 
 		protected abstract bool AttributesConsistentWithConstrainedDimension(UICollectionViewLayoutAttributes attributes);
-
-		bool SizesAreSame(CGSize preferredSize, Size elementSize)
-		{
-			const double tolerance = 0.000001;
-
-			if (Math.Abs(preferredSize.Height - elementSize.Height) > tolerance)
-			{
-				return false;
-			}
-
-			if (Math.Abs(preferredSize.Width - elementSize.Width) > tolerance)
-			{
-				return false;
-			}
-
-			return true;
-		}
 
 		void UpdateVisualStates()
 		{

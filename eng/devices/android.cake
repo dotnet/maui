@@ -6,13 +6,13 @@
 
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
 
-const string defaultVersion = "30";
+const int defaultVersion = 30;
 const string dotnetVersion = "net8.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
-string DEVICE_NAME = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
+string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
@@ -28,13 +28,17 @@ var TEST_APP_INSTRUMENTATION = Argument("instrumentation", EnvironmentVariable("
 var TEST_RESULTS = Argument("results", EnvironmentVariable("ANDROID_TEST_RESULTS") ?? "");
 
 string TEST_WHERE = Argument("where", EnvironmentVariable("NUNIT_TEST_WHERE") ?? $"");
-var androidVersion = Argument("apiversion", EnvironmentVariable("ANDROID_PLATFORM_VERSION") ?? defaultVersion);
+
+string DEVICE_UDID = "";
+string DEVICE_VERSION = "";
+string DEVICE_NAME = "";
+string DEVICE_OS = "";
 
 // other
 string CONFIGURATION = Argument("configuration", "Debug");
 string TEST_FRAMEWORK = "net472";
 string ANDROID_AVD = "DEVICE_TESTS_EMULATOR";
-string DEVICE_ID = "";
+string ANDROID_AVD_IMAGE = "";
 string DEVICE_ARCH = "";
 bool DEVICE_BOOT = Argument("boot", true);
 bool DEVICE_BOOT_WAIT = Argument("wait", true);
@@ -72,7 +76,7 @@ Setup(context =>
 	{
 		var working = TEST_DEVICE.Trim().ToLower();
 		var emulator = true;
-		var api = 30;
+		var api = defaultVersion;
 		// version
 		if (working.IndexOf("_") is int idx && idx > 0) {
 			api = int.Parse(working.Substring(idx + 1));
@@ -107,27 +111,33 @@ Setup(context =>
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
 		if (api == 27 && DEVICE_ARCH == "x86_64")
 			sdk = "default";
-		DEVICE_ID = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
+		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
-		Information("Going to run image: {0}", DEVICE_ID);
+		Information("Going to run image: {0}", ANDROID_AVD_IMAGE);
 		// we are not using a virtual device, so quit
 		if (!emulator)
+		{
+			Information("Not using a virtual device, skipping... and getting devices ");
+			
+			GetDevices(api.ToString());
+
 			return;
+		}
 	}
 
-	Information("Test Device ID: {0}", DEVICE_ID);
+	Information("Test Device ID: {0}", ANDROID_AVD_IMAGE);
 
 	if (DEVICE_BOOT) {
 		Information("Trying to boot the emulator...");
 
 		// delete the AVD first, if it exists
-		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);
+		Information("Deleting AVD if exists: {0}...", ANDROID_AVD);	
 		try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
 		catch { }
 
 		// create the new AVD
 		Information("Creating AVD: {0}...", ANDROID_AVD);
-		AndroidAvdCreate(ANDROID_AVD, DEVICE_ID, DEVICE_NAME, force: true, settings: avdSettings);
+		AndroidAvdCreate(ANDROID_AVD, ANDROID_AVD_IMAGE, DEVICE_SKIN, force: true, settings: avdSettings);
 
 		// start the emulator
 		Information("Starting Emulator: {0}...", ANDROID_AVD);
@@ -433,13 +443,18 @@ void SetupAppPackageNameAndResult()
 
 void InstallApk(string testApp, string testAppPackageName, string testResultsDirectory)
 {
+	var installadbSettings = new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT };
+	if(!string.IsNullOrEmpty(DEVICE_UDID))
+	{
+		installadbSettings.Serial = DEVICE_UDID;
+	}
 	if (DEVICE_BOOT_WAIT) {
 		Information("Waiting for the emulator to finish booting...");
 
 		// wait for it to finish booting (10 mins)
 		var waited = 0;
 		var total = 60 * 10;
-		while (AdbShell("getprop sys.boot_completed", adbSettings).FirstOrDefault() != "1") {
+		while (AdbShell("getprop sys.boot_completed", installadbSettings).FirstOrDefault() != "1") {
 			System.Threading.Thread.Sleep(1000);
 			Information("Wating {0}/{1} seconds for the emulator to boot up.", waited, total);
 			if (waited++ > total)
@@ -449,20 +464,89 @@ void InstallApk(string testApp, string testAppPackageName, string testResultsDir
 	}
 
 	Information("Setting the ADB properties...");
-	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", adbSettings);
+	var lines = AdbShell("setprop debug.mono.log default,mono_log_level=debug,mono_log_mask=all", installadbSettings);
 	Information("{0}", string.Join("\n", lines));
-	lines = AdbShell("getprop debug.mono.log", adbSettings);
+	lines = AdbShell("getprop debug.mono.log", installadbSettings);
 	Information("{0}", string.Join("\n", lines));
 
-	//install apk on the emulator
+	//install apk on the emulator or device
 	Information("Install with xharness: {0}", testApp);
 	var settings = new DotNetToolSettings {
 		DiagnosticOutput = true,
-		ArgumentCustomization = args=>args.Append("run xharness android install " +
-			$"--app=\"{testApp}\" " +
-			$"--package-name=\"{testAppPackageName}\" " +
-			$"--output-directory=\"{testResultsDirectory}\" " +
-			$"--verbosity=\"Debug\" ")
+		ArgumentCustomization =  args =>
+						{
+							args.Append("run xharness android install " +
+										$"--app=\"{testApp}\" " +
+										$"--package-name=\"{testAppPackageName}\" " +
+										$"--output-directory=\"{testResultsDirectory}\" " +
+										$"--verbosity=\"Debug\" ");
+							
+							//if we specify a device we need to pass it to xharness
+							if(!string.IsNullOrEmpty(DEVICE_UDID))
+							{
+								args.Append($"--device-id=\"{DEVICE_UDID}\" ");
+							}
+
+							return args;
+						}
+	};
+	
+	if(!string.IsNullOrEmpty(DEVICE_UDID))
+	{
+		SetEnvironmentVariable("DEVICE_UDID", DEVICE_UDID);
+		//this needs to be translated to android 10/11 for appium
+		var realApi ="";
+		if(DEVICE_VERSION == "33")
+		{
+			realApi = "13";
+		}
+		if(DEVICE_VERSION == "32" || DEVICE_VERSION == "31")
+		{
+			realApi = "12";
+		}
+		else if(DEVICE_VERSION == "30")
+		{
+			realApi = "11";
+		}
+		SetEnvironmentVariable("PLATFORM_VERSION", realApi);
+	}
+
+	DotNetTool("tool", settings);
+}
+
+void GetDevices(string version)
+{
+	var deviceUdid = "";
+	var deviceName = "";
+	var deviceVersion = "";
+	var deviceOS = "";
+
+	var devices = AdbDevices(adbSettings);
+	foreach	(var device in devices)
+	{
+		deviceUdid = device.Serial;
+		deviceName = device.Model;
+		deviceOS = device.Product;
+
+		deviceVersion = AdbShell($"getprop ro.build.version.sdk ", new AdbToolSettings { SdkRoot = ANDROID_SDK_ROOT, Serial = deviceUdid }).FirstOrDefault();
+		Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
+
+		if(version.Contains(deviceVersion.Split(".")[0]))
+		{
+			Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
+			DEVICE_UDID = deviceUdid;
+			DEVICE_VERSION = deviceVersion;
+			DEVICE_NAME = deviceName;
+			DEVICE_OS = deviceOS;
+			break;
+		}
+	}
+
+	//this will fail if there are no devices with this api attached
+	var settings = new DotNetToolSettings {
+			DiagnosticOutput = true,
+			ArgumentCustomization = args=>args.Append("run xharness android device " +
+			$"--api-version=\"{version}\" " )
 	};
 	DotNetTool("tool", settings);
 }
