@@ -7,8 +7,10 @@ using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
 {
-	public partial class ShellTests : ControlsHandlerTestBase
+	[Category(TestCategory.Shell)]
+	public partial class ShellTests
     {
+#if !MACCATALYST
         [Theory]
 		[InlineData(0)]
 		[InlineData(100)]
@@ -45,5 +47,6 @@ namespace Microsoft.Maui.DeviceTests
                 Assert.Equal(topMargin > 0 ? topMargin : GetSafeArea().Top, header.Frame.Top);
 			});
 		}
+#endif
     }
 }
