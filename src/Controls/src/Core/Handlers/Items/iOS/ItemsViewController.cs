@@ -242,7 +242,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal Size? GetSize()
 		{
-			if (_emptyViewDisplayed) 
+			if (_emptyViewDisplayed)
 			{
 				return _emptyUIView.Frame.Size.ToSize();
 			}
