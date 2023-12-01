@@ -34,6 +34,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Swipe to right the SwipeView")]
 		public void SwipeToRight()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			// 1. Open the SwipeView using a gesture.
 			App.WaitForElement(SwipeViewToRightId);
 			App.SwipeLeftToRight(SwipeViewToRightId);
@@ -49,6 +51,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Swipe to left the SwipeView")]
 		public void SwipeToLeft()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			// 1. Open the SwipeView using a gesture.
 			App.WaitForElement(SwipeViewToLeftId);
 			App.SwipeRightToLeft(SwipeViewToLeftId);
