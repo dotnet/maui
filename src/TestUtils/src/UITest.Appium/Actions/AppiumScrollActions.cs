@@ -149,7 +149,7 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
+				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
@@ -168,7 +168,7 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
+				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
@@ -187,7 +187,7 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
+				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
@@ -206,7 +206,7 @@ namespace UITest.Appium
 
 			new TouchAction(driver)
 				.Press(startX, startY)
-				.Wait(swipeSpeed)
+				.Wait(strategy != ScrollStrategy.Programmatically ? swipeSpeed : 0)
 				.MoveTo(endX, endY)
 				.Release()
 				.Perform();
