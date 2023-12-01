@@ -30,21 +30,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 		public string TestNuGetConfig => Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "NuGet.config");
 
-		// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
-		protected List<string> BuildProps => new()
-		{
-			"RestoreNoCache=true",
-			//"GenerateAppxPackageOnBuild=true",
-			$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
-			$"RestoreConfigFile={TestNuGetConfig}",
-			// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
-			$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
-			//Try not restore dependencies of 6.0.10
-			$"DisableTransitiveFrameworkReferenceDownloads=true",
-			// Surface warnings as build errors
-			"TreatWarningsAsErrors=true",
-		};
-
+		protected List<string> BuildProps = new List<string>();
 
 		/// <summary>
 		/// Copy NuGet packages that are not installed as part of the workload and set up NuGet.config
@@ -55,6 +41,21 @@ namespace Microsoft.Maui.IntegrationTests
 		[OneTimeSetUp]
 		public void BuildTestFxtSetUp()
 		{
+			// Properties that ensure we don't use cached packages, and *only* the empty NuGet.config
+			BuildProps = new()
+			{
+				"RestoreNoCache=true",
+				//"GenerateAppxPackageOnBuild=true",
+				$"RestorePackagesPath={Path.Combine(TestEnvironment.GetTestDirectoryRoot(), "packages")}",
+				$"RestoreConfigFile={TestNuGetConfig}",
+				// Avoid iOS build warning as error on Windows: There is no available connection to the Mac. Task 'VerifyXcodeVersion' will not be executed
+				$"CustomBeforeMicrosoftCSharpTargets={Path.Combine(TestEnvironment.GetMauiDirectory(), "src", "Templates", "TemplateTestExtraTargets.targets")}",
+				//Try not restore dependencies of 6.0.10
+				$"DisableTransitiveFrameworkReferenceDownloads=true",
+				// Surface warnings as build errors
+				"TreatWarningsAsErrors=true",
+			};
+
 			string[] NuGetOnlyPackages = new string[] {
 				"Microsoft.Maui.Controls.*.nupkg",
 				"Microsoft.Maui.Core.*.nupkg",

@@ -114,6 +114,51 @@ namespace Microsoft.Maui.IntegrationTests
 		}
 
 		[Test]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
+		{
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			BuildProps.Add("PublishAot=true");
+			BuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+
+			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: BuildProps, runtimeIdentifier: runtimeIdentifier),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
+		public void PublishNativeAOTCheckWarnings(string id, string framework, string runtimeIdentifier)
+		{
+			var expectedWarningsCount = 69; // NOTE: As we progress we will want to lower this number to match the current state
+			var projectDir = TestDirectory;
+			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			BuildProps.Add("PublishAot=true");
+			BuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			BuildProps.Add("TrimmerSingleWarn=false");
+
+			Assert.IsTrue(DotnetInternal.PublishForOutput(projectFile, "Release", out string buildOutput, framework: framework, properties: BuildProps, runtimeIdentifier: runtimeIdentifier),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+			Assert.NotNull(buildOutput);
+
+			var buildOutputLines = buildOutput.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
+			var trimAnalysisWarnings = buildOutputLines.Where(buildOutputLine => buildOutputLine.Contains(": Trim analysis warning", StringComparison.InvariantCulture)).ToList();
+			var aotAnalysisWarnings = buildOutputLines.Where(buildOutputLine => buildOutputLine.Contains(": AOT analysis warning", StringComparison.InvariantCulture)).ToList();
+			var trimWarningsCount = trimAnalysisWarnings?.Count();
+			var aotWarningsCount = aotAnalysisWarnings?.Count();
+			var relevantWarningsCount = trimWarningsCount + aotWarningsCount;
+			Assert.IsTrue(relevantWarningsCount <= expectedWarningsCount);
+		}
+
+		[Test]
 		[TestCase("maui", DotNetCurrent, "Release")]
 		public void PublishUnpackaged(string id, string framework, string config)
 		{
