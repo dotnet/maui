@@ -192,6 +192,21 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("setOrientationPortrait", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Performs a tap / touch gesture on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to tap.</param>
+		/// <param name="y">The y coordinate to tap.</param>
+		public static void TapCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
