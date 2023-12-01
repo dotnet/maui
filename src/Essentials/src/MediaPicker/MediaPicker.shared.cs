@@ -1,6 +1,5 @@
 #nullable enable
 using System.Threading.Tasks;
-using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Storage;
 
 namespace Microsoft.Maui.Media
@@ -20,28 +19,28 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
-		Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a photo.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
-		Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the media browser to select a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
-		Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null);
 
 		/// <summary>
 		/// Opens the camera to take a video.
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
-		Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null);
+		Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null);
 	}
 
 	/// <summary>
@@ -60,7 +59,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked photo.</returns>
-		public static Task<FileResult> PickPhotoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> PickPhotoAsync(MediaPickerOptions? options = null) =>
 			Default.PickPhotoAsync(options);
 
 		/// <summary>
@@ -68,7 +67,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured photo.</returns>
-		public static Task<FileResult> CapturePhotoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> CapturePhotoAsync(MediaPickerOptions? options = null) =>
 			Default.CapturePhotoAsync(options);
 
 		/// <summary>
@@ -76,7 +75,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the picked video.</returns>
-		public static Task<FileResult> PickVideoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> PickVideoAsync(MediaPickerOptions? options = null) =>
 			Default.PickVideoAsync(options);
 
 		/// <summary>
@@ -84,7 +83,7 @@ namespace Microsoft.Maui.Media
 		/// </summary>
 		/// <param name="options">Pick options to use.</param>
 		/// <returns>A <see cref="FileResult"/> object containing details of the captured video.</returns>
-		public static Task<FileResult> CaptureVideoAsync(MediaPickerOptions? options = null) =>
+		public static Task<FileResult?> CaptureVideoAsync(MediaPickerOptions? options = null) =>
 			Default.CaptureVideoAsync(options);
 
 		static IMediaPicker? defaultImplementation;
