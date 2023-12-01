@@ -77,8 +77,8 @@ namespace Microsoft.Maui.DeviceTests
 				await CreateHandlerAndAddToWindow<LineHandler>(line, async (handler) =>
 				{
 					await AssertionExtensions.Wait(
-						() => 
-						handler.PlatformView is not null && 
+						() =>
+						handler.PlatformView is not null &&
 						handler.PlatformView.Drawable is not null);
 
 					var mauiShapeView = handler.PlatformView;
