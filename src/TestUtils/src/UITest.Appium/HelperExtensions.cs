@@ -175,6 +175,83 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Performs a left to right swipe gesture on the screen. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeLeftToRight(this IApp app, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+			{
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Performs a left to right swipe gesture on the matching element. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeLeftToRight(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		///  Performs a right to left swipe gesture on the screen. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeRightToLeft(this IApp app, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+			{
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Performs a right to left swipe gesture on the matching element. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeRightToLeft(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+    }
+    
 		/// Changes the device orientation to landscape mode.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
