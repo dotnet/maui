@@ -257,39 +257,17 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			var parent = ContentView?.Superview;
 			if (parent is null)
+			{
 				return;
+			}
 
 			nfloat footerHeight = 0;
-
 			if (FooterView is not null)
+			{
 				footerHeight = FooterView.Frame.Height;
-
-			if (ScrollView is not null)
-			{
-				var contentFrame = new Rect(parent.Bounds.X, ContentTopMargin, parent.Bounds.Width, parent.Bounds.Height - ContentTopMargin - footerHeight);
-				if (Content is null)
-				{
-					ContentView.Frame = contentFrame.AsCGRect();
-				}
-				else
-				{
-					(Content as IView)?.Arrange(contentFrame);
-				}
 			}
-			else
-			{
-				var contentViewYOffset = (HeaderView?.Frame.Height ?? 0) + HeaderViewVerticalOffset + ContentTopMargin;
-				if (!Content.IsSet(View.MarginProperty))
-				{
-					// If HeaderView is null, we need to offset the content by SafeArea.Top. 
-					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
-					if (HeaderView is null)
-						contentViewYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
-				}
 
-				var contentFrame = new Rect(parent.Bounds.X, contentViewYOffset, parent.Bounds.Width, parent.Bounds.Height - footerHeight - contentViewYOffset);
-				(Content as IView)?.Arrange(contentFrame);
-			}
+			LayoutContent(parent.Bounds, footerHeight);
 
 			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithMargin))
 			{
@@ -306,7 +284,39 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				}
 				else if (HeaderView.Layer.Mask is not null)
+				{
 					HeaderView.Layer.Mask = null;
+				}
+			}
+		}
+
+		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
+		{
+			// Initially we offset the content by the header's offset (which could include the safe area) + the calculated top margin for the content
+			var contentViewYOffset = HeaderViewVerticalOffset + ContentTopMargin;
+			if (Content?.IsSet(View.MarginProperty) == false)
+			{
+				if (HeaderView is null)
+				{
+					// If HeaderView is null, we need add the SafeArea.Top explicitly. 
+					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
+					contentViewYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+				}
+			}
+
+			if (ScrollView is null)
+			{
+				contentViewYOffset += HeaderView?.Frame.Height ?? 0;
+			}
+
+			var contentFrame = new Rect(parentBounds.X, contentViewYOffset, parentBounds.Width, parentBounds.Height - contentViewYOffset - footerHeight);
+			if (Content is null)
+			{
+				ContentView.Frame = contentFrame.AsCGRect();
+			}
+			else
+			{
+				(Content as IView)?.Arrange(contentFrame);
 			}
 		}
 
