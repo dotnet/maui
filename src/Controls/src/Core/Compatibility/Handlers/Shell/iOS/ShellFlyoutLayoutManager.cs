@@ -294,7 +294,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			// Initially we offset the content by the header's offset (which could include the safe area) + the calculated top margin for the content
 			var contentViewYOffset = HeaderViewVerticalOffset + ContentTopMargin;
-			if (Content?.IsSet(View.MarginProperty) == false && HeaderView is not null)
+			if (Content?.IsSet(View.MarginProperty) == false && HeaderView is null)
 			{
 					// If HeaderView is null, we need add the SafeArea.Top explicitly. 
 					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
