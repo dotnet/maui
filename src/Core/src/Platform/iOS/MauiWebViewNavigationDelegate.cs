@@ -27,7 +27,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var handler = Handler;
 			var virtualView = handler?.VirtualView;
-			
+
 			if (handler == null || virtualView == null)
 				return;
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.Platform
 		{
 			var handler = Handler;
 			var virtualView = handler?.VirtualView;
-			
+
 			if (handler == null || virtualView == null)
 				return;
 
