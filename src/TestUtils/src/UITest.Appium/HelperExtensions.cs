@@ -177,7 +177,7 @@ namespace UITest.Appium
 		/// <summary>
 		/// Presses the volume up button on the device.
 		/// </summary>
-		/// <param name="app"></param>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void PressVolumeUp(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressVolumeUp", ImmutableDictionary<string, object>.Empty);
@@ -186,13 +186,13 @@ namespace UITest.Appium
 		/// <summary>
 		/// Presses the volume down button on the device.
 		/// </summary>
-		/// <param name="app"></param>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		public static void PressVolumeDown(this IApp app)
 		{
 			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
-    }
+		}
     
-    /// <summary>
+		/// <summary>
 		/// Performs a left to right swipe gesture on the screen. 
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
