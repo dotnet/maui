@@ -190,8 +190,16 @@ namespace Microsoft.Maui.Controls.Platform
 				_visualElement.BindingContext = dataContext;
 			}
 
-			Content = _handler.ToPlatform();
-
+			var nativeView = _handler.ToPlatform();
+			if (nativeView is ICrossPlatformLayoutBacking)
+			{
+				Content = nativeView;
+			}
+			else
+			{
+				Content = new ContentPanel() { Content = nativeView, CrossPlatformLayout = _visualElement };
+			}
+			
 			itemsView?.AddLogicalChild(_visualElement);
 		}
 
@@ -268,12 +276,6 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <inheritdoc/>
 		protected override WSize ArrangeOverride(WSize finalSize)
 		{
-			if (_handler != null && _visualElement is IView view)
-			{
-				// Ensure that cross-platform arrangement takes place, if necessary
-				view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height));
-			}
-
 			return base.ArrangeOverride(finalSize);
 		}
 
@@ -300,12 +302,6 @@ namespace Microsoft.Maui.Controls.Platform
 			// call base.MeasureOverride, so that we don't short circuit whatever bookkeeping it needs to do.
 
 			var measureSize = base.MeasureOverride(new WSize(width, height));
-
-			if (_visualElement is IView view)
-			{
-				// Ensure that cross-platform measurement takes place, if necessary
-				view.Measure(availableSize.Width, availableSize.Height);
-			}
 
 			return new WSize(Max(measureSize.Width, width), Max(measureSize.Height, height));
 		}

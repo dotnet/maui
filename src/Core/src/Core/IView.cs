@@ -7,7 +7,7 @@ namespace Microsoft.Maui
 	/// <summary>
 	/// Represents a visual element that is used to place layouts and controls on the screen.
 	/// </summary>
-	public interface IView : IElement, ITransform
+	public interface IView : IElement, ITransform, ICrossPlatformLayout
 	{
 		/// <summary>
 		/// Id used by automation tools to interact with this View
@@ -164,5 +164,17 @@ namespace Microsoft.Maui
 		/// Gets a value indicating whether this element should be involved in the user interaction cycle.
 		/// </summary>
 		bool InputTransparent { get; }
+
+#pragma warning disable RS0016 // Add public types and members to the declared API
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint) 
+		{
+			return Measure(widthConstraint, heightConstraint);
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds) 
+		{
+			return Arrange(bounds);
+		}
+#pragma warning restore RS0016 // Add public types and members to the declared API
 	}
 }
