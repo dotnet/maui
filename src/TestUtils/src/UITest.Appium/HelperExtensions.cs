@@ -174,6 +174,24 @@ namespace UITest.Appium
 			}
 		}
 
+		/// <summary>
+		/// Changes the device orientation to landscape mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetOrientationLandscape(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationLandscape", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Changes the device orientation to portrait mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetOrientationPortrait(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationPortrait", ImmutableDictionary<string, object>.Empty);
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
