@@ -341,7 +341,11 @@ namespace Microsoft.Maui.Platform
 
 			Measure(0, double.PositiveInfinity);
 
-			var desiredMinimum = virtualView.Aggregate(new Size(), (s, c) => new Size(Math.Max(s.Width, c.DesiredSize.Width), s.Height + c.DesiredSize.Height));
+			var desiredMinimum = virtualView.Aggregate(new Size(), 
+				(s, c) => new Size(
+					// this is only true if Layout is vertical?
+					Math.Max(s.Width, c.DesiredSize.Width), 
+					s.Height + c.DesiredSize.Height));
 
 			MeasuredMinimum = Measure(desiredMinimum.Width, double.PositiveInfinity);
 
