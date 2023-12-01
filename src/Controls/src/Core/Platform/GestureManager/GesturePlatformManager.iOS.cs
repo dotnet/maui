@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
-				foreach(var uiGestureRecognizer in kvp.Value)
+				foreach (var uiGestureRecognizer in kvp.Value)
 				{
 					if (uiGestureRecognizer is null)
 						continue;
