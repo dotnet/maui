@@ -87,9 +87,4 @@ public class PlatformTouchGraphicsView : Microsoft.Maui.Graphics.Platform.Gtk.Gt
 	{
 		_graphicsView = null;
 	}
-
-	public void UpdateDrawable(IGraphicsView graphicsView)
-	{
-		Drawable = graphicsView.Drawable;
-	}
 }
