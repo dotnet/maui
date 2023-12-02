@@ -9,8 +9,8 @@ namespace Microsoft.Maui.Graphics
 	[TypeConverter(typeof(Converters.RectTypeConverter))]
 	public partial struct Rect
 	{
-		double _Height;
-		double _Width;
+		double _height;
+		double _width;
 
 		public double X { get; set; }
 
