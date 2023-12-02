@@ -182,18 +182,33 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Theory]
-		[ClassData(typeof(ShellFlyoutHeaderBehaviorTestCases))]
-		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(FlyoutHeaderBehavior behavior)
+		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
+		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
+			FlyoutHeaderBehavior behavior, 
+			string contentType, 
+			int? headerMarginTop, 
+			int? headerMarginBottom, 
+			int contentMarginTop, 
+			int contentMarginBottom)
 		{
 			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
 			// so we have to account for that in the default setup
+			var headerMargin = new Thickness(0, headerMarginTop ?? GetSafeArea().Top, 0, headerMarginBottom ?? 0);
+			var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
 			var flyoutHeader = new Label() { Text = "Flyout Header" };
+
+			// If margin top is null we don't set anything so safe area is added automatically
+			if (headerMarginTop.HasValue)
+			{
+				flyoutHeader.Margin = headerMargin;
+			}
+
 			await RunShellTest(shell =>
 			{
 				shell.FlyoutHeader = flyoutHeader;
 				shell.FlyoutFooter = new Label() { Text = "Flyout Footer" };
-				shell.FlyoutContent = new VerticalStackLayout() { new Label() { Text = "Flyout Content" } };
 				shell.FlyoutHeaderBehavior = behavior;
+				shell.FlyoutContent = ShellFlyoutHeaderBehaviorAndContentTestCases.GetFlyoutContentAction(contentType, contentMargin);
 			},
 			async (shell, handler) =>
 			{
@@ -206,21 +221,27 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(GetSafeArea().Top, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
+				var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
+				if (contentType != "ScrollView")
+				{
+					expectedContentY += headerFrame.Height;
+				}
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + GetSafeArea().Top, contentFrame.Y, epsilon: 0.5, message: "Content Y");
+				AssertionExtensions.CloseEnough(expectedContentY, contentFrame.Y, epsilon: 0.5, message: "Content Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
 
 				// validate footer position
+				var expectedFooterY = expectedContentY + contentMargin.Bottom + contentFrame.Height;
 				AssertionExtensions.CloseEnough(0, footerFrame.X, message: "Footer X");
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + GetSafeArea().Top, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
+				AssertionExtensions.CloseEnough(expectedFooterY, footerFrame.Y, epsilon: 0.5, message: "Footer Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, footerFrame.Width, message: "Footer Width");
 
 				//All three views should measure to the height of the flyout
-				AssertionExtensions.CloseEnough(headerFrame.Height + contentFrame.Height + footerFrame.Height + GetSafeArea().Top, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
+				AssertionExtensions.CloseEnough(expectedFooterY + footerFrame.Height, flyoutFrame.Height, epsilon: 0.5, message: "Total Height");
 			});
 		}
 #endif
