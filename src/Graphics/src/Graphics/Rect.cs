@@ -48,10 +48,6 @@ namespace Microsoft.Maui.Graphics
 		// constructors
 		public Rect(double x, double y, double width, double height) : this()
 		{
-			if (double.IsNaN(width))
-				throw new ArgumentOutOfRangeException(nameof(width), width, "Cannot be NaN");
-			if (double.IsNaN(height))
-				throw new ArgumentOutOfRangeException(nameof(height), height, "Cannot be NaN");
 			X = x;
 			Y = y;
 			Width = width;
