@@ -78,7 +78,7 @@ namespace Microsoft.Maui.Devices
 				using (var filter = new IntentFilter(Intent.ActionBatteryChanged))
 				using (var battery = PlatformUtils.RegisterBroadcastReceiver(null, filter, false))
 				{
-					if(battery is null)
+					if (battery is null)
 						return -1; // Unknown
 
 					var level = battery.GetIntExtra(BatteryManager.ExtraLevel, -1);

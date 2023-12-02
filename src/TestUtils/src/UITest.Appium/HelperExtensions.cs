@@ -250,8 +250,8 @@ namespace UITest.Appium
 				{ "swipeSpeed", swipeSpeed },
 				{ "withInertia", withInertia }
 			});
-    }
-    
+		}
+
 		/// Changes the device orientation to landscape mode.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
