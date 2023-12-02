@@ -18,23 +18,23 @@ namespace Microsoft.Maui.Graphics
 
 		public double Width
 		{
-			get => _Width;
+			get => _width;
 			set
 			{
 				if (double.IsNaN(value))
 					throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot be NaN");
-				_Width = value;
+				_width = value;
 			}
 		}
 
 		public double Height
 		{
-			get => _Height;
+			get => _height;
 			set
 			{
 				if (double.IsNaN(value))
 					throw new ArgumentOutOfRangeException(nameof(value), value, "Cannot be NaN");
-				_Height = value;
+				_height = value;
 			}
 		}
 
