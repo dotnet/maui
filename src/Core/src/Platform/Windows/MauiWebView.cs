@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
@@ -10,8 +11,6 @@ namespace Microsoft.Maui.Platform
 	public class MauiWebView : WebView2, IWebViewDelegate
 	{
 		readonly WeakReference<WebViewHandler> _handler;
-
-		bool _navigatingToHtmlWithBaseUrl;
 
 		[Obsolete("Constructor is no longer used, please use an overloaded version.")]
 #pragma warning disable CS8618
@@ -50,8 +49,6 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadHtml(string? html, string? baseUrl)
 		{
-			_navigatingToHtmlWithBaseUrl = false;
-
 			var mapBaseDirectory = false;
 
 			if (string.IsNullOrEmpty(baseUrl))
@@ -97,8 +94,6 @@ namespace Microsoft.Maui.Platform
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 				}
 
-				_navigatingToHtmlWithBaseUrl = true;
-
 				// Set the HTML for the 'real' WebView to the updated HTML
 				NavigateToString(!string.IsNullOrEmpty(htmlWithBaseTag) ? htmlWithBaseTag : html);
 
@@ -117,8 +112,6 @@ namespace Microsoft.Maui.Platform
 
 		public async void LoadUrl(string? url)
 		{
-			_navigatingToHtmlWithBaseUrl = false;
-
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
 			if (!uri.IsAbsoluteUri ||
@@ -154,14 +147,12 @@ namespace Microsoft.Maui.Platform
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
 				if (IsUriWithLocalScheme(args?.Uri) ||
-					(IsDataUri(args?.Uri) && _navigatingToHtmlWithBaseUrl))
+					IsWebView2DataUriWithBaseUrl(args?.Uri))
 				{
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
 						ApplicationPath,
 						Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
-
-					_navigatingToHtmlWithBaseUrl = false;
 				}
 				// Auto unmap local virtual app dir host if navigating to any other potentially unsafe domain
 				else
@@ -179,9 +170,23 @@ namespace Microsoft.Maui.Platform
 					StringComparison.OrdinalIgnoreCase) == true;
 		}
 
-		static bool IsDataUri(string? uri)
+		static bool IsWebView2DataUriWithBaseUrl(string? uri)
 		{
-			return uri?.StartsWith("data:text/html", StringComparison.OrdinalIgnoreCase) ?? false;
+			// WebView2 sends the web page with inserted base tag as data URI
+			const string dataUriBase64 = "data:text/html;charset=utf-8;base64,";
+			if (uri == null ||
+				uri.StartsWith(
+					dataUriBase64,
+					StringComparison.OrdinalIgnoreCase) == false)
+				return false;
+
+			string decodedHtml = Encoding.UTF8.GetString(
+				Convert.FromBase64String(
+					uri.Substring(dataUriBase64.Length)));
+
+			return decodedHtml.Contains(
+				$"<base href=\"{LocalScheme}",
+				StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }
