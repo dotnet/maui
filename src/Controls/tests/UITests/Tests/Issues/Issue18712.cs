@@ -15,29 +15,44 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void Issue18712IsEnabledTest()
 		{
-			App.Click("IsEnabledButton");
+			try
+			{
+				App.Click("IsEnabledButton");
 
-			App.WaitForElement("WaitForStubControl");
+				App.WaitForElement("WaitForStubControl");
 
-			// 1. The test fails if you are able to interact with the editor below.
-			App.Click("TestEditor");
-			VerifyScreenshot();
+				// 1. The test fails if you are able to interact with the editor below.
+				App.Click("TestEditor");
+				VerifyScreenshot();
+
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 
 		[Test]
 		public void Issue18712IsVisibleTest()
 		{
-			App.Click("IsVisibleButton");
+			try
+			{
+				App.Click("IsVisibleButton");
 
-			App.WaitForElement("WaitForStubControl");
+				App.WaitForElement("WaitForStubControl");
 
-			// 1. The test fails if the editor below is visible.
-			// Verify therefore that when trying to find, we cannot.
-			var editor = App.FindElement("TestEditor");
-			Assert.NotNull(editor);
+				// 1. The test fails if the editor below is visible.
+				// Verify therefore that when trying to find, we cannot.
+				var editor = App.FindElement("TestEditor");
+				Assert.NotNull(editor);
 
-			// With a snapshot ensure that the Editor is not visible.
-			VerifyScreenshot();
+				// With a snapshot ensure that the Editor is not visible.
+				VerifyScreenshot();
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 	}
 }
