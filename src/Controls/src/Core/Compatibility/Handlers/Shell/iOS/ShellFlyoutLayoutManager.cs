@@ -293,20 +293,20 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
 			// Initially we offset the content by the header's offset (which could include the safe area) + the calculated top margin for the content
-			var contentViewYOffset = HeaderViewVerticalOffset + ContentTopMargin;
+			var contentYOffset = HeaderViewVerticalOffset + ContentTopMargin;
 			if (Content?.IsSet(View.MarginProperty) == false && HeaderView is null)
 			{
 					// If HeaderView is null, we need add the SafeArea.Top explicitly. 
 					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
-					contentViewYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+					contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 			}
 
 			if (ScrollView is null)
 			{
-				contentViewYOffset += HeaderView?.Frame.Height ?? 0;
+				contentYOffset += HeaderView?.Frame.Height ?? 0;
 			}
 
-			var contentFrame = new Rect(parentBounds.X, contentViewYOffset, parentBounds.Width, parentBounds.Height - contentViewYOffset - footerHeight);
+			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
 			if (Content is null)
 			{
 				ContentView.Frame = contentFrame.AsCGRect();
