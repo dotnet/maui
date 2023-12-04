@@ -14,26 +14,22 @@ namespace Microsoft.Maui.DeviceTests
         [Theory]
 		[InlineData(0)]
 		[InlineData(100)]
-		public async Task FlyoutHeaderRendererDoesNotGoOverContent(int topMargin)
+		public async Task FlyoutHeaderRendererHasTheRightHeight(int topMargin)
 		{
-			var flyoutItem = new FlyoutItem() { Items = { new ContentPage() } };
-			var flyoutItemGrid = new Grid();
 			var flyoutHeaderHeight = 250;
-			var layout = new Grid() { BackgroundColor = Colors.Pink, HeightRequest = flyoutHeaderHeight };
-			layout.Children.Add(new Button() { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill, BackgroundColor = Colors.Orange });
+			var layout = new Grid() { HeightRequest = flyoutHeaderHeight };
+			layout.Children.Add(new Button() { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill });
 			
 			if (topMargin > 0)
 			{
 				layout.Margin = new Thickness(0, topMargin, 0, 0);
 			}
-			
-			Shell.SetItemTemplate(flyoutItem, new DataTemplate(() => flyoutItemGrid));
 
 			await RunShellTest(shell =>
 			{
 				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
 				shell.FlyoutHeader = layout;
-				shell.Items.Add(flyoutItem);
+				shell.FlyoutContent = new ScrollView() { Content = new Label() { Text = "FlyoutContent" } };
 			},
 			async (shell, handler) =>
 			{
