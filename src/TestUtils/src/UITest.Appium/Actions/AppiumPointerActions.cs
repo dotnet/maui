@@ -15,6 +15,7 @@ namespace UITest.Appium
 		const string DoubleClickCommand = "doubleClick";
 		const string DragAndDropCommand = "dragAndDrop";
 		const string ScrollToCommand = "scrollTo";
+		const string TapCoordinatesCommand = "tapCoordinates";
 
 		readonly AppiumApp _appiumApp;
 		readonly List<string> _commands = new()
@@ -23,6 +24,7 @@ namespace UITest.Appium
 			DoubleClickCommand,
 			DragAndDropCommand,
 			ScrollToCommand,
+			TapCoordinatesCommand,
 		};
 
 		public AppiumPointerActions(AppiumApp appiumApp)
@@ -43,6 +45,7 @@ namespace UITest.Appium
 				DoubleClickCommand => DoubleClick(parameters),
 				DragAndDropCommand => DragAndDrop(parameters),
 				ScrollToCommand => ScrollTo(parameters),
+				TapCoordinatesCommand => TapCoordinates(parameters),
 				_ => CommandResponse.FailedEmptyResponse,
 			};
 		}
@@ -198,6 +201,17 @@ namespace UITest.Appium
 			}
 		}
 
+		CommandResponse TapCoordinates(IDictionary<string, object> parameters)
+		{
+			if (parameters.TryGetValue("x", out var x) &&
+				parameters.TryGetValue("y", out var y))
+			{
+				return ClickCoordinates(Convert.ToSingle(x), Convert.ToSingle(y));
+			}
+
+			return CommandResponse.FailedEmptyResponse;
+		}
+		
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)
