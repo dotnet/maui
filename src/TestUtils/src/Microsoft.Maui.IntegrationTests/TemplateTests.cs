@@ -147,7 +147,8 @@ namespace Microsoft.Maui.IntegrationTests
 
 			Assert.IsTrue(DotnetInternal.PublishForOutput(projectFile, "Release", out string buildOutput, framework: framework, properties: BuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-			Assert.NotNull(buildOutput);
+			Assert.NotNull(buildOutput,
+				$"Build output has not been created when building {Path.GetFileName(projectFile)}. Check test output/attachments for errors.");
 
 			var buildOutputLines = buildOutput.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
 			var trimAnalysisWarnings = buildOutputLines.Where(buildOutputLine => buildOutputLine.Contains(": Trim analysis warning", StringComparison.InvariantCulture)).ToList();
@@ -155,7 +156,9 @@ namespace Microsoft.Maui.IntegrationTests
 			var trimWarningsCount = trimAnalysisWarnings?.Count();
 			var aotWarningsCount = aotAnalysisWarnings?.Count();
 			var relevantWarningsCount = trimWarningsCount + aotWarningsCount;
-			Assert.IsTrue(relevantWarningsCount <= expectedWarningsCount);
+
+			Assert.IsTrue(relevantWarningsCount <= expectedWarningsCount,
+				$"Building the project {Path.GetFileName(projectFile)} generated: {relevantWarningsCount} trim/AOT warnings which is greater than the expected amount: {expectedWarningsCount}");
 		}
 
 		[Test]
