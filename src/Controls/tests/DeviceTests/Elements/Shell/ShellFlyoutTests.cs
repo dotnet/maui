@@ -193,7 +193,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
 			// so we have to account for that in the default setup
-			var headerMargin = new Thickness(0, headerMarginTop ?? GetSafeArea().Top, 0, headerMarginBottom ?? 0);
+			var headerMargin = new Thickness(0, headerMarginTop ?? 0, 0, headerMarginBottom ?? 0);
 			var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
 			var flyoutHeader = new Label() { Text = "Flyout Header" };
 
@@ -212,6 +212,11 @@ namespace Microsoft.Maui.DeviceTests
 			},
 			async (shell, handler) =>
 			{
+				if (!headerMarginTop.HasValue)
+				{
+					headerMargin.Top = GetSafeArea().Top;
+				}
+
 				await OpenFlyout(handler);
 
 				var flyoutFrame = GetFlyoutFrame(handler);
