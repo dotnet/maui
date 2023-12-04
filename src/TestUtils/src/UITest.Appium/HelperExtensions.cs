@@ -284,6 +284,28 @@ namespace UITest.Appium
 			});
 		}
 
+
+		/// <summary>
+		/// Sets the value of a Slider element that matches marked.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
+		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
+		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d,double maximum = 1d)
+		{
+			var element = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			{
+				{ "element", element },
+				{ "value", value },
+				{ "minimum", minimum },
+				{ "maximum", maximum },
+			});
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
