@@ -29,6 +29,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Set different slider values")]
 		public void SetSliderValue()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
 			const string customSlider = "CustomSlider";
 			App.WaitForElement(customSlider);
 
