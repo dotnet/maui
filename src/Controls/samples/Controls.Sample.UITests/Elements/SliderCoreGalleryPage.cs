@@ -42,7 +42,7 @@ internal class SliderCoreGalleryPage : ContentPage
 		layout.Add(thumbColorLabel);
 		layout.Add(thumbColorSlider);
 
-		// Custom Color
+		// Custom Slider
 		var customLabel = new Label { Text = "Custom" };
 		var customSlider = new Slider { AutomationId = "CustomSlider", Minimum = 0, Maximum = 100, Value = 30 };
 		layout.Add(customLabel);
