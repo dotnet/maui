@@ -57,12 +57,12 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 
 		[Fact]
 		public void Unsubscribe_BatteryInfoChanged_Does_Not_Crash()
-		{   
+		{
 			// TODO: the test runner app (UI version) should do this, until then...
 			if (!HardwareSupport.HasBattery)
 				return;
 
-			Battery.BatteryInfoChanged -= (sender, args) => { };	
+			Battery.BatteryInfoChanged -= (sender, args) => { };
 		}
 
 		[Fact]

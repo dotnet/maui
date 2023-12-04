@@ -105,8 +105,8 @@ namespace UITest.Appium
 
 			int startX = (int)(position.X + (size.Width * swipePercentage));
 			int startY = position.Y + size.Height / 2;
-			
-			int endX = (int)(position.X + (size.Width * 0.05));	
+
+			int endX = (int)(position.X + (size.Width * 0.05));
 			int endY = startY;
 
 			new TouchAction(driver)
