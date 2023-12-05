@@ -133,9 +133,7 @@ namespace UITest.Appium
 
 		public void Dispose()
 		{
-			// TODO: Switch this back to Dispose once BrowserStack fixes
-			//_driver?.Dispose();
-			_driver?.Quit();
+			_driver?.Dispose();
 		}
 	}
 }

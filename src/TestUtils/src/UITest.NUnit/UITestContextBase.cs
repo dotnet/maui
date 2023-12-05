@@ -84,7 +84,7 @@ namespace UITest.Appium.NUnit
 
 		// Dispose of the driver. This is currently only used for BrowserStack, where the driver is recreated for each test
 		// so each test has its own session.
-		public void TearDown()
+		public void TearDownDriver()
 		{
 			_uiTestContext?.Dispose();
 			_uiTestContext = null;

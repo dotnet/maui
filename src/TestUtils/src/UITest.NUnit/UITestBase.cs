@@ -28,44 +28,24 @@ namespace UITest.Appium.NUnit
 		}
 
 		[SetUp]
-		public void RecordTestSetup()
+		public void TestSetup()
 		{
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Start");
 
+			// When running tests in isolation, we need to run the fixture setup steps for each test, navigating to the right UI
 			if (RunTestsInIsolation)
 			{
-				InitialSetup(UITestContextSetupFixture.ServerContext);
+				SetUpForFixtureTests();
 			}
 		}
 
 		[TearDown]
-		public void RecordTestTeardown()
+		public void TestTeardown()
 		{
-			if (RunTestsInIsolation)
-			{
-				TearDown();
-			}
-
 			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
 			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {name} Stop");
-		}
 
-		protected virtual void FixtureSetup()
-		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
-		}
-
-		protected virtual void FixtureTeardown()
-		{
-			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
-		}
-
-		[TearDown]
-		public void UITestBaseTearDown()
-		{
 			// With BrowserStack, checking AppState isn't supported currently, producing the error below, so skip this on BrowserStack
 			// BrowserStack error: System.NotImplementedException : Unknown mobile command "queryAppState". Only shell,scrollBackTo,viewportScreenshot,deepLink,startLogsBroadcast,stopLogsBroadcast,acceptAlert,dismissAlert,batteryInfo,deviceInfo,changePermissions,getPermissions,performEditorAction,startScreenStreaming,stopScreenStreaming,getNotifications,listSms,type commands are supported
 			if (!_useBrowserStack)
@@ -88,10 +68,35 @@ namespace UITest.Appium.NUnit
 				SaveDeviceDiagnosticInfo();
 				SaveUIDiagnosticInfo();
 			}
+
+			if (RunTestsInIsolation)
+			{
+				TearDownDriver();
+			}
+		}
+
+		protected virtual void FixtureSetup()
+		{
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureSetup)} for {name}");
+		}
+
+		protected virtual void FixtureTeardown()
+		{
+			var name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} {nameof(FixtureTeardown)} for {name}");
 		}
 
 		[OneTimeSetUp]
 		public void OneTimeSetup()
+		{
+			if (!RunTestsInIsolation)
+			{
+				SetUpForFixtureTests();
+			}
+		}
+
+		void SetUpForFixtureTests()
 		{
 			InitialSetup(UITestContextSetupFixture.ServerContext);
 			try
@@ -110,17 +115,22 @@ namespace UITest.Appium.NUnit
 		[OneTimeTearDown]
 		public void OneTimeTearDown()
 		{
-			var outcome = TestContext.CurrentContext.Result.Outcome;
-
-			// We only care about setup failures as regular test failures will already do logging
-			if (outcome.Status == ResultState.SetUpFailure.Status &&
-				outcome.Site == ResultState.SetUpFailure.Site)
+			// When running tests in isolation, we can skip this. OneTimeSetup failures never happen and there's no need to
+			// call FixtureTeardown to navigate back in the UI since the app will be restarted for the next test.
+			if (!RunTestsInIsolation)
 			{
-				SaveDeviceDiagnosticInfo();
-				SaveUIDiagnosticInfo();
-			}
+				var outcome = TestContext.CurrentContext.Result.Outcome;
 
-			FixtureTeardown();
+				// We only care about setup failures as regular test failures will already do logging
+				if (outcome.Status == ResultState.SetUpFailure.Status &&
+					outcome.Site == ResultState.SetUpFailure.Site)
+				{
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
+				}
+
+				FixtureTeardown();
+			}
 		}
 
 		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)

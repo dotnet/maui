@@ -23,10 +23,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			base.FixtureTeardown();
 
-			if (!RunTestsInIsolation)
-			{
-				this.Back();
-			}
+			this.Back();
 		}
 
 		[Test]
