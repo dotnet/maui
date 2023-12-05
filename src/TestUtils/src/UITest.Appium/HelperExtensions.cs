@@ -191,7 +191,7 @@ namespace UITest.Appium
 		{
 			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
 		}
-    
+
 		/// <summary>
 		/// Performs a left to right swipe gesture on the screen. 
 		/// </summary>
