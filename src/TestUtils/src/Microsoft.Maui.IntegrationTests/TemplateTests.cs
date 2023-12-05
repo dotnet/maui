@@ -117,16 +117,20 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOT(string id, string framework, string runtimeIdentifier)
 		{
+			if (!TestEnvironment.IsMacOS)
+				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			BuildProps.Add("PublishAot=true");
-			BuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add("PublishAot=true");
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 
-			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: BuildProps, runtimeIdentifier: runtimeIdentifier),
+			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
@@ -134,6 +138,9 @@ namespace Microsoft.Maui.IntegrationTests
 		[TestCase("maui", $"{DotNetCurrent}-ios", "ios-arm64")]
 		public void PublishNativeAOTCheckWarnings(string id, string framework, string runtimeIdentifier)
 		{
+			if (!TestEnvironment.IsMacOS)
+				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
+
 			var expectedWarningsCount = 69; // NOTE: As we progress we will want to lower this number to match the current state
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
@@ -141,11 +148,12 @@ namespace Microsoft.Maui.IntegrationTests
 			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
 				$"Unable to create template {id}. Check test output for errors.");
 
-			BuildProps.Add("PublishAot=true");
-			BuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
-			BuildProps.Add("TrimmerSingleWarn=false");
+			var extendedBuildProps = BuildProps;
+			extendedBuildProps.Add("PublishAot=true");
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
-			Assert.IsTrue(DotnetInternal.PublishForOutput(projectFile, "Release", out string buildOutput, framework: framework, properties: BuildProps, runtimeIdentifier: runtimeIdentifier),
+			Assert.IsTrue(DotnetInternal.PublishForOutput(projectFile, "Release", out string buildOutput, framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 			Assert.NotNull(buildOutput,
 				$"Build output has not been created when building {Path.GetFileName(projectFile)}. Check test output/attachments for errors.");
