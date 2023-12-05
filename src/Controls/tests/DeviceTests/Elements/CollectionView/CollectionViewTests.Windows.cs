@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
@@ -244,6 +245,11 @@ namespace Microsoft.Maui.DeviceTests
 				// The first label's height should be smaller than the second one since the text won't wrap
 				Assert.Equal(expectedHeight, finalHeight);
 			});
+		}
+
+		Rect GetCollectionViewCellBounds(IView cellContent)
+		{			
+			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 	}
 }

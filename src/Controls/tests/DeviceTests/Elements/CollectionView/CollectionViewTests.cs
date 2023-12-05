@@ -47,11 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact
-#if IOS || MACCATALYST || ANDROID
-		(Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517")
-#endif
-		]
+		[Fact]
 		public async Task CellSizeAccountsForMargin()
 		{
 			SetupBuilder();
@@ -77,16 +73,16 @@ namespace Microsoft.Maui.DeviceTests
 				WidthRequest = 200
 			};
 
-			//var platformView = (await CreateHandlerAsync<CollectionViewHandler>(collectionView)).PlatformView;
-
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
-				await Task.Delay(1000);
-#if WINDOWS
-				var bounds = buttons[0].ToPlatform().GetParentOfType<ItemContentControl>().GetPlatformViewBounds();
-				Assert.Equal(70, bounds.Height);
+				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0);
+				var button = buttons.Last();
+				var bounds = GetCollectionViewCellBounds(button);
 
-#endif
+				Assert.Equal(70, bounds.Height, 1d);
+				Assert.Equal(50, button.Frame.Height, 1d);
+				Assert.Equal(10, button.Frame.X, 1d);
+				Assert.Equal(10, button.Frame.Y, 1d);
 
 			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
