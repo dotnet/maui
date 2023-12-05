@@ -1,12 +1,12 @@
 <Project>
-  <Import Project="eng\Versions.props" />
+  <Import Project="eng\Versions.props"/>
 
   <PropertyGroup>
     <_MauiDotNetVersionMajor Condition="'$(_MauiDotNetVersionMajor)' == ''">7</_MauiDotNetVersionMajor>
     <_MauiDotNetVersionMinor Condition="'$(_MauiDotNetVersionMinor)' == ''">0</_MauiDotNetVersionMinor>
     <_MauiDotNetVersion Condition="'$(_MauiDotNetVersion)' == ''">$(_MauiDotNetVersionMajor).$(_MauiDotNetVersionMinor)</_MauiDotNetVersion>
     <_MauiDotNetTfm Condition="'$(_MauiDotNetTfm)' == ''">net$(_MauiDotNetVersion)</_MauiDotNetTfm>
-    
+
     <_MauiPreviousDotNetVersionMajor Condition="'$(_MauiPreviousDotNetVersionMajor)' == ''">7</_MauiPreviousDotNetVersionMajor>
     <_MauiPreviousDotNetVersionMinor Condition="'$(_MauiPreviousDotNetVersionMinor)' == ''">0</_MauiPreviousDotNetVersionMinor>
     <_MauiPreviousDotNetVersion Condition="'$(_MauiPreviousDotNetVersion)' == ''">$(_MauiPreviousDotNetVersionMajor).$(_MauiPreviousDotNetVersionMinor)</_MauiPreviousDotNetVersion>
@@ -97,10 +97,10 @@
     <WindowsTargetFrameworkVersion>10.0.19041</WindowsTargetFrameworkVersion>
     <Windows2TargetFrameworkVersion>10.0.20348</Windows2TargetFrameworkVersion>
     <TizenTargetFrameworkVersion>6.5</TizenTargetFrameworkVersion>
-    <GtkTargetFrameworkVersion>3.24.24.64</GtkTargetFrameworkVersion>
+    <GtkTargetFrameworkVersion>3.24.24.95</GtkTargetFrameworkVersion>
   </PropertyGroup>
 
-  <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props" />
+  <Import Condition="Exists('Directory.Build.Override.props')" Project="Directory.Build.Override.props"/>
 
   <PropertyGroup>
     <!-- the real TFMs -->
@@ -179,12 +179,12 @@
     <NoWarn>$(NoWarn);RS0016;RS0017;CA1822;CA1805;CS0649;CS1589</NoWarn>
   </PropertyGroup>
   <!-- This target is replaced by GitInfo when restored. Allows Versions.targets to rely on it before restore. -->
-  <Target Name="GitVersion" />
-  <Target Name="GitInfo" />
-  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props" />
-  <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props" />
+  <Target Name="GitVersion"/>
+  <Target Name="GitInfo"/>
+  <Import Condition="'$(EnvironmentBuildPropsImported)' != 'True'" Project="$(MSBuildThisFileDirectory)eng\Environment.Build.props"/>
+  <Import Condition="'$(SampleProject)' != 'True' and '$(CI)' == 'true'" Project="$(MSBuildThisFileDirectory)eng\SourceLink.Build.props"/>
   <ItemGroup Condition="'$(MSBuildVersion)' != '' AND '$(MSBuildVersion)' &lt; '16.7.0'  ">
-    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.7.0" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Net.Compilers.Toolset" Version="4.7.0" PrivateAssets="all"/>
   </ItemGroup>
   <PropertyGroup>
     <!-- We don't need to be warned that we are using a preview .NET -->
@@ -193,6 +193,6 @@
     <DisableTransitiveFrameworkReferenceDownloads>true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
   <PropertyGroup>
-    
+
   </PropertyGroup>
 </Project>
