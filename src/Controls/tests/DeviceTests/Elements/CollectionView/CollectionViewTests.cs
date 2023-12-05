@@ -80,7 +80,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
-				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0);
+				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded);
 				var button = buttons.Last();
 				var bounds = GetCollectionViewCellBounds(button);
 				var buttonBounds = button.GetBoundingBox();
