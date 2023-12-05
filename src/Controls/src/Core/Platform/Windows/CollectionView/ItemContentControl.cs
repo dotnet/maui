@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Platform
 	public class ItemContentControl : ContentControl
 	{
 		VisualElement _visualElement;
-		IViewHandler _renderer;
+		IViewHandler _handler;
 		DataTemplate _currentTemplate;
 
 		public ItemContentControl()
@@ -153,7 +153,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 			var itemsView = container as ItemsView;
 
-			if (itemsView != null && _renderer?.VirtualView is Element e)
+			if (itemsView != null && _handler?.VirtualView is Element e)
 			{
 				itemsView.RemoveLogicalChild(e);
 			}
@@ -163,14 +163,14 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (_renderer?.ContainerView is null || _currentTemplate != formsTemplate)
+			if (_handler?.ContainerView is null || _currentTemplate != formsTemplate)
 			{
 				// If the content has never been realized (i.e., this is a new instance), 
 				// or if we need to switch DataTemplates (because this instance is being recycled)
 				// then we'll need to create the content from the template 
 				_visualElement = formsTemplate.CreateContent(dataContext, container) as VisualElement;
 				_visualElement.BindingContext = dataContext;
-				_renderer = _visualElement.ToHandler(mauiContext);
+				_handler = _visualElement.ToHandler(mauiContext);
 
 				// We need to set IsPlatformStateConsistent explicitly; otherwise, it won't be set until the renderer's Loaded 
 				// event. If the CollectionView is in a Layout, the Layout won't measure or layout the CollectionView until
@@ -186,17 +186,17 @@ namespace Microsoft.Maui.Controls.Platform
 			else
 			{
 				// We are reusing this ItemContentControl and we can reuse the Element
-				_visualElement = _renderer.VirtualView as VisualElement;
+				_visualElement = _handler.VirtualView as VisualElement;
 				_visualElement.BindingContext = dataContext;
 			}
 
-			if (_renderer.VirtualView is ICrossPlatformLayout)
+			if (_handler.VirtualView is ICrossPlatformLayout)
 			{
-				Content = _renderer.ToPlatform();
+				Content = _handler.ToPlatform();
 			}
 			else
 			{
-				Content = new ContentLayoutPanel(_renderer.VirtualView);
+				Content = new ContentLayoutPanel(_handler.VirtualView);
 			}
 
 			itemsView?.AddLogicalChild(_visualElement);
@@ -219,7 +219,7 @@ namespace Microsoft.Maui.Controls.Platform
 
 		internal void UpdateIsSelected(bool isSelected)
 		{
-			var formsElement = _renderer?.VirtualView as VisualElement;
+			var formsElement = _handler?.VirtualView as VisualElement;
 
 			if (formsElement == null)
 				return;
@@ -281,7 +281,7 @@ namespace Microsoft.Maui.Controls.Platform
 		/// <inheritdoc/>
 		protected override WSize MeasureOverride(WSize availableSize)
 		{
-			if (_renderer is null)
+			if (_handler is null)
 			{
 				// Make sure we supply a real number for sizes otherwise virtualization won't function
 				if (double.IsFinite(availableSize.Width) && !double.IsFinite(availableSize.Height))

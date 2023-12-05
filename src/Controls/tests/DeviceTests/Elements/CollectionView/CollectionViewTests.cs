@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,6 +45,50 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 				});
 			});
+		}
+
+		[Fact
+#if IOS || MACCATALYST || ANDROID
+		(Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/18517")
+#endif
+		]
+		public async Task CellSizeAccountsForMargin()
+		{
+			SetupBuilder();
+
+			List<Label> buttons = new List<Label>();
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var button = new Label()
+					{
+						Text = "Margin Test",
+						Margin = new Thickness(10, 10, 10, 10),
+						HeightRequest = 50,
+					};
+
+					buttons.Add(button);
+					return button;
+				}),
+
+				ItemsSource = Enumerable.Range(0, 2).ToList(),
+				HeightRequest = 800,
+				WidthRequest = 200
+			};
+
+			//var platformView = (await CreateHandlerAsync<CollectionViewHandler>(collectionView)).PlatformView;
+
+			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
+			{
+				await Task.Delay(1000);
+#if WINDOWS
+				var bounds = buttons[0].ToPlatform().GetParentOfType<ItemContentControl>().GetPlatformViewBounds();
+				Assert.Equal(70, bounds.Height);
+
+#endif
+
+			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
 		[Fact]
