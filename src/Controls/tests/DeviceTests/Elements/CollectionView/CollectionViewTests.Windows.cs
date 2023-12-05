@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
@@ -209,7 +210,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			var collectionView = new CollectionView
 			{
-				ItemTemplate = new Controls.DataTemplate(() => {
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
 					var label = new Label { WidthRequest = 450 };
 					label.SetBinding(Label.TextProperty, new Binding("."));
 					return label;
@@ -237,7 +239,7 @@ namespace Microsoft.Maui.DeviceTests
 				var expectedHeight = originalHeight + 10;
 
 				((Label)labels[0]).HeightRequest = expectedHeight;
-				
+
 				await WaitForUIUpdate(frame, collectionView);
 
 				var finalHeight = ((Label)labels[0]).Height;
@@ -248,7 +250,12 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		Rect GetCollectionViewCellBounds(IView cellContent)
-		{			
+		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
 			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 	}

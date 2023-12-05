@@ -88,6 +88,11 @@ namespace Microsoft.Maui.DeviceTests
 
 		Rect GetCollectionViewCellBounds(IView cellContent)
 		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
 			return cellContent.ToPlatform().GetParentOfType<ItemContentView>().GetBoundingBox();
 		}
 	}
