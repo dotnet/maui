@@ -45,7 +45,7 @@ pr:
 variables:
   - template: /eng/pipelines/common/variables.yml
   - name: AgentPoolAccessToken
-    value: $(botdeploy--azdo--token--register--xamarin-public--untrusted)
+    value: $(botdeploy--azdo--token)
 
 parameters:
   - name: provisionatorChannel
