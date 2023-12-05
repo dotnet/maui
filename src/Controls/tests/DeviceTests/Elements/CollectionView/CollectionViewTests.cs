@@ -37,6 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<SwipeView, SwipeViewHandler>();
 					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
 
@@ -56,12 +57,12 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			SetupBuilder();
 
-			List<Label> buttons = new List<Label>();
+			List<Button> buttons = new List<Button>();
 			var collectionView = new CollectionView
 			{
 				ItemTemplate = new DataTemplate(() =>
 				{
-					var button = new Label()
+					var button = new Button()
 					{
 						Text = "Margin Test",
 						Margin = new Thickness(10, 10, 10, 10),
