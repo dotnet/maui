@@ -38,9 +38,9 @@ steps:
       height: '1080'
     displayName: "Set screen resolution"
 
-  - task: NodeTool@0
+  - task: UseNode@1
     inputs:
-      versionSpec: "20.3.1"
+      version: "20.3.1"
     displayName: "Install node"
 
   - pwsh: ./eng/scripts/appium-install.ps1
