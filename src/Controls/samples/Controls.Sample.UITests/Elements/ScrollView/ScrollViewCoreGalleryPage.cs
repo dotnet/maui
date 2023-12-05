@@ -41,8 +41,14 @@ namespace Controls.Sample.UITests
 							new ScrollViewIsEnabled(), Navigation),
 						// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
 						TestBuilder.NavButton("ScrollView Orientation", () =>
-							new ScrollChangeOrientation(), Navigation),
-					}
+							new ScrollChangeOrientation(), Navigation),  
+						// Issue2680Test_ScrollEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
+						// Issue2680Test_ScrollDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
+						TestBuilder.NavButton("ScrollView Disable Scroll", () =>
+							new ScrollViewDisableScroll(), Navigation),
+						// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
+						TestBuilder.NavButton("ScrollView DeviceOrientation", () =>
+							new ScrollViewDeviceOrientation(), Navigation), }
 				}
 			};
 		}
