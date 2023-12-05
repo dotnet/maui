@@ -63,6 +63,7 @@ namespace Maui.Controls.Sample
 			new GalleryPageFactory(() => new ImageCoreGalleryPage(), "Image Gallery"),
 			new GalleryPageFactory(() => new LabelCoreGalleryPage(), "Label Gallery"),
 			new GalleryPageFactory(() => new ListViewCoreGalleryPage(), "ListView Gallery"),
+			new GalleryPageFactory(() => new NavBarTranslucentGalleryPage(), "NavBarTranslucent Gallery"),
 			new GalleryPageFactory(() => new PickerCoreGalleryPage(), "Picker Gallery"),
 			new GalleryPageFactory(() => new ProgressBarCoreGalleryPage(), "Progress Bar Gallery"),
 			new GalleryPageFactory(() => new RadioButtonCoreGalleryPage(), "RadioButton Gallery"),
