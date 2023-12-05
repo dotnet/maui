@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk/">
 
   <PropertyGroup>
-    <TargetFrameworks>$(_MauiDotNetTfm)-gtk</TargetFrameworks>
+    <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm)-gtk</TargetFrameworks>
     <RootNamespace>Microsoft.Maui.Graphics.Gtk</RootNamespace>
   </PropertyGroup>
   <PropertyGroup>
@@ -10,6 +10,9 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Graphics\Graphics.csproj"/>
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework.Contains('-gtk')) != 'true'">
+    <PackageReference Include="GtkSharp" Version="$(GtkTargetFrameworkVersion))" />
   </ItemGroup>
 
 </Project>
