@@ -9,7 +9,6 @@ namespace Microsoft.Maui.Essentials.Connectivity
 	internal class ConnectivityNativeHelper
 	{
 		internal static string CNetworkListManagerCoClassGuid = "DCB00C01-570F-4A9B-8D69-199FDBA5723B";
-		internal static string NetworkClassPropertyBagName = "NA_NetworkClass";
 
 		internal enum NLM_ENUM_NETWORK : int
 		{
