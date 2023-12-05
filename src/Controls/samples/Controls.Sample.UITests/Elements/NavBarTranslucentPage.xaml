@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             AutomationId="NavBarTranslucentPage"
+             x:Class="Maui.Controls.Sample.NavBarTranslucentPage"
+             xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
+            ios:Page.UseSafeArea="False"
+            ios:NavigationPage.IsNavigationBarTranslucent="True"
+            ios:NavigationPage.HideNavigationBarSeparator="True">
+    <Grid IgnoreSafeArea="True" RowDefinitions="*,*">
+        <BoxView Background="Green" Grid.Row="0" AutomationId="TopBoxView"/>
+        <Label Margin="20" Text="Green boxview should be behind navbar and touching very top of screen" Grid.Row="1" />
+    </Grid>
+</ContentView>
