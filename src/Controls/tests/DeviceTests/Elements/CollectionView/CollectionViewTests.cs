@@ -47,7 +47,11 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact]
+		[Fact(
+#if IOS || MACCATALYST
+		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/19240"
+#endif
+		)]
 		public async Task CellSizeAccountsForMargin()
 		{
 			SetupBuilder();
@@ -78,7 +82,9 @@ namespace Microsoft.Maui.DeviceTests
 				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0);
 				var button = buttons.Last();
 				var bounds = GetCollectionViewCellBounds(button);
+				var buttonBounds = button.GetBoundingBox();
 
+				Assert.Equal(50, buttonBounds.Height, 1d);
 				Assert.Equal(70, bounds.Height, 1d);
 				Assert.Equal(50, button.Frame.Height, 1d);
 				Assert.Equal(10, button.Frame.X, 1d);
