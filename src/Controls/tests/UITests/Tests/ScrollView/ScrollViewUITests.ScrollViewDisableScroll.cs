@@ -22,7 +22,12 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			this.IgnoreIfPlatforms(new[]
 			{
-				TestDevice.Android, TestDevice.iOS, TestDevice.Mac, TestDevice.Windows
+				TestDevice.Android,
+			}, "Currently fails on Android; see https://github.com/dotnet/maui/issues/19213");
+
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.iOS, TestDevice.Mac, TestDevice.Windows
 			}, "https://github.com/dotnet/maui/pull/19181");
 
 			App.Click("ScrollViewDisableScroll");
