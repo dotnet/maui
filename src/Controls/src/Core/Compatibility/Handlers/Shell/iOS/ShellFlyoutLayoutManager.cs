@@ -269,13 +269,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			LayoutContent(parent.Bounds, footerHeight);
 
-			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithMargin))
+			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithOutMargin))
 			{
-				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderViewVerticalOffset, parent.Frame.Width, ArrangedHeaderViewHeightWithMargin);
+				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderViewVerticalOffset, parent.Frame.Width, ArrangedHeaderViewHeightWithOutMargin);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewVerticalOffset > 0 && _headerOffset < 0)
 				{
-					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithMargin + _headerOffset);
+					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithOutMargin + _headerOffset);
 					CAShapeLayer shapeLayer = new CAShapeLayer();
 					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
 					var path = CGPath.FromRect(rect);
@@ -378,12 +378,29 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			set
 			{
 				if (HeaderView is not null &&
-					HeaderView.Height != (value))
+					HeaderView.Height != value)
 				{
 					HeaderView.Height = value;
 				}
 
 				_headerSize = value;
+			}
+		}
+
+		double ArrangedHeaderViewHeightWithOutMargin
+		{
+			get
+			{
+				var headerHeight = ArrangedHeaderViewHeightWithMargin;
+
+				// We only subtract the margin if it was explicitly set, otherwise we would be subtracting the safe area 
+				// which is not accounted for in ArrangedHeaderViewHeightWithMargin
+				if (!double.IsNaN(ArrangedHeaderViewHeightWithMargin) && HeaderView?.View.IsSet(View.MarginProperty) == true)
+				{
+					headerHeight -= HeaderView.View.Margin.VerticalThickness;
+				}
+
+				return headerHeight;
 			}
 		}
 
