@@ -31,7 +31,7 @@ class MainWindow : Window
 
 		Titlebar = headerBar;
 
-		var hpanned = new HPaned { Position = 300 };
+		var hpanned = new Paned(Orientation.Horizontal) { Position = 300 };
 
 		_treeView = new TreeView { HeadersVisible = false };
 

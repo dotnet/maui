@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>$(_MauiDotNetTfm)</TargetFramework>
+    <TargetFramework>$(_MauiDotNetTfm)-gtk</TargetFramework>
     <RootNamespace>GraphicsTester.Gtk</RootNamespace>
 
     <PackageId>GraphicsTester.Gtk</PackageId>
