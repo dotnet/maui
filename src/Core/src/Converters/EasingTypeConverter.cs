@@ -24,7 +24,7 @@ namespace Microsoft.Maui.Converters
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			var parts = (strValue = strValue.Trim().ToLowerInvariant()).Split('.');
+			var parts = (strValue = strValue.Trim()).Split('.');
 
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				strValue = parts[parts.Length - 1];
