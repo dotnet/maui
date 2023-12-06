@@ -34,7 +34,9 @@ string DEVICE_OS = "";
 
 // other
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
-string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iossimulator-x64" : "ios-arm64";
+string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? 
+	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
+  : $"ios-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}";
 string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string TEST_FRAMEWORK = "net472";
@@ -63,6 +65,9 @@ Setup(context =>
 
 	Information($"DOTNET_TOOL_PATH {DOTNET_TOOL_PATH}");
 	
+	Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
+	Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
 	// only grab attached iOS devices if we are trying to test on device
 	if (TEST_DEVICE.Contains("device")) 
 	{ 
@@ -93,7 +98,16 @@ void Cleanup()
 		Information("No simulators found to delete.");
 		return;
 	}
-	var xharness = sims.Where(s => s.Name.Contains("XHarness")).ToArray();
+	var simulatorName = "XHarness";
+	if(iosVersion.Contains("17"))
+		simulatorName = "iPhone 15";	
+	Information("Looking for simulator: {0} iosversion {1}", simulatorName, iosVersion);
+	var xharness = sims.Where(s => s.Name.Contains(simulatorName))?.ToArray();
+	if(xharness == null || xharness.Length == 0)
+	{
+		Information("No XHarness simulators found to delete.");
+		return;
+	}
 	foreach (var sim in xharness) {
 		Information("Deleting XHarness simulator {0} ({1})...", sim.Name, sim.UDID);
 		StartProcess("xcrun", "simctl shutdown " + sim.UDID);
@@ -185,8 +199,8 @@ Task("Test")
 			TEST_APP = apps.First().FullPath;
 		}
 		else {
-			Error("Error: Couldn't find .app file");
-			throw new Exception("Error: Couldn't find .app file");
+			Error($"Error: Couldn't find *.app file in {binDir}");
+			throw new Exception($"Error: Couldn't find *.app file in {binDir}");
 		}
 	}
 	if (string.IsNullOrEmpty(TEST_RESULTS)) {
@@ -219,12 +233,25 @@ Task("Test")
 	var settings = new DotNetToolSettings {
 		ToolPath = DOTNET_TOOL_PATH,
 		DiagnosticOutput = true,
-		ArgumentCustomization = args => args.Append("run xharness apple test " +
-		$"--app=\"{TEST_APP}\" " +
-		$"--targets=\"{TEST_DEVICE}\" " +
-		$"--output-directory=\"{TEST_RESULTS}\" " +
-		xcode_args +
-		$"--verbosity=\"Debug\" ")
+		ArgumentCustomization = args => 
+		{
+			args.Append("run xharness apple test " +
+				$"--app=\"{TEST_APP}\" " +
+				$"--targets=\"{TEST_DEVICE}\" " +
+				$"--output-directory=\"{TEST_RESULTS}\" " +
+				xcode_args +
+				$"--verbosity=\"Debug\" ");
+			
+			if (TEST_DEVICE.Contains("device"))
+			{
+				if(string.IsNullOrEmpty(DEVICE_UDID))
+				{
+					throw new Exception("No device was found to install the app on. See the Setup method for more details.");
+				}
+				args.Append($"--device=\"{DEVICE_UDID}\" ");
+			}
+			return args;	
+		}
 	};
 
 	bool testsFailed = true;
@@ -468,13 +495,23 @@ void GetDevices(string version)
 						};
 				}
 	});
+	Information("List count: {0}", list.Count);	
 	//this removes the extra lines from output
+	if(list.Count == 0)
+	{
+		throw new Exception($"No devices found");
+		return;
+	}
 	list.Remove(list.Last());
 	list.Remove(list.Last());
 	foreach (var item in list)
 	{
 		Information("Device: {0}", item.Trim());
 		var parts = item.Trim().Split(" ",StringSplitOptions.RemoveEmptyEntries);
+		if(parts.Length < 3)
+		{
+			continue;
+		}
 		if(item.Contains("iPhone"))
 		{
 			deviceOS = "iPhone";
@@ -498,5 +535,9 @@ void GetDevices(string version)
 			DEVICE_OS = deviceOS;
 			break;
 		}
+	}
+	if(string.IsNullOrEmpty(DEVICE_UDID))
+	{
+		throw new Exception($"No devices found for version {version}");
 	}
 }
