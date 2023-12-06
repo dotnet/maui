@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return;
 
 			// If the HeaderView hasn't been measured we need to measure it
-			if (double.IsNaN(MeasuredHeaderViewHeightWithMargin))
+			if (double.IsNaN(MeasuredHeaderViewHeightWithOutMargin))
 			{
 				HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
 			}
@@ -210,12 +210,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (HeaderView is not null)
 			{
-				if (double.IsNaN(MeasuredHeaderViewHeightWithMargin))
+				if (double.IsNaN(MeasuredHeaderViewHeightWithOutMargin))
 				{
 					return;
 				}
 
-				ScrollView.ContentInset = new UIEdgeInsets((nfloat)(MeasuredHeaderViewHeightWithMargin), 0, 0, 0);
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)MeasuredHeaderViewHeightWithOutMargin, 0, 0, 0);
 			}
 			else
 			{
@@ -268,35 +268,16 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			LayoutContent(parent.Bounds, footerHeight);
-
-			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithOutMargin))
-			{
-				HeaderView.Frame = new CGRect(0, _headerOffset + HeaderViewVerticalOffset, parent.Frame.Width, ArrangedHeaderViewHeightWithOutMargin);
-
-				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewVerticalOffset > 0 && _headerOffset < 0)
-				{
-					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithOutMargin + _headerOffset);
-					CAShapeLayer shapeLayer = new CAShapeLayer();
-					CGRect rect = new CGRect(0, _headerOffset * -1, parent.Frame.Width, headerHeight);
-					var path = CGPath.FromRect(rect);
-					shapeLayer.Path = path;
-					HeaderView.Layer.Mask = shapeLayer;
-
-				}
-				else if (HeaderView.Layer.Mask is not null)
-				{
-					HeaderView.Layer.Mask = null;
-				}
-			}
+			LayoutHeader(parent.Frame);
 		}
 
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
-			// Initially we offset the content by the header's offset (which could include the safe area) + the calculated top margin for the content
+			// Initially we offset the content by the header's offset (which could be safe area or vertical margin) + the calculated top margin for the content
 			var contentYOffset = HeaderViewVerticalOffset + ContentTopMargin;
 			if (Content?.IsSet(View.MarginProperty) == false && HeaderView is null)
 			{
-					// If HeaderView is null, we need add the SafeArea.Top explicitly. 
+					// If HeaderView is null and no margin was set for the content, we need add the SafeArea.Top explicitly. 
 					// We get this value through HeaderViewVerticalOffset when there is a HeaderView.
 					contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 			}
@@ -314,6 +295,36 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			else
 			{
 				(Content as IView)?.Arrange(contentFrame);
+			}
+		}
+
+		void LayoutHeader(CGRect parentFrame)
+		{
+			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithOutMargin))
+			{
+				nfloat safeArea = 0;
+				if (!HeaderView.View.IsSet(View.MarginProperty))
+				{
+					safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
+				}
+
+				// We should not consider margin as part of the header's frame since that will be handled by MAUI layout system through the header's subviews
+				HeaderView.Frame = new CGRect(0, _headerOffset + safeArea, parentFrame.Width, ArrangedHeaderViewHeightWithOutMargin);
+
+				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewVerticalOffset > 0 && _headerOffset < 0)
+				{
+					var headerHeight = Math.Max(HeaderMinimumHeight, ArrangedHeaderViewHeightWithOutMargin + _headerOffset);
+					CAShapeLayer shapeLayer = new CAShapeLayer();
+					CGRect rect = new CGRect(0, _headerOffset * -1, parentFrame.Width, headerHeight);
+					var path = CGPath.FromRect(rect);
+					shapeLayer.Path = path;
+					HeaderView.Layer.Mask = shapeLayer;
+
+				}
+				else if (HeaderView.Layer.Mask is not null)
+				{
+					HeaderView.Layer.Mask = null;
+				}
 			}
 		}
 
@@ -343,13 +354,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				case FlyoutHeaderBehavior.Default:
 				case FlyoutHeaderBehavior.Fixed:
-					ArrangedHeaderViewHeightWithMargin = MeasuredHeaderViewHeightWithMargin;
+					ArrangedHeaderViewHeightWithOutMargin = MeasuredHeaderViewHeightWithOutMargin;
 					_headerOffset = 0;
 					break;
 
 				case FlyoutHeaderBehavior.Scroll:
-					ArrangedHeaderViewHeightWithMargin = MeasuredHeaderViewHeightWithMargin;
-					_headerOffset = Math.Min(0, -(MeasuredHeaderViewHeightWithMargin + contentOffsetY));
+					ArrangedHeaderViewHeightWithOutMargin = MeasuredHeaderViewHeightWithOutMargin;
+					_headerOffset = Math.Min(0, -(MeasuredHeaderViewHeightWithOutMargin + contentOffsetY));
 					break;
 
 				case FlyoutHeaderBehavior.CollapseOnScroll:
@@ -366,36 +377,59 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView is not null)
 			{
 				if (ScrollView is not null && contentOffsetY is not null && _context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
-					ArrangedHeaderViewHeightWithMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value);
+					ArrangedHeaderViewHeightWithOutMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value);
 				else
-					ArrangedHeaderViewHeightWithMargin = MeasuredHeaderViewHeightWithMargin;
-			}
-		}
-
-		double ArrangedHeaderViewHeightWithMargin
-		{
-			get => _headerSize;
-			set
-			{
-				if (HeaderView is not null &&
-					HeaderView.Height != value)
 				{
-					HeaderView.Height = value;
+					HeaderView.Height = HeaderView.MeasuredHeight;
+					ArrangedHeaderViewHeightWithOutMargin = MeasuredHeaderViewHeightWithOutMargin;
 				}
-
-				_headerSize = value;
 			}
 		}
 
 		double ArrangedHeaderViewHeightWithOutMargin
 		{
+			get => _headerSize;
+			set
+			{
+				// if (HeaderView is not null &&
+				// 	HeaderView.Height != value)
+				// {
+				// 	HeaderView.Height = value;
+				// }
+
+				_headerSize = value;
+			}
+		}
+
+		// double ArrangedHeaderViewHeightWithOutMargin
+		// {
+		// 	get
+		// 	{
+		// 		var headerHeight = ArrangedHeaderViewHeightWithMargin;
+
+		// 		// We only subtract the margin if it was explicitly set, otherwise we would be subtracting the safe area 
+		// 		// which is not accounted for in ArrangedHeaderViewHeightWithMargin
+		// 		if (!double.IsNaN(ArrangedHeaderViewHeightWithMargin) && HeaderView?.View.IsSet(View.MarginProperty) == true)
+		// 		{
+		// 			headerHeight -= HeaderView.View.Margin.VerticalThickness;
+		// 		}
+
+		// 		return headerHeight;
+		// 	}
+		// }
+
+		double MeasuredHeaderViewHeightWithMargin =>
+			HeaderView?.MeasuredHeight ?? 0;
+
+		double MeasuredHeaderViewHeightWithOutMargin 
+		{
 			get
 			{
-				var headerHeight = ArrangedHeaderViewHeightWithMargin;
+				var headerHeight = HeaderView?.MeasuredHeight ?? 0;
 
 				// We only subtract the margin if it was explicitly set, otherwise we would be subtracting the safe area 
-				// which is not accounted for in ArrangedHeaderViewHeightWithMargin
-				if (!double.IsNaN(ArrangedHeaderViewHeightWithMargin) && HeaderView?.View.IsSet(View.MarginProperty) == true)
+				// which is not accounted for in MeasuredHeaderViewHeightWithMargin
+				if (!double.IsNaN(headerHeight) && HeaderView?.View.IsSet(View.MarginProperty) == true)
 				{
 					headerHeight -= HeaderView.View.Margin.VerticalThickness;
 				}
@@ -403,9 +437,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				return headerHeight;
 			}
 		}
-
-		double MeasuredHeaderViewHeightWithMargin =>
-			HeaderView?.MeasuredHeight ?? 0;
 
 		double HeaderMinimumHeight
 		{
@@ -431,7 +462,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		/// </summary>
 		double HeaderViewVerticalOffset => HeaderView?.Margin.Top ?? 0;
 
-		double ContentTopMargin => HeaderView?.Margin.Bottom ?? 0 + Content?.Margin.Top ?? 0;
+		double ContentTopMargin => (HeaderView?.Margin.Bottom ?? 0) + (Content?.Margin.Top ?? 0);
 
 		public void TearDown()
 		{
