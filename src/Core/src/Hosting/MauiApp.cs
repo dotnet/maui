@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Hosting
 		/// <summary>
 		/// The application's configured <see cref="IConfiguration"/>.
 		/// </summary>
-		public IConfiguration Configuration => _applicationScopedServices.GetRequiredService<IConfiguration>();
+		public IConfiguration Configuration => _rootServices.GetRequiredService<IConfiguration>();
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="MauiAppBuilder"/> class with optional defaults.
