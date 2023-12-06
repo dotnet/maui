@@ -57,8 +57,9 @@ steps:
 
   - pwsh: |
       # Use Start-Process to help avoid error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
-      Write-Host "Start-Process -FilePath `"pwsh`" -ArgumentList `"-File ./build.ps1`" `"-Script `"eng/devices/${{ parameters.platform }}.cake --project=`"${{ parameters.path }}`" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results=`"$(TestResultsDirectory)`" --binlog=`"$(LogDirectory)`" ${{ parameters.cakeArgs }}`"`" -NoNewWindow -Wait"
-      Start-Process -FilePath "pwsh" -ArgumentList "-File ./build.ps1" "-Script `"eng/devices/${{ parameters.platform }}.cake --project=`"${{ parameters.path }}`" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results=`"$(TestResultsDirectory)`" --binlog=`"$(LogDirectory)`" ${{ parameters.cakeArgs }}`"" -NoNewWindow -Wait
+      Write-Host "Start-Process -FilePath `"pwsh`" -ArgumentList `"-File ./build.ps1`", `"-Script `"eng/devices/${{ parameters.platform }}.cake --project=`"${{ parameters.path }}`" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results=`"$(TestResultsDirectory)`" --binlog=`"$(LogDirectory)`" ${{ parameters.cakeArgs }}`"`" -NoNewWindow -Wait"
+      # ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+      Start-Process -FilePath "pwsh" -ArgumentList "-File ./build.ps1", "-Script `"eng/devices/${{ parameters.platform }}.cake --project=`"${{ parameters.path }}`" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results=`"$(TestResultsDirectory)`" --binlog=`"$(LogDirectory)`" ${{ parameters.cakeArgs }}`"" -NoNewWindow -Wait
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 2
