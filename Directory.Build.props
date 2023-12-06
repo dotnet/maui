@@ -53,7 +53,8 @@
 
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeMacOSTargetFrameworks Condition="'$(DotNetMacOSWorkloadIsInstalled)' == 'true'">true</IncludeMacOSTargetFrameworks>
-    <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks>
+    <!-- Disabled until net9.0-tizen is available -->
+    <!-- <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks> -->
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
     <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
     <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
