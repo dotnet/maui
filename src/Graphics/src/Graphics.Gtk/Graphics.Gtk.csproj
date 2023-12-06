@@ -12,7 +12,7 @@
     <ProjectReference Include="..\Graphics\Graphics.csproj"/>
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework.Contains('-gtk')) != 'true'">
-    <PackageReference Include="GtkSharp" Version="$(GtkTargetFrameworkVersion))" />
+    <PackageReference Include="GtkSharp" />
   </ItemGroup>
 
 </Project>
