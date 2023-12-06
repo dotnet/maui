@@ -323,7 +323,14 @@ namespace Microsoft.Maui.Controls.Platform
 			public ContentLayoutPanel(IView view)
 			{
 				_view = view;
-				Children.Add(view.ToPlatform());
+
+				var platformView = view.ToPlatform();
+
+				// Just in case this view is already parented to a wrapper that's been cycled out
+				if (platformView.Parent is ContentLayoutPanel clp)
+					clp.Children.Remove(platformView);
+
+				Children.Add(platformView);
 			}
 
 			protected override WSize ArrangeOverride(WSize finalSize) => _view.Arrange(new Rect(0, 0, finalSize.Width, finalSize.Height)).ToPlatform();
