@@ -1,7 +1,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Reflection;
 using static Microsoft.Maui.Easing;
 
@@ -25,40 +24,50 @@ namespace Microsoft.Maui.Converters
 			if (string.IsNullOrWhiteSpace(strValue))
 				return null;
 
-			strValue = strValue?.Trim() ?? "";
-			var parts = strValue.Split('.');
+			var parts = (strValue = strValue.Trim().ToLowerInvariant()).Split('.');
 
 			if (parts.Length == 2 && parts[0] == nameof(Easing))
 				strValue = parts[parts.Length - 1];
 
-			if (strValue.Equals(nameof(Linear), StringComparison.OrdinalIgnoreCase))
-				return Linear;
-			if (strValue.Equals(nameof(SinIn), StringComparison.OrdinalIgnoreCase))
-				return SinIn;
-			if (strValue.Equals(nameof(SinOut), StringComparison.OrdinalIgnoreCase))
-				return SinOut;
-			if (strValue.Equals(nameof(SinInOut), StringComparison.OrdinalIgnoreCase))
-				return SinInOut;
-			if (strValue.Equals(nameof(CubicIn), StringComparison.OrdinalIgnoreCase))
-				return CubicIn;
-			if (strValue.Equals(nameof(CubicOut), StringComparison.OrdinalIgnoreCase))
-				return CubicOut;
-			if (strValue.Equals(nameof(CubicInOut), StringComparison.OrdinalIgnoreCase))
-				return CubicInOut;
-			if (strValue.Equals(nameof(BounceIn), StringComparison.OrdinalIgnoreCase))
-				return BounceIn;
-			if (strValue.Equals(nameof(BounceOut), StringComparison.OrdinalIgnoreCase))
-				return BounceOut;
-			if (strValue.Equals(nameof(SpringIn), StringComparison.OrdinalIgnoreCase))
-				return SpringIn;
-			if (strValue.Equals(nameof(SpringOut), StringComparison.OrdinalIgnoreCase))
-				return SpringOut;
+			switch (easing)
+			{
+				case nameof(Linear):
+					return nameof(Linear);
+				case nameof(SinIn):
+					return nameof(SinIn);
+				case nameof(SinOut):
+					return nameof(SinOut);
+				case nameof(SinInOut):
+					return nameof(SinInOut);
+				case nameof(CubicIn):
+					return nameof(CubicIn);
+				case nameof(CubicOut):
+					return nameof(CubicOut);
+				case nameof(CubicInOut):
+					return nameof(CubicInOut);
+				case nameof(BounceIn):
+					return nameof(BounceIn);
+				case nameof(BounceOut):
+					return nameof(BounceOut);
+				case nameof(SpringIn):
+					return nameof(SpringIn);
+				case nameof(SpringOut):
+					return nameof(SpringOut);
+			}
 
-			var fallbackValue = typeof(Easing)
-				.GetTypeInfo()
-				.DeclaredFields
-				.FirstOrDefault(f => f.Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
-				?.GetValue(null);
+			var delcaredFields = typeof(Easing)
+								.GetTypeInfo()
+								.DeclaredFields;
+
+			var fallbackValue = null;
+			for (int i = 0; i < delcaredFields.Length; i++)
+			{
+				if (delcaredFields[i].Name.Equals(strValue, StringComparison.OrdinalIgnoreCase))
+				{
+					fallbackValue = delcaredFields[i].GetValue(null);
+					break;
+				}
+			}
 
 			if (fallbackValue is Easing fallbackEasing)
 				return fallbackEasing;
@@ -71,30 +80,21 @@ namespace Microsoft.Maui.Converters
 			if (value is not Easing easing)
 				throw new NotSupportedException();
 
-			if (easing == Linear)
-				return nameof(Linear);
-			if (easing == SinIn)
-				return nameof(SinIn);
-			if (easing == SinOut)
-				return nameof(SinOut);
-			if (easing == SinInOut)
-				return nameof(SinInOut);
-			if (easing == CubicIn)
-				return nameof(CubicIn);
-			if (easing == CubicOut)
-				return nameof(CubicOut);
-			if (easing == CubicInOut)
-				return nameof(CubicInOut);
-			if (easing == BounceIn)
-				return nameof(BounceIn);
-			if (easing == BounceOut)
-				return nameof(BounceOut);
-			if (easing == SpringIn)
-				return nameof(SpringIn);
-			if (easing == SpringOut)
-				return nameof(SpringOut);
-
-			throw new NotSupportedException();
+			return easing switch
+			{
+				nameof(Linear) => nameof(Linear),
+				nameof(SinIn) => nameof(SinIn),
+				nameof(SinOut) => nameof(SinOut),
+				nameof(SinInOut) => nameof(SinInOut),
+				nameof(CubicIn) => nameof(CubicIn),
+				nameof(CubicOut) => nameof(CubicOut),
+				nameof(CubicInOut) => nameof(CubicInOut),
+				nameof(BounceIn) => nameof(BounceIn),
+				nameof(BounceOut) => nameof(BounceOut),
+				nameof(SpringIn) => nameof(SpringIn),
+				nameof(SpringOut) => nameof(SpringOut),
+				_ => throw new NotSupportedException(),
+			};
 		}
 
 		public override bool GetStandardValuesSupported(ITypeDescriptorContext context)
