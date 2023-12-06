@@ -21,7 +21,7 @@ steps:
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
-  - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
+  - script: pwsh build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
     retryCountOnTaskFailure: 3
     env:
@@ -43,7 +43,7 @@ steps:
     - pwsh: Move-Item -Path artifacts\${{ parameters.artifactName }}\*.nupkg -Destination artifacts -Force
       displayName: Move the downloaded artifacts
 
-    - pwsh: ./build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
+    - script: pwsh build.ps1 --target=dotnet-local-workloads --verbosity=diagnostic
       displayName: 'Install .NET (Local Workloads)'
       retryCountOnTaskFailure: 3
       workingDirectory: ${{ parameters.checkoutDirectory }}
@@ -52,10 +52,10 @@ steps:
         PRIVATE_BUILD: $(PrivateBuild)
 
   - ${{ else }}:
-    - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
+    - script: pwsh build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - script: pwsh build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
     retryCountOnTaskFailure: 2
