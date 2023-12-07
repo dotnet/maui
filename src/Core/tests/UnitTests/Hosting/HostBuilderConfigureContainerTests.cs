@@ -14,7 +14,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var builder = MauiApp.CreateBuilder();
 			var mauiApp = builder.Build();
 
-			Assert.NotNull(mauiApp.Services);
+			Assert.IsType<ServiceProvider>(mauiApp.Services);
 		}
 
 		[Fact]
