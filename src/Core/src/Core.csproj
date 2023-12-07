@@ -4,13 +4,18 @@
     <TargetFrameworks>netstandard2.1;netstandard2.0;$(_MauiDotNetTfm);$(MauiPlatforms)</TargetFrameworks>
     <RootNamespace>Microsoft.Maui</RootNamespace>
     <AssemblyName>Microsoft.Maui</AssemblyName>
-    <PackageId>Microsoft.Maui.Core</PackageId>
     <Nullable>enable</Nullable>
-    <IsPackable>true</IsPackable>
     <IsTrimmable>false</IsTrimmable>
     <MauiGenerateResourceDesigner>true</MauiGenerateResourceDesigner>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591;RS0041;RS0026;RS0027</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- NuGet package information -->
+    <IsPackable>true</IsPackable>
+    <PackageId>Microsoft.Maui.Core</PackageId>
+    <Description>.NET Multi-platform App UI (.NET MAUI) is a cross-platform framework for creating native mobile and desktop apps with C# and XAML. This package only contains the core objects used by .NET MAUI. Please install the Microsoft.Maui.Controls package to start using .NET MAUI.</Description>
   </PropertyGroup>
 
   <Import Project="$(MauiSrcDirectory)MultiTargeting.targets" />

@@ -1,6 +1,8 @@
-﻿using NUnit.Framework;
-using UITest.Appium;
-using UITest.Core;
+﻿using System.Drawing;
+using Microsoft.Maui.Appium;
+using NUnit.Framework;
+using OpenQA.Selenium.Appium.MultiTouch;
+using TestUtils.Appium.UITests;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -15,7 +17,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void AppDoesntCrashWhenOpeningWinUIWindowParentedToCurrentWindow()
 		{
-			this.IgnoreIfPlatforms(new[]
+			UITestContext.IgnoreIfPlatforms(new[]
 			{
 				TestDevice.Mac, TestDevice.iOS, TestDevice.Android
 			});

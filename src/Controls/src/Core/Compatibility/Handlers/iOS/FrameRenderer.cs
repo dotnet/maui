@@ -73,8 +73,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void TraitCollectionDidChange(UITraitCollection previousTraitCollection)
 		{
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
-			// Make sure the control adheres to changes in UI theme
+#pragma warning restore CA1422 // Validate platform compatibility
+							  // Make sure the control adheres to changes in UI theme
 			if (OperatingSystem.IsIOSVersionAtLeast(13) && previousTraitCollection?.UserInterfaceStyle != TraitCollection.UserInterfaceStyle)
 				SetupLayer();
 		}
