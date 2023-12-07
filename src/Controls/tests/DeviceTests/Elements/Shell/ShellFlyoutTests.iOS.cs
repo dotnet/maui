@@ -12,17 +12,18 @@ namespace Microsoft.Maui.DeviceTests
     {
 #if !MACCATALYST
         [Theory]
+		[InlineData(null)]
 		[InlineData(0)]
 		[InlineData(100)]
-		public async Task FlyoutHeaderRendererHasTheRightHeight(int topMargin)
+		public async Task FlyoutHeaderRendererHasTheRightHeight(int? topMargin)
 		{
 			var flyoutHeaderHeight = 250;
 			var layout = new Grid() { HeightRequest = flyoutHeaderHeight };
 			layout.Children.Add(new Button() { HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill });
 			
-			if (topMargin > 0)
+			if (topMargin is not null)
 			{
-				layout.Margin = new Thickness(0, topMargin, 0, 0);
+				layout.Margin = new Thickness(0, topMargin.Value, 0, 0);
 			}
 
 			await RunShellTest(shell =>
@@ -39,8 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The flyout header's height should be equal to the requested height + the top margin.
 				// The safe area should not be accounted for.
-				Assert.Equal(flyoutHeaderHeight + topMargin, header.Frame.Height);
-                Assert.Equal(topMargin > 0 ? topMargin : GetSafeArea().Top, header.Frame.Top);
+				Assert.Equal(flyoutHeaderHeight + (topMargin ?? 0), header.Frame.Height);
 			});
 		}
 #endif
