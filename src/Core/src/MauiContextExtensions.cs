@@ -37,7 +37,9 @@ namespace Microsoft.Maui
 
 		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication platformApplication)
 		{
-			var scopedContext = new MauiContext(mauiContext.Services);
+			var scope = mauiContext.Services.CreateScope();
+
+			var scopedContext = new MauiContext(scope.ServiceProvider);
 
 			scopedContext.AddSpecific(platformApplication);
 
