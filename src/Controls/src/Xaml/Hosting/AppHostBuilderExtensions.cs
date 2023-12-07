@@ -184,14 +184,14 @@ namespace Microsoft.Maui.Controls.Hosting
 				});
 
 #if WINDOWS
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiControlsInitializer>());
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeScopedService, MauiControlsInitializer>());
 #endif
 			builder.RemapForControls();
 
 			return builder;
 		}
 
-		class MauiControlsInitializer : IMauiInitializeService
+		class MauiControlsInitializer : IMauiInitializeScopedService
 		{
 			public void Initialize(IServiceProvider services)
 			{

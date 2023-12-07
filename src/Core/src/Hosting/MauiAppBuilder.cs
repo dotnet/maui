@@ -43,12 +43,12 @@ namespace Microsoft.Maui.Hosting
 				this.UseEssentials();
 
 #if WINDOWS
-				this.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeService, MauiCoreInitializer>());
+				this.Services.TryAddEnumerable(ServiceDescriptor.Transient<IMauiInitializeScopedService, MauiCoreInitializer>());
 #endif
 			}
 		}
 
-		class MauiCoreInitializer : IMauiInitializeService
+		class MauiCoreInitializer : IMauiInitializeScopedService
 		{
 			public void Initialize(IServiceProvider services)
 			{
