@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -52,9 +53,9 @@ namespace Microsoft.Maui.DeviceTests
 			switch (name)
 			{
 				case "ScrollView":
-					return new ScrollView() { Content = new Label() { Text = "ScrollView" }, Margin = margin };
+					return new ScrollView() { Content = new Label() { Text = "ScrollView" }, Margin = margin, BackgroundColor = Colors.Orange };
 				case "VerticalStackLayout":
-					return new VerticalStackLayout() { Margin = margin, Children = { new Label() { Text = "VerticalStackLayout" } } };
+					return new VerticalStackLayout() { Margin = margin, Children = { new Label() { Text = "VerticalStackLayout" } }, BackgroundColor = Colors.Orange };
 			}
 
 			throw new ArgumentException(nameof(name));

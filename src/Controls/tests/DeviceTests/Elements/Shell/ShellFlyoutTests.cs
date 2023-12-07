@@ -9,6 +9,10 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 
+#if IOS
+using UIKit;
+#endif
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
@@ -195,7 +199,7 @@ namespace Microsoft.Maui.DeviceTests
 			// so we have to account for that in the default setup
 			var headerMargin = new Thickness(0, headerMarginTop ?? 0, 0, headerMarginBottom ?? 0);
 			var contentMargin = new Thickness(0, contentMarginTop, 0, contentMarginBottom);
-			var flyoutHeader = new Label() { Text = "Flyout Header" };
+			var flyoutHeader = new Label() { Text = "Flyout Header", BackgroundColor = Colors.AliceBlue };
 
 			// If margin top is null we don't set anything so safe area is added automatically
 			if (headerMarginTop.HasValue)
@@ -220,7 +224,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OpenFlyout(handler);
 
 				var flyoutFrame = GetFlyoutFrame(handler);
-				var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
+ 				var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
 				var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
@@ -234,6 +238,13 @@ namespace Microsoft.Maui.DeviceTests
 				if (contentType != "ScrollView")
 				{
 					expectedContentY += headerFrame.Height;
+				}
+				else
+				{
+#if IOS
+					var scrollViewContentInsetTop = ((UIScrollView)((IView)shell.FlyoutContent).Handler.PlatformView).ContentInset.Top;
+					AssertionExtensions.CloseEnough(headerFrame.Height, scrollViewContentInsetTop, message: "Content ScrollView Inset Y");
+#endif
 				}
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
 				AssertionExtensions.CloseEnough(expectedContentY, contentFrame.Y, epsilon: 0.5, message: "Content Y");

@@ -195,8 +195,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				HeaderView.SizeThatFits(new CGSize(ContentView.Superview.Frame.Width, double.PositiveInfinity));
 			}
 
-			UpdateHeaderMaximumSize(ScrollView?.ContentOffset.Y);
 			SetHeaderContentInset();
+			UpdateHeaderMaximumSize(ScrollView?.ContentOffset.Y);
 			LayoutParallax();
 		}
 
@@ -210,12 +210,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (HeaderView is not null)
 			{
-				if (double.IsNaN(ArrangedHeaderViewHeightWithMargin))
+				if (double.IsNaN(MeasuredHeaderViewHeightWithNoMargin))
 				{
 					return;
 				}
 
-				ScrollView.ContentInset = new UIEdgeInsets((nfloat)ArrangedHeaderViewHeightWithMargin, 0, 0, 0);
+				// We take the measured header height without margin, since the margin is already accounted for in the positioning of the scroll view itself.
+				ScrollView.ContentInset = new UIEdgeInsets((nfloat)Math.Max(HeaderMinimumHeight, MeasuredHeaderViewHeightWithNoMargin), 0, 0, 0);
 			}
 			else
 			{
@@ -282,7 +283,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
 				}
 
-				// We should only consider the safe area as part of the header's Y offset, but no margin since it will be handled by MAUI's layout system.
+				// For header's Y offset, we should only consider the safe area but not its margin, since it will be handled by MAUI's layout system.
 				HeaderView.Frame = new CGRect(0, _headerOffset + safeArea, parentFrame.Width, ArrangedHeaderViewHeightWithMargin);
 
 				if (_context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll && HeaderViewTopVerticalOffset > 0 && _headerOffset < 0)
@@ -316,7 +317,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (ScrollView is null)
 				{
-					// The margin is already managed by MAUI's layout system, so we don't need to add it here, so we just offset the content by the header height.				
+					// The margin is already managed by MAUI's layout system, so we don't need to add it here and we just offset the content by the header's height.				
 					contentYOffset += HeaderView.Frame.Height;
 				}
 				else
@@ -370,7 +371,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				case FlyoutHeaderBehavior.Scroll:
 					ArrangedHeaderViewHeightWithMargin = MeasuredHeaderViewHeightWithMargin;
-					_headerOffset = Math.Min(0, -(MeasuredHeaderViewHeightWithMargin + contentOffsetY));
+					_headerOffset = Math.Min(0, -(MeasuredHeaderViewHeightWithNoMargin + contentOffsetY));
 					break;
 
 				case FlyoutHeaderBehavior.CollapseOnScroll:
@@ -387,9 +388,14 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView is not null)
 			{
 				if (ScrollView is not null && contentOffsetY is not null && _context.Shell.FlyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
-					ArrangedHeaderViewHeightWithMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value);
+				{
+					// Neither HeaderMinimumHeight nor contentOffsetY (calculated in SetHeaderContentInset) contain the header's margin, so we need to add it here.
+					ArrangedHeaderViewHeightWithMargin = Math.Max(HeaderMinimumHeight, -contentOffsetY.Value) + HeaderView.View.Margin.VerticalThickness;
+				}
 				else
+				{
 					ArrangedHeaderViewHeightWithMargin = MeasuredHeaderViewHeightWithMargin;
+				}
 			}
 		}
 
@@ -410,6 +416,19 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		double MeasuredHeaderViewHeightWithMargin =>
 			HeaderView?.MeasuredHeight ?? 0;
+
+		double MeasuredHeaderViewHeightWithNoMargin
+		{
+			get
+			{
+				if (!double.IsNaN(MeasuredHeaderViewHeightWithMargin) && HeaderView?.View.IsSet(View.MarginProperty) == true)
+				{
+					return MeasuredHeaderViewHeightWithMargin - HeaderView.View.Margin.VerticalThickness;
+				}
+
+				return MeasuredHeaderViewHeightWithMargin;
+			}
+		}
 
 		double HeaderMinimumHeight
 		{
