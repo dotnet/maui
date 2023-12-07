@@ -42,7 +42,7 @@ if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP
 		.VirtualDevice("Android_x64_API24",   (AndroidApiLevel)24, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API25",   (AndroidApiLevel)25, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API26",   (AndroidApiLevel)26, AndroidSystemImageApi.Google,          AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
-		.VirtualDevice("Android_x86_API27",   (AndroidApiLevel)27, AndroidSystemImageApi.GooglePlayStore,  AndroidSystemImageAbi.x86,       AndroidVirtualDevice.NEXUS_5X)
+		.VirtualDevice("Android_x86_API27",   (AndroidApiLevel)27, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86,       AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API28",   (AndroidApiLevel)28, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API29",   (AndroidApiLevel)29, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)
 		.VirtualDevice("Android_x64_API30",   (AndroidApiLevel)30, AndroidSystemImageApi.GooglePlayStore, AndroidSystemImageAbi.x86_64,    AndroidVirtualDevice.NEXUS_5X)

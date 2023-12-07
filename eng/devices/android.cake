@@ -12,7 +12,7 @@ const string dotnetVersion = "net8.0";
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);
 string TEST_DEVICE = Argument("device", EnvironmentVariable("ANDROID_TEST_DEVICE") ?? $"android-emulator-64_{defaultVersion}");
-string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "pixel_5");
+string DEVICE_SKIN = Argument("skin", EnvironmentVariable("ANDROID_TEST_SKIN") ?? "Nexus 5X");
 
 // optional
 var USE_DOTNET = Argument("dotnet", true);
