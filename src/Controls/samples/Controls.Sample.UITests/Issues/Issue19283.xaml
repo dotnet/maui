@@ -8,9 +8,6 @@
             AutomationId="btn"
             Text="Click Me and a Label Should Appear"
             x:Name="btn">
-            <Button.GestureRecognizers>
-                <PointerGestureRecognizer />
-            </Button.GestureRecognizers>
             <VisualStateManager.VisualStateGroups>
                 <VisualStateGroup x:Name="CommonStates">
                     <VisualState x:Name="Normal" />

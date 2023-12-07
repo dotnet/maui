@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
@@ -11,6 +12,12 @@ namespace Maui.Controls.Sample.Issues
 		public Issue19283()
 		{
 			InitializeComponent();
+
+			// https://github.com/dotnet/maui/issues/19289
+			if (!OperatingSystem.IsAndroid())
+			{
+				btn.GestureRecognizers.Add(new PointerGestureRecognizer());
+			}
 
 			btn.Clicked += (sender, args) => 
 			{ 
