@@ -21,6 +21,9 @@ namespace UITest.Appium
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumOrientationActions(this));
 		}
 
 		public abstract ApplicationState AppState { get; }

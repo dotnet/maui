@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.UI.Xaml.Controls;
@@ -113,7 +114,8 @@ namespace Microsoft.Maui.Platform
 		{
 			Uri uri = new Uri(url ?? string.Empty, UriKind.RelativeOrAbsolute);
 
-			if (!uri.IsAbsoluteUri)
+			if (!uri.IsAbsoluteUri ||
+				IsUriWithLocalScheme(uri.AbsoluteUri))
 			{
 				await EnsureCoreWebView2Async();
 
@@ -122,7 +124,8 @@ namespace Microsoft.Maui.Platform
 					ApplicationPath,
 					Web.WebView2.Core.CoreWebView2HostResourceAccessKind.Allow);
 
-				uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
+				if (!uri.IsAbsoluteUri)
+					uri = new Uri(LocalScheme + url, UriKind.RelativeOrAbsolute);
 			}
 
 			if (_handler?.TryGetTarget(out var handler) ?? false)
@@ -143,7 +146,8 @@ namespace Microsoft.Maui.Platform
 			NavigationStarting += (sender, args) =>
 			{
 				// Auto map local virtual app dir host, e.g. if navigating back to local site from a link to an external site
-				if (args?.Uri?.ToLowerInvariant().StartsWith(LocalScheme.TrimEnd('/').ToLowerInvariant()) == true)
+				if (IsUriWithLocalScheme(args?.Uri) ||
+					IsWebView2DataUriWithBaseUrl(args?.Uri))
 				{
 					CoreWebView2.SetVirtualHostNameToFolderMapping(
 						LocalHostName,
@@ -156,6 +160,33 @@ namespace Microsoft.Maui.Platform
 					CoreWebView2.ClearVirtualHostNameToFolderMapping(LocalHostName);
 				}
 			};
+		}
+
+		static bool IsUriWithLocalScheme(string? uri)
+		{
+			return uri?
+				.StartsWith(
+					LocalScheme.TrimEnd('/'),
+					StringComparison.OrdinalIgnoreCase) == true;
+		}
+
+		static bool IsWebView2DataUriWithBaseUrl(string? uri)
+		{
+			// WebView2 sends the web page with inserted base tag as data URI
+			const string dataUriBase64 = "data:text/html;charset=utf-8;base64,";
+			if (uri == null ||
+				uri.StartsWith(
+					dataUriBase64,
+					StringComparison.OrdinalIgnoreCase) == false)
+				return false;
+
+			string decodedHtml = Encoding.UTF8.GetString(
+				Convert.FromBase64String(
+					uri.Substring(dataUriBase64.Length)));
+
+			return decodedHtml.Contains(
+				$"<base href=\"{LocalScheme}",
+				StringComparison.OrdinalIgnoreCase);
 		}
 	}
 }

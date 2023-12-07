@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using CoreAnimation;
 using CoreGraphics;
 using Microsoft.Maui.Graphics;
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Platform
 	public class MauiCALayer : CALayer
 	{
 		CGRect _bounds;
-
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShape is a non-NSObject in MAUI.")]
 		IShape? _shape;
 
 		UIColor? _backgroundColor;

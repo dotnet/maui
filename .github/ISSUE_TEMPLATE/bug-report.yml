@@ -55,6 +55,7 @@ body:
         - 7.0.58
         - 7.0.52
         - 7.0.49
+        - Nightly / CI build (Please specify exact version)
         - Unknown/Other
     validations:
       required: true
