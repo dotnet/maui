@@ -2,15 +2,8 @@
 
 namespace Microsoft.Maui.Controls
 {
-
 	public partial class Label
 	{
-
-		public static void MapTextType(ILabelHandler handler, Label label)
-		{
-			handler.PlatformView?.UpdateText(label, label.TextType);
-		}
-
 		public static void MapText(ILabelHandler handler, Label label)
 		{
 			handler.PlatformView?.UpdateText(label, label.TextType);
@@ -25,7 +18,5 @@ namespace Microsoft.Maui.Controls
 		{
 			handler.PlatformView?.UpdateText(label, label.TextType);
 		}
-
 	}
-
 }
