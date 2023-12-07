@@ -332,7 +332,7 @@ namespace UITest.Appium
 		/// <param name="value">The value to set the Slider to.</param>
 		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
 		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
-		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d,double maximum = 1d)
+		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d, double maximum = 1d)
 		{
 			var element = app.FindElement(marked);
 
