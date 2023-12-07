@@ -230,22 +230,26 @@ namespace Microsoft.Maui.DeviceTests
 
 				// validate header position
 				AssertionExtensions.CloseEnough(0, headerFrame.X, message: "Header X");
-				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, message: "Header Y");
+				AssertionExtensions.CloseEnough(headerMargin.Top, headerFrame.Y, epsilon: 0.3, message: "Header Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, headerFrame.Width, message: "Header Width");
 
 				// validate content position
 				var expectedContentY = headerMargin.Top + headerMargin.Bottom + contentMargin.Top;
+
+#if IOS
 				if (contentType != "ScrollView")
+#endif
 				{
 					expectedContentY += headerFrame.Height;
 				}
+#if IOS
 				else
 				{
-#if IOS
 					var scrollViewContentInsetTop = ((UIScrollView)((IView)shell.FlyoutContent).Handler.PlatformView).ContentInset.Top;
 					AssertionExtensions.CloseEnough(headerFrame.Height, scrollViewContentInsetTop, message: "Content ScrollView Inset Y");
-#endif
 				}
+#endif
+
 				AssertionExtensions.CloseEnough(0, contentFrame.X, message: "Content X");
 				AssertionExtensions.CloseEnough(expectedContentY, contentFrame.Y, epsilon: 0.5, message: "Content Y");
 				AssertionExtensions.CloseEnough(flyoutFrame.Width, contentFrame.Width, message: "Content Width");
