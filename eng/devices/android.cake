@@ -120,7 +120,7 @@ Setup(context =>
 				DEVICE_ARCH = "arm64-v8a";
 		}
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
-		if (api == 27 && DEVICE_ARCH == "x86_64")
+		if (api == 27 && (DEVICE_ARCH == "x86_64" || DEVICE_ARCH == "arm64-v8a"))
 			sdk = "default";
 
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
