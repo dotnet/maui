@@ -7,7 +7,7 @@ namespace UITest.Appium
 	public class AppiumSliderActions : ICommandExecutionGroup
 	{
 		const string SetSliderValueCommand = "setSliderValue";
-		
+
 		protected readonly AppiumApp _app;
 
 		public AppiumSliderActions(AppiumApp app)
@@ -76,7 +76,7 @@ namespace UITest.Appium
 			int y = position.Y;
 
 			double moveToX = (x + size.Width) * value / maximum;
-			
+
 			TouchAction touchAction = new TouchAction(driver);
 			touchAction
 				.Press(x, y)
