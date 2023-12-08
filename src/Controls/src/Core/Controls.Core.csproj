@@ -67,6 +67,12 @@
     </ItemGroup>
   </Target>
 
+  <ItemGroup>
+    <EmbeddedResource Include="ILLink.Substitutions.xml">
+      <LogicalName>ILLink.Substitutions.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <Import Project="$(MauiSrcDirectory)Workload\Shared\LibraryPacks.targets" />
 
   <Import Project="$(MauiSrcDirectory)PublicAPI.targets" />

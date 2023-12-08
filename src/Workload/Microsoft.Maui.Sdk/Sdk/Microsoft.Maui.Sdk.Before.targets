@@ -21,4 +21,14 @@
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
 
+  <!-- Feature flags -->
+  <PropertyGroup>
+    <XamlLoadingIsEnabled Condition="'$(XamlLoadingIsEnabled)' == '' and '$(PublishAot)' == 'true'">false</XamlLoadingIsEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.Controls.FeatureFlags.IsXamlLoadingEnabled"
+                                    Condition="'$(XamlLoadingIsEnabled)' != ''"
+                                    Value="$(XamlLoadingIsEnabled)"
+                                    Trim="true" />
+  </ItemGroup>
 </Project>

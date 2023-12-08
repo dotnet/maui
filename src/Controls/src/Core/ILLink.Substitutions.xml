@@ -1,0 +1,7 @@
+<linker>
+  <assembly fullname="Microsoft.Maui.Controls">
+    <type fullname="Microsoft.Maui.Controls.FeatureFlags">
+      <method signature="System.Boolean get_IsXamlLoadingEnabled()" body="stub" feature="Microsoft.Maui.Controls.FeatureFlags.IsXamlLoadingEnabled" featurevalue="false" />
+    </type>
+  </assembly>
+</linker>
