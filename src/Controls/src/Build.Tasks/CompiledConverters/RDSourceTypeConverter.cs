@@ -83,6 +83,20 @@ namespace Microsoft.Maui.Controls.XamlC
 			}
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
+
+			// TODO: Would it be possible to avoid calling `SetAndLoadSource` here? If the resource is supposed to be compiled using XamlC as well,
+			// why not just simply call `new __XamlGeneratedCode__.__TypeC2CFE8ACF2359BF9()` instead? Is that because the class might not exist yet?
+			// Is that only a technical limitation that we might be able to overcome?
+			// It would be beneficial to avoid calling `SetAndLoadSource` because we could:
+			// a) reduce the use of reflection (even when it will work with NativeAOT thanks to DynamicallyAccesseedMembers annotations)
+			// b) allow us to annotate the `SetAndLoadSource` method with [RequiresUnreferencedCode] to avoid weird DX when an app might throw
+			//    without producing a runtime warning.
+			//
+			// If it would be too much work to instantiate the resource dictionary directly, could we at least split the
+			// `SetAndLoadSource` method into two methods:
+			// - one that will always create the resource dictionary class through reflection (when we know the resource dictionary will be compiled)
+			// - one that will always load the resource dictionary from XAML (which we can annotate with [RequiresUnreferencedCode])
+
 			yield return Create(Callvirt, currentModule.ImportMethodReference(context.Cache,
 																	   resourceDictionaryType,
 																	   methodName: "SetAndLoadSource",
