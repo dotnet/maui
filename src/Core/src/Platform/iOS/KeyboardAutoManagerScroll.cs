@@ -525,7 +525,7 @@ public static class KeyboardAutoManagerScroll
 					// handle the collapsable navbar
 					var navController = View?.GetNavigationController();
 					var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
-					if (prefersLargeTitles)
+					if (prefersLargeTitles && (UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.Portrait || UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.PortraitUpsideDown))
 						move = AdjustForLargeTitles(move, superScrollView, navController!);
 
 					var origContentOffsetY = superScrollView.ContentOffset.Y;
