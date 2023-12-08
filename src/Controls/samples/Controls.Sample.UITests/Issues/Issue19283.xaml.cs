@@ -19,8 +19,8 @@ namespace Maui.Controls.Sample.Issues
 				btn.GestureRecognizers.Add(new PointerGestureRecognizer());
 			}
 
-			btn.Clicked += (sender, args) => 
-			{ 
+			btn.Clicked += (sender, args) =>
+			{
 				layout.Children.Add(new Label { Text = "Success", AutomationId = "Success" });
 			};
 		}
