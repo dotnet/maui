@@ -525,7 +525,8 @@ public static class KeyboardAutoManagerScroll
 					// handle the collapsable navbar
 					var navController = View?.GetNavigationController();
 					var prefersLargeTitles = navController?.NavigationBar.PrefersLargeTitles ?? false;
-					if (prefersLargeTitles && (UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.Portrait || UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.PortraitUpsideDown))
+
+					if (prefersLargeTitles)
 						move = AdjustForLargeTitles(move, superScrollView, navController!);
 
 					var origContentOffsetY = superScrollView.ContentOffset.Y;
@@ -701,10 +702,16 @@ public static class KeyboardAutoManagerScroll
 	// this collapsable height difference from the calculated move distance.
 	static nfloat AdjustForLargeTitles(nfloat move, UIScrollView superScrollView, UINavigationController navController)
 	{
+		// The Large Titles will be presented in Portrait modes on iPhones and all orientations of iPads,
+		// so skip if we are not in those scenarios.
+		if (UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone
+			&& (UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.LandscapeLeft || UIDevice.CurrentDevice.Orientation == UIDeviceOrientation.LandscapeRight))
+			return move;
+
 		// These values are not publicly available but can be tested.
 		// It is possible that these can change in the future.
-		var navBarCollapsedHeight = 44;
-		var navBarExpandedHeight = 96;
+		var navBarCollapsedHeight = UIDevice.CurrentDevice.UserInterfaceIdiom == UIUserInterfaceIdiom.Phone ? 44 : 50;
+		var navBarExpandedHeight = navController.NavigationBar.SizeThatFits(new CGSize(0, 0)).Height;
 
 		var minPageMoveToCollapseNavBar = navBarExpandedHeight - navBarCollapsedHeight;
 		var amountScrolled = superScrollView.ContentOffset.Y;
