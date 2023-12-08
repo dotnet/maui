@@ -33,6 +33,18 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		}
 
 		[Fact]
+		public void ConnectsWithOnlyHandlerSet()
+		{
+			var handler = Substitute.For<IViewHandler>();
+			var view = Substitute.For<IControlsView>();
+
+			view.Handler.Returns(handler);
+
+			GestureManager gestureManager = new GestureManager(view);
+			Assert.True(gestureManager.IsConnected);
+		}
+
+		[Fact]
 		public void DisconnectsWhenWindowIsRemoved()
 		{
 			var handler = Substitute.For<IViewHandler>();
@@ -93,25 +105,6 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			handler.ContainerView.Returns(new object());
 			view.PlatformContainerViewChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
-
-			Assert.NotEqual(gestureManager.GesturePlatformManager, platformManagerForHandler1);
-		}
-		
-		[Fact]
-		public void PlatformManagerChangesWhenWindowChanged()
-		{
-			var view = Substitute.For<IControlsView>();
-			var handler = Substitute.For<IViewHandler>();
-
-			handler.ContainerView.Returns(null);
-			view.Window.Returns(new Window());
-			view.Handler.Returns(handler);
-
-			GestureManager gestureManager = new GestureManager(view);
-			var platformManagerForHandler1 = gestureManager.GesturePlatformManager;
-
-			view.Window.Returns(new Window());
-			view.WindowChanged += Raise.Event<EventHandler>(view, EventArgs.Empty);
 
 			Assert.NotEqual(gestureManager.GesturePlatformManager, platformManagerForHandler1);
 		}

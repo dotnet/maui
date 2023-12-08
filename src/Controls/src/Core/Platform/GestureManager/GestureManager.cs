@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Controls.Platform
 				return;
 			}
 
-			if (_containerView != handler.ContainerView ||
-			    _platformView != handler.PlatformView ||
-			    _handler != handler)
+			if (_containerView != handler.ContainerView || 
+				_platformView != handler.PlatformView || 
+				_handler != handler)
 			{
 				DisconnectGestures();
 			}
