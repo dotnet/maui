@@ -26,9 +26,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 		[InlineData(",10,,,Top,")]
 		[InlineData(" 4,,,,")]
 		[InlineData("Left,")]
+		[InlineData(" 15")]
 		public void ButtonContentDesignTypeConverter_Valid_Unusual(string value)
 		{
-			// ButtonContentConverter.ConvertFrom handles allows these cases
+			// ButtonContentConverter.ConvertFrom allows these cases
 			ButtonContentDesignTypeConverter converter = new ButtonContentDesignTypeConverter();
 			bool actual = converter.IsValid(value);
 			Assert.True(actual);

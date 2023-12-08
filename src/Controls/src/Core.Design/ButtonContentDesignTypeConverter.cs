@@ -5,8 +5,15 @@ namespace Microsoft.Maui.Controls.Design
 {
 	public class ButtonContentDesignTypeConverter : StringConverter
 	{
-		private enum ImagePosition { Left, Top, Right, Bottom }; // MUST MATCH values of ButtonContentConverter.ImagePosition
 		private static readonly char[] Separators = { ',' };
+
+		// MUST MATCH values of ButtonContentConverter.ImagePosition. NOTE that we use enum rather than strings
+		// to better match ButtonContentConverter. First, Enum.Parse will accept int values like 1 or 20. Second,
+		// values passed to converter contain numbers and enum values, i.e. there is a possibility that we might
+		// need to handle ints in place of enums. ButtonContentConverter does not properly handle corner cases.
+		// For example, it does not trim incoming strings, so " 15" will be converted as
+		// ButtonContentLayout((ImagePorition)15, DefaultSpacing/*10*/)
+		private enum ImagePosition { Left, Top, Right, Bottom }; 
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{

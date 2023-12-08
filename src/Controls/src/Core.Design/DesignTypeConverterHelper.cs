@@ -1,5 +1,4 @@
 ﻿using System.Globalization;
-using System.Linq;
 
 namespace Controls.Core.Design
 {
@@ -18,10 +17,12 @@ namespace Controls.Core.Design
 			if (parts.Length > maxCount)
 				return null; // too many numbers
 
-			if (parts.All(p => double.TryParse(p, NumberStyles.Number, CultureInfo.InvariantCulture, out _)))
-				return parts.Length; // all numbers are valid
-
-			return null;
+			foreach (string part in parts)
+			{
+				if (!double.TryParse(part, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+					return null; // invalid number found
+			}
+			return parts.Length; // all numbers are valid
 		}
 	}
 }

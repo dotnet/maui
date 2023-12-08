@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using Controls.Core.Design;
 
 namespace Microsoft.Maui.Controls.Design
@@ -17,10 +16,18 @@ namespace Microsoft.Maui.Controls.Design
 				if (strValue.IndexOf(",", StringComparison.Ordinal) != -1)
 				{
 					var parts = strValue.Split(',');
-					
+
 					// Example: "1,2,3,4"
 					if (parts.Length == 4)
-						return parts.All(p => double.TryParse(p, NumberStyles.Number, CultureInfo.InvariantCulture, out _));
+					{
+						foreach (string part in parts)
+						{
+							if (!double.TryParse(part, NumberStyles.Number, CultureInfo.InvariantCulture, out _))
+								return false;
+						}
+
+						return true;
+					}
 
 					// Example: "1,a,b". CornerRadiusTypeConverter has unusual behavior
 					// for 2 or 3 token string. We match its behavior here
