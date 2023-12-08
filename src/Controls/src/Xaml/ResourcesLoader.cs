@@ -1,3 +1,5 @@
+using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
 using System.Xml;
@@ -8,8 +10,14 @@ namespace Microsoft.Maui.Controls.Xaml
 {
 	class ResourcesLoader : IResourcesLoader
 	{
+		[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T : new()
 		{
+			if (!FeatureFlags.IsXamlLoadingEnabled)
+			{
+				throw new InvalidOperationException($"XAML parsing at runtime is not enabled. Ensure all XAML files are compiled or enable the feature by setting the {nameof(FeatureFlags.IsXamlLoadingEnabled)} feature flag to true.");
+			}
+
 			var rd = new T();
 
 			var resourceLoadingResponse = Maui.Controls.Internals.ResourceLoader.ResourceProvider2?.Invoke(new Maui.Controls.Internals.ResourceLoader.ResourceLoadingQuery
