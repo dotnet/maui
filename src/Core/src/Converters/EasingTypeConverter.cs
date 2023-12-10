@@ -11,6 +11,7 @@ namespace Microsoft.Maui.Converters
 	/// <inheritdoc/>
 	public class EasingTypeConverter : TypeConverter
 	{
+
 		public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
 			=> sourceType == typeof(string);
 
@@ -31,29 +32,30 @@ namespace Microsoft.Maui.Converters
 
 			switch (easing)
 			{
-				case nameof(Linear):
-					return nameof(Linear);
-				case nameof(SinIn):
-					return nameof(SinIn);
-				case nameof(SinOut):
-					return nameof(SinOut);
-				case nameof(SinInOut):
-					return nameof(SinInOut);
-				case nameof(CubicIn):
-					return nameof(CubicIn);
-				case nameof(CubicOut):
-					return nameof(CubicOut);
-				case nameof(CubicInOut):
-					return nameof(CubicInOut);
-				case nameof(BounceIn):
-					return nameof(BounceIn);
-				case nameof(BounceOut):
-					return nameof(BounceOut);
-				case nameof(SpringIn):
-					return nameof(SpringIn);
-				case nameof(SpringOut):
-					return nameof(SpringOut);
+				case _ when Compare(strValue, Linear):
+					return Linear;
+				case _ when Compare(strValue, SinIn):
+					return SinIn;
+				case _ when Compare(strValue, SinOut):
+					return SinOut;
+				case _ when Compare(strValue, SinInOut):
+					return SinInOut;
+				case _ when Compare(strValue, CubicIn):
+					return CubicIn;
+				case _ when Compare(strValue, CubicOut):
+					return CubicOut;
+				case _ when Compare(strValue, CubicInOut):
+					return CubicInOut;
+				case _ when Compare(strValue, BounceIn):
+					return BounceIn;
+				case _ when Compare(strValue, BounceOut):
+					return BounceOut;
+				case _ when Compare(strValue, SpringIn):
+					return SpringIn;
+				case _ when Compare(strValue, SpringOut):
+					return SpringOut;
 			}
+			bool Compare(string left, string right) => left.Equals(right, StringComparison.InvariantCultureIgnoreCase);
 
 			var delcaredFields = typeof(Easing)
 								.GetTypeInfo()
@@ -73,6 +75,7 @@ namespace Microsoft.Maui.Converters
 				return fallbackEasing;
 
 			throw new InvalidOperationException($"Cannot convert \"{strValue}\" into {typeof(Easing)}");
+
 		}
 
 		public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
@@ -82,17 +85,17 @@ namespace Microsoft.Maui.Converters
 
 			return easing switch
 			{
-				nameof(Linear) => nameof(Linear),
-				nameof(SinIn) => nameof(SinIn),
-				nameof(SinOut) => nameof(SinOut),
-				nameof(SinInOut) => nameof(SinInOut),
-				nameof(CubicIn) => nameof(CubicIn),
-				nameof(CubicOut) => nameof(CubicOut),
-				nameof(CubicInOut) => nameof(CubicInOut),
-				nameof(BounceIn) => nameof(BounceIn),
-				nameof(BounceOut) => nameof(BounceOut),
-				nameof(SpringIn) => nameof(SpringIn),
-				nameof(SpringOut) => nameof(SpringOut),
+				_ when easing.Equals(Linear) => nameof(Linear),
+				_ when easing.Equals(SinIn) => nameof(SinIn),
+				_ when easing.Equals(SinOut) => nameof(SinOut),
+				_ when easing.Equals(SinInOut) => nameof(SinInOut),
+				_ when easing.Equals(CubicIn) => nameof(CubicIn),
+				_ when easing.Equals(CubicOut) => nameof(CubicOut),
+				_ when easing.Equals(CubicInOut) => nameof(CubicInOut),
+				_ when easing.Equals(BounceIn) => nameof(BounceIn),
+				_ when easing.Equals(BounceOut) => nameof(BounceOut),
+				_ when easing.Equals(SpringIn) => nameof(SpringIn),
+				_ when easing.Equals(SpringOut) => nameof(SpringOut),
 				_ => throw new NotSupportedException(),
 			};
 		}
