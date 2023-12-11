@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.Maui.Essentials.Connectivity
+namespace Microsoft.Maui.Networking
 {
 #if WINDOWS
 	internal class ConnectivityNativeHelper
