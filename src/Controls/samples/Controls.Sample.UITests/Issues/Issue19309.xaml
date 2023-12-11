@@ -8,6 +8,7 @@
         VerticalOptions="Center" 
         Spacing="20">
         <BoxView
+            AutomationId="WaitForStubControl"
             CornerRadius="10"
             HeightRequest="160"
             HorizontalOptions="Center"
