@@ -41,15 +41,11 @@ param
     [string] $appiumVersion = '2.1.1',
     [string] $windowsDriverVersion = '2.10.1',
     [string] $androidDriverVersion = '2.29.4',
-    [string] $iOSDriverVersion = '4.34.0',
+    [string] $iOSDriverVersion = '5.2.0',
     [string] $macDriverVersion = '1.7.2'
 )
 
 Write-Output  "Welcome to the Appium installer"
-node -v
-
-Write-Output  "Updating npm"
-npm install -g npm
 
 Write-Output  "Node version"
 node -v
