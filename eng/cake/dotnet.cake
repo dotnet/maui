@@ -486,16 +486,6 @@ Task("VS")
         StartVisualStudioForDotNet();
     }); 
 
-// Keeping this for users that are already using this.
-Task("VS-NET6")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("VS")
-    .Does(() =>
-    {
-       Warning("!!!!Please switch to using the `VS` target.!!!!");
-    });
-
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?
