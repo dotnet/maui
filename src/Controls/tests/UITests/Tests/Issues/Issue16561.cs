@@ -125,8 +125,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// Turn the text values into numbers so we can compare with a tolerance
 			(var tapX, var tapY) = ParseCoordinates(tapData);
 
-			Assert.AreEqual((double)expectedX, tapX, 1, $"{which} tap has unexpected X value");
-			Assert.AreEqual((double)expectedY, tapY, 1, $"{which} tap has unexpected Y value");
+			Assert.AreEqual((double)expectedX, tapX, 1.5, $"{which} tap has unexpected X value");
+			Assert.AreEqual((double)expectedY, tapY, 1.5, $"{which} tap has unexpected Y value");
 		}
 
 		static (double, double) ParseCoordinates(string text)

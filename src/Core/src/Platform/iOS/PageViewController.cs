@@ -31,7 +31,9 @@ namespace Microsoft.Maui.Platform
 				application?.ThemeChanged();
 			}
 
+#pragma warning disable CA1422 // Validate platform compatibility
 			base.TraitCollectionDidChange(previousTraitCollection);
+#pragma warning restore CA1422 // Validate platform compatibility
 		}
 	}
 }

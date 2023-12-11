@@ -1,5 +1,6 @@
 ﻿#nullable disable
 using System;
+using Microsoft.Maui.Controls.Compatibility;
 
 namespace Microsoft.Maui.Controls
 {
@@ -7,7 +8,7 @@ namespace Microsoft.Maui.Controls
 	{
 		[Obsolete("Use SearchBarHandler.Mapper instead.")]
 		public static IPropertyMapper<ISearchBar, SearchBarHandler> ControlsSearchBarMapper =
-			new PropertyMapper<SearchBar, SearchBarHandler>(SearchBarHandler.Mapper);
+			new ControlsMapper<SearchBar, SearchBarHandler>(SearchBarHandler.Mapper);
 
 		internal static new void RemapForControls()
 		{
