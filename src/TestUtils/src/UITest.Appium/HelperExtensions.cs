@@ -396,6 +396,43 @@ namespace UITest.Appium
 		}
 
 		/// <summary>
+		/// Executes an existing application on the device. 
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void LaunchApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("launchApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Send the currently running app for this session to the background.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void BackgroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("backgroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Reset the currently running app for this session.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ResetApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("resetApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Close an app on device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void CloseApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("closeApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
 		/// Sets the value of a Slider element that matches marked.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
