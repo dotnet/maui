@@ -49,7 +49,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				// 1. The test fails if the editor below is visible.
 				// Verify therefore that when trying to find, we cannot.
 				var editor = App.FindElement("TestEditor");
-				Assert.NotNull(editor);
+				Assert.Null(editor);
 
 				// With a snapshot ensure that the Editor is not visible.
 				VerifyScreenshot("Issue18712IsVisibleTest");
