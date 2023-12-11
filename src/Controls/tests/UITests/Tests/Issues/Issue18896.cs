@@ -6,6 +6,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 {
 	public class Issue18896 : _IssuesUITest
 	{
+		const string ListView = "TestListView";
+
 		public Issue18896(TestDevice device) : base(device)
 		{
 		}
@@ -22,6 +24,10 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				"Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994");
 
 			App.WaitForElement("WaitForStubControl");
+
+			App.ScrollDown(ListView);
+			
+			App.ScrollUp(ListView);
 
 			// Load images
 			await Task.Delay(1000);
