@@ -5,12 +5,13 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollViewObjectDisposedUITests : ScrollViewUITests
+	public class ScrollViewObjectDisposedUITests : _IssuesUITest
 	{
 		public ScrollViewObjectDisposedUITests(TestDevice device)
-			: base(device)
-		{
-		}
+		: base(device)
+		{ }
+
+		public override string Issue => "Object Disposed Exception in ScrollView";
 
 		// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
 		[Test]
@@ -19,8 +20,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android },		
 				"This test is failing, likely due to product issue");
-
-			App.Click("ScrollViewNoObjectDisposed");
 
 			// 1. Tap the button.
 			App.Click("TestButtonId");

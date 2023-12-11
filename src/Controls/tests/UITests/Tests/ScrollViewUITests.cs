@@ -5,11 +5,25 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollToUITests : ScrollViewUITests
+	public class ScrollToUITests : UITest
 	{
+		const string LayoutGallery = "ScrollView Gallery";
+
 		public ScrollToUITests(TestDevice device)
 			: base(device)
 		{
+		}
+
+		protected override void FixtureSetup()
+		{
+			base.FixtureSetup();
+			App.NavigateToGallery(LayoutGallery);
+		}
+
+		protected override void FixtureTeardown()
+		{
+			base.FixtureTeardown();
+			this.Back();
 		}
 
 		[Test]
@@ -18,7 +32,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the start position.
@@ -40,7 +53,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the center position.
@@ -65,7 +77,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll to the end.
@@ -87,7 +98,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll 100 px.
@@ -106,7 +116,6 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
 			{
-				App.Click("ScrollViewScrollTo");
 				App.WaitForElement("WaitForStubControl");
 
 				// 1. Tap a button to scroll 100 px.

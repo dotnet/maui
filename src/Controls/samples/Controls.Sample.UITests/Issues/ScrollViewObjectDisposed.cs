@@ -2,8 +2,10 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 
-namespace Controls.Sample.UITests
+namespace Maui.Controls.Sample.Issues
 {
+	// ScrollViewObjectDisposedTest (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewObjectDisposed.cs)
+	[Issue(IssueTracker.None, 0, "Object Disposed Exception in ScrollView", PlatformAffected.All)]
 	public class ScrollViewObjectDisposed : ContentPage
 	{
 		const string Instructions = "Tap the button. If the app does not crash and the red label displays \"Success\", this test has passed.";

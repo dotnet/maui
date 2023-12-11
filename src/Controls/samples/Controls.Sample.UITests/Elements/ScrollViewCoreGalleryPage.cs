@@ -6,7 +6,7 @@ using Microsoft.Maui.Graphics;
 
 namespace Controls.Sample.UITests
 {
-	public class ScrollTo : ContentPage
+	public class ScrollViewCoreGalleryPage : ContentPage
 	{
 		readonly ScrollView _scrollview;
 		readonly StackLayout _stack;
@@ -14,7 +14,7 @@ namespace Controls.Sample.UITests
 		List<Button> _buttons = new List<Button>();
 		Button _toNavigateTo;
 
-		public ScrollTo(ScrollOrientation orientation = ScrollOrientation.Vertical)
+		public ScrollViewCoreGalleryPage(ScrollOrientation orientation = ScrollOrientation.Vertical)
 		{
 			Title = "ScrollView ScrollTo";
 

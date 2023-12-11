@@ -5,19 +5,20 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollViewDeviceOrientationUITests : ScrollViewUITests
+	public class ScrollViewDeviceOrientationUITests : _IssuesUITest
 	{
 		public ScrollViewDeviceOrientationUITests(TestDevice device)
 			: base(device)
 		{
 		}
 
+		public override string Issue => "Horizontal ScrollView locks after rotation";
+
 		// Issue773TestsRotationRelayoutIssue(src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
 		[Test]
 		[Description("StackLayout respects device rotation.")]
 		public void ScrollViewDeviceOrientationTest()
 		{
-			App.Click("ScrollViewDeviceOrientation");
 			App.WaitForElement("WaitForStubControl");
 
 			App.SetOrientationLandscape();

@@ -1,16 +1,18 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 
-namespace Controls.Sample.UITests
+namespace Maui.Controls.Sample.Issues
 {
+	// NullContentOnScrollViewDoesntCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue3507.cs)
+	[Issue(IssueTracker.None, 0, "Scrollview with null content crashes on Windows", PlatformAffected.UWP)]
 	public class ScrollViewNoContent : ContentPage
 	{
 		readonly Label _label;
-		readonly ScrollView scrollView;
+		readonly ScrollView _scrollView;
 
 		public ScrollViewNoContent()
 		{
-			scrollView = new ScrollView();
+			_scrollView = new ScrollView();
 			_label = new Label();
 
 			Content = new StackLayout()
@@ -18,7 +20,7 @@ namespace Controls.Sample.UITests
 				Children =
 				{
 					_label,
-					scrollView
+					_scrollView
 				}
 			};
 		}
@@ -27,9 +29,9 @@ namespace Controls.Sample.UITests
 		{
 			base.OnAppearing();
 			await Task.Delay(500);
-			scrollView.Content = new StackLayout();
+			_scrollView.Content = new StackLayout();
 			await Task.Delay(500);
-			scrollView.Content = null;
+			_scrollView.Content = null;
 			await Task.Delay(500);
 			_label.Text = "Success";
 		}

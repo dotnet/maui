@@ -5,7 +5,7 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollViewIsEnabledTests : ScrollViewUITests
+	public class ScrollViewIsEnabledTests : _IssuesUITest
 	{
 		const string InitiallyEnabled = "InitiallyEnabled";
 		const string InitiallyNotEnabled = "InitiallyNotEnabled";
@@ -18,13 +18,13 @@ namespace Microsoft.Maui.AppiumTests
 			: base(device)
 		{
 		}
+		
+		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabled()
 		{
-			App.Click("ScrollViewIsEnabled");
-
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
 			App.Click(InitiallyEnabled);
@@ -42,8 +42,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
-			App.Click("ScrollViewIsEnabled");
-
 			// 1. Enable the ScrollView.
 			App.WaitForElement(InitiallyEnabled);
 			App.Click(InitiallyEnabled);
@@ -68,8 +66,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollViewInitiallyNotEnabled()
 		{
-			App.Click("ScrollViewIsEnabled");
-
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
 			App.Click(InitiallyNotEnabled);
@@ -86,8 +82,6 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
-			App.Click("ScrollViewIsEnabled");
-
 			// 1. Disable the ScrollView.
 			App.WaitForElement(InitiallyNotEnabled);
 			App.Click(InitiallyNotEnabled);

@@ -3,8 +3,10 @@ using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Devices;
 
-namespace Controls.Sample.UITests
+namespace Maui.Controls.Sample.Issues
 {
+	// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
+	[Issue(IssueTracker.None, 0, "Horizontal ScrollView locks after rotation", PlatformAffected.iOS)]
 	public class ScrollViewDeviceOrientation : ContentPage
 	{
 		public ScrollViewDeviceOrientation()

@@ -5,18 +5,19 @@ using UITest.Core;
 namespace Microsoft.Maui.AppiumTests
 {
 	[Category(UITestCategories.ScrollView)]
-	public class ScrollChangeOrientationUITests : ScrollViewUITests
+	public class ScrollChangeOrientationUITests : _IssuesUITest
 	{
 		public ScrollChangeOrientationUITests(TestDevice device)
 			: base(device)
 		{
 		}
 
+		public override string Issue => "Horizontal ScrollView locks after rotation";
+
+		// Issue773TestsRotationRelayoutIssue (src\Compatibility\ControlGallery\src\Issues.Shared\Issue773.cs)
 		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
-			App.Click("ScrollViewOrientation");
-
 			App.SetOrientationLandscape();
 
 			var buttonAutomationIds = new[] 

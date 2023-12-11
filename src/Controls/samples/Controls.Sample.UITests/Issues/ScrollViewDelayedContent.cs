@@ -2,8 +2,10 @@
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 
-namespace Controls.Sample.UITests
+namespace Maui.Controls.Sample.Issues
 {
+	// MeasuringEmptyScrollViewDoesNotCrash (src\Compatibility\ControlGallery\src\Issues.Shared\Issue1538.cs)
+	[Issue(IssueTracker.None, 0, "Crash measuring empty ScrollView", PlatformAffected.Android | PlatformAffected.UWP)]
 	public class ScrollViewDelayedContent : ContentPage
 	{
 		readonly ScrollView _sv;
