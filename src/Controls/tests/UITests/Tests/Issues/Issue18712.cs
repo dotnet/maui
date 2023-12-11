@@ -13,7 +13,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "Editor IsEnabled and IsVisible works";
 
 		[Test]
-		public void Issue18712IsEnabledTest()
+		public void Issue18712Test()
+		{
+			VerifyIsEnabled();
+			VerifyIsVisible();
+		}
+
+		void VerifyIsEnabled()
 		{
 			try
 			{
@@ -32,8 +38,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 		}
 
-		[Test]
-		public void Issue18712IsVisibleTest()
+		void VerifyIsVisible()
 		{
 			try
 			{
