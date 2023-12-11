@@ -46,10 +46,6 @@ param
 )
 
 Write-Output  "Welcome to the Appium installer"
-node -v
-
-Write-Output  "Updating npm"
-npm install -g npm
 
 Write-Output  "Node version"
 node -v
