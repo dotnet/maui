@@ -14,6 +14,39 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
+	public static class LoggingHelperExtensions
+	{
+		class LoggingHelperContext
+		{
+			public int WarningLevel { get; set; } =4;
+			public bool TreatWarningsAsErrors { get; set; }=false;
+			public string NoWarn { get; set; }
+		}
+
+		static LoggingHelperContext Context { get; set; }
+
+		public static void SetContext(this TaskLoggingHelper loggingHelper, int warningLevel, bool treatWarningsAsErrors, string noWarn)
+		{
+			if (Context == null)
+				Context = new LoggingHelperContext();
+			Context.WarningLevel = warningLevel;
+			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
+			Context.NoWarn = noWarn;
+		}
+
+		public static void LogWarningOrError(this TaskLoggingHelper loggingHelper, string code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, string message, params object[] messageArgs)
+		{
+			if (Context == null)
+				Context = new LoggingHelperContext();
+			if (Context.NoWarn != null && Context.NoWarn.Contains(code))
+				return;
+			if (Context.TreatWarningsAsErrors)
+				loggingHelper.LogError($"XamlC {code}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+			else
+				loggingHelper.LogWarning($"XamlC {code}", xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+		}
+	}
+
 	public class XamlCTask : XamlTask
 	{
 		readonly XamlCache cache = new();
@@ -23,6 +56,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
 		public string TargetFramework { get; set; }
+		public bool TreatWarningsAsErrors {get;set;} =false;
+		public string NoWarn {get;set;}
+		public int WarningLevel { get; set; } = 4;
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
@@ -38,6 +74,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
+			LoggingHelper.SetContext (WarningLevel, TreatWarningsAsErrors, NoWarn);
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
 			var skipassembly = !DefaultCompile;
 			bool success = true;
