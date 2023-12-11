@@ -1,15 +1,17 @@
 using System;
 using Gdk;
 using Gtk;
-using Microsoft.Maui.Platform;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Layouts;
 using Point = Microsoft.Maui.Graphics.Point;
+using Size = Microsoft.Maui.Graphics.Size;
 
 namespace Microsoft.Maui.Handlers
 {
 
 	// https://docs.gtk.org/gtk3/class.ScrolledWindow.html
 
-	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>
+	public partial class ScrollViewHandler : ViewHandler<IScrollView, ScrollView>, ICrossPlatformLayout
 	{
 
 		protected override ScrollView CreatePlatformView()
@@ -19,6 +21,44 @@ namespace Microsoft.Maui.Handlers
 			return s;
 		}
 
+		Size ICrossPlatformLayout.CrossPlatformMeasure(double widthConstraint, double heightConstraint)
+		{
+			var scrollView = VirtualView;
+
+			var padding = scrollView.Padding;
+
+			if (scrollView.PresentedContent == null)
+			{
+				return new Size(padding.HorizontalThickness, padding.VerticalThickness);
+			}
+
+			// Exclude the padding while measuring the internal content ...
+			var measurementWidth = widthConstraint - padding.HorizontalThickness;
+			var measurementHeight = heightConstraint - padding.VerticalThickness;
+
+			var result = (scrollView as ICrossPlatformLayout).CrossPlatformMeasure(measurementWidth, measurementHeight);
+
+			// ... and add the padding back in to the final result
+			var fullSize = new Size(result.Width + padding.HorizontalThickness, result.Height + padding.VerticalThickness);
+
+			if (double.IsInfinity(widthConstraint))
+			{
+				widthConstraint = result.Width;
+			}
+
+			if (double.IsInfinity(heightConstraint))
+			{
+				heightConstraint = result.Height;
+			}
+
+			return fullSize.AdjustForFill(new Rect(0, 0, widthConstraint, heightConstraint), scrollView.PresentedContent);
+		}
+
+		Size ICrossPlatformLayout.CrossPlatformArrange(Rect bounds)
+		{
+			return (VirtualView as ICrossPlatformLayout).CrossPlatformArrange(bounds);
+		}
+		
 		public override void SetVirtualView(IView view)
 		{
 			base.SetVirtualView(view);
@@ -58,15 +98,18 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		protected override void ConnectHandler(ScrollView nativeView)
+		protected override void ConnectHandler(ScrollView platformView)
 		{
-			base.ConnectHandler(nativeView);
+			base.ConnectHandler(platformView);
 
-			nativeView.Vadjustment.ValueChanged += OnNativeViewValueChanged;
-			nativeView.Hadjustment.ValueChanged += OnNativeViewValueChanged;
-			ConnectButtonEvents(nativeView);
-			ConnectButtonEvents(nativeView.VScrollbar);
-			ConnectButtonEvents(nativeView.HScrollbar);
+			platformView.CrossPlatformArrange = VirtualView.CrossPlatformArrange;
+			platformView.CrossPlatformMeasure = VirtualView.CrossPlatformMeasure;
+
+			platformView.Vadjustment.ValueChanged += OnNativeViewValueChanged;
+			platformView.Hadjustment.ValueChanged += OnNativeViewValueChanged;
+			ConnectButtonEvents(platformView);
+			ConnectButtonEvents(platformView.VScrollbar);
+			ConnectButtonEvents(platformView.HScrollbar);
 
 		}
 
@@ -78,7 +121,7 @@ namespace Microsoft.Maui.Handlers
 			widget.ButtonPressEvent += OnNativeViewButtonPressEvent;
 			widget.ButtonReleaseEvent += OnNativeViewButtonReleaseEvent;
 			widget.ScrollEvent += OnNativeViewScrollEvent;
-			widget.MotionNotifyEvent += OnNativeViewotionNotifyEvent;
+			widget.MotionNotifyEvent += OnNativeViewMotionNotifyEvent;
 		}
 
 		protected virtual void DisconnectButtonEvents(Widget? widget)
@@ -91,15 +134,15 @@ namespace Microsoft.Maui.Handlers
 
 		}
 
-		protected override void DisconnectHandler(ScrollView nativeView)
+		protected override void DisconnectHandler(ScrollView platformView)
 		{
-			base.OnDisconnectHandler(nativeView);
+			base.OnDisconnectHandler(platformView);
 
-			nativeView.Vadjustment.ValueChanged -= OnNativeViewValueChanged;
-			nativeView.Hadjustment.ValueChanged -= OnNativeViewValueChanged;
-			DisconnectButtonEvents(nativeView);
-			DisconnectButtonEvents(nativeView.VScrollbar);
-			DisconnectButtonEvents(nativeView.HScrollbar);
+			platformView.Vadjustment.ValueChanged -= OnNativeViewValueChanged;
+			platformView.Hadjustment.ValueChanged -= OnNativeViewValueChanged;
+			DisconnectButtonEvents(platformView);
+			DisconnectButtonEvents(platformView.VScrollbar);
+			DisconnectButtonEvents(platformView.HScrollbar);
 		}
 
 		bool _scrolling;
@@ -117,7 +160,7 @@ namespace Microsoft.Maui.Handlers
 			_lastDelta = 0d;
 		}
 
-		void OnNativeViewotionNotifyEvent(object o, MotionNotifyEventArgs args)
+		void OnNativeViewMotionNotifyEvent(object o, MotionNotifyEventArgs args)
 		{
 			_lastMotion = new Point(args.Event.X, args.Event.Y);
 
@@ -231,49 +274,49 @@ namespace Microsoft.Maui.Handlers
 
 		public static void MapOrientation(IScrollViewHandler handler, IScrollView view)
 		{
-			if (handler?.PlatformView is not { } nativeView)
+			if (handler?.PlatformView is not { } platformView)
 				return;
 
 			switch (view.Orientation)
 			{
 				case ScrollOrientation.Both:
-					nativeView.PropagateNaturalWidth = true;
-					nativeView.PropagateNaturalHeight = true;
-					nativeView.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
-					nativeView.HScrollbar.Visible = true;
-					nativeView.VScrollbar.Visible = true;
+					platformView.PropagateNaturalWidth = true;
+					platformView.PropagateNaturalHeight = true;
+					platformView.SetPolicy(PolicyType.Automatic, PolicyType.Automatic);
+					platformView.HScrollbar.Visible = true;
+					platformView.VScrollbar.Visible = true;
 
 					break;
 				case ScrollOrientation.Horizontal:
-					nativeView.PropagateNaturalWidth = true;
-					nativeView.PropagateNaturalHeight = false;
-					nativeView.SetPolicy(PolicyType.Automatic, PolicyType.Never);
-					nativeView.HScrollbar.Visible = true;
-					nativeView.VScrollbar.Visible = false;
+					platformView.PropagateNaturalWidth = true;
+					platformView.PropagateNaturalHeight = false;
+					platformView.SetPolicy(PolicyType.Automatic, PolicyType.Never);
+					platformView.HScrollbar.Visible = true;
+					platformView.VScrollbar.Visible = false;
 
 					break;
 				case ScrollOrientation.Vertical:
-					nativeView.PropagateNaturalHeight = true;
-					nativeView.PropagateNaturalWidth = false;
-					nativeView.SetPolicy(PolicyType.Never, PolicyType.Automatic);
-					nativeView.HScrollbar.Visible = false;
-					nativeView.VScrollbar.Visible = true;
+					platformView.PropagateNaturalHeight = true;
+					platformView.PropagateNaturalWidth = false;
+					platformView.SetPolicy(PolicyType.Never, PolicyType.Automatic);
+					platformView.HScrollbar.Visible = false;
+					platformView.VScrollbar.Visible = true;
 
 					break;
 
 				case ScrollOrientation.Neither:
-					nativeView.PropagateNaturalWidth = false;
-					nativeView.PropagateNaturalHeight = false;
-					nativeView.SetPolicy(PolicyType.Never, PolicyType.Never);
-					nativeView.HScrollbar.Visible = false;
-					nativeView.VScrollbar.Visible = false;
+					platformView.PropagateNaturalWidth = false;
+					platformView.PropagateNaturalHeight = false;
+					platformView.SetPolicy(PolicyType.Never, PolicyType.Never);
+					platformView.HScrollbar.Visible = false;
+					platformView.VScrollbar.Visible = false;
 
 					break;
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
 
-			nativeView.ScrollOrientation = view.Orientation;
+			platformView.ScrollOrientation = view.Orientation;
 		}
 
 		public static void MapHorizontalScrollBarVisibility(IScrollViewHandler handler, IScrollView view)
