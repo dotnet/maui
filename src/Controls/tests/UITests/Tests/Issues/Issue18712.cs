@@ -29,7 +29,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 				// 1. The test fails if you are able to interact with the editor below.
 				App.Click("TestEditor");
-				VerifyScreenshot();
+				VerifyScreenshot("Issue18712IsEnabledTest");
 
 			}
 			finally
@@ -52,7 +52,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				Assert.NotNull(editor);
 
 				// With a snapshot ensure that the Editor is not visible.
-				VerifyScreenshot();
+				VerifyScreenshot("Issue18712IsVisibleTest");
 			}
 			finally
 			{
