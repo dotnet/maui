@@ -58,6 +58,12 @@
     <None Include="nuget\**" Exclude="nuget\**\*.in.*" PackagePath="" Pack="true" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="ILLink.Substitutions.xml">
+      <LogicalName>ILLink.Substitutions.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
   <Target Name="_CopyToBuildTasksDir" AfterTargets="Build">
     <ItemGroup>
       <_CopyItems Include="nuget\buildTransitive\**" Exclude="nuget\**\*.in.*" />

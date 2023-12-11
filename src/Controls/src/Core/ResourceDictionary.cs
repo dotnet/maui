@@ -52,7 +52,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (!FeatureFlags.IsXamlLoadingEnabled)
+				if (!RuntimeFeature.IsXamlLoadingEnabled)
 				{
 					throw new InvalidOperationException($"The resource '{resourcePath}' has not been compiled using XamlC. "
 						+ "Loading resources from XAML at runtime is disabled. Ensure all resources are compiled using XamlC. "
