@@ -1,0 +1,38 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Issue 19309"
+             x:Class="Maui.Controls.Sample.Issues.Issue19309">
+    <VerticalStackLayout 
+        HorizontalOptions="Center" 
+        VerticalOptions="Center" 
+        Spacing="20">
+        <BoxView
+            CornerRadius="10"
+            HeightRequest="160"
+            HorizontalOptions="Center"
+            VerticalOptions="Center"
+            WidthRequest="160"
+            Color="CornflowerBlue" />
+
+        <BoxView
+            Background="Green"
+            CornerRadius="10"
+            HeightRequest="15"
+            WidthRequest="150"
+            Color="Purple" />
+
+        <BoxView
+            Background="Blue"
+            CornerRadius="10"
+            HeightRequest="15"
+            WidthRequest="150" />
+
+        <BoxView
+            Background="Green"
+            CornerRadius="25"
+            HeightRequest="50"
+            WidthRequest="50"
+            Color="Purple" />
+    </VerticalStackLayout>
+</ContentPage>
