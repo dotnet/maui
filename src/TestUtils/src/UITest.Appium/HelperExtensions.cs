@@ -224,27 +224,7 @@ namespace UITest.Appium
 
 			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
 			{
-				{ "element", elementToSwipe},
-			});
-		}
-
-		/// <summary>
-		/// Scrolls left on the first element matching query.
-		/// </summary>
-		/// <param name="app">Represents the main gateway to interact with an app.</param>
-		/// <param name="marked">Marked selector to match.</param>
-		/// <param name="strategy">Strategy for scrolling element.</param>
-		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
-		/// <param name="swipeSpeed">The speed of the gesture.</param>
-		/// <param name="withInertia">Whether swipes should cause inertia.</param>
-		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
-		{
-			var elementToSwipe = app.FindElement(marked);
-
-			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
-			{
-				{ "element", elementToSwipe},
-				{ "strategy", strategy },
+				{ "element", elementToSwipe},          
 				{ "swipePercentage", swipePercentage },
 				{ "swipeSpeed", swipeSpeed },
 				{ "withInertia", withInertia }
@@ -284,6 +264,32 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
 			{
 				{ "element", elementToSwipe},
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls left on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
 			});
 		}
 
