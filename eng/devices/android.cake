@@ -66,6 +66,8 @@ var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT }
 if (IsCIBuild())
 	emuSettings.ArgumentCustomization = args => args.Append("-no-window");
 
+emuSettings.ArgumentCustomization = args => args.Append("-feature -Vulkan");
+
 AndroidEmulatorProcess emulatorProcess = null;
 
 Setup(context =>
