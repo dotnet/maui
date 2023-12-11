@@ -211,7 +211,7 @@ namespace UITest.Appium
 
 			return CommandResponse.FailedEmptyResponse;
 		}
-		
+
 		static AppiumElement? GetAppiumElement(object element)
 		{
 			if (element is AppiumElement appiumElement)

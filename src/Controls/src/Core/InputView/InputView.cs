@@ -23,7 +23,7 @@ namespace Microsoft.Maui.Controls
 		public static readonly BindableProperty IsTextPredictionEnabledProperty = BindableProperty.Create(nameof(IsTextPredictionEnabled), typeof(bool), typeof(InputView), true);
 
 		/// <summary>Bindable property for <see cref="MaxLength"/>.</summary>
-		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(int), int.MaxValue);
+		public static readonly BindableProperty MaxLengthProperty = BindableProperty.Create(nameof(MaxLength), typeof(int), typeof(InputView), int.MaxValue);
 
 		/// <summary>Bindable property for <see cref="IsReadOnly"/>.</summary>
 		public static readonly BindableProperty IsReadOnlyProperty = BindableProperty.Create(nameof(IsReadOnly), typeof(bool), typeof(InputView), false);
