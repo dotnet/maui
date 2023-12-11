@@ -86,7 +86,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.WaitForElement(InitiallyNotEnabled);
 			App.Click(InitiallyNotEnabled);
 
-			// 2. Enaable the ScrollView.
+			// 2. Enable the ScrollView.
 			App.WaitForElement(ToggleButton);
 			App.Click(ToggleButton);
 
