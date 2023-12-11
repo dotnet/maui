@@ -191,7 +191,7 @@ namespace UITest.Appium
 		{
 			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
 		}
-    
+
 		/// <summary>
 		/// Performs a left to right swipe gesture on the screen. 
 		/// </summary>
@@ -224,7 +224,7 @@ namespace UITest.Appium
 
 			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
 			{
-				{ "element", elementToSwipe},
+				{ "element", elementToSwipe},          
 				{ "swipePercentage", swipePercentage },
 				{ "swipeSpeed", swipeSpeed },
 				{ "withInertia", withInertia }
@@ -270,6 +270,99 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Scrolls left on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls down on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls right on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollRight(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls up on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUp(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
 		/// Changes the device orientation to landscape mode.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
@@ -339,6 +432,68 @@ namespace UITest.Appium
 			app.CommandExecutor.Execute("closeApp", ImmutableDictionary<string, object>.Empty);
 		}
 
+		/// <summary>
+		/// Sets the value of a Slider element that matches marked.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		public static void SetSliderValue(this IApp app, string marked, double value)
+		{
+			var element = app.FindElement(marked);
+
+			double defaultMinimum = 0d;
+			double defaultMaximum = 1d;
+
+			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			{
+				{ "element", element },
+				{ "value", value },
+				{ "minimum", defaultMinimum },
+				{ "maximum", defaultMaximum },
+			});
+		}
+
+		/// <summary>
+		/// Sets the value of a Slider element that matches marked.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
+		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
+		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d, double maximum = 1d)
+		{
+			var element = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			{
+				{ "element", element },
+				{ "value", value },
+				{ "minimum", minimum },
+				{ "maximum", maximum },
+			});
+		}
+
+		/// <summary>
+		/// Performs a continuous drag gesture between 2 points.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="fromX">The x coordinate to start dragging from.</param>
+		/// <param name="fromY">The y coordinate to start dragging from.</param>
+		/// <param name="toX">The x coordinate to drag to.</param>
+		/// <param name="toY">The y coordinate to drag to.</param>
+		public static void DragCoordinates(this IApp app, float fromX, float fromY, float toX, float toY)
+		{
+			app.CommandExecutor.Execute("dragCoordinates", new Dictionary<string, object>
+			{
+				{ "fromX", fromX },
+				{ "fromY", fromY },
+				{ "toX", toX },
+				{ "toY", toY },
+			});
+		}
+	
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
