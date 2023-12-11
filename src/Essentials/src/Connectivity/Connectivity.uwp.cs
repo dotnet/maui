@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Net.NetworkInformation;
-using Microsoft.Maui.Essentials.Connectivity;
-using Microsoft.UI.Xaml.Controls;
 using Windows.Networking.Connectivity;
 using static Microsoft.Maui.Essentials.Connectivity.ConnectivityNativeHelper;
 
@@ -13,12 +9,12 @@ namespace Microsoft.Maui.Networking
 	partial class ConnectivityImplementation : IConnectivity
 	{
 		void StartListeners() =>
-			NetworkInformation.NetworkStatusChanged += NetworkStatusChanged;
+			NetworkChange.NetworkAvailabilityChanged += NetworkStatusChanged;
 
 		void StopListeners() =>
-			NetworkInformation.NetworkStatusChanged -= NetworkStatusChanged;
+			NetworkChange.NetworkAvailabilityChanged -= NetworkStatusChanged;
 
-		void NetworkStatusChanged(object sender) =>
+		void NetworkStatusChanged(object sender, EventArgs e) =>
 			OnConnectivityChanged();
 
 		public NetworkAccess NetworkAccess
