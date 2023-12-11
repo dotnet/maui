@@ -345,6 +345,25 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Performs a continuous drag gesture between 2 points.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="fromX">The x coordinate to start dragging from.</param>
+		/// <param name="fromY">The y coordinate to start dragging from.</param>
+		/// <param name="toX">The x coordinate to drag to.</param>
+		/// <param name="toY">The y coordinate to drag to.</param>
+		public static void DragCoordinates(this IApp app, float fromX, float fromY, float toX, float toY)
+		{
+			app.CommandExecutor.Execute("dragCoordinates", new Dictionary<string, object>
+			{
+				{ "fromX", fromX },
+				{ "fromY", fromY },
+				{ "toX", toX },
+				{ "toY", toY },
+			});
+		}
+	
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
