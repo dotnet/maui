@@ -35,7 +35,7 @@ PS> .\appium-install.ps1 '2.1.1' 2.7.2 2.25.1 4.30.2 1.6.1
 This would install or update Appium version 2.1.1, the windows driver 2.7.2, the uiautomator2 driver with 2.25.1, the xcuitest driver with 4.30.2 and mac2 driver with 1.6.1
 
 Versions for these steps are pinned and ideally stay in sync with the script that initializes the XAMBOT agents.
-You can find the script for that here: https://devdiv.visualstudio.com/Engineering/_git/BotDeploy.PackageGeneration?path=/bootstrap_bundle_appium/ROOT/Users/Shared/bootstrap/uuuu_bundle_appium/appium-install.ps1&version=GBmain&_a=contents
+Find the script for that on the DevDiv Azure DevOps instance, Engineering team, BotDeploy.PackageGeneration repo.
 #>
 
 param
