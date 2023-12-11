@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using Windows.Networking.Connectivity;
-using static Microsoft.Maui.Essentials.Connectivity.ConnectivityNativeHelper;
 
 namespace Microsoft.Maui.Networking
 {
@@ -39,11 +38,11 @@ namespace Microsoft.Maui.Networking
 				else
 				{
 					// Windows 10 workaround for 
-					var networkList = GetNetworkListManager();
-					var enumNetworks = networkList.GetNetworks(NLM_ENUM_NETWORK.NLM_ENUM_NETWORK_CONNECTED);
-					var connectivity = NLM_CONNECTIVITY.NLM_CONNECTIVITY_DISCONNECTED;
+					var networkList = ConnectivityNativeHelper.GetNetworkListManager();
+					var enumNetworks = networkList.GetNetworks(ConnectivityNativeHelper.NLM_ENUM_NETWORK.NLM_ENUM_NETWORK_CONNECTED);
+					var connectivity = ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_DISCONNECTED;
 
-					foreach (INetwork networkInterface in enumNetworks)
+					foreach (ConnectivityNativeHelper.INetwork networkInterface in enumNetworks)
 					{
 						if (networkInterface.IsConnected())
 						{
@@ -52,15 +51,15 @@ namespace Microsoft.Maui.Networking
 						}
 					}
 
-					if ((connectivity & (NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_INTERNET | NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_INTERNET)) != 0)
+					if ((connectivity & (ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_INTERNET | ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_INTERNET)) != 0)
 					{
 						return NetworkAccess.Internet;
 					}
-					else if ((connectivity & (NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_LOCALNETWORK | NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_LOCALNETWORK)) != 0)
+					else if ((connectivity & (ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_LOCALNETWORK | ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_LOCALNETWORK)) != 0)
 					{
 						return NetworkAccess.Local;
 					}
-					else if ((connectivity & (NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_NOTRAFFIC | NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_NOTRAFFIC)) != 0)
+					else if ((connectivity & (ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV4_NOTRAFFIC | ConnectivityNativeHelper.NLM_CONNECTIVITY.NLM_CONNECTIVITY_IPV6_NOTRAFFIC)) != 0)
 					{
 						return NetworkAccess.Local;
 					}
