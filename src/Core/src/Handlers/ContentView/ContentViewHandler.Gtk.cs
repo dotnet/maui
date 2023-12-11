@@ -5,8 +5,15 @@ namespace Microsoft.Maui.Handlers
 
 	public partial class ContentViewHandler : ViewHandler<IContentView, ContentView>
 	{
+		protected override ContentView CreatePlatformView()
+		{
+			if (VirtualView == null)
+			{
+				throw new InvalidOperationException($"{nameof(VirtualView)} must be set to create a {nameof(ContentView)}");
+			}
 
-		protected override ContentView CreatePlatformView() => new();
+			return new ContentView { CrossPlatformLayout = VirtualView };
+		}
 
 		public void UpdateContent()
 		{
@@ -25,7 +32,6 @@ namespace Microsoft.Maui.Handlers
 				contentViewHandler.UpdateContent();
 			}
 		}
-
 	}
 
 }

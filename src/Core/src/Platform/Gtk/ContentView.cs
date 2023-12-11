@@ -5,14 +5,11 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Platform
 {
 
-	public class ContentView : Gtk.Box
+	public class ContentView : Gtk.Box, ICrossPlatformLayoutBacking
 	{
-
 		public ContentView() : base(Orientation.Horizontal, 0) { }
 
-		internal Func<double, double, Size>? CrossPlatformMeasure { get; set; }
-
-		internal Func<Rect, Size>? CrossPlatformArrange { get; set; }
+		public ICrossPlatformLayout? CrossPlatformLayout { get; set; }
 
 		Widget? _content;
 
@@ -24,7 +21,6 @@ namespace Microsoft.Maui.Platform
 				if (_content != null && value != null)
 				{
 					this.ReplaceChild(_content, value);
-
 				}
 				else if (value != null)
 				{
@@ -32,10 +28,8 @@ namespace Microsoft.Maui.Platform
 				}
 
 				_content = value;
-
 			}
 		}
-
 	}
 
 }
