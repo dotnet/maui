@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 {
 	// Issue2680Test_ScrollEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
 	// Issue2680Test_ScrollDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\Issue2680ScrollView.cs)
-	[Issue(IssueTracker.None, 0, "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]
+	[Issue(IssueTracker.None, 2680, "Add VerticalScrollMode/HorizontalScrollMode to ListView and ScrollView", PlatformAffected.All)]
 	public class ScrollViewDisableScroll : ContentPage
 	{
 		const string ScrollViewMark = "ScrollView";

@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Issues
 	// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 	// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 	// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
-	[Issue(IssueTracker.None, 0, "ScrollView set to disabled will still allow scrolling", PlatformAffected.All)]
+	[Issue(IssueTracker.None, 0112358, "ScrollView set to disabled will still allow scrolling", PlatformAffected.All)]
 	public class ScrollViewIsEnabled : NavigationPage
 	{
 		const string InitiallyEnabled = "Initially Enabled";
