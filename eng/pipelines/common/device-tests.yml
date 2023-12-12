@@ -29,6 +29,7 @@ stages:
         clean: all
       displayName: "Android emulator tests"
       pool: ${{ parameters.androidPool }}
+      timeoutInMinutes: 240
       strategy:
         matrix:
           # create all the variables used for the matrix
@@ -66,6 +67,7 @@ stages:
         clean: all
       displayName: "iOS simulator tests"
       pool: ${{ parameters.iosPool }}
+      timeoutInMinutes: 240
       strategy:
         matrix:
           # create all the variables used for the matrix
@@ -103,6 +105,7 @@ stages:
         clean: all
       displayName: "macOS tests"
       pool: ${{ parameters.catalystPool }}
+      timeoutInMinutes: 240
       strategy:
         matrix:
           # create all the variables used for the matrix
@@ -140,6 +143,7 @@ stages:
         clean: all
       displayName: "Windows device tests"
       pool: ${{ parameters.windowsPool }}
+      timeoutInMinutes: 240 # how long to run the job before automatically cancelling
       strategy:
         matrix:
           # create all the variables used for the matrix

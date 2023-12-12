@@ -66,7 +66,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler IUIViewLifeCycleEvents.MovedToWindow
 		{
@@ -80,9 +80,9 @@ namespace Microsoft.Maui.Platform
 			_movedToWindow?.Invoke(this, EventArgs.Empty);
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		public event EventHandler? TextPropertySet;
-		[UnconditionalSuppressMessage("Memory", "MA0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
+		[UnconditionalSuppressMessage("Memory", "MEM0001", Justification = "Proven safe in test: MemoryTests.HandlerDoesNotLeak")]
 		internal event EventHandler? SelectionChanged;
 	}
 }

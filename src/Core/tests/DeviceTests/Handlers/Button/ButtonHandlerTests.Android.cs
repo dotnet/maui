@@ -77,6 +77,31 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(expectedValue, values.PlatformViewValue, EmCoefficientPrecision);
 		}
 
+		[Theory(DisplayName = "CornerRadius Initializes Correctly")]
+		[InlineData(0, 0)]
+		[InlineData(5, 5)]
+		public async Task CornerRadiusInitializesCorrectly(int viewRadius, int platformViewRadius)
+		{
+			var button = new ButtonStub
+			{
+				Background = new SolidPaintStub(Colors.Black),
+				ImageSource = new FileImageSourceStub("black.png"),
+				CornerRadius = viewRadius
+			};
+
+			var values = await GetValueAsync(button, (handler) =>
+			{
+				return new
+				{
+					ViewValue = button.CornerRadius,
+					PlatformViewValue = GetNativeCornerRadius(handler)
+				};
+			});
+
+			Assert.Equal(viewRadius, values.ViewValue);
+			Assert.Equal(platformViewRadius, values.PlatformViewValue);
+		}
+
 		[Theory]
 		[InlineData("red.png", "#FF0000")]
 		[InlineData("green.png", "#00FF00")]
@@ -107,6 +132,27 @@ namespace Microsoft.Maui.DeviceTests
 
 		string GetNativeText(ButtonHandler buttonHandler) =>
 			GetNativeButton(buttonHandler).Text;
+
+		int GetNativeCornerRadius(ButtonHandler buttonHandler)
+		{
+			var appCompatButton = GetNativeButton(buttonHandler);
+
+			if (appCompatButton.Background is BorderDrawable)
+			{
+				var background = (BorderDrawable)appCompatButton.Background;
+
+				if (background != null)
+				{
+					// Cornerradius is applied in drawing the path, in PathF. But that takes a private value as input, here we check that that private value is correctly set
+					CornerRadius cr = (CornerRadius)typeof(BorderDrawable).GetField("_cornerRadius",
+						System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).GetValue(background);
+
+					return (int)cr.TopRight;
+				}
+			}
+
+			return -1;
+		}
 
 		Color GetNativeTextColor(ButtonHandler buttonHandler)
 		{

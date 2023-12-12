@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Platform
 		CAShapeLayer? _maskLayer;
 		CAShapeLayer? _backgroundMaskLayer;
 		CAShapeLayer? _shadowLayer;
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = "_borderView is a SubView")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "_borderView is a SubView")]
 		UIView? _borderView;
 
 		public WrapperView()
@@ -126,7 +126,7 @@ namespace Microsoft.Maui.Platform
 			{
 				return imageView.SizeThatFitsImage(size);
 			}
-			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null)
+			else if (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null)
 			{
 				return imageButton.ImageView.SizeThatFitsImage(size);
 			}
@@ -141,7 +141,7 @@ namespace Microsoft.Maui.Platform
 
 			var child = Subviews[0];
 
-			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null))
+			if (child is UIImageView || (child is UIButton imageButton && imageButton.ImageView?.Image is not null && imageButton.CurrentTitle is null))
 			{
 				var widthConstraint = IsExplicitSet(virtualViewWidth) ? virtualViewWidth : originalSpec.Width;
 				var heightConstraint = IsExplicitSet(virtualViewHeight) ? virtualViewHeight : originalSpec.Height;
@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Platform
 			return Layer;
 		}
 
-		[UnconditionalSuppressMessage("Memory", "MA0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = IUIViewLifeCycleEvents.UnconditionalSuppressMessage)]
 		EventHandler? _movedToWindow;
 		event EventHandler? IUIViewLifeCycleEvents.MovedToWindow
 		{

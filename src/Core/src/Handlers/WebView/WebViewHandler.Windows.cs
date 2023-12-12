@@ -12,6 +12,7 @@ namespace Microsoft.Maui.Handlers
 	public partial class WebViewHandler : ViewHandler<IWebView, WebView2>
 	{
 		WebNavigationEvent _eventState;
+		readonly WebView2Proxy _proxy = new();
 		readonly HashSet<string> _loadedCookies = new();
 		Window? _window;
 
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Handlers
 
 		protected override void ConnectHandler(WebView2 platformView)
 		{
-			platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
+			_proxy.Connect(this, platformView);
 			base.ConnectHandler(platformView);
 
 			if (platformView.IsLoaded)
@@ -58,16 +59,8 @@ namespace Microsoft.Maui.Handlers
 				_window = null;
 			}
 
-			if (platformView.CoreWebView2 is not null)
-			{
-				platformView.CoreWebView2.HistoryChanged -= OnHistoryChanged;
-				platformView.CoreWebView2.NavigationStarting -= OnNavigationStarting;
-				platformView.CoreWebView2.NavigationCompleted -= OnNavigationCompleted;
-				platformView.CoreWebView2.Stop();
-			}
-
 			platformView.Loaded -= OnWebViewLoaded;
-			platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
+			_proxy.Disconnect(platformView);
 			platformView.Close();
 		}
 
@@ -75,28 +68,6 @@ namespace Microsoft.Maui.Handlers
 		{
 			Disconnect(platformView);
 			base.DisconnectHandler(platformView);
-		}
-
-		void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
-		{
-			sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
-			sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
-			sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
-
-			sender.UpdateUserAgent(VirtualView);
-		}
-
-		void OnHistoryChanged(CoreWebView2 sender, object args)
-		{
-			PlatformView?.UpdateCanGoBackForward(VirtualView);
-		}
-
-		void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
-		{
-			if (args.IsSuccess)
-				NavigationSucceeded(sender, args);
-			else
-				NavigationFailed(sender, args);
 		}
 
 		void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
@@ -330,6 +301,73 @@ namespace Microsoft.Maui.Handlers
 				}
 
 				handler.PlatformView.EvaluateJavaScript(request);
+			}
+		}
+
+		class WebView2Proxy
+		{
+			WeakReference<WebViewHandler>? _handler;
+
+			WebViewHandler? Handler => _handler is not null && _handler.TryGetTarget(out var h) ? h : null;
+
+			public void Connect(WebViewHandler handler, WebView2 platformView)
+			{
+				_handler = new(handler);
+				platformView.CoreWebView2Initialized += OnCoreWebView2Initialized;
+			}
+
+			public void Disconnect(WebView2 platformView)
+			{
+				platformView.CoreWebView2Initialized -= OnCoreWebView2Initialized;
+
+				if (platformView.CoreWebView2 is CoreWebView2 webView2)
+				{
+					webView2.HistoryChanged -= OnHistoryChanged;
+					webView2.NavigationStarting -= OnNavigationStarting;
+					webView2.NavigationCompleted -= OnNavigationCompleted;
+					webView2.Stop();
+				}
+
+				_handler = null;
+			}
+
+			void OnCoreWebView2Initialized(WebView2 sender, CoreWebView2InitializedEventArgs args)
+			{
+				sender.CoreWebView2.HistoryChanged += OnHistoryChanged;
+				sender.CoreWebView2.NavigationStarting += OnNavigationStarting;
+				sender.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+
+				if (Handler is WebViewHandler handler)
+				{
+					sender.UpdateUserAgent(handler.VirtualView);
+				}
+			}
+
+			void OnHistoryChanged(CoreWebView2 sender, object args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.PlatformView?.UpdateCanGoBackForward(handler.VirtualView);
+				}
+			}
+
+			void OnNavigationCompleted(CoreWebView2 sender, CoreWebView2NavigationCompletedEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					if (args.IsSuccess)
+						handler.NavigationSucceeded(sender, args);
+					else
+						handler.NavigationFailed(sender, args);
+				}
+			}
+
+			void OnNavigationStarting(CoreWebView2 sender, CoreWebView2NavigationStartingEventArgs args)
+			{
+				if (Handler is WebViewHandler handler)
+				{
+					handler.OnNavigationStarting(sender, args);
+				}
 			}
 		}
 	}

@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using UITest.Core;
@@ -55,13 +56,13 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-
-			if (App.AppState == ApplicationState.Not_Running)
+			if (App.AppState == ApplicationState.NotRunning)
 			{
-				// Assert.Fail will immediately exit the test which is desirable as the app is not
-				// running anymore so we don't want to log diagnostic data as there is nothing to collect from
 				Reset();
 				FixtureSetup();
+
+				// Assert.Fail will immediately exit the test which is desirable as the app is not
+				// running anymore so we can't capture any UI structures or any screenshots
 				Assert.Fail("The app was expected to be running still, investigate as possible crash");
 			}
 
@@ -69,7 +70,7 @@ namespace UITest.Appium.NUnit
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
 			{
-				SaveDiagnosticLogs("UITestBaseTearDown");
+				SaveUIDiagnosticInfo();
 			}
 		}
 
@@ -84,7 +85,7 @@ namespace UITest.Appium.NUnit
 			}
 			catch
 			{
-				SaveDiagnosticLogs("FixtureSetup");
+				SaveUIDiagnosticInfo();
 				throw;
 			}
 		}
@@ -98,33 +99,65 @@ namespace UITest.Appium.NUnit
 			if (outcome.Status == ResultState.SetUpFailure.Status &&
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
-				SaveDiagnosticLogs("OneTimeTearDown");
+				SaveUIDiagnosticInfo();
 			}
 
 			FixtureTeardown();
 		}
 
-		void SaveDiagnosticLogs(string? note = null)
+		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
 		{
+			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
+			if (screenshotPath is not null)
+			{
+				_ = App.Screenshot(screenshotPath);
+
+				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+			}
+
+			var pageSourcePath = GetGeneratedFilePath("PageSource.txt", note);
+			if (pageSourcePath is not null)
+			{
+				File.WriteAllText(pageSourcePath, App.ElementTree);
+
+				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+			}
+		}
+
+		string? GetGeneratedFilePath(string filename, string? note = null)
+		{
+			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
+			if (UITestContext is null)
+				return null;
+
 			if (string.IsNullOrEmpty(note))
 				note = "-";
 			else
 				note = $"-{note}-";
 
-			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+			filename = $"{Path.GetFileNameWithoutExtension(filename)}-{Guid.NewGuid().ToString("N")}{Path.GetExtension(filename)}";
 
-			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
-			if (UITestContext is not null)
+			var logDir =
+				Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ??
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+
+			var name =
+				TestContext.CurrentContext.Test.MethodName ??
+				TestContext.CurrentContext.Test.Name;
+
+			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
+		}
+
+		void AddTestAttachment(string filePath, string? description = null)
+		{
+			try
 			{
-				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
-
-				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot.png");
-				_ = App.Screenshot(screenshotPath);
-				TestContext.AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
-
-				var pageSourcePath = Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt");
-				File.WriteAllText(pageSourcePath, App.ElementTree);
-				TestContext.AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+				TestContext.AddTestAttachment(filePath, description);
+			}
+			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
+			{
+				// Add the file path to better troubleshoot when these errors occur
+				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
 			}
 		}
 	}

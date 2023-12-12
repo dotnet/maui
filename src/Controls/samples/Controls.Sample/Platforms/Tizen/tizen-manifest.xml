@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest package="maui-application-id-placeholder" version="0.0.0" api-version="7" xmlns="http://tizen.org/ns/packages">
+<manifest package="maui-application-id-placeholder" version="0.0.0" api-version="8" xmlns="http://tizen.org/ns/packages">
   <profile name="common" />
   <ui-application appid="maui-application-id-placeholder" exec="Maui.Controls.Sample.dll" multiple="false" nodisplay="false" taskmanage="true" type="dotnet" launch_mode="single">
     <label>maui-application-title-placeholder</label>
