@@ -108,6 +108,12 @@ void Cleanup()
 			}
 		}
 	}
+
+	if (IsCIBuild()) {
+		Information("Stopping all Simulator processes and reset all Simulator states");
+		StartProcess("xcrun", "simctl shutdown all");
+		StartProcess("xcrun", "simctl erase all");
+	}
 }
 
 Task("Cleanup");
