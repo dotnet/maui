@@ -389,8 +389,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				n = n.Parent as IElementNode;
 			}
 
-			if (dataTypeNode is null)
+			if (dataTypeNode is null) {
+				context.LoggingHelper.LogWarningOrError(10101, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, $"Binding could be compiled if x:DataType is specified", null);
 				yield break;
+			}
 
 			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
