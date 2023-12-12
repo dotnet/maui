@@ -20,6 +20,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
+
 				App.WaitForElement("Button1");
 
 				App.SetOrientationLandscape();
