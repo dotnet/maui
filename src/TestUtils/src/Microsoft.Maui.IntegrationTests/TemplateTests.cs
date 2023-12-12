@@ -141,7 +141,6 @@ namespace Microsoft.Maui.IntegrationTests
 			if (!TestEnvironment.IsMacOS)
 				Assert.Ignore("Publishing a MAUI iOS app with NativeAOT is only supported on a host MacOS system.");
 
-			var expectedWarningsCount = 69; // NOTE: As we progress we will want to lower this number to match the current state
 			var projectDir = TestDirectory;
 			var projectFile = Path.Combine(projectDir, $"{Path.GetFileName(projectDir)}.csproj");
 
@@ -153,20 +152,14 @@ namespace Microsoft.Maui.IntegrationTests
 			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
-			Assert.IsTrue(DotnetInternal.PublishForOutput(projectFile, "Release", out string buildOutput, framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
+			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
+			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-			Assert.NotNull(buildOutput,
-				$"Build output has not been created when building {Path.GetFileName(projectFile)}. Check test output/attachments for errors.");
+			
+			var expectedWarnings = BuildWarningsUtilities.ExpectedNativeAOTWarnings;
+			var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 
-			var buildOutputLines = buildOutput.Split(new[] {"\r\n", "\r", "\n"}, StringSplitOptions.None);
-			var trimAnalysisWarnings = buildOutputLines.Where(buildOutputLine => buildOutputLine.Contains(": Trim analysis warning", StringComparison.InvariantCulture)).ToList();
-			var aotAnalysisWarnings = buildOutputLines.Where(buildOutputLine => buildOutputLine.Contains(": AOT analysis warning", StringComparison.InvariantCulture)).ToList();
-			var trimWarningsCount = trimAnalysisWarnings?.Count();
-			var aotWarningsCount = aotAnalysisWarnings?.Count();
-			var relevantWarningsCount = trimWarningsCount + aotWarningsCount;
-
-			Assert.IsTrue(relevantWarningsCount <= expectedWarningsCount,
-				$"Building the project {Path.GetFileName(projectFile)} generated: {relevantWarningsCount} trim/AOT warnings which is greater than the expected amount: {expectedWarningsCount}");
+			actualWarnings.AssertWarnings(expectedWarnings);
 		}
 
 		[Test]

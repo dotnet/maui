@@ -80,14 +80,6 @@ namespace Microsoft.Maui.IntegrationTests
 			return Run("publish", $"{buildArgs}");
 		}
 
-		public static bool PublishForOutput(string projectFile, string config, out string buildOutput, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "")
-		{
-			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
-			buildOutput = RunForOutput("publish", $"{buildArgs}", out int exitCode);
-			TestContext.WriteLine(buildOutput);
-			return exitCode == 0;
-		}
-
 		public static bool New(string shortName, string outputDirectory, string framework = "")
 		{
 			var args = $"{shortName} -o \"{outputDirectory}\"";
