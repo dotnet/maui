@@ -1,5 +1,5 @@
-using Microsoft.Maui.Devices;
 using System.Threading.Tasks;
+using Microsoft.Maui.Devices;
 using Xunit;
 
 namespace Microsoft.Maui.Essentials.DeviceTests
@@ -53,6 +53,16 @@ namespace Microsoft.Maui.Essentials.DeviceTests
 		public void App_Is_Not_Lower_Power_mode()
 		{
 			Assert.Equal(EnergySaverStatus.Off, Battery.EnergySaverStatus);
+		}
+
+		[Fact]
+		public void Unsubscribe_BatteryInfoChanged_Does_Not_Crash()
+		{
+			// TODO: the test runner app (UI version) should do this, until then...
+			if (!HardwareSupport.HasBattery)
+				return;
+
+			Battery.BatteryInfoChanged -= (sender, args) => { };
 		}
 
 		[Fact]
