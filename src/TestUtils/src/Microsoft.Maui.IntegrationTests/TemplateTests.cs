@@ -1,3 +1,4 @@
+using System.Xml.Linq;
 using Microsoft.Maui.IntegrationTests.Apple;
 
 namespace Microsoft.Maui.IntegrationTests
@@ -44,6 +45,41 @@ namespace Microsoft.Maui.IntegrationTests
 
 			string target = shouldPack ? "Pack" : "";
 			Assert.IsTrue(DotnetInternal.Build(projectFile, config, target: target, properties: BuildProps, msbuildWarningsAsErrors: true),
+				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
+		}
+
+		[Test]
+		// with spaces
+		[TestCase("maui", "Project Space", "projectspace")]
+		[TestCase("maui-blazor", "Project Space", "projectspace")]
+		[TestCase("mauilib", "Project Space", "projectspace")]
+  		// with invalid characters
+		[TestCase("maui", "Project@Symbol", "projectsymbol")]
+		[TestCase("maui-blazor", "Project@Symbol", "projectsymbol")]
+		[TestCase("mauilib", "Project@Symbol", "projectsymbol")]
+		public void BuildsWithSpecialCharacters(string id, string projectName, string expectedId)
+		{
+			var projectDir = Path.Combine(TestDirectory, projectName);
+			var projectFile = Path.Combine(projectDir, $"{projectName}.csproj");
+
+			Assert.IsTrue(DotnetInternal.New(id, projectDir, DotNetCurrent),
+				$"Unable to create template {id}. Check test output for errors.");
+
+			EnableTizen(projectFile);
+
+			// libraries do not have application IDs
+			if (id != "mauilib")
+			{
+				var doc = XDocument.Load(projectFile);
+				var appId = doc.Root!
+					.Elements("PropertyGroup")
+					.Elements("ApplicationId")
+					.Single()
+					.Value;
+				Assert.AreEqual($"com.companyname.{expectedId}", appId);
+			}
+
+			Assert.IsTrue(DotnetInternal.Build(projectFile, "Debug", properties: BuildProps, msbuildWarningsAsErrors: true),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
 		}
 
