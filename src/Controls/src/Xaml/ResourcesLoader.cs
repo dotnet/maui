@@ -13,9 +13,9 @@ namespace Microsoft.Maui.Controls.Xaml
 		[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 		public T CreateFromResource<T>(string resourcePath, Assembly assembly, IXmlLineInfo lineInfo) where T : new()
 		{
-			if (!RuntimeFeature.IsXamlLoadingEnabled)
+			if (!RuntimeFeature.IsXamlRuntimeParsingSupported)
 			{
-				throw new InvalidOperationException($"XAML parsing at runtime is not enabled. Ensure all XAML files are compiled or enable the feature by setting the XamlLoadingIsEnabled MSBuild property to true.");
+				throw new InvalidOperationException($"XAML parsing at runtime is not enabled. Ensure all XAML files are compiled or enable the feature by setting the MauiXamlRuntimeParsingSupport MSBuild property to true.");
 			}
 
 			var rd = new T();

@@ -14,12 +14,12 @@ namespace Microsoft.Maui
 	/// </remarks>
 	internal static class RuntimeFeature
 	{
-		private const bool IsXamlLoadingEnabledByDefault = true;
+		private const bool IsXamlRuntimeParsingSupportedByDefault = true;
 
-		internal static bool IsXamlLoadingEnabled =>
-			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlLoadingEnabled", out bool isEnabled)
+		internal static bool IsXamlRuntimeParsingSupported =>
+			AppContext.TryGetSwitch("Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported", out bool isEnabled)
 				? isEnabled
-				: IsXamlLoadingEnabledByDefault;
+				: IsXamlRuntimeParsingSupportedByDefault;
 
 		internal static bool IsDebuggerSupported =>
 			AppContext.TryGetSwitch("System.Diagnostics.Debugger.IsSupported", out bool isSupported) && isSupported;

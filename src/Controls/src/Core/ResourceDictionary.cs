@@ -53,7 +53,7 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				if (RuntimeFeature.IsXamlLoadingEnabled)
+				if (RuntimeFeature.IsXamlRuntimeParsingSupported)
 				{
 					_mergedInstance = LoadResourceDictionary();
 				}
@@ -65,9 +65,9 @@ namespace Microsoft.Maui.Controls
 						// If XAML compilation is disabled, it is not possible to load this resource dictionary both in Release and Debug.
 						throw new InvalidOperationException(
 							$"The resource '{resourcePath}' has not been compiled using XamlC because XAML compilation is disabled for the whole {assembly.GetName().Name} asembly. "
-							+ "It is not possible to disable XAML compilation when XAML loading at runtime is disabled via the XamlLoadingIsEnabled feature switch. "
+							+ "It is not possible to disable XAML compilation when XAML loading at runtime is disabled via the MauiXamlRuntimeParsingSupport feature switch. "
 							+ "Consider either enabling XAML compilation by removing the XamlCompilation attributes or enabling XAML loading by setting the "
-							+ "XamlLoadingIsEnabled MSBuild property to true.");
+							+ "MauiXamlRuntimeParsingSupport MSBuild property to true.");
 					}
 					else
 					{
@@ -85,7 +85,7 @@ namespace Microsoft.Maui.Controls
 							throw new InvalidOperationException(
 								$"The resource '{resourcePath}' has not been compiled using XamlC. "
 								+ "Loading resources from XAML at runtime is disabled. Ensure all resources are compiled using XamlC. "
-								+ "Alternatively, enable loading XAML at runtime by setting the XamlLoadingIsEnabled MSBuild property to true.");
+								+ "Alternatively, enable loading XAML at runtime by setting the MauiXamlRuntimeParsingSupport MSBuild property to true.");
 						}
 					}
 				}

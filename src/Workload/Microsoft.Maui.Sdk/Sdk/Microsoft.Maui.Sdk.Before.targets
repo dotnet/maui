@@ -23,12 +23,12 @@
 
   <!-- Feature switches -->
   <PropertyGroup>
-    <XamlLoadingIsEnabled Condition="'$(XamlLoadingIsEnabled)' == '' and '$(PublishAot)' == 'true'">false</XamlLoadingIsEnabled>
+    <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
   </PropertyGroup>
   <ItemGroup>
-    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlLoadingEnabled"
-                                    Condition="'$(XamlLoadingIsEnabled)' != ''"
-                                    Value="$(XamlLoadingIsEnabled)"
+    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
+                                    Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
+                                    Value="$(MauiXamlRuntimeParsingSupport)"
                                     Trim="true" />
   </ItemGroup>
 </Project>
