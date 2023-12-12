@@ -18,21 +18,26 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
-			App.SetOrientationLandscape();
-
-			var buttonAutomationIds = new[] 
+			try
 			{
-				"Button1",
-				"Button2",
-				"Button3",
-			};
+				App.SetOrientationLandscape();
 
-			foreach (string buttonAutomationId in buttonAutomationIds)
-				App.WaitForElement(buttonAutomationId);
+				var buttonAutomationIds = new[]
+				{
+					"Button1",
+					"Button2",
+					"Button3",
+				};
 
-			App.Screenshot("StackLayout respects rotation");
+				foreach (string buttonAutomationId in buttonAutomationIds)
+					App.WaitForElement(buttonAutomationId);
 
-			App.SetOrientationPortrait();
+				App.Screenshot("StackLayout respects rotation");
+			}
+			finally
+			{
+				App.SetOrientationPortrait();
+			}
 		}
 	}
 }
