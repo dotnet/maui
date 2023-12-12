@@ -10,13 +10,13 @@ namespace Controls.Sample.UITests
 	{
 		readonly ScrollView _scrollview;
 		readonly StackLayout _stack;
-		ScrollOrientation _orientation;
-		List<Button> _buttons = new List<Button>();
+		readonly ScrollOrientation _orientation;
+		readonly List<Button> _buttons = new List<Button>();
 		Button _toNavigateTo;
 
 		public ScrollViewCoreGalleryPage(ScrollOrientation orientation = ScrollOrientation.Vertical)
 		{
-			Title = "ScrollView ScrollTo";
+			Title = "ScrollView Gallery";
 
 			_orientation = orientation;
 

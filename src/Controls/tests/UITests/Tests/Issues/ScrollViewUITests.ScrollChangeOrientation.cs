@@ -20,6 +20,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				App.WaitForElement("Button1");
+
 				App.SetOrientationLandscape();
 
 				var buttonAutomationIds = new[]

@@ -18,96 +18,116 @@ namespace Microsoft.Maui.AppiumTests
 			: base(device)
 		{
 		}
-		
+
 		public override string Issue => "ScrollView set to disabled will still allow scrolling";
 
 		// ScrollViewInitiallyEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabled()
 		{
-			// 1. Enable the ScrollView.
-			App.WaitForElement(InitiallyEnabled);
-			App.Click(InitiallyEnabled);
-			App.WaitForElement(FirstItem);
-			App.WaitForElement(ScrollView);
+			try
+			{
+				// 1. Enable the ScrollView.
+				App.WaitForElement(InitiallyEnabled);
+				App.Click(InitiallyEnabled);
+				App.WaitForElement(FirstItem);
+				App.WaitForElement(ScrollView);
 
-			// 2. Scroll a litlle bit.
-			App.ScrollTo("Item10", true);
+				// 2. Scroll a litlle bit.
+				App.ScrollTo("Item10", true);
 
-			// 3. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
-
-			this.Back();
+				// 3. If the ScrollView scrolled, the test passed.
+				App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 
 		// ScrollViewInitiallyEnabledThenDisabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyEnabledThenDisabled()
 		{
-			// 1. Enable the ScrollView.
-			App.WaitForElement(InitiallyEnabled);
-			App.Click(InitiallyEnabled);
+			try
+			{
+				// 1. Enable the ScrollView.
+				App.WaitForElement(InitiallyEnabled);
+				App.Click(InitiallyEnabled);
 
-			// 2. Disable the ScrollView.
-			App.WaitForElement(ToggleButton);
-			App.Click(ToggleButton);
+				// 2. Disable the ScrollView.
+				App.WaitForElement(ToggleButton);
+				App.Click(ToggleButton);
 
-			// Scrolling should now be IsEnabled = false
+				// Scrolling should now be IsEnabled = false
 
-			// 3. Try to scroll.
-			App.WaitForElement(FirstItem);
-			App.WaitForElement(ScrollView);
-			App.ScrollTo("Item10", true);
+				// 3. Try to scroll.
+				App.WaitForElement(FirstItem);
+				App.WaitForElement(ScrollView);
+				App.ScrollTo("Item10", true);
 
-			// 4. Shouldn't have scrolled.
-			var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
-			Assert.IsEmpty(success);
-
-			this.Back();
+				// 4. Shouldn't have scrolled.
+				var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
+				Assert.IsEmpty(success);
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 
 		// ScrollViewInitiallyNotEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyNotEnabled()
 		{
-			// 1. Disable the ScrollView.
-			App.WaitForElement(InitiallyNotEnabled);
-			App.Click(InitiallyNotEnabled);
-			App.WaitForElement(FirstItem);
-			App.WaitForElement(ScrollView);
-			App.ScrollTo("Item10", true);
+			try
+			{
+				// 1. Disable the ScrollView.
+				App.WaitForElement(InitiallyNotEnabled);
+				App.Click(InitiallyNotEnabled);
+				App.WaitForElement(FirstItem);
+				App.WaitForElement(ScrollView);
+				App.ScrollTo("Item10", true);
 
-			// 2. Shouldn't have scrolled.
-			var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
-			Assert.IsEmpty(success);
-
-			this.Back();
+				// 2. Shouldn't have scrolled.
+				var success = App.FindElement(Success).GetText(); // Shouldn't have scrolled, so no success label should be displayed
+				Assert.IsEmpty(success);
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 
 		// ScrollViewInitiallyNotEnabledThenEnabled (src\Compatibility\ControlGallery\src\Issues.Shared\ScrollViewIsEnabled.cs)
 		[Test]
 		public void ScrollViewInitiallyNotEnabledThenEnabled()
 		{
-			// 1. Disable the ScrollView.
-			App.WaitForElement(InitiallyNotEnabled);
-			App.Click(InitiallyNotEnabled);
+			try
+			{
+				// 1. Disable the ScrollView.
+				App.WaitForElement(InitiallyNotEnabled);
+				App.Click(InitiallyNotEnabled);
 
-			// 2. Enable the ScrollView.
-			App.WaitForElement(ToggleButton);
-			App.Click(ToggleButton);
+				// 2. Enable the ScrollView.
+				App.WaitForElement(ToggleButton);
+				App.Click(ToggleButton);
 
-			// Scrolling should now be IsEnabled = true
+				// Scrolling should now be IsEnabled = true
 
-			App.WaitForElement(FirstItem);
-			App.WaitForElement(ScrollView);
+				App.WaitForElement(FirstItem);
+				App.WaitForElement(ScrollView);
 
-			// 3. Try to scroll.
-			App.ScrollTo("Item10", true);
+				// 3. Try to scroll.
+				App.ScrollTo("Item10", true);
 
-			// 4. If the ScrollView scrolled, the test passed.
-			App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
-
-			this.Back();
+				// 4. If the ScrollView scrolled, the test passed.
+				App.WaitForElement(Success); // If the ScrollView scrolled, the success label should be displayed
+			}
+			finally
+			{
+				this.Back();
+			}
 		}
 	}
 }
