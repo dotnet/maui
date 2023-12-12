@@ -2,7 +2,7 @@ using CoreAnimation;
 
 namespace Microsoft.Maui.Platform;
 
-public class MauiCAKeyFrameAnimation : CAKeyFrameAnimation
+internal class MauiCAKeyFrameAnimation : CAKeyFrameAnimation
 {
     public int Width { get; set; }
 

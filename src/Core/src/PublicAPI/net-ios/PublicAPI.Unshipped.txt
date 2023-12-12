@@ -160,9 +160,3 @@ Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
 override Microsoft.Maui.Handlers.BorderHandler.PlatformArrange(Microsoft.Maui.Graphics.Rect rect) -> void
 *REMOVED*static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> void
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.MauiCAKeyFrameAnimation() -> void
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Width.get -> int
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Width.set -> void
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Height.get -> int
-Microsoft.Maui.Platform.MauiCAKeyFrameAnimation.Height.set -> void
