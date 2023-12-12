@@ -5,6 +5,8 @@
     <MSBuildWarningsAsMessages Condition=" '$(TargetPlatformIdentifier)' == 'Android' ">$(MSBuildWarningsAsMessages);XA4218</MSBuildWarningsAsMessages>
   </PropertyGroup>
 
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.Maui.Core.BundledVersions.targets" />
+
   <!--
     This double check seems excessive, but importing the WinUI.targets when building for windows is not
     sufficient. The WASDK targets assume everything is WinUI and thus just passes along the TFM of the app.

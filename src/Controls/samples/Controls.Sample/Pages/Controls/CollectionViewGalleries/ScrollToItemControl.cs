@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 						items.Add(item);
 					}
 
-					_picker.ItemsSource = items;
+					_picker!.ItemsSource = items;
 				}
 			};
 
@@ -81,7 +81,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 			}
 		}
 
-		void ScrollTo(object sender, EventArgs e)
+		void ScrollTo(object? sender, EventArgs e)
 		{
 			ScrollTo();
 		}

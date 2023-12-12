@@ -7,13 +7,7 @@ namespace Microsoft.Maui.Controls
 {
 	public partial class Label
 	{
-		public static void MapTextType(LabelHandler handler, Label label) => MapTextType((ILabelHandler)handler, label);
 		public static void MapText(LabelHandler handler, Label label) => MapText((ILabelHandler)handler, label);
-
-		public static void MapTextType(ILabelHandler handler, Label label)
-		{
-			handler.UpdateValue(nameof(ILabel.Text));
-		}
 
 		public static void MapText(ILabelHandler handler, Label label)
 		{

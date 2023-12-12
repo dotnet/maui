@@ -1,6 +1,9 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Xunit;
 
 namespace Microsoft.Maui.DeviceTests
@@ -81,6 +84,16 @@ namespace Microsoft.Maui.DeviceTests
 					Assert.True(header.Height > 0, "Header should be laid out");
 					Assert.True(footer.Height > 0, "Footer should be laid out");
 				});
+		}
+
+		Rect GetCollectionViewCellBounds(IView cellContent)
+		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
+			return cellContent.ToPlatform().GetParentOfType<ItemContentView>().GetBoundingBox();
 		}
 	}
 }
