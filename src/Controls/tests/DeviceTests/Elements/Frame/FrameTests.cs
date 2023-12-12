@@ -25,6 +25,7 @@ namespace Microsoft.Maui.DeviceTests
 				builder.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler<StackLayout, LayoutHandler>();
+					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Button, ButtonHandler>();
 					handlers.AddHandler<Entry, EntryHandler>();
 					handlers.AddHandler<Frame, FrameRenderer>();
@@ -432,12 +433,20 @@ namespace Microsoft.Maui.DeviceTests
 		async Task<Rect> LayoutFrame(Layout layout, Frame frame, double widthConstraint, double heightConstraint, Func<Task> additionalTests = null)
 		{
 			additionalTests ??= () => Task.CompletedTask;
+
+			// Let the OS call measure and arrange
+			var grid = new Grid()
+			{
+				Children = { layout }
+			};
+
 			return await
-					AttachAndRun(layout, async (handler) =>
+					AttachAndRun(grid, async (handler) =>
 					{
-						var size = (layout as IView).Measure(widthConstraint, heightConstraint);
+						/*var size = (layout as IView).Measure(widthConstraint, heightConstraint);
 						var rect = new Graphics.Rect(0, 0, size.Width, size.Height);
-						(layout as IView).Arrange(rect);
+						(layout as IView).Arrange(rect);*/
+
 						await OnFrameSetToNotEmpty(layout);
 						await OnFrameSetToNotEmpty(frame);
 
