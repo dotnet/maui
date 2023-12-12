@@ -20,14 +20,14 @@ namespace Microsoft.Maui.Controls.Compatibility.Platform.UWP
 			TargetProperty = targetProperty;
 			try
 			{
-				//var updateSourceEvent = target.GetType().GetRuntimeEvent(updateSourceEventName);
-				//MethodInfo addMethod = updateSourceEvent.AddMethod;
-				//MethodInfo removeMethod = updateSourceEvent.RemoveMethod;
-				//ParameterInfo[] addParameters = addMethod.GetParameters();
-				//Type delegateType = addParameters[0].ParameterType;
-				//var handlerDelegate = s_handlerinfo.CreateDelegate(delegateType, this);
-				//Func<object, EventRegistrationToken> add = a => (EventRegistrationToken)addMethod.Invoke(target, new object[] { handlerDelegate });
-				//Action<EventRegistrationToken> remove = t => removeMethod.Invoke(target, new object[] { t });
+				var updateSourceEvent = target.GetType().GetRuntimeEvent(updateSourceEventName);
+				MethodInfo addMethod = updateSourceEvent.AddMethod;
+				MethodInfo removeMethod = updateSourceEvent.RemoveMethod;
+				ParameterInfo[] addParameters = addMethod.GetParameters();
+				Type delegateType = addParameters[0].ParameterType;
+				var handlerDelegate = s_handlerinfo.CreateDelegate(delegateType, this);
+				Func<object, EventRegistrationToken> add = a => (EventRegistrationToken)addMethod.Invoke(target, new object[] { handlerDelegate });
+				Action<EventRegistrationToken> remove = t => removeMethod.Invoke(target, new object[] { t });
 
 				// TODO WINUI3
 				//WindowsRuntimeMarshal.AddEventHandler(add, remove, s_handlerinfo);
