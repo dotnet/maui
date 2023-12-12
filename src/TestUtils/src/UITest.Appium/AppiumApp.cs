@@ -1,11 +1,11 @@
-﻿using OpenQA.Selenium;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Appium;
 using OpenQA.Selenium.Appium.Enums;
 using UITest.Core;
 
 namespace UITest.Appium
 {
-	public abstract class AppiumApp : IApp
+	public abstract class AppiumApp : IApp, IScreenshotSupportedApp
 	{
 		protected readonly AppiumDriver _driver;
 		protected readonly IConfig _config;
@@ -13,14 +13,19 @@ namespace UITest.Appium
 
 		public AppiumApp(AppiumDriver driver, IConfig config)
 		{
-			_driver = driver;
-			_config = config;
+			_driver = driver ?? throw new ArgumentNullException(nameof(driver));
+			_config = config ?? throw new ArgumentNullException(nameof(config));
 
 			_commandExecutor = new AppiumCommandExecutor();
 			_commandExecutor.AddCommandGroup(new AppiumPointerActions(this));
 			_commandExecutor.AddCommandGroup(new AppiumTextActions());
 			_commandExecutor.AddCommandGroup(new AppiumGeneralActions());
 			_commandExecutor.AddCommandGroup(new AppiumVirtualKeyboardActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSliderActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumSwipeActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumScrollActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumOrientationActions(this));
+			_commandExecutor.AddCommandGroup(new AppiumLifecycleActions(this));
 		}
 
 		public abstract ApplicationState AppState { get; }
@@ -30,36 +35,16 @@ namespace UITest.Appium
 		public ICommandExecution CommandExecutor => _commandExecutor;
 		public string ElementTree => _driver.PageSource;
 
-		public void Click(float x, float y)
-		{
-			CommandExecutor.Execute("click", new Dictionary<string, object>()
-			{
-				{ "x", x },
-				{ "y", y }
-			});
-		}
-
 		public FileInfo Screenshot(string fileName)
 		{
-			if (_driver == null)
-			{
-				throw new NullReferenceException("Screenshot: _driver is null");
-			}
-
-			string filename = $"{fileName}.png";
 			Screenshot screenshot = _driver.GetScreenshot();
-			screenshot.SaveAsFile(filename, ScreenshotImageFormat.Png);
-			var file = new FileInfo(filename);
+			screenshot.SaveAsFile(fileName, ScreenshotImageFormat.Png);
+			var file = new FileInfo(fileName);
 			return file;
 		}
 
 		public byte[] Screenshot()
 		{
-			if (_driver == null)
-			{
-				throw new NullReferenceException("Screenshot: _driver is null");
-			}
-
 			Screenshot screenshot = _driver.GetScreenshot();
 			return screenshot.AsByteArray;
 		}

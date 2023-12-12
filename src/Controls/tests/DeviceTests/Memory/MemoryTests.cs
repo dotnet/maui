@@ -91,13 +91,19 @@ public class MemoryTests : ControlsHandlerTestBase
 				return;
 #endif
 
+#if IOS
+		// NOTE: skip certain controls on older iOS devices
+		if (type == typeof(WebView) && !OperatingSystem.IsIOSVersionAtLeast(16))
+			return;
+#endif
+
 		WeakReference viewReference = null;
 		WeakReference platformViewReference = null;
 		WeakReference handlerReference = null;
 
 		var observable = new ObservableCollection<int> { 1, 2, 3 };
 
-		await InvokeOnMainThreadAsync(() =>
+		await InvokeOnMainThreadAsync(async () =>
 		{
 			var layout = new Grid();
 			var view = (View)Activator.CreateInstance(type);
@@ -110,6 +116,11 @@ public class MemoryTests : ControlsHandlerTestBase
 			{
 				items.ItemTemplate = new DataTemplate(() => new Label());
 				items.ItemsSource = observable;
+			}
+			else if (view is WebView webView)
+			{
+				webView.Source = new HtmlWebViewSource { Html = "<p>hi</p>" };
+				await Task.Delay(1000);
 			}
 			var handler = CreateHandler<LayoutHandler>(layout);
 			viewReference = new WeakReference(view);
