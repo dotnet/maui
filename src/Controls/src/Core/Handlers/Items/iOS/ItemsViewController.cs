@@ -7,7 +7,6 @@ using CoreGraphics;
 using Foundation;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Graphics;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -178,12 +177,12 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		public override void ViewWillAppear(bool animated)
 		{
 			base.ViewWillAppear(animated);
-			ConstrainToItemsView();
+			ConstrainItemsToBounds();
 		}
 
 		public override void ViewWillLayoutSubviews()
 		{
-			ConstrainToItemsView();
+			ConstrainItemsToBounds();
 			base.ViewWillLayoutSubviews();
 			InvalidateMeasureIfContentSizeChanged();
 			LayoutEmptyView();
@@ -251,18 +250,11 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return CollectionView.CollectionViewLayout.CollectionViewContentSize.ToSize();
 		}
 
-		void ConstrainToItemsView()
+		void ConstrainItemsToBounds()
 		{
-			var itemsViewWidth = ItemsView.Width;
-			var itemsViewHeight = ItemsView.Height;
-
-			if (itemsViewHeight < 0 || itemsViewWidth < 0)
-			{
-				ItemsViewLayout.UpdateConstraints(CollectionView.Bounds.Size);
-				return;
-			}
-
-			ItemsViewLayout.UpdateConstraints(new CGSize(itemsViewWidth, itemsViewHeight));
+			var contentBounds = CollectionView.AdjustedContentInset.InsetRect(CollectionView.Bounds);
+			var constrainedSize = contentBounds.Size;
+			ItemsViewLayout.UpdateConstraints(constrainedSize);
 		}
 
 		void EnsureLayoutInitialized()
@@ -320,7 +312,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 			Layout.InvalidateLayout();
 		}
-
 
 		public override nint NumberOfSections(UICollectionView collectionView)
 		{
