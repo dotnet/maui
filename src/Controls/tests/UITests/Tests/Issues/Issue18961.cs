@@ -33,14 +33,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			await Task.Delay(500);
 
 			// 4. The keyboard has opened and the Entry have been translated above the keyboard.
-			VerifyScreenshot("Issue18961KeyboardOpened");
+			App.Screenshot("The keyboard has opened and the Entry have been translated above the keyboard.");
 
 			// 5. Close the keyboard to see if sizes adjust back.
 			App.DismissKeyboard();	
 			await Task.Delay(500);
 
 			// 6. Make sure that everything has returned to the initial size once the keyboard has closed.
-			VerifyScreenshot("Issue18961KeyboardClosed");
+			App.Screenshot("Make sure that everything has returned to the initial size once the keyboard has closed.");
 		}
 	}
 }
