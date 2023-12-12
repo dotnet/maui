@@ -29,8 +29,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			
 			App.ScrollUp(ListView);
 
-			// Load images
-			await Task.Delay(1000);
+			// Load images and hide scrollbar.
+			await Task.Delay(2000);
 
 			// The test passes if you are able to see the image, name, and location of each monkey.
 			VerifyScreenshot();
