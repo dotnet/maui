@@ -441,24 +441,19 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Because of this binding, the the layout will need two passes.
 			button.SetBinding(VisualElement.WidthRequestProperty, new Binding(nameof(View.Width), mode: BindingMode.Default, source: grid));
-
-			await InvokeOnMainThreadAsync(async () =>
+			
+			await AttachAndRun(outerGrid, async (handler) =>
 			{
-				await AttachAndRun(outerGrid, async (handler) =>
-				{
-					// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule
-					// the second layout pass correctly on Android. That's why we don't add the inner Grid to the outer Grid until
-					// we're already attached.
+				// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule
+				// the second layout pass correctly on Android. That's why we don't add the inner Grid to the outer Grid until
+				// we're already attached.
 
-					outerGrid.Add(grid);
+				outerGrid.Add(grid);
 
-					var expectation = () => button.Width == expectedWidth;
+				var expectation = () => button.Width == expectedWidth;
 
-					await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
-				});
+				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
 			});
 		}
-
-		
 	}
 }
