@@ -130,9 +130,9 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
-    }
-    
-    [Test]
+		}
+
+		[Test]
 		[Description("Scroll down the ScrollView using a gesture")]
 		public void ScrollUpAndDownWithGestures()
 		{
