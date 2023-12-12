@@ -1,3 +1,5 @@
+﻿using CoreGraphics;
+using System.Collections.Generic;
 using Foundation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Controls.Internals;
@@ -123,6 +125,117 @@ namespace Microsoft.Maui.Controls.Platform
 #endif
 
 			return attrString;
+		}
+
+		public static void RecalculateSpanPositions(this UILabel control, Label element)
+		{
+			if (element == null)
+				return;
+
+			if (element.TextType == TextType.Html)
+				return;
+
+			if (element?.FormattedText?.Spans is null
+				|| element.FormattedText.Spans.Count == 0)
+				return;
+
+			var finalSize = control.Frame;
+
+			if (finalSize.Width <= 0 || finalSize.Height <= 0)
+				return;
+
+			var inline = control.AttributedText;
+
+			if (inline is null)
+				return;
+
+			NSTextStorage textStorage = new NSTextStorage();
+			textStorage.SetString(inline);
+
+			var layoutManager = new NSLayoutManager();
+			textStorage.AddLayoutManager(layoutManager);
+
+			var textContainer = new NSTextContainer(size: finalSize.Size)
+			{
+				LineFragmentPadding = 0
+			};
+
+			layoutManager.AddTextContainer(textContainer);
+
+			var currentLocation = 0;
+
+			for (int i = 0; i < element.FormattedText.Spans.Count; i++)
+			{
+				var span = element.FormattedText.Spans[i];
+
+				var location = currentLocation;
+				var length = span.Text?.Length ?? 0;
+
+				if (length == 0)
+					continue;
+
+				var startRect = GetCharacterBounds(new NSRange(location, 1), layoutManager, textContainer);
+				var endRect = GetCharacterBounds(new NSRange(location + length, 1), layoutManager, textContainer);
+
+				var defaultLineHeight = control.FindDefaultLineHeight(location, length);
+
+				var yaxis = startRect.Top;
+				var lineHeights = new List<double>();
+
+				while ((endRect.Bottom - yaxis) > 0.001)
+				{
+					double lineHeight;
+					if (yaxis == startRect.Top) // First Line
+					{
+						lineHeight = startRect.Bottom - startRect.Top;
+					}
+					else if (yaxis != endRect.Top) // Middle Line(s)
+					{
+						lineHeight = defaultLineHeight;
+					}
+					else // Bottom Line
+					{
+						lineHeight = endRect.Bottom - endRect.Top;
+					}
+					lineHeights.Add(lineHeight);
+					yaxis += (float)lineHeight;
+				}
+
+				((ISpatialElement)span).Region = Region.FromLines(lineHeights.ToArray(), finalSize.Width, startRect.X, endRect.X, startRect.Top).Inflate(10);
+
+				// Update current location
+				currentLocation += length;
+			}
+		}
+
+		static CGRect GetCharacterBounds(NSRange characterRange, NSLayoutManager layoutManager, NSTextContainer textContainer)
+		{
+			layoutManager.GetCharacterRange(characterRange, out NSRange glyphRange);
+
+			return layoutManager.GetBoundingRect(glyphRange, textContainer);
+		}
+
+		static double FindDefaultLineHeight(this UILabel control, int start, int length)
+		{
+			if (length == 0)
+				return 0.0;
+
+			var textStorage = new NSTextStorage();
+
+			if (control.AttributedText is not null)
+				textStorage.SetString(control.AttributedText.Substring(start, length));
+
+			var layoutManager = new NSLayoutManager();
+			textStorage.AddLayoutManager(layoutManager);
+
+			var textContainer = new NSTextContainer(size: new SizeF(float.MaxValue, float.MaxValue))
+			{
+				LineFragmentPadding = 0
+			};
+			layoutManager.AddTextContainer(textContainer);
+
+			var rect = GetCharacterBounds(new NSRange(0, 1), layoutManager, textContainer);
+			return rect.Bottom - rect.Top;
 		}
 	}
 }
