@@ -56,7 +56,7 @@ namespace Microsoft.Maui.Controls
 				{
 					throw new InvalidOperationException($"The resource '{resourcePath}' has not been compiled using XamlC. "
 						+ "Loading resources from XAML at runtime is disabled. Ensure all resources are compiled using XamlC. "
-						+ $"Altermatively, enable loading XAML at runtime by setting the {nameof(FeatureFlags.IsXamlLoadingEnabled)} flag to true.");
+						+ $"Alternatively, enable loading XAML at runtime by setting the XamlLoadingIsEnabled MSBuild property to true.");
 				}
 
 				_mergedInstance = DependencyService.Get<IResourcesLoader>().CreateFromResource<ResourceDictionary>(resourcePath, assembly, lineInfo);
