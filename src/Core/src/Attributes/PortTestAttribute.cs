@@ -3,9 +3,8 @@ using System;
 
 namespace Microsoft.Maui
 {
-	// TODO: Consider making this public for .NET 9
 	[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-	internal class PortTestAttribute : Attribute
+	public class PortTestAttribute : Attribute
 	{
 		public PortTestAttribute()
 		{
