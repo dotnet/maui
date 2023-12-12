@@ -1011,7 +1011,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (isObsolete)
-				context.LoggingHelper.LogWarningOrError("0618", context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"BindableProperty {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(618, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"BindableProperty {localName} is deprecated.", null);
 
 			return bpRef;
 		}
@@ -1351,12 +1351,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out declaringTypeReference);
 			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertyIsObsolete)
-				context.LoggingHelper.LogWarningOrError("0618", context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(618, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property {localName} is deprecated.", null);
 
 			var propertySetter = property.SetMethod;
 			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertySetterIsObsolete)
-				context.LoggingHelper.LogWarningOrError("0618", context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property setter for {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(618, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property setter for {localName} is deprecated.", null);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"

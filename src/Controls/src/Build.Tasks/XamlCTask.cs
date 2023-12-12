@@ -14,37 +14,79 @@ using IOPath = System.IO.Path;
 
 namespace Microsoft.Maui.Controls.Build.Tasks
 {
+	/// <summary>
+	/// Provides extension methods for the <see cref="TaskLoggingHelper"/> class to assist with logging warnings and errors.
+	/// </summary>
 	public static class LoggingHelperExtensions
 	{
 		class LoggingHelperContext
 		{
-			public int WarningLevel { get; set; } =4;
-			public bool TreatWarningsAsErrors { get; set; }=false;
-			public string NoWarn { get; set; }
+			public int WarningLevel { get; set; } = 4; //unused so far
+			public bool TreatWarningsAsErrors { get; set; } =false;
+			public IList<int> WarningsAsErrors { get; set; }
+			public IList<int> WarningsNotAsErrors { get; set; }
+			public IList<int> NoWarn { get; set; }
 		}
 
 		static LoggingHelperContext Context { get; set; }
 
-		public static void SetContext(this TaskLoggingHelper loggingHelper, int warningLevel, bool treatWarningsAsErrors, string noWarn)
+		public static void SetContext(this TaskLoggingHelper loggingHelper, int warningLevel, bool treatWarningsAsErrors, string noWarn, string warningsAsErrors, string warningsNotAsErrors)
 		{
 			if (Context == null)
 				Context = new LoggingHelperContext();
 			Context.WarningLevel = warningLevel;
 			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
-			Context.NoWarn = noWarn;
+			
+			Context.NoWarn = noWarn?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+				if (int.TryParse(s, out var i))
+					return i;
+				if (s.StartsWith("XC"))
+				{
+					var code = s.Substring(2);
+					if (int.TryParse(code, out i))
+						return i;
+				}	
+				return -1;
+			}).Where(i => i != -1).ToList();
+
+			Context.WarningsAsErrors = warningsAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+				if (int.TryParse(s, out var i))
+					return i;
+				if (s.StartsWith("XC"))
+				{
+					var code = s.Substring(2);
+					if (int.TryParse(code, out i))
+						return i;
+				}	
+				return -1;
+			}).Where(i => i != -1).ToList();
+
+			Context.WarningsNotAsErrors = warningsNotAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+				if (int.TryParse(s, out var i))
+					return i;
+				if (s.StartsWith("XC"))
+				{
+					var code = s.Substring(2);
+					if (int.TryParse(code, out i))
+						return i;
+				}	
+				return -1;
+			}).Where(i => i != -1).ToList();
 		}
 
-		public static void LogWarningOrError(this TaskLoggingHelper loggingHelper, string code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, string message, params object[] messageArgs)
+		public static void LogWarningOrError(this TaskLoggingHelper loggingHelper, int code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, string message, params object[] messageArgs)
 		{
 			if (Context == null)
 				Context = new LoggingHelperContext();
 			if (Context.NoWarn != null && Context.NoWarn.Contains(code))
 				return;
-			if (Context.TreatWarningsAsErrors)
-				loggingHelper.LogError($"XamlC {code}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+			if (   (Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code)))
+				|| (Context.WarningsAsErrors!= null && Context.WarningsAsErrors.Contains(code)))
+				loggingHelper.LogError($"XamlC {code:0000}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
 			else
-				loggingHelper.LogWarning($"XamlC {code}", xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+				loggingHelper.LogWarning($"XamlC {code:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
 		}
+
 	}
 
 	public class XamlCTask : XamlTask
@@ -56,9 +98,13 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public bool DefaultCompile { get; set; }
 		public bool ForceCompile { get; set; }
 		public string TargetFramework { get; set; }
+
+		public int WarningLevel { get; set; } = 4; //unused so far
 		public bool TreatWarningsAsErrors {get;set;} =false;
+		public string WarningsAsErrors { get;set;}
+		public string WarningsNotAsErrors {get;set;}
 		public string NoWarn {get;set;}
-		public int WarningLevel { get; set; } = 4;
+		
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
@@ -74,7 +120,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public override bool Execute(out IList<Exception> thrownExceptions)
 		{
 			thrownExceptions = null;
-			LoggingHelper.SetContext (WarningLevel, TreatWarningsAsErrors, NoWarn);
+			LoggingHelper.SetContext(WarningLevel, TreatWarningsAsErrors, NoWarn, WarningsAsErrors, WarningsNotAsErrors);
 			LoggingHelper.LogMessage(Normal, $"{new string(' ', 0)}Compiling Xaml, assembly: {Assembly}");
 			var skipassembly = !DefaultCompile;
 			bool success = true;
