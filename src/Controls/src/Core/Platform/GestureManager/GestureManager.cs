@@ -57,16 +57,16 @@ namespace Microsoft.Maui.Controls.Platform
 		void SetupGestureManager()
 		{
 			var handler = _view.Handler;
-			
-			if (handler == null || 
-			    (_didHaveWindow && _view.Window == null))
+
+			if (handler == null ||
+				(_didHaveWindow && _view.Window == null))
 			{
 				DisconnectGestures();
 				return;
 			}
 
-			if (_containerView != handler.ContainerView || 
-				_platformView != handler.PlatformView || 
+			if (_containerView != handler.ContainerView ||
+				_platformView != handler.PlatformView ||
 				_handler != handler)
 			{
 				DisconnectGestures();
