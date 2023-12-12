@@ -248,7 +248,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var first = new NavigationPage(new ContentPage());
 			var second = new NavigationPage(new ContentPage());
-			
+
 			flyoutPage.Detail = first;
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>

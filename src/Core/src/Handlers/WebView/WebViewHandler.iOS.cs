@@ -439,7 +439,7 @@ namespace Microsoft.Maui.Handlers
 			{
 				cookieBuilder.Append("document.cookie = '");
 				cookieBuilder.Append(jCookie.Name);
-				cookieBuilder.Append("=");
+				cookieBuilder.Append('=');
 
 				if (jCookie.Expired)
 				{
