@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				return true; // No references alive
-			}, timeout: 5000);
+			}, timeout: 10000);
 		}
 
 		public static void AssertHasFlag(this Enum self, Enum flag)

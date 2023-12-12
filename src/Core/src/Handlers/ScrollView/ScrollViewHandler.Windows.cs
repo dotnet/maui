@@ -20,6 +20,16 @@ namespace Microsoft.Maui.Handlers
 			return new ScrollViewer();
 		}
 
+		internal static void MapInvalidateMeasure(IScrollViewHandler handler, IView view, object? args)
+		{
+			handler.PlatformView.InvalidateMeasure(view);
+
+			if (handler.PlatformView.Content is FrameworkElement content)
+			{
+				content.InvalidateMeasure();
+			}
+		}
+
 		protected override void ConnectHandler(ScrollViewer platformView)
 		{
 			base.ConnectHandler(platformView);

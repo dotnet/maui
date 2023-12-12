@@ -44,7 +44,7 @@ Information("Build Binary Log (binlog): {0}", BINLOG_DIR);
 Information("Build Platform: {0}", PLATFORM);
 Information("Build Configuration: {0}", CONFIGURATION);
 
-string DOTNET_TOOL_PATH = "dotnet";
+string DOTNET_TOOL_PATH = "/usr/local/share/dotnet/dotnet";
 
 var localDotnetiOS = GetBuildVariable("workloads", "local") == "local";
 if (localDotnetiOS)
@@ -143,6 +143,35 @@ Task("Build")
 		});
 });
 
+Task("uitest-build")
+	.Does(() =>
+{
+	var name = System.IO.Path.GetFileNameWithoutExtension(DEFAULT_APP_PROJECT);
+	var binlog = $"{BINLOG_DIR}/{name}-{CONFIGURATION}-ios.binlog";
+
+	Information("app" +DEFAULT_APP_PROJECT);
+	DotNetBuild(DEFAULT_APP_PROJECT, new DotNetBuildSettings {
+		Configuration = CONFIGURATION,
+		Framework = TARGET_FRAMEWORK,
+		ToolPath = DOTNET_PATH,
+		ArgumentCustomization = args =>
+		{ 	
+			args
+			.Append("/p:BuildIpa=true")
+			.Append("/bl:" + binlog)
+			.Append("/tl");
+			
+			// if we building for a device
+			if(TEST_DEVICE.ToLower().Contains("device"))
+			{
+				args.Append("/p:RuntimeIdentifier=ios-arm64");
+			}
+
+			return args;
+		}
+	});
+});
+
 Task("Test")
 	.IsDependentOn("Build")
 	.Does(() =>
@@ -230,6 +259,7 @@ Task("Test")
 });
 
 Task("uitest")
+	.IsDependentOn("uitest-build")
 	.Does(() =>
 {
 	SetupAppPackageNameAndResult();
@@ -353,10 +383,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 	try {
 		DotNetTool("tool", settings);
 	} finally {
-
 		string iosVersionToRun = version;
 		string deviceToRun = "";	
-
+		
 		if (testDevice.Contains("device"))
 		{	
 			if(!string.IsNullOrEmpty(DEVICE_UDID))
@@ -367,9 +396,9 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			{
 				throw new Exception("No device was found to run tests on.");
 			}
-
+			
 			iosVersionToRun = DEVICE_VERSION;
-
+			
 			Information("The device to run tests: {0} {1}", DEVICE_NAME, iosVersionToRun);
 		}
 		else
@@ -382,10 +411,12 @@ void InstallIpa(string testApp, string testAppPackageName, string testDevice, st
 			var simXH = sims.Where(s => s.Name.Contains(simulatorName)).FirstOrDefault();
 			if(simXH == null)
 				throw new Exception("No simulator was found to run tests on.");
+
 			deviceToRun = simXH.UDID;
 			DEVICE_NAME = simXH.Name;
 			Information("The emulator to run tests: {0} {1}", simXH.Name, simXH.UDID);
 		}
+
 		Information("The platform version to run tests: {0}", iosVersionToRun);
 		SetEnvironmentVariable("DEVICE_UDID", deviceToRun);
 		SetEnvironmentVariable("DEVICE_NAME", DEVICE_NAME);
@@ -397,7 +428,7 @@ void GetSimulators(string version)
 {
 	DotNetTool("tool", new DotNetToolSettings {
 			ToolPath = DOTNET_TOOL_PATH,
-			DiagnosticOutput = true,	
+			DiagnosticOutput = true,
 			ArgumentCustomization = args => args.Append("run xharness apple simulators install " +
 				$"\"{version}\" " +
 				$"--verbosity=\"Debug\" ")
@@ -410,7 +441,7 @@ void GetDevices(string version)
 	var deviceName = "";
 	var deviceVersion = "";
 	var deviceOS = "";
-
+	
 	var list = new List<string>();
 	bool isDevice = false;
 	// print the apple state of the machine
