@@ -224,7 +224,7 @@ namespace UITest.Appium
 
 			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
 			{
-				{ "element", elementToSwipe},          
+				{ "element", elementToSwipe},
 				{ "swipePercentage", swipePercentage },
 				{ "swipeSpeed", swipeSpeed },
 				{ "withInertia", withInertia }
@@ -493,7 +493,7 @@ namespace UITest.Appium
 				{ "toY", toY },
 			});
 		}
-	
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
