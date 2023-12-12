@@ -170,5 +170,18 @@ namespace Microsoft.Maui.Platform
 
 		public static UIColor ToPlatform(this Color? color, UIColor defaultColor)
 			=> color?.ToPlatform() ?? defaultColor;
+
+		internal static bool AreEqual(UIColor a, UIColor b)
+		{
+			a.GetRGBA(out nfloat aRed, out nfloat aGreen, out nfloat aBlue, out nfloat aAlpha);
+			b.GetRGBA(out nfloat bRed, out nfloat bGreen, out nfloat bBlue, out nfloat bAlpha);
+
+			var redMatches = aRed == bRed;
+			var greenMatches = aGreen == bGreen;
+			var blueMatches = aBlue == bBlue;
+			var alphaMatches = aAlpha == bAlpha;
+
+			return redMatches && greenMatches && blueMatches && alphaMatches;
+		}
 	}
 }
