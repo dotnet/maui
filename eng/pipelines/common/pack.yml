@@ -149,15 +149,6 @@ steps:
       TargetFolder: $(build.artifactstagingdirectory)/logs
       flattenFolders: true
 
-  - task: CopyFiles@2
-    displayName: 'Copy Binaries Files'
-    condition: always()
-    inputs:
-      Contents: |
-        ${{ parameters.checkoutDirectory }}/src/**/*.dll
-      TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
-      flattenFolders: false
-
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
@@ -172,9 +163,19 @@ steps:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
         ArtifactName: xml-docs
 
+    # binaries for compliance scanning
+    - task: CopyFiles@2
+      displayName: 'Copy Binaries Files'
+      condition: succeeded()
+      inputs:
+        Contents: |
+          ${{ parameters.checkoutDirectory }}/src/**/bin/**/*.dll
+        TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
+        flattenFolders: false
+
     - task: PublishBuildArtifacts@1
-      condition: always()
-      displayName: publish docs artifacts
+      condition: succeeded()
+      displayName: publish binaries artifacts
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/binaries
         ArtifactName: ${{ parameters.artifactBinaries }}
