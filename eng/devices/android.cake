@@ -153,12 +153,7 @@ Teardown(context =>
 
 	//stop and cleanup the emulator
 	Information("AdbEmuKill");
-    try { AdbEmuKill(adbSettings); }
-	catch(Exception exc) 
-    {
-        Information("AdbEmuKill Exception: {0}", exc);
-    }
-	
+	AdbEmuKill(adbSettings);
 
 	System.Threading.Thread.Sleep(5000);
 
