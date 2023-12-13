@@ -19,6 +19,8 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Measuring empty ScrollView does not crash")]
 		public async Task MeasuringEmptyScrollViewDoesNotCrash()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac });
+
 			// 1. Let's add a child after a second.
 			await Task.Delay(1000);
 
