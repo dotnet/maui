@@ -228,7 +228,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			for (var i = 0; i < GCCollectRetries && !collected; i++)
 			{
-				await WaitForGC();
+				await WaitForGCAsync();
 
 				var target = new CacheCheckTarget();
 

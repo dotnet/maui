@@ -152,6 +152,13 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 				viewHandler.PlatformArrange(view.Frame);
 			}
+
+			// Force a GC so we can try to trigger any paths where
+			// things are getting prematurely collected
+			// If you're seeing random failures in tests, it might be related to GC timing
+			// Try adding WaitForGCAsync() to the test that's occasionally failing
+			// to see if that makes it fail more reliably.
+			WaitForGC();
 		}
 
 		protected TCustomHandler CreateHandler<THandler, TCustomHandler>(IElement element, IMauiContext mauiContext)
