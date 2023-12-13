@@ -282,6 +282,7 @@ stages:
       parameters:
         stageDependsOn: 'pack_net'
         complianceEnabled: true
+        policheckExclusionFilesFolder: '$(Build.SourcesDirectory)/src/Essentials/src/PublicAPI/'
         scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
         binSkimEnabled: true
