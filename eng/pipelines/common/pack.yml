@@ -145,6 +145,15 @@ steps:
       TargetFolder: $(build.artifactstagingdirectory)/logs
       flattenFolders: true
 
+  - task: CopyFiles@2
+    displayName: 'Copy Binaries Files'
+    condition: always()
+    inputs:
+      Contents: |
+        ${{ parameters.checkoutDirectory }}/src/**/*.dll
+      TargetFolder: $(build.artifactstagingdirectory)/binaries
+      flattenFolders: true
+
   - task: PublishBuildArtifacts@1
     condition: always()
     displayName: publish artifacts
