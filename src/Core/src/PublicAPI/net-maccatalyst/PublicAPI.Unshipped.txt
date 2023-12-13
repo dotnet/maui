@@ -158,5 +158,4 @@ virtual Microsoft.Maui.MauiUIApplicationDelegate.PerformFetch(UIKit.UIApplicatio
 *REMOVED*override Microsoft.Maui.Platform.ContentView.SetNeedsLayout() -> void
 Microsoft.Maui.Platform.UIEdgeInsetsExtensions
 static Microsoft.Maui.Platform.UIEdgeInsetsExtensions.ToThickness(this UIKit.UIEdgeInsets insets) -> Microsoft.Maui.Thickness
-static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> System.Threading.Tasks.Task!
-*REMOVED*static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlaying(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> void
+static Microsoft.Maui.Platform.ImageViewExtensions.UpdateIsAnimationPlayingAsync(this UIKit.UIImageView! imageView, Microsoft.Maui.IImageSourcePart! image) -> System.Threading.Tasks.Task!

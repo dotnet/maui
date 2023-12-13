@@ -47,9 +47,9 @@ internal class ImageAnimationHelper
 
 			var imageProperties = imageSource.GetProperties(index, null);
 
-			using var gifImageProperties = imageProperties?.Dictionary[ImageIO.CGImageProperties.GIFDictionary];
-			using var unclampedDelayTimeValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFUnclampedDelayTime);
-			using var delayTimeValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFDelayTime);
+			using var gifImageProperties = imageProperties?.Dictionary[CGImageProperties.GIFDictionary];
+			using var unclampedDelayTimeValue = gifImageProperties?.ValueForKey(CGImageProperties.GIFUnclampedDelayTime);
+			using var delayTimeValue = gifImageProperties?.ValueForKey(CGImageProperties.GIFDelayTime);
 
 			if (unclampedDelayTimeValue is NSNumber unclampedDelay)
 			{
@@ -60,7 +60,7 @@ internal class ImageAnimationHelper
 				delayTime = delay.DoubleValue;
 			}
 
-			// Frame delay compability adjustment.
+			// Frame delay compatibility adjustment.
 			if (delayTime <= 0.02f)
 				delayTime = 0.1f;
 
@@ -79,7 +79,7 @@ internal class ImageAnimationHelper
 			}
 		}
 
-		public MauiCAKeyFrameAnimation CreateKeyFrameAnimation(CGImageSource imageSource)
+		public MauiCAKeyFrameAnimation CreateKeyFrameAnimation()
 		{
 			if (_totalAnimationTime <= 0.0f)
 				return null;
@@ -145,8 +145,8 @@ internal class ImageAnimationHelper
 		if (imageSource.TypeIdentifier == "com.compuserve.gif")
 		{
 			var imageProperties = imageSource.GetProperties(null);
-			using var gifImageProperties = imageProperties?.Dictionary[ImageIO.CGImageProperties.GIFDictionary];
-			using var repeatCountValue = gifImageProperties?.ValueForKey(ImageIO.CGImageProperties.GIFLoopCount);
+			using var gifImageProperties = imageProperties?.Dictionary[CGImageProperties.GIFDictionary];
+			using var repeatCountValue = gifImageProperties?.ValueForKey(CGImageProperties.GIFLoopCount);
 
 			if (repeatCountValue != null)
 				_ = float.TryParse(repeatCountValue.ToString(), out repeatCount);
@@ -162,7 +162,7 @@ internal class ImageAnimationHelper
 			imageData.AddFrameData(i, imageSource);
 		}
 
-		MauiCAKeyFrameAnimation animation = imageData.CreateKeyFrameAnimation(imageSource);
+		MauiCAKeyFrameAnimation animation = imageData.CreateKeyFrameAnimation();
 
 		if (animation != null)
 		{
@@ -240,8 +240,8 @@ internal class ImageAnimationHelper
 
 		if (!string.IsNullOrEmpty(file))
 		{
-
 			var root = NSBundle.MainBundle.BundlePath;
+
 #if MACCATALYST
 			root = Path.Combine(root, "Contents", "Resources");
 #endif

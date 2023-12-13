@@ -22,7 +22,10 @@ namespace Microsoft.Maui.Platform
 			imageView.ClipsToBounds = imageView.ContentMode == UIViewContentMode.ScaleAspectFill || imageView.ContentMode == UIViewContentMode.Center;
 		}
 
-		public static async Task UpdateIsAnimationPlaying(this UIImageView imageView, IImageSourcePart image)
+		public static void UpdateIsAnimationPlaying(this UIImageView imageView, IImageSourcePart image) =>
+			imageView.UpdateIsAnimationPlayingAsync(image).FireAndForget();
+
+		public static async Task UpdateIsAnimationPlayingAsync(this UIImageView imageView, IImageSourcePart image)
 		{
 			if (imageView is MauiImageView mauiImageView)
 			{
@@ -56,7 +59,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateSource(this UIImageView imageView, UIImage? uIImage, IImageSourcePart image)
 		{
 			imageView.Image = uIImage;
-			imageView.UpdateIsAnimationPlaying(image).FireAndForget();
+			imageView.UpdateIsAnimationPlaying(image);
 		}
 
 		public static Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(

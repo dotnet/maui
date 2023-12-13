@@ -29,7 +29,7 @@ namespace Microsoft.Maui.Handlers
 			handler.PlatformView?.UpdateAspect(image);
 
 		public static void MapIsAnimationPlaying(IImageHandler handler, IImage image) =>
-			handler.PlatformView?.UpdateIsAnimationPlaying(image).FireAndForget(handler);
+			handler.PlatformView?.UpdateIsAnimationPlaying(image);
 
 		public static void MapSource(IImageHandler handler, IImage image) =>
 			MapSourceAsync(handler, image).FireAndForget(handler);
