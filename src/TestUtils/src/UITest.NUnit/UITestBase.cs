@@ -58,12 +58,13 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-				if (App.AppState == ApplicationState.Not_Running)
+				if (App.AppState == ApplicationState.NotRunning)
 				{
-					// Assert.Fail will immediately exit the test which is desirable as the app is not
-					// running anymore so we don't want to log diagnostic data as there is nothing to collect from
 					Reset();
 					FixtureSetup();
+
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
 					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
@@ -73,7 +74,7 @@ namespace UITest.Appium.NUnit
 				if (testOutcome == ResultState.Error ||
 					testOutcome == ResultState.Failure)
 				{
-					SaveDiagnosticLogs("UITestBaseTearDown");
+					SaveUIDiagnosticInfo();
 				}
 			}
 		}
@@ -84,7 +85,7 @@ namespace UITest.Appium.NUnit
 			InitialSetup(UITestContextSetupFixture.ServerContext);
 			try
 			{
-				SaveDiagnosticLogs("BeforeFixtureSetup");
+				//SaveDiagnosticLogs("BeforeFixtureSetup");
 				FixtureSetup();
 			}
 			catch
