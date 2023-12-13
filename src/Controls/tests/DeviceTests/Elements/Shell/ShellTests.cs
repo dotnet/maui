@@ -1022,7 +1022,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(pageReference);
-			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
 		//HideSoftInputOnTapped doesn't currently do anything on windows

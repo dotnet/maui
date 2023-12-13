@@ -69,26 +69,16 @@ namespace Microsoft.Maui.Handlers.Memory
 			if (!_fixture.HasType(data.HandlerType))
 				await Allocate(data);
 
-			await AssertionExtensions.Wait(() =>
-			{
+			var test = () => {
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 
-				if (_fixture.DoReferencesStillExist(data.HandlerType))
-				{
-					return false;
-				}
+				return !_fixture.DoReferencesStillExist(data.HandlerType);
+			};
 
-				return true;
-
-			}, 5000);
-
-			if (_fixture.DoReferencesStillExist(data.HandlerType))
-			{
-				Assert.Fail($"{data.HandlerType} failed to collect.");
-			}
+			await test.AssertEventually(timeout: 5000, message: $"{data.HandlerType} failed to collect.");
 		}
 	}
 }

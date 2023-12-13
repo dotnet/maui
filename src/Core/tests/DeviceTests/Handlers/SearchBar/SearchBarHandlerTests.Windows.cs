@@ -3,6 +3,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -26,7 +27,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertionExtensions.Wait(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
+				await AssertEventually(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
 			});
 
 			await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
