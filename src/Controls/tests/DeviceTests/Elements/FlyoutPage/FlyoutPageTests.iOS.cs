@@ -1,20 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 #endif
@@ -54,7 +47,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<PhoneFlyoutPageRenderer>(flyoutPage, async (handler) =>
 			{
 				var offset = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
-				await AssertionExtensions.Wait(() => flyoutLabel.ToPlatform().GetLocationOnScreen().Y > 1);
+				await AssertEventually(() => flyoutLabel.ToPlatform().GetLocationOnScreen().Y > 1);
 				var flyoutLocation = flyoutLabel.ToPlatform().GetLocationOnScreen();
 				Assert.True(Math.Abs(offset - flyoutLocation.Y) < 1.0);
 			});
@@ -92,7 +85,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
-				await AssertionExtensions.Wait(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
 				var screenBounds = flyoutPage.GetBoundingBox();
 				var detailBounds = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
@@ -119,13 +112,16 @@ namespace Microsoft.Maui.DeviceTests
 				flyoutPage.IsPresented = false;
 
 				await Task.Yield();
-				await AssertionExtensions.Wait(() =>
+
+				bool flyoutHasExpectedBounds()
 				{
 					var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
 					return
 						-flyoutBounds.Width == flyoutBounds.X || //ltr
 						screenBounds.Width == flyoutBounds.X;    //rtl
-				});
+				}
+
+				await AssertEventually(flyoutHasExpectedBounds);
 
 				var detailBoundsNotPresented = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBoundsNotPresented = flyoutPage.Flyout.GetBoundingBox();

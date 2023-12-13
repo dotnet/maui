@@ -58,7 +58,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}

@@ -43,7 +43,7 @@ namespace Microsoft.Maui.DeviceTests
 			await InvokeOnMainThreadAsync(async () =>
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext);
 			});
 		}
@@ -70,7 +70,7 @@ namespace Microsoft.Maui.DeviceTests
 				var handler = CreateHandler<LayoutHandler>(layout);
 				handlerReference = new WeakReference(image.Handler);
 				platformViewReference = new WeakReference(image.Handler.PlatformView);
-				await image.Wait();
+				await image.WaitUntilLoaded();
 			});
 
 			await AssertionExtensions.WaitForGC(handlerReference, platformViewReference);

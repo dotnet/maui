@@ -15,6 +15,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Abstractions;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -80,7 +81,9 @@ namespace Microsoft.Maui.DeviceTests
 
 			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
 			{
-				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded);
+				bool expectation() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded;
+
+				await AssertEventually(expectation);
 				var button = buttons.Last();
 				var bounds = GetCollectionViewCellBounds(button);
 				var buttonBounds = button.GetBoundingBox();
@@ -195,7 +198,7 @@ namespace Microsoft.Maui.DeviceTests
 
 					if (n == 0)
 					{
-						await AssertionExtensions.Wait(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
+						await AssertEventually(() => collectionView.Frame.Width > 0 && collectionView.Frame.Height > 0);
 					}
 					else
 					{
