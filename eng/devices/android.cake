@@ -66,7 +66,8 @@ var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT }
 if (IsCIBuild())
 	emuSettings.ArgumentCustomization = args => args.Append("-no-window");
 
-emuSettings.ArgumentCustomization = args => args.Append("-feature -Vulkan");
+emuSettings.ArgumentCustomization = args => args.Append("-gpu swiftshader_indirect");
+emuSettings.ArgumentCustomization = args => args.Append("-no-boot-anim");
 
 AndroidEmulatorProcess emulatorProcess = null;
 
