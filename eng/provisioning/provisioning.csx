@@ -12,9 +12,9 @@ if (IsMac)
 string ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("ANDROID_API_SDKS");
 string SKIP_ANDROID_API_SDKS = Environment.GetEnvironmentVariable ("SKIP_ANDROID_API_SDKS");
 
-Console.WriteLine($"LOGGING:")
-Console.WriteLine($"ANDROID_API_SDKS: {ANDROID_API_SDKS}")
-Console.WriteLine($"SKIP_ANDROID_API_SDKS: {SKIP_ANDROID_API_SDKS}")
+Console.WriteLine($"LOGGING:");
+Console.WriteLine($"ANDROID_API_SDKS: {ANDROID_API_SDKS}");
+Console.WriteLine($"SKIP_ANDROID_API_SDKS: {SKIP_ANDROID_API_SDKS}");
 if(String.IsNullOrWhiteSpace(ANDROID_API_SDKS) && String.IsNullOrWhiteSpace(SKIP_ANDROID_API_SDKS))
 {
 	AndroidSdk()
