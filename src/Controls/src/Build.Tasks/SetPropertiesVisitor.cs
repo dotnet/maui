@@ -397,7 +397,10 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
+			{
+				context.LoggingHelper.LogWarningOrError(10102, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, $"Binding could be compiled if x:DataType is not explicitly null", null);
 				yield break;
+			}
 
 			string dataType = null;
 

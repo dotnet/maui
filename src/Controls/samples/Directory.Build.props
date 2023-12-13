@@ -2,6 +2,7 @@
   <PropertyGroup>
     <SampleProject>true</SampleProject>
     <UseMaui Condition=" '$(UseWorkload)' == 'true' ">true</UseMaui>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC10101;XC10102</WarningsNotAsErrors>
   </PropertyGroup>
   <Import Project="../../../Directory.Build.props" />
 </Project>

@@ -7,7 +7,7 @@
     <AssemblyName>Microsoft.Maui.TestUtils.DeviceTests.Runners</AssemblyName>
     <!--<Nullable>enable</Nullable>-->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
-    <WarningsNotAsErrors>XC10101</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC10101;XC10102</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
