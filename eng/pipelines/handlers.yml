@@ -276,7 +276,7 @@ stages:
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     # compliance.yml
-    - template: security/full/v1.yml@templates
+    - template: security/full/v1.yml@yaml-templates
       parameters:
         stageDependsOn: 'pack_net'
         complianceEnabled: true
