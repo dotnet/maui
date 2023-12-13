@@ -1,7 +1,6 @@
 parameters:
   poolName: ''
   skipXcode: false
-  skipVS: true
   skipProvisioning: $(skipProvisionator)
   skipAndroidSdks: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
@@ -70,19 +69,6 @@ steps:
     condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
   # Prepare Windows
-  - ${{ if ne(parameters.skipVS, 'true') }}:
-    - task: xamops.azdevex.provisionator-task.provisionator@2
-      displayName: 'Provision Visual Studio'
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-      inputs:
-        provisioning_script: ${{ parameters.checkoutDirectory }}/${{ parameters.provisionatorVSPath }}
-        provisioning_extra_args: ${{ parameters.provisionatorExtraArguments }}
-        github_token: ${{ parameters.gitHubToken }}
-      env:
-        PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
-        ${{ if eq(parameters.skipAndroidSdks, true) }}:
-          SKIP_ANDROID_API_SDKS: 'true'
-
   # Provision Additional Software
   - ${{ if ne(parameters.skipProvisioning, 'true') }}:
     - task: xamops.azdevex.provisionator-task.provisionator@2
@@ -94,6 +80,8 @@ steps:
         github_token: ${{ parameters.gitHubToken }}
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
+        ${{ if eq(parameters.skipAndroidSdks, true) }}:
+          SKIP_ANDROID_API_SDKS: 'true'
 
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
