@@ -284,7 +284,8 @@ stages:
         complianceEnabled: true
         scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
-        binSkimEnabled: false
+        binSkimEnabled: true
+        binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\src\Controls\src\Nuget\bin\Release\net8.0\*.dll;'
         credScanEnabled: true
         credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json'
         enableCodeInspector: true

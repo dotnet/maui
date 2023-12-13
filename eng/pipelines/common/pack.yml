@@ -169,7 +169,7 @@ steps:
       condition: succeeded()
       inputs:
         Contents: |
-          ${{ parameters.checkoutDirectory }}/src/**/bin/**/*.dll
+          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
         TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
         flattenFolders: false
 
