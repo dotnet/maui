@@ -13,6 +13,7 @@ using Microsoft.Maui.Media;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 
 namespace Microsoft.Maui.Handlers.Memory
@@ -69,16 +70,17 @@ namespace Microsoft.Maui.Handlers.Memory
 			if (!_fixture.HasType(data.HandlerType))
 				await Allocate(data);
 
-			var test = () => {
+			bool referencesCollected()
+			{
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 				GC.Collect();
 				GC.WaitForPendingFinalizers();
 
 				return !_fixture.DoReferencesStillExist(data.HandlerType);
-			};
+			}
 
-			await test.AssertEventually(timeout: 5000, message: $"{data.HandlerType} failed to collect.");
+			await AssertEventually(referencesCollected, timeout: 5000, message: $"{data.HandlerType} failed to collect.");
 		}
 	}
 }
