@@ -10,9 +10,6 @@ namespace Microsoft.Maui.DeviceTests
 		where THandler : class, IViewHandler, new()
 		where TStub : IStubBase, IView, new()
 	{
-		//public static Task<bool> Wait(Func<bool> exitCondition, int timeout = 1000) =>
-		//	AssertionExtensions.Wait(exitCondition, timeout);
-
 		protected THandler CreateHandler(IView view, IMauiContext mauiContext = null) =>
 			CreateHandler<THandler>(view, mauiContext);
 
