@@ -152,14 +152,17 @@ Teardown(context =>
 		return;
 
 	//stop and cleanup the emulator
+	Information("AdbEmuKill");
 	AdbEmuKill(adbSettings);
 
 	System.Threading.Thread.Sleep(5000);
 
 	// kill the process if it has not already exited
+	Information("emulatorProcess.Kill()");
 	try { emulatorProcess.Kill(); }
 	catch { }
 
+	Information("AndroidAvdDelete");
 	// delete the AVD
 	try { AndroidAvdDelete(ANDROID_AVD, avdSettings); }
 	catch { }
