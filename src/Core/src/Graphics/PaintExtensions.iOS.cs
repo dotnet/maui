@@ -169,7 +169,7 @@ namespace Microsoft.Maui.Graphics
 		static CGColor[] GetCAGradientLayerColors(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new CGColor[0];
+				return Array.Empty<CGColor>();
 
 			CGColor[] colors = new CGColor[gradientStops.Count];
 
