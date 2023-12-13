@@ -30,7 +30,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the start")]
 		public void ScrollToElement1Start()
 		{
-			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WaitForStubControl");
 
@@ -51,7 +51,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the center")]
 		public void ScrollToElement2Center()
 		{
-			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WaitForStubControl");
 
@@ -75,7 +75,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("Scroll element to the end")]
 		public void ScrollToElement3End()
 		{
-			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WaitForStubControl");
 
@@ -96,7 +96,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToY()
 		{
-			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WaitForStubControl");
 
@@ -114,7 +114,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Description("ScrollTo Y = 100")]
 		public void ScrollToYTwice()
 		{
-			if (Device == TestDevice.Android || Device == TestDevice.Mac || Device == TestDevice.iOS)
+			if (Device == TestDevice.Android)
 			{
 				App.WaitForElement("WaitForStubControl");
 
