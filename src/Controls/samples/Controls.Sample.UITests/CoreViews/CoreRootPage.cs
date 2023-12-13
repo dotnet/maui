@@ -60,14 +60,5 @@ namespace Maui.Controls.Sample
 
 			Content = stackLayout;
 		}
-
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
-
-			// reset the InitNavigationPageStyling in case a test changed it
-			if (Microsoft.Maui.Controls.Application.Current.MainPage is Microsoft.Maui.Controls.NavigationPage nav)
-				CoreNavigationPage.InitNavigationPageStyling(nav);
-		}
 	}
 }
