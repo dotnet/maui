@@ -28,7 +28,7 @@ namespace UITest.Appium
 				// https://developer.apple.com/documentation/xctest/xcuiapplicationstate?language=objc
 				return Convert.ToInt32(state) switch
 				{
-					1 => ApplicationState.Not_Running,
+					1 => ApplicationState.NotRunning,
 					2 or
 					3 or
 					4 => ApplicationState.Running,
