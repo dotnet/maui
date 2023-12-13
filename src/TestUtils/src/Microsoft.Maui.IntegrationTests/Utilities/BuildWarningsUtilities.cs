@@ -28,7 +28,7 @@ namespace Microsoft.Maui.IntegrationTests
 		// While the actual file paths are always full paths and can have different repo roots (e.g., building locally or on CI).
 		private static bool CompareWarningsFilePaths(this string actual, string expected) => actual.Contains(expected, StringComparison.Ordinal);
 
-		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace("\\", "/", StringComparison.Ordinal);
+		private static string NormalizeFilePath(string file) => file.Replace("\\\\", "/", StringComparison.Ordinal).Replace('\\', '/');
 
 		public static List<WarningsPerFile> ReadNativeAOTWarningsFromBinLog(string binLogFilePath)
 		{
