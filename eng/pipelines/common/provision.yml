@@ -49,8 +49,8 @@ steps:
       env:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
-        ${{ if eq(parameters.skipAndroidSdks, 'true') }}:
-          SKIP_ANDROID_API_SDKS: true
+        ${{ if eq(parameters.skipAndroidSdks, true) }}:
+          SKIP_ANDROID_API_SDKS: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
