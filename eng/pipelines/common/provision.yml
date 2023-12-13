@@ -3,6 +3,7 @@ parameters:
   skipXcode: false
   skipProvisioning: $(skipProvisionator)
   skipAndroidSdks: false
+  skipAndroidImages: false
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
@@ -50,6 +51,8 @@ steps:
         AUTH_TOKEN_COMPONENTS_MAC_IOS_CERTIFICATE_P12: ${{ parameters.certPass }}
         ${{ if eq(parameters.skipAndroidSdks, true) }}:
           SKIP_ANDROID_API_SDKS: 'true'
+        ${{ if eq(parameters.skipAndroidImages, true) }}:
+          SKIP_ANDROID_API_IMAGES: 'true'
 
   # Setup JDK Paths (gradle needs it)
   - bash: |
@@ -82,6 +85,8 @@ steps:
         PROVISIONATOR_CHANNEL: ${{ parameters.provisionatorChannel }}
         ${{ if eq(parameters.skipAndroidSdks, true) }}:
           SKIP_ANDROID_API_SDKS: 'true'
+        ${{ if eq(parameters.skipAndroidImages, true) }}:
+          SKIP_ANDROID_API_IMAGES: 'true'
 
   - pwsh: |
       if ($env:JAVA_HOME_11_X64) {
