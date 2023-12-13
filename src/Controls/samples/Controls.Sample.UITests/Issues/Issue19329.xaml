@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Maui.Controls.Sample.Issues.Issue19329">
+    <VerticalStackLayout x:Name="layout" Margin="75,75,75,75" BackgroundColor="LightGray">
+        <BoxView x:Name="UpperBox" AutomationId="UpperBox" Color="CornflowerBlue" WidthRequest="20" HeightRequest="20"/>
+
+        <Button AutomationId="TapHere" Text="Tap Here">
+            <Button.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnTapped" />
+            </Button.GestureRecognizers>
+        </Button>
+    </VerticalStackLayout>
+</ContentPage>
