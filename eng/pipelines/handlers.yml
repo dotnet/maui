@@ -277,15 +277,18 @@ stages:
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     # compliance.yml
     - template: security/full/v1.yml@templates
-      dependsOn: [pack_net]
-        parameters:
-          complianceEnabled: eq(variables.ComplianceEnabled, true)
-          scanArtifacts: ['nuget']
-          antiMalwareEnabled: true
-          binSkimEnabled: true
-          credScanEnabled: true
-          credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json'
-          enableCodeInspector: true
+      parameters:
+        stageDependsOn: 'pack_net'
+        complianceEnabled: true
+        scanArtifacts: ['nuget']
+        antiMalwareEnabled: true
+        binSkimEnabled: true
+        credScanEnabled: true
+        credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json'
+        enableCodeInspector: true
+        apiScanEnabled: true
+        apiScanSoftwareName: 'MAUI'
+        apiScanSoftwareVersionNum: $(Build.BuildNumber)
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
     - template: common/localization-handback.yml                    # Process incoming translations and Create PR to main [Localization Handback]
     - template: common/merge-translations-update.yml                # Validating incoming translations strings and merge PR [Localization Handback]
