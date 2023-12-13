@@ -45,6 +45,7 @@ steps:
         poolName: ${{ parameters.poolName }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         gitHubToken: ${{ parameters.gitHubToken }}
+        skipAndroidSdks: true
 
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
