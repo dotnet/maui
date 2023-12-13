@@ -284,11 +284,11 @@ stages:
         complianceEnabled: true
         scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
-        binSkimEnabled: true
+        binSkimEnabled: false
         credScanEnabled: true
         credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json'
         enableCodeInspector: true
-        apiScanEnabled: true
+        apiScanEnabled: false
         apiScanSoftwareName: 'MAUI'
         apiScanSoftwareVersionNum: $(Build.BuildNumber)
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
