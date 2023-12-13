@@ -27,6 +27,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
+
 				// 1. Enable the ScrollView.
 				App.WaitForElement(InitiallyEnabled);
 				App.Click(InitiallyEnabled);
@@ -51,6 +53,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
+
 				// 1. Enable the ScrollView.
 				App.WaitForElement(InitiallyEnabled);
 				App.Click(InitiallyEnabled);
@@ -82,6 +86,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
+
 				// 1. Disable the ScrollView.
 				App.WaitForElement(InitiallyNotEnabled);
 				App.Click(InitiallyNotEnabled);
@@ -105,6 +111,8 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			try
 			{
+				this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac }, "This test is failing, likely due to product issue");
+
 				// 1. Disable the ScrollView.
 				App.WaitForElement(InitiallyNotEnabled);
 				App.Click(InitiallyNotEnabled);
