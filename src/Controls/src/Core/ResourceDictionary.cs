@@ -59,47 +59,25 @@ namespace Microsoft.Maui.Controls
 				}
 				else
 				{
-					// TODO: Are we even able to detect if XAML compilation is disabled?
-					if (XamlCompilationIsDisabled())
+					// The general guidance for feature switches is to behave the same way in Debug and Release builds.
+					// We cannot avoid this codepath in Debug, but we can assume that XamlC will compile the
+					// ResourceDictionary and generate the XamlResourceIdAttribute to associate the generated type
+					// with this resource path. There is also no need to produce any trimming warnings.
+					// In Release, there is no fallback when XAML loading is disabled.
+					if (RuntimeFeature.IsDebuggerSupported)
 					{
-						// If XAML compilation is disabled, it is not possible to load this resource dictionary both in Release and Debug.
-						throw new InvalidOperationException(
-							$"The resource '{resourcePath}' has not been compiled using XamlC because XAML compilation is disabled for the whole {assembly.GetName().Name} asembly. "
-							+ "It is not possible to disable XAML compilation when XAML loading at runtime is disabled via the MauiXamlRuntimeParsingSupport feature switch. "
-							+ "Consider either enabling XAML compilation by removing the XamlCompilation attributes or enabling XAML loading by setting the "
-							+ "MauiXamlRuntimeParsingSupport MSBuild property to true.");
+						_mergedInstance = _LoadResourceDictionary();
 					}
 					else
 					{
-						if (RuntimeFeature.IsDebuggerSupported)
-						{
-							// The general guidance for feature switches is to behave the same way in Debug and Release builds.
-							// We cannot avoid this codepath in Debug, but we can safely assume that XamlC will compile the
-							// ResourceDictionary and generate the XamlResourceIdAttribute to associate the generated type
-							// with this resource path. There is also no need to produce any trimming warnings.
-							_mergedInstance = _LoadResourceDictionary();
-						}
-						else
-						{
-							// In Release, there is no fallback when XAML loading is disabled.
-							throw new InvalidOperationException(
-								$"The resource '{resourcePath}' has not been compiled using XamlC. "
-								+ "Loading resources from XAML at runtime is disabled. Ensure all resources are compiled using XamlC. "
-								+ "Alternatively, enable loading XAML at runtime by setting the MauiXamlRuntimeParsingSupport MSBuild property to true.");
-						}
+						throw new InvalidOperationException(
+							$"The resource '{resourcePath}' has not been compiled using XamlC and parsing XAML resources at runtime is disabled. "
+							+ "Ensure the resource is compiled using XamlC. Alternatively, enable parsing XAML resources at runtime by setting "
+							+ "the MauiXamlRuntimeParsingSupport MSBuild property to true.");
 					}
 				}
 			}
 			OnValuesChanged(_mergedInstance.ToArray());
-
-			bool XamlCompilationIsDisabled()
-			{
-				// TODO can we detect other ways of disabling XAML compilation, such as the $(MauiXamlCValidateOnly) MSBuild property?
-				// TODO we can't check `XamlCompilationAttribute` which is defined in Microsoft.Maui.Controls.Xaml...
-				// return assembly.GetCustomAttribute<XamlCompilationAttribute>() is XamlCompilationAttribute attribute
-				// 		&& attribute.XamlCompilationOptions == XamlCompilationOptions.Skip;
-				return false;
-			}
 
 			[RequiresUnreferencedCode(TrimmerConstants.XamlLoadingTrimmerWarning)]
 			ResourceDictionary LoadResourceDictionary()
