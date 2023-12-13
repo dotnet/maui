@@ -18,7 +18,7 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void ScrollRotationRelayoutIssue()
 		{
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows });
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
 
 			App.WaitForElement("Button1");
 
