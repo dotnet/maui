@@ -83,6 +83,7 @@ parameters:
         bootsAndroid: $(Android.Pkg)
         bootsMacCatalyst: $(MacCatalyst.Pkg)
         artifact: build-macos
+ 
   - name: PackPlatforms
     type: object
     default:
@@ -215,6 +216,7 @@ stages:
                 poolName: ${{ PackPlatform.poolName }}
                 provisionatorChannel: ${{ parameters.provisionatorChannel }}
                 artifact:  ${{ PackPlatform.artifact }}
+                artifactBinaries: 'pack-binaries'
                 gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
 
   - stage: samples_net
@@ -280,7 +282,7 @@ stages:
       parameters:
         stageDependsOn: 'pack_net'
         complianceEnabled: true
-        scanArtifacts: ['nuget']
+        scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
         binSkimEnabled: true
         credScanEnabled: true

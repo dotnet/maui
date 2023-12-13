@@ -15,6 +15,10 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: artifactBinaries
+  type: string
+  default: 'pack-binaries'
+
 - name: nugetFolder
   type: string
   default: 'artifacts'
@@ -151,8 +155,8 @@ steps:
     inputs:
       Contents: |
         ${{ parameters.checkoutDirectory }}/src/**/*.dll
-      TargetFolder: $(build.artifactstagingdirectory)/binaries
-      flattenFolders: true
+      TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
+      flattenFolders: false
 
   - task: PublishBuildArtifacts@1
     condition: always()
@@ -167,4 +171,11 @@ steps:
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
         ArtifactName: xml-docs
+
+    - task: PublishBuildArtifacts@1
+      condition: always()
+      displayName: publish docs artifacts
+      inputs:
+        PathToPublish: ${{ parameters.checkoutDirectory }}/binaries
+        ArtifactName: ${{ parameters.artifactBinaries }}
 
