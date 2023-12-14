@@ -16,6 +16,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIStringAttributes _defaultTitleAttributes;
 		float _shadowOpacity = float.MinValue;
 		CGColor _shadowColor;
+		UIImage _defaultNavBarShadowImage;
 
 		public void UpdateLayout(UINavigationController controller)
 		{
@@ -63,6 +64,10 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		public virtual void SetHasShadow(UINavigationController controller, bool hasShadow)
 		{
 			var navigationBar = controller.NavigationBar;
+
+			if (_defaultNavBarShadowImage is null)
+				_defaultNavBarShadowImage = navigationBar.ShadowImage;
+
 			if (_shadowOpacity == float.MinValue)
 			{
 				// Don't do anything if user hasn't changed the shadow to true
@@ -77,6 +82,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				navigationBar.Layer.ShadowColor = UIColor.Black.CGColor;
 				navigationBar.Layer.ShadowOpacity = 1.0f;
+				navigationBar.ShadowImage = _defaultNavBarShadowImage;
 			}
 			else
 			{
@@ -120,6 +126,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// since we cannot call this directly in .NET 8
 			if (appearance.BackgroundColor == Colors.Transparent)
 			{
+				// save the shadow image
+				_defaultNavBarShadowImage = navBar.ShadowImage;
 				navigationBarAppearance.ConfigureWithTransparentBackground();
 				navBar.Translucent = true;
 			}
@@ -147,13 +155,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				};
 			}
 
+			// if the BackgroundColor is set to transparent, let's apply translucence as well
+			// since we cannot call this directly in .NET 8
 			if (appearance.BackgroundColor == Colors.Transparent)
 			{
-				navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-				navBar.ShadowImage = new UIImage();
-				navBar.BackgroundColor = UIColor.Clear;
-				navBar.TintColor = UIColor.Clear;
-				navBar.BarTintColor = UIColor.Clear;
+				// save the shadow image
+				_defaultNavBarShadowImage = navBar.ShadowImage;
+				Handlers.Compatibility.NavigationRenderer.SetTransparentNavigationBar(navBar);
 				navBar.Translucent = true;
 			}
 		}

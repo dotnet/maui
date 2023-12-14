@@ -4,11 +4,11 @@
              AutomationId="NavBarTranslucentPage"
              x:Class="Maui.Controls.Sample.Issues.Issue17022"
              xmlns:ios="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific;assembly=Microsoft.Maui.Controls"
-            ios:Page.UseSafeArea="False"
-            ios:NavigationPage.IsNavigationBarTranslucent="True"
-            ios:NavigationPage.HideNavigationBarSeparator="True">
+            ios:Page.UseSafeArea="False">
     <Grid IgnoreSafeArea="True" RowDefinitions="*,*">
-        <BoxView Background="Green" Grid.Row="0" AutomationId="TopBoxView"/>
-        <Label Margin="20" Text="Green boxview should be behind navbar and touching very top of screen" Grid.Row="1" />
+        <Button Text="Push NavigationPage" AutomationId="NewNavigationPageButton"
+            Clicked="NewNavigationPageButtonPressed" Grid.Row="0"/>
+        <Button Text="Push FlyoutPage" AutomationId="NewFlyoutPageButton"
+            Clicked="NewFlyoutPageButtonPressed" Grid.Row="1"/>
     </Grid>
 </ContentPage>
