@@ -23,14 +23,13 @@ namespace Microsoft.Maui.DeviceTests
 				CancelButtonColor = expected
 			};
 
-			searchBar.Focus();
+			// The cancel button won't exist in the SearchBar until the SearchBar is loaded (and OnApplyTemplate is called)
+			// so we need to attach the SearchBar to the running app before we can check the color
 
 			await AttachAndRun(searchBar, async (searchBarHandler) =>
 			{
-				await AssertEventually(() => searchBarHandler.PlatformView.FocusState != UI.Xaml.FocusState.Unfocused);
+				await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
 			});
-
-			await ValidatePropertyInitValue(searchBar, () => searchBar.CancelButtonColor, GetNativeCancelButtonColor, expected);
 		}
 
 		static AutoSuggestBox GetNativeSearchBar(SearchBarHandler searchBarHandler) =>
