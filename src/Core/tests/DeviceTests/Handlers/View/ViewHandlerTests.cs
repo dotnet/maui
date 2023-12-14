@@ -86,7 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 
 		async Task AssertTooltipTextApplied<TElement, THandler>(string expected)
 			where TElement : StubBase
-			where THandler : IElementHandler, new()
+			where THandler : class, IViewHandler, new()
 		{
 #if ANDROID
 			// Tooltips are only supported in the Android API as of 26+
@@ -106,10 +106,11 @@ namespace Microsoft.Maui.DeviceTests
 			var control = (TElement)Activator.CreateInstance(typeof(TElement));
 			control.ToolTip = new ToolTip() { Content = expected };
 
-			var handler = await CreateHandlerAsync<THandler>(control);
 
 			var platformText = await InvokeOnMainThreadAsync(() =>
 			{
+				var handler = CreateHandler(control, typeof(THandler));
+
 #if IOS || MACCATALYST
 				return handler.ToPlatform()?.GetToolTipInteraction()?.DefaultToolTip;
 #elif ANDROID
