@@ -13,14 +13,18 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public override string Issue => "UINavigationBar is Translucent";
 
 		[Test]
-		public void Issue17022Test()
+        [TestCase("NewNavigationPageButton")]
+        [TestCase("NewFlyoutPageButton")]
+		public void Issue17022Test(string testButtonID)
 		{
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Android, TestDevice.Mac, TestDevice.Windows }, "This test is only for iOS");
 
+            App.WaitForElement(testButtonID).Click();
             var boxView = App.WaitForElement("TopBoxView");
             Assert.NotNull(boxView);
 			var rect = boxView.GetRect();
             Assert.AreEqual(rect.Y, 0);
+            App.WaitForElement("PopPageButton").Click();
 		}
 	}
 }
