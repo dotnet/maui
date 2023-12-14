@@ -128,7 +128,7 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
-			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 
 			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
@@ -149,13 +149,13 @@ namespace Microsoft.Maui.IntegrationTests
 
 			var extendedBuildProps = BuildProps;
 			extendedBuildProps.Add("PublishAot=true");
-			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");	// TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
+			extendedBuildProps.Add("PublishAotUsingRuntimePack=true");  // TODO: This parameter will become obsolete https://github.com/dotnet/runtime/issues/87060
 			extendedBuildProps.Add("TrimmerSingleWarn=false");
 
 			string binLogFilePath = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 			Assert.IsTrue(DotnetInternal.Publish(projectFile, "Release", framework: framework, properties: extendedBuildProps, runtimeIdentifier: runtimeIdentifier, binlogPath: binLogFilePath),
 				$"Project {Path.GetFileName(projectFile)} failed to build. Check test output/attachments for errors.");
-			
+
 			var expectedWarnings = BuildWarningsUtilities.ExpectedNativeAOTWarnings;
 			var actualWarnings = BuildWarningsUtilities.ReadNativeAOTWarningsFromBinLog(binLogFilePath);
 
