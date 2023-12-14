@@ -736,8 +736,8 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		internal static void SetTransparentNavigationBar (UINavigationBar navigationBar)
 		{
-			// navigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-			// navigationBar.ShadowImage = new UIImage();
+			navigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
+			navigationBar.ShadowImage = new UIImage();
 			navigationBar.BackgroundColor = UIColor.Clear;
 			navigationBar.TintColor = UIColor.Clear;
 			navigationBar.BarTintColor = UIColor.Clear;
