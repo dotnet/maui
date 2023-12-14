@@ -441,7 +441,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			// Because of this binding, the the layout will need two passes.
 			button.SetBinding(VisualElement.WidthRequestProperty, new Binding(nameof(View.Width), mode: BindingMode.Default, source: grid));
-			
+
 			await AttachAndRun(outerGrid, async (handler) =>
 			{
 				// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule

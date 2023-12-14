@@ -249,7 +249,7 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(interval);
 				timeout -= interval;
 
-			} 
+			}
 			while (timeout >= 0);
 
 			if (!assertion())
