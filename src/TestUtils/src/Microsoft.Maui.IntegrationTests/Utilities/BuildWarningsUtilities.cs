@@ -264,102 +264,6 @@ namespace Microsoft.Maui.IntegrationTests
 			},
 			new WarningsPerFile
 			{
-				File = "src/Controls/src/Xaml/ApplyPropertiesVisitor.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2072",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.Visit(ElementNode,INode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The return value of method 'System.Collections.Generic.Dictionary`2<IElementNode,Type>.Item.get' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.Visit(ElementNode,INode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The return value of method 'System.Collections.Generic.Dictionary`2<IElementNode,Type>.Item.get' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.Visit(ElementNode,INode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetTargetProperty(Object,XmlName,Object,IXmlLineInfo): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperties(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'name' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicEvents' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeEvent(Type,String)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicEvents', 'DynamicallyAccessedMemberTypes.NonPublicEvents' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeEvents(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.<>c__DisplayClass37_0.<TrySetValue>b__1(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperties(Type)'. The return value of method 'Microsoft.Maui.Controls.BindableProperty.DeclaringType.get' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TrySetProperty(Object,String,Object,IXmlLineInfo,IServiceProvider,Object,Exception&): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties', 'DynamicallyAccessedMemberTypes.NonPublicProperties' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeProperties(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryAddToProperty(Object,XmlName,Object,String,IXmlLineInfo,IServiceProvider,Object,Exception&): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo,Boolean): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Type.GetFields(BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetBindableProperty(Type,String,IXmlLineInfo,Boolean)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.Interfaces' in call to 'System.Type.GetInterfaces()'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2075",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryGetProperty(Object,String,Object&,IXmlLineInfo,Object,Exception&,Object&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Type.GetProperty(String,BindingFlags)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Type.GetMethod(String,BindingFlags)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethod(String)'. The return value of method 'System.Reflection.EventInfo.EventHandlerType.get' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Type.GetMethods(BindingFlags)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.TryConnectEvent(Object,String,Boolean,Object,Object,IXmlLineInfo,Exception&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethod(String)'. The return value of method 'System.Reflection.EventInfo.EventHandlerType.get' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2067",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.GetAllRuntimeMethods(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.<>c.<GetAllRuntimeMethods>b__46_0(Type): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The parameter 't' of method 'Microsoft.Maui.Controls.Xaml.ApplyPropertiesVisitor.<>c.<GetAllRuntimeMethods>b__46_0(Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Xaml/CreateValuesVisitor.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2075",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.Visit(ElementNode,INode): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.NonPublicConstructors' in call to 'System.Reflection.TypeInfo.DeclaredConstructors.get'. The return value of method 'Microsoft.Maui.Controls.Xaml.XamlParser.GetElementType(XmlType,IXmlLineInfo,Assembly,XamlParseException&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.Visit(ElementNode,INode): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.NonPublicConstructors' in call to 'System.Reflection.TypeInfo.DeclaredConstructors.get'. The return value of method 'Microsoft.Maui.Controls.Xaml.XamlParser.GetElementType(XmlType,IXmlLineInfo,Assembly,XamlParseException&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2072",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.Visit(ElementNode,INode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.XamlParser.GetElementType(XmlType,IXmlLineInfo,Assembly,XamlParseException&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2067",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateLanguagePrimitive(Type,IElementNode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateLanguagePrimitive(Type,IElementNode)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromFactory(Type,IElementNode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors' in call to 'System.Activator.CreateInstance(Type,Object[])'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromFactory(Type,IElementNode)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromFactory(Type,IElementNode): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods', 'DynamicallyAccessedMemberTypes.NonPublicMethods' in call to 'System.Reflection.RuntimeReflectionExtensions.GetRuntimeMethods(Type)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromFactory(Type,IElementNode)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-					new WarningsPerCode
-					{
-						Code = "IL2070",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.ValidateCtorArguments(Type,IElementNode,String&): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.NonPublicConstructors' in call to 'System.Reflection.TypeInfo.DeclaredConstructors.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.ValidateCtorArguments(Type,IElementNode,String&)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-							"Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromParameterizedConstructor(Type,IElementNode): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.NonPublicConstructors' in call to 'System.Reflection.TypeInfo.DeclaredConstructors.get'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.CreateValuesVisitor.CreateFromParameterizedConstructor(Type,IElementNode)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
 				File = "src/Core/src/Hosting/Internal/MauiFactory.cs",
 				WarningsPerCode = new List<WarningsPerCode>
 				{
@@ -450,21 +354,6 @@ namespace Microsoft.Maui.IntegrationTests
 						Messages = new List<string>
 						{
 							"Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.NonPublicFields' in call to 'System.Reflection.TypeInfo.DeclaredFields.get'. The parameter 'i' of method 'Microsoft.Maui.Platform.ReflectionExtensions.<>c.<GetFields>b__1_0(TypeInfo)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
-						}
-					},
-				}
-			},
-			new WarningsPerFile
-			{
-				File = "src/Controls/src/Xaml/MarkupExpressionParser.cs",
-				WarningsPerCode = new List<WarningsPerCode>
-				{
-					new WarningsPerCode
-					{
-						Code = "IL2072",
-						Messages = new List<string>
-						{
-							"Microsoft.Maui.Controls.Xaml.MarkupExpressionParser.ParseExpression(String&,IServiceProvider): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'System.Object.GetType()' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
 				}
