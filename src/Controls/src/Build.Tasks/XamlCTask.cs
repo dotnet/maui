@@ -17,7 +17,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 	/// <summary>
 	/// Provides extension methods for the <see cref="TaskLoggingHelper"/> class to assist with logging warnings and errors.
 	/// </summary>
-	public static class LoggingHelperExtensions
+	static class LoggingHelperExtensions
 	{
 		class LoggingHelperContext
 		{
@@ -74,19 +74,18 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}).Where(i => i != -1).ToList();
 		}
 
-		public static void LogWarningOrError(this TaskLoggingHelper loggingHelper, int code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, string message, params object[] messageArgs)
+		public static void LogWarningOrError(this TaskLoggingHelper loggingHelper, BuildExceptionCode code, string xamlFilePath, int lineNumber, int linePosition, int endLineNumber, int endLinePosition, params object[] messageArgs)
 		{
 			if (Context == null)
 				Context = new LoggingHelperContext();
-			if (Context.NoWarn != null && Context.NoWarn.Contains(code))
+			if (Context.NoWarn != null && Context.NoWarn.Contains(code.CodeCode))
 				return;
-			if (   (Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code)))
-				|| (Context.WarningsAsErrors!= null && Context.WarningsAsErrors.Contains(code)))
-				loggingHelper.LogError($"XamlC {code:0000}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+			if (   (Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code.CodeCode)))
+				|| (Context.WarningsAsErrors!= null && Context.WarningsAsErrors.Contains(code.CodeCode)))
+				loggingHelper.LogError($"XamlC {code.CodePrefix}{code.CodeCode:0000}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
 			else
-				loggingHelper.LogWarning($"XamlC {code:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, message, messageArgs);
+				loggingHelper.LogWarning($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
 		}
-
 	}
 
 	public class XamlCTask : XamlTask
