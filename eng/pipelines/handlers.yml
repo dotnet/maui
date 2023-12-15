@@ -287,9 +287,9 @@ stages:
         binSkimEnabled: true
         binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\pack-binaries\src\Controls\src\Nuget\bin\Release\net8.0\*.dll'
         # sourceGdnSuppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
-        tsaConfigFile: $(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json
-        policheckExclusionFilesFolder: $(Build.SourcesDirectory)\eng\automation\guardian
-        policheckGdnSuppressionFilesFolder: $(Build.SourcesDirectory)\eng\automation\guardian
+        tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
+        policheckExclusionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian' 
+        policheckGdnSuppressionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian'
         credScanEnabled: true
         credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\CredScanSuppressions.json'
         enableCodeInspector: true
