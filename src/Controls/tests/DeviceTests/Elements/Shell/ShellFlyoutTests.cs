@@ -269,7 +269,7 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 #endif
 
-#if ANDROID
+#if ANDROID || IOS
 		[Fact]
 		public async Task FlyoutHeaderCollapsesOnScroll()
 		{
