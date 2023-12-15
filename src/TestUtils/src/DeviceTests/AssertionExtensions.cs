@@ -236,5 +236,26 @@ namespace Microsoft.Maui.DeviceTests
 
 			return pvh.PlatformView?.IsLoaded() == true;
 		}
+
+		public static async Task AssertEventually(this Func<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (assertion())
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!assertion())
+			{
+				throw new XunitException(message);
+			}
+		}
 	}
 }
