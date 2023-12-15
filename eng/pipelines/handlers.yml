@@ -282,13 +282,16 @@ stages:
       parameters:
         stageDependsOn: 'pack_net'
         complianceEnabled: true
-        policheckExclusionFilesFolder: 'src/Essentials/src/PublicAPI/'
         scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
         binSkimEnabled: true
         binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\pack-binaries\src\Controls\src\Nuget\bin\Release\net8.0\*.dll'
+        sourceGdnSuppressionFile: $(Build.SourcesDirectory)\build-tools\automation\guardian\source.gdnsuppress
+        tsaConfigFile: $(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json
+        policheckExclusionFilesFolder: $(Build.SourcesDirectory)\eng\automation\guardian
+        policheckGdnSuppressionFilesFolder: $(Build.SourcesDirectory)\eng\automation\guardian
         credScanEnabled: true
-        credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\CredScanSuppressions.json'
+        credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\CredScanSuppressions.json'
         enableCodeInspector: true
         apiScanEnabled: false
         apiScanSoftwareName: 'MAUI'
