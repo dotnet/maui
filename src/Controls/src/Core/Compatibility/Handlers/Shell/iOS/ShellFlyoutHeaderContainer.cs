@@ -1,7 +1,4 @@
 #nullable disable
-using System;
-using CoreGraphics;
-using Microsoft.Maui.Platform;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Platform.Compatibility
@@ -21,6 +18,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				if (View.IsSet(View.MarginProperty))
 					return View.Margin;
+
+				if (View is ISafeAreaView sav && sav.IgnoreSafeArea)
+					return Thickness.Zero;
 
 				var safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow();
 
