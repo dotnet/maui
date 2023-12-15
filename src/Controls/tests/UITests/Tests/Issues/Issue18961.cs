@@ -25,12 +25,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 2. Scroll to the end.
 			App.Click("ScrollButton");
-			await Task.Delay(500);
+			await Task.Delay(1000);
 
 			// 3. Focus latest Entry
 			App.EnterText("TestEntry20", "test");
 			App.Click("TestEntry20");
-			await Task.Delay(500);
+			await Task.Delay(1000);
 
 			// 4. The keyboard has opened and the Entry have been translated above the keyboard.
 			App.Screenshot("The keyboard has opened and the Entry have been translated above the keyboard.");
