@@ -83,7 +83,6 @@ namespace Microsoft.Maui.Controls.XamlC
 			}
 			foreach (var instruction in node.PushXmlLineInfo(context))
 				yield return instruction; //lineinfo
-
 			yield return Create(Callvirt, currentModule.ImportMethodReference(context.Cache,
 																	   resourceDictionaryType,
 																	   methodName: "SetAndLoadSource",
