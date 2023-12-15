@@ -390,7 +390,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (dataTypeNode is null) {
-				context.LoggingHelper.LogWarningOrError(10101, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, $"Binding could be compiled if x:DataType is specified", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
 				yield break;
 			}
 
@@ -398,7 +399,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
 			{
-				context.LoggingHelper.LogWarningOrError(10102, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, $"Binding could be compiled if x:DataType is not explicitly null", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				yield break;
 			}
 
