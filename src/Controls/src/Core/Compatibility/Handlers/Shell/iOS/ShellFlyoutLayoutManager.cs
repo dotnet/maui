@@ -277,7 +277,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (HeaderView is not null && !double.IsNaN(ArrangedHeaderViewHeightWithMargin))
 			{
 				nfloat safeArea = 0;
-				if (!HeaderView.View.IsSet(View.MarginProperty))
+				if (ShouldHonorSafeArea(HeaderView.View))
 				{
 					// We add the safe area if margin is not explicitly set.
 					safeArea = UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
@@ -306,8 +306,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			double contentYOffset = 0;
 			
-			if (HeaderView?.View.IsSet(View.MarginProperty) == false || 
-				(HeaderView is null && Content?.IsSet(View.MarginProperty) == false))
+			if (ShouldHonorSafeArea(HeaderView.View) || 
+				(HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
 				// We add the safe area if margin is not explicitly set. This matches the header behavior.
 				contentYOffset += (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
@@ -337,6 +337,13 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				(Content as IView)?.Arrange(contentFrame);
 			}
+		}
+
+		bool ShouldHonorSafeArea(View view)
+		{
+			return view != null 
+				&& !view.IsSet(View.MarginProperty) 
+				&& !(view is ISafeAreaView sav && sav.IgnoreSafeArea);
 		}
 		
 		void OnStructureChanged(object sender, EventArgs e) => UpdateVerticalScrollMode();
