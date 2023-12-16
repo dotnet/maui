@@ -730,11 +730,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			}
 			else
 			{
-				NavigationBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-				NavigationBar.ShadowImage = new UIImage();
-				NavigationBar.BackgroundColor = UIColor.Clear;
-				NavigationBar.TintColor = UIColor.Clear;
-				NavigationBar.BarTintColor = UIColor.Clear;
+				NavigationBar.SetTransparentNavigationBar();
 			}		
 		}
 

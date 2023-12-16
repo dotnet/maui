@@ -155,11 +155,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (appearance.BackgroundColor == Colors.Transparent)
 			{
-				navBar.SetBackgroundImage(new UIImage(), UIBarMetrics.Default);
-				navBar.ShadowImage = new UIImage();
-				navBar.BackgroundColor = UIColor.Clear;
-				navBar.TintColor = UIColor.Clear;
-				navBar.BarTintColor = UIColor.Clear;
+				// save the shadow image
+				_defaultNavBarShadowImage = navBar.ShadowImage;
+				navBar.SetTransparentNavigationBar();
 				navBar.Translucent = true;
 			}
 		}
