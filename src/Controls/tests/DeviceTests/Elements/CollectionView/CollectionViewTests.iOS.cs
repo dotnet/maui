@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using CoreGraphics;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
@@ -125,6 +127,16 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				Assert.False(reference.IsAlive, "View should not be alive!");
 			}
+		}
+
+		Rect GetCollectionViewCellBounds(IView cellContent)
+		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
+			return cellContent.ToPlatform().GetParentOfType<UIKit.UICollectionViewCell>().GetBoundingBox();
 		}
 	}
 }
