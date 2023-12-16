@@ -161,7 +161,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				// save the shadow image
 				_defaultNavBarShadowImage = navBar.ShadowImage;
-				Handlers.Compatibility.NavigationRenderer.SetTransparentNavigationBar(navBar);
+				navBar.SetTransparentNavigationBar();
 				navBar.Translucent = true;
 			}
 		}
