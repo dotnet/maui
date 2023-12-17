@@ -5,13 +5,8 @@
     xmlns:views="clr-namespace:Maui.Controls.Sample.Pages.Base"
     Title="TableView">
     <views:BasePage.Content>
-        <VerticalStackLayout
-            Margin="12">
-            <Label
-                Text="Default"
-                Style="{StaticResource Headline}"/>
             <TableView 
-                Intent="Form">
+                Intent="Form" Margin="12">
                 <TableRoot 
                     Title="TableView Title">
                     <TableSection
@@ -30,9 +25,19 @@
                         <ViewCell>
                             <Label Text="A View Cell can be anything you want!" />
                         </ViewCell>
+                        <ViewCell>
+                            <Picker Title="Choose">
+                                <Picker.ItemsSource>
+                                    <x:Array Type="{x:Type x:String}">
+                                        <x:String>AAA</x:String>
+                                        <x:String>BBB</x:String>
+                                        <x:String>CCC</x:String>
+                                    </x:Array>
+                                </Picker.ItemsSource>
+                            </Picker>
+                        </ViewCell>
                     </TableSection>
                 </TableRoot>
             </TableView>
-        </VerticalStackLayout>
     </views:BasePage.Content>
 </views:BasePage>
