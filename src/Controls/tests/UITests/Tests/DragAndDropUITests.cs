@@ -57,6 +57,7 @@ namespace Microsoft.Maui.AppiumTests
 			App.EnterText("TargetView", "DragAndDropBetweenLayouts");
 			App.Click("GoButton");
 
+			App.WaitForElement("ResetButton");
 			App.Click("ResetButton");
 
 			App.WaitForElement("Red");
