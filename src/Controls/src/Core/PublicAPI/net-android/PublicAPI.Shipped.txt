@@ -7486,6 +7486,7 @@ override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.Dispos
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.GetDesiredSize(double widthConstraint, double heightConstraint) -> Microsoft.Maui.SizeRequest
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.MinimumSize() -> Microsoft.Maui.Graphics.Size
 override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnAttachedToWindow() -> void
+override Microsoft.Maui.Controls.Handlers.Compatibility.TableViewRenderer.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnLayout(bool changed, int l, int t, int r, int b) -> void
 override Microsoft.Maui.Controls.Handlers.Compatibility.VisualElementRenderer<TElement>.OnMeasure(int widthMeasureSpec, int heightMeasureSpec) -> void
 override Microsoft.Maui.Controls.Handlers.Items.CarouselViewAdapter<TItemsView, TItemsViewSource>.ItemCount.get -> int

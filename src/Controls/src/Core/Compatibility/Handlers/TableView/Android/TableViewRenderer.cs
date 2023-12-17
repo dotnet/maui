@@ -126,6 +126,21 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
+		protected override void OnMeasure(int widthMeasureSpec, int heightMeasureSpec)
+		{
+			int width = MeasureSpec.GetSize(widthMeasureSpec);
+			int height = MeasureSpec.GetSize(heightMeasureSpec);
+
+			SetMeasuredDimension(width, height);
+
+			for (int i = 0; i < ChildCount; i++)
+			{
+				AView child = GetChildAt(i);
+				child.Measure(MeasureSpec.MakeMeasureSpec(width, MeasureSpecMode.Exactly),
+					MeasureSpec.MakeMeasureSpec(height, MeasureSpecMode.Exactly));
+			}
+		}
+
 		protected override void Dispose(bool disposing)
 		{
 			if (_disposed)
