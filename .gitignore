@@ -19,6 +19,7 @@ templatesTest/
 
 # Mono auto generated files
 mono_crash.*
+.mono/
 
 # Build results
 [Dd]ebug/
