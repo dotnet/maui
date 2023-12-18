@@ -75,13 +75,16 @@ parameters:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
+        demands:
+          - ImageOverride -equals maui-2023
         artifact: build-windows
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
+        demands:
+          - macOS.Name -equals Ventura
+          - macOS.Architecture -equals x64
+          - Agent.OSVersion -equals 13.5
         artifact: build-macos
   - name: PackPlatforms
     type: object
@@ -89,13 +92,16 @@ parameters:
       - name: Windows
         poolName: $(windowsNet6VmPool)
         vmImage: $(windowsNet6VmImage)
-        bootsAndroid: $(Android.Msi)
+        demands:
+          - ImageOverride -equals maui-2023
         artifact: nuget
       - name: macOS
         poolName: $(macOSXNet6VmPool)
         vmImage: $(macOSXNet6VmImage)
-        bootsAndroid: $(Android.Pkg)
-        bootsMacCatalyst: $(MacCatalyst.Pkg)
+        demands:
+          - macOS.Name -equals Ventura
+          - macOS.Architecture -equals x64
+          - Agent.OSVersion -equals 13.5
         artifact: nuget-macos
 
   - name: RunTemplatePlatforms
@@ -161,10 +167,7 @@ stages:
             pool:
               name: ${{ BuildPlatform.poolName }}
               vmImage: ${{ BuildPlatform.vmImage }}
-              demands:
-                - macOS.Name -equals Ventura
-                - macOS.Architecture -equals x64
-                - Agent.OSVersion -equals 13.5
+              demands: ${{ BuildPlatform.demands }}
             steps:
               - template: common/provision.yml
                 parameters:
@@ -204,10 +207,7 @@ stages:
           pool:
             name: ${{ PackPlatform.poolName }}
             vmImage: ${{ PackPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Ventura
-              - macOS.Architecture -equals x64
-              - Agent.OSVersion -equals 13.5
+            demands: ${{ PackPlatform.demands }}
           steps:
             - template: common/pack.yml
               parameters:
@@ -230,10 +230,7 @@ stages:
           pool:
             name: ${{ BuildPlatform.poolName }}
             vmImage: ${{ BuildPlatform.vmImage }}
-            demands:
-              - macOS.Name -equals Ventura
-              - macOS.Architecture -equals x64
-              - Agent.OSVersion -equals 13.5
+            demands: ${{ BuildPlatform.demands }}
           steps:
             - template: common/provision.yml
               parameters:
