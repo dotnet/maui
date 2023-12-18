@@ -306,7 +306,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		{
 			double contentYOffset = 0;
 			
-			if (ShouldHonorSafeArea(HeaderView.View) || 
+			if (ShouldHonorSafeArea(HeaderView?.View) || 
 				(HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
 				// We add the safe area if margin is not explicitly set. This matches the header behavior.
