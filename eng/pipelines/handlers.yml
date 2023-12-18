@@ -293,7 +293,7 @@ stages:
         credScanEnabled: true
         credScanSuppressionFile: '$(System.DefaultWorkingDirectory)\eng\automation\guardian\CredScanSuppressions.json'
         enableCodeInspector: true
-        apiScanEnabled: false
+        apiScanEnabled: true
         apiScanSoftwareName: 'MAUI'
         apiScanSoftwareVersionNum: $(Build.BuildNumber)
     - template: common/localization-handoff.yml                     # Process outgoing strings [Localization Handoff]
