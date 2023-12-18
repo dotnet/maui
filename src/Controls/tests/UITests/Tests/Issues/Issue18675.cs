@@ -20,7 +20,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// 1.The test fails if the placeholder text in the editor below is missing.
 			App.Click("IsReadOnlyEditor");
 
-			// Wait to remove the selected underline color in the Editor.
+			// Delay for the Editor underline on Android to return from
+			// the selected state to normal state.
 			await Task.Delay(1000);
 
 			// 2. The test fails if the placeholder text in the editor below is not blue.

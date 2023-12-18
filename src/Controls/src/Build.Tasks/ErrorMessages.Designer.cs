@@ -383,5 +383,14 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
                 return ResourceManager.GetString("XStaticSyntax", resourceCulture);
             }
         }
+
+        /// <summary>
+        /// Gets the error message for the obsolete property.
+        /// </summary>
+        internal static string ObsoleteProperty {
+            get {
+                return ResourceManager.GetString("ObsoleteProperty", resourceCulture);
+            }
+        }
     }
 }

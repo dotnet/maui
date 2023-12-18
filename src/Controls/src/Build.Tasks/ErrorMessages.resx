@@ -193,6 +193,9 @@
     <value>An element with the name "{0}" already exists in this NameScope.</value>
     <comment>0 is the duplicated key</comment>
   </data>
+  <data name="ObsoleteProperty" xml:space="preserve">
+    <value>Property, Property setter or BindableProperty "{0}" is deprecated.</value>
+  </data>  
   <data name="PropertyMissing" xml:space="preserve">
     <value>Missing mandatory property "{0}" on "{1}".</value>
     <comment>0 is a property name, 1 is a type</comment>
