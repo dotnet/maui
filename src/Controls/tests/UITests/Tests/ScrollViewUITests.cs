@@ -74,5 +74,18 @@ namespace Microsoft.Maui.AppiumTests
 				Assert.Ignore("This test is failing, likely due to product issue");
 			}
 		}
+
+		[Test]
+		[Description("Scroll down the ScrollView using a gesture")]
+		public void ScrollUpAndDownWithGestures()
+		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Mac, TestDevice.Windows });
+
+			App.ScrollDown("thescroller", ScrollStrategy.Gesture, 0.75);
+			App.Screenshot("Element scrolled down");
+
+			App.ScrollUp("thescroller", ScrollStrategy.Gesture, 0.75);
+			App.Screenshot("Element scrolled up");
+		}
 	}
 }
