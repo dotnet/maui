@@ -48,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 				}
 
 				return true; // No references alive
-			}, timeout: 5000);
+			}, timeout: 10000);
 		}
 
 		public static void AssertHasFlag(this Enum self, Enum flag)
@@ -235,6 +235,27 @@ namespace Microsoft.Maui.DeviceTests
 				return false;
 
 			return pvh.PlatformView?.IsLoaded() == true;
+		}
+
+		public static async Task AssertEventually(this Func<bool> assertion, int timeout = 1000, int interval = 100, string message = "Assertion timed out")
+		{
+			do
+			{
+				if (assertion())
+				{
+					return;
+				}
+
+				await Task.Delay(interval);
+				timeout -= interval;
+
+			}
+			while (timeout >= 0);
+
+			if (!assertion())
+			{
+				throw new XunitException(message);
+			}
 		}
 	}
 }

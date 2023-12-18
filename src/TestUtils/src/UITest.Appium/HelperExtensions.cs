@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -174,7 +174,336 @@ namespace UITest.Appium
 			}
 		}
 
-		static IUIElement Wait(Func<IUIElement> query,
+		/// <summary>
+		/// Presses the volume up button on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PressVolumeUp(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressVolumeUp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Presses the volume down button on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void PressVolumeDown(this IApp app)
+		{
+			app.CommandExecutor.Execute("pressVolumeDown", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Performs a left to right swipe gesture on the screen. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeLeftToRight(this IApp app, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+			{
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Performs a left to right swipe gesture on the matching element. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeLeftToRight(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("swipeLeftToRight", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		///  Performs a right to left swipe gesture on the screen. 
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeRightToLeft(this IApp app, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+			{
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Performs a right to left swipe gesture on the matching element. 
+		/// If multiple elements are matched, the first one will be used.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void SwipeRightToLeft(this IApp app, string marked, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("swipeRightToLeft", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls left on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollLeft(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollLeft", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls down on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollDown(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollDown", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls right on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollRight(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollRight", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Scrolls up on the first element matching query.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector to match.</param>
+		/// <param name="strategy">Strategy for scrolling element.</param>
+		/// <param name="swipePercentage">How far across the element to swipe (from 0.0 to 1.0).</param>
+		/// <param name="swipeSpeed">The speed of the gesture.</param>
+		/// <param name="withInertia">Whether swipes should cause inertia.</param>
+		public static void ScrollUp(this IApp app, string marked, ScrollStrategy strategy = ScrollStrategy.Auto, double swipePercentage = 0.67, int swipeSpeed = 500, bool withInertia = true)
+		{
+			var elementToSwipe = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("scrollUp", new Dictionary<string, object>
+			{
+				{ "element", elementToSwipe},
+				{ "strategy", strategy },
+				{ "swipePercentage", swipePercentage },
+				{ "swipeSpeed", swipeSpeed },
+				{ "withInertia", withInertia }
+			});
+		}
+
+		/// <summary>
+		/// Changes the device orientation to landscape mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetOrientationLandscape(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationLandscape", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Changes the device orientation to portrait mode.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void SetOrientationPortrait(this IApp app)
+		{
+			app.CommandExecutor.Execute("setOrientationPortrait", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Performs a tap / touch gesture on the given coordinates.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="x">The x coordinate to tap.</param>
+		/// <param name="y">The y coordinate to tap.</param>
+		public static void TapCoordinates(this IApp app, float x, float y)
+		{
+			app.CommandExecutor.Execute("tapCoordinates", new Dictionary<string, object>
+			{
+				{ "x", x },
+				{ "y", y }
+			});
+		}
+
+		/// <summary>
+		/// Executes an existing application on the device. 
+		/// If the application is already running then it will be brought to the foreground.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void LaunchApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("launchApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Send the currently running app for this session to the background.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void BackgroundApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("backgroundApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Reset the currently running app for this session.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void ResetApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("resetApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Close an app on device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void CloseApp(this IApp app)
+		{
+			app.CommandExecutor.Execute("closeApp", ImmutableDictionary<string, object>.Empty);
+		}
+
+		/// <summary>
+		/// Sets the value of a Slider element that matches marked.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		public static void SetSliderValue(this IApp app, string marked, double value)
+		{
+			var element = app.FindElement(marked);
+
+			double defaultMinimum = 0d;
+			double defaultMaximum = 1d;
+
+			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			{
+				{ "element", element },
+				{ "value", value },
+				{ "minimum", defaultMinimum },
+				{ "maximum", defaultMaximum },
+			});
+		}
+
+		/// <summary>
+		/// Sets the value of a Slider element that matches marked.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="marked">Marked selector of the Slider element to update.</param>
+		/// <param name="value">The value to set the Slider to.</param>
+		/// <param name="minimum">Te minimum selectable value for the Slider.</param>
+		/// <param name="maximum">Te maximum selectable value for the Slider.</param>
+		public static void SetSliderValue(this IApp app, string marked, double value, double minimum = 0d, double maximum = 1d)
+		{
+			var element = app.FindElement(marked);
+
+			app.CommandExecutor.Execute("setSliderValue", new Dictionary<string, object>
+			{
+				{ "element", element },
+				{ "value", value },
+				{ "minimum", minimum },
+				{ "maximum", maximum },
+			});
+		}
+
+		/// <summary>
+		/// Performs a continuous drag gesture between 2 points.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="fromX">The x coordinate to start dragging from.</param>
+		/// <param name="fromY">The y coordinate to start dragging from.</param>
+		/// <param name="toX">The x coordinate to drag to.</param>
+		/// <param name="toY">The y coordinate to drag to.</param>
+		public static void DragCoordinates(this IApp app, float fromX, float fromY, float toX, float toY)
+		{
+			app.CommandExecutor.Execute("dragCoordinates", new Dictionary<string, object>
+			{
+				{ "fromX", fromX },
+				{ "fromY", fromY },
+				{ "toX", toX },
+				{ "toY", toY },
+			});
+		}
+
+		/// <summary>
+		/// Navigate back on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Back(this IApp app)
+		{
+			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
+		}
+		
+		static IUIElement Wait(Func<IUIElement> query,	
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)

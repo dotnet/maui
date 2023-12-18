@@ -36,8 +36,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.SelectionGalleries
 
 	public class LineItem
 	{
-		public string ItemName { get; set; }
+		public string? ItemName { get; set; }
 
-		public override string ToString() => ItemName;
+		public override string? ToString() => ItemName;
 	}
 }

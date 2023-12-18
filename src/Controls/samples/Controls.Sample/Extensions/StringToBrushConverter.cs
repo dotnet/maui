@@ -11,16 +11,16 @@ namespace Maui.Controls.Sample
 {
 	public class StringToBrushConverter : IValueConverter
 	{
-		public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			if (string.IsNullOrEmpty(value?.ToString()))
 				return null;
 
-			var color = GetColorFromString(value.ToString());
+			var color = GetColorFromString(value!.ToString()!);
 			return new SolidColorBrush(color);
 		}
 
-		public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+		public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
 		{
 			return null;
 		}

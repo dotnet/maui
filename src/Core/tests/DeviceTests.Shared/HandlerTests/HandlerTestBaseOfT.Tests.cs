@@ -133,6 +133,7 @@ namespace Microsoft.Maui.DeviceTests
 		{
 			var view = new TStub();
 			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
+			
 			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler));
 			Assert.Equal(view.Semantics.HeadingLevel, id);
 		}

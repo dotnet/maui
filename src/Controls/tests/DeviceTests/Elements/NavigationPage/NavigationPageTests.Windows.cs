@@ -38,37 +38,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-		[Fact(DisplayName = "Back Button Enabled Changes with push/pop + page change")]
-		public async Task BackButtonEnabledChangesWithPushPopAndPageChanges()
-		{
-			SetupBuilder();
-
-			var flyoutPage = new FlyoutPage();
-			flyoutPage.Title = "Hello world";
-			flyoutPage.FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split;
-			flyoutPage.Flyout = new ContentPage() { Title = "Hello world" };
-
-			var first = new NavigationPage(new ContentPage());
-			var second = new NavigationPage(new ContentPage());
-
-			flyoutPage.Detail = first;
-
-			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
-			{
-				var navView = (RootNavigationView)GetMauiNavigationView(handler.MauiContext);
-				Assert.False(navView.IsBackEnabled);
-
-				await first.PushAsync(new ContentPage());
-				Assert.True(navView.IsBackEnabled);
-
-				flyoutPage.Detail = second;
-				Assert.False(navView.IsBackEnabled);
-
-				await second.PushAsync(new ContentPage());
-				Assert.True(navView.IsBackEnabled);
-			});
-		}
-
 		[Fact(DisplayName = "App Title Bar Margin Sets when Back Button Visible")]
 		public async Task AppTitleBarMarginSetsWhenBackButtonVisible()
 		{

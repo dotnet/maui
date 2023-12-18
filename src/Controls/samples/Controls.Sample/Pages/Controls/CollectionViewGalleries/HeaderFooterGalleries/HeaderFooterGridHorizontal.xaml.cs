@@ -13,8 +13,8 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries.HeaderFooterGalleri
 	public partial class HeaderFooterGridHorizontal : ContentPage
 	{
 		readonly DemoFilteredItemSource _demoFilteredItemSource = new DemoFilteredItemSource(10);
-		object header;
-		object footer;
+		object? header;
+		object? footer;
 
 		public HeaderFooterGridHorizontal()
 		{

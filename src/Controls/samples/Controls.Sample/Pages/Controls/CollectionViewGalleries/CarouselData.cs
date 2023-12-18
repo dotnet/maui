@@ -7,7 +7,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 {
 	public class CarouselData
 	{
-		public Color Color { get; set; }
-		public string Name { get; set; }
+		public Color? Color { get; set; }
+		public string? Name { get; set; }
 	}
 }
