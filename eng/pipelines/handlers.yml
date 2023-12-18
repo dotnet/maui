@@ -286,7 +286,7 @@ stages:
         antiMalwareEnabled: true
         binSkimEnabled: true
      #   binSkimTargetGlob: '$(Build.ArtifactStagingDirectory)\binaries-to-scan\pack-binaries\src\Controls\src\Nuget\bin\Release\net8.0\*.dll'
-        # sourceGdnSuppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
+        sourceGdnSuppressionFile: $(Build.SourcesDirectory)\eng\automation\guardian\source.gdnsuppress
         tsaConfigFile: '$(Build.SourcesDirectory)\eng\automation\guardian\tsaoptions-v2.json'
         policheckExclusionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian' 
         policheckGdnSuppressionFilesFolder: '$(System.DefaultWorkingDirectory)\eng\automation\guardian'
