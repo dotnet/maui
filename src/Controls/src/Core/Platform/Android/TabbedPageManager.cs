@@ -8,6 +8,7 @@ using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Views;
+using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
@@ -629,12 +630,27 @@ namespace Microsoft.Maui.Controls.Handlers
 		{
 			if (IsBottomTabPlacement)
 			{
-				if (_orignalTabIconColors == null)
+				if (_orignalTabIconColors is null)
 					_orignalTabIconColors = _bottomNavigationView.ItemIconTintList;
 			}
 			// this ensures that existing behavior doesn't change
 			else if (!IsBottomTabPlacement && BarSelectedItemColor != null && BarItemColor == null)
 				return null;
+
+
+			var boop = Resource.Styleable.NavigationBarView_itemIconTint;
+
+				// context, null, R.styleable.Toolbar, Resource.Attribute.toolbarStyle, 0
+			var styledAttributes = 
+				TintTypedArray.ObtainStyledAttributes(_context.Context, null, Resource.Styleable.NavigationBarView, Resource.Attribute.bottomNavigationStyle, 0);
+			try
+			{
+				var defaultColors =  styledAttributes.GetColorStateList(boop);
+			}
+			finally
+			{
+				styledAttributes.Recycle();
+			}
 
 			Color barItemColor = BarItemColor;
 			Color barSelectedItemColor = BarSelectedItemColor;
