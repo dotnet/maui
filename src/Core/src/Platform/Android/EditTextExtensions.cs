@@ -416,7 +416,7 @@ namespace Microsoft.Maui.Platform
 			else
 			{
 				var leftEdge = platformView.PaddingLeft;
-				var rightEdge = leftEdge + platformView.Width;
+				var rightEdge = leftEdge + buttonRect.Width();
 
 				return new Android.Graphics.Rect(leftEdge, topEdge, rightEdge, bottomEdge);
 			}
