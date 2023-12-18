@@ -282,7 +282,7 @@ stages:
       parameters:
         stageDependsOn: 'pack_net'
         complianceEnabled: true
-        complianceTimeoutInMinutes: 240
+        complianceTimeoutInMinutes: 480
         scanArtifacts: ['pack-binaries']
         antiMalwareEnabled: true
         binSkimEnabled: true
