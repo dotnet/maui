@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -274,7 +275,7 @@ namespace Microsoft.Maui.Platform
 			//handler.PlatformView.OpenPaneLength = handler.PlatformView.TemplateSettings.OpenPaneWidth;
 		}
 
-		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateFlyoutIconAsync(this MauiNavigationView navigationView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			var togglePaneButton = navigationView.TogglePaneButton;
 
@@ -289,7 +290,7 @@ namespace Microsoft.Maui.Platform
 			await animatedIcon.UpdateFlyoutIconAsync(imageSource, provider);
 		}
 
-		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateFlyoutIconAsync(this AnimatedIcon platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (platformView is null)
 				return;
@@ -297,7 +298,7 @@ namespace Microsoft.Maui.Platform
 			if (provider is not null && imageSource is not null)
 			{
 				// Custom Icon
-				var service = provider.GetRequiredImageSourceService(imageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 				var nativeImageSource = await service.GetImageSourceAsync(imageSource);
 
 				platformView.Source = null;

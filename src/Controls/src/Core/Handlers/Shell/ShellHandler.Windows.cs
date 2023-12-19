@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Handlers
 		public static void MapFlyoutIcon(ShellHandler handler, Shell view)
 		{
 			var flyoutIcon = view.FlyoutIcon;
-			var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+			var provider = handler.GetKeyedServiceProvider();
 
 			handler.PlatformView.UpdateFlyoutIconAsync(flyoutIcon, provider).FireAndForget();
 		}
