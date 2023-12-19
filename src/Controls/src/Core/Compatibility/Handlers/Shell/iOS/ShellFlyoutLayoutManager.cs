@@ -130,7 +130,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					ScrollView = sv;
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
-				else if (ContentView.Subviews.Length > 0 && ContentView.Subviews[0] is UICollectionView cv)
+				else if (Content is ItemsView && ContentView.Subviews.Length > 0 && ContentView.Subviews[0] is UICollectionView cv)
 					ScrollView = cv;
 
 				if (ScrollView is not null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
