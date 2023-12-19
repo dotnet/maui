@@ -159,7 +159,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 																: enviOSPath;
 
 			// Running on the simulator
-			var appConfiguration = ConfigureApp.iOS
+			var app = ConfigureApp.iOS
 							.PreferIdeSettings()
 							.AppBundle(fullApkPath)
 							.Debug()
