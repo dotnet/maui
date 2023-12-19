@@ -1,6 +1,7 @@
 ﻿#nullable enable
 using System;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -102,7 +103,7 @@ namespace Microsoft.Maui.Platform
 			"SliderThumbBackgroundDisabled",
 		};
 
-		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IImageSourceServiceProvider? provider, Size? defaultThumbSize)
+		internal static async Task UpdateThumbImageSourceAsync(this MauiSlider nativeSlider, ISlider slider, IKeyedServiceProvider? provider, Size? defaultThumbSize)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 
@@ -123,7 +124,7 @@ namespace Microsoft.Maui.Platform
 
 			if (provider != null && thumbImageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(thumbImageSource.GetType());
 				var nativeThumbImageSource = await service.GetImageSourceAsync(thumbImageSource);
 				var nativeThumbImage = nativeThumbImageSource?.Value;
 

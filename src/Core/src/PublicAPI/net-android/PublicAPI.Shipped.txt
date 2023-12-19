@@ -2942,7 +2942,7 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximumTrackColor(this And
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimum(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider) -> void
-static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider, Microsoft.Extensions.DependencyInjection.IKeyedServiceProvider! provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Android.Widget.SeekBar! seekBar, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this Microsoft.Maui.Platform.MauiStepper! linearLayout, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateIsEnabled(this Microsoft.Maui.Platform.MauiStepper! linearLayout, Microsoft.Maui.IStepper! stepper) -> void

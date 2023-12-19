@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Tizen.NUI.Components;
 
 namespace Microsoft.Maui.Platform
@@ -35,12 +36,12 @@ namespace Microsoft.Maui.Platform
 			platformSlider.ThumbColor = slider.ThumbColor.ToNUIColor();
 		}
 
-		public static async Task UpdateThumbImageSourceAsync(this Slider platformSlider, ISlider slider, IImageSourceServiceProvider provider)
+		public static async Task UpdateThumbImageSourceAsync(this Slider platformSlider, ISlider slider, IKeyedServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 			if (thumbImageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(thumbImageSource.GetType());
 				var result = await service.GetImageAsync(thumbImageSource);
 
 				if (result != null)

@@ -2757,7 +2757,7 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximumTrackColor(this Tiz
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimum(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
-static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider, Microsoft.Extensions.DependencyInjection.IKeyedServiceProvider! provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this Tizen.NUI.Components.Slider! platformSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStroke(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void
 static Microsoft.Maui.Platform.StrokeExtensions.UpdateStrokeDashOffset(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IBorderStroke! border) -> void

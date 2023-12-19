@@ -41,13 +41,13 @@ namespace Microsoft.Maui.Platform
 				uiSlider.ThumbTintColor = slider.ThumbColor.ToPlatform();
 		}
 
-		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IImageSourceServiceProvider provider)
+		public static async Task UpdateThumbImageSourceAsync(this UISlider uiSlider, ISlider slider, IKeyedServiceProvider provider)
 		{
 			var thumbImageSource = slider.ThumbImageSource;
 
 			if (thumbImageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(thumbImageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(thumbImageSource.GetType());
 				var scale = uiSlider.GetDisplayDensity();
 				var result = await service.GetImageAsync(thumbImageSource, scale);
 				var thumbImage = result?.Value;

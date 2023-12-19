@@ -2842,7 +2842,7 @@ static Microsoft.Maui.Platform.SliderExtensions.UpdateMaximumTrackColor(this UIK
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimum(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateMinimumTrackColor(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbColor(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider) -> void
-static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider, Microsoft.Maui.IImageSourceServiceProvider! provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.SliderExtensions.UpdateThumbImageSourceAsync(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider, Microsoft.Extensions.DependencyInjection.IKeyedServiceProvider! provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.SliderExtensions.UpdateValue(this UIKit.UISlider! uiSlider, Microsoft.Maui.ISlider! slider) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateIncrement(this UIKit.UIStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
 static Microsoft.Maui.Platform.StepperExtensions.UpdateMaximum(this UIKit.UIStepper! platformStepper, Microsoft.Maui.IStepper! stepper) -> void
