@@ -95,7 +95,7 @@ stages:
       
       pool:
         name: $(POOLNAME)
-        ${{ if eq(variable['POOLDEMANDS'], 'ios-15') }}:
+        ${{ if eq(variables['POOLDEMANDS'], 'ios-15') }}:
           demands:
           - HasiOS
           - iOS-15
