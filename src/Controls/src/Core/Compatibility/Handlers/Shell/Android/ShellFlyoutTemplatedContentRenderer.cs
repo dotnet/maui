@@ -506,7 +506,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			}
 
 			var services = MauiContext.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 
 			_bgImage.Clear();
 			imageSource.LoadImage(MauiContext, result =>
