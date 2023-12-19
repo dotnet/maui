@@ -14,11 +14,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void RelativePointerPositionIsComputedCorrectly()
 		{
-			IUIElement button = App.FindElement("TapHere");
-			Rectangle rect = button.GetRect();
+			IUIElement boxView = App.FindElement("TapHere");
+			Rectangle rect = boxView.GetRect();
 
 			App.TapCoordinates(rect.CenterX(), rect.CenterY());
-			//App.Click(rect.CenterX(), rect.CenterY());
+
 			App.WaitForElement("TapAccepted");
 			App.WaitForElement("Success");
 		}

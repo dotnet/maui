@@ -3,12 +3,12 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="Maui.Controls.Sample.Issues.Issue19329">
     <VerticalStackLayout x:Name="layout" Margin="75,75,75,75" BackgroundColor="LightGray">
+        <Label Text="Tap the bottom box" />
         <BoxView x:Name="UpperBox" AutomationId="UpperBox" Color="CornflowerBlue" WidthRequest="20" HeightRequest="20"/>
-
-        <Button AutomationId="TapHere" Text="Tap Here">
-            <Button.GestureRecognizers>
+        <BoxView x:Name="TapHere" AutomationId="TapHere" Color="Red" WidthRequest="20" HeightRequest="20">
+            <BoxView.GestureRecognizers>
                 <TapGestureRecognizer Tapped="OnTapped" />
-            </Button.GestureRecognizers>
-        </Button>
+            </BoxView.GestureRecognizers>
+        </BoxView>
     </VerticalStackLayout>
 </ContentPage>

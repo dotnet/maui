@@ -28,7 +28,7 @@ namespace Maui.Controls.Sample.Issues
 			{
 				result = "Error: position is null";
 			}
-			else if (position.Value.X < 75 && position.Value.X < 75)
+			else if (position.Value.X <= 40 && position.Value.Y <= 40)
 			{
 				result = "Success";
 			}
