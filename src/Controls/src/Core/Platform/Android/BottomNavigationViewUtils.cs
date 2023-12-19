@@ -132,9 +132,10 @@ namespace Microsoft.Maui.Controls.Platform
 			if (source is null)
 				return;
 
-			var services = context.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-			var imageSourceService = provider.GetRequiredImageSourceService(source);
+			if (context.Services is not IKeyedServiceProvider provider)
+				throw new InvalidOperationException($"Context services {nameof(context.Services)} does not implement {nameof(IKeyedServiceProvider)}");
+
+			var imageSourceService = provider.GetRequiredKeyedService<IImageSourceService>(source.GetType());
 
 			var result = await imageSourceService.GetDrawableAsync(
 				source,
