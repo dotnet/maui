@@ -85,12 +85,7 @@ stages:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
                       POOLNAME: MAUI-Testing
-                      POOLDEMANDS: ios-15
-                      PP:
-                        name: MAUI-Testing
-                        demands:
-                        - HasiOS
-                        - ios-${{ replace(version, 'device-', '') }}
+                      POOLDEMANDS: '15'
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
                       APIVERSION: ${{ replace(version, 'simulator-', '') }}
@@ -98,16 +93,10 @@ stages:
                       POOLIMAGE:  ${{ parameters.iosPool.vmImage }}
                       POOLDEMANDS: ${{ parameters.iosPool.demands }}
       
-      pool: $(PP)
-        # name: $(POOLNAME)
-        # ${{ if eq(variables['APIVERSION'], '15') }}:
-        #   demands:
-        #   - HasiOS
-        #   - ios-15
-        # ${{ if eq(variables['APIVERSION'], '16') }}:
-        #   demands:
-        #   - HasiOS
-        #   - ios-16
+      pool:
+        name: MAUI-Testing
+        demands:
+        - HasiOS -equals $(POOLDEMANDS)
 
       steps:
         - template: device-tests-steps.yml
