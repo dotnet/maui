@@ -502,8 +502,8 @@ namespace UITest.Appium
 		{
 			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
 		}
-		
-		static IUIElement Wait(Func<IUIElement> query,	
+
+		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,
 			TimeSpan? timeout = null, TimeSpan? retryFrequency = null)
