@@ -37,9 +37,10 @@ namespace Microsoft.Maui
 			if (imageSource == null)
 				return Task.FromResult<IImageSourceServiceResult<PlatformImage>?>(null);
 
-			var services = mauiContext.Services;
-			var provider = services.GetRequiredService<IImageSourceServiceProvider>();
-			var imageSourceService = provider.GetRequiredImageSourceService(imageSource);
+			if (mauiContext.Services is not IKeyedServiceProvider provider)
+				throw new InvalidOperationException($"Context services {nameof(mauiContext.Services)} does not implement {nameof(IKeyedServiceProvider)}");
+
+			var imageSourceService = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 			return imageSourceService.GetPlatformImageAsync(imageSource, mauiContext);
 		}
 
