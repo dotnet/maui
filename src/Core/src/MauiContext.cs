@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			_services.AddSpecific(typeof(TService), static state => ((WeakReference)state).Target, new WeakReference(instance));
 		}
 
-		class WrappedServiceProvider : IServiceProvider
+		class WrappedServiceProvider : IKeyedServiceProvider, IServiceProvider
 		{
 			readonly ConcurrentDictionary<Type, (object, Func<object, object?>)> _scopeStatic = new();
 
@@ -66,6 +66,22 @@ namespace Microsoft.Maui
 				}
 
 				return Inner.GetService(serviceType);
+			}
+
+			public object? GetKeyedService(Type serviceType, object? serviceKey)
+			{
+				if (Inner is IKeyedServiceProvider wrapped)
+					return wrapped.GetKeyedService(serviceType, serviceKey);
+
+				throw new InvalidOperationException($"WrappedServiceProvider's Inner service provider `{Inner.GetType()}` does not implement {nameof(IKeyedServiceProvider)}");
+			}
+
+			public object GetRequiredKeyedService(Type serviceType, object? serviceKey)
+			{
+				if (Inner is IKeyedServiceProvider wrapped)
+					return wrapped.GetRequiredKeyedService(serviceType, serviceKey);
+
+				throw new InvalidOperationException($"WrappedServiceProvider's Inner service provider `{Inner.GetType()}` does not implement {nameof(IKeyedServiceProvider)}");
 			}
 
 			public void AddSpecific(Type type, Func<object, object?> getter, object state)
