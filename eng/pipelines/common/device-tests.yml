@@ -85,7 +85,7 @@ stages:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
                       POOLNAME: MAUI-Testing
-                      POOLDEMANDS: HasiOS
+                      POOLDEMANDS: ios-15
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
                       APIVERSION: ${{ replace(version, 'simulator-', '') }}
@@ -97,7 +97,7 @@ stages:
         name: $(POOLNAME)
         demands:
         - HasiOS
-        - ios-$(APIVERSION)
+        - $(POOLDEMANDS)
   
       steps:
         - template: device-tests-steps.yml
