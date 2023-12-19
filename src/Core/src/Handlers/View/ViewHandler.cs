@@ -310,7 +310,7 @@ namespace Microsoft.Maui.Handlers
 
 			if (view.Background is ImageSourcePaint image)
 			{
-				var provider = handler.GetRequiredService<IImageSourceServiceProvider>();
+				var provider = handler.GetKeyedServiceProvider();
 
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
 					.FireAndForget(handler);

@@ -248,7 +248,7 @@ namespace Microsoft.Maui.Platform
 				panel.UpdateBackground(view.Background);
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this FrameworkElement platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (platformView is Control control)
 				await control.UpdateBackgroundImageSourceAsync(imageSource, provider);

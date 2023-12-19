@@ -13,6 +13,7 @@ using AndroidX.ConstraintLayout.Helper.Widget;
 using AndroidX.Core.Content;
 using AndroidX.Core.View;
 using AndroidX.Window.Layout;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Primitives;
@@ -384,7 +385,7 @@ namespace Microsoft.Maui.Platform
 			PlatformInterop.RequestLayoutIfNeeded(platformView);
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this AView platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (provider == null)
 				return;
@@ -396,7 +397,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 				var result = await service.GetDrawableAsync(imageSource, context);
 				Drawable? backgroundImageDrawable = result?.Value;
 

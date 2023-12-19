@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Platform
 
 		public static void UpdateVisibility(this object platformView, IView view) { }
 
-		public static Task UpdateBackgroundImageSourceAsync(this object platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static Task UpdateBackgroundImageSourceAsync(this object platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 			=> Task.CompletedTask;
 
 		public static void UpdateBackground(this object platformView, IView view) { }

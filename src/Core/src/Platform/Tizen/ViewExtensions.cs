@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Numerics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Tizen.NUI;
 using Tizen.UIExtensions.NUI;
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Platform
 		{
 			if (view.Background is ImageSourcePaint image)
 			{
-				var provider = view.Handler?.GetRequiredService<IImageSourceServiceProvider>();
+				var provider = view.Handler?.GetKeyedServiceProvider();
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider)
 					.FireAndForget();
 				return;
@@ -100,7 +101,7 @@ namespace Microsoft.Maui.Platform
 			}
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this NView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this NView platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (provider == null)
 				return;
@@ -113,7 +114,7 @@ namespace Microsoft.Maui.Platform
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 				var result = await service.GetImageAsync(imageSource);
 
 				if (result != null)

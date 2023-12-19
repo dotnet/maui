@@ -2790,7 +2790,7 @@ static Microsoft.Maui.Platform.ViewExtensions.UpdateAutomationId(this Tizen.NUI.
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Microsoft.Maui.Platform.ContentViewGroup! platformView, Microsoft.Maui.IBorderView! border) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.Graphics.Paint? paint) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void
-static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundImageSourceAsync(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundImageSourceAsync(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Extensions.DependencyInjection.IKeyedServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBorder(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateClip(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateHeight(this Tizen.NUI.BaseComponents.View! platformView, Microsoft.Maui.IView! view) -> void

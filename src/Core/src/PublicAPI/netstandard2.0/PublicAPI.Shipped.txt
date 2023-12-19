@@ -2316,7 +2316,7 @@ static Microsoft.Maui.Platform.ViewExtensions.UpdateAnchorX(this object! platfor
 static Microsoft.Maui.Platform.ViewExtensions.UpdateAnchorY(this object! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateAutomationId(this object! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBackground(this object! platformView, Microsoft.Maui.IView! view) -> void
-static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundImageSourceAsync(this object! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IImageSourceServiceProvider? provider) -> System.Threading.Tasks.Task!
+static Microsoft.Maui.Platform.ViewExtensions.UpdateBackgroundImageSourceAsync(this object! platformView, Microsoft.Maui.IImageSource? imageSource, Microsoft.Extensions.DependencyInjection.IKeyedServiceProvider? provider) -> System.Threading.Tasks.Task!
 static Microsoft.Maui.Platform.ViewExtensions.UpdateBorder(this object! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateClip(this object! platformView, Microsoft.Maui.IView! view) -> void
 static Microsoft.Maui.Platform.ViewExtensions.UpdateClipsToBounds(this object! platformView, Microsoft.Maui.IView! view) -> void

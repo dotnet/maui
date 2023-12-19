@@ -1,4 +1,5 @@
-﻿using UIKit;
+﻿using Microsoft.Extensions.DependencyInjection;
+using UIKit;
 
 namespace Microsoft.Maui.Platform
 {
@@ -12,7 +13,7 @@ namespace Microsoft.Maui.Platform
 			viewController.Title = titled.Title;
 		}
 
-		public static void UpdateBackground(this UIView platformView, IContentView page, IImageSourceServiceProvider? provider)
+		public static void UpdateBackground(this UIView platformView, IContentView page, IKeyedServiceProvider? provider)
 		{
 			if (page.Background is ImageSourcePaint image)
 				platformView.UpdateBackgroundImageSourceAsync(image.ImageSource, provider).FireAndForget();

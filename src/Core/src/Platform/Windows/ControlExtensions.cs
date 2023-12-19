@@ -1,5 +1,6 @@
 #nullable enable
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -36,10 +37,10 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateBackground(this Panel platformControl, Paint? paint, UI.Xaml.Media.Brush? defaultBrush = null) =>
 			platformControl.UpdateProperty(Panel.BackgroundProperty, paint.IsNullOrEmpty() ? defaultBrush : paint?.ToPlatform());
 
-		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this Panel platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 			=> await platformView.UpdateBackgroundImageAsync(imageSource, provider);
 
-		public static async Task UpdateBackgroundImageSourceAsync(this Control platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this Control platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 			=> await platformView.UpdateBackgroundImageAsync(imageSource, provider);
 
 		public static void UpdateForegroundColor(this Control platformControl, Color color, UI.Xaml.Media.Brush? defaultBrush = null) =>
@@ -61,7 +62,7 @@ namespace Microsoft.Maui.Platform
 		public static void UpdateCharacterSpacing(this Control nativeControl, ITextStyle text) =>
 			nativeControl.CharacterSpacing = text.CharacterSpacing.ToEm();
 
-		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		internal static async Task UpdateBackgroundImageAsync(this FrameworkElement platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (platformView == null || provider == null)
 				return;
@@ -78,7 +79,7 @@ namespace Microsoft.Maui.Platform
 
 			if (provider != null && imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 				var nativeBackgroundImageSource = await service.GetImageSourceAsync(imageSource);
 
 				var background = new ImageBrush { ImageSource = nativeBackgroundImageSource?.Value };

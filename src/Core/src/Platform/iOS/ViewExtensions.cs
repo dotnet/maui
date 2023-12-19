@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using CoreGraphics;
 using Foundation;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Graphics;
 using UIKit;
 using static Microsoft.Maui.Primitives.Dimension;
@@ -316,14 +317,14 @@ namespace Microsoft.Maui.Platform
 			platformView.Frame = new CoreGraphics.CGRect(currentFrame.X, currentFrame.Y, view.Width, view.Height);
 		}
 
-		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IImageSource? imageSource, IImageSourceServiceProvider? provider)
+		public static async Task UpdateBackgroundImageSourceAsync(this UIView platformView, IImageSource? imageSource, IKeyedServiceProvider? provider)
 		{
 			if (provider == null)
 				return;
 
 			if (imageSource != null)
 			{
-				var service = provider.GetRequiredImageSourceService(imageSource);
+				var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 
 				var scale = platformView.GetDisplayDensity();
 				var result = await service.GetImageAsync(imageSource, scale);
