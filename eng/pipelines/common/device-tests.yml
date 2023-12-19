@@ -84,7 +84,7 @@ stages:
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
-                      POOLNAME: MAUI-Testing'
+                      POOLNAME: MAUI-Testing
                       POOLDEMANDS: HasiOS
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
