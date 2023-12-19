@@ -74,7 +74,8 @@ namespace UITest.Appium.NUnit
 				if (testOutcome == ResultState.Error ||
 					testOutcome == ResultState.Failure)
 				{
-					SaveUIDiagnosticInfo();
+          SaveDeviceDiagnosticInfo();
+          SaveUIDiagnosticInfo();
 				}
 			}
 		}
@@ -90,6 +91,7 @@ namespace UITest.Appium.NUnit
 			}
 			catch
 			{
+				SaveDeviceDiagnosticInfo();
 				SaveUIDiagnosticInfo();
 				throw;
 			}
@@ -104,10 +106,32 @@ namespace UITest.Appium.NUnit
 			if (outcome.Status == ResultState.SetUpFailure.Status &&
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
+				SaveDeviceDiagnosticInfo();
 				SaveUIDiagnosticInfo();
 			}
 
 			FixtureTeardown();
+		}
+
+		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
+		{
+			var types = App.GetLogTypes().ToArray();
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
+
+			foreach (var logType in new[] { "logcat" })
+			{
+				if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+					continue;
+
+				var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
+				if (logsPath is not null)
+				{
+					var entries = App.GetLogEntries(logType);
+					File.WriteAllLines(logsPath, entries);
+
+					AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+				}
+			}
 		}
 
 		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)

@@ -78,11 +78,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Description makes element accessible"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
 		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
@@ -94,11 +90,7 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(important);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Hint makes element accessible"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
 		public async virtual Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
@@ -136,15 +128,12 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Semantics.Hint, id);
 		}
 
-		[Fact(DisplayName = "Semantic Heading is set correctly"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Semantic Heading is set correctly")]
 		public async Task SetSemanticHeading()
 		{
 			var view = new TStub();
 			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
+			
 			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler));
 			Assert.Equal(view.Semantics.HeadingLevel, id);
 		}
