@@ -7,7 +7,6 @@ parameters:
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   provisionatorPath: $(provisionator.path)
   provisionatorXCodePath: $(provisionator.xcode)
-  provisionatorVSPath: $(provisionator.vs)
   provisionatorChannel: 'latest'
   provisionatorExtraArguments: $(provisionator.extraArguments)
   gitHubToken: $(github--pat--vs-mobiletools-engineering-service2)
