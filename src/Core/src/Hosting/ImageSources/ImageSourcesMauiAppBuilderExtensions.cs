@@ -24,34 +24,5 @@ namespace Microsoft.Maui.Hosting
 		{
 			throw new NotImplementedException();
 		}
-
-		class ImageSourceRegistration
-		{
-			private readonly Action<IImageSourceServiceCollection> _registerAction;
-
-			public ImageSourceRegistration(Action<IImageSourceServiceCollection> registerAction)
-			{
-				_registerAction = registerAction;
-			}
-
-			internal void AddRegistration(IImageSourceServiceCollection builder)
-			{
-				_registerAction(builder);
-			}
-		}
-
-		class ImageSourceServiceBuilder : MauiServiceCollection, IImageSourceServiceCollection
-		{
-			public ImageSourceServiceBuilder(IEnumerable<ImageSourceRegistration> registrationActions)
-			{
-				if (registrationActions != null)
-				{
-					foreach (var effectRegistration in registrationActions)
-					{
-						effectRegistration.AddRegistration(this);
-					}
-				}
-			}
-		}
 	}
 }
