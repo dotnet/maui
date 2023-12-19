@@ -95,10 +95,11 @@ stages:
       
       pool:
         name: $(POOLNAME)
-        demands:
-        - HasiOS
-        - $(POOLDEMANDS)
-  
+        ${{ if eq(variable['POOLDEMANDS', 'ios-15') }}:
+          demands:
+          - HasiOS
+          - iOS-15
+
       steps:
         - template: device-tests-steps.yml
           parameters:
