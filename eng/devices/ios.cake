@@ -36,7 +36,7 @@ string DEVICE_OS = "";
 string PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? "iPhoneSimulator" : "iPhone";
 string DOTNET_PLATFORM = TEST_DEVICE.ToLower().Contains("simulator") ? 
 	$"iossimulator-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}"
-  : $"ios-{System.Runtime.InteropServices.RuntimeInformation.OSArchitecture.ToString().ToLower()}";
+  : $"ios-arm64";
 string CONFIGURATION = Argument("configuration", "Debug");
 bool DEVICE_CLEANUP = Argument("cleanup", true);
 string TEST_FRAMEWORK = "net472";
