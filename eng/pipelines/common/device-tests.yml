@@ -70,7 +70,6 @@ stages:
       workspace:
         clean: all
       displayName: "iOS tests"
-      pool: ${{ parameters.iosPool }}
       timeoutInMinutes: 140
       strategy:
         matrix:
@@ -85,9 +84,20 @@ stages:
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
+                      POOLNAME: MAUI-Testing
+                      POOLDEMANDS: 
+                      - HasiOS
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
                       APIVERSION: ${{ replace(version, 'simulator-', '') }}
+                      POOLNAME:  ${{ parameters.iosPool.name }}
+                      POOLIMAGE:  ${{ parameters.iosPool.vmImage }}
+                      POOLDEMANDS: ${{ parameters.iosPool.demands }}
+      
+      pool:
+        name: $(POOLNAME)
+        demands: $(POOLDEMANDS)
+     
       steps:
         - template: device-tests-steps.yml
           parameters:
