@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Android.Graphics.Drawables;
 using Android.Views;
 
@@ -11,7 +12,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task<IImageSourceServiceResult?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			View destinationContext,
-			IImageSourceServiceProvider services,
+			IKeyedServiceProvider services,
 			Action<Drawable?> setImage,
 			CancellationToken cancellationToken = default)
 		{
@@ -37,7 +38,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var service = services.GetRequiredImageSourceService(imageSource);
+				var service = services.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 
 				var applied = !cancellationToken.IsCancellationRequested && destinationContext.IsAlive() && imageSource == image.Source;
 

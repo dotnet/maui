@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task<IImageSourceServiceResult<WImageSource>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			FrameworkElement destinationContext,
-			IImageSourceServiceProvider services,
+			IKeyedServiceProvider services,
 			Action<WImageSource?> setImage,
 			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default)
@@ -31,7 +31,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var service = services.GetRequiredImageSourceService(imageSource);
+				var service = services.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 
 				var result = await service.GetImageSourceAsync(imageSource, imageScale, cancellationToken);
 				var uiImage = result?.Value;

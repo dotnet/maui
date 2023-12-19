@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Handlers;
 
 #if IOS || MACCATALYST
@@ -25,7 +26,7 @@ namespace Microsoft.Maui.Platform
 	public partial class ImageSourcePartLoader
 	{
 #if IOS || ANDROID || WINDOWS || TIZEN
-		IImageSourceServiceProvider? _imageSourceServiceProvider;
+		IKeyedServiceProvider? _imageSourceServiceProvider;
 #endif
 
 		readonly IImageSourcePartSetter _setter;
@@ -62,7 +63,7 @@ namespace Microsoft.Maui.Platform
 			if (imageSource?.Source is not null)
 			{
 #if IOS || ANDROID || WINDOWS || TIZEN
-				_imageSourceServiceProvider ??= handler.GetRequiredService<IImageSourceServiceProvider>();
+				_imageSourceServiceProvider ??= handler.GetKeyedServiceProvider();
 #endif
 
 #if IOS || WINDOWS

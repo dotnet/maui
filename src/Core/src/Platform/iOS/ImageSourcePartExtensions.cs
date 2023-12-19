@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using UIKit;
 
 namespace Microsoft.Maui.Platform
@@ -10,7 +11,7 @@ namespace Microsoft.Maui.Platform
 		public static async Task<IImageSourceServiceResult<UIImage>?> UpdateSourceAsync(
 			this IImageSourcePart image,
 			UIView destinationContext,
-			IImageSourceServiceProvider services,
+			IKeyedServiceProvider services,
 			Action<UIImage?> setImage,
 			float imageScale = 1.0f,
 			CancellationToken cancellationToken = default)
@@ -28,7 +29,7 @@ namespace Microsoft.Maui.Platform
 
 			try
 			{
-				var service = services.GetRequiredImageSourceService(imageSource);
+				var service = services.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 
 				var result = await service.GetImageAsync(imageSource, imageScale, cancellationToken);
 				var uiImage = result?.Value;
