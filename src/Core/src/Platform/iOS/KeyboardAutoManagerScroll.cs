@@ -283,27 +283,6 @@ public static class KeyboardAutoManagerScroll
 		if (IsKeyboardShowing && View?.InputAccessoryView is not null)
 			await Task.Delay(20);
 
-		// With Maui Community Toolkit Popup, for example, the popup viewcontroller
-		// uses UIKit.UIModalPresentationStyle.Popover with other customizations
-		// that cause the viewcontroller to translate in the postive y-axis.
-		// This translation happens at the same time that the Entry and Editors
-		// are focused and our keyboard scrolling begins. Due to this, we are adding
-		// to the delay so that the translation on the y-axis of the viewcontroller can
-		// occur prior to our calculations for scrolling.
-		var vc = View?.FindResponder<UIViewController>();
-		if (vc?.ActivePresentationController?.PresentationStyle == UIModalPresentationStyle.Popover)
-		{
-			await Task.Delay(30);
-
-			var currentContainerViewFrame = ContainerView?.ConvertRectToView(ContainerView.Bounds, null);
-			while (currentContainerViewFrame != StartingContainerViewFrame)
-			{
-				StartingContainerViewFrame = currentContainerViewFrame;
-				await Task.Delay(5);
-				currentContainerViewFrame = ContainerView?.ConvertRectToView(ContainerView.Bounds, null);
-			}
-		}
-
 		if (entranceCount == DebounceCount)
 		{
 			AdjustPosition();
