@@ -97,7 +97,8 @@ stages:
         name: $(POOLNAME)
         demands:
         - HasiOS
-     
+        - ios-$(APIVERSION)
+  
       steps:
         - template: device-tests-steps.yml
           parameters:
