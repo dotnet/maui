@@ -19,7 +19,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		UIView _footerView;
 		double _headerSize;
 		readonly IShellContext _context;
-		Action removeScolledEvent;
+		Action removeScrolledEvent;
 
 		// This is the height of the AppBar on Android, which is used
 		// as the default minimum height on `Android`.
@@ -40,8 +40,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (content == Content)
 				return;
 
-			removeScolledEvent?.Invoke();
-			removeScolledEvent = null;
+			removeScrolledEvent?.Invoke();
+			removeScrolledEvent = null;
 
 			if (Content is not null)
 			{
@@ -76,21 +76,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				if (Content is ScrollView sv)
 				{
 					sv.Scrolled += ScrollViewScrolled;
-					removeScolledEvent = () => sv.Scrolled -= ScrollViewScrolled;
+					removeScrolledEvent = () => sv.Scrolled -= ScrollViewScrolled;
 					void ScrollViewScrolled(object sender, ScrolledEventArgs e) =>
 						OnScrolled((nfloat)sv.ScrollY);
 				}
 				else if (Content is CollectionView cv)
 				{
 					cv.Scrolled += CollectionViewScrolled;
-					removeScolledEvent = () => cv.Scrolled -= CollectionViewScrolled;
+					removeScrolledEvent = () => cv.Scrolled -= CollectionViewScrolled;
 					void CollectionViewScrolled(object sender, ItemsViewScrolledEventArgs e) =>
-						OnScrolled((nfloat)e.VerticalOffset);
+						// OnScrolled expects a negative offset based on the header height since it is based on ScrollView.ScrollY
+						// So we fix it up here by subtracting the header height
+						OnScrolled((nfloat)(e.VerticalOffset - MeasuredHeaderViewHeightWithMargin));
 				}
 				else if (Content is ListView lv)
 				{
 					lv.Scrolled += ListViewScrolled;
-					removeScolledEvent = () => lv.Scrolled -= ListViewScrolled;
+					removeScrolledEvent = () => lv.Scrolled -= ListViewScrolled;
 					void ListViewScrolled(object sender, ScrolledEventArgs e) =>
 						OnScrolled((nfloat)e.ScrollY);
 				}
@@ -124,10 +126,12 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 				ScrollView = null;
 
-				if (ContentView is UIScrollView sv1)
-					ScrollView = sv1;
+				if (ContentView is UIScrollView sv)
+					ScrollView = sv;
 				else if (ContentView is IPlatformViewHandler ver && ver.PlatformView is UIScrollView uIScroll)
 					ScrollView = uIScroll;
+				else if (ContentView.Subviews.Length > 0 && ContentView.Subviews[0] is UICollectionView cv)
+					ScrollView = cv;
 
 				if (ScrollView is not null && (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
 #if TVOS
@@ -202,7 +206,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 
 		internal void SetHeaderContentInset()
-		{
+				{
 			if (ScrollView is null)
 				return;
 
