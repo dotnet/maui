@@ -95,7 +95,8 @@ stages:
       
       pool:
         name: $(POOLNAME)
-        demands: $(POOLDEMANDS)
+        demands:
+        - HasiOS
      
       steps:
         - template: device-tests-steps.yml
