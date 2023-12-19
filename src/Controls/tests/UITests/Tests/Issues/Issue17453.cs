@@ -22,6 +22,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			});
 
 			App.WaitForElement("WaitForStubControl");
+			string? rtlEntryText = App.FindElement("RtlEntry").GetText();
+
+			if (String.IsNullOrWhiteSpace(rtlEntryText))
+				App.EnterText("RtlEntry", "Simple Text");
+
 			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
 			App.EnterText("RtlEntry", "Simple Text");
 
@@ -31,9 +36,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			// Tap on the entry but not on the clear button
 			App.Click(rtlEntryRect.CenterX(), rtlEntryRect.CenterY());
 
-			string? ltrEntryText = App.FindElement("RtlEntry").GetText();
+			rtlEntryText = App.FindElement("RtlEntry").GetText();
 
-			Assert.IsNotEmpty(ltrEntryText);
+			Assert.IsNotEmpty(rtlEntryText);
 		}
 
 		[Test]
@@ -48,7 +53,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			});
 
 			App.WaitForElement("WaitForStubControl");
-			App.EnterText("RtlEntry", "Simple Text");
+
+			string? rtlEntryText = App.FindElement("RtlEntry").GetText();
+
+			if (String.IsNullOrWhiteSpace(rtlEntryText))
+				App.EnterText("RtlEntry", "Simple Text");
+
 			var rtlEntryRect = App.FindElement("RtlEntry").GetRect();
 
 			// Set focus
@@ -56,11 +66,11 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// Tap Clear Button
 			var margin = 30;
-			App.Click(rtlEntryRect.Width + margin, rtlEntryRect.Y + margin);
+			App.Click(rtlEntryRect.X + margin, rtlEntryRect.Y + margin);
 
-			string? ltrEntryText = App.FindElement("RtlEntry").GetText();
+			rtlEntryText = App.FindElement("RtlEntry").GetText();
 
-			Assert.IsEmpty(ltrEntryText);
+			Assert.IsEmpty(rtlEntryText);
 		}
 	}
 }
