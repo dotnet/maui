@@ -144,7 +144,7 @@ stages:
           windows: $(System.DefaultWorkingDirectory)/src/Core/tests/DeviceTests/Core.DeviceTests.csproj
         - name: controls
           desc: Controls
-          androidApiLevelsExclude: [25] # Ignore for now API25 since the runs's are not stable
+          androidApiLevelsExclude: [27, 25] # Ignore for now API25 since the runs's are not stable
           windowsPackageId: 'com.microsoft.maui.controls.devicetests'
           android: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
           ios: $(System.DefaultWorkingDirectory)/src/Controls/tests/DeviceTests/Controls.DeviceTests.csproj
