@@ -14,4 +14,4 @@ namespace Maui.Controls.Sample.Issues
 			BindingContext = new MonkeysViewModel();
 		}
 	}
-} 
+}

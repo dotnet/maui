@@ -20,13 +20,13 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS, TestDevice.Mac },
 				"Currently fails on iOS; see https://github.com/dotnet/maui/issues/18811");
 
-			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },	
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.Windows },
 				"Currently fails on Windows; see https://github.com/dotnet/maui/issues/15994");
 
 			App.WaitForElement("WaitForStubControl");
 
 			App.ScrollDown(ListView);
-			
+
 			App.ScrollUp(ListView);
 
 			// Load images and hide scrollbar.
