@@ -16,8 +16,8 @@ namespace Microsoft.Maui.Graphics
 			UpdateShapeView(shape);
 		}
 
-		internal IShapeView? ShapeView 
-		{ 
+		internal IShapeView? ShapeView
+		{
 			get => _shapeView is not null && _shapeView.TryGetTarget(out var d) ? d : null;
 			set
 			{
@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Graphics
 					_shapeView = null;
 					return;
 				}
-				
+
 				_shapeView = new(value);
 			}
 		}

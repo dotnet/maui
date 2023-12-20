@@ -55,6 +55,8 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		//BP,BO
 		public static BuildExceptionCode BPName = new BuildExceptionCode("XFC", 0020, nameof(BPName), "");
 		public static BuildExceptionCode BPMissingGetter = new BuildExceptionCode("XFC", 0021, nameof(BPMissingGetter), "");
+		public static BuildExceptionCode BindingWithoutDataType = new BuildExceptionCode("XC", 0022, nameof(BindingWithoutDataType), ""); //warning
+		public static BuildExceptionCode BindingWithNullDataType = new BuildExceptionCode("XC", 0023, nameof(BindingWithNullDataType), ""); //warning
 
 		//Bindings, conversions
 		public static BuildExceptionCode Conversion = new BuildExceptionCode("XFC", 0040, nameof(Conversion), "");
@@ -90,7 +92,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public static BuildExceptionCode XKeyNotLiteral = new BuildExceptionCode("XFC", 0127, nameof(XKeyNotLiteral), "");
 
 		//CSC equivalents
-		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), "");
+		public static BuildExceptionCode ObsoleteProperty = new BuildExceptionCode("XC", 0618, nameof(ObsoleteProperty), ""); //warning
 
 		public string Code { get; }
 		public string CodePrefix { get; }
