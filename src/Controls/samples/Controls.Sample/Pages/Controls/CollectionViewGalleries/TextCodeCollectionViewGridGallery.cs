@@ -21,7 +21,7 @@ namespace Maui.Controls.Sample.Pages.CollectionViewGalleries
 
 			var collectionView = new CollectionView { ItemsLayout = itemsLayout, AutomationId = "collectionview" };
 
-			var generator = new ItemsSourceGenerator(collectionView);
+			var generator = new ItemsSourceGenerator(collectionView, 200000);
 			var spanSetter = new SpanSetter(collectionView);
 
 			layout.Children.Add(generator);
