@@ -25,7 +25,6 @@ steps:
         skipAndroidSdks: false
         skipAndroidImages: true
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      clearCaches: false
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
