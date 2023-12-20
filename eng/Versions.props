@@ -28,7 +28,7 @@
     <MicrosoftMacCatalystSdkPackageVersion>17.0.8499</MicrosoftMacCatalystSdkPackageVersion>
     <MicrosoftmacOSSdkPackageVersion>14.0.8499</MicrosoftmacOSSdkPackageVersion>
     <MicrosoftiOSSdkPackageVersion>17.0.8499</MicrosoftiOSSdkPackageVersion>
-    <MicrosofttvOSSdkPackageVersion>17.0.8499</MicrosofttvOSSdkPackageVersion>
+    <MicrosofttvOSSdkPackageVersion>17.0.8500</MicrosofttvOSSdkPackageVersion>
     <!-- Samsung/Tizen.NET -->
     <SamsungTizenSdkPackageVersion>7.0.125</SamsungTizenSdkPackageVersion>
     <!-- emsdk -->
