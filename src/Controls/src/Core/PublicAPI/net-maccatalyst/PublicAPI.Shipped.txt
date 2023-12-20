@@ -2048,7 +2048,6 @@
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewDelegator<TItemsView, TViewController>.GetInsetForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> UIKit.UIEdgeInsets
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewDelegator<TItemsView, TViewController>.GetMinimumInteritemSpacingForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> System.Runtime.InteropServices.NFloat
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewDelegator<TItemsView, TViewController>.GetMinimumLineSpacingForSection(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, nint section) -> System.Runtime.InteropServices.NFloat
-~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewDelegator<TItemsView, TViewController>.GetSizeForItem(UIKit.UICollectionView collectionView, UIKit.UICollectionViewLayout layout, Foundation.NSIndexPath indexPath) -> CoreGraphics.CGSize
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewDelegator<TItemsView, TViewController>.Scrolled(UIKit.UIScrollView scrollView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.ConnectHandler(UIKit.UIView platformView) -> void
 ~override Microsoft.Maui.Controls.Handlers.Items.ItemsViewHandler<TItemsView>.CreatePlatformView() -> UIKit.UIView

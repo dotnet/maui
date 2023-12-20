@@ -249,6 +249,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		void Initialize(UICollectionViewScrollDirection scrollDirection)
 		{
+			EstimatedItemSize = UICollectionViewFlowLayout.AutomaticSize;
+			ItemSize = UICollectionViewFlowLayout.AutomaticSize;
+			
 			ScrollDirection = scrollDirection;
 		}
 

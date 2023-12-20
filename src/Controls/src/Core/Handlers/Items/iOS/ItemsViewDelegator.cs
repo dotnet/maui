@@ -174,9 +174,9 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			return centerItemIndex;
 		}
 
-		public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
-		{
-			return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
-		}
+		// public override CGSize GetSizeForItem(UICollectionView collectionView, UICollectionViewLayout layout, NSIndexPath indexPath)
+		// {
+		// 	return ViewController?.GetSizeForItem(indexPath) ?? CGSize.Empty;
+		// }
 	}
 }
