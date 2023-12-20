@@ -297,6 +297,23 @@ Task("cg-uitest")
 
 	InstallIpa(TEST_APP, "com.microsoft.mauicompatibilitygallery", TEST_DEVICE, $"{TEST_RESULTS}/ios", iosVersion);
 
+	// For non-CI builds we assume that this is configured correctly on your machine
+	if (IsCIBuild())
+	{
+		// Install IDB (and prerequisites)
+		StartProcess("brew", "tap facebook/fb");
+		StartProcess("brew", "install idb-companion");
+		StartProcess("pip3", "install --user fb-idb");
+
+		// Create a temporary script file to hold the inline Bash script
+		var makeSymLinkScript = "./temp_script.sh";
+		// Below is an attempt to somewhat dynamically determine the path to idb and make a symlink to /usr/local/bin this is needed in order for Xamarin.UITest to find it
+		System.IO.File.AppendAllLines(makeSymLinkScript, new[] { "sudo ln -s $(find /Users/$(whoami)/Library/Python/?.*/bin -name idb | head -1) /usr/local/bin" });
+
+		StartProcess("bash", makeSymLinkScript);
+		System.IO.File.Delete(makeSymLinkScript);
+	}
+
 	//set env var for the app path for Xamarin.UITest setup
 	SetEnvironmentVariable("iOS_APP", $"{TEST_APP}");
 
@@ -320,7 +337,8 @@ Task("cg-uitest")
 	var nunitSettings = new NUnit3Settings { 
 		Configuration = CONFIGURATION,
 		OutputFile = $"{TEST_RESULTS}/ios/run_uitests_output.log",
-		Work = $"{TEST_RESULTS}/ios"
+		Work = $"{TEST_RESULTS}/ios",
+		TraceLevel = NUnitInternalTraceLevel.Verbose
 	};
 
 	Information("Outputfile {0}", nunitSettings.OutputFile);
