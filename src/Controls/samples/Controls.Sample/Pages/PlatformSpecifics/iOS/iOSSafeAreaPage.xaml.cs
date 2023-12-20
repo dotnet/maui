@@ -15,7 +15,7 @@ namespace Maui.Controls.Sample.Pages
 		void OnButtonClicked(object sender, EventArgs e)
 		{
 			On<iOS>().SetUseSafeArea(false);
-			(sender as Button).IsEnabled = false;
+			(sender as Button)!.IsEnabled = false;
 		}
 	}
 }

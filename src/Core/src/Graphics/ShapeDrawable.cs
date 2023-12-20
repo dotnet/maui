@@ -1,9 +1,11 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 
 namespace Microsoft.Maui.Graphics
 {
 	public class ShapeDrawable : IDrawable
 	{
+		WeakReference<IShapeView>? _shapeView;
 		public ShapeDrawable()
 		{
 
@@ -14,7 +16,21 @@ namespace Microsoft.Maui.Graphics
 			UpdateShapeView(shape);
 		}
 
-		internal IShapeView? ShapeView { get; set; }
+		internal IShapeView? ShapeView
+		{
+			get => _shapeView is not null && _shapeView.TryGetTarget(out var d) ? d : null;
+			set
+			{
+				if (value is null)
+				{
+					_shapeView = null;
+					return;
+				}
+
+				_shapeView = new(value);
+			}
+		}
+
 		internal WindingMode WindingMode { get; set; }
 		internal Matrix3x2? RenderTransform { get; set; }
 

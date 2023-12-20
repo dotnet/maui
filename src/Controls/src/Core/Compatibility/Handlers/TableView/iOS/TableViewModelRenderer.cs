@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Foundation;
 using ObjCRuntime;
 using UIKit;
@@ -12,18 +13,34 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		readonly Dictionary<nint, Cell> _headerCells = new Dictionary<nint, Cell>();
 
 		protected bool HasBoundGestures;
+
+		[Obsolete("Unused due to memory leak. Will be removed in a future version.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Unused")]
 		protected UITableView Table;
 
+		[Obsolete("Unused due to memory leak. Will be removed in a future version.")]
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "Unused")]
 		protected TableView View;
+
+		WeakReference<UITableView> _platformView;
+		WeakReference<TableView> _tableView;
+
+		UITableView PlatformView
+		{
+			get => _platformView is not null && _platformView.TryGetTarget(out var t) ? t : null;
+			set => _platformView = value is not null ? new(value) : null;
+		}
+
+		internal TableView TableView
+		{
+			get => _tableView is not null && _tableView.TryGetTarget(out var t) ? t : null;
+			set => _tableView = value is not null ? new(value) : null;
+		}
 
 		public TableViewModelRenderer(TableView model)
 		{
-			View = model;
-			View.ModelChanged += (s, e) =>
-			{
-				if (Table != null)
-					Table.ReloadData();
-			};
+			TableView = model;
+			model.ModelChanged += (s, e) => PlatformView?.ReloadData();
 			AutomaticallyDeselect = true;
 		}
 
@@ -31,7 +48,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UITableViewCell GetCell(UITableView tableView, NSIndexPath indexPath)
 		{
-			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
+			if (TableView is not TableView table)
+				return null;
+			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var nativeCell = CellTableViewCell.GetPlatformCell(tableView, cell);
 
 			return nativeCell;
@@ -39,8 +58,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override nfloat GetHeightForHeader(UITableView tableView, nint section)
 		{
+			if (TableView is not TableView table)
+				return 0;
 			if (!_headerCells.ContainsKey((int)section))
-				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
 
 			var result = _headerCells[section];
 
@@ -49,8 +70,10 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override UIView GetViewForHeader(UITableView tableView, nint section)
 		{
+			if (TableView is not TableView table)
+				return null;
 			if (!_headerCells.ContainsKey((int)section))
-				_headerCells[section] = View.Model.GetHeaderCell((int)section);
+				_headerCells[section] = table.Model.GetHeaderCell((int)section);
 
 			var result = _headerCells[section];
 
@@ -62,7 +85,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 				result.ReusableCell = reusable;
 				result.TableView = tableView;
 
-				var cellRenderer = result.ToHandler(View.FindMauiContext());
+				var cellRenderer = result.ToHandler(table.FindMauiContext());
 				return (UIView)cellRenderer.PlatformView;
 			}
 			return null;
@@ -70,9 +93,9 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override void WillDisplayHeaderView(UITableView tableView, UIView headerView, nint section)
 		{
-			if (headerView is UITableViewHeaderFooterView header)
+			if (headerView is UITableViewHeaderFooterView header && TableView is TableView table)
 			{
-				var sectionHeaderTextColor = View.Model.GetSectionTextColor((int)section);
+				var sectionHeaderTextColor = table.Model.GetSectionTextColor((int)section);
 				if (sectionHeaderTextColor is not null)
 				{
 #pragma warning disable CA1416, CA1422 // TODO:  'UITableViewHeaderFooterView.TextLabel' is unsupported on: 'ios' 14.0 and later
@@ -87,40 +110,43 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public void LongPress(UILongPressGestureRecognizer gesture)
 		{
-			var point = gesture.LocationInView(Table);
-			var indexPath = Table.IndexPathForRowAtPoint(point);
+			if (PlatformView is not UITableView tableView)
+				return;
+
+			var point = gesture.LocationInView(tableView);
+			var indexPath = tableView.IndexPathForRowAtPoint(point);
 			if (indexPath == null)
 				return;
 
-			View.Model.RowLongPressed(indexPath.Section, indexPath.Row);
+			TableView?.Model.RowLongPressed(indexPath.Section, indexPath.Row);
 		}
 
 		public override nint NumberOfSections(UITableView tableView)
 		{
 			BindGestures(tableView);
-			return View.Model.GetSectionCount();
+			return TableView?.Model.GetSectionCount() ?? 0;
 		}
 
 		public override void RowSelected(UITableView tableView, NSIndexPath indexPath)
 		{
-			View.Model.RowSelected(indexPath.Section, indexPath.Row);
+			TableView?.Model.RowSelected(indexPath.Section, indexPath.Row);
 			if (AutomaticallyDeselect)
 				tableView.DeselectRow(indexPath, true);
 		}
 
 		public override nint RowsInSection(UITableView tableview, nint section)
 		{
-			return View.Model.GetRowCount((int)section);
+			return TableView?.Model.GetRowCount((int)section) ?? 0;
 		}
 
 		public override string[] SectionIndexTitles(UITableView tableView)
 		{
-			return View.Model.GetSectionIndexTitles();
+			return TableView?.Model.GetSectionIndexTitles();
 		}
 
 		public override string TitleForHeader(UITableView tableView, nint section)
 		{
-			return View.Model.GetSectionTitle((int)section);
+			return TableView?.Model.GetSectionTitle((int)section);
 		}
 
 		void BindGestures(UITableView tableview)
@@ -138,7 +164,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			dismissGesture.CancelsTouchesInView = false;
 			tableview.AddGestureRecognizer(dismissGesture);
 
-			Table = tableview;
+			PlatformView = tableview;
 		}
 
 		void Tap(UITapGestureRecognizer gesture)
@@ -155,10 +181,13 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 
 		public override nfloat GetHeightForRow(UITableView tableView, NSIndexPath indexPath)
 		{
-			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
+			if (TableView is not TableView table)
+				return 0;
+
+			var cell = table.Model.GetCell(indexPath.Section, indexPath.Row);
 			var h = cell.Height;
 
-			if (View.RowHeight == -1 && h == -1 && cell is ViewCell)
+			if (table.RowHeight == -1 && h == -1 && cell is ViewCell)
 			{
 				return UITableView.AutomaticDimension;
 			}

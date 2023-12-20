@@ -4,6 +4,7 @@
     <TargetFrameworks>$(MauiPlatforms)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <SingleProject>true</SingleProject>
+    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <!-- Disable multi-RID builds to workaround a parallel build issue -->
     <RuntimeIdentifier Condition="$(TargetFramework.Contains('-maccatalyst'))">maccatalyst-x64</RuntimeIdentifier>

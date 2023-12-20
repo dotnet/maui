@@ -137,7 +137,7 @@ namespace Microsoft.Maui.Graphics
 		static NSNumber[] GetCAGradientLayerLocations(List<PaintGradientStop> gradientStops)
 		{
 			if (gradientStops == null || gradientStops.Count == 0)
-				return new NSNumber[0];
+				return Array.Empty<NSNumber>();
 
 			if (gradientStops.Count > 1 && gradientStops.Any(gt => gt.Offset != 0))
 				return gradientStops.Select(x => new NSNumber(x.Offset)).ToArray();

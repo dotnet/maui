@@ -3,7 +3,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
+using Microsoft.Maui.Platform;
 using Microsoft.UI.Xaml;
 using Xunit;
 using WSetter = Microsoft.UI.Xaml.Setter;
@@ -102,6 +105,66 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		[Fact]
+		public async Task ValidateItemsVirtualize()
+		{
+			SetupBuilder();
+
+			const int listItemCount = 1000;
+
+			var collectionView = new CollectionView()
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var template = new Grid()
+					{
+						ColumnDefinitions = new ColumnDefinitionCollection(
+						[
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+							new ColumnDefinition(25),
+						])
+					};
+
+					for (int i = 0; i < 5; i++)
+					{
+						var label = new Label();
+						label.SetBinding(Label.TextProperty, new Binding("Symbol"));
+						Grid.SetColumn(label, i);
+						template.Add(label);
+					}
+
+					return template;
+				}),
+				ItemsSource = Enumerable.Range(0, listItemCount)
+					.Select(x => new { Symbol = x })
+					.ToList()
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				var listView = (UI.Xaml.Controls.ListView)collectionView.Handler.PlatformView;
+
+				int childCount = 0;
+				int prevChildCount = -1;
+
+				await Task.Delay(2000);
+
+				await AssertionExtensions.Wait(() =>
+				{
+					// Wait until the list stops growing
+					prevChildCount = childCount;
+					childCount = listView.GetChildren<UI.Xaml.Controls.TextBlock>().Count();
+					return childCount == prevChildCount;
+				}, 10000);
+
+				// If this is broken we'll get way more than 1000 elements
+				Assert.True(childCount < 1000);
+			});
+		}
+
+		[Fact]
 		public async Task ValidateSendRemainingItemsThresholdReached()
 		{
 			SetupBuilder();
@@ -136,6 +199,64 @@ namespace Microsoft.Maui.DeviceTests
 				await Task.Delay(200);
 				Assert.True(data.Count == 30);
 			});
+		}
+
+		[Fact]
+		public async Task CollectionViewContentHeightChanged()
+		{
+			// Tests that when a control's HeightRequest is changed, the control is rendered using the new value https://github.com/dotnet/maui/issues/18078
+
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new Controls.DataTemplate(() =>
+				{
+					var label = new Label { WidthRequest = 450 };
+					label.SetBinding(Label.TextProperty, new Binding("."));
+					return label;
+				}),
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+				}
+			};
+
+			var layout = new Grid
+			{
+				collectionView
+			};
+
+			var frame = collectionView.Frame;
+
+			await CreateHandlerAndAddToWindow<LayoutHandler>(layout, async handler =>
+			{
+				await WaitForUIUpdate(frame, collectionView);
+				frame = collectionView.Frame;
+
+				var labels = collectionView.LogicalChildrenInternal;
+				var originalHeight = ((Label)labels[0]).Height;
+				var expectedHeight = originalHeight + 10;
+
+				((Label)labels[0]).HeightRequest = expectedHeight;
+
+				await WaitForUIUpdate(frame, collectionView);
+
+				var finalHeight = ((Label)labels[0]).Height;
+
+				// The first label's height should be smaller than the second one since the text won't wrap
+				Assert.Equal(expectedHeight, finalHeight);
+			});
+		}
+
+		Rect GetCollectionViewCellBounds(IView cellContent)
+		{
+			if (!cellContent.ToPlatform().IsLoaded())
+			{
+				throw new System.Exception("The cell is not in the visual tree");
+			}
+
+			return cellContent.ToPlatform().GetParentOfType<ItemContentControl>().GetBoundingBox();
 		}
 	}
 }
