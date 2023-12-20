@@ -12,7 +12,7 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 		}
-				
+
 		async void OnEntryButtonClicked(object sender, EventArgs e)
 		{
 			await Navigation.PushAsync(new Issue18740Entry());

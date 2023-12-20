@@ -22,7 +22,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		class LoggingHelperContext
 		{
 			public int WarningLevel { get; set; } = 4; //unused so far
-			public bool TreatWarningsAsErrors { get; set; } =false;
+			public bool TreatWarningsAsErrors { get; set; } = false;
 			public IList<int> WarningsAsErrors { get; set; }
 			public IList<int> WarningsNotAsErrors { get; set; }
 			public IList<int> NoWarn { get; set; }
@@ -36,8 +36,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context = new LoggingHelperContext();
 			Context.WarningLevel = warningLevel;
 			Context.TreatWarningsAsErrors = treatWarningsAsErrors;
-			
-			Context.NoWarn = noWarn?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+
+			Context.NoWarn = noWarn?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			{
 				if (int.TryParse(s, out var i))
 					return i;
 				if (s.StartsWith("XC"))
@@ -45,11 +46,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var code = s.Substring(2);
 					if (int.TryParse(code, out i))
 						return i;
-				}	
+				}
 				return -1;
 			}).Where(i => i != -1).ToList();
 
-			Context.WarningsAsErrors = warningsAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+			Context.WarningsAsErrors = warningsAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			{
 				if (int.TryParse(s, out var i))
 					return i;
 				if (s.StartsWith("XC"))
@@ -57,11 +59,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var code = s.Substring(2);
 					if (int.TryParse(code, out i))
 						return i;
-				}	
+				}
 				return -1;
 			}).Where(i => i != -1).ToList();
 
-			Context.WarningsNotAsErrors = warningsNotAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s => {
+			Context.WarningsNotAsErrors = warningsNotAsErrors?.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(s =>
+			{
 				if (int.TryParse(s, out var i))
 					return i;
 				if (s.StartsWith("XC"))
@@ -69,7 +72,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 					var code = s.Substring(2);
 					if (int.TryParse(code, out i))
 						return i;
-				}	
+				}
 				return -1;
 			}).Where(i => i != -1).ToList();
 		}
@@ -80,9 +83,9 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 				Context = new LoggingHelperContext();
 			if (Context.NoWarn != null && Context.NoWarn.Contains(code.CodeCode))
 				return;
-			if (   (Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code.CodeCode)))
-				|| (Context.WarningsAsErrors!= null && Context.WarningsAsErrors.Contains(code.CodeCode)))
-				loggingHelper.LogError($"XamlC {code.CodePrefix}{code.CodeCode:0000}" , null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
+			if ((Context.TreatWarningsAsErrors && (Context.WarningsNotAsErrors == null || !Context.WarningsNotAsErrors.Contains(code.CodeCode)))
+				|| (Context.WarningsAsErrors != null && Context.WarningsAsErrors.Contains(code.CodeCode)))
+				loggingHelper.LogError($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
 			else
 				loggingHelper.LogWarning($"XamlC {code.CodePrefix}{code.CodeCode:0000}", null, null, xamlFilePath, lineNumber, linePosition, endLineNumber, endLinePosition, ErrorMessages.ResourceManager.GetString(code.ErrorMessageKey), messageArgs);
 		}
@@ -99,11 +102,11 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 		public string TargetFramework { get; set; }
 
 		public int WarningLevel { get; set; } = 4; //unused so far
-		public bool TreatWarningsAsErrors {get;set;} =false;
-		public string WarningsAsErrors { get;set;}
-		public string WarningsNotAsErrors {get;set;}
-		public string NoWarn {get;set;}
-		
+		public bool TreatWarningsAsErrors { get; set; } = false;
+		public string WarningsAsErrors { get; set; }
+		public string WarningsNotAsErrors { get; set; }
+		public string NoWarn { get; set; }
+
 
 		public IAssemblyResolver DefaultAssemblyResolver { get; set; }
 
