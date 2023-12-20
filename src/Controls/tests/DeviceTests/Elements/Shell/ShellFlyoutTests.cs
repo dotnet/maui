@@ -1,11 +1,8 @@
 ﻿
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 
@@ -274,18 +271,16 @@ namespace Microsoft.Maui.DeviceTests
 #endif
 
 #if ANDROID || IOS
-		[Fact]
-		public async Task FlyoutHeaderCollapsesOnScroll()
+		[Theory]
+		[ClassData(typeof(ShellFlyoutHeaderScrollTestCases))]
+		public async Task FlyoutHeaderScroll(FlyoutHeaderBehavior flyoutHeaderBehavior, string contentType)
 		{
+			var headerRequestedHeight = 250;
+			var headerMinHeight = 100;
+
 			await RunShellTest(shell =>
 			{
-				Enumerable.Range(0, 100)
-					.ForEach(i =>
-					{
-						shell.FlyoutHeaderBehavior = FlyoutHeaderBehavior.CollapseOnScroll;
-						shell.Items.Add(new FlyoutItem() { Title = $"FlyoutItem {i}", Items = { new ContentPage() } });
-					});
-
+				shell.FlyoutHeaderBehavior = flyoutHeaderBehavior;
 				var layout = new VerticalStackLayout()
 				{
 					new Label()
@@ -294,13 +289,15 @@ namespace Microsoft.Maui.DeviceTests
 					}
 				};
 
-				layout.HeightRequest = 250;
+				layout.HeightRequest = headerRequestedHeight;
 
 				shell.FlyoutHeader = new ScrollView()
 				{
-					MinimumHeightRequest = 100,
+					MinimumHeightRequest = headerMinHeight,
 					Content = layout
 				};
+
+				ShellFlyoutHeaderScrollTestCases.SetFlyoutContent(contentType, shell);
 			},
 			async (shell, handler) =>
 			{
@@ -308,12 +305,28 @@ namespace Microsoft.Maui.DeviceTests
 
 				var initialBox = (shell.FlyoutHeader as IView).GetBoundingBox();
 
-				AssertionExtensions.CloseEnough(250, initialBox.Height, 0.3);
+				AssertionExtensions.CloseEnough(headerRequestedHeight, initialBox.Height, 0.3);
 
-				await ScrollFlyoutToBottom(handler);
-
+				var bottomOffset = await ScrollFlyoutToBottom(handler);
 				var scrolledBox = (shell.FlyoutHeader as IView).GetBoundingBox();
-				AssertionExtensions.CloseEnough(100, scrolledBox.Height, 0.3);
+
+				if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
+				{
+					AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3);
+				}
+				else
+				{
+					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3);
+					
+					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
+					{
+						Assert.True(scrolledBox.Y <= scrolledBox.Height * -1);
+					}
+					else
+					{
+						AssertionExtensions.CloseEnough(GetSafeArea().Top, scrolledBox.Y, 0.3);
+					}
+				}
 			});
 		}
 

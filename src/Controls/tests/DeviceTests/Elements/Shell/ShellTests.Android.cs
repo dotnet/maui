@@ -1,13 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.Core.View;
+using AndroidX.Core.Widget;
 using AndroidX.DrawerLayout.Widget;
+using AndroidX.RecyclerView.Widget;
 using AndroidX.ViewPager2.Widget;
 using Google.Android.Material.AppBar;
 using Google.Android.Material.BottomNavigation;
@@ -16,7 +16,6 @@ using Microsoft.Maui.Controls.Handlers.Compatibility;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Controls.Platform.Compatibility;
 using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
@@ -415,10 +414,29 @@ namespace Microsoft.Maui.DeviceTests
 			}
 		}
 
-		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		protected async Task<double> ScrollFlyoutToBottom(ShellRenderer shellRenderer)
 		{
-			var flyoutItems = GetFlyoutMenuReyclerView(shellRenderer);
+			IShellContext shellContext = shellRenderer;
+			DrawerLayout dl = shellContext.CurrentDrawerLayout;
+			var viewGroup = dl.GetChildAt(1) as ViewGroup;
+			var scrollView = viewGroup?.GetChildAt(0);
 
+			if (scrollView is RecyclerView rv)
+			{
+				return await ScrollRecyclerViewToBottom(rv);
+			}
+			else if (scrollView is MauiScrollView mauisv)
+			{
+				return await ScrollMauiScrollViewToBottom(mauisv);
+			}
+			else
+			{
+				throw new Exception("RecyclerView or MauiScrollView not found");
+			}
+		}
+
+		async Task<double> ScrollRecyclerViewToBottom(RecyclerView flyoutItems)
+		{
 			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
 			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
 			flyoutItems.ScrollToPosition(flyoutItems.GetAdapter().ItemCount - 1);
@@ -444,6 +462,39 @@ namespace Microsoft.Maui.DeviceTests
 			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
 			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
 			await Task.Delay(10);
+
+			return verticalOffset;
+		}
+
+		async Task<double> ScrollMauiScrollViewToBottom(MauiScrollView flyoutItems)
+		{
+			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
+			flyoutItems.ScrollChange +=	OnFlyoutItemsScrollChange;
+			flyoutItems.ScrollTo(0, flyoutItems.Height);
+			await result.Task.WaitAsync(TimeSpan.FromSeconds(2));
+			await Task.Delay(10);
+
+			void OnFlyoutItemsScrollChange(object sender, NestedScrollView.ScrollChangeEventArgs e)
+			{
+				flyoutItems.ScrollChange -= OnFlyoutItemsScrollChange;
+				result.TrySetResult(true);
+			}
+
+			// The appbar layout won't offset if you programmatically scroll the RecyclerView
+			// I haven't found a way to match the exact behavior when you touch and scroll
+			// I think we'd have to actually send touch events through adb
+
+			var coordinatorLayout = flyoutItems.Parent.GetParentOfType<CoordinatorLayout>();
+			var appbarLayout = coordinatorLayout.GetFirstChildOfType<AppBarLayout>();
+			var clLayoutParams = appbarLayout.LayoutParameters as CoordinatorLayout.LayoutParams;
+			var behavior = clLayoutParams.Behavior as AppBarLayout.Behavior;
+			var headerContainer = appbarLayout.GetFirstChildOfType<HeaderContainer>();
+
+			var verticalOffset = flyoutItems.ComputeVerticalScrollOffset();
+			behavior.OnNestedPreScroll(coordinatorLayout, appbarLayout, flyoutItems, 0, verticalOffset, new int[2], ViewCompat.TypeTouch);
+			await Task.Delay(10);
+
+			return verticalOffset;
 		}
 
 		ShellFlyoutRenderer GetDrawerLayout(ShellRenderer shellRenderer)
@@ -452,16 +503,19 @@ namespace Microsoft.Maui.DeviceTests
 			return (ShellFlyoutRenderer)shellContext.CurrentDrawerLayout;
 		}
 
-		RecyclerViewContainer GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
+		RecyclerView GetFlyoutMenuReyclerView(ShellRenderer shellRenderer)
 		{
 			IShellContext shellContext = shellRenderer;
 			DrawerLayout dl = shellContext.CurrentDrawerLayout;
 
 			var flyout = dl.GetChildAt(0);
-			RecyclerViewContainer flyoutContainer = null;
+			RecyclerView flyoutContainer = null;
 
+			var ViewGroup = dl.GetChildAt(1) as ViewGroup;
+			var rc = ViewGroup.GetChildAt(0) as RecyclerView;
+			
 			if (dl.GetChildAt(1) is ViewGroup vg1 &&
-				vg1.GetChildAt(0) is RecyclerViewContainer rvc)
+				vg1.GetChildAt(0) is RecyclerView rvc)
 			{
 				flyoutContainer = rvc;
 			}
