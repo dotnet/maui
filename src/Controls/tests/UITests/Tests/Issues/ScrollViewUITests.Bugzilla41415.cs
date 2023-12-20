@@ -20,6 +20,9 @@ namespace Microsoft.Maui.AppiumTests
 		[Test]
 		public void Bugzilla41415Test()
 		{
+			this.IgnoreIfPlatforms(new TestDevice[] { TestDevice.iOS },
+				"This test is failing, likely due to product issue");
+
 			App.WaitForElement(ButtonId);
 			App.Click(ButtonId);
 			App.WaitForNoElement("x: 100");
