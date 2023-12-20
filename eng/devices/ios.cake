@@ -506,34 +506,30 @@ void GetDevices(string version)
 	list.Remove(list.Last());
 	foreach (var item in list)
 	{
-		Information("Device: {0}", item.Trim());
-		var parts = item.Trim().Split(" ",StringSplitOptions.RemoveEmptyEntries);
-		if(parts.Length < 3)
+		var stringToTest = $"Device: {item.Trim()}";
+		Information(stringToTest);
+		var regex = new System.Text.RegularExpressions.Regex(@"Device:\s+((?:[^\s]+(?:\s+[^\s]+)*)?)\s+([0-9A-Fa-f-]+)\s+([\d.]+)\s+(iPhone|iPad)\s+iOS");
+		var match = regex.Match(stringToTest);
+		if(match.Success)
 		{
-			continue;
+			deviceName = match.Groups[1].Value;
+			deviceUdid = match.Groups[2].Value;
+			deviceVersion = match.Groups[3].Value;
+			deviceOS = match.Groups[4].Value;
+			Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
+			if(version.Contains(deviceVersion.Split(".")[0]))
+			{
+				Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
+				DEVICE_UDID = deviceUdid;
+				DEVICE_VERSION = deviceVersion;
+				DEVICE_NAME = deviceName;
+				DEVICE_OS = deviceOS;
+				break;
+			}
 		}
-		if(item.Contains("iPhone"))
-		{
-			deviceOS = "iPhone";
-		}
-		if(item.Contains("iPad iOS"))
-		{
-			deviceOS = "iPad iOS";
-		}
-
-		deviceName = parts[0].Trim();
-		deviceUdid = parts[1].Trim();
-		deviceVersion = parts[2].Trim();
-		Information("DeviceName:{0} udid:{1} version:{2} os:{3}", deviceName, deviceUdid, deviceVersion, deviceOS);
-
-		if(version.Contains(deviceVersion.Split(".")[0]))
-		{
-			Information("We want this device: {0} {1} because it matches {2}", deviceName, deviceVersion, version);
-			DEVICE_UDID = deviceUdid;
-			DEVICE_VERSION = deviceVersion;
-			DEVICE_NAME = deviceName;
-			DEVICE_OS = deviceOS;
-			break;
+        else
+        {
+            Information("No match found for {0}", stringToTest);
 		}
 	}
 	if(string.IsNullOrEmpty(DEVICE_UDID))
