@@ -20,7 +20,7 @@ namespace Microsoft.Maui.DeviceTests
 	public static class Extensions
 	{
 		public static Task WaitUntilLoaded(this Image image, int timeout = 1000) =>
-			AssertEventually(() => !image.IsLoading, timeout);
+			AssertEventually(() => !image.IsLoading, timeout, message: $"Timed out loading image {image}");
 
 		public static void SetupShellHandlers(this MauiAppBuilder builder)
 		{

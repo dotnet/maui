@@ -20,6 +20,7 @@ using AView = Android.Views.View;
 using MColor = Microsoft.Maui.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using AndroidX.Core.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -217,7 +218,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
 			Task.WhenAll(
 				view.WaitForLayout(timeout),
-				AssertEventually(() => view.Width > 0 && view.Height > 0, timeout, 
+				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout, 
 					message: $"Timed out waiting for {view} to have {nameof(view.Width)} and {nameof(view.Height)} greater than zero"));
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)
@@ -332,6 +333,13 @@ namespace Microsoft.Maui.DeviceTests
 				{
 					Gravity = GravityFlags.Center
 				};
+
+				// Ensure that the view gets _some_ width/height; the combination of WrapContent and Center above means that 
+				// the default Fill layout options will have no effect, so unless the root test object or its Content has a
+				// WidthRequest/HeightRequest, the actual layout height and width may be zero 
+
+				view.SetMinimumWidth(40);
+				view.SetMinimumHeight(40);
 
 				var act = context.GetActivity()!;
 				var rootView = act.FindViewById<FrameLayout>(Android.Resource.Id.Content)!;
