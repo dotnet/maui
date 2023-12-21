@@ -66,6 +66,9 @@ var emuSettings = new AndroidEmulatorToolSettings { SdkRoot = ANDROID_SDK_ROOT }
 if (IsCIBuild())
 	emuSettings.ArgumentCustomization = args => args.Append("-no-window");
 
+emuSettings.ArgumentCustomization = args => args.Append("-gpu swiftshader_indirect");
+emuSettings.ArgumentCustomization = args => args.Append("-no-boot-anim");
+
 AndroidEmulatorProcess emulatorProcess = null;
 
 Setup(context =>
@@ -95,6 +98,17 @@ Setup(context =>
 		// arch/bits
 		Information("Host OS System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.OSArchitecture);
 		Information("Host Processor System Arch: {0}", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture);
+
+		// If the requested emulator was 32 bits but the hosting build agent is 64 bits, this won't work. In that case, switch to 64 bits and continue
+		if (parts[2] == "32"
+			&& (System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.Arm64
+			|| System.Runtime.InteropServices.RuntimeInformation.OSArchitecture == System.Runtime.InteropServices.Architecture.X64)) {
+
+			Information("Android device to be used specified as 32-bits, but hosting OS only supports 64-bits, switching to 64-bits.");
+
+			parts[2] = "64";
+		}
+
 		if (parts[2] == "32") {
 			if (emulator)
 				DEVICE_ARCH = "x86";
@@ -109,7 +123,7 @@ Setup(context =>
 				DEVICE_ARCH = "arm64-v8a";
 		}
 		var sdk = api >= 27 ? "google_apis_playstore" : "google_apis";
-		if (api == 27 && DEVICE_ARCH == "x86_64")
+		if (api == 27 && (DEVICE_ARCH == "x86_64" || DEVICE_ARCH == "arm64-v8a"))
 			sdk = "default";
 		ANDROID_AVD_IMAGE = $"system-images;android-{api};{sdk};{DEVICE_ARCH}";
 
@@ -126,6 +140,14 @@ Setup(context =>
 	}
 
 	Information("Test Device ID: {0}", ANDROID_AVD_IMAGE);
+
+	Information("Listing available Android devices.");
+
+	// List available Android devices
+	foreach (var device in AndroidAvdListDevices(avdSettings))
+	{
+		Information(device.Name);
+	}
 
 	if (DEVICE_BOOT) {
 		Information("Trying to boot the emulator...");
