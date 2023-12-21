@@ -1,5 +1,6 @@
 parameters:
   poolName: ''
+  clearCaches: true
   skipXcode: false
   skipProvisioning: $(skipProvisionator)
   skipAndroidSdks: false
@@ -134,8 +135,9 @@ steps:
       dotnet --list-sdks
     displayName: 'Show .NET SDK info'
 
-  - pwsh: dotnet nuget locals all --clear
-    displayName: 'Clear all NuGet caches'
+  - ${{ if eq(parameters.clearCaches, 'true') }}:
+    - pwsh: dotnet nuget locals all --clear
+      displayName: 'Clear all NuGet caches'
 
   - ${{ if eq(variables['System.TeamProject'], 'devdiv') }}:
     - task: PowerShell@2
