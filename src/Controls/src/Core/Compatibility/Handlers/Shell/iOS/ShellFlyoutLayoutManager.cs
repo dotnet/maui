@@ -206,7 +206,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 
 		internal void SetHeaderContentInset()
-				{
+		{
 			if (ScrollView is null)
 				return;
 
