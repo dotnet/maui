@@ -469,7 +469,7 @@ namespace Microsoft.Maui.DeviceTests
 		async Task<double> ScrollMauiScrollViewToBottom(MauiScrollView flyoutItems)
 		{
 			TaskCompletionSource<object> result = new TaskCompletionSource<object>();
-			flyoutItems.ScrollChange +=	OnFlyoutItemsScrollChange;
+			flyoutItems.ScrollChange += OnFlyoutItemsScrollChange;
 			flyoutItems.ScrollTo(0, flyoutItems.Height);
 			await result.Task.WaitAsync(TimeSpan.FromSeconds(2));
 			await Task.Delay(10);
