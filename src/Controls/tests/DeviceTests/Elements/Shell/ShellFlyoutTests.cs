@@ -320,7 +320,7 @@ namespace Microsoft.Maui.DeviceTests
 					
 					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
 					{
-						Assert.True(scrolledBox.Y <= scrolledBox.Height * -1, $"Scrolled Header Position: {scrolledBox.Y} <= {scrolledBox.Height * -1}");
+						Assert.True(scrolledBox.Y <= headerRequestedHeight * -1, $"Scrolled Header Position: {scrolledBox.Y} <= {scrolledBox.Height * -1}");
 					}
 					else
 					{
