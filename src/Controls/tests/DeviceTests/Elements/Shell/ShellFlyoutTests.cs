@@ -312,19 +312,19 @@ namespace Microsoft.Maui.DeviceTests
 
 				if (flyoutHeaderBehavior == FlyoutHeaderBehavior.CollapseOnScroll)
 				{
-					AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3);
+					AssertionExtensions.CloseEnough(headerMinHeight, scrolledBox.Height, 0.3, "Collapsed Header Height");
 				}
 				else
 				{
-					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3);
+					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
 					
 					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
 					{
-						Assert.True(scrolledBox.Y <= scrolledBox.Height * -1);
+						Assert.True(scrolledBox.Y <= scrolledBox.Height * -1, $"Scrolled Header Position: {scrolledBox.Y} <= {scrolledBox.Height * -1}");
 					}
 					else
 					{
-						AssertionExtensions.CloseEnough(GetSafeArea().Top, scrolledBox.Y, 0.3);
+						AssertionExtensions.CloseEnough(GetSafeArea().Top, scrolledBox.Y, 0.3, "Header position");
 					}
 				}
 			});
