@@ -322,7 +322,8 @@ namespace Microsoft.Maui.DeviceTests
 					{
 						// scrolledBoy.Y is negative because the header is scrolled up
 						var diff = scrolledBox.Y + headerRequestedHeight;
-						Assert.True(diff <= 0.3, $"Scrolled Header Position: {scrolledBox.Y} <= {scrolledBox.Height * -1}");
+						var epsilon = 0.3;
+						Assert.True(diff <= epsilon, $"Scrolled Header: position {scrolledBox.Y} is no enough to cover height ({scrolledBox.Height * -1}). Epsilon: {epsilon}");
 					}
 					else
 					{
