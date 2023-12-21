@@ -162,7 +162,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 			var appConfiguration = ConfigureApp.iOS
 							.PreferIdeSettings()
 							.AppBundle(fullApkPath)
-							.Debug()
+							.Debug();
 
 			var appConfiguration = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug();
 
