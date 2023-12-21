@@ -13,10 +13,10 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 
 			bool actual = converter.GetStandardValuesSupported();
 			Assert.True(actual);
-			
+
 			actual = converter.GetStandardValuesExclusive();
 			Assert.True(actual);
-			
+
 			var values = converter.GetStandardValues();
 			Assert.Equal(5, values.Count);
 		}

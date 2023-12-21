@@ -13,7 +13,7 @@ namespace Microsoft.Maui.Controls.Design
 		// need to handle ints in place of enums. ButtonContentConverter does not properly handle corner cases.
 		// For example, it does not trim incoming strings, so " 15" will be converted as
 		// ButtonContentLayout((ImagePorition)15, DefaultSpacing/*10*/)
-		private enum ImagePosition { Left, Top, Right, Bottom }; 
+		private enum ImagePosition { Left, Top, Right, Bottom };
 
 		public override bool IsValid(ITypeDescriptorContext context, object value)
 		{
