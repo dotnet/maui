@@ -164,9 +164,7 @@ namespace Microsoft.Maui.Controls.ControlGallery
 							.AppBundle(fullApkPath)
 							.Debug();
 
-			var appConfiguration = ConfigureApp.iOS.InstalledApp(AppPaths.BundleId).Debug();
-
-			if(!string.IsNullOrWhiteSpace(UDID))
+			if (!string.IsNullOrWhiteSpace(UDID))
 			{
 				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
 			}
