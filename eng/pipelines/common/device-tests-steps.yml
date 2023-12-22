@@ -10,7 +10,7 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
-  rebootAgent: false
+  rebootAgent: true
 
 steps:
   - template: provision.yml
@@ -20,9 +20,11 @@ steps:
       ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipProvisioning: ${{ or(eq(parameters.platform, 'windows'),eq(parameters.platform, 'ios')) }}
+      skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
-      clearCaches: false
+      ${{ if eq(parameters.platform, 'ios')}}:
+        skipAndroidSdks: true
+        skipAndroidImages: true
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
     displayName: 'Install .NET'
