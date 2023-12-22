@@ -2,8 +2,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Graphics;
-using Microsoft.Maui.Platform;
 using Xunit;
 
 #if IOS
@@ -12,7 +10,12 @@ using UIKit;
 
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
+using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+#else
+using Microsoft.Maui.Controls.Handlers;
 #endif
+
 
 namespace Microsoft.Maui.DeviceTests
 {
