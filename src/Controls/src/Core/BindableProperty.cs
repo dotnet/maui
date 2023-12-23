@@ -148,6 +148,44 @@ namespace Microsoft.Maui.Controls
 				defaultValueCreator: defaultValueCreator);
 		}
 
+		public static BindableProperty Create<TDeclaringType, TReturnType>(string propertyName, TReturnType defaultValue = default, BindingMode defaultBindingMode = BindingMode.OneWay, ValidateValueDelegate<TReturnType> validateValue = null,
+										BindingPropertyChangedDelegate<TReturnType> propertyChanged = null, BindingPropertyChangingDelegate<TReturnType> propertyChanging = null, CoerceValueDelegate<TReturnType> coerceValue = null,
+										CreateDefaultValueDelegate<TDeclaringType, TReturnType> defaultValueCreator = null)
+		{
+			ValidateValueDelegate untypedValidateValue = null;
+			if (validateValue != null)
+			{
+				untypedValidateValue = (bindable, value) => validateValue(bindable, value is TReturnType typedValue ? typedValue : default);
+			}
+
+			BindingPropertyChangedDelegate untypedPropertyChanged = null;
+			if (propertyChanged != null)
+			{
+				untypedPropertyChanged = (bindable, o, n) => propertyChanged(bindable, o is TReturnType typedOldValue ? typedOldValue : default, n is TReturnType typedNewValue ? typedNewValue : default);
+			}
+
+			BindingPropertyChangingDelegate untypedPropertyChanging = null;
+			if (propertyChanging != null)
+			{
+				untypedPropertyChanging = (bindable, o, n) => propertyChanging(bindable, o is TReturnType typedOldValue ? typedOldValue : default, n is TReturnType typedNewValue ? typedNewValue : default);
+			}
+
+			CoerceValueDelegate untypedCoerceValue = null;
+			if (coerceValue != null)
+			{
+				untypedCoerceValue = (bindable, value) => coerceValue(bindable, value is TReturnType typedValue ? typedValue : default);
+			}
+
+			CreateDefaultValueDelegate untypedDefaultValueCreator = null;
+			if (defaultValueCreator != null)
+			{
+				untypedDefaultValueCreator = (bindable) => defaultValueCreator(bindable is TDeclaringType typedBindable ? typedBindable : default);
+			}
+
+			return new BindableProperty(propertyName, typeof(TReturnType), typeof(TDeclaringType), defaultValue, defaultBindingMode, untypedValidateValue, untypedPropertyChanged, untypedPropertyChanging, untypedCoerceValue,
+				defaultValueCreator: untypedDefaultValueCreator);
+		}
+
 		/// <include file="../../docs/Microsoft.Maui.Controls/BindableProperty.xml" path="//Member[@MemberName='CreateAttached']/Docs/*" />
 		public static BindableProperty CreateAttached(string propertyName, Type returnType, [DynamicallyAccessedMembers(DeclaringTypeMembers)] Type declaringType, object defaultValue, BindingMode defaultBindingMode = BindingMode.OneWay,
 													  ValidateValueDelegate validateValue = null, BindingPropertyChangedDelegate propertyChanged = null, BindingPropertyChangingDelegate propertyChanging = null,
