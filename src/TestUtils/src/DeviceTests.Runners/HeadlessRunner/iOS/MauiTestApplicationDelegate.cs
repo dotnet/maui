@@ -100,7 +100,11 @@ namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.HeadlessRunner
 			};
 
 			var mauiApp = CreateMauiApp();
-			Services = mauiApp.Services;
+			var rootContext = new MauiContext(mauiApp.Services);
+
+			var appContext = rootContext.MakeApplicationScope(this);
+
+			Services = appContext.Services;
 
 			SetEnvironmentVariables();
 
