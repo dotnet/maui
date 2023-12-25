@@ -243,6 +243,11 @@ namespace Microsoft.Maui.Controls
 
 		void OnItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
 		{
+			// Do not execute when Items is locked because updates to ItemsSource will
+			// take care of it
+			if (((LockableObservableListWrapper)Items).IsLocked)
+				return;
+
 			var oldIndex = SelectedIndex;
 			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
 			//FIXME use the specificity of the caller
@@ -278,8 +283,9 @@ namespace Microsoft.Maui.Controls
 			}
 			else
 			{
-				((LockableObservableListWrapper)Items).InternalClear();
+				// Unlock, then clear, so OnItemsCollectionChanged executes
 				((LockableObservableListWrapper)Items).IsLocked = false;
+				((LockableObservableListWrapper)Items).InternalClear();
 			}
 		}
 
@@ -306,6 +312,10 @@ namespace Microsoft.Maui.Controls
 			int index = e.NewStartingIndex < 0 ? Items.Count : e.NewStartingIndex;
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
+			if (index <= SelectedIndex)
+			{
+				UpdateSelectedItem(SelectedIndex);
+			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
@@ -313,6 +323,16 @@ namespace Microsoft.Maui.Controls
 			int index = e.OldStartingIndex < Items.Count ? e.OldStartingIndex : Items.Count;
 			foreach (object _ in e.OldItems)
 				((LockableObservableListWrapper)Items).InternalRemoveAt(index--);
+			if (index <= SelectedIndex)
+			{
+				var oldIndex = SelectedIndex;
+				var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+
+				SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+				// Update SelectedItem separately if index hasn't changed
+				if (newIndex == oldIndex)
+					UpdateSelectedItem(newIndex);
+			}
 		}
 
 		void ResetItems()
@@ -323,7 +343,12 @@ namespace Microsoft.Maui.Controls
 			foreach (object item in ItemsSource)
 				((LockableObservableListWrapper)Items).InternalAdd(GetDisplayMember(item));
 			Handler?.UpdateValue(nameof(IPicker.Items));
-			UpdateSelectedItem(SelectedIndex);
+
+			var oldIndex = SelectedIndex;
+			var newIndex = SelectedIndex.Clamp(-1, Items.Count - 1);
+			SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
+			if (oldIndex == newIndex)
+				UpdateSelectedItem(SelectedIndex);
 		}
 
 		static void OnSelectedIndexChanged(object bindable, object oldValue, object newValue)
