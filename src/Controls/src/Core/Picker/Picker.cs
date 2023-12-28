@@ -313,9 +313,7 @@ namespace Microsoft.Maui.Controls
 			foreach (object newItem in e.NewItems)
 				((LockableObservableListWrapper)Items).InternalInsert(index++, GetDisplayMember(newItem));
 			if (index <= SelectedIndex)
-			{
 				UpdateSelectedItem(SelectedIndex);
-			}
 		}
 
 		void RemoveItems(NotifyCollectionChangedEventArgs e)
@@ -331,7 +329,9 @@ namespace Microsoft.Maui.Controls
 				SetValue(SelectedIndexProperty, newIndex, SetterSpecificity.FromHandler);
 				// Update SelectedItem separately if index hasn't changed
 				if (newIndex == oldIndex)
+				{
 					UpdateSelectedItem(newIndex);
+				}
 			}
 		}
 
