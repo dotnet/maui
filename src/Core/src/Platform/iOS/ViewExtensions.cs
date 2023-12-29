@@ -889,12 +889,12 @@ namespace Microsoft.Maui.Platform
 			return null;
 		}
 
-		internal static UIView? FindFirstResponder(this UIView? superview)
+		internal static UIView? FindFirstResponder(this UIView? superview, Func<UIView, bool>? predicate = null)
 		{
 			if (superview is null)
 				return null;
 
-			if (superview.IsFirstResponder)
+			if (superview.IsFirstResponder && (predicate?.Invoke(superview) ?? true))
 				return superview;
 
 			foreach (var subview in superview.Subviews)

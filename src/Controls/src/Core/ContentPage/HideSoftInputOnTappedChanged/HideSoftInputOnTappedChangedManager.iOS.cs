@@ -7,22 +7,18 @@ namespace Microsoft.Maui.Controls
 {
 	partial class HideSoftInputOnTappedChangedManager
 	{
-		internal IDisposable? SetupHideSoftInputOnTapped(UIView uIView)
+		internal IDisposable? SetupHideSoftInputOnTapped(UIView uiView)
 		{
-			if (!FeatureEnabled || uIView.Window is null)
+			if (!FeatureEnabled || uiView.Window is null)
 				return null;
 
-			if (uIView is UISearchBar searchBar &&
-				searchBar.GetSearchTextField() is UIView textField)
-			{
-				uIView = textField;
-			}
+			var firstResponder = uiView.FindFirstResponder(v => v is UITextField or UITextView);
 
-			if (uIView is null)
+			if (firstResponder is null)
 				return null;
 
 			return ResignFirstResponderTouchGestureRecognizer
-					.Update(uIView);
+					.Update(firstResponder);
 		}
 	}
 }
