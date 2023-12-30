@@ -14,7 +14,7 @@ namespace Microsoft.Maui.Controls
 			var ctx = self.GetContext(property);
 			if (ctx != null && ctx.Bindings.Count > 0)
 			{
-				var binding = ctx.Bindings.Last().Value;
+				var binding = ctx.Bindings.GetValue();
 
 				// support bound properties
 				if (!ctx.Attributes.HasFlag(BindableObject.BindableContextAttributes.IsBeingSet))
