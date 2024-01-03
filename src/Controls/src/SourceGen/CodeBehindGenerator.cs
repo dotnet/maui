@@ -152,7 +152,10 @@ namespace Microsoft.Maui.Controls.SourceGen
 			if (!TryParseXaml(text, uid, compilation, caches, context.CancellationToken, projItem.TargetFramework, out var accessModifier, out var rootType, out var rootClrNamespace, out var generateDefaultCtor, out var addXamlCompilationAttribute, out var hideFromIntellisense, out var XamlResourceIdOnly, out var baseType, out var namedFields, out var parseException))
 			{
 				if (parseException != null)
-					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, null, parseException.Message));
+				{
+					var location = projItem.RelativePath is not null ? Location.Create(projItem.RelativePath, new TextSpan(), new LinePositionSpan()) : null;
+					context.ReportDiagnostic(Diagnostic.Create(Descriptors.XamlParserError, location, parseException.Message));
+				}
 				return;
 			}
 			var sb = new StringBuilder();
@@ -257,6 +260,12 @@ namespace Microsoft.Maui.Controls.SourceGen
 			catch (XmlException xe)
 			{
 				exception = xe;
+				return false;
+			}
+
+			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
+			{
+				exception = new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
 				return false;
 			}
 
