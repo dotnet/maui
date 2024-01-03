@@ -4,7 +4,7 @@
     <IsPackable>false</IsPackable>
     <InstallWorkloadPacks Condition=" '$(InstallWorkloadPacks)' == '' ">true</InstallWorkloadPacks>
     <InternalAzureFeed>https://dotnetbuilds.blob.core.windows.net/internal</InternalAzureFeed>
-    <DotNetFeedUrl>https://dotnetcli.azureedge.net/dotnet</DotNetFeedUrl>
+    <DotNetFeedUrl>https://dotnetbuilds.blob.core.windows.net/public</DotNetFeedUrl>
   </PropertyGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('windows'))">
     <DotNetInstallScriptUrl>https://dot.net/v1/dotnet-install.ps1</DotNetInstallScriptUrl>
