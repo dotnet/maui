@@ -1,12 +1,13 @@
 ﻿using Maui.Controls.Sample;
-using Microsoft.Maui.Appium;
 using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests
 {
 	public class InputTransparencyGalleryTests : CoreGalleryBasePageTest
 	{
-		const string ButtonGallery = "* marked:'Input Transparency Gallery'";
+		const string ButtonGallery = "Input Transparency Gallery";
 
 		public InputTransparencyGalleryTests(TestDevice device)
 			: base(device)
@@ -19,11 +20,11 @@ namespace Microsoft.Maui.AppiumTests
 		}
 
 		[Test]
-		public void Simple([Values] Test.InputTransparency test) => RunTest(test.ToString());
+		public void InputTransparencySimple([Values] Test.InputTransparency test) => RunTest(test.ToString());
 
 		[Test]
 		[Combinatorial]
-		public void Matrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
+		public void InputTransparencyMatrix([Values] bool rootTrans, [Values] bool rootCascade, [Values] bool nestedTrans, [Values] bool nestedCascade, [Values] bool trans)
 		{
 			var (clickable, passthru) = Test.InputTransparencyMatrix.States[(rootTrans, rootCascade, nestedTrans, nestedCascade, trans)];
 			var key = Test.InputTransparencyMatrix.GetKey(rootTrans, rootCascade, nestedTrans, nestedCascade, trans, clickable, passthru);
@@ -31,17 +32,17 @@ namespace Microsoft.Maui.AppiumTests
 			RunTest(key, clickable, passthru);
 		}
 
-		static void RunTest(string test, bool? clickable = null, bool? passthru = null)
+		void RunTest(string test, bool? clickable = null, bool? passthru = null)
 		{
 			var remote = new EventViewContainerRemote(UITestContext, test);
 			remote.GoTo(test.ToString());
 
-			var textBeforeClick = remote.GetEventLabel().Text;
+			var textBeforeClick = remote.GetEventLabel().GetText();
 			Assert.AreEqual($"Event: {test} (none)", textBeforeClick);
 
 			remote.TapView();
 
-			var textAfterClick = remote.GetEventLabel().Text;
+			var textAfterClick = remote.GetEventLabel().GetText();
 
 			if (clickable is null || passthru is null)
 			{
@@ -65,7 +66,7 @@ namespace Microsoft.Maui.AppiumTests
 				// sometimes nothing can happen, so try test that
 				Task.Delay(500).Wait(); // just make sure that nothing happened
 
-				textAfterClick = remote.GetEventLabel().Text;
+				textAfterClick = remote.GetEventLabel().GetText();
 				Assert.AreEqual($"Event: {test} (none)", textBeforeClick);
 			}
 		}

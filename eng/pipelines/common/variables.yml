@@ -43,8 +43,6 @@ variables:
   value: 'eng/provisioning/xcode.csx'
 - name: provisionator.path
   value: 'eng/provisioning/provisioning.csx'
-- name: provisionator.vs
-  value: 'eng/provisioning/vs.csx'
 - name: provisionator.extraArguments
   value: '-vvvv'
 - name: DotNet.Dir

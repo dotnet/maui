@@ -1,8 +1,6 @@
-﻿using System.Drawing;
-using Microsoft.Maui.Appium;
-using NUnit.Framework;
-using OpenQA.Selenium.Appium.MultiTouch;
-using TestUtils.Appium.UITests;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -23,7 +21,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			}
 			finally
 			{
-				App.Tap("PopMeButton");
+				App.WaitForElement("PopMeButton", timeout: TimeSpan.FromSeconds(4)).Click();
 			}
 		}
 	}

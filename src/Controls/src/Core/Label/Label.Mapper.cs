@@ -10,7 +10,7 @@ namespace Microsoft.Maui.Controls
 	public partial class Label
 	{
 		[Obsolete("Use LabelHandler.Mapper instead.")]
-		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper = 
+		public static IPropertyMapper<ILabel, LabelHandler> ControlsLabelMapper =
 			new ControlsMapper<ILabel, LabelHandler>(LabelHandler.Mapper);
 
 		internal static new void RemapForControls()

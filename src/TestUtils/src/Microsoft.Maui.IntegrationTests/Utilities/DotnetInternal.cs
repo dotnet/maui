@@ -9,19 +9,18 @@ namespace Microsoft.Maui.IntegrationTests
 		static readonly string DotnetTool = Path.Combine(DotnetRoot, "dotnet");
 		const int DEFAULT_TIMEOUT = 900;
 
-		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "")
+		private static string ConstructBuildArgs(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "", bool isPublishing = false)
 		{
-			var binlogName = $"build-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 			var buildArgs = $"\"{projectFile}\" -c {config}";
 
 			if (!string.IsNullOrEmpty(target))
-			{
-				binlogName = $"{target}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 				buildArgs += $" -t:{target}";
-			}
 
 			if (!string.IsNullOrEmpty(framework))
 				buildArgs += $" -f:{framework}";
+
+			if (!string.IsNullOrEmpty(runtimeIdentifier))
+				buildArgs += $" -r:{runtimeIdentifier}";
 
 			if (properties != null)
 			{
@@ -33,40 +32,52 @@ namespace Microsoft.Maui.IntegrationTests
 
 			if (string.IsNullOrEmpty(binlogPath))
 			{
+				var binlogPrefix = string.Empty;
+				if (!string.IsNullOrEmpty(target))
+					binlogPrefix = target;
+				else
+					binlogPrefix = isPublishing ? "publish" : "build";
+
+				var binlogName = $"{binlogPrefix}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
 				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
 			}
+			buildArgs += $" -bl:\"{binlogPath}\"";
 
-			return Run("build", $"{buildArgs} -bl:\"{binlogPath}\"");
+			return buildArgs;
 		}
 
-		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "")
+		public static bool Build(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", bool msbuildWarningsAsErrors = false)
 		{
-			var binlogName = $"publish-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-			var buildArgs = $"\"{projectFile}\" -c {config}";
+			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath);
 
-			if (!string.IsNullOrEmpty(target))
+			if (msbuildWarningsAsErrors)
 			{
-				binlogName = $"{target}-{DateTime.UtcNow.ToFileTimeUtc()}.binlog";
-				buildArgs += $" -t:{target}";
-			}
+				// We set WarnAsError to specifically cause *MSBuild* warnings to be errors (setting TreatWarningsAsErrors
+				// affect only C# compiler warnings).
+				buildArgs += " -warnaserror";
 
-			if (!string.IsNullOrEmpty(framework))
-				buildArgs += $" -f:{framework}";
-
-			if (properties != null)
-			{
-				foreach (var p in properties)
+				// However, we need to ignore specific MSBuild warnings that are acceptable in these tests:
+				var csWarningsToIgnore = new string[]
 				{
-					buildArgs += $" -p:{p}";
-				}
+					"NETSDK1201", // Details: "For projects targeting .NET 8.0 and higher, specifying a RuntimeIdentifier
+								// will no longer produce a self contained app by default. To continue building
+								// self-contained apps, set the SelfContained property to true or use the --self-contained
+								// argument."
+								// Justification: This warning isn't meaningful in this test scenario.
+					"CS1591", // Details: "Missing XML comment for publicly visible type or member 'XYZ'"
+							// Justification: It's OK for templates to have missing doc comments.
+				};
+				var csWarnings = string.Join("%3B", csWarningsToIgnore);
+				buildArgs += $" -p:nowarn=\"{csWarnings}\"";
 			}
 
-			if (string.IsNullOrEmpty(binlogPath))
-			{
-				binlogPath = Path.Combine(Path.GetDirectoryName(projectFile) ?? "", binlogName);
-			}
+			return Run("build", $"{buildArgs}");
+		}
 
-			return Run("publish", $"{buildArgs} -bl:\"{binlogPath}\"");
+		public static bool Publish(string projectFile, string config, string target = "", string framework = "", IEnumerable<string>? properties = null, string binlogPath = "", string runtimeIdentifier = "")
+		{
+			var buildArgs = ConstructBuildArgs(projectFile, config, target, framework, properties, binlogPath, runtimeIdentifier, true);
+			return Run("publish", $"{buildArgs}");
 		}
 
 		public static bool New(string shortName, string outputDirectory, string framework = "")
@@ -84,8 +95,10 @@ namespace Microsoft.Maui.IntegrationTests
 		public static bool Run(string command, string args, int timeoutinSeconds = DEFAULT_TIMEOUT)
 		{
 			var runOutput = RunForOutput(command, args, out int exitCode, timeoutinSeconds);
-			if (exitCode != 0)
-				TestContext.WriteLine(runOutput);
+			TestContext.WriteLine($"Process exit code: {exitCode}");
+			TestContext.WriteLine($"-------- Process output start --------");
+			TestContext.WriteLine(runOutput);
+			TestContext.WriteLine($"-------- Process output end --------");
 
 			return exitCode == 0;
 		}
