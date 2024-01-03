@@ -334,11 +334,11 @@ namespace Microsoft.Maui.IntegrationTests
 
 		void EnableTizen(string projectFile)
 		{
-			//FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
-			//{
-			//	{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
-			//	{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
-			//});
+			FileUtilities.ReplaceInFile(projectFile, new Dictionary<string, string>()
+			{
+				{ "<!-- <TargetFrameworks>", "<TargetFrameworks>" },
+				{ "</TargetFrameworks> -->", "</TargetFrameworks>" },
+			});
 		}
 
 	}
