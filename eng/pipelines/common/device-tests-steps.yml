@@ -20,7 +20,10 @@ steps:
       ${{ if or(eq(parameters.platform, 'ios'), eq(parameters.platform, 'catalyst'), eq(parameters.platform, 'android'))}}:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
-      skipProvisioning: ${{ or(eq(parameters.platform, 'windows'),eq(parameters.platform, 'ios')) }}
+      skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
+      ${{ if eq(parameters.platform, 'ios')}}:
+        skipAndroidSdks: false
+        skipAndroidImages: true
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
