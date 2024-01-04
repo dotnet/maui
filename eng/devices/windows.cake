@@ -322,8 +322,16 @@ Task("Test")
 	// and if the categories we expected to run match the test result files
 	if (isControlsProjectTestRun)
 	{
+		foreach(var cat in System.IO.File.ReadAllLines(testsToRunFile))
+		{
+			Information($"Test category to run: {cat}");
+		}
+
 		var expectedCategoriesRanCount = System.IO.File.ReadAllLines(testsToRunFile).Length-1;
 		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
+
+		Information($"ExpectedCategoriesRanCount: {expectedCategoriesRanCount}");
+		Information($"ActualResultFileCount: {actualResultFileCount}");
 
 		while (actualResultFileCount < expectedCategoriesRanCount) {
 			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
