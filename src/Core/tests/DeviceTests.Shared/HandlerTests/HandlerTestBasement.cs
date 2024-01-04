@@ -181,10 +181,10 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 		protected Task ValidateHasColor(
-			IView view, 
-			Color color, 
-			Type handlerType, 
-			Action action = null, 
+			IView view,
+			Color color,
+			Type handlerType,
+			Action action = null,
 			string updatePropertyValue = null,
 			double? tolerance = null)
 		{
