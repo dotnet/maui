@@ -30,7 +30,7 @@ namespace Maui.Controls.Sample.Issues
 				result = "Error: position is null";
 				automationId = "Failure";
 			}
-			else if (position.Value.X > 40 && position.Value.Y > 20)
+			else if (position.Value.X >= 60 && position.Value.X <= 80 && position.Value.Y >= 20 && position.Value.Y <= 40)
 			{
 				result = $"Success: relative position is: X={position.Value.X}, Y={position.Value.Y}";
 				automationId = "Success";
