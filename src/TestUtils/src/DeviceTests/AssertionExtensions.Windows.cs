@@ -171,7 +171,7 @@ namespace Microsoft.Maui.DeviceTests
 				// Window is not a XAML type so is never on the hierarchy
 				var window = (Window)mauiContext!.Services!.GetService(typeof(Window))!;
 
-				Assert.True(window?.Content is not null, 
+				Assert.True(window?.Content is not null,
 					"Content on Window has not been set. Most likely the window under test isn't being registered against the test service being used. Check if you're passing the right MauiContext in");
 
 				if (window.Content.XamlRoot != view.XamlRoot)

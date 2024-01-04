@@ -85,11 +85,11 @@ namespace Microsoft.Maui.DeviceTests
 			MockAccessibilityExpectations(view);
 			view.Semantics.Description = "Test";
 
-			#if IOS || MACCATALYST
+#if IOS || MACCATALYST
 			bool attachAndRun = true;
-			#else
+#else
 			bool attachAndRun = false;
-			#endif
+#endif
 
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
 
@@ -102,11 +102,11 @@ namespace Microsoft.Maui.DeviceTests
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
 
-			#if IOS || MACCATALYST
+#if IOS || MACCATALYST
 			bool attachAndRun = true;
-			#else
+#else
 			bool attachAndRun = false;
-			#endif
+#endif
 
 			view.Semantics.Hint = "Test";
 			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
@@ -146,11 +146,11 @@ namespace Microsoft.Maui.DeviceTests
 			var view = new TStub();
 			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
 
-			#if IOS || MACCATALYST
+#if IOS || MACCATALYST
 			bool attachAndRun = true;
-			#else
+#else
 			bool attachAndRun = false;
-			#endif
+#endif
 
 			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler), attachAndRun);
 			Assert.Equal(view.Semantics.HeadingLevel, id);
