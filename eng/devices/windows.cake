@@ -326,9 +326,6 @@ Task("Test")
 		var expectedCategoriesRanCount = expectedCategories.Length;
 		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
 
-		Information($"ExpectedCategoriesRanCount: {expectedCategoriesRanCount}");
-		Information($"ActualResultFileCount: {actualResultFileCount}");
-
 		while (actualResultFileCount < expectedCategoriesRanCount) {
 			actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
 			System.Threading.Thread.Sleep(1000);
