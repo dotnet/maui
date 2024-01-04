@@ -40,7 +40,7 @@ namespace Microsoft.Maui.AppiumTests
 		{
 			var remote = new StateViewContainerRemote(UITestContext, Test.VisualElement.IsVisible);
 			remote.GoTo();
-
+			App.WaitForElement($"IsVisibleStateButton");
 			var viewPre = remote.GetViews();
 
 			Assert.AreEqual(1, viewPre.Count);

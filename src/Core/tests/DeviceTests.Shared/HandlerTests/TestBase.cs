@@ -36,6 +36,7 @@ namespace Microsoft.Maui.DeviceTests
 			await Task.Delay(10);
 			GC.Collect();
 			GC.WaitForPendingFinalizers();
+			await Task.Delay(10);
 		}
 	}
 }
