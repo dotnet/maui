@@ -23,22 +23,26 @@ namespace Maui.Controls.Sample.Issues
 			Point? position = e.GetPosition(relativeTo: UpperBox);
 
 			string result;
+			string automationId;
 
 			if (position is null)
 			{
 				result = "Error: position is null";
+				automationId = "Failure";
 			}
-			else if (position.Value.X <= 40 && position.Value.Y <= 40)
+			else if (position.Value.X > 40 && position.Value.Y > 20)
 			{
-				result = "Success";
+				result = $"Success: relative position is: X={position.Value.X}, Y={position.Value.Y}";
+				automationId = "Success";
 			}
 			else
 			{
-				result = $"Error: relative position is: X={position.Value.X},Y={position.Value.Y}";
+				result = $"Error: relative position is: X={position.Value.X}, Y={position.Value.Y}";
+				automationId = "Failure";
 			}
 
 			// Report the result of the test.
-			layout.Children.Add(new Label { Text = result, AutomationId = result });
+			layout.Children.Add(new Label { Text = result, AutomationId = automationId });
 		}
 	}
 }
