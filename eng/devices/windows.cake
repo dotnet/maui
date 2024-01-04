@@ -327,7 +327,7 @@ Task("Test")
 			Information($"Test category to run: {cat}");
 		}
 
-		var expectedCategoriesRanCount = System.IO.File.ReadAllLines(testsToRunFile).Length-1;
+		var expectedCategoriesRanCount = System.IO.File.ReadAllLines(testsToRunFile).Length;
 		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
 
 		Information($"ExpectedCategoriesRanCount: {expectedCategoriesRanCount}");
