@@ -118,30 +118,25 @@ namespace Microsoft.Maui.DeviceTests
 				shell.Items.Add(shellItem);
 			});
 
-			await InvokeOnMainThreadAsync(async () =>
+			await CreateHandlerAndAddToWindow<ShellHandler>(shell, async (handler) =>
 			{
-				await CreateHandlerAndAddToWindow<ShellHandler>(shell, (handler) =>
+				var rootNavView = handler.PlatformView;
+				var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
+				var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
+				var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
+
+				Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
+				Assert.NotNull(shellItemView);
+				Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
+
+				await AssertionExtensions.AssertEventually(() =>
 				{
-					var rootNavView = handler.PlatformView;
-					var shellItemView = shell.CurrentItem.Handler.PlatformView as MauiNavigationView;
-					var expectedRoot = UI.Xaml.Controls.NavigationViewPaneDisplayMode.Left;
-					var expectedShellItems = UI.Xaml.Controls.NavigationViewPaneDisplayMode.LeftMinimal;
-
-					Assert.Equal(expectedRoot, rootNavView.PaneDisplayMode);
-					Assert.NotNull(shellItemView);
-					Assert.Equal(expectedShellItems, shellItemView.PaneDisplayMode);
-
-					return Task.CompletedTask;
+					var platformView = shell.CurrentPage.Handler.PlatformView as FrameworkElement;
+					return platformView is not null && (platformView.ActualHeight > 0 || platformView.ActualWidth > 0);
 				});
 
-				await AssertionExtensions.Wait(() =>
-				{
-					var platformView = shell.Handler.PlatformView as FrameworkElement;
-					return platformView is not null && (platformView.Height > 0 || platformView.Width > 0);
-				});
+				await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 			});
-
-			await ValidateHasColor(shell, expectedColor, typeof(ShellHandler));
 		}
 
 		[Fact(DisplayName = "Back Button Enabled/Disabled")]

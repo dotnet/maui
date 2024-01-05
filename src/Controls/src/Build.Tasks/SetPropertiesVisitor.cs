@@ -390,12 +390,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (dataTypeNode is null)
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
 				yield break;
+			}
 
 			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				yield break;
+			}
 
 			string dataType = null;
 
@@ -1011,7 +1018,7 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 
 			var isObsolete = bpDef.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (isObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"BindableProperty {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			return bpRef;
 		}
@@ -1351,12 +1358,12 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			var property = parent.VariableType.GetProperty(context.Cache, pd => pd.Name == localName, out declaringTypeReference);
 			var propertyIsObsolete = property.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertyIsObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			var propertySetter = property.SetMethod;
 			var propertySetterIsObsolete = propertySetter.CustomAttributes.Any(ca => ca.AttributeType.FullName == "System.ObsoleteAttribute");
 			if (propertySetterIsObsolete)
-				context.LoggingHelper.LogWarning("XamlC", null, null, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, $"Property setter for {localName} is deprecated.", null);
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.ObsoleteProperty, context.XamlFilePath, iXmlLineInfo.LineNumber, iXmlLineInfo.LinePosition, 0, 0, localName);
 
 			//			IL_0007:  ldloc.0
 			//			IL_0008:  ldstr "foo"

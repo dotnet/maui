@@ -17,8 +17,18 @@
             </Frame>
 
             <Image Source="{Binding ErrorImage}"></Image>
-            <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" />
-            <Label Text="{Binding ErrorStackTrace}"/>
+            
+            <Label Text="{Binding ErrorMessage}" FontAttributes="Bold" x:Name="ErrorMessage" />
+            <Label Text="{Binding ErrorStackTrace}"
+                   x:Name="ErrorTrace" />
+
+            <HorizontalStackLayout Spacing="5">
+                <Button Text="Copy Message"
+                        x:Name="CopyMessage" />
+
+                <Button Text="Copy StackTrace"
+                        x:Name="CopyTrace" />
+            </HorizontalStackLayout>
         </StackLayout>
     </ScrollView>
 
