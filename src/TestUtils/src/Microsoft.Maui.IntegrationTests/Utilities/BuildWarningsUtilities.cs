@@ -168,6 +168,38 @@ namespace Microsoft.Maui.IntegrationTests
 							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type): 'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicMethods' in call to 'System.Type.GetMethods(BindingFlags)'. The parameter '#0' of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetImplicitConversionOperator(Type,Type,Type)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
 						}
 					},
+					new WarningsPerCode
+					{
+						Code = "IL2072",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.<>c__DisplayClass2_0.<ConvertTo>b__0(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
+							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.<>c__DisplayClass2_0.<ConvertTo>b__0(): 'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicParameterlessConstructor' in call to 'System.Activator.CreateInstance(Type)'. The return value of method 'Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>)' does not have matching annotations. The source value must declare at least the same requirements as those declared on the target location it is assigned to.",
+						}
+					},
+					new WarningsPerCode
+					{
+						Code = "IL2057",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Xaml.TypeConversionExtensions.GetTypeConverterType(IEnumerable`1<CustomAttributeData>): Unrecognized value passed to the parameter 'typeName' of method 'System.Type.GetType(String)'. It's not possible to guarantee the availability of the target type.",
+						}
+					},
+				}
+			},
+			new WarningsPerFile
+			{
+				File = "src/Controls/src/Core/Routing.cs",
+				WarningsPerCode = new List<WarningsPerCode>
+				{
+					new WarningsPerCode
+					{
+						Code = "IL2111",
+						Messages = new List<string>
+						{
+							"Microsoft.Maui.Controls.Routing..cctor(): Method 'Microsoft.Maui.Controls.Routing.RegisterRoute(String,Type)' with parameters or return value with `DynamicallyAccessedMembersAttribute` is accessed via reflection. Trimmer can't guarantee availability of the requirements of the method.",
+						}
+					},
 				}
 			},
 			new WarningsPerFile

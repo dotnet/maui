@@ -209,11 +209,16 @@
   <Target Name="_MauiPrepareForILLink" BeforeTargets="PrepareForILLink">
     <PropertyGroup>
       <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
+      <MauiEnableIVisualAssemblyScanning Condition="'$(MauiEnableIVisualAssemblyScanning)' == ''">false</MauiEnableIVisualAssemblyScanning>
     </PropertyGroup>
     <ItemGroup>
       <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
                                       Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
                                       Value="$(MauiXamlRuntimeParsingSupport)"
+                                      Trim="true" />
+      <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsIVisualAssemblyScanningEnabled"
+                                      Condition="'$(MauiEnableIVisualAssemblyScanning)' != ''"
+                                      Value="$(MauiEnableIVisualAssemblyScanning)"
                                       Trim="true" />
     </ItemGroup>
   </Target>
