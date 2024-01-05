@@ -214,13 +214,29 @@ namespace Microsoft.Maui.Controls.Hosting
 			}
 		}
 
-
 		internal static MauiAppBuilder ConfigureImageSourceHandlers(this MauiAppBuilder builder)
 		{
-			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSource), (svcs, _) => new FileImageSourceService(svcs.CreateLogger<FileImageSourceService>()));
-			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FontImageSource), (svcs, _) => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
-			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(StreamImageSource), (svcs, _) => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
-			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(UriImageSource), (svcs, _) => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			void AliasOrAddImageSourceService(
+				Type newKey,
+				Type aliasKey,
+				Func<IKeyedServiceProvider, IImageSourceService> createImageSourceService)
+			{
+				Func<IServiceProvider, object, IImageSourceService> implementationFactory = (svcs, _) =>
+				{
+					if (svcs is not IKeyedServiceProvider ksvcs)
+						throw new InvalidOperationException("ImageSourceServices must be resolved from an IKeyedServiceProvider.");
+
+					return (IImageSourceService)ksvcs.GetKeyedService(typeof(IImageSourceService), aliasKey) ?? createImageSourceService(ksvcs);
+				};
+
+				builder.Services.AddKeyedSingleton<IImageSourceService>(newKey, implementationFactory);
+			}
+
+			AliasOrAddImageSourceService(typeof(FileImageSource), typeof(IFileImageSource), ksvcs => new FileImageSourceService(ksvcs.CreateLogger<FileImageSourceService>()));
+			AliasOrAddImageSourceService(typeof(FontImageSource), typeof(IFontImageSource), ksvcs => new FontImageSourceService(ksvcs.GetRequiredService<IFontManager>(), ksvcs.CreateLogger<FontImageSourceService>()));
+			AliasOrAddImageSourceService(typeof(StreamImageSource), typeof(IStreamImageSource), ksvcs => new StreamImageSourceService(ksvcs.CreateLogger<StreamImageSourceService>()));
+			AliasOrAddImageSourceService(typeof(UriImageSource), typeof(IUriImageSource), ksvcs => new UriImageSourceService(ksvcs.CreateLogger<UriImageSourceService>()));
+
 			builder.ConfigureImageSources(services =>
 			{
 				services.AddService<FileImageSource>(svcs => new FileImageSourceService(svcs.CreateLogger<FileImageSourceService>()));
