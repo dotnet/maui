@@ -33,6 +33,20 @@ namespace Microsoft.Maui
 			return services;
 		}
 
+		public static IKeyedServiceProvider GetKeyedServiceProvider(this IElementHandler handler)
+		{
+			var context = handler.MauiContext ??
+				throw new InvalidOperationException($"Unable to find the context. The {nameof(ElementHandler.MauiContext)} property should have been set by the host.");
+
+			var services = context?.Services ??
+				throw new InvalidOperationException($"Unable to find the service provider. The {nameof(ElementHandler.MauiContext)} property should have been set by the host.");
+
+			if (services is not IKeyedServiceProvider keyedServices)
+				throw new InvalidOperationException($"The {nameof(ElementHandler.MauiContext)} property set by the host was not initialized with a service provider that implements {nameof(IKeyedServiceProvider)}.");
+
+			return keyedServices;
+		}
+
 		public static T? GetService<T>(this IElementHandler handler, Type type)
 		{
 			var services = handler.GetServiceProvider();
