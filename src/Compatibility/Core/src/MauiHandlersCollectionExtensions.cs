@@ -101,7 +101,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 			return fontCollection;
 		}
 
-		public static IImageSourceServiceCollection AddCompatibilityServices(this IImageSourceServiceCollection services, params global::System.Reflection.Assembly[] assemblies)
+		public static MauiAppBuilder AddCompatibilityServices(this MauiAppBuilder builder, params global::System.Reflection.Assembly[] assemblies)
 		{
 			Hosting.MauiAppBuilderExtensions.CheckForCompatibility();
 #if PLATFORM
@@ -118,7 +118,7 @@ namespace Microsoft.Maui.Controls.Compatibility.Hosting
 					// that can map legacy image handlers to new image service structures
 				});
 #endif
-			return services;
+			return builder;
 		}
 
 
