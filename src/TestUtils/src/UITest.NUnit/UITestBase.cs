@@ -58,16 +58,16 @@ namespace UITest.Appium.NUnit
 		{
 			try
 			{
-			  if (App.AppState == ApplicationState.NotRunning)
-			  {
-				SaveDeviceDiagnosticInfo();
+				if (App.AppState == ApplicationState.NotRunning)
+				{
+					SaveDeviceDiagnosticInfo();
 
-				Reset();
-				FixtureSetup();
+					Reset();
+					FixtureSetup();
 
-          // Assert.Fail will immediately exit the test which is desirable as the app is not
-          // running anymore so we can't capture any UI structures or any screenshots
-          Assert.Fail("The app was expected to be running still, investigate as possible crash");
+					// Assert.Fail will immediately exit the test which is desirable as the app is not
+					// running anymore so we can't capture any UI structures or any screenshots
+					Assert.Fail("The app was expected to be running still, investigate as possible crash");
 				}
 			}
 			finally
@@ -76,8 +76,8 @@ namespace UITest.Appium.NUnit
 				if (testOutcome == ResultState.Error ||
 					testOutcome == ResultState.Failure)
 				{
-          SaveDeviceDiagnosticInfo();
-          SaveUIDiagnosticInfo();
+					SaveDeviceDiagnosticInfo();
+					SaveUIDiagnosticInfo();
 				}
 			}
 		}
