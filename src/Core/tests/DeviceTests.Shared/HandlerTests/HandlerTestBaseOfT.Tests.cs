@@ -78,34 +78,38 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Visibility, id);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Description makes element accessible"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Setting Semantic Description makes element accessible")]
 		public async virtual Task SettingSemanticDescriptionMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
-
 			view.Semantics.Description = "Test";
-			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
 
 			Assert.True(important);
 		}
 
-		[Fact(DisplayName = "Setting Semantic Hint makes element accessible"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Setting Semantic Hint makes element accessible")]
 		public async virtual Task SettingSemanticHintMakesElementAccessible()
 		{
 			var view = new TStub();
 			MockAccessibilityExpectations(view);
 
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
 			view.Semantics.Hint = "Test";
-			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement());
+			var important = await GetValueAsync(view, handler => view.IsAccessibilityElement(), attachAndRun);
 
 			Assert.True(important);
 		}
@@ -136,16 +140,19 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(view.Semantics.Hint, id);
 		}
 
-		[Fact(DisplayName = "Semantic Heading is set correctly"
-#if IOS
-			, Skip = "This is failing on iOS: https://github.com/dotnet/maui/issues/19122"
-#endif
-		)]
+		[Fact(DisplayName = "Semantic Heading is set correctly")]
 		public async Task SetSemanticHeading()
 		{
 			var view = new TStub();
 			view.Semantics.HeadingLevel = SemanticHeadingLevel.Level1;
-			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler));
+
+#if IOS || MACCATALYST
+			bool attachAndRun = true;
+#else
+			bool attachAndRun = false;
+#endif
+
+			var id = await GetValueAsync(view, handler => GetSemanticHeading(handler), attachAndRun);
 			Assert.Equal(view.Semantics.HeadingLevel, id);
 		}
 

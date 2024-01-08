@@ -494,6 +494,15 @@ namespace UITest.Appium
 			});
 		}
 
+		/// <summary>
+		/// Navigate back on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Back(this IApp app)
+		{
+			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
+		}
+
 		static IUIElement Wait(Func<IUIElement> query,
 			Func<IUIElement, bool> satisfactory,
 			string? timeoutMessage = null,

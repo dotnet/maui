@@ -109,7 +109,11 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await OpenFlyout(handler);
 				var flyoutFrame = GetFrameRelativeToFlyout(handler, shell.FlyoutHeader as IView);
-				AssertionExtensions.CloseEnough(flyoutFrame.Height, 30);
+
+				await AssertionExtensions.AssertEventually(() =>
+				{
+					return Math.Abs(30 - flyoutFrame.Height) < 0.2;
+				}, message: $"Expected: {30}. Actual: {flyoutFrame.Height}. Diff: {Math.Abs(30 - flyoutFrame.Height)}");
 			});
 		}
 
