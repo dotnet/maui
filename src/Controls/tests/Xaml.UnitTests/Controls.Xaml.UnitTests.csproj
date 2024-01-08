@@ -5,8 +5,8 @@
     <RootNamespace>Microsoft.Maui.Controls.Xaml.UnitTests</RootNamespace>
     <AssemblyName>Microsoft.Maui.Controls.Xaml.UnitTests</AssemblyName>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>0672;0219;0414;CS0436;CS0618</NoWarn>
-    <WarningsNotAsErrors>XC0618</WarningsNotAsErrors>
+    <NoWarn>$(NoWarn);0672;0219;0414;CS0436;CS0618</NoWarn>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);XC0618;XC0022;XC0023</WarningsNotAsErrors>
     <IsPackable>false</IsPackable>
     <DisableMSBuildAssemblyCopyCheck>true</DisableMSBuildAssemblyCopyCheck>
   </PropertyGroup>

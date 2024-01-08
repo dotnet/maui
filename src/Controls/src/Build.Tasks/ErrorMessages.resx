@@ -135,6 +135,12 @@
     <value>Binding: Unsupported indexer index type: "{0}".</value>
     <comment>0 is indexer type name</comment>
   </data>
+  <data name="BindingWithoutDataType" xml:space="preserve">
+    <value>Binding could be compiled if x:DataType is specified.</value>
+  </data>  
+  <data name="BindingWithNullDataType" xml:space="preserve">
+    <value>Binding could be compiled if x:DataType is not explicitly null.</value>
+  </data>  
   <data name="BindingPropertyNotFound" xml:space="preserve">
     <value>Binding: Property "{0}" not found on "{1}".</value>
     <comment>0 is property name, 1 is type name</comment>
