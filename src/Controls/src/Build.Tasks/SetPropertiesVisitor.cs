@@ -390,12 +390,19 @@ namespace Microsoft.Maui.Controls.Build.Tasks
 			}
 
 			if (dataTypeNode is null)
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithoutDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
+
 				yield break;
+			}
 
 			if (dataTypeNode is ElementNode enode
 				&& enode.XmlType.NamespaceUri == XamlParser.X2009Uri
 				&& enode.XmlType.Name == nameof(Microsoft.Maui.Controls.Xaml.NullExtension))
+			{
+				context.LoggingHelper.LogWarningOrError(BuildExceptionCode.BindingWithNullDataType, context.XamlFilePath, node.LineNumber, node.LinePosition, 0, 0, null);
 				yield break;
+			}
 
 			string dataType = null;
 

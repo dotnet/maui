@@ -1025,7 +1025,9 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.False(pageReference.IsAlive, "Page should not be alive!");
 		}
 
-		[Fact(DisplayName = "HideSoftInputOnTapped Doesnt Crash If Entry Is Still Focused After Window Is Null")]
+		//HideSoftInputOnTapped doesn't currently do anything on windows
+#if !WINDOWS
+		[Fact(DisplayName = "HideSoftInputOnTapped Doesn't Crash If Entry Is Still Focused After Window Is Null")]
 		public async Task HideSoftInputOnTappedDoesntCrashIfEntryIsStillFocusedAfterWindowIsNull()
 		{
 			SetupBuilder();
@@ -1067,6 +1069,7 @@ namespace Microsoft.Maui.DeviceTests
 				};
 			}
 		}
+#endif
 
 		[Fact(DisplayName = "Can Reuse Pages")]
 		public async Task CanReusePages()
