@@ -5,8 +5,6 @@ using System.ComponentModel;
 using CoreGraphics;
 using Foundation;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Internals;
-using ObjCRuntime;
 using UIKit;
 
 namespace Microsoft.Maui.Controls.Handlers.Items
@@ -21,9 +19,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		CGSize _currentSize;
 		WeakReference<Func<UICollectionViewCell>> _getPrototype;
 
-		const double ConstraintSizeTolerance = 0.00001;
-
-		Dictionary<object, CGSize> _cellSizeCache = new Dictionary<object, CGSize>();
+		readonly Dictionary<object, CGSize> _cellSizeCache = new();
 
 		public ItemsUpdatingScrollMode ItemsUpdatingScrollMode { get; set; }
 
@@ -102,7 +98,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 
 		internal virtual void UpdateConstraints(CGSize size)
 		{
-			if (!RequiresConstraintUpdate(size, _currentSize))
+			if (size.IsCloseTo(_currentSize))
 			{
 				return;
 			}
@@ -573,18 +569,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				return base.ShouldInvalidateLayoutForBoundsChange(newBounds);
 			}
 
-			if (OperatingSystem.IsIOSVersionAtLeast(11) || OperatingSystem.IsMacCatalystVersionAtLeast(11)
-#if TVOS
-				|| OperatingSystem.IsTvOSVersionAtLeast(11)
-#endif
-			)
-			{
-				UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
-			}
-			else
-			{
-				UpdateConstraints(CollectionView.Bounds.Size);
-			}
+			UpdateConstraints(CollectionView.AdjustedContentInset.InsetRect(newBounds).Size);
 
 			return true;
 		}
@@ -609,21 +594,6 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		internal void ClearCellSizeCache()
 		{
 			_cellSizeCache.Clear();
-		}
-
-		bool RequiresConstraintUpdate(CGSize newSize, CGSize current)
-		{
-			if (Math.Abs(newSize.Width - current.Width) > ConstraintSizeTolerance)
-			{
-				return true;
-			}
-
-			if (Math.Abs(newSize.Height - current.Height) > ConstraintSizeTolerance)
-			{
-				return true;
-			}
-
-			return false;
 		}
 	}
 }

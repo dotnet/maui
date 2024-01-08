@@ -383,5 +383,33 @@ namespace Microsoft.Maui.Controls.Build.Tasks {
                 return ResourceManager.GetString("XStaticSyntax", resourceCulture);
             }
         }
+
+        /// <summary>
+        /// Looks up a localized message for the obsolete property.
+        /// </summary>
+        internal static string ObsoleteProperty {
+            get {
+                return ResourceManager.GetString("ObsoleteProperty", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Looks up a localized message for when a binding is used without specifying a data type.
+        /// </summary>
+        internal static string BindingWithoutDataType {
+            get {
+                return ResourceManager.GetString("BindingWithoutDataType", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        /// Looks up a localized message for binding with null data type.
+        /// </summary>
+        /// <returns>The error message.</returns>
+        internal static string BindingWithNullDataType {
+            get {
+                return ResourceManager.GetString("BindingWithNullDataType", resourceCulture);
+            }
+        }
     }
 }
