@@ -45,20 +45,20 @@ namespace Maui.Controls.Sample.Pages
 			entrySelection.SelectionLength = (int)e.NewValue;
 		}
 
-		void OnEntryPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnEntryPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Entry.CursorPosition))
-				lblCursor.Text = $"CursorPosition = {((Entry)sender).CursorPosition}";
+				lblCursor.Text = $"CursorPosition = {((Entry)sender!).CursorPosition}";
 			if (e.PropertyName == nameof(Entry.Text))
-				sldCursorPosition.Maximum = ((Entry)sender).Text.Length;
+				sldCursorPosition.Maximum = ((Entry)sender!).Text.Length;
 		}
 
-		void OnEntrySelectionPropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+		void OnEntrySelectionPropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
 		{
 			if (e.PropertyName == nameof(Entry.SelectionLength))
-				lblSelection.Text = $"SelectionLength = {((Entry)sender).SelectionLength}";
+				lblSelection.Text = $"SelectionLength = {((Entry)sender!).SelectionLength}";
 			if (e.PropertyName == nameof(Entry.Text))
-				sldSelection.Maximum = ((Entry)sender).Text.Length;
+				sldSelection.Maximum = ((Entry)sender!).Text.Length;
 		}
 
 		void OnEntryCompleted(object sender, EventArgs e)

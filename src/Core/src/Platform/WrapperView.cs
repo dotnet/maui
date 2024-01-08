@@ -1,11 +1,15 @@
-﻿using Microsoft.Maui.Graphics;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Maui.Graphics;
 
 namespace Microsoft.Maui.Platform
 {
 	public partial class WrapperView
 	{
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShape is a non-NSObject in MAUI.")]
 		IShape? _clip;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IShadow is a non-NSObject in MAUI.")]
 		IShadow? _shadow;
+		[UnconditionalSuppressMessage("Memory", "MEM0002", Justification = "IBorder is a non-NSObject in MAUI.")]
 		IBorderStroke? _border;
 
 #if WINDOWS

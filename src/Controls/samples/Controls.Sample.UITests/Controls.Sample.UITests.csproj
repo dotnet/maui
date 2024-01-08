@@ -46,18 +46,6 @@
     <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFFFFF" BaseSize="168,208" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Elements\BordersWithVariousShapes.xaml.cs">
-      <DependentUpon>BordersWithVariousShapes.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
   <Import Project="$(MauiSrcDirectory)Maui.InTree.props" Condition=" '$(UseMaui)' != 'true' " />
-
-  <ItemGroup>
-    <MauiXaml Update="Elements\BordersWithVariousShapes.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </MauiXaml>
-  </ItemGroup>
 
 </Project>

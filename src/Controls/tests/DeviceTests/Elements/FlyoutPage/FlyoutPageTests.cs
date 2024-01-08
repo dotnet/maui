@@ -235,6 +235,39 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
+		[Fact(DisplayName = "Back Button Enabled Changes with push/pop + page change")]
+		public async Task BackButtonEnabledChangesWithPushPopAndPageChanges()
+		{
+			SetupBuilder();
+
+			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage
+			{
+				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Split,
+				Flyout = new ContentPage() { Title = "Hello world" }
+			});
+
+			var first = new NavigationPage(new ContentPage());
+			var second = new NavigationPage(new ContentPage());
+
+			flyoutPage.Detail = first;
+
+			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
+			{
+				Assert.False(IsBackButtonVisible(handler));
+
+				await first.PushAsync(new ContentPage());
+				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
+				Assert.True(IsBackButtonVisible(handler));
+
+				flyoutPage.Detail = second;
+				Assert.False(IsBackButtonVisible(handler));
+
+				await second.PushAsync(new ContentPage());
+				await AssertionExtensions.Wait(() => IsBackButtonVisible(handler));
+				Assert.True(IsBackButtonVisible(handler));
+			});
+		}
+
 		bool CanDeviceDoSplitMode(FlyoutPage page)
 		{
 			return ((IFlyoutPageController)page).ShouldShowSplitMode;

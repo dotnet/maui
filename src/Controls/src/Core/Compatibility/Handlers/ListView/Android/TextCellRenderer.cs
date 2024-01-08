@@ -90,7 +90,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 		}
 
 		// ensure we don't get other people's BaseCellView's
-		internal class TextCellView : BaseCellView
+		internal sealed class TextCellView : BaseCellView
 		{
 			public TextCellView(Context context, Cell cell) : base(context, cell)
 			{

@@ -23,6 +23,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 		WScrollBarVisibility? _horizontalScrollBarVisibilityWithoutLoop;
 		WScrollBarVisibility? _verticalScrollBarVisibilityWithoutLoop;
 		Size _currentSize;
+		NotifyCollectionChangedEventHandler _collectionChanged;
+		readonly WeakNotifyCollectionChangedProxy _proxy = new();
+
+		~CarouselViewHandler() => _proxy.Unsubscribe();
 
 		protected override IItemsLayout Layout { get; }
 
@@ -47,9 +51,7 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 			if (ListViewBase != null)
 			{
 				ListViewBase.SizeChanged -= OnListViewSizeChanged;
-
-				if (CollectionViewSource?.Source is ObservableItemTemplateCollection observableItemsSource)
-					observableItemsSource.CollectionChanged -= OnCollectionItemsSourceChanged;
+				_proxy.Unsubscribe();
 			}
 
 			if (_scrollViewer != null)
@@ -120,7 +122,10 @@ namespace Microsoft.Maui.Controls.Handlers.Items
 				GetItemHeight(), GetItemWidth(), GetItemSpacing(), MauiContext);
 
 			if (collectionViewSource is ObservableItemTemplateCollection observableItemsSource)
-				observableItemsSource.CollectionChanged += OnCollectionItemsSourceChanged;
+			{
+				_collectionChanged ??= OnCollectionItemsSourceChanged;
+				_proxy.Subscribe(observableItemsSource, _collectionChanged);
+			}
 
 			return new CollectionViewSource
 			{

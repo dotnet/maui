@@ -16,6 +16,7 @@ namespace Maui.Controls.Sample
 			bool _filterBugzilla;
 			bool _filterNone;
 			bool _filterGitHub;
+			bool _filterManual;
 			string _filter;
 
 			static TextCell MakeIssueCell(string text, string detail, Action tapped)
@@ -107,7 +108,7 @@ namespace Maui.Controls.Sample
 			class IssueModel
 			{
 				public IssueTracker IssueTracker { get; set; }
-				public int IssueNumber { get; set; }
+				public string IssueNumber { get; set; }
 				public int IssueTestNumber { get; set; }
 				public string Name { get; set; }
 				public string Description { get; set; }
@@ -196,6 +197,9 @@ namespace Maui.Controls.Sample
 					case IssueTracker.Bugzilla:
 						_filterBugzilla = !_filterBugzilla;
 						break;
+					case IssueTracker.ManualTest:
+						_filterManual = !_filterManual;
+						break;
 					case IssueTracker.None:
 						_filterNone = !_filterNone;
 						break;
@@ -251,6 +255,17 @@ namespace Maui.Controls.Sample
 						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
 
 					issueCells = issueCells.Concat(githubIssueCells);
+				}
+
+				if (!_filterManual)
+				{
+					var manualIssueCells =
+						from issueModel in _issues
+						where issueModel.IssueTracker == IssueTracker.ManualTest && issueModel.Matches(filter)
+						orderby issueModel.IssueNumber descending
+						select MakeIssueCell(issueModel.Name, issueModel.Description, issueModel.Action);
+
+					issueCells = issueCells.Concat(manualIssueCells);
 				}
 
 				if (!_filterNone)
@@ -373,17 +388,22 @@ namespace Maui.Controls.Sample
 			};
 
 			var bzSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla" });
+			trackerFilterLayout.Children.Add(new Label { Text = "Bugzilla", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(bzSwitch);
 			bzSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Bugzilla);
 
 			var ghSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "GitHub" });
+			trackerFilterLayout.Children.Add(new Label { Text = "GitHub", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(ghSwitch);
 			ghSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.Github);
 
+			var manualSwitch = new Switch { IsToggled = true };
+			trackerFilterLayout.Children.Add(new Label { Text = "Manual", VerticalOptions = LayoutOptions.Center });
+			trackerFilterLayout.Children.Add(manualSwitch);
+			manualSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.ManualTest);
+
 			var noneSwitch = new Switch { IsToggled = true };
-			trackerFilterLayout.Children.Add(new Label { Text = "None" });
+			trackerFilterLayout.Children.Add(new Label { Text = "None", VerticalOptions = LayoutOptions.Center });
 			trackerFilterLayout.Children.Add(noneSwitch);
 			noneSwitch.Toggled += (sender, args) => testCaseScreen.FilterTracker(IssueTracker.None);
 

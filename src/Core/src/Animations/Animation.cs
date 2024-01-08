@@ -194,12 +194,11 @@ namespace Microsoft.Maui.Animations
 			var secondsSinceLastUpdate = millisecondsSinceLastUpdate / 1000.0;
 			CurrentTime += secondsSinceLastUpdate;
 
-			if (childrenAnimations.Any())
+			if (childrenAnimations.Count > 0)
 			{
 				var hasFinished = true;
 				foreach (var animation in childrenAnimations)
 				{
-
 					animation.OnTick(millisecondsSinceLastUpdate);
 					if (!animation.HasFinished)
 						hasFinished = false;
@@ -373,6 +372,14 @@ namespace Microsoft.Maui.Animations
 		{
 			// Do not change this code. Put cleanup code in Dispose(bool disposing) above.
 			Dispose(true);
+		}
+
+		internal virtual void ForceFinish()
+		{
+			if (Progress < 1.0)
+			{
+				Update(1.0);
+			}
 		}
 	}
 }

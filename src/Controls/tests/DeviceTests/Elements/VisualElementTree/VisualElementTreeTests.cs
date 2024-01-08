@@ -9,6 +9,8 @@ using Xunit;
 using System.Collections.Generic;
 using ContentView = Microsoft.Maui.Controls.ContentView;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Shapes;
+
 #if ANDROID || IOS || MACCATALYST
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 #endif
@@ -37,6 +39,7 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<NestingView, NestingViewHandler>();
 					handlers.AddHandler<ContentView, ContentViewHandler>();
 					handlers.AddHandler<CollectionView, CollectionViewHandler>();
+					handlers.AddHandler<Border, BorderHandler>();
 				});
 			});
 		}
@@ -45,11 +48,15 @@ namespace Microsoft.Maui.DeviceTests
 		public async Task GetVisualTreeElements()
 		{
 			SetupBuilder();
+
+			var border = new Border() { WidthRequest = 50, HeightRequest = 50, StrokeShape = new RoundRectangle() { CornerRadius = 5 } };
 			var label = new Label() { Text = "Find Me" };
+
 			var page = new ContentPage() { Title = "Title Page" };
 			page.Content = new VerticalStackLayout()
 			{
-				label
+				label,
+				border
 			};
 
 			var rootPage = await InvokeOnMainThreadAsync(() =>
@@ -58,6 +65,8 @@ namespace Microsoft.Maui.DeviceTests
 
 			await CreateHandlerAndAddToWindow<IWindowHandler>(rootPage, async handler =>
 			{
+				await OnFrameSetToNotEmpty(rootPage);
+				await OnFrameSetToNotEmpty(border);
 				await OnFrameSetToNotEmpty(label);
 				var locationOnScreen = label.GetLocationOnScreen().Value;
 				var labelFrame = label.Frame;

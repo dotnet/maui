@@ -74,12 +74,5 @@ namespace Microsoft.Maui.DeviceTests
 				SearchBarTests.GetPlatformText(handler);
 		}
 #endif
-
-		[Category(TestCategory.SearchBar)]
-		[Category(TestCategory.TextInput)]
-		[Collection(RunInNewWindowCollection)]
-		public class SearchBarTextInputFocusTests : TextInputFocusTests<SearchBarHandler, SearchBar>
-		{
-		}
 	}
 }
