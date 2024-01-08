@@ -20,7 +20,7 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 			builder.Services.AddKeyedSingleton<IImageSourceService, UriImageSourceService>(typeof(MultipleInterfacesImageSourceStub));
 			var provider = (IKeyedServiceProvider)builder.Build().Services;
 
-			var service = provider.GetRequiredKeyedService(typeof(MultipleInterfacesImageSourceStub));
+			var service = provider.GetRequiredKeyedService<IImageSourceService>(typeof(MultipleInterfacesImageSourceStub));
 			Assert.IsType<UriImageSourceService>(service);
 		}
 	}
