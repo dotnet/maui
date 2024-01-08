@@ -219,8 +219,8 @@ namespace Microsoft.Maui.DeviceTests
 				handler.ImageEvents.Clear();
 
 				// get the service we are going to test with
-				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var imageService = provider.GetRequiredImageSourceService<CountedImageSourceStub>();
+				var provider = handler.GetKeyedServiceProvider();
+				var imageService = provider.GetRequiredKeyedService<IImageSourceService>(typeof(CountedImageSourceStub));
 				var countedService = Assert.IsType<CountedImageSourceServiceStub>(imageService);
 
 				// hook up the listeners
@@ -286,8 +286,8 @@ namespace Microsoft.Maui.DeviceTests
 				handler.ImageEvents.Clear();
 
 				// get the service we are going to test with
-				var provider = handler.Services.GetRequiredService<IImageSourceServiceProvider>();
-				var imageService = provider.GetRequiredImageSourceService<CountedImageSourceStub>();
+				var provider = handler.GetKeyedServiceProvider();
+				var imageService = provider.GetRequiredKeyedService<IImageSourceService>(typeof(CountedImageSourceStub));
 				var countedService = Assert.IsType<CountedImageSourceServiceStub>(imageService);
 
 				// hook up the listeners
