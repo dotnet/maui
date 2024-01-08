@@ -15,25 +15,13 @@ namespace Microsoft.Maui.UnitTests.ImageSource
 		[Fact]
 		public void ResolvesToConcreteTypeOverInterface()
 		{
-			var provider = CreateImageSourceServiceProvider(services =>
-			{
-				services.AddService<IStreamImageSource, StreamImageSourceService>();
-				services.AddService<MultipleInterfacesImageSourceStub, UriImageSourceService>();
-			});
+			var builder = MauiApp.CreateBuilder();
+			builder.Services.AddKeyedSingleton<IImageSourceService, StreamImageSourceService>(typeof(IStreamImageSource));
+			builder.Services.AddKeyedSingleton<IImageSourceService, UriImageSourceService>(typeof(MultipleInterfacesImageSourceStub));
+			var provider = (IKeyedServiceProvider)builder.Build().Services;
 
-			var service = provider.GetRequiredImageSourceService(new MultipleInterfacesImageSourceStub());
+			var service = provider.GetRequiredKeyedService(typeof(MultipleInterfacesImageSourceStub));
 			Assert.IsType<UriImageSourceService>(service);
-		}
-
-		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
-		{
-			var mauiApp = MauiApp.CreateBuilder()
-				.ConfigureImageSources(configure)
-				.Build();
-
-			var provider = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
-
-			return provider;
 		}
 	}
 }
