@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Hosting;
 
@@ -8,17 +9,13 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static MauiAppBuilder ConfigureTestBuilder(this MauiAppBuilder mauiAppBuilder)
 		{
-			return mauiAppBuilder
+			var builder = mauiAppBuilder
 				.ConfigureMauiHandlers(handlers =>
 				{
 					handlers.AddHandler(typeof(ButtonWithContainerStub), typeof(ButtonWithContainerStubHandler));
 					handlers.AddHandler(typeof(SliderStub), typeof(SliderHandler));
 					handlers.AddHandler(typeof(ButtonStub), typeof(ButtonHandler));
 					handlers.AddHandler(typeof(ElementStub), typeof(ElementHandlerStub));
-				})
-				.ConfigureImageSources(services =>
-				{
-					services.AddService<ICountedImageSourceStub, CountedImageSourceServiceStub>();
 				})
 				.ConfigureFonts(fonts =>
 				{
@@ -28,6 +25,9 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-Italic.ttf", "Lobster Two Italic");
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
+			builder.Services.AddKeyedSingleton<IImageSourceService, CountedImageSourceServiceStub>(typeof(CountedImageSourceStub));
+
+			return builder;
 		}
 	}
 }
