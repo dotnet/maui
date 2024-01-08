@@ -13,14 +13,14 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public void CanResolveCorrectService()
 		{
-			var provider = CreateImageSourceServiceProvider(services =>
-			{
-				services.AddService<IFileImageSource, FileImageSourceService>();
-			});
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddKeyedSingleton<IImageSourceService, FileImageSourceService>(typeof(FileImageSourceStub));
+
+			var provider = (IKeyedServiceProvider)builder.Build().Services;
 
 			var imageSource = new FileImageSourceStub();
 
-			var service = provider.GetRequiredImageSourceService(imageSource);
+			var service = provider.GetRequiredKeyedService<IImageSourceService>(imageSource.GetType());
 
 			Assert.IsType<FileImageSourceService>(service);
 		}
@@ -28,38 +28,29 @@ namespace Microsoft.Maui.DeviceTests
 		[Fact]
 		public void CanResolveCorrectServiceWhenMultiple()
 		{
-			var provider = CreateImageSourceServiceProvider(services =>
-			{
-				services.AddService<IFileImageSource, FileImageSourceService>();
-				services.AddService<IUriImageSource, UriImageSourceService>();
-			});
+			var builder = MauiApp.CreateBuilder(useDefaults: false);
+			builder.Services.AddKeyedSingleton<IImageSourceService, FileImageSourceService>(typeof(FileImageSourceStub));
+			builder.Services.AddKeyedSingleton<IImageSourceService, UriImageSourceService>(typeof(UriImageSourceStub));
 
-			var service = provider.GetRequiredImageSourceService(new FileImageSourceStub());
+			var provider = (IKeyedServiceProvider)builder.Build().Services;
+
+			var fileImageSource = new FileImageSourceStub();
+			var service = provider.GetRequiredKeyedService<IImageSourceService>(fileImageSource.GetType());
 			Assert.IsType<FileImageSourceService>(service);
 
-			service = provider.GetRequiredImageSourceService(new UriImageSourceStub());
+			var uriImageSource = new UriImageSourceStub();
+			service = provider.GetRequiredKeyedService<IImageSourceService>(uriImageSource.GetType());
 			Assert.IsType<UriImageSourceService>(service);
 		}
 
 		[Fact]
 		public void ThrowsWhenMissingService()
 		{
-			var provider = CreateImageSourceServiceProvider(services => { });
+			var provider = (IKeyedServiceProvider)MauiApp.CreateBuilder(useDefaults: false).Build().Services;
 
-			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new FileImageSourceStub()));
+			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredKeyedService<IImageSourceService>(typeof(FileImageSourceStub)));
 
-			Assert.Contains(nameof(IFileImageSource), ex.Message, StringComparison.Ordinal);
-		}
-
-		[Fact]
-		public void ThrowsWhenNotASpecificImageSource()
-		{
-			var provider = CreateImageSourceServiceProvider(services => { });
-
-			var ex = Assert.Throws<InvalidOperationException>(() => provider.GetRequiredImageSourceService(new InvalidImageSourceStub()));
-
-			Assert.Contains(nameof(InvalidImageSourceStub), ex.Message, StringComparison.Ordinal);
-			Assert.Contains(nameof(IImageSource), ex.Message, StringComparison.Ordinal);
+			Assert.Contains(nameof(IImageSourceService), ex.Message, StringComparison.Ordinal);
 		}
 
 		[Fact]
@@ -86,17 +77,6 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(1, dispose);
 
 			cache.Return(Colors.Red);
-		}
-
-		private IImageSourceServiceProvider CreateImageSourceServiceProvider(Action<IImageSourceServiceCollection> configure)
-		{
-			var mauiApp = MauiApp.CreateBuilder(useDefaults: false)
-				.ConfigureImageSources(configure)
-				.Build();
-
-			var provider = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
-
-			return provider;
 		}
 	}
 }
