@@ -37,8 +37,8 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
-			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
+			var provider = (IKeyedServiceProvider)mauiApp.Services;
+			var service = provider.GetRequiredKeyedService<IImageSourceService>(typeof(IFontImageSource));
 
 			var imageSource = new FontImageSourceStub
 			{
@@ -67,8 +67,8 @@ namespace Microsoft.Maui.DeviceTests
 				.ConfigureImageSources()
 				.Build();
 
-			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
-			var service = images.GetRequiredImageSourceService<FontImageSourceStub>();
+			var provider = (IKeyedServiceProvider)mauiApp.Services;
+			var service = provider.GetRequiredKeyedService<IImageSourceService>(typeof(IFontImageSource));
 
 			var imageSource = new FontImageSourceStub
 			{
