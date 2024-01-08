@@ -26,6 +26,7 @@ namespace Microsoft.Maui.DeviceTests
 					fonts.AddFont("LobsterTwo-BoldItalic.ttf", "Lobster Two BoldItalic");
 				});
 			builder.Services.AddKeyedSingleton<IImageSourceService, CountedImageSourceServiceStub>(typeof(CountedImageSourceStub));
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSourceStub), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFileImageSource)));
 
 			return builder;
 		}
