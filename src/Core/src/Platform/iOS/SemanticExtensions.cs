@@ -35,15 +35,22 @@ namespace Microsoft.Maui.Platform
 					platformView.IsAccessibilityElement = true;
 			}
 
+			var accessibilityTraits = platformView.AccessibilityTraits;
+			var hasHeader = (accessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header;
+
 			if (semantics.IsHeading)
 			{
-				if ((platformView.AccessibilityTraits & UIAccessibilityTrait.Header) != UIAccessibilityTrait.Header)
-					platformView.AccessibilityTraits |= UIAccessibilityTrait.Header;
+				if (!hasHeader)
+				{
+					platformView.AccessibilityTraits = accessibilityTraits | UIAccessibilityTrait.Header;
+				}
 			}
 			else
 			{
-				if ((platformView.AccessibilityTraits & UIAccessibilityTrait.Header) == UIAccessibilityTrait.Header)
-					platformView.AccessibilityTraits &= ~UIAccessibilityTrait.Header;
+				if (hasHeader)
+				{
+					platformView.AccessibilityTraits = accessibilityTraits & ~UIAccessibilityTrait.Header;
+				}
 			}
 		}
 	}
