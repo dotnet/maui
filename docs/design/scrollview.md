@@ -50,6 +50,8 @@ The other method, `ScrollFinished()`, is called by the native platform to indica
 
 # Platform Implementations
 
+The behavior of the `Padding` property on ScrollView (inherited from Forms) requires that the padding is applied _inside_ the scrollable portion of the ScrollView. Also, the content of a ScrollView may have its own `Margin`. The inset of content in a ScrollView is effectively the sum of the ScrollView's `Padding` and the content's `Margin`. However, the various platforms all treat these properties differently within their native ScrollView equivalents. Much of the complexity of the ScrollViewHandler for each platform is addressing these differences.
+
 ## Windows
 
 We'll start with Windows, because it's the most confusing. First off, it's important to note that as of this writing, the backing control for the .NET MAUI ScrollView is [`Microsoft.UI.Xaml.Controls.ScrollViewer`](https://learn.microsoft.com/en-us/uwp/api/windows.ui.xaml.controls.scrollviewer?view=winrt-22621). It is _not_ [`Microsoft.UI.Xaml.Controls.ScrollView`](https://learn.microsoft.com/en-us/windows/windows-app-sdk/api/winrt/microsoft.ui.xaml.controls.scrollview?view=windows-app-sdk-1.4), as this control was not available when .NET MAUI was first ported from Forms. _This may change in the future._ But for now, the native control is a ScrollView_er_. 
