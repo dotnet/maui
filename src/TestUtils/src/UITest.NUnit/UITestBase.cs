@@ -58,6 +58,8 @@ namespace UITest.Appium.NUnit
 		{
 			if (App.AppState == ApplicationState.NotRunning)
 			{
+				SaveDeviceDiagnosticInfo();
+
 				Reset();
 				FixtureSetup();
 

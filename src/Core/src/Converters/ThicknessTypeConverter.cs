@@ -17,6 +17,7 @@ namespace Microsoft.Maui.Converters
 
 		public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 		{
+			// IMPORTANT! Update ThicknessTypeDesignConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)
