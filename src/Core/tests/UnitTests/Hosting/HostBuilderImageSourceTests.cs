@@ -16,12 +16,13 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var builder = MauiApp
 				.CreateBuilder()
 				.ConfigureImageSources();
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSourceStub), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFileImageSource)));
 			var mauiApp = builder.Build();
 
 			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
-			var imageSourceService = images.GetRequiredImageSourceService(type);
+			var imageSourceService = images.GetRequiredKeyedService<IImageSourceService>(type);
 			Assert.NotNull(imageSourceService);
 			Assert.IsType<FileImageSourceService>(imageSourceService);
 		}
@@ -41,7 +42,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
-			var imageSourceService = images.GetRequiredImageSourceService<IFontImageSource>();
+			var imageSourceService = images.GetRequiredKeyedService<IImageSourceService>(typeof(IFontImageSource));
 			Assert.NotNull(imageSourceService);
 			var fontService = Assert.IsType<FontImageSourceService>(imageSourceService);
 
@@ -55,6 +56,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.CreateBuilder()
 				.ConfigureFonts()
 				.ConfigureImageSources();
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FontImageSourceStub), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFontImageSource)));
 			var mauiApp = builder.Build();
 
 			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
@@ -63,7 +65,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
-			var imageSourceService = images.GetRequiredImageSourceService<FontImageSourceStub>();
+			var imageSourceService = images.GetRequiredKeyedService<IImageSourceService>(typeof(FontImageSourceStub));
 			Assert.NotNull(imageSourceService);
 			var fontService = Assert.IsType<FontImageSourceService>(imageSourceService);
 
