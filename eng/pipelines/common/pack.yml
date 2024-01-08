@@ -15,6 +15,10 @@ parameters:
   type: string
   default: 'nuget'
 
+- name: artifactBinaries
+  type: string
+  default: 'pack-binaries'
+
 - name: nugetFolder
   type: string
   default: 'artifacts'
@@ -41,6 +45,7 @@ steps:
         poolName: ${{ parameters.poolName }}
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
         gitHubToken: ${{ parameters.gitHubToken }}
+        skipAndroidImages: true
 
   - ${{ each step in parameters.prepareSteps }}:
     - ${{ each pair in step }}:
@@ -158,4 +163,21 @@ steps:
       inputs:
         PathToPublish: ${{ parameters.checkoutDirectory }}/artifacts/docs-packs
         ArtifactName: xml-docs
+
+    # binaries for compliance scanning
+    - task: CopyFiles@2
+      displayName: 'Copy Binaries Files'
+      condition: succeeded()
+      inputs:
+        Contents: |
+          ${{ parameters.checkoutDirectory }}/src/Controls/src/Nuget/bin/Release/**/*.dll
+        TargetFolder: ${{ parameters.checkoutDirectory }}/binaries
+        flattenFolders: false
+
+    - task: PublishBuildArtifacts@1
+      condition: succeeded()
+      displayName: publish binaries artifacts
+      inputs:
+        PathToPublish: ${{ parameters.checkoutDirectory }}/binaries
+        ArtifactName: ${{ parameters.artifactBinaries }}
 
