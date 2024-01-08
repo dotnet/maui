@@ -87,13 +87,13 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		static string[] IsXamlFalseSource = new[]
 		{
 			"Validation.NotXaml",
-		};		
-	
+		};
+
 		[Test, TestCaseSource(nameof(IsXamlFalseSource))]
 		public void IsXamlFalse(string name)
 		{
 			var resource = GetResource(name);
 			Assert.IsFalse(resource.IsXaml(new XamlCache(), assembly.MainModule, out _), $"IsXaml should return false for '{name}'.");
-		}		
+		}
 	}
 }

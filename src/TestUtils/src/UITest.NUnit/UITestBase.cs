@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
@@ -60,8 +60,10 @@ namespace UITest.Appium.NUnit
 			{
 				if (App.AppState == ApplicationState.NotRunning)
 				{
-					Reset();
-					FixtureSetup();
+				SaveDeviceDiagnosticInfo();
+
+				Reset();
+				FixtureSetup();
 
 					// Assert.Fail will immediately exit the test which is desirable as the app is not
 					// running anymore so we can't capture any UI structures or any screenshots
