@@ -1,6 +1,6 @@
-﻿using System.Reflection;
-using Microsoft.Maui.Appium;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using UITest.Appium;
+using UITest.Core;
 
 namespace Microsoft.Maui.AppiumTests.Issues
 {
@@ -28,14 +28,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			Assert.AreEqual(GetExpectedButtonStatus(isVisible: true), thirdStatus);
 		}
 
-		string TapButtonAndGetStatus()
+		string? TapButtonAndGetStatus()
 		{
-			App.Tap(buttonId);
+			App.Click(buttonId);
 
 			return GetStatus();
 		}
 
-		string GetStatus() => App.Query(x => x.Marked("LabelStatus"))[0].Text;
+		string? GetStatus() => App.FindElement("LabelStatus").GetText();
 
 		string GetExpectedButtonStatus(bool isVisible)
 		{

@@ -156,6 +156,28 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.True(finished);
 		}
 
+		[Fact(DisplayName = "Flyout Width Does Not Crash")]
+		public async Task FlyoutWidthDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var shell = await CreateShellAsync(shell =>
+			{
+				shell.CurrentItem = new ContentPage();
+				shell.FlyoutBehavior = FlyoutBehavior.Flyout;
+			});
+
+			bool finished = false;
+			await CreateHandlerAndAddToWindow<IWindowHandler>(shell, (_) =>
+			{
+				finished = true;
+				shell.FlyoutWidth = 1;
+				return Task.CompletedTask;
+			});
+
+			Assert.True(finished);
+		}
+
 		[Fact(DisplayName = "Appearing Fires Before NavigatedTo")]
 		public async Task AppearingFiresBeforeNavigatedTo()
 		{
@@ -792,6 +814,7 @@ namespace Microsoft.Maui.DeviceTests
 				};
 
 				Shell.SetBackButtonBehavior(secondPage, behavior);
+				await AssertionExtensions.Wait(() => !IsBackButtonVisible(shell.Handler));
 				Assert.False(IsBackButtonVisible(shell.Handler));
 				behavior.IsVisible = true;
 				NavigationPage.SetHasBackButton(shell.CurrentPage, true);

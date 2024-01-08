@@ -124,19 +124,29 @@ namespace Microsoft.Maui.Controls
 			if (bpcontext == null)
 				return;
 
-			var original = bpcontext.Values.GetSpecificityAndValue().Value;
-			var newValue = bpcontext.Values.GetClearedValue();
-			var changed = !Equals(original, newValue);
+			var original = bpcontext.Values.GetSpecificityAndValue();
+			if (original.Key == SetterSpecificity.FromHandler)
+				bpcontext.Values.Remove(SetterSpecificity.FromHandler);
+
+
+			var newValue = bpcontext.Values.GetClearedValue(specificity);
+			var changed = !Equals(original.Value, newValue);
 			if (changed)
 			{
-				property.PropertyChanging?.Invoke(this, original, newValue);
+				property.PropertyChanging?.Invoke(this, original.Value, newValue);
 				OnPropertyChanging(property.PropertyName);
 			}
+
 			bpcontext.Values.Remove(specificity);
+
+			//there's some side effect implemented in CoerceValue (see IsEnabled) that we need to trigger here
+			if (property.CoerceValue != null)
+				property.CoerceValue(this, newValue);
+
 			if (changed)
 			{
 				OnPropertyChanged(property.PropertyName);
-				property.PropertyChanged?.Invoke(this, original, newValue);
+				property.PropertyChanged?.Invoke(this, original.Value, newValue);
 			}
 		}
 
@@ -163,7 +173,7 @@ namespace Microsoft.Maui.Controls
 
 		internal LocalValueEnumerator GetLocalValueEnumerator() => new LocalValueEnumerator(this);
 
-		internal class LocalValueEnumerator : IEnumerator<LocalValueEntry>
+		internal sealed class LocalValueEnumerator : IEnumerator<LocalValueEntry>
 		{
 			Dictionary<BindableProperty, BindablePropertyContext>.Enumerator _propertiesEnumerator;
 			internal LocalValueEnumerator(BindableObject bindableObject) => _propertiesEnumerator = bindableObject._properties.GetEnumerator();
@@ -190,7 +200,7 @@ namespace Microsoft.Maui.Controls
 			}
 		}
 
-		internal class LocalValueEntry
+		internal sealed class LocalValueEntry
 		{
 			internal LocalValueEntry(BindableProperty property, object value, BindableContextAttributes attributes)
 			{
@@ -779,7 +789,7 @@ namespace Microsoft.Maui.Controls
 			IsDefaultValueCreated = 1 << 5,
 		}
 
-		internal class BindablePropertyContext
+		internal sealed class BindablePropertyContext
 		{
 			public BindableContextAttributes Attributes;
 
@@ -801,7 +811,7 @@ namespace Microsoft.Maui.Controls
 			Default = None
 		}
 
-		internal class SetValueArgs
+		internal sealed class SetValueArgs
 		{
 			public readonly SetValueFlags Attributes;
 			public readonly BindablePropertyContext Context;

@@ -66,7 +66,7 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task DetailsViewPopOverLayoutIsCorrectForIdiom(bool isRtl)
 		{
-			if(isRtl && System.OperatingSystem.IsIOSVersionAtLeast(17))
+			if (isRtl && System.OperatingSystem.IsIOSVersionAtLeast(17))
 			{
 				//skip till we figure the 1 pixel issue 
 				return;

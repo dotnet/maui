@@ -66,7 +66,6 @@ namespace Microsoft.Maui.Media
 			if (!OperatingSystem.IsAndroidVersionAtLeast(33))
 				await Permissions.EnsureGrantedAsync<Permissions.StorageWrite>();
 
-
 			var capturePhotoIntent = new Intent(photo ? MediaStore.ActionImageCapture : MediaStore.ActionVideoCapture);
 
 			if (!PlatformUtils.IsIntentSupported(capturePhotoIntent))
@@ -86,24 +85,22 @@ namespace Microsoft.Maui.Media
 				var fileName = Guid.NewGuid().ToString("N") + ext;
 				var tmpFile = FileSystemUtils.GetTemporaryFile(Application.Context.CacheDir, fileName);
 
-				// Set up the content:// uri
-				AndroidUri outputUri = null;
-				void OnCreate(Intent intent)
+				string path = null;
+
+				void OnResult(Intent intent)
 				{
-					// Android requires that using a file provider to get a content:// uri for a file to be called
-					// from within the context of the actual activity which may share that uri with another intent
-					// it launches.
+					// The uri returned is only temporary and only lives as long as the Activity that requested it,
+					// so this means that it will always be cleaned up by the time we need it because we are using
+					// an intermediate activity.
 
-					outputUri ??= FileProvider.GetUriForFile(tmpFile);
-
-					intent.PutExtra(MediaStore.ExtraOutput, outputUri);
+					path = FileSystemUtils.EnsurePhysicalPath(intent.Data);
 				}
 
 				// Start the capture process
-				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, OnCreate);
+				await IntermediateActivity.StartAsync(capturePhotoIntent, PlatformUtils.requestCodeMediaCapture, onResult: OnResult);
 
 				// Return the file that we just captured
-				return new FileResult(tmpFile.AbsolutePath);
+				return new FileResult(path);
 			}
 			catch (OperationCanceledException)
 			{
