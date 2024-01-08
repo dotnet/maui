@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using NUnit.Framework;
 using NUnit.Framework.Interfaces;
 using UITest.Core;
@@ -55,13 +56,15 @@ namespace UITest.Appium.NUnit
 		[TearDown]
 		public void UITestBaseTearDown()
 		{
-
-			if (App.AppState == ApplicationState.Not_Running)
+			if (App.AppState == ApplicationState.NotRunning)
 			{
-				// Assert.Fail will immediately exit the test which is desirable as the app is not
-				// running anymore so we don't want to log diagnostic data as there is nothing to collect from
+				SaveDeviceDiagnosticInfo();
+
 				Reset();
 				FixtureSetup();
+
+				// Assert.Fail will immediately exit the test which is desirable as the app is not
+				// running anymore so we can't capture any UI structures or any screenshots
 				Assert.Fail("The app was expected to be running still, investigate as possible crash");
 			}
 
@@ -69,7 +72,8 @@ namespace UITest.Appium.NUnit
 			if (testOutcome == ResultState.Error ||
 				testOutcome == ResultState.Failure)
 			{
-				SaveDiagnosticLogs("UITestBaseTearDown");
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
 			}
 		}
 
@@ -84,7 +88,8 @@ namespace UITest.Appium.NUnit
 			}
 			catch
 			{
-				SaveDiagnosticLogs("FixtureSetup");
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
 				throw;
 			}
 		}
@@ -98,36 +103,75 @@ namespace UITest.Appium.NUnit
 			if (outcome.Status == ResultState.SetUpFailure.Status &&
 				outcome.Site == ResultState.SetUpFailure.Site)
 			{
-				SaveDiagnosticLogs("OneTimeTearDown");
+				SaveDeviceDiagnosticInfo();
+				SaveUIDiagnosticInfo();
 			}
 
 			FixtureTeardown();
 		}
 
-		void SaveDiagnosticLogs(string? note = null)
+		void SaveDeviceDiagnosticInfo([CallerMemberName] string? note = null)
 		{
+			var types = App.GetLogTypes().ToArray();
+			TestContext.Progress.WriteLine($">>>>> {DateTime.Now} Log types: {string.Join(", ", types)}");
+
+			foreach (var logType in new[] { "logcat" })
+			{
+				if (!types.Contains(logType, StringComparer.InvariantCultureIgnoreCase))
+					continue;
+
+				var logsPath = GetGeneratedFilePath($"AppLogs-{logType}.log", note);
+				if (logsPath is not null)
+				{
+					var entries = App.GetLogEntries(logType);
+					File.WriteAllLines(logsPath, entries);
+
+					AddTestAttachment(logsPath, Path.GetFileName(logsPath));
+				}
+			}
+		}
+
+		void SaveUIDiagnosticInfo([CallerMemberName] string? note = null)
+		{
+			var screenshotPath = GetGeneratedFilePath("ScreenShot.png", note);
+			if (screenshotPath is not null)
+			{
+				_ = App.Screenshot(screenshotPath);
+
+				AddTestAttachment(screenshotPath, Path.GetFileName(screenshotPath));
+			}
+
+			var pageSourcePath = GetGeneratedFilePath("PageSource.txt", note);
+			if (pageSourcePath is not null)
+			{
+				File.WriteAllText(pageSourcePath, App.ElementTree);
+
+				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
+			}
+		}
+
+		string? GetGeneratedFilePath(string filename, string? note = null)
+		{
+			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
+			if (UITestContext is null)
+				return null;
+
 			if (string.IsNullOrEmpty(note))
 				note = "-";
 			else
 				note = $"-{note}-";
 
-			var logDir = (Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE")) ?? Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
+			filename = $"{Path.GetFileNameWithoutExtension(filename)}-{Guid.NewGuid().ToString("N")}{Path.GetExtension(filename)}";
 
-			// App could be null if UITestContext was not able to connect to the test process (e.g. port already in use etc...)
-			if (UITestContext is not null)
-			{
-				string name = TestContext.CurrentContext.Test.MethodName ?? TestContext.CurrentContext.Test.Name;
+			var logDir =
+				Path.GetDirectoryName(Environment.GetEnvironmentVariable("APPIUM_LOG_FILE") ??
+				Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location))!;
 
-				var screenshotPath = Path.Combine(logDir, $"{name}-{_testDevice}{note}ScreenShot");
-				_ = App.Screenshot(screenshotPath);
-				// App.Screenshot appends a ".png" extension always, so include that here
-				var screenshotPathWithExtension = screenshotPath + ".png";
-				AddTestAttachment(screenshotPathWithExtension, Path.GetFileName(screenshotPathWithExtension));
+			var name =
+				TestContext.CurrentContext.Test.MethodName ??
+				TestContext.CurrentContext.Test.Name;
 
-				var pageSourcePath = Path.Combine(logDir, $"{name}-{_testDevice}{note}PageSource.txt");
-				File.WriteAllText(pageSourcePath, App.ElementTree);
-				AddTestAttachment(pageSourcePath, Path.GetFileName(pageSourcePath));
-			}
+			return Path.Combine(logDir, $"{name}-{_testDevice}{note}{filename}");
 		}
 
 		void AddTestAttachment(string filePath, string? description = null)
@@ -136,17 +180,10 @@ namespace UITest.Appium.NUnit
 			{
 				TestContext.AddTestAttachment(filePath, description);
 			}
-			catch (FileNotFoundException e)
+			catch (FileNotFoundException e) when (e.Message == "Test attachment file path could not be found.")
 			{
 				// Add the file path to better troubleshoot when these errors occur
-				if (e.Message == "Test attachment file path could not be found.")
-				{
-					throw new FileNotFoundException($"{e.Message}: {filePath}");
-				}
-				else
-				{
-					throw;
-				}
+				throw new FileNotFoundException($"Test attachment file path could not be found: '{filePath}' {description}", e);
 			}
 		}
 	}
