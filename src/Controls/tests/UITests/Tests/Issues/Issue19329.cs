@@ -14,8 +14,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void RelativePointerPositionIsComputedCorrectly()
 		{
-			IUIElement labelView = App.WaitForElement("TapHere");
-			Rectangle rect = labelView.GetRect();
+			_ = App.WaitForElement("TapHere");
 
 			App.Click("TapHere");
 
