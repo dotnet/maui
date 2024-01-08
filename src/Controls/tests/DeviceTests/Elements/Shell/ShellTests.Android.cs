@@ -22,6 +22,7 @@ using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
 using AView = Android.Views.View;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -286,7 +287,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items[1].Icon = "blue.png";
 
 				// let the icon and title propagate
-				await AssertionExtensions.Wait(() => menuItem1.Icon != icon1);
+				await AssertEventually(() => menuItem1.Icon != icon1);
 
 				menu = GetDrawerLayout(handler).GetFirstChildOfType<BottomNavigationView>().Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -324,7 +325,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items.RemoveAt(2);
 
 				// let the change propagate
-				await AssertionExtensions.Wait(() => bottomView.Menu.Size() == 2);
+				await AssertEventually(() => bottomView.Menu.Size() == 2);
 
 				menu = bottomView.Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
@@ -354,7 +355,7 @@ namespace Microsoft.Maui.DeviceTests
 				shell.CurrentItem.Items.Insert(1, new Tab() { Items = { new ContentPage() }, Title = "Tab 2", Icon = "green.png" });
 
 				// let the change propagate
-				await AssertionExtensions.Wait(() => bottomView.Menu.GetItem(1).Icon != menuItem2Icon);
+				await AssertEventually(() => bottomView.Menu.GetItem(1).Icon != menuItem2Icon);
 
 				menu = bottomView.Menu;
 				Assert.Equal(menuItem1, menu.GetItem(0));
