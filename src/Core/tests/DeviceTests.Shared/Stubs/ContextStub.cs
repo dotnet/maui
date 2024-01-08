@@ -6,7 +6,7 @@ using Microsoft.Maui.TestUtils.DeviceTests.Runners;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
-	public class ContextStub : IMauiContext, IServiceProvider
+	public class ContextStub : IMauiContext, IServiceProvider, IKeyedServiceProvider
 	{
 		IServiceProvider _services;
 		IAnimationManager _manager;
@@ -71,6 +71,22 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 				return _services.GetService(serviceType) ?? TestDispatcher.Current;
 
 			return _services.GetService(serviceType);
+		}
+
+		public object GetKeyedService(Type serviceType, object serviceKey)
+		{
+			if (_services is IKeyedServiceProvider wrapped)
+				return wrapped.GetKeyedService(serviceType, serviceKey);
+
+			throw new InvalidOperationException($"Unable to find service {serviceType} with key {serviceKey}");
+		}
+
+		public object GetRequiredKeyedService(Type serviceType, object serviceKey)
+		{
+			if (_services is IKeyedServiceProvider wrapped)
+				return wrapped.GetRequiredKeyedService(serviceType, serviceKey);
+
+			throw new InvalidOperationException($"Unable to find service {serviceType} with key {serviceKey}");
 		}
 
 #if WINDOWS
