@@ -15,6 +15,7 @@ namespace Microsoft.Maui.Converters
 
 		public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object? value)
 		{
+			// IMPORTANT! Update CornerRadiusDesignTypeConverter.IsValid if making changes here
 			var strValue = value?.ToString();
 
 			if (strValue != null)

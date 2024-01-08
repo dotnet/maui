@@ -400,5 +400,60 @@ namespace Microsoft.Maui.DeviceTests
 			Assert.Equal(0, cyanBlob.MinColumn, 2d);
 			Assert.Equal(bitmap.Height / 3 * 2, cyanBlob.MinRow, 2d);
 		}*/
+
+		[Fact]
+		public async Task DependentLayoutBindingsResolve()
+		{
+			EnsureHandlerCreated((builder) =>
+			{
+				builder.ConfigureMauiHandlers(handler =>
+				{
+					handler.AddHandler(typeof(Entry), typeof(EntryHandler));
+					handler.AddHandler(typeof(Button), typeof(ButtonHandler));
+					handler.AddHandler(typeof(Layout), typeof(LayoutHandler));
+				});
+			});
+
+			double expectedWidth = 200;
+
+			var outerGrid = new Grid()
+			{
+				WidthRequest = expectedWidth
+			};
+
+			var grid = new Grid
+			{
+				HeightRequest = 80,
+				HorizontalOptions = LayoutOptions.Fill
+			};
+
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+			grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Auto));
+
+			var entry = new Entry() { Text = "Lorem ipsum dolor", HorizontalOptions = LayoutOptions.Fill };
+			var button = new Button() { Text = "Hello world", HorizontalOptions = LayoutOptions.Fill };
+
+			grid.Add(entry);
+			grid.Add(button);
+
+			grid.SetColumn(entry, 0);
+			grid.SetColumn(button, 1);
+
+			// Because of this binding, the the layout will need two passes.
+			button.SetBinding(VisualElement.WidthRequestProperty, new Binding(nameof(View.Width), mode: BindingMode.Default, source: grid));
+
+			await AttachAndRun(outerGrid, async (handler) =>
+			{
+				// The layout needs to occur while the views are attached to the Window, otherwise they won't be able to schedule
+				// the second layout pass correctly on Android. That's why we don't add the inner Grid to the outer Grid until
+				// we're already attached.
+
+				outerGrid.Add(grid);
+
+				var expectation = () => button.Width == expectedWidth;
+
+				await expectation.AssertEventually(timeout: 2000, message: $"Button did not have expected Width of {expectedWidth}");
+			});
+		}
 	}
 }
