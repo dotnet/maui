@@ -295,7 +295,7 @@ namespace Microsoft.Maui.Controls.SourceGen
 
 			if (rootClass != null)
 				XmlnsHelper.ParseXmlns(rootClass.Value, out rootType, out rootClrNamespace, out var rootAsm, out var targetPlatform);
-			else if (hasXamlCompilationProcessingInstruction)
+			else if (hasXamlCompilationProcessingInstruction && root.NamespaceURI == XamlParser.MauiUri)
 			{
 				rootClrNamespace = "__XamlGeneratedCode__";
 				rootType = $"__Type{uid}";
@@ -325,13 +325,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 		{
 			var instruction = xmlDoc.SelectSingleNode("processing-instruction('xaml-comp')") as XmlProcessingInstruction;
 			if (instruction == null)
-				return false;
+				return true;
 
 			var parts = instruction.Data.Split(' ', '=');
 			var indexOfCompile = Array.IndexOf(parts, "compile");
 			if (indexOfCompile != -1)
-				return parts[indexOfCompile + 1].Trim('"', '\'').Equals("true", StringComparison.OrdinalIgnoreCase);
-			return false;
+				return !parts[indexOfCompile + 1].Trim('"', '\'').Equals("false", StringComparison.OrdinalIgnoreCase);
+			return true;
 		}
 
 		static IEnumerable<(string name, string type, string accessModifier)> GetNamedFields(XmlNode root, XmlNamespaceManager nsmgr, Compilation compilation, AssemblyCaches caches, CancellationToken cancellationToken)
