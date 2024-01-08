@@ -2,6 +2,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using UIKit;
 using Xunit;
@@ -35,6 +36,47 @@ namespace Microsoft.Maui.DeviceTests
 
 			await InvokeOnMainThreadAsync(() => handler.PlatformView.SendActionForControlEvents(UIControlEvent.TouchUpInside));
 			Assert.True(fired, "Button.Clicked did not fire!");
+		}
+
+		[Theory("Button with image lays out correctly")]
+		[InlineData(true)]
+		[InlineData(false)]
+		public async Task ButtonWithImage(bool includeText)
+		{
+			var gridHeight = 300;
+			var gridWidth = 300;
+
+			var button = new Button { BackgroundColor = Colors.Yellow, VerticalOptions = LayoutOptions.Center, HorizontalOptions = LayoutOptions.Center };
+			if (includeText)
+			{
+				button.Text = "Hello world!";
+			}
+
+			var layout = new Grid() { HeightRequest = gridHeight, WidthRequest = gridWidth, BackgroundColor = Colors.Blue };
+			layout.Add(button);
+
+			var buttonHandler = await CreateHandlerAsync<ButtonHandler>(button);
+			var handler = await CreateHandlerAsync<LayoutHandler>(layout);
+
+			await InvokeOnMainThreadAsync(async () =>
+			{
+				button.ImageSource = ImageSource.FromFile("red.png");
+
+				// Wait for image to load and force the grid to measure itself again
+				await Task.Delay(1000);
+				layout.Measure(double.PositiveInfinity, double.PositiveInfinity);
+
+				await handler.ToPlatform().AssertContainsColor(Colors.Blue, MauiContext); // Grid renders
+				await handler.ToPlatform().AssertContainsColor(Colors.Red, MauiContext); // Image within button renders
+				await handler.ToPlatform().AssertContainsColor(Colors.Yellow, MauiContext); // Button renders
+			});
+
+			// red.png is 100x100
+			Assert.True(button.Width > 100, $"Button should have larger width than its image. Exepected: 100>, was {button.Width}");
+			Assert.True(button.Height > 100, $"Button should have larger height than its image. Exepected: 100>, was {button.Height}");
+
+			Assert.True(button.Width < gridWidth, $"Button shouldn't occupy entire layout width. Expected: {gridWidth}<, was {button.Width}");
+			Assert.True(button.Height < gridHeight, $"Button shouldn't occupy entire layout height. Expected: {gridHeight}<, was {button.Height}");
 		}
 	}
 }

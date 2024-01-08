@@ -23,7 +23,7 @@ namespace UITest.Appium
 				}
 				catch (NoSuchWindowException)
 				{
-					return ApplicationState.Not_Running;
+					return ApplicationState.NotRunning;
 				}
 			}
 		}

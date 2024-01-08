@@ -2,14 +2,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Handlers.Items;
+using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -34,8 +37,61 @@ namespace Microsoft.Maui.DeviceTests
 					handlers.AddHandler<VerticalStackLayout, LayoutHandler>();
 					handlers.AddHandler<Grid, LayoutHandler>();
 					handlers.AddHandler<Label, LabelHandler>();
+					handlers.AddHandler<Button, ButtonHandler>();
+					handlers.AddHandler<SwipeView, SwipeViewHandler>();
+					handlers.AddHandler<SwipeItem, SwipeItemMenuItemHandler>();
+
+#if IOS && !MACCATALYST
+					handlers.AddHandler<CacheTestCollectionView, CacheTestCollectionViewHandler>();
+#endif
 				});
 			});
+		}
+
+		[Fact(
+#if IOS || MACCATALYST
+		Skip = "Fails on iOS/macOS: https://github.com/dotnet/maui/issues/19240"
+#endif
+		)]
+		public async Task CellSizeAccountsForMargin()
+		{
+			SetupBuilder();
+
+			List<Button> buttons = new List<Button>();
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var button = new Button()
+					{
+						Text = "Margin Test",
+						Margin = new Thickness(10, 10, 10, 10),
+						HeightRequest = 50,
+					};
+
+					buttons.Add(button);
+					return button;
+				}),
+
+				ItemsSource = Enumerable.Range(0, 2).ToList(),
+				HeightRequest = 800,
+				WidthRequest = 200
+			};
+
+			await collectionView.AttachAndRun<CollectionViewHandler>(async (handler) =>
+			{
+				await AssertionExtensions.Wait(() => buttons.Count > 1 && buttons.Last().Frame.Height > 0 && buttons.Last().IsLoaded);
+				var button = buttons.Last();
+				var bounds = GetCollectionViewCellBounds(button);
+				var buttonBounds = button.GetBoundingBox();
+
+				Assert.Equal(50, buttonBounds.Height, 1d);
+				Assert.Equal(70, bounds.Height, 1d);
+				Assert.Equal(50, button.Frame.Height, 1d);
+				Assert.Equal(10, button.Frame.X, 1d);
+				Assert.Equal(10, button.Frame.Y, 1d);
+
+			}, MauiContext, (view) => CreateHandlerAsync<CollectionViewHandler>(view));
 		}
 
 		[Fact]
@@ -271,6 +327,36 @@ namespace Microsoft.Maui.DeviceTests
 
 				// The first label's height should be smaller than the second one since the text won't wrap
 				Assert.True(0 < firstLabelHeight && firstLabelHeight < secondLabelHeight);
+			});
+		}
+
+		[Fact(DisplayName = "SwipeView in CollectionView does not crash")]
+		public async Task SwipeViewInCollectionViewDoesNotCrash()
+		{
+			SetupBuilder();
+
+			var collectionView = new CollectionView
+			{
+				ItemTemplate = new DataTemplate(() =>
+				{
+					var swipeItem = new SwipeItem { BackgroundColor = Colors.Red };
+					swipeItem.SetBinding(SwipeItem.TextProperty, new Binding("."));
+					var swipeView = new SwipeView { RightItems = [swipeItem] };
+
+					return swipeView;
+				}),
+				ItemsSource = new ObservableCollection<string>()
+				{
+					"Item 1",
+					"Item 2",
+				}
+			};
+
+			await CreateHandlerAndAddToWindow<CollectionViewHandler>(collectionView, async handler =>
+			{
+				await WaitForUIUpdate(collectionView.Frame, collectionView);
+
+				Assert.NotNull(handler.PlatformView);
 			});
 		}
 
