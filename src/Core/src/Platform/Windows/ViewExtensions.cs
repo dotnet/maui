@@ -3,6 +3,7 @@ using System;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Media;
