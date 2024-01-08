@@ -18,7 +18,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 				.ConfigureImageSources();
 			var mauiApp = builder.Build();
 
-			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService(type);
@@ -38,7 +38,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
 			Assert.NotNull(manager);
 
-			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService<IFontImageSource>();
@@ -60,7 +60,7 @@ namespace Microsoft.Maui.UnitTests.Hosting
 			var manager = mauiApp.Services.GetRequiredService<IFontManager>();
 			Assert.NotNull(manager);
 
-			var images = mauiApp.Services.GetRequiredService<IImageSourceServiceProvider>();
+			var images = (IKeyedServiceProvider)mauiApp.Services;
 			Assert.NotNull(images);
 
 			var imageSourceService = images.GetRequiredImageSourceService<FontImageSourceStub>();
