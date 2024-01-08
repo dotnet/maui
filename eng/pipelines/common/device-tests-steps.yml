@@ -2,6 +2,7 @@ parameters:
   platform: '' # [ android, ios, catalyst, windows ]
   path: '' # path to csproj
   device: '' # the xharness device to use
+  apiversion: '' # the iOS device api version to use
   cakeArgs: '' # additional cake args
   provisionatorChannel: 'latest'
   agentPoolAccessToken: ''
@@ -9,6 +10,7 @@ parameters:
   artifactItemPattern: '**/*.nupkg'
   checkoutDirectory: $(System.DefaultWorkingDirectory)
   useArtifacts: false
+  rebootAgent: true
 
 steps:
   - template: provision.yml
@@ -19,6 +21,9 @@ steps:
         platform: macos
       skipXcode: ${{ or(eq(parameters.platform, 'android'), eq(parameters.platform, 'windows')) }}
       skipProvisioning: ${{ eq(parameters.platform, 'windows') }}
+      ${{ if eq(parameters.platform, 'ios')}}:
+        skipAndroidSdks: false
+        skipAndroidImages: true
       provisionatorChannel: ${{ parameters.provisionatorChannel }}
 
   - pwsh: ./build.ps1 --target=dotnet --configuration="Release" --verbosity=diagnostic
@@ -55,9 +60,30 @@ steps:
     - pwsh: ./build.ps1 --target=dotnet-buildtasks --configuration="Release"
       displayName: 'Build the MSBuild Tasks'
 
-  - pwsh: ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+  - pwsh: |
+      $platformName = 'Windows'
+      if ($IsMacOS) {
+        $platformName = 'Mac'
+      } elseif ($IsLinux) {
+        $platformName = 'Linux'
+      }
+      Write-Host "Platform.Name: ${platformName}"
+      Write-Host "##vso[task.setvariable variable=Platform.Name]${platformName}"
+    displayName: 'Set Platform.Name'
+
+  - pwsh: |
+      ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
     displayName: $(Agent.JobName)
     workingDirectory: ${{ parameters.checkoutDirectory }}
+    condition: and(succeeded(), ne(variables['Platform.Name'], 'Mac'))
+    retryCountOnTaskFailure: 2
+
+  - bash: |
+      # Execute the powershell script from a bash shell on Mac to avoid interference between powershell processes that lead to this error: The STDIO streams did not close within 10 seconds of the exit event from process '/usr/local/bin/pwsh'. This may indicate a child process inherited the STDIO streams and has not yet exited.
+      pwsh ./build.ps1 -Script eng/devices/${{ parameters.platform }}.cake --project="${{ parameters.path }}" --device=${{ parameters.device }} --apiversion=${{ parameters.apiversion }} --packageid=${{ parameters.windowsPackageId }} --results="$(TestResultsDirectory)" --binlog="$(LogDirectory)" ${{ parameters.cakeArgs }}
+    displayName: $(Agent.JobName)
+    workingDirectory: ${{ parameters.checkoutDirectory }}
+    condition: and(succeeded(), eq(variables['Platform.Name'], 'Mac'))
     retryCountOnTaskFailure: 2
 
   - task: PublishTestResults@2
@@ -74,7 +100,8 @@ steps:
     inputs:
       artifactName: '$(Agent.JobName) (attempt $(System.JobAttempt))'
 
-  # This must always be placed as the last step in the job
-  - template: agent-rebooter/mac.v1.yml@yaml-templates
-    parameters:
-      AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}
+  - ${{ if eq(parameters.rebootAgent, true) }}:
+    # This must always be placed as the last step in the job
+    - template: agent-rebooter/mac.v1.yml@yaml-templates
+      parameters:
+        AgentPoolAccessToken: ${{ parameters.agentPoolAccessToken }}

@@ -72,6 +72,7 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 			"IsCompiledDefault",
 			"X2006Namespace",
 			"X2009Primitives",
+			"Validation.MissingXClass",
 		};
 
 		[Test, TestCaseSource(nameof(IsXamlTrueSource))]
@@ -79,12 +80,12 @@ namespace Microsoft.Maui.Controls.Xaml.UnitTests
 		{
 			var resource = GetResource(name);
 			Assert.IsTrue(resource.IsXaml(new XamlCache(), assembly.MainModule, out string className), $"IsXaml should return true for '{name}'.");
-			Assert.AreEqual(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
+			if (!className.StartsWith("__XamlGeneratedCode__"))
+				Assert.AreEqual(className, $"{testNamespace}.{name}"); // Test cases x:Class matches the file name
 		}
 
 		static string[] IsXamlFalseSource = new[]
 		{
-			"Validation.MissingXClass",
 			"Validation.NotXaml",
 		};
 
