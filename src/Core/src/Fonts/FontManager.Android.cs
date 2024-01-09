@@ -131,7 +131,7 @@ namespace Microsoft.Maui
 			return null;
 		}
 
-		Typeface? LoadDefaultTypeface(string fontfamily)
+		static Typeface? LoadDefaultTypeface(string fontfamily)
 		{
 			switch (fontfamily.ToLowerInvariant())
 			{
@@ -178,7 +178,7 @@ namespace Microsoft.Maui
 			return result;
 		}
 
-		TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
+		static TypefaceStyle ToTypefaceStyle(FontWeight weight, bool italic)
 		{
 			var style = TypefaceStyle.Normal;
 			var bold = weight >= FontWeight.Bold;
@@ -191,7 +191,7 @@ namespace Microsoft.Maui
 			return style;
 		}
 
-		string FontNameToFontFile(string fontFamily)
+		static string FontNameToFontFile(string fontFamily)
 		{
 			fontFamily ??= string.Empty;
 
