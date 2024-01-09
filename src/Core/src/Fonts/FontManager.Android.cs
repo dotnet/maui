@@ -195,7 +195,7 @@ namespace Microsoft.Maui
 		{
 			fontFamily ??= string.Empty;
 
-			int hashtagIndex = fontFamily.IndexOf("#", StringComparison.Ordinal);
+			int hashtagIndex = fontFamily.IndexOf('#', StringComparison.Ordinal);
 			if (hashtagIndex >= 0)
 				return fontFamily.Substring(0, hashtagIndex);
 
