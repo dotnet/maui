@@ -1,25 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Microsoft.Maui.Controls.CustomAttributes;
-using Microsoft.Maui.Controls.Internals;
+﻿using System.Collections.ObjectModel;
+using Microsoft.Maui;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
+using Microsoft.Maui.Platform;
+using System.Linq;
+using System.Collections.Generic;
 
-#if UITEST
-using Xamarin.UITest;
-using NUnit.Framework;
-using Microsoft.Maui.Controls.Compatibility.UITests;
-#endif
-
-namespace Microsoft.Maui.Controls.ControlGallery.Issues
+namespace Maui.Controls.Sample.Issues
 {
-	[Preserve(AllMembers = true)]
 	[Issue(IssueTracker.None, 5955, "Group ListView Crashes when ItemSource is Cleared", PlatformAffected.iOS)]
-#if UITEST
-	[NUnit.Framework.Category(Compatibility.UITests.UITestCategories.Github5000)]
-	[Category(UITestCategories.ListView)]
-#endif
 	public class GroupListViewHeaderIndexOutOfRange : TestContentPage
 	{
 		const string ButtonId = "button";
@@ -49,33 +38,39 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 						 select new Grouping<string, SamplePack>(sampleGroup.Key, sampleGroup);
 
 			Testing = new ObservableCollection<Grouping<string, SamplePack>>(sorted);
-
-			var groupLabel = new Label { FontSize = 18, TextColor = Color.FromArgb("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
-			groupLabel.SetBinding(Label.TextProperty, new Binding("Key", stringFormat: "{0} Music"));
-
-			var itemLabel = new Label { TextColor = Colors.Black };
-			itemLabel.SetBinding(Label.TextProperty, new Binding("Info"));
-
+			
 			ListView TestingList = new ListView()
 			{
 				IsPullToRefreshEnabled = true,
 				IsGroupingEnabled = true,
-				GroupHeaderTemplate = new DataTemplate(() => new ViewCell
+				GroupHeaderTemplate = new DataTemplate(() => 
 				{
-					Height = 283,
-					View = new StackLayout
+					var groupLabel = new Label { FontSize = 18, TextColor = Color.FromArgb("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
+					groupLabel.SetBinding(Label.TextProperty, new Binding("Key", stringFormat: "{0} Music"));
+
+					return new ViewCell				
 					{
-						Spacing = 0,
-						Padding = 10,
-						BackgroundColor = Colors.Blue,
-						Children = {
-							new StackLayout{ Padding=5, BackgroundColor=Colors.White, HeightRequest=30,  Children = { groupLabel } }
+						Height = 283,
+						View = new StackLayout
+						{
+							Spacing = 0,
+							Padding = 10,
+							BackgroundColor = Colors.Blue,
+							Children = {
+								new StackLayout{ Padding = 5, BackgroundColor=Colors.White, HeightRequest=30,  Children = { groupLabel } }
+							}
 						}
-					}
+					};
 				}),
-				ItemTemplate = new DataTemplate(() => new ViewCell
+				ItemTemplate = new DataTemplate(() => 
 				{
-					View = itemLabel
+					var itemLabel = new Label { TextColor = Colors.Black };
+					itemLabel.SetBinding(Label.TextProperty, new Binding("Info"));
+
+					return new ViewCell
+					{
+						View = itemLabel
+					};
 				})
 			};
 
@@ -97,7 +92,6 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			Content = new StackLayout { Children = { button, TestingList } };
 		}
 
-		[Preserve(AllMembers = true)]
 		public class Grouping<K, T> : ObservableCollection<T>
 		{
 			public Grouping(K key, IEnumerable<T> items)
@@ -113,21 +107,9 @@ namespace Microsoft.Maui.Controls.ControlGallery.Issues
 			public K Key { get; }
 		}
 
-		[Preserve(AllMembers = true)]
 		public class SamplePack
 		{
 			public string Info { get; set; }
 		}
-
-#if UITEST
-		[MovedToAppium]
-		[Test]
-		public void GroupListViewHeaderIndexOutOfRangeTest()
-		{
-			RunningApp.WaitForElement(q => q.Marked(ButtonId));
-			RunningApp.Tap(q => q.Marked(ButtonId));
-			RunningApp.WaitForElement(q => q.Marked(ButtonId));
-		}
-#endif
 	}
 }
