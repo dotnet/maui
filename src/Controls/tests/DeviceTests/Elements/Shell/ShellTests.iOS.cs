@@ -323,15 +323,17 @@ namespace Microsoft.Maui.DeviceTests
 		}
 
 
-		protected async Task ScrollFlyoutToBottom(ShellRenderer shellRenderer)
+		protected async Task<double> ScrollFlyoutToBottom(ShellHandler shellHandler)
 		{
-			var platformView = GetFlyoutPlatformView(shellRenderer);
-			var tableView = platformView.FindDescendantView<UITableView>();
-			var bottomOffset = new CGPoint(0, tableView.ContentSize.Height - tableView.Bounds.Height + tableView.ContentInset.Bottom);
-			tableView.SetContentOffset(bottomOffset, false);
-			await Task.Delay(1);
+			var platformView = GetFlyoutPlatformView(shellHandler);
+			var scrollView = platformView.FindDescendantView<UIScrollView>();
+			var bottomOffset = new CGPoint(0, scrollView.ContentSize.Height - scrollView.Bounds.Height + scrollView.ContentInset.Bottom);
+			
+			scrollView.SetContentOffset(bottomOffset, false);
+			
+			await Task.Delay(10);
 
-			return;
+			return bottomOffset.Y;
 		}
 #if IOS
 		[Fact(DisplayName = "Back Button Text Has Correct Default")]
