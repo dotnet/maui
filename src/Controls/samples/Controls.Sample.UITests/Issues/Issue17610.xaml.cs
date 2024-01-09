@@ -16,11 +16,22 @@ namespace Maui.Controls.Sample.Issues
 		{
 			InitializeComponent();
 			ItemSource = 
-				Enumerable.Range(0,100)
+				Enumerable.Range(0,17)
 					.Select(x => new { Text = $"Item {x}", AutomationId = $"Item{x}"  })
 					.ToList();		
 					
 			BindableLayout.SetItemsSource(vsl, ItemSource);
+			
+			#if ANDROID
+			refreshView.HandlerChanged += (x,y) =>
+			{
+				if (refreshView.Handler.PlatformView is Microsoft.Maui.Platform.MauiSwipeRefreshLayout refresh)
+				// In order for the refresh view to have enough contrast to trigger the screen shot comparison code
+				// we need to set it to a color that will trigger above the threshold
+					refresh.SetProgressBackgroundColorSchemeResource(Android.Resource.Color.HoloRedDark);
+			};
+			#endif
+			
 		}
 
 
