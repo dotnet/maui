@@ -135,7 +135,7 @@ namespace Microsoft.Maui.Handlers
 			platformView.FocusLost += OnUnfocused;
 		}
 
-		partial void DisconnectingHandler(PlatformView platformView)
+		static partial void DisconnectingHandler(PlatformView platformView)
 		{
 			if (platformView == null)
 				return;
