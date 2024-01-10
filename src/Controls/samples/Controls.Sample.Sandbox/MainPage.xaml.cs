@@ -1,9 +1,26 @@
-﻿namespace Maui.Controls.Sample;
+using System;
+using Microsoft.Maui.Controls;
 
-public partial class MainPage : ContentPage
+namespace Maui.Controls.Sample
 {
-	public MainPage()
+	public partial class MainPage : ContentPage
 	{
-		InitializeComponent();
+		public Command ClickCommand { get; }
+
+		public MainPage()
+		{
+			ClickCommand = new(execute: () =>
+			{
+				DisplayAlert("Title", "Button 1 clicked", "Cancel");
+			});
+
+			InitializeComponent();
+			BindingContext = this;
+		}
+
+		private void button2_Clicked(object sender, EventArgs e)
+		{
+			DisplayAlert("Title", "Button 2 clicked", "Cancel");
+		}
 	}
 }
