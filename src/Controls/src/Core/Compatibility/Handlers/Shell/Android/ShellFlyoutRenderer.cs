@@ -183,9 +183,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				canvas.DrawRect(0, 0, Width, Height, _scrimPaint);
 			}
 
-			if (!FlyoutFirstDrawPassFinished && _flyoutContent != null)
+			if (!FlyoutFirstDrawPassFinished && _flyoutContent is not null)
 			{
-				if (child == _flyoutContent?.AndroidView)
+				if (_flyoutContent?.AndroidView is not null)
 					FlyoutFirstDrawPassFinished = true;
 
 				if (this.IsDrawerOpen(_flyoutContent.AndroidView) != _shellContext.Shell.FlyoutIsPresented)
