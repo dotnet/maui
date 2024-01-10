@@ -185,6 +185,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			if (!FlyoutFirstDrawPassFinished && _flyoutContent is not null)
 			{
+				// If the AndroidView property which is the DrawerLayout is initialized at this point, the Flyout first draw pass finished.
 				if (_flyoutContent?.AndroidView is not null)
 					FlyoutFirstDrawPassFinished = true;
 
