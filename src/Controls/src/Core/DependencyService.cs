@@ -91,12 +91,12 @@ namespace Microsoft.Maui.Controls
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
 		{
 			if (!DependencyTypes.Any(t => t.Type == type))
-				DependencyTypes.Add(new DependencyType(type));
+				DependencyTypes.Add(new DependencyType { Type = type });
 		}
 
 		[return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
 		static Type FindImplementor(Type target) =>
-			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t.Type))?.Type;
+			DependencyTypes.FirstOrDefault(t => target.IsAssignableFrom(t.Type)).Type;
 
 		// Once we get essentials/cg converted to using startup.cs
 		// we will delete the initialize code from here and just use
@@ -171,19 +171,10 @@ namespace Microsoft.Maui.Controls
 			public Type ImplementorType { get; set; }
 		}
 
-		class DependencyType : IEquatable<DependencyType>
+		struct DependencyType
 		{
 			[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
-			public Type Type { get; }
-
-			public DependencyType([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] Type type)
-			{
-				Type = type;
-			}
-
-			public override int GetHashCode() => Type.GetHashCode();
-			public override bool Equals(object obj) => obj is DependencyType other && Equals(other);
-			public bool Equals(DependencyType other) => other.Type == Type;
+			public Type Type { get; set; }
 		}
 	}
 }
