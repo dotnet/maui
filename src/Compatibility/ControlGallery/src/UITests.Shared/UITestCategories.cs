@@ -72,6 +72,12 @@ namespace Microsoft.Maui.Controls.Compatibility.UITests
 		public const string Brush = "Brush";
 	}
 
+	public class MovedToAppium : IgnoreAttribute
+	{
+		public MovedToAppium() : base("This test has been moved to Appium")
+		{
+		}
+	}
 
 	public class FailsOnMaui : IgnoreAttribute
 	{
