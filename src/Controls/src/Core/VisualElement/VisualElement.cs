@@ -1585,7 +1585,7 @@ namespace Microsoft.Maui.Controls
 				VisualStateManager.GoToState(this, VisualStateManager.CommonStates.Normal);
 			}
 
-			if (IsEnabled)
+			if (IsEnabled && !IsPointerOver)
 			{
 				// Focus needs to be handled independently; otherwise, if no actual Focus state is supplied
 				// in the control's visual states, the state can end up stuck in PointerOver after the pointer
