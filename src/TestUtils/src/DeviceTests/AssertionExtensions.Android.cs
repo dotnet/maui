@@ -9,18 +9,18 @@ using Android.Text;
 using Android.Views;
 using Android.Views.InputMethods;
 using Android.Widget;
+using AndroidX.Core.View;
 using Google.Android.Material.BottomNavigation;
 using Google.Android.Material.Navigation;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
 using AView = Android.Views.View;
 using MColor = Microsoft.Maui.Graphics.Color;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
-using AndroidX.Core.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -218,7 +218,7 @@ namespace Microsoft.Maui.DeviceTests
 		public static Task WaitForLayoutOrNonZeroSize(this AView view, int timeout = 1000) =>
 			Task.WhenAll(
 				view.WaitForLayout(timeout),
-				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout, 
+				AssertEventually(() => ViewCompat.IsLaidOut(view), timeout,
 					message: $"Timed out waiting for {view} to have {nameof(view.Width)} and {nameof(view.Height)} greater than zero"));
 
 		public static Task<bool> WaitForLayout(this AView view, int timeout = 1000)

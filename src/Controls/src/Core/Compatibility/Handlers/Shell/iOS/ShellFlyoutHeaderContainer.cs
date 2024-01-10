@@ -6,7 +6,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 	internal class ShellFlyoutHeaderContainer : UIContainerView
 	{
 		Thickness _safearea = Thickness.Zero;
-		
+
 		public ShellFlyoutHeaderContainer(View view) : base(view)
 		{
 			UpdateSafeAreaMargin();
