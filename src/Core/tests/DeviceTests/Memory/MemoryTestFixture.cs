@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers.Memory
 
 		public bool DoReferencesStillExist(Type handlerType)
 		{
-			(WeakReference weakHandler, WeakReference  weakView) = _handlers[handlerType];
+			(WeakReference weakHandler, WeakReference weakView) = _handlers[handlerType];
 
 			return weakHandler.IsAlive || weakView.IsAlive;
 		}

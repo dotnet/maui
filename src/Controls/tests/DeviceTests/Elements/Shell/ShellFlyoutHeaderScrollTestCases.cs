@@ -37,7 +37,7 @@ namespace Microsoft.Maui.DeviceTests
 					break;
 			}
 		}
-	
+
 		static void AddShellItems(Shell shell)
 		{
 			Enumerable.Range(0, 100)
@@ -49,9 +49,9 @@ namespace Microsoft.Maui.DeviceTests
 
 		static void AddCollectionView(Shell shell)
 		{
-			shell.FlyoutContent = new CollectionView() 
+			shell.FlyoutContent = new CollectionView()
 			{
-				ItemsSource = Enumerable.Range(0,100).ToList(),
+				ItemsSource = Enumerable.Range(0, 100).ToList(),
 				BackgroundColor = Colors.Orange
 			};
 		}
@@ -71,12 +71,12 @@ namespace Microsoft.Maui.DeviceTests
 				grid.Add(item);
 			}
 
-            shell.FlyoutContent = new ScrollView()
+			shell.FlyoutContent = new ScrollView()
 			{
 				Content = grid
 			};
 		}
-	
+
 		IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 	}
 }

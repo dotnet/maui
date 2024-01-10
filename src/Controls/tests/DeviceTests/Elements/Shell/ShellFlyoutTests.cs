@@ -189,16 +189,16 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-// Skipping this for Android because there is a bug with the footer. Fix coming in a separate PR.
+		// Skipping this for Android because there is a bug with the footer. Fix coming in a separate PR.
 #if IOS
 		[Theory]
 		[ClassData(typeof(ShellFlyoutHeaderBehaviorAndContentTestCases))]
 		public async Task FlyoutHeaderContentAndFooterAllMeasureCorrectly(
-			FlyoutHeaderBehavior behavior, 
-			string contentType, 
-			int? headerMarginTop, 
-			int? headerMarginBottom, 
-			int contentMarginTop, 
+			FlyoutHeaderBehavior behavior,
+			string contentType,
+			int? headerMarginTop,
+			int? headerMarginBottom,
+			int contentMarginTop,
 			int contentMarginBottom)
 		{
 			// flyoutHeader.Margin.Top gets set to the SafeAreaPadding
@@ -230,7 +230,7 @@ namespace Microsoft.Maui.DeviceTests
 				await OpenFlyout(handler);
 
 				var flyoutFrame = GetFlyoutFrame(handler);
- 				var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
+				var headerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutHeader);
 				var contentFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutContent);
 				var footerFrame = GetFrameRelativeToFlyout(handler, (IView)shell.FlyoutFooter);
 
@@ -320,7 +320,7 @@ namespace Microsoft.Maui.DeviceTests
 				else
 				{
 					AssertionExtensions.CloseEnough(headerRequestedHeight, scrolledBox.Height, 0.3, "Header Height");
-					
+
 					if (flyoutHeaderBehavior == FlyoutHeaderBehavior.Scroll)
 					{
 						// scrolledBoy.Y is negative because the header is scrolled up

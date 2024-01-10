@@ -20,8 +20,8 @@ using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Platform;
 using Xunit;
 using static Microsoft.Maui.Controls.Platform.Compatibility.ShellFlyoutTemplatedContentRenderer;
-using AView = Android.Views.View;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -513,7 +513,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			var ViewGroup = dl.GetChildAt(1) as ViewGroup;
 			var rc = ViewGroup.GetChildAt(0) as RecyclerView;
-			
+
 			if (dl.GetChildAt(1) is ViewGroup vg1 &&
 				vg1.GetChildAt(0) is RecyclerView rvc)
 			{
