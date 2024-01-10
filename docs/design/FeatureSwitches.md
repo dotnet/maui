@@ -1,6 +1,6 @@
 # Feature Switches
 
-Certain features of MAUI can be enabled or disabled using feature switches. The easiest way to control the features is by putting the corresponding MSBuild property into the app's .csproj file. Disabling unnecessary features can help reducing the app size when combined with the [`full` timming mode](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
+Certain features of MAUI can be enabled or disabled using feature switches. The easiest way to control the features is by putting the corresponding MSBuild property into the app's project file. Disabling unnecessary features can help reducing the app size when combined with the [`full` timming mode](https://learn.microsoft.com/en-us/dotnet/core/deploying/trimming/trimming-options).
 
 | MSBuild Property Name | AppContext Setting | Description |
 |-|-|-|
