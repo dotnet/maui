@@ -40,7 +40,7 @@ namespace Microsoft.Maui
 			}
 		}
 
-		BitmapImage GetAppPackage(string filename)
+		static BitmapImage GetAppPackage(string filename)
 		{
 			return new BitmapImage(new Uri("ms-appx:///" + filename));
 		}
