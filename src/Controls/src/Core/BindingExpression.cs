@@ -219,8 +219,8 @@ namespace Microsoft.Maui.Controls
 				int lbIndex = part.IndexOf("[", StringComparison.Ordinal);
 				if (lbIndex != -1)
 				{
-					int rbIndex = part.LastIndexOf(']');
-					if (rbIndex == -1)
+					int rbIndex = part.Length - 1;
+					if (part[rbIndex] != ']')
 						throw new FormatException("Indexer did not contain closing bracket");
 
 					int argLength = rbIndex - lbIndex - 1;
@@ -326,10 +326,10 @@ namespace Microsoft.Maui.Controls
 				}
 
 				string indexerName = "Item";
-				foreach (DefaultMemberAttribute attrib in sourceType.GetCustomAttributes(typeof(DefaultMemberAttribute), true))
+				var defaultMemberAttribute = (DefaultMemberAttribute)sourceType.GetCustomAttribute(typeof(DefaultMemberAttribute), true);
+				if (defaultMemberAttribute != null)
 				{
-					indexerName = attrib.MemberName;
-					break;
+					indexerName = defaultMemberAttribute.MemberName;
 				}
 
 				part.IndexerName = indexerName;
@@ -366,27 +366,31 @@ namespace Microsoft.Maui.Controls
 			else
 			{
 				TypeInfo type = sourceType;
-				while (type != null && property == null)
+				do
 				{
 					property = type.GetDeclaredProperty(part.Content);
-					type = type.BaseType?.GetTypeInfo();
-				}
+				} while (property == null && (type = type.BaseType?.GetTypeInfo()) != null);
 			}
 			if (property != null)
 			{
-				if (property.CanRead && property.GetMethod.IsPublic && !property.GetMethod.IsStatic)
-					part.LastGetter = property.GetMethod;
-				if (property.CanWrite && property.SetMethod.IsPublic && !property.SetMethod.IsStatic)
+				var propertyType = property.PropertyType;
+
+				if (property is { CanRead: true, GetMethod: { IsPublic: true, IsStatic: false } propertyGetMethod })
 				{
-					part.LastSetter = property.SetMethod;
-					part.SetterType = property.PropertyType;
+					part.LastGetter = propertyGetMethod;
+				}
+
+				if (property is {CanWrite: true, SetMethod: {IsPublic: true, IsStatic: false} propertySetMethod})
+				{
+					part.LastSetter = propertySetMethod;
+					part.SetterType = propertyType;
 
 					if (Binding.AllowChaining)
 					{
 						FieldInfo bindablePropertyField = sourceType.GetDeclaredField(part.Content + "Property");
 						if (bindablePropertyField != null && bindablePropertyField.FieldType == typeof(BindableProperty) && sourceType.ImplementedInterfaces.Contains(typeof(IElementController)))
 						{
-							MethodInfo setValueMethod = typeof(IElementController).GetMethod("SetValueFromRenderer", new[] { typeof(BindableProperty), typeof(object) });
+							MethodInfo setValueMethod = typeof(IElementController).GetMethod(nameof(IElementController.SetValueFromRenderer), new[] { typeof(BindableProperty), typeof(object) });
 							if (setValueMethod != null)
 							{
 								part.LastSetter = setValueMethod;
@@ -397,11 +401,9 @@ namespace Microsoft.Maui.Controls
 					}
 				}
 
-				if (property != null
-					&& part.NextPart != null
-					&& property.PropertyType.IsGenericType)
+				if (part.NextPart != null && propertyType.IsGenericType && propertyType.IsValueType)
 				{
-					Type genericTypeDefinition = property.PropertyType.GetGenericTypeDefinition();
+					Type genericTypeDefinition = propertyType.GetGenericTypeDefinition();
 					if ((genericTypeDefinition == typeof(ValueTuple<>)
 						|| genericTypeDefinition == typeof(ValueTuple<,>)
 						|| genericTypeDefinition == typeof(ValueTuple<,,>)

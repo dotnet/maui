@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Layouts;
@@ -101,7 +102,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 					return GridLength.Star;
 				}
 
-				return new GridLength(double.Parse(gridLength), GridUnitType.Star);
+				return new GridLength(double.Parse(gridLength, CultureInfo.InvariantCulture), GridUnitType.Star);
 			}
 
 			if (gridLength.ToLowerInvariant() == "auto")
@@ -109,7 +110,7 @@ namespace Microsoft.Maui.UnitTests.Layouts
 				return GridLength.Auto;
 			}
 
-			return new GridLength(double.Parse(gridLength));
+			return new GridLength(double.Parse(gridLength, CultureInfo.InvariantCulture));
 		}
 
 		List<IGridColumnDefinition> CreateTestColumns(params string[] columnWidths)

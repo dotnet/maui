@@ -10,6 +10,7 @@ using Microsoft.Maui.Platform;
 using Microsoft.UI.Windowing;
 using Xunit;
 using WPanel = Microsoft.UI.Xaml.Controls.Panel;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -114,7 +115,7 @@ namespace Microsoft.Maui.DeviceTests
 				var mauiToolBar = GetPlatformToolbar(handler);
 
 				Assert.NotNull(mauiToolBar);
-				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+				await AssertEventually(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0);
 
 				var position = mauiToolBar.GetLocationOnScreen();
 				var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
@@ -155,13 +156,13 @@ namespace Microsoft.Maui.DeviceTests
 				presenter.Maximize();
 
 				// Wait for maximize animation to finish
-				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 0));
+				await AssertEventually(() => mauiToolBar.GetLocationOnScreen().Value.Y == 0);
 
 				// Now restore the window
 				presenter.SetBorderAndTitleBar(true, true);
 				presenter.Restore();
 
-				Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y == 32));
+				await AssertEventually(() => mauiToolBar.GetLocationOnScreen().Value.Y == 32);
 			});
 		}
 
@@ -191,7 +192,7 @@ namespace Microsoft.Maui.DeviceTests
 							var mauiToolBar = GetPlatformToolbar(handler);
 
 							Assert.NotNull(mauiToolBar);
-							Assert.True(await AssertionExtensions.Wait(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0));
+							await AssertEventually(() => mauiToolBar.GetLocationOnScreen().Value.Y > 0);
 
 							var position = mauiToolBar.GetLocationOnScreen();
 							var appTitleBarHeight = GetWindowRootView(handler).AppTitleBarActualHeight;
