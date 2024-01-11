@@ -27,6 +27,9 @@ namespace Microsoft.Maui.DeviceTests
 				});
 			builder.Services.AddKeyedSingleton<IImageSourceService, CountedImageSourceServiceStub>(typeof(CountedImageSourceStub));
 			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSourceStub), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFileImageSource)));
+#if WINDOWS
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSource), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFileImageSource)));
+#endif
 
 			return builder;
 		}
