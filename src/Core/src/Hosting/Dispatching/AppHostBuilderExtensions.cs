@@ -23,7 +23,6 @@ namespace Microsoft.Maui.Hosting
 
 				var dispatch = Dispatcher.GetForCurrentThread();
 
-				// Slight behavior change 
 				return dispatch ?? svc.GetRequiredService<ApplicationDispatcher>().AppDispatcher;
 			});
 
