@@ -1,10 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
-using System.Linq;
-using System.Collections.Generic;
 
 namespace Maui.Controls.Sample.Issues
 {
@@ -38,17 +38,17 @@ namespace Maui.Controls.Sample.Issues
 						 select new Grouping<string, SamplePack>(sampleGroup.Key, sampleGroup);
 
 			Testing = new ObservableCollection<Grouping<string, SamplePack>>(sorted);
-			
+
 			ListView TestingList = new ListView()
 			{
 				IsPullToRefreshEnabled = true,
 				IsGroupingEnabled = true,
-				GroupHeaderTemplate = new DataTemplate(() => 
+				GroupHeaderTemplate = new DataTemplate(() =>
 				{
 					var groupLabel = new Label { FontSize = 18, TextColor = Color.FromArgb("#1f1f1f"), HorizontalOptions = LayoutOptions.Start, HorizontalTextAlignment = TextAlignment.Start };
 					groupLabel.SetBinding(Label.TextProperty, new Binding("Key", stringFormat: "{0} Music"));
 
-					return new ViewCell				
+					return new ViewCell
 					{
 						Height = 283,
 						View = new StackLayout
@@ -62,7 +62,7 @@ namespace Maui.Controls.Sample.Issues
 						}
 					};
 				}),
-				ItemTemplate = new DataTemplate(() => 
+				ItemTemplate = new DataTemplate(() =>
 				{
 					var itemLabel = new Label { TextColor = Colors.Black };
 					itemLabel.SetBinding(Label.TextProperty, new Binding("Info"));
