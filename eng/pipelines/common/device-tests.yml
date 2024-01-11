@@ -1,6 +1,7 @@
 parameters:
   androidPool: { }
   iosPool: { }
+  iosDevicePool: { }
   catalystPool: { }
   windowsPool: { }
   androidApiLevels: [ 33 ]
@@ -85,9 +86,19 @@ stages:
                     ${{ if contains(version, 'device') }}:
                       DEVICE: ios-device
                       APIVERSION: ${{ replace(version, 'device-', '') }}
+                      POOLNAME: ${{ parameters.iosDevicePool.name }}
+                      POOLDEMANDS: '15'
                     ${{ else }}:
                       DEVICE: ios-simulator-64_${{ replace(version, 'simulator-', '') }}
                       APIVERSION: ${{ replace(version, 'simulator-', '') }}
+                      POOLNAME:  ${{ parameters.iosPool.name }}
+                      POOLIMAGE:  ${{ parameters.iosPool.vmImage }}
+                      POOLDEMANDS: ${{ parameters.iosPool.demands }}
+      pool:
+        name: $(POOLNAME)
+        demands:
+        - HasiOS -equals $(POOLDEMANDS)
+      
       steps:
         - template: device-tests-steps.yml
           parameters:

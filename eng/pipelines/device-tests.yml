@@ -74,6 +74,13 @@ parameters:
       demands:
         - macOS.Name -equals Ventura
         - macOS.Architecture -equals x64
+  
+  - name: iosDevicePool
+    type: object
+    default:
+      name: MAUI-Testing
+      demands:
+        - macOS.Name -equals Ventura
 
   - name: catalystPool
     type: object
@@ -101,18 +108,19 @@ stages:
     parameters:
       androidPool: ${{ parameters.androidPool }}
       iosPool: ${{ parameters.iosPool }}
+      iosDevicePool: ${{ parameters.iosDevicePool }}
       catalystPool: ${{ parameters.catalystPool }}
       windowsPool: ${{ parameters.windowsPool }}
       agentPoolAccessToken: $(AgentPoolAccessToken)
       ${{ if or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv'))) }}:
         androidApiLevels: [ 33, 30, 29, 28, 27, 26, 25, 24, 23 ]
-        iosVersions: [ 'simulator-17.2']
+        iosVersions: [ 'device-15' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
       ${{ if not(or(parameters.BuildEverything, and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'devdiv')))) }}:
         androidApiLevels: [ 33, 23 ]
-        iosVersions: [ 'simulator-17.2' ]
+        iosVersions: [ 'device-15' ]
         catalystVersions: [ 'latest' ]
         windowsVersions: ['packaged', 'unpackaged']
         provisionatorChannel: ${{ parameters.provisionatorChannel }}
