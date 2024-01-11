@@ -197,8 +197,8 @@ namespace Microsoft.Maui.Controls.Hosting
 			{
 #if WINDOWS
 				var dispatcher =
-					services.GetService<IDispatcher>() ??
-					IPlatformApplication.Current?.Services.GetRequiredService<IDispatcher>();
+					services.GetService<ApplicationDispatcher>()?.AppDispatcher ??
+					IPlatformApplication.Current?.Services?.GetRequiredService<IDispatcher>();
 
 				dispatcher
 					.DispatchIfRequired(() =>

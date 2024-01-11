@@ -40,6 +40,7 @@ namespace Microsoft.Maui.DeviceTests
 
 			appBuilder.Services.AddSingleton<IDispatcherProvider>(svc => TestDispatcher.Provider);
 			appBuilder.Services.AddScoped<IDispatcher>(svc => TestDispatcher.Current);
+			appBuilder.Services.AddSingleton<ApplicationDispatcher>(svc => new ApplicationDispatcher(TestDispatcher.Current));
 			appBuilder.Services.AddSingleton<IApplication>((_) => new CoreApplicationStub());
 
 			appBuilder = ConfigureBuilder(appBuilder);

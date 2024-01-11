@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Maui.Hosting;
 using Microsoft.Maui.LifecycleEvents;
 using Microsoft.Maui.TestUtils.DeviceTests.Runners;
@@ -68,6 +69,12 @@ namespace Microsoft.Maui.DeviceTests
 			});
 #endif
 			appBuilder.UseVisualRunner();
+
+			appBuilder.ConfigureContainer(new DefaultServiceProviderFactory(new ServiceProviderOptions
+			{
+				ValidateOnBuild = true,
+				ValidateScopes = true,
+			}));
 
 			var mauiApp = appBuilder.Build();
 

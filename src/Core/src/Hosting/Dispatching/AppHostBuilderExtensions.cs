@@ -21,19 +21,44 @@ namespace Microsoft.Maui.Hosting
 				if (DispatcherProvider.SetCurrent(provider))
 					svc.CreateLogger<Dispatcher>()?.LogWarning("Replaced an existing DispatcherProvider with one from the service provider.");
 
-				return Dispatcher.GetForCurrentThread()!;
+				var dispatch = Dispatcher.GetForCurrentThread();
+
+				// Slight behavior change 
+				return dispatch ?? svc.GetRequiredService<ApplicationDispatcher>().AppDispatcher;
 			});
-			builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<IMauiInitializeScopedService, DispatcherInitializer>());
+
+			builder.Services.AddSingleton<ApplicationDispatcher>();
+
+
+			builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IMauiInitializeService, DispatcherInitializer>());
 
 			return builder;
 		}
 
-		class DispatcherInitializer : IMauiInitializeScopedService
+		class DispatcherInitializer : IMauiInitializeService
 		{
 			public void Initialize(IServiceProvider services)
 			{
-				_ = services.GetRequiredService<IDispatcher>();
+				_ = services.GetRequiredService<ApplicationDispatcher>();
 			}
+		}
+	}
+
+	/// <summary>
+	/// If the user tries to retrieve `IDispatcher` from the root `IServiceProvider` on a background thread
+	/// this serves as a way to retrieve the App level dispatcher
+	/// </summary>
+	internal class ApplicationDispatcher
+	{
+		public IDispatcher AppDispatcher { get; }
+
+		public ApplicationDispatcher() : this(Dispatcher.GetForCurrentThread()!)
+		{
+		}
+
+		internal ApplicationDispatcher(IDispatcher dispatcher)
+		{
+			AppDispatcher = dispatcher;
 		}
 	}
 }

@@ -55,7 +55,7 @@ namespace Microsoft.Maui.Hosting
 #if WINDOWS
 				// WORKAROUND: use the MAUI dispatcher instead of the OS dispatcher to
 				// avoid crashing: https://github.com/microsoft/WindowsAppSDK/issues/2451
-				var dispatcher = services.GetRequiredService<IDispatcher>();
+				var dispatcher = services.GetRequiredService<ApplicationDispatcher>().AppDispatcher;
 				if (dispatcher.IsDispatchRequired)
 					dispatcher.Dispatch(() => SetupResources());
 				else

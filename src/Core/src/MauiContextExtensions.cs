@@ -6,20 +6,20 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.ApplicationModel;
 
 #if WINDOWS
-using NativeApplication = Microsoft.UI.Xaml.Application;
-using NativeWindow = Microsoft.UI.Xaml.Window;
+using PlatformApplication = Microsoft.UI.Xaml.Application;
+using PlatformWindow = Microsoft.UI.Xaml.Window;
 #elif __IOS__ || __MACCATALYST__
-using NativeApplication = UIKit.IUIApplicationDelegate;
-using NativeWindow = UIKit.UIWindow;
+using PlatformApplication = UIKit.IUIApplicationDelegate;
+using PlatformWindow = UIKit.UIWindow;
 #elif __ANDROID__
-using NativeApplication = Android.App.Application;
-using NativeWindow = Android.App.Activity;
+using PlatformApplication = Android.App.Application;
+using PlatformWindow = Android.App.Activity;
 #elif TIZEN
-using NativeApplication = Tizen.Applications.CoreApplication;
-using NativeWindow = Tizen.NUI.Window;
+using PlatformApplication = Tizen.Applications.CoreApplication;
+using PlatformWindow = Tizen.NUI.Window;
 #else
-using NativeApplication = System.Object;
-using NativeWindow = System.Object;
+using PlatformApplication = System.Object;
+using PlatformWindow = System.Object;
 #endif
 
 namespace Microsoft.Maui
@@ -35,7 +35,7 @@ namespace Microsoft.Maui
 		public static IDispatcher? GetOptionalDispatcher(this IMauiContext mauiContext) =>
 			mauiContext.Services.GetService<IDispatcher>();
 
-		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, NativeApplication platformApplication)
+		public static IMauiContext MakeApplicationScope(this IMauiContext mauiContext, PlatformApplication platformApplication)
 		{
 			var scopedContext = new MauiContext(mauiContext.Services);
 
@@ -46,7 +46,7 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
-		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, NativeWindow platformWindow, out IServiceScope scope)
+		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, PlatformWindow platformWindow, out IServiceScope scope)
 		{
 			scope = mauiContext.Services.CreateScope();
 
@@ -65,6 +65,10 @@ namespace Microsoft.Maui
 			scopedContext.AddSpecific(new NavigationRootManager(platformWindow));
 #endif
 
+			// Capture the window level dispatcher.
+			// If the user first retrieves the IDispatcher from the window on a background thread
+			// it'll just return null and be permanently null if we don't saturate this for them.
+			_ = scope.ServiceProvider.GetService<IDispatcher>();
 			return scopedContext;
 		}
 
