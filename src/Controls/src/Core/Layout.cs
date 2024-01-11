@@ -236,14 +236,14 @@ namespace Microsoft.Maui.Controls.Compatibility
 
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			return MeasureOverride(widthConstraint, heightConstraint);
+			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+			return DesiredSize;
 		}
 
 		protected override Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
 			var sansMargins = OnMeasure(widthConstraint, heightConstraint).Request;
-			DesiredSize = new Size(sansMargins.Width + Margin.HorizontalThickness, sansMargins.Height + Margin.VerticalThickness);
-			return DesiredSize;
+			return new Size(sansMargins.Width + Margin.HorizontalThickness, sansMargins.Height + Margin.VerticalThickness);
 		}
 
 		protected override void OnSizeAllocated(double width, double height)

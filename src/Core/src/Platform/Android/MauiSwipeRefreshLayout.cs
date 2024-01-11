@@ -82,7 +82,7 @@ namespace Microsoft.Maui.Platform
 			return true;
 		}
 
-		bool CanScrollUpViewByType(AView? view)
+		static bool CanScrollUpViewByType(AView? view)
 		{
 			if (view is AbsListView absListView)
 			{

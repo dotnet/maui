@@ -1,6 +1,6 @@
 ﻿#nullable enable
-using Microsoft.Maui.Controls;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Controls;
 
 namespace Microsoft.Maui.TestUtils.DeviceTests.Runners.VisualRunner.Pages
 {
