@@ -4,7 +4,7 @@ if (IsMac)
 	MicrosoftOpenJdk ("11.0.13.8.1");
 	//this is needed for tools on macos like nunit console or nuget.exe 
 	Item("https://download.mono-project.com/archive/6.12.0/macos-10-universal/MonoFramework-MDK-6.12.0.199.macos10.xamarin.universal.pkg");
-	AppleCodesignIdentity("Apple Development: Rui Marinho (G6DXESA369)", "https://dl.internalx.com/test/certs/maui-mac-ios-certificate");
+	AppleCodesignIdentity("Apple Development: Rui Marinho (G6DXESA369)", "https://dl.internalx.com/test/certs/maui-mac-ios-certificate.p12");
 	AppleCodesignProfile("https://dl.internalx.com/test/certs/maui-ios-provisioning.mobileprovision");
 	AppleCodesignProfile("https://dl.internalx.com/test/certs/maui-mac-provisioning.mobileprovision");
 	AppleCodesignProfile("https://dl.internalx.com/test/certs/maui-tvos-provisioning.mobileprovision");
