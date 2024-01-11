@@ -309,8 +309,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 		void LayoutContent(CGRect parentBounds, nfloat footerHeight)
 		{
 			double contentYOffset = 0;
-			
-			if (ShouldHonorSafeArea(HeaderView?.View) || 
+
+			if (ShouldHonorSafeArea(HeaderView?.View) ||
 				(HeaderView is null && ShouldHonorSafeArea(Content)))
 			{
 				// We add the safe area if margin is not explicitly set. This matches the header behavior.
@@ -331,7 +331,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					contentYOffset += HeaderView.View.Margin.VerticalThickness;
 				}
 			}
-			
+
 			var contentFrame = new Rect(parentBounds.X, contentYOffset, parentBounds.Width, parentBounds.Height - contentYOffset - footerHeight);
 			if (Content is null)
 			{
@@ -345,11 +345,11 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 		bool ShouldHonorSafeArea(View view)
 		{
-			return view != null 
-				&& !view.IsSet(View.MarginProperty) 
+			return view != null
+				&& !view.IsSet(View.MarginProperty)
 				&& !(view is ISafeAreaView sav && sav.IgnoreSafeArea);
 		}
-		
+
 		void OnStructureChanged(object sender, EventArgs e) => UpdateVerticalScrollMode();
 
 		void OnShellPropertyChanged(object sender, PropertyChangedEventArgs e)
