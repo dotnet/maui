@@ -7,7 +7,7 @@
 #tool nuget:?package=NUnit.ConsoleRunner&version=3.16.3
 
 const int defaultVersion = 30;
-const string dotnetVersion = "net8.0";
+const string dotnetVersion = "net9.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("ANDROID_TEST_PROJECT") ?? DEFAULT_PROJECT);

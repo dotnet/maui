@@ -5,6 +5,7 @@ trigger:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
     - loc
   tags:
     include:
@@ -30,6 +31,7 @@ pr:
     - release/*
     - net7.0
     - net8.0
+    - net9.0
   paths:
     include:
     - '*'
@@ -131,8 +133,8 @@ parameters:
         tfm: default
       # - name: net6
       #   tfm: net6.0
-      - name: net8
-        tfm: net8.0
+      - name: net9
+        tfm: net9.0
 
 resources:
   repositories:

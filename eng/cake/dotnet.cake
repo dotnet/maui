@@ -486,16 +486,6 @@ Task("VS")
         StartVisualStudioForDotNet();
     }); 
 
-// Keeping this for users that are already using this.
-Task("VS-NET6")
-    .Description("Provisions .NET 6 and launches an instance of Visual Studio using it.")
-    .IsDependentOn("Clean")
-    .IsDependentOn("VS")
-    .Does(() =>
-    {
-       Warning("!!!!Please switch to using the `VS` target.!!!!");
-    });
-
 bool RunPackTarget()
 {
     // Is the user running the pack target explicitly?
@@ -549,6 +539,7 @@ void SetDotNetEnvironmentVariables()
     
     //Workaround: https://github.com/dotnet/linker/issues/3012
     SetEnvironmentVariable("DOTNET_gcServer", "0");
+    SetEnvironmentVariable("VSDebugger_ValidateDotnetDebugLibSignatures", "0");
     SetEnvironmentVariable("DOTNET_INSTALL_DIR", dotnet);
     SetEnvironmentVariable("DOTNET_ROOT", dotnet);
     SetEnvironmentVariable("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", dotnet);

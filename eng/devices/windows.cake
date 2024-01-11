@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 const string defaultVersion = "10.0.19041";
-const string dotnetVersion = "net8.0";
+const string dotnetVersion = "net9.0";
 
 // required
 FilePath PROJECT = Argument("project", EnvironmentVariable("WINDOWS_TEST_PROJECT") ?? DEFAULT_PROJECT);
