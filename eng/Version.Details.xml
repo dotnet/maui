@@ -8,25 +8,25 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>4c500699b938d53993b928b93543b8dbe68f69aa</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.1.106">
+    <Dependency Name="Microsoft.Android.Sdk.Windows" Version="34.99.0-preview.1.117">
       <Uri>https://github.com/xamarin/xamarin-android</Uri>
-      <Sha>45e7cb9e39da65e301b4f8eb4f3059028c5fefa5</Sha>
+      <Sha>de9d6c87b6ccab5c7784bdafa7d03c65d21814da</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="17.0.9712-net9-p1">
+    <Dependency Name="Microsoft.MacCatalyst.Sdk" Version="17.0.9803-net9-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6189b42fae62e14ae2c5534f092d560f0bc9a3ed</Sha>
+      <Sha>1e6084e7279c1480cacb6565bfca4bef0766d259</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.macOS.Sdk" Version="14.0.9712-net9-p1">
+    <Dependency Name="Microsoft.macOS.Sdk" Version="14.0.9803-net9-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6189b42fae62e14ae2c5534f092d560f0bc9a3ed</Sha>
+      <Sha>1e6084e7279c1480cacb6565bfca4bef0766d259</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.iOS.Sdk" Version="17.0.9712-net9-p1">
+    <Dependency Name="Microsoft.iOS.Sdk" Version="17.0.9803-net9-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6189b42fae62e14ae2c5534f092d560f0bc9a3ed</Sha>
+      <Sha>1e6084e7279c1480cacb6565bfca4bef0766d259</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.tvOS.Sdk" Version="17.0.9712-net9-p1">
+    <Dependency Name="Microsoft.tvOS.Sdk" Version="17.0.9803-net9-p1">
       <Uri>https://github.com/xamarin/xamarin-macios</Uri>
-      <Sha>6189b42fae62e14ae2c5534f092d560f0bc9a3ed</Sha>
+      <Sha>1e6084e7279c1480cacb6565bfca4bef0766d259</Sha>
     </Dependency>
     <Dependency Name="Microsoft.WindowsAppSDK" Version="0.0.1">
       <Uri>https://dev.azure.com/microsoft/ProjectReunion/_git/ProjectReunionInternal</Uri>
