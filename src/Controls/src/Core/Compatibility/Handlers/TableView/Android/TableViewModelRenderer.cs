@@ -144,7 +144,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			// The cell content we get back might already be in a ConditionalFocusLayout; if it is, 
 			// we'll just use that. If not, we'll need to create one and add the content to it
 
-			if(nativeCellContent.Parent is not ConditionalFocusLayout layout)
+			if (nativeCellContent.Parent is not ConditionalFocusLayout layout)
 			{
 				layout = new ConditionalFocusLayout(Context) { Orientation = Orientation.Vertical };
 				layout.AddView(nativeCellContent);
@@ -190,7 +190,7 @@ namespace Microsoft.Maui.Controls.Handlers.Compatibility
 			divider.SetBackgroundResource(DividerResourceId);
 		}
 
-		void UpdateCellFocus(Cell cell, AView nativeCell) 
+		void UpdateCellFocus(Cell cell, AView nativeCell)
 		{
 			// If this cell is the one that's supposed to have focus, then request focus for the native cell
 			if (_restoreFocus == cell)

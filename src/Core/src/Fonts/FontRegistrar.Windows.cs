@@ -8,7 +8,7 @@ namespace Microsoft.Maui
 	/// <inheritdoc/>
 	public partial class FontRegistrar : IFontRegistrar
 	{
-		string? LoadNativeAppFont(string font, string filename, string? alias)
+		static string? LoadNativeAppFont(string font, string filename, string? alias)
 		{
 			if (FileSystemUtils.AppPackageFileExists(filename))
 				return $"ms-appx:///{filename}";

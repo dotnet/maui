@@ -39,13 +39,13 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await AssertEventually(referencesCollected, timeout: 10000);
 			}
-			catch (XunitException ex) 
+			catch (XunitException ex)
 			{
-				throw new XunitException(ListLivingReferences(references), ex);			
+				throw new XunitException(ListLivingReferences(references), ex);
 			}
 		}
 
-		static string ListLivingReferences(WeakReference[] references) 
+		static string ListLivingReferences(WeakReference[] references)
 		{
 			StringBuilder stringBuilder = new StringBuilder();
 

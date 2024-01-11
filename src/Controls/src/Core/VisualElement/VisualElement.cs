@@ -1847,7 +1847,8 @@ namespace Microsoft.Maui.Controls
 		/// <inheritdoc/>
 		Size IView.Measure(double widthConstraint, double heightConstraint)
 		{
-			return MeasureOverride(widthConstraint, heightConstraint);
+			DesiredSize = MeasureOverride(widthConstraint, heightConstraint);
+			return DesiredSize;
 		}
 
 		/// <summary>
@@ -1859,8 +1860,7 @@ namespace Microsoft.Maui.Controls
 		/// <returns>The requested size that an element wants in order to be displayed on the device.</returns>
 		protected virtual Size MeasureOverride(double widthConstraint, double heightConstraint)
 		{
-			DesiredSize = this.ComputeDesiredSize(widthConstraint, heightConstraint);
-			return DesiredSize;
+			return this.ComputeDesiredSize(widthConstraint, heightConstraint);
 		}
 
 		/// <inheritdoc/>
