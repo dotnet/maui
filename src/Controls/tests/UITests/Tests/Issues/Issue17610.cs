@@ -18,8 +18,12 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		[Test]
 		public void RefreshIconDisappearsWhenUserCancelsRefreshByScrollingBackUp()
 		{
-			if (App is not AppiumAndroidApp aaa)
-				return;
+			this.IgnoreIfPlatforms(new[]
+			{
+				TestDevice.iOS,
+				TestDevice.Mac,
+				TestDevice.Windows
+			});
 
 			var rect1 = App.WaitForElement("Item4").GetRect();
 			var rect2 = App.WaitForElement("Item16").GetRect();
@@ -35,9 +39,6 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				.MoveTo(fromX, fromY)
 				.Release()
 				.Perform();
-
-			// TODO REmove before merging
-			Thread.Sleep(1000);
 
 			VerifyScreenshot();
 		}
