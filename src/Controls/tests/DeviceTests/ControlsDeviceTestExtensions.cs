@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Controls;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.Controls;
 using Microsoft.Maui.Controls.Hosting;
 using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Handlers;
@@ -15,8 +16,7 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static MauiAppBuilder ConfigureTestBuilder(this MauiAppBuilder mauiAppBuilder)
 		{
-			return
-				mauiAppBuilder
+			var builder = mauiAppBuilder
 					.RemapForControls()
 					.ConfigureLifecycleEvents(lifecycle =>
 					{
@@ -52,6 +52,10 @@ namespace Microsoft.Maui.DeviceTests
 						handlers.AddHandler(typeof(MauiAppNewWindowStub), typeof(ApplicationHandler));
 #endif
 					});
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(StreamImageSource), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IStreamImageSource)));
+			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(FileImageSource), (ksvcs, _) => ((IKeyedServiceProvider)ksvcs).GetRequiredKeyedService<IImageSourceService>(typeof(IFileImageSource)));
+
+			return builder;
 		}
 	}
 }
