@@ -25,6 +25,9 @@ namespace Microsoft.Maui.AppiumTests.Issues
 				TestDevice.Windows
 			});
 
+			if (App is not AppiumAndroidApp androidApp)
+				throw new InvalidOperationException($"Invalid App Type For this Test: {App} Expected AppiumAndroidApp.");
+
 			var rect1 = App.WaitForElement("Item4").GetRect();
 			var rect2 = App.WaitForElement("Item16").GetRect();
 
@@ -33,7 +36,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 			var toX = (int)rect2.CenterX();
 			var toY = (int)rect2.CenterY();
 
-			new TouchAction(aaa.Driver)
+			new TouchAction(androidApp.Driver)
 				.Press(fromX, fromY)
 				.MoveTo(toX, toY)
 				.MoveTo(fromX, fromY)
