@@ -34,7 +34,10 @@ namespace Microsoft.Maui.Controls.ControlGallery
 				{
 					handlers.AddCompatibilityRenderers(AppDomain.CurrentDomain.GetAssemblies());
 				})
-				.AddCompatibilityServices(AppDomain.CurrentDomain.GetAssemblies())
+				.ConfigureImageSources(sources =>
+				{
+					sources.AddCompatibilityServices(AppDomain.CurrentDomain.GetAssemblies());
+				})
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddCompatibilityFonts(new FontRegistrar(new EmbeddedFontLoader()), AppDomain.CurrentDomain.GetAssemblies());

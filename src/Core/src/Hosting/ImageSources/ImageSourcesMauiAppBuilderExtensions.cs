@@ -15,14 +15,27 @@ namespace Microsoft.Maui.Hosting
 			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(IFontImageSource), (svcs, _) => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
 			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(IStreamImageSource), (svcs, _) => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
 			builder.Services.AddKeyedSingleton<IImageSourceService>(typeof(IUriImageSource), (svcs, _) => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
-
+			builder.ConfigureImageSources(services =>
+			{
+				services.AddService<IFileImageSource>(svcs => new FileImageSourceService(svcs.CreateLogger<FileImageSourceService>()));
+				services.AddService<IFontImageSource>(svcs => new FontImageSourceService(svcs.GetRequiredService<IFontManager>(), svcs.CreateLogger<FontImageSourceService>()));
+				services.AddService<IStreamImageSource>(svcs => new StreamImageSourceService(svcs.CreateLogger<StreamImageSourceService>()));
+				services.AddService<IUriImageSource>(svcs => new UriImageSourceService(svcs.CreateLogger<UriImageSourceService>()));
+			});
 			return builder;
 		}
 
-		[Obsolete("This method is deprecated. Custom ImageSource services should be registered directly through the MauiAppBuilder's IServiceCollection as keyed services.")]
 		public static MauiAppBuilder ConfigureImageSources(this MauiAppBuilder builder, Action<IImageSourceServiceCollection>? configureDelegate)
 		{
-			throw new NotImplementedException();
+			if (configureDelegate != null)
+			{
+				builder.Services.AddSingleton<ImageSourceRegistration>(new ImageSourceRegistration(configureDelegate));
+			}
+
+			builder.Services.TryAddSingleton<IImageSourceServiceProvider>(svcs => new ImageSourceServiceProvider(svcs.GetRequiredService<IImageSourceServiceCollection>(), svcs));
+			builder.Services.TryAddSingleton<IImageSourceServiceCollection>(svcs => new ImageSourceServiceBuilder(svcs.GetServices<ImageSourceRegistration>()));
+
+			return builder;
 		}
 
 		class ImageSourceRegistration
