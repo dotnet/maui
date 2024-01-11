@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using Android.Content.Res;
 using Android.Graphics.Drawables;
@@ -156,8 +157,21 @@ namespace Microsoft.Maui.Handlers
 
 		void OnPlatformViewLayoutChange(object? sender, AView.LayoutChangeEventArgs e)
 		{
-			if (sender is MaterialButton platformView && VirtualView != null)
+			UpdateIconSize();
+
+			if (sender is MaterialButton platformView && VirtualView is not null)
 				platformView.UpdateBackground(VirtualView);
+		}
+
+		void UpdateIconSize()
+		{
+			if (PlatformView is null || PlatformView.IsDisposed())
+				return;
+
+			if (PlatformView.Height > PlatformView.Width)
+				PlatformView.IconSize = PlatformView.Width - (PlatformView.PaddingLeft + PlatformView.PaddingRight);
+			else
+				PlatformView.IconSize = PlatformView.Height - (PlatformView.PaddingTop + PlatformView.PaddingBottom);
 		}
 
 		class ButtonClickListener : Java.Lang.Object, AView.IOnClickListener
