@@ -53,8 +53,7 @@
 
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows')) or '$(Packing)' == 'true'">true</IncludeWindowsTargetFrameworks>
     <IncludeMacOSTargetFrameworks Condition="'$(DotNetMacOSWorkloadIsInstalled)' == 'true'">true</IncludeMacOSTargetFrameworks>
-    <!-- Disabled until net9.0-tizen is available -->
-    <!-- <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks> -->
+    <IncludeTizenTargetFrameworks Condition="'$(DotNetTizenWorkloadIsInstalled)' == 'true'">true</IncludeTizenTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
     <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
     <IncludeIosTargetFrameworks>true</IncludeIosTargetFrameworks>
@@ -66,7 +65,7 @@
   <PropertyGroup Condition="'$(CI)' == 'true' or '$(TF_BUILD)' == 'true'">
     <IncludeWindowsTargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">true</IncludeWindowsTargetFrameworks>
     <!-- Disabled until net9.0-tizen is available -->
-    <IncludeTizenTargetFrameworks>false</IncludeTizenTargetFrameworks>
+    <IncludeTizenTargetFrameworks>true</IncludeTizenTargetFrameworks>
     <IncludeMacOSTargetFrameworks>true</IncludeMacOSTargetFrameworks>
     <IncludeAndroidTargetFrameworks>true</IncludeAndroidTargetFrameworks>
     <IncludeMacCatalystTargetFrameworks>true</IncludeMacCatalystTargetFrameworks>
