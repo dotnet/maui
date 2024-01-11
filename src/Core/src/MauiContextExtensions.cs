@@ -46,6 +46,14 @@ namespace Microsoft.Maui
 			return scopedContext;
 		}
 
+		internal static void SetupDispatcher(this IMauiContext mauiContext)
+		{
+			// Capture the window level dispatcher.
+			// If the user first retrieves the IDispatcher from the scoped service on a background thread
+			// it'll just return null. This ensures that the user has access to the window dispatcher
+			_ = mauiContext?.Services?.GetService<IDispatcher>();
+		}
+
 		public static IMauiContext MakeWindowScope(this IMauiContext mauiContext, PlatformWindow platformWindow, out IServiceScope scope)
 		{
 			scope = mauiContext.Services.CreateScope();
@@ -65,10 +73,13 @@ namespace Microsoft.Maui
 			scopedContext.AddSpecific(new NavigationRootManager(platformWindow));
 #endif
 
-			// Capture the window level dispatcher.
-			// If the user first retrieves the IDispatcher from the window on a background thread
-			// it'll just return null and be permanently null if we don't saturate this for them.
-			_ = scope.ServiceProvider.GetService<IDispatcher>();
+			// Windows creates its window from the application thread so we
+			// leave it to the MauiWinUIWindow to call `SetupDispatcher`
+			// Android/iOS create the window scope from their respective versions of "window"
+#if !WINDOWS
+			scopedContext.SetupDispatcher();
+#endif
+
 			return scopedContext;
 		}
 

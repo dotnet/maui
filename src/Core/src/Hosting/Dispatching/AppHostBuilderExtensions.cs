@@ -26,7 +26,7 @@ namespace Microsoft.Maui.Hosting
 				return dispatch ?? svc.GetRequiredService<ApplicationDispatcher>().AppDispatcher;
 			});
 
-			builder.Services.AddSingleton<ApplicationDispatcher>();
+			builder.Services.TryAddSingleton<ApplicationDispatcher>();
 
 
 			builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IMauiInitializeService, DispatcherInitializer>());

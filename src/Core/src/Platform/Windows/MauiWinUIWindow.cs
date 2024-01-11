@@ -28,8 +28,8 @@ namespace Microsoft.Maui
 		{
 			_windowManager = WindowMessageManager.Get(this);
 			_viewSettings = new ViewManagement.UISettings();
-
 			Activated += OnActivated;
+			Activated += AssignDispatcher;
 			Closed += OnClosedPrivate;
 			VisibilityChanged += OnVisibilityChanged;
 
@@ -56,6 +56,12 @@ namespace Microsoft.Maui
 
 			SubClassingWin32();
 			SetIcon();
+		}
+
+		void AssignDispatcher(object sender, UI.Xaml.WindowActivatedEventArgs args)
+		{
+			Activated -= AssignDispatcher;
+			Window?.Handler?.MauiContext?.SetupDispatcher();
 		}
 
 		protected virtual void OnActivated(object sender, UI.Xaml.WindowActivatedEventArgs args)
