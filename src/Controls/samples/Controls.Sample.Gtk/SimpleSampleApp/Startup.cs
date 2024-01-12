@@ -64,13 +64,17 @@ namespace Maui.SimpleSampleApp
 
 					// Log everything in this one
 					events.AddGtk(gtk => gtk
+						.OnCreated((window, args) =>
+						{
+							window.WidthRequest = 800;
+							window.HeightRequest = 800;
+						})
 						.OnActivated((a, b) => LogEvent(nameof(GtkLifecycle.OnApplicationActivated)))
 						.OnClosed((a, b) => LogEvent(nameof(GtkLifecycle.OnHidden)))
 						.OnLaunched((a, b) => LogEvent(nameof(GtkLifecycle.OnLaunched)))
 						.OnShown((a, b) =>
 						{
 							LogEvent(nameof(GtkLifecycle.OnShown));
-							a.Maximize();
 						})
 					);
 

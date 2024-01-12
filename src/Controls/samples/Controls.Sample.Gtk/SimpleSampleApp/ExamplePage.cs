@@ -421,7 +421,7 @@ namespace Maui.SimpleSampleApp
 
 			verticalStack.Add(new Image() { Source = "dotnet_bot.png" });
 
-			Content = new ScrollView { Content = verticalStack, Orientation = ScrollOrientation.Both };
+			Content = new ScrollView { Content = verticalStack, Orientation = ScrollOrientation.Vertical };
 		}
 
 		public IView View { get => (IView)Content; set => Content = (View)value; }
