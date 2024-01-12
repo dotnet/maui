@@ -20,15 +20,4 @@
     <RuntimeIdentifier>win10-$(_SingleProjectHostArchitecture)</RuntimeIdentifier>
     <_MauiUsingDefaultRuntimeIdentifier>true</_MauiUsingDefaultRuntimeIdentifier>
   </PropertyGroup>
-
-  <!-- Feature switches -->
-  <PropertyGroup>
-    <MauiXamlRuntimeParsingSupport Condition="'$(MauiXamlRuntimeParsingSupport)' == '' and '$(PublishAot)' == 'true'">false</MauiXamlRuntimeParsingSupport>
-  </PropertyGroup>
-  <ItemGroup>
-    <RuntimeHostConfigurationOption Include="Microsoft.Maui.RuntimeFeature.IsXamlRuntimeParsingSupported"
-                                    Condition="'$(MauiXamlRuntimeParsingSupport)' != ''"
-                                    Value="$(MauiXamlRuntimeParsingSupport)"
-                                    Trim="true" />
-  </ItemGroup>
 </Project>
