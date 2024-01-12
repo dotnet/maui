@@ -63,7 +63,7 @@ The ScrollViewer control behavior differs from the .NET MAUI behavior (and Forms
 	
 To compound our problems, ScrollViewer is `sealed`. So we cannot override the measure/arrange behavior.
 	
-So, to make the Windows implemenation of ScrollView work the way we want, we insert an extra layer - a `ContentPanel`. The native `Content` property of the ScrollViewer is set our extra `ContentPanel`, which hosts the content of the virtual ScrollView. This intermediate `ContentPanel` provides our virtual `Padding` and `Margin` property behaviors, and is responsible for invoking the `CrossPlatformMeasure()` and `CrossPlatformArrange()` methods. 
+So, to make the Windows implementation of ScrollView work the way we want, we insert an extra layer - a `ContentPanel`. The native `Content` property of the ScrollViewer is set our extra `ContentPanel`, which hosts the content of the virtual ScrollView. This intermediate `ContentPanel` provides our virtual `Padding` and `Margin` property behaviors, and is responsible for invoking the `CrossPlatformMeasure()` and `CrossPlatformArrange()` methods. 
 
 ## Android
 
