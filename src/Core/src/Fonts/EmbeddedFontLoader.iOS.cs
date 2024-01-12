@@ -49,7 +49,10 @@ namespace Microsoft.Maui
 				if (uiFont != null)
 					return name;
 
-				throw new NSErrorException(error);
+				if (error != null)
+					throw new NSErrorException(error);
+				else
+					throw new InvalidOperationException("Unable to load font from the stream.");
 			}
 			catch (Exception ex)
 			{
