@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CoreGraphics;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics;
 using UIKit;
 
@@ -37,6 +39,13 @@ namespace Microsoft.Maui.Handlers
 			_proxy.Disconnect(platformView);
 
 			base.DisconnectHandler(platformView);
+		}
+
+		public override void PlatformArrange(Rect rect)
+		{
+			base.PlatformArrange(rect);
+
+			UpdateValue(nameof(IImage.Source));
 		}
 
 #if MACCATALYST
@@ -202,9 +211,57 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not UIButton button)
 					return;
 
-				platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+				if (button.Bounds == CGRect.Empty)
+					return;
 
-				button.SetImage(platformImage, UIControlState.Normal);
+				nfloat buttonSize;
+
+#pragma warning disable CA1422 // Validate platform compatibility
+				var contentEdgeInsets = button.ContentEdgeInsets;
+#pragma warning restore CA1422 // Validate platform compatibility
+
+				if (button.Bounds.Height > button.Bounds.Width)
+					buttonSize = button.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
+				else
+					buttonSize = button.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
+
+				if (buttonSize == 0)
+					return;
+
+				try
+				{
+					platformImage = ResizeImageSource(platformImage, buttonSize, buttonSize);
+					platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
+
+					button.SetImage(platformImage, UIControlState.Normal);
+				}
+				catch (Exception)
+				{
+					Handler.MauiContext?.CreateLogger<ButtonHandler>()?.LogWarning("Can not load Button ImageSource");
+				}
+			}
+
+			static UIImage? ResizeImageSource(UIImage? sourceImage, nfloat maxWidth, nfloat maxHeight)
+			{
+				if (sourceImage is null)
+					return null;
+
+				var sourceSize = sourceImage.Size;
+				var maxResizeFactor = Math.Min(maxWidth / sourceSize.Width, maxHeight / sourceSize.Height);
+
+				if (maxResizeFactor > 1)
+					return sourceImage;
+
+				var width = maxResizeFactor * sourceSize.Width;
+				var height = maxResizeFactor * sourceSize.Height;
+				CGSize scaleSize = new CGSize(width, height);
+
+				UIGraphics.BeginImageContextWithOptions(new CGSize((nfloat)width, (nfloat)height), false, 0);
+				sourceImage.Draw(new CGRect(0, 0, scaleSize.Width, scaleSize.Height));
+				var resultImage = UIGraphics.GetImageFromCurrentImageContext();
+				UIGraphics.EndImageContext();
+
+				return resultImage;
 			}
 		}
 	}
