@@ -225,6 +225,7 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 					lp.Dispose();
 
 					var services = MauiContext.Services;
+					var provider = services.GetRequiredService<IImageSourceServiceProvider>();
 					var icon = shellContent.Icon;
 
 					shellContent.Icon.LoadImage(
