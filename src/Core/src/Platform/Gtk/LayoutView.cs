@@ -192,10 +192,11 @@ namespace Microsoft.Maui.Platform
 			if (clearCache && !MeasureCache.IsEmpty)
 			{
 				MeasureCache.Clear();
+				MeasuredSizeH = null;
+				MeasuredSizeV = null;
 			}
 
-			MeasuredSizeH = null;
-			MeasuredSizeV = null;
+
 			MeasuredMinimum = null;
 		}
 
@@ -224,10 +225,11 @@ namespace Microsoft.Maui.Platform
 
 				LastAllocation = mAllocation;
 
-				var mesuredAllocation = Measure(allocation.Width, allocation.Height);
-
 				if (RestrictToMesuredAllocation)
+				{
+					var mesuredAllocation = Measure(allocation.Width, allocation.Height);
 					mAllocation.Size = mesuredAllocation;
+				}
 
 				ArrangeAllocation(new Rectangle(Point.Zero, mAllocation.Size));
 				AllocateChildren(mAllocation);
@@ -361,13 +363,17 @@ namespace Microsoft.Maui.Platform
 			if (VirtualView is not { } virtualView)
 				return;
 
-			double constraint = minimumSize;
+			double allocation = orientation == Orientation.Vertical ? AllocatedWidth : AllocatedHeight;
 
+			double constraint = Math.Max(allocation, naturalSize);
+			double hConstraint = IsReallocating ? AllocatedHeight : double.PositiveInfinity;
+			double wConstraint = IsReallocating ? AllocatedWidth : 0;
 
 			if (orientation == Orientation.Horizontal)
 			{
 				// constraint = constraint == 0 && MeasuredSizeV is { } size ? size.Height : constraint;
-				var measuredMinimum = MeasureMinimum(orientation, constraint);
+				var size = new Size(wConstraint, constraint);
+				var measuredMinimum = Measure(size.Width, size.Height);
 				MeasuredSizeH = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Width;
 				naturalSize = (int)minimumSize;
@@ -375,9 +381,9 @@ namespace Microsoft.Maui.Platform
 
 			if (orientation == Orientation.Vertical)
 			{
-				constraint = constraint == 0 && MeasuredSizeH is { } size ? size.Width : constraint;
-
-				var measuredMinimum = MeasureMinimum(orientation, constraint);
+				constraint = constraint == 0 && MeasuredSizeH is { } hsize ? hsize.Width : constraint;
+				var size = new Size(constraint, hConstraint);
+				var measuredMinimum = Measure(size.Width, size.Height);
 				MeasuredSizeV = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Height;
 				naturalSize = (int)minimumSize;

@@ -107,10 +107,10 @@ namespace Microsoft.Maui.Handlers
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
-			if (PlatformView is not { } nativeView)
+			if (PlatformView is not { } platformView)
 				return Size.Zero;
 
-			return nativeView.GetDesiredSize(widthConstraint, heightConstraint);
+			return platformView.GetDesiredSize(widthConstraint, heightConstraint);
 			//return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
