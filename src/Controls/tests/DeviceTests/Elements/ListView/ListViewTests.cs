@@ -305,10 +305,6 @@ namespace Microsoft.Maui.DeviceTests
 			});
 
 			await AssertionExtensions.WaitForGC(references.ToArray());
-			foreach (var reference in references)
-			{
-				Assert.False(reference.IsAlive, "Cell should not be alive!");
-			}
 		}
 
 		[Fact("Cells Repopulate After Null ItemsSource")]

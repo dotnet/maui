@@ -9,6 +9,7 @@ using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -16,14 +17,12 @@ namespace Microsoft.Maui.DeviceTests
 	{
 		public static async Task WaitForKeyboardToShow(this UIView view, int timeout = 1000)
 		{
-			var result = await Wait(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
-			Assert.True(result);
+			await AssertEventually(() => KeyboardAutoManagerScroll.IsKeyboardShowing, timeout: timeout, message: $"Timed out waiting for {view} to show keyboard");
 		}
 
 		public static async Task WaitForKeyboardToHide(this UIView view, int timeout = 1000)
 		{
-			var result = await Wait(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout);
-			Assert.True(result);
+			await AssertEventually(() => !KeyboardAutoManagerScroll.IsKeyboardShowing, timeout: timeout, message: $"Timed out waiting for {view} to hide keyboard");
 		}
 
 		public static Task SendValueToKeyboard(this UIView view, char value, int timeout = 1000)
@@ -38,22 +37,12 @@ namespace Microsoft.Maui.DeviceTests
 
 		public static async Task WaitForFocused(this UIView view, int timeout = 1000)
 		{
-			if (!view.IsFocused())
-			{
-				await Wait(() => view.IsFocused(), timeout);
-			}
-
-			Assert.True(view.IsFocused());
+			await AssertEventually(view.IsFocused, timeout: timeout, message: $"Timed out waiting for {view} to become focused");
 		}
 
 		public static async Task WaitForUnFocused(this UIView view, int timeout = 1000)
 		{
-			if (view.IsFocused())
-			{
-				await Wait(() => view.IsFocused(), timeout);
-			}
-
-			Assert.False(view.IsFocused());
+			await AssertEventually(() => !view.IsFocused(), timeout: timeout, message: $"Timed out waiting for {view} to become unfocused");
 		}
 
 		static bool IsFocused(this UIView view) => view.Focused || view.IsFirstResponder;

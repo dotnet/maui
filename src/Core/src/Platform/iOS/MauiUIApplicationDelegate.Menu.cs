@@ -84,7 +84,7 @@ namespace Microsoft.Maui
 
 		[SupportedOSPlatform("ios13.0")]
 		[Export(KeyboardAcceleratorExtensions.MenuItemSelectedSelector)]
-		internal void MenuItemSelected(UICommand uiCommand)
+		static internal void MenuItemSelected(UICommand uiCommand)
 		{
 			uiCommand.SendClicked();
 		}
