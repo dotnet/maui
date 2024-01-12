@@ -18,7 +18,7 @@ namespace Microsoft.Maui.Handlers
 		}
 
 		public override Size GetDesiredSize(double widthConstraint, double heightConstraint)
-			=> PlatformView.GetDesiredSize(widthConstraint, heightConstraint);
+			=> this.GetDesiredSizeFromHandler(widthConstraint, heightConstraint);
 
 		protected override void SetupContainer()
 		{ }

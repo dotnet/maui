@@ -2,13 +2,13 @@ using System;
 using Gtk;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Graphics.Platform.Gtk;
+using Microsoft.Maui.Primitives;
 
 namespace Microsoft.Maui
 {
 
 	public static class WidgetExtensions
 	{
-
 		public static void UpdateIsEnabled(this Widget nativeView, bool isEnabled) =>
 			nativeView.Sensitive = isEnabled;
 
@@ -81,9 +81,7 @@ namespace Microsoft.Maui
 				if (!heightConstrained)
 				{
 					nativeView.GetPreferredWidthForHeight(Math.Max(minimumHeight, naturalHeight), out minimumWidth, out naturalWidth);
-
 				}
-
 			}
 
 			if (heightConstrained)
@@ -94,7 +92,6 @@ namespace Microsoft.Maui
 				{
 					nativeView.GetPreferredHeightForWidth(Math.Max(minimumWidth, naturalWidth), out minimumHeight, out naturalHeight);
 				}
-
 			}
 
 			return new SizeRequest(new Size(naturalWidth, naturalHeight), new Size(minimumWidth, minimumHeight));
@@ -131,7 +128,6 @@ namespace Microsoft.Maui
 				nativeView.WidthRequest = widthRequest;
 				nativeView.QueueResize();
 			}
-
 		}
 
 		public static void UpdateHeight(this Widget nativeView, IView view)
@@ -143,7 +139,6 @@ namespace Microsoft.Maui
 				nativeView.HeightRequest = heightRequest;
 				nativeView.QueueResize();
 			}
-
 		}
 
 		public static void UpdateFont(this Widget nativeView, ITextStyle textStyle, IFontManager fontManager)
@@ -154,7 +149,6 @@ namespace Microsoft.Maui
 #pragma warning disable 612
 			nativeView.ModifyFont(fontFamily);
 #pragma warning restore 612
-
 		}
 
 		public static void ReplaceChild(this Gtk.Container cont, Gtk.Widget oldWidget, Gtk.Widget newWidget)
@@ -219,21 +213,22 @@ namespace Microsoft.Maui
 		}
 
 		[MissingMapper]
-		public static void UpdateMinimumHeight(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateMinimumHeight(this Widget platformView, IView view)
+		{
+			UpdateHeight(platformView, view);
+		}
 
 		[MissingMapper]
-		public static void UpdateMinimumWidth(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateMinimumWidth(this Widget platformView, IView view)
+		{
+			UpdateWidth(platformView, view);
+		}
 
 		[MissingMapper]
-		public static void UpdateMaximumHeight(this Widget nativeView, IView view)
-		{ }
+		public static void UpdateMaximumHeight(this Widget nativeView, IView view) { }
 
 		[MissingMapper]
-		public static void UpdateMaximumWidth(this Widget nativeView, IView view)
-		{ }
-
+		public static void UpdateMaximumWidth(this Widget nativeView, IView view) { }
 	}
 
 }

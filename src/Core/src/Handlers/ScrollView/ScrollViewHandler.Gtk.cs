@@ -138,6 +138,9 @@ namespace Microsoft.Maui.Handlers
 		{
 			base.OnDisconnectHandler(platformView);
 
+			platformView.CrossPlatformArrange = null;
+			platformView.CrossPlatformMeasure = null;
+
 			platformView.Vadjustment.ValueChanged -= OnNativeViewValueChanged;
 			platformView.Hadjustment.ValueChanged -= OnNativeViewValueChanged;
 			DisconnectButtonEvents(platformView);

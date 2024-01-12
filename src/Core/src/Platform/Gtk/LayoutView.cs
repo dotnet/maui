@@ -11,6 +11,8 @@ using Rectangle = Microsoft.Maui.Graphics.Rect;
 using Size = Microsoft.Maui.Graphics.Size;
 using Point = Microsoft.Maui.Graphics.Point;
 
+#pragma warning disable CS0162 // Unreachable code detected
+
 namespace Microsoft.Maui.Platform
 {
 
@@ -18,7 +20,6 @@ namespace Microsoft.Maui.Platform
 
 	public class LayoutView : Container, IGtkContainer
 	{
-
 		protected override bool OnDrawn(Cairo.Context cr)
 		{
 			var stc = this.StyleContext;
@@ -78,9 +79,9 @@ namespace Microsoft.Maui.Platform
 			var orientation = GetOrientation();
 
 			var focusChain = _children
-			   .Select(c => c.widget)
+				.Select(c => c.widget)
 				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-			   .ToArray();
+				.ToArray();
 
 			FocusChain = focusChain;
 		}
@@ -129,7 +130,6 @@ namespace Microsoft.Maui.Platform
 			_children[index] = (view, widget);
 			Remove(replace.widget);
 			Add(widget);
-
 		}
 
 		protected override void OnAdded(Widget widget)
@@ -147,7 +147,6 @@ namespace Microsoft.Maui.Platform
 
 		protected void AllocateChildren(Rectangle allocation)
 		{
-
 			foreach (var cr in _children.ToArray())
 			{
 				var w = cr.widget;
@@ -170,7 +169,6 @@ namespace Microsoft.Maui.Platform
 				return;
 
 			VirtualView.CrossPlatformArrange(allocation);
-
 		}
 
 		protected bool RestrictToMesuredAllocation { get; set; } = true;
@@ -199,12 +197,10 @@ namespace Microsoft.Maui.Platform
 			MeasuredSizeH = null;
 			MeasuredSizeV = null;
 			MeasuredMinimum = null;
-
 		}
 
 		protected override void OnSizeAllocated(Gdk.Rectangle allocation)
 		{
-
 			if (IsSizeAllocating)
 				return;
 
@@ -244,14 +240,12 @@ namespace Microsoft.Maui.Platform
 				}
 
 				base.OnSizeAllocated(allocation);
-
 			}
 			finally
 			{
 				IsReallocating = false;
 				IsSizeAllocating = false;
 			}
-
 		}
 
 		protected override void OnUnrealized()
@@ -271,7 +265,6 @@ namespace Microsoft.Maui.Platform
 				{
 					LastAllocation = Allocation.ToRect();
 					Measure(Allocation.Width, Allocation.Height);
-
 				}
 				catch
 				{
@@ -291,10 +284,9 @@ namespace Microsoft.Maui.Platform
 
 		public Size Measure(double widthConstraint, double heightConstraint, SizeRequestMode mode = SizeRequestMode.ConstantSize)
 		{
-
 			bool CanBeCached() => !double.IsPositiveInfinity(widthConstraint) && !double.IsPositiveInfinity(heightConstraint);
 
-			if (VirtualView is not {  } virtualView)
+			if (VirtualView is not { } virtualView)
 				return Size.Zero;
 
 			var key = (widthConstraint, heightConstraint, mode);
@@ -303,13 +295,12 @@ namespace Microsoft.Maui.Platform
 
 			bool cacheHit = CanBeCached() && MeasureCache.TryGetValue(key, out cached);
 
-			if (cacheHit)
+			if (cacheHit && false)
 			{
 #if TRACE_ALLOCATION
 				if (!_checkCacheHitFailed)
 #endif
 					return cached;
-
 			}
 
 			var measured = VirtualView.CrossPlatformMeasure(widthConstraint, heightConstraint);
@@ -329,25 +320,31 @@ namespace Microsoft.Maui.Platform
 			return measured;
 		}
 
-		protected Size MeasureMinimum()
+		protected Size MeasureMinimum(Orientation orientation, double constraint)
 		{
-			if (MeasuredMinimum != null)
+			if (MeasuredMinimum != null && false)
 				return MeasuredMinimum.Value;
 
 			if (VirtualView is not { } virtualView)
 				return Size.Zero;
 
+			var size = Size.Zero;
 			// ensure all children have DesiredSize:
+			if (orientation == Orientation.Vertical)
+				size = Measure(double.PositiveInfinity, constraint);
+			else
+				size = Measure(constraint, double.PositiveInfinity);
 
-			Measure(0, double.PositiveInfinity);
-
-			var desiredMinimum = virtualView.Aggregate(new Size(), 
+			return size;
+			var desiredMinimum = virtualView.Aggregate(new Size(),
 				(s, c) => new Size(
-					// this is only true if Layout is vertical?
-					Math.Max(s.Width, c.DesiredSize.Width), 
-					s.Height + c.DesiredSize.Height));
+					orientation == Orientation.Vertical ? Math.Max(s.Width, c.DesiredSize.Width) : s.Width + c.DesiredSize.Width,
+					orientation == Orientation.Vertical ? s.Height + c.DesiredSize.Height : Math.Max(s.Height, c.DesiredSize.Height))
+			);
 
-			MeasuredMinimum = Measure(desiredMinimum.Width, double.PositiveInfinity);
+			MeasuredMinimum = orientation == Orientation.Vertical
+				? Measure(desiredMinimum.Width, double.PositiveInfinity)
+				: Measure(double.PositiveInfinity, desiredMinimum.Height);
 
 			return MeasuredMinimum.Value;
 		}
@@ -364,70 +361,31 @@ namespace Microsoft.Maui.Platform
 			if (VirtualView is not { } virtualView)
 				return;
 
-			var measuredMinimum = MeasureMinimum();
-
 			double constraint = minimumSize;
+
 
 			if (orientation == Orientation.Horizontal)
 			{
-				if (RequestMode is SizeRequestMode.WidthForHeight or SizeRequestMode.ConstantSize)
-				{
-					if (MeasuredSizeV is { Width : > 0 } size && (constraint == 0))
-						constraint = size.Width;
-
-					constraint = constraint == 0 ? double.PositiveInfinity : constraint;
-				}
-				else
-				{
-					;
-				}
-
-				MeasuredSizeH = constraint != 0 ? Measure(constraint, double.PositiveInfinity) : measuredMinimum;
-
-				constraint = MeasuredSizeH.Value.Width;
-
+				// constraint = constraint == 0 && MeasuredSizeV is { } size ? size.Height : constraint;
+				var measuredMinimum = MeasureMinimum(orientation, constraint);
+				MeasuredSizeH = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Width;
-				naturalSize = (int)constraint;
+				naturalSize = (int)minimumSize;
 			}
 
 			if (orientation == Orientation.Vertical)
 			{
-				var widthContraint = double.PositiveInfinity;
+				constraint = constraint == 0 && MeasuredSizeH is { } size ? size.Width : constraint;
 
-				if (RequestMode is SizeRequestMode.HeightForWidth or SizeRequestMode.ConstantSize)
-				{
-					MeasuredSizeH ??= measuredMinimum;
-
-					if (MeasuredSizeH is { } size && constraint == 0)
-					{
-						if (size.Height > 0)
-							constraint = size.Height;
-
-						if (size.Width > 0)
-							widthContraint = size.Width;
-					}
-
-					constraint = constraint == 0 ? double.PositiveInfinity : constraint;
-
-				}
-				else
-				{
-					;
-				}
-
-				MeasuredSizeV = constraint != 0 ? Measure(widthContraint, constraint) : measuredMinimum;
-
-				constraint = MeasuredSizeV.Value.Height;
-
+				var measuredMinimum = MeasureMinimum(orientation, constraint);
+				MeasuredSizeV = measuredMinimum;
 				minimumSize = (int)measuredMinimum.Height;
-				naturalSize = (int)constraint;
-
+				naturalSize = (int)minimumSize;
 			}
 		}
 
 		public void Arrange(Rectangle rect)
 		{
-
 			if (rect.IsEmpty)
 				return;
 
@@ -435,7 +393,6 @@ namespace Microsoft.Maui.Platform
 
 			if (IsSizeAllocating)
 			{
-
 				SizeAllocate(rect.ToNative());
 
 				return;
@@ -447,8 +404,25 @@ namespace Microsoft.Maui.Platform
 			QueueAllocate();
 		}
 
-		protected int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
+		public Size GetDesiredSize(double widthConstraint, double heightConstraint)
+		{
+			if (VirtualView is not { } virtualView)
+				return new Size(widthConstraint, heightConstraint);
 
+			double? explicitWidth = (virtualView.Width >= 0) ? virtualView.Width : null;
+			double? explicitHeight = (virtualView.Height >= 0) ? virtualView.Height : null;
+
+			var measuredSize = Measure(explicitWidth ?? widthConstraint, explicitHeight ?? heightConstraint);
+
+			// apply width and height constraints if necessary
+			// var desiredWidth = Math.Min(measuredSize.Width, widthConstraint);
+			// var desiredHeight = Math.Min(measuredSize.Height, heightConstraint);
+
+			// return new Size(desiredWidth, desiredHeight);
+			return measuredSize;
+		}
+
+		protected int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
 	}
 
 }

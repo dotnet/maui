@@ -111,6 +111,7 @@ namespace Microsoft.Maui.Handlers
 				return Size.Zero;
 
 			return nativeView.GetDesiredSize(widthConstraint, heightConstraint);
+			//return base.GetDesiredSize(widthConstraint, heightConstraint);
 		}
 
 #endif
