@@ -794,6 +794,7 @@ Microsoft.Maui.Hosting.IEssentialsBuilder.UseMapServiceToken(string! token) -> M
 Microsoft.Maui.Hosting.IEssentialsBuilder.UseVersionTracking() -> Microsoft.Maui.Hosting.IEssentialsBuilder!
 Microsoft.Maui.Hosting.IFontCollection
 Microsoft.Maui.Hosting.IImageSourceServiceCollection
+Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions
 Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions
 Microsoft.Maui.Hosting.IMauiHandlersCollection
 Microsoft.Maui.Hosting.IMauiInitializeScopedService
@@ -977,6 +978,11 @@ Microsoft.Maui.IImageSourceService
 Microsoft.Maui.IImageSourceService.GetDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Content.Context! context, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>!
 Microsoft.Maui.IImageSourceService.LoadDrawableAsync(Microsoft.Maui.IImageSource! imageSource, Android.Widget.ImageView! imageView, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult?>!
 Microsoft.Maui.IImageSourceService<T>
+Microsoft.Maui.IImageSourceServiceProvider
+Microsoft.Maui.IImageSourceServiceProvider.GetImageSourceService(System.Type! imageSource) -> Microsoft.Maui.IImageSourceService?
+Microsoft.Maui.IImageSourceServiceProvider.GetImageSourceServiceType(System.Type! imageSource) -> System.Type!
+Microsoft.Maui.IImageSourceServiceProvider.GetImageSourceType(System.Type! imageSource) -> System.Type!
+Microsoft.Maui.IImageSourceServiceProvider.HostServiceProvider.get -> System.IServiceProvider!
 Microsoft.Maui.IImageSourceServiceResult
 Microsoft.Maui.IImageSourceServiceResult.IsDisposed.get -> bool
 Microsoft.Maui.IImageSourceServiceResult.IsResolutionDependent.get -> bool
@@ -1022,6 +1028,7 @@ Microsoft.Maui.ImageSourceServiceLoadResult.ImageSourceServiceLoadResult(bool re
 Microsoft.Maui.ImageSourceServiceLoadResult.ImageSourceServiceLoadResult(System.Action? dispose = null) -> void
 Microsoft.Maui.ImageSourceServiceLoadResult.IsDisposed.get -> bool
 Microsoft.Maui.ImageSourceServiceLoadResult.IsResolutionDependent.get -> bool
+Microsoft.Maui.ImageSourceServiceProviderExtensions
 Microsoft.Maui.ImageSourceServiceResult
 Microsoft.Maui.ImageSourceServiceResult.Dispose() -> void
 Microsoft.Maui.ImageSourceServiceResult.ImageSourceServiceResult(Android.Graphics.Drawables.Drawable! image, bool resolutionDependent, System.Action? dispose = null) -> void
@@ -2713,6 +2720,8 @@ static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this 
 static Microsoft.Maui.Hosting.FontsMauiAppBuilderExtensions.ConfigureFonts(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Maui.Hosting.HandlerMauiAppBuilderExtensions.ConfigureMauiHandlers(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IMauiHandlersCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
+static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource, TImageSourceService>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
+static Microsoft.Maui.Hosting.ImageSourceServiceCollectionExtensions.AddService<TImageSource>(this Microsoft.Maui.Hosting.IImageSourceServiceCollection! services, System.Func<System.IServiceProvider!, Microsoft.Maui.IImageSourceService<TImageSource>!>! implementationFactory) -> Microsoft.Maui.Hosting.IImageSourceServiceCollection!
 static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageSources(this Microsoft.Maui.Hosting.MauiAppBuilder! builder, System.Action<Microsoft.Maui.Hosting.IImageSourceServiceCollection!>? configureDelegate) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.ImageSourcesMauiAppBuilderExtensions.ConfigureImageSources(this Microsoft.Maui.Hosting.MauiAppBuilder! builder) -> Microsoft.Maui.Hosting.MauiAppBuilder!
 static Microsoft.Maui.Hosting.MauiApp.CreateBuilder(bool useDefaults = true) -> Microsoft.Maui.Hosting.MauiAppBuilder!
@@ -2738,6 +2747,11 @@ static Microsoft.Maui.HotReload.MauiHotReloadHelper.UpdateApplication(System.Typ
 static Microsoft.Maui.ImageSourceExtensions.GetPlatformImageAsync(this Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IMauiContext! mauiContext) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>!
 static Microsoft.Maui.ImageSourceExtensions.GetPlatformImageAsync(this Microsoft.Maui.IImageSourceService! imageSourceService, Microsoft.Maui.IImageSource? imageSource, Microsoft.Maui.IMauiContext! mauiContext) -> System.Threading.Tasks.Task<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>!
 static Microsoft.Maui.ImageSourceExtensions.LoadImage(this Microsoft.Maui.IImageSource? source, Microsoft.Maui.IMauiContext! mauiContext, System.Action<Microsoft.Maui.IImageSourceServiceResult<Android.Graphics.Drawables.Drawable!>?>? finished = null) -> void
+static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetImageSourceService(this Microsoft.Maui.IImageSourceServiceProvider! provider, Microsoft.Maui.IImageSource! imageSource) -> Microsoft.Maui.IImageSourceService?
+static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetImageSourceService<T>(this Microsoft.Maui.IImageSourceServiceProvider! provider) -> Microsoft.Maui.IImageSourceService?
+static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetRequiredImageSourceService(this Microsoft.Maui.IImageSourceServiceProvider! provider, Microsoft.Maui.IImageSource! imageSource) -> Microsoft.Maui.IImageSourceService!
+static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetRequiredImageSourceService(this Microsoft.Maui.IImageSourceServiceProvider! provider, System.Type! imageSourceType) -> Microsoft.Maui.IImageSourceService!
+static Microsoft.Maui.ImageSourceServiceProviderExtensions.GetRequiredImageSourceService<T>(this Microsoft.Maui.IImageSourceServiceProvider! provider) -> Microsoft.Maui.IImageSourceService!
 static Microsoft.Maui.IPickerExtension.GetItemsAsArray(this Microsoft.Maui.IPicker! picker) -> string![]!
 static Microsoft.Maui.IPickerExtension.GetItemsAsList(this Microsoft.Maui.IPicker! picker) -> System.Collections.Generic.List<string!>!
 static Microsoft.Maui.ITextInputExtensions.UpdateText(this Microsoft.Maui.ITextInput! textInput, Android.Text.TextChangedEventArgs! e) -> void
