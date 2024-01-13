@@ -263,11 +263,13 @@ namespace Microsoft.Maui.Controls.SourceGen
 				return false;
 			}
 
+#pragma warning disable CS0618 // Type or member is obsolete
 			if (xmlDoc.DocumentElement.NamespaceURI == XamlParser.FormsUri)
 			{
 				exception = new Exception($"{XamlParser.FormsUri} is not a valid namespace. Use {XamlParser.MauiUri} instead");
 				return false;
 			}
+#pragma warning restore CS0618 // Type or member is obsolete
 
 			cancellationToken.ThrowIfCancellationRequested();
 
