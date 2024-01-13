@@ -18,6 +18,8 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// Scroll down to the Test button. When the bug is present, the button cannot be tapped.
 			App.ScrollTo("Test");
+
+			App.WaitForElement("Test");
 			App.Click("Test");
 
 			// If we can successfully tap the button, the Success label will be displayed
