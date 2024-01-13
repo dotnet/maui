@@ -34,7 +34,7 @@ namespace Microsoft.Maui.Hosting
 		public static IImageSourceServiceCollection AddService<TImageSource>(this IImageSourceServiceCollection services, Func<IServiceProvider, IImageSourceService<TImageSource>> implementationFactory)
 			where TImageSource : IImageSource
 		{
-			services.AddSingleton(provider => implementationFactory(((IImageSourceServiceProvider)provider).HostServiceProvider));
+			services.AddSingleton(provider => implementationFactory(provider));
 
 			return services;
 		}
