@@ -11,7 +11,6 @@ using Microsoft.UI.Xaml;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using WSetter = Microsoft.UI.Xaml.Setter;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {

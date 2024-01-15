@@ -7,7 +7,6 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Xunit;
 using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using AColor = Android.Graphics.Color;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
