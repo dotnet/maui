@@ -60,6 +60,11 @@ namespace Maui.Controls.Sample
 		protected override Window CreateWindow(IActivationState activationState)
 		{
 			var window = base.CreateWindow(activationState);
+			
+			window.Created += (s, e) =>
+			{
+				Issues.Issue17865.Instance?.RevealLastItem();
+			};
 
 			// For desktop use a fixed window size, so that screenshots are deterministic,
 			// matching (as much as possible) between dev machines and CI. Currently
