@@ -11,6 +11,8 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 	{
 		readonly Dictionary<Type, object> services = new Dictionary<Type, object>();
 
+		static IValueConverterProvider defaultValueConverterProvider = new ValueConverterProvider();
+
 		internal XamlServiceProvider(INode node, HydrationContext context)
 		{
 			if (context != null && node != null && node.Parent != null && context.Values.TryGetValue(node.Parent, out object targetObject))
@@ -26,10 +28,10 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			if (node is IXmlLineInfo xmlLineInfo)
 				IXmlLineInfoProvider = new XmlLineInfoProvider(xmlLineInfo);
 
-			IValueConverterProvider = new ValueConverterProvider();
+			IValueConverterProvider = defaultValueConverterProvider;
 		}
 
-		public XamlServiceProvider() => IValueConverterProvider = new ValueConverterProvider();
+		public XamlServiceProvider() => IValueConverterProvider = defaultValueConverterProvider;
 
 		internal IProvideValueTarget IProvideValueTarget
 		{
@@ -107,6 +109,22 @@ namespace Microsoft.Maui.Controls.Xaml.Internals
 			}
 		}
 	}
+
+#nullable enable
+	public class ValueTargetProvider : IProvideValueTarget
+	{
+		private object targetObject;
+		private object targetProperty;
+
+		public ValueTargetProvider(object targetObject, object targetProperty)
+		{
+			this.targetObject = targetObject;
+			this.targetProperty = targetProperty;
+		}
+		object IProvideValueTarget.TargetObject => targetObject;
+		object IProvideValueTarget.TargetProperty => targetProperty;
+	}
+#nullable restore
 
 	public class SimpleValueTargetProvider : IProvideParentValues, IProvideValueTarget, IReferenceProvider
 	{
