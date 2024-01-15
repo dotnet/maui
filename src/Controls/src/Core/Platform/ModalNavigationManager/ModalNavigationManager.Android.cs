@@ -149,8 +149,16 @@ namespace Microsoft.Maui.Controls.Platform
 			NavAnimationInProgress = true;
 			if (animated)
 			{
-				modalContainer.TranslationY = GetModalParentView().Height;
-				modalContainer?.Animate()?.TranslationY(0)?.SetInterpolator(new DecelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
+				var translationValue = 0;
+				var windowInsets = ViewCompat.GetRootWindowInsets(parentView);
+				if (windowInsets is not null && !windowInsets.IsVisible(WindowInsetsCompat.Type.StatusBars()))
+				{
+					var statusBarHeight = _window.PlatformActivity.GetStatusBarHeight();
+					translationValue -= statusBarHeight;
+				}
+
+				modalContainer.TranslationY = parentView.Height;
+				modalContainer?.Animate()?.TranslationY(translationValue)?.SetInterpolator(new DecelerateInterpolator(1))?.SetDuration(300)?.SetListener(new GenericAnimatorListener
 				{
 					OnEnd = a =>
 					{
