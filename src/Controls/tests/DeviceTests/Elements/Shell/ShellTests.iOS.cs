@@ -16,9 +16,9 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 using ShellHandler = Microsoft.Maui.Controls.Handlers.Compatibility.ShellRenderer;
 using UIModalPresentationStyle = Microsoft.Maui.Controls.PlatformConfiguration.iOSSpecific.UIModalPresentationStyle;
-using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -328,9 +328,9 @@ namespace Microsoft.Maui.DeviceTests
 			var platformView = GetFlyoutPlatformView(shellHandler);
 			var scrollView = platformView.FindDescendantView<UIScrollView>();
 			var bottomOffset = new CGPoint(0, scrollView.ContentSize.Height - scrollView.Bounds.Height + scrollView.ContentInset.Bottom);
-			
+
 			scrollView.SetContentOffset(bottomOffset, false);
-			
+
 			await Task.Delay(10);
 
 			return bottomOffset.Y;
