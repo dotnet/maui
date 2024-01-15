@@ -1,20 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Foundation;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui;
 using Microsoft.Maui.Controls;
-using Microsoft.Maui.Controls.Handlers;
 using Microsoft.Maui.Controls.Handlers.Compatibility;
-using Microsoft.Maui.DeviceTests.Stubs;
-using Microsoft.Maui.Handlers;
-using Microsoft.Maui.Hosting;
+using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Platform;
 using UIKit;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
+
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
 #endif
@@ -54,7 +48,7 @@ namespace Microsoft.Maui.DeviceTests
 			await CreateHandlerAndAddToWindow<PhoneFlyoutPageRenderer>(flyoutPage, async (handler) =>
 			{
 				var offset = (float)UIApplication.SharedApplication.GetSafeAreaInsetsForWindow().Top;
-				await AssertionExtensions.Wait(() => flyoutLabel.ToPlatform().GetLocationOnScreen().Y > 1);
+				await AssertEventually(() => flyoutLabel.ToPlatform().GetLocationOnScreen().Y > 1);
 				var flyoutLocation = flyoutLabel.ToPlatform().GetLocationOnScreen();
 				Assert.True(Math.Abs(offset - flyoutLocation.Y) < 1.0);
 			});
@@ -66,13 +60,11 @@ namespace Microsoft.Maui.DeviceTests
 		[InlineData(true)]
 		public async Task DetailsViewPopOverLayoutIsCorrectForIdiom(bool isRtl)
 		{
-			if (isRtl && System.OperatingSystem.IsIOSVersionAtLeast(17))
-			{
-				//skip till we figure the 1 pixel issue 
-				return;
-			}
 			SetupBuilder();
 			var flyoutLabel = new Label() { Text = "Content" };
+			var flyoutLayout = new VerticalStackLayout() { BackgroundColor = Colors.Blue };
+			flyoutLayout.Add(flyoutLabel);
+
 			var flyoutPage = await InvokeOnMainThreadAsync(() => new FlyoutPage()
 			{
 				FlyoutLayoutBehavior = FlyoutLayoutBehavior.Popover,
@@ -80,19 +72,19 @@ namespace Microsoft.Maui.DeviceTests
 				Detail = new ContentPage()
 				{
 					Title = "Detail",
-					Content = new Label()
+					Content = new Label() { Text = "Detail", BackgroundColor = Colors.Red }
 				},
 				Flyout = new ContentPage()
 				{
 					Title = "Flyout",
-					Content = flyoutLabel
+					Content = flyoutLayout
 				},
-				FlowDirection = (isRtl) ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
+				FlowDirection = isRtl ? FlowDirection.RightToLeft : FlowDirection.LeftToRight
 			});
 
 			await CreateHandlerAndAddToWindow<FlyoutViewHandler>(flyoutPage, async (handler) =>
 			{
-				await AssertionExtensions.Wait(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
+				await AssertEventually(() => flyoutPage.Flyout.GetBoundingBox().Width > 0);
 				var screenBounds = flyoutPage.GetBoundingBox();
 				var detailBounds = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
@@ -116,16 +108,7 @@ namespace Microsoft.Maui.DeviceTests
 				else
 					Assert.Equal(0, flyoutBounds.X);
 
-				flyoutPage.IsPresented = false;
-
-				await Task.Yield();
-				await AssertionExtensions.Wait(() =>
-				{
-					var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
-					return
-						-flyoutBounds.Width == flyoutBounds.X || //ltr
-						screenBounds.Width == flyoutBounds.X;    //rtl
-				});
+				await CloseFlyout(flyoutPage);
 
 				var detailBoundsNotPresented = flyoutPage.Detail.GetBoundingBox();
 				var flyoutBoundsNotPresented = flyoutPage.Flyout.GetBoundingBox();
@@ -146,8 +129,36 @@ namespace Microsoft.Maui.DeviceTests
 			});
 		}
 
-
 		UIView FindPlatformFlyoutView(UIView uiView) =>
 			uiView.FindResponder<PhoneFlyoutPageRenderer>()?.View;
+
+		async Task CloseFlyout(FlyoutPage flyoutPage)
+		{
+			flyoutPage.IsPresented = false;
+
+			await Task.Yield();
+
+			bool flyoutHasExpectedBounds()
+			{
+				if (IsPad)
+				{
+					// When used on an iPad the flyout overlaps the details
+					var flyoutBounds = flyoutPage.Flyout.GetBoundingBox();
+					var screenBounds = flyoutPage.GetBoundingBox();
+					return
+						-flyoutBounds.Width == flyoutBounds.X || //ltr
+						screenBounds.Width == flyoutBounds.X;    //rtl
+				}
+				else
+				{
+					// When used on an iPhone the details page just covers the flyout
+					// When the flyout opens the details page is moved to the right
+					var detailsBound = flyoutPage.Detail.GetBoundingBox();
+					return 0 == detailsBound.X;
+				}
+			}
+
+			await AssertEventually(flyoutHasExpectedBounds);
+		}
 	}
 }
