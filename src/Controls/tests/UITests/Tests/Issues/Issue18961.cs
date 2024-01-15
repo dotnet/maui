@@ -37,7 +37,7 @@ namespace Microsoft.Maui.AppiumTests.Issues
 
 			// 5. Close the keyboard to see if sizes adjust back.
 			App.DismissKeyboard();	
-			await Task.Delay(500);
+			await Task.Delay(1000);
 
 			// 6. Make sure that everything has returned to the initial size once the keyboard has closed.
 			App.Screenshot("Make sure that everything has returned to the initial size once the keyboard has closed.");
