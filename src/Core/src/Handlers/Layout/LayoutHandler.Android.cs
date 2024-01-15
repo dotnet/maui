@@ -63,7 +63,7 @@ namespace Microsoft.Maui.Handlers
 			}
 		}
 
-		void Clear(LayoutViewGroup platformView)
+		static void Clear(LayoutViewGroup platformView)
 		{
 			if (platformView != null && !platformView.IsDisposed())
 				platformView.RemoveAllViews();
