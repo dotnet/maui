@@ -2263,6 +2263,7 @@ namespace Microsoft.Maui.Controls
 
 			public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
 			{
+				// IMPORTANT! Update VisibilityDesignTypeConverter.IsValid if making changes here
 				var strValue = value?.ToString()?.Trim();
 
 				if (!string.IsNullOrEmpty(strValue))

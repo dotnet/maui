@@ -322,7 +322,8 @@ Task("Test")
 	// and if the categories we expected to run match the test result files
 	if (isControlsProjectTestRun)
 	{
-		var expectedCategoriesRanCount = System.IO.File.ReadAllLines(testsToRunFile).Length-1;
+		var expectedCategories = System.IO.File.ReadAllLines(testsToRunFile);
+		var expectedCategoriesRanCount = expectedCategories.Length;
 		var actualResultFileCount = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml").Length;
 
 		while (actualResultFileCount < expectedCategoriesRanCount) {
@@ -344,6 +345,20 @@ Task("Test")
 		// If it's less, throw an exception to fail the pipeline.
 		if (actualResultFileCount < expectedCategoriesRanCount)
 		{
+			// Grab the category name from the file name
+			// Ex: "TestResults-com_microsoft_maui_controls_devicetests_Frame.xml" -> "Frame"
+			var actualFiles = System.IO.Directory.GetFiles(testResultsPath, "TestResults-*.xml");
+			var actualCategories = actualFiles.Select(x => x.Substring(0, x.Length - 4)   // Remove ".xml"
+					 										.Split('_').Last()).ToList();
+
+			foreach (var category in expectedCategories)
+			{
+				if (!actualCategories.Contains(category))
+				{
+					Error($"Error: missing test file result for {category}");
+				}
+			}
+
 			throw new Exception($"Expected test result files: {expectedCategoriesRanCount}, actual files: {actualResultFileCount}, some process(es) might have crashed.");
 		}
 	}

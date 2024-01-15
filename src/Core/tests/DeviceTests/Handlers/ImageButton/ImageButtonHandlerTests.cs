@@ -7,6 +7,7 @@ using Microsoft.Maui.DeviceTests.Stubs;
 using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -50,9 +51,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(imageButton);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
+				await AssertEventually(() => ImageSourceLoaded(handler));
 
-				Assert.True(imageLoaded);
 				var expectedColor = Color.FromArgb(colorHex);
 				await handler.PlatformView.AssertContainsColor(expectedColor, MauiContext);
 			});
@@ -86,9 +86,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler(imageButton);
 
-				bool imageLoaded = await Wait(() => ImageSourceLoaded(handler));
-
-				Assert.True(imageLoaded);
+				await AssertEventually(() => ImageSourceLoaded(handler));
 			});
 
 			Assert.True(loadingStarted);

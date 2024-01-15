@@ -14,6 +14,14 @@ namespace UITest.Appium
 	{
 		static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(15);
 
+		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		/// <param name="element">Target Element</param>
 		public static void Click(this IApp app, string element)
 		{
 			app.FindElement(element).Click();
@@ -77,6 +85,13 @@ namespace UITest.Appium
 			app.FindElement(element).Clear();
 		}
 
+		/// <summary>
+		/// For desktop, this will perform a mouse click on the target element.
+		/// For mobile, this will tap the element.
+		/// This API works for all platforms whereas TapCoordinates currently doesn't work on Catalyst
+		/// https://github.com/dotnet/maui/issues/19754
+		/// </summary>
+		/// <param name="element">Target Element</param>
 		public static void Click(this IUIElement element)
 		{
 			element.Command.Execute("click", new Dictionary<string, object>()
@@ -382,6 +397,10 @@ namespace UITest.Appium
 
 		/// <summary>
 		/// Performs a tap / touch gesture on the given coordinates.
+		/// This API currently doesn't work on Catalyst https://github.com/dotnet/maui/issues/19754
+		/// For Catalyst you'll currently need to use Click instead. 
+		/// Tap is more mobile-specific and provides more flexibility than click. Click is more general and is 
+		/// used for simpler interactions. Depending on the context of your test, you might prefer one over the other.
 		/// </summary>
 		/// <param name="app">Represents the main gateway to interact with an app.</param>
 		/// <param name="x">The x coordinate to tap.</param>
@@ -492,6 +511,15 @@ namespace UITest.Appium
 				{ "toX", toX },
 				{ "toY", toY },
 			});
+		}
+
+		/// <summary>
+		/// Navigate back on the device.
+		/// </summary>
+		/// <param name="app">Represents the main gateway to interact with an app.</param>
+		public static void Back(this IApp app)
+		{
+			app.CommandExecutor.Execute("back", ImmutableDictionary<string, object>.Empty);
 		}
 
 		static IUIElement Wait(Func<IUIElement> query,
