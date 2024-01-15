@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests.Stubs
 {
@@ -43,7 +44,7 @@ namespace Microsoft.Maui.DeviceTests.Stubs
 
 	public static class ImageStubExtensions
 	{
-		public static Task Wait(this IImageStub image, int timeout = 1000) =>
-			AssertionExtensions.Wait(() => !image.IsLoading, timeout);
+		public static Task WaitUntilLoaded(this IImageStub image, int timeout = 1000) =>
+			AssertEventually(() => !image.IsLoading, timeout: timeout, message: $"Image {image} did not load before timeout");
 	}
 }
