@@ -88,7 +88,7 @@ namespace Microsoft.Maui.Controls.Platform
 					tapGestureRecognizer.PropertyChanged -= OnTapGestureRecognizerPropertyChanged;
 				}
 
-				foreach(var uiGestureRecognizer in kvp.Value)
+				foreach (var uiGestureRecognizer in kvp.Value)
 				{
 					if (uiGestureRecognizer is null)
 						continue;
@@ -180,7 +180,7 @@ namespace Microsoft.Maui.Controls.Platform
 			var eventTracker = weakEventTracker.Target as GesturePlatformManager;
 			var virtualView = eventTracker?._handler?.VirtualView as View;
 			var platformRecognizer = weakPlatformRecognizer?.Target as UIGestureRecognizer;
-			var platformView = eventTracker?.PlatformView;
+			var platformView = element?.ToPlatform();
 
 			if (virtualView == null)
 				return null;

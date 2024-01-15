@@ -153,17 +153,23 @@ namespace Microsoft.Maui.Controls.ControlGallery
 
 
 			var enviOSPath = Environment.GetEnvironmentVariable("iOS_APP");
-
+			var UDID = Environment.GetEnvironmentVariable("DEVICE_UDID");
 
 			var fullApkPath = string.IsNullOrEmpty(enviOSPath) ? IOPath.Combine(TestContext.CurrentContext.TestDirectory, AppPaths.iOSPath)
 																: enviOSPath;
 
 			// Running on the simulator
-			var app = ConfigureApp.iOS
+			var appConfiguration = ConfigureApp.iOS
 							.PreferIdeSettings()
 							.AppBundle(fullApkPath)
-							.Debug()
-							.StartApp();
+							.Debug();
+
+			if (!string.IsNullOrWhiteSpace(UDID))
+			{
+				appConfiguration = appConfiguration.DeviceIdentifier(UDID);
+			}
+							
+			var app = appConfiguration.StartApp();
 
 			return app;
 		}
