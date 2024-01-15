@@ -45,7 +45,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 				await handler.ToPlatform().AssertDoesNotContainColor(Colors.Red, MauiContext);
@@ -82,7 +82,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});
@@ -113,7 +113,7 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				var handler = CreateHandler<LayoutHandler>(layout);
 
-				await image.Wait();
+				await image.WaitUntilLoaded();
 
 				await handler.ToPlatform().AssertContainsColor(Colors.White, MauiContext);
 			});
