@@ -6,6 +6,7 @@ using Microsoft.Maui.Graphics;
 using Microsoft.Maui.Handlers;
 using Microsoft.Maui.Hosting;
 using Xunit;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 namespace Microsoft.Maui.DeviceTests
 {
@@ -74,7 +75,7 @@ namespace Microsoft.Maui.DeviceTests
 
 				Assert.True(clicked);
 
-				await AssertionExtensions.AssertEventually(
+				await AssertEventually(
 					() =>
 					handler.PlatformView is not null &&
 					handler.PlatformView.Drawable is not null);
