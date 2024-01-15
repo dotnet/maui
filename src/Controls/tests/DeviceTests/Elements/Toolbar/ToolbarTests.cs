@@ -14,6 +14,7 @@ using Microsoft.Maui.Hosting;
 using Microsoft.Maui.Platform;
 using Xunit;
 using Xunit.Sdk;
+using static Microsoft.Maui.DeviceTests.AssertHelpers;
 
 #if IOS || MACCATALYST
 using FlyoutViewHandler = Microsoft.Maui.Controls.Handlers.Compatibility.PhoneFlyoutPageRenderer;
@@ -174,7 +175,7 @@ namespace Microsoft.Maui.DeviceTests
 						pageSet[i].Contains("NavigationPage", StringComparison.OrdinalIgnoreCase) ||
 						pageSet[i].Contains("Shell", StringComparison.OrdinalIgnoreCase);
 
-					await AssertionExtensions.Wait(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
+					await AssertEventually(() => shouldHaveToolbar == IsNavigationBarVisible(currentPage.Handler));
 					Assert.Equal(shouldHaveToolbar, IsNavigationBarVisible(currentPage.Handler));
 				}
 			});
