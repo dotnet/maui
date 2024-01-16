@@ -19,6 +19,9 @@ namespace Maui.Controls.Sample
 
 			Debug.WriteLine($"The injected text service had a message: '{textService.GetText()}'");
 
+			var requested = services.GetRequiredService<ITextService>();
+			Debug.WriteLine($"The requested text service had a message: '{requested.GetText()}'");
+
 			Debug.WriteLine($"Current app theme: {RequestedTheme}");
 
 			RequestedThemeChanged += (sender, args) =>
@@ -48,7 +51,8 @@ namespace Maui.Controls.Sample
 		// Must not use MainPage for multi-window
 		protected override Window CreateWindow(IActivationState? activationState)
 		{
-			var window = new MauiWindow(Services.GetRequiredService<Page>())
+			var services = activationState!.Context.Services;
+			var window = new MauiWindow(services.GetRequiredService<Page>())
 			{
 				Title = ".NET MAUI Samples Gallery"
 			};
