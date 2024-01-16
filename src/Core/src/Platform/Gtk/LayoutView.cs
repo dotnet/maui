@@ -18,8 +18,11 @@ namespace Microsoft.Maui.Platform
 
 	// refactored from: https://github.com/mono/xwt/blob/501f6b529fca632655295169094f637627c74c47/Xwt.Gtk/Xwt.GtkBackend/BoxBackend.cs
 
+	// see: https://github.com/linuxmint/gtk/blob/master/gtk/gtkcontainer.c
+
 	public class LayoutView : Container, IGtkContainer
 	{
+
 		protected override bool OnDrawn(Cairo.Context cr)
 		{
 			var stc = this.StyleContext;
@@ -79,9 +82,9 @@ namespace Microsoft.Maui.Platform
 			var orientation = GetOrientation();
 
 			var focusChain = _children
-				.Select(c => c.widget)
+			   .Select(c => c.widget)
 				// .OrderBy(kvp => orientation == Orientation.Horizontal ? kvp.Value.Rect.X : kvp.Value.Rect.Y)
-				.ToArray();
+			   .ToArray();
 
 			FocusChain = focusChain;
 		}
@@ -173,7 +176,7 @@ namespace Microsoft.Maui.Platform
 
 		protected bool RestrictToMesuredAllocation { get; set; } = true;
 
-		protected bool RestrictToMeasuredArrange { get; set; } = true;
+		protected bool RestrictToMeasuredArrange { get; set; } = false;
 
 		protected bool IsReallocating;
 
@@ -195,7 +198,6 @@ namespace Microsoft.Maui.Platform
 				MeasuredSizeH = null;
 				MeasuredSizeV = null;
 			}
-
 
 			MeasuredMinimum = null;
 		}
@@ -322,34 +324,19 @@ namespace Microsoft.Maui.Platform
 			return measured;
 		}
 
-		protected Size MeasureMinimum(Orientation orientation, double constraint)
+		protected override void OnGetPreferredHeightForWidth(int width, out int minimum_height, out int natural_height)
 		{
-			if (MeasuredMinimum != null && false)
-				return MeasuredMinimum.Value;
+			base.OnGetPreferredHeightForWidth(width, out minimum_height, out natural_height);
 
-			if (VirtualView is not { } virtualView)
-				return Size.Zero;
-
-			var size = Size.Zero;
-			// ensure all children have DesiredSize:
-			if (orientation == Orientation.Vertical)
-				size = Measure(double.PositiveInfinity, constraint);
-			else
-				size = Measure(constraint, double.PositiveInfinity);
-
-			return size;
-			var desiredMinimum = virtualView.Aggregate(new Size(),
-				(s, c) => new Size(
-					orientation == Orientation.Vertical ? Math.Max(s.Width, c.DesiredSize.Width) : s.Width + c.DesiredSize.Width,
-					orientation == Orientation.Vertical ? s.Height + c.DesiredSize.Height : Math.Max(s.Height, c.DesiredSize.Height))
-			);
-
-			MeasuredMinimum = orientation == Orientation.Vertical
-				? Measure(desiredMinimum.Width, double.PositiveInfinity)
-				: Measure(double.PositiveInfinity, desiredMinimum.Height);
-
-			return MeasuredMinimum.Value;
 		}
+
+		protected override void OnGetPreferredWidthForHeight(int height, out int minimum_width, out int natural_width)
+		{
+			base.OnGetPreferredWidthForHeight(height, out minimum_width, out natural_width);
+
+		}
+
+		// see: https://github.com/linuxmint/gtk/blob/158a2b0e1e8d582bc041acc7fe323922747d7787/gtk/gtksizerequest.c#L362
 
 		protected override void OnAdjustSizeRequest(Orientation orientation, out int minimumSize, out int naturalSize)
 		{
@@ -368,6 +355,13 @@ namespace Microsoft.Maui.Platform
 			double constraint = Math.Max(allocation, naturalSize);
 			double hConstraint = IsReallocating ? AllocatedHeight : double.PositiveInfinity;
 			double wConstraint = IsReallocating ? AllocatedWidth : 0;
+
+			var requestMode = RequestMode;
+
+			if (requestMode != SizeRequestMode.HeightForWidth)
+			{
+				;
+			}
 
 			if (orientation == Orientation.Horizontal)
 			{
@@ -404,8 +398,15 @@ namespace Microsoft.Maui.Platform
 				return;
 			}
 
-			var measuredArrange = Measure(rect.Width, rect.Height);
-			var alloc = new Rectangle(rect.Location, RestrictToMeasuredArrange ? measuredArrange : rect.Size);
+			var size = rect.Size;
+
+			if (RestrictToMeasuredArrange)
+			{
+				var measuredArrange = Measure(rect.Width, rect.Height);
+				size = measuredArrange;
+			}
+
+			var alloc = new Rectangle(rect.Location, size);
 			SizeAllocate(alloc.ToNative());
 			QueueAllocate();
 		}
@@ -429,6 +430,7 @@ namespace Microsoft.Maui.Platform
 		}
 
 		protected int ToSize(double it) => double.IsPositiveInfinity(it) ? 0 : (int)it;
+
 	}
 
 }
