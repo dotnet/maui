@@ -15,7 +15,7 @@ namespace Microsoft.Maui.Controls.Internals
 {
 
 	[EditorBrowsable(EditorBrowsableState.Never)]
-	public sealed class TemplatedItemsList<TView, [DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers)] TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
+	public sealed class TemplatedItemsList<TView, [DynamicallyAccessedMembers(BindableProperty.DeclaringTypeMembers | BindableProperty.ReturnTypeMembers)] TItem> : BindableObject, ITemplatedItemsList<TItem>, IList, IDisposable
 												where TView : BindableObject, IItemsView<TItem>
 												where TItem : BindableObject
 	{
