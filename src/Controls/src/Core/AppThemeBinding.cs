@@ -58,6 +58,9 @@ namespace Microsoft.Maui.Controls
 		void OnRequestedThemeChanged(object sender, AppThemeChangedEventArgs e)
 			=> ApplyCore(true);
 
+		void OnRequestedThemeChanged(object sender, EventArgs e)
+			=> ApplyCore(true);
+
 		void ApplyCore(bool dispatch = false)
 		{
 			if (_weakTarget == null || !_weakTarget.TryGetTarget(out var target))
@@ -115,31 +118,19 @@ namespace Microsoft.Maui.Controls
 
 		public object Default { get; set; }
 
-		// Ideally this will get reworked to not use `Application.Current` at all
-		// https://github.com/dotnet/maui/issues/8713
-		// But I'm going with a simple nudge for now so that we can get our 
-		// device tests back to a working state and address issues
-		// of the more crashing variety
 		object GetValue()
 		{
-			Application app;
+			// First, try use the theme from the target VisualElement because that is the fastest
+			// way to get the theme. If this element is attached to the UI, then it will have been
+			// set by the parent VisualElement, Window or Application.
+			var appTheme = AppTheme.Unspecified;
+			if (_weakTarget?.TryGetTarget(out var target) == true && target is VisualElement ve)
+				appTheme = ve.RequestedTheme;
 
-			if (_weakTarget?.TryGetTarget(out var target) == true &&
-				target is VisualElement ve &&
-				ve?.Window?.Parent is Application a)
-			{
-				app = a;
-			}
-			else
-			{
-				app = Application.Current;
-			}
-
-			AppTheme appTheme;
-			if (app == null)
-				appTheme = AppInfo.RequestedTheme;
-			else
-				appTheme = app.RequestedTheme;
+			// If there is no VisualElement (OR no theme set because it is not attached to the UI),
+			// then try the current app. If that fails, just ask the OS for the current theme.
+			if (appTheme == AppTheme.Unspecified)
+				appTheme = Application.Current?.RequestedTheme ?? AppInfo.RequestedTheme;
 
 			return appTheme switch
 			{
@@ -150,20 +141,45 @@ namespace Microsoft.Maui.Controls
 
 		void SetAttached(bool value)
 		{
-			var app = Application.Current;
-			if (app != null && _attached != value)
+			if (_attached == value)
+				return;
+
+			_attached = value;
+
+			if (_weakTarget?.TryGetTarget(out var target) == true && target is VisualElement ve)
 			{
+				// Use the VisualElement as this is faster than Application.RequestedThemeChanged
+				// by a significant margin: https://github.com/dotnet/maui/issues/18505
+				//
+				// We do "lose" a feature where all bindings would listen to the (at the time
+				// of first Apply) the current application. However, this has the drawback where
+				// the list of subscribers grows so large it takes too long to add/remove handlers.
+				//
+				// This logic here does also have a strong reference to the target object when
+				// applied, however this does not appear to be a problem in my tests. I also
+				// tested with making the _weakTarget field be a normal reference and still
+				// did not leak.
+
 				if (value)
-				{
-					// Going from false -> true
-					app.RequestedThemeChanged += OnRequestedThemeChanged;
-				}
+					ve.RequestedThemeChanged += OnRequestedThemeChanged;
 				else
-				{
-					// Going from true -> false
+					ve.RequestedThemeChanged -= OnRequestedThemeChanged;
+			}
+			else
+			{
+				// Fall back to the app for listening to theme changes if the target is not a
+				// VisualElement.
+
+				// This is still bad, but the work to make all the various elements respond to
+				// the theme propagation is too much work for this PR. Instead, things like
+				// Shell and MenuItems will subscribe directly to the app. The main issue is
+				// for thing like scrolling a list view or pages with large numbers of controls.
+
+				var app = Application.Current;
+				if (value)
+					app.RequestedThemeChanged += OnRequestedThemeChanged;
+				else
 					app.RequestedThemeChanged -= OnRequestedThemeChanged;
-				}
-				_attached = value;
 			}
 		}
 	}

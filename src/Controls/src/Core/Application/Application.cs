@@ -15,7 +15,7 @@ using Microsoft.Maui.Handlers;
 namespace Microsoft.Maui.Controls
 {
 	/// <include file="../../docs/Microsoft.Maui.Controls/Application.xml" path="Type[@FullName='Microsoft.Maui.Controls.Application']/Docs/*" />
-	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication
+	public partial class Application : Element, IResourcesProvider, IApplicationController, IElementConfiguration<Application>, IVisualTreeElement, IApplication, IRequestedThemeController
 	{
 		readonly WeakEventManager _weakEventManager = new WeakEventManager();
 		readonly Lazy<PlatformConfigurationRegistry<Application>> _platformConfigurationRegistry;
@@ -243,12 +243,20 @@ namespace Microsoft.Maui.Controls
 				_themeChangedFiring = true;
 				_lastAppTheme = newTheme;
 
+				PropertyPropagationExtensions.PropagatePropertyChanged(VisualElement.RequestedThemeProperty, this);
+
 				_weakEventManager.HandleEvent(this, new AppThemeChangedEventArgs(newTheme), nameof(RequestedThemeChanged));
 			}
 			finally
 			{
 				_themeChangedFiring = false;
 			}
+		}
+
+		AppTheme IRequestedThemeController.RequestedTheme
+		{
+			get => RequestedTheme;
+			set { /* do nothing as this API is not really meant to work this way */ }
 		}
 
 		public event EventHandler<ModalPoppedEventArgs>? ModalPopped;

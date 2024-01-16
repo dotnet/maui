@@ -1,5 +1,6 @@
 using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Core.UnitTests;
+using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Devices;
 using Microsoft.Maui.Dispatching;
@@ -29,19 +30,23 @@ public partial class Maui16538
 			DispatcherProvider.SetCurrent(new DispatcherProviderStub());
 		}
 
-
 		[TearDown] public void TearDown() => AppInfo.SetCurrent(null);
 
 		[Test]
 		public void VSMandAppTheme([Values(false, true)] bool useCompiledXaml)
 		{
-
 			Application.Current.UserAppTheme = AppTheme.Dark;
+
 			var page = new Maui16538(useCompiledXaml);
 			Button button = page.button0;
 			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("404040")));
+
+			Application.Current.LoadPage(page);
+			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("404040")));
+
 			button.IsEnabled = true;
 			Assert.That(button.BackgroundColor, Is.EqualTo(Colors.White));
+
 			Application.Current.UserAppTheme = AppTheme.Light;
 			Assert.That(button.BackgroundColor, Is.EqualTo(Color.FromHex("512BD4")));
 		}

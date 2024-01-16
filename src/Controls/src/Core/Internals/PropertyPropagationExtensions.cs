@@ -1,11 +1,18 @@
 #nullable disable
 using System.Collections;
+using Microsoft.Maui.ApplicationModel;
 
 namespace Microsoft.Maui.Controls.Internals
 {
 	/// <include file="../../../docs/Microsoft.Maui.Controls.Internals/PropertyPropagationExtensions.xml" path="Type[@FullName='Microsoft.Maui.Controls.Internals.PropertyPropagationExtensions']/Docs/*" />
 	public static class PropertyPropagationExtensions
 	{
+		internal static void PropagatePropertyChanged<T>(BindableProperty property, T element) where T : Element, IVisualTreeElement =>
+			PropagatePropertyChanged(property.PropertyName, element);
+
+		internal static void PropagatePropertyChanged<T>(string propertyName, T element) where T : Element, IVisualTreeElement =>
+			PropagatePropertyChanged(propertyName, element, element.GetVisualChildren());
+
 		internal static void PropagatePropertyChanged(string propertyName, Element element, IEnumerable children)
 		{
 			if (propertyName == null || propertyName == VisualElement.FlowDirectionProperty.PropertyName)
@@ -16,6 +23,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
 				SetWindowFromParent(element);
+
+			if (propertyName == null || propertyName == VisualElement.RequestedThemeProperty.PropertyName)
+				SetRequestedThemeFromParent(element);
 
 			if (propertyName == null || propertyName == Shell.NavBarHasShadowProperty.PropertyName)
 				BaseShellItem.PropagateFromParent(Shell.NavBarHasShadowProperty, element);
@@ -41,6 +51,9 @@ namespace Microsoft.Maui.Controls.Internals
 
 			if (propertyName == null || propertyName == VisualElement.WindowProperty.PropertyName)
 				PropagateWindow(target, source);
+
+			if (propertyName == null || propertyName == VisualElement.RequestedThemeProperty.PropertyName)
+				PropagateRequestedTheme(target, source);
 
 			if (target is IPropertyPropagationController view)
 				view.PropagatePropertyChanged(propertyName);
@@ -109,6 +122,21 @@ namespace Microsoft.Maui.Controls.Internals
 		internal static void SetWindowFromParent(Element child)
 		{
 			PropagateWindow(child, child.Parent);
+		}
+
+		internal static void PropagateRequestedTheme(Element target, Element source)
+		{
+			if (target is not IRequestedThemeController controller)
+				return;
+
+			var sourceController = source as IRequestedThemeController;
+
+			controller.RequestedTheme = sourceController?.RequestedTheme ?? AppTheme.Unspecified;
+		}
+
+		internal static void SetRequestedThemeFromParent(Element child)
+		{
+			PropagateRequestedTheme(child, child.Parent);
 		}
 	}
 }

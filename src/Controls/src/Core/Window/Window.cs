@@ -13,7 +13,7 @@ using Microsoft.Maui.Graphics;
 namespace Microsoft.Maui.Controls
 {
 	[ContentProperty(nameof(Page))]
-	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController
+	public partial class Window : NavigableElement, IWindow, IToolbarElement, IMenuBarElement, IFlowDirectionController, IWindowController, IRequestedThemeController, IPropertyPropagationController
 	{
 		/// <summary>Bindable property for <see cref="Title"/>.</summary>
 		public static readonly BindableProperty TitleProperty = BindableProperty.Create(
@@ -401,8 +401,17 @@ namespace Microsoft.Maui.Controls
 		Window IWindowController.Window
 		{
 			get => this;
-			set => throw new InvalidOperationException("A window cannot set a window.");
+			set { /* do nothing as Window does have a parent Window */ }
 		}
+
+		AppTheme IRequestedThemeController.RequestedTheme
+		{
+			get => Application?.RequestedTheme ?? Application.Current?.RequestedTheme ?? AppInfo.Current.RequestedTheme;
+			set { /* do nothing as we are not storing this value locally at all */ }
+		}
+
+		void IPropertyPropagationController.PropagatePropertyChanged(string propertyName) =>
+			PropertyPropagationExtensions.PropagatePropertyChanged(propertyName, this);
 
 		IView IWindow.Content =>
 			Page ?? throw new InvalidOperationException("No page was set on the window.");

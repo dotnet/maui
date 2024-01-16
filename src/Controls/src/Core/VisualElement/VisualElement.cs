@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using Microsoft.Maui.ApplicationModel;
 using Microsoft.Maui.Controls.Internals;
 using Microsoft.Maui.Controls.Shapes;
 using Microsoft.Maui.Graphics;
@@ -18,7 +19,7 @@ namespace Microsoft.Maui.Controls
 	/// <remarks>
 	/// The base class for most Microsoft.Maui.Controls on-screen elements. Provides most properties, events, and methods for presenting an item on screen.
 	/// </remarks>
-	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IView, IControlsVisualElement
+	public partial class VisualElement : NavigableElement, IAnimatable, IVisualElementController, IResourcesProvider, IStyleElement, IFlowDirectionController, IPropertyPropagationController, IVisualController, IWindowController, IRequestedThemeController, IView, IControlsVisualElement
 	{
 		/// <summary>Bindable property for <see cref="NavigableElement.Navigation"/>.</summary>
 		public new static readonly BindableProperty NavigationProperty = NavigableElement.NavigationProperty;
@@ -478,6 +479,19 @@ namespace Microsoft.Maui.Controls
 		{
 			get => (Window)GetValue(WindowProperty);
 			set => SetValue(WindowPropertyKey, value);
+		}
+
+		static readonly BindablePropertyKey RequestedThemePropertyKey = BindableProperty.CreateReadOnly(
+			nameof(RequestedTheme), typeof(AppTheme), typeof(VisualElement), AppTheme.Unspecified, propertyChanged: OnRequestedThemeChanged);
+
+		internal static readonly BindableProperty RequestedThemeProperty = RequestedThemePropertyKey.BindableProperty;
+
+		internal AppTheme RequestedTheme => (AppTheme)GetValue(RequestedThemeProperty);
+
+		AppTheme IRequestedThemeController.RequestedTheme
+		{
+			get => (AppTheme)GetValue(RequestedThemeProperty);
+			set => SetValue(RequestedThemePropertyKey, value);
 		}
 
 		readonly Dictionary<Size, SizeRequest> _measureCache = new Dictionary<Size, SizeRequest>();
@@ -2190,6 +2204,16 @@ namespace Microsoft.Maui.Controls
 		{
 			UpdatePlatformUnloadedLoadedWiring(Window);
 		}
+
+		static void OnRequestedThemeChanged(BindableObject bindable, object? oldValue, object? newValue)
+		{
+			if (bindable is not VisualElement visualElement)
+				return;
+
+			visualElement.RequestedThemeChanged?.Invoke(visualElement, EventArgs.Empty);
+		}
+
+		internal event EventHandler RequestedThemeChanged;
 
 		// We only want to wire up to platform loaded events
 		// if the user is watching for them. Otherwise
