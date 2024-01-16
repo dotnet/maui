@@ -87,6 +87,9 @@ namespace Microsoft.Maui.AppiumTests
 				keyboardPosition.Y -= defaultSizeAccessoryView;
 
 			}
+			if (rect.CenterY() > keyboardPosition.Y)
+				testApp!.Screenshot("TJTest.png");
+
 			Assert.Less(rect.CenterY(), keyboardPosition.Y);
 
 			return true;
