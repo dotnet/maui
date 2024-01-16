@@ -211,26 +211,25 @@ namespace Microsoft.Maui.Handlers
 				if (Handler?.PlatformView is not UIButton button)
 					return;
 
-				if (button.Bounds == CGRect.Empty)
-					return;
-
-				nfloat buttonSize;
+				nfloat buttonSize = 0;
 
 #pragma warning disable CA1422 // Validate platform compatibility
 				var contentEdgeInsets = button.ContentEdgeInsets;
 #pragma warning restore CA1422 // Validate platform compatibility
 
-				if (button.Bounds.Height > button.Bounds.Width)
-					buttonSize = button.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
-				else
-					buttonSize = button.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
-
-				if (buttonSize == 0)
-					return;
+				if (button.Bounds != CGRect.Empty)
+				{
+					if (button.Bounds.Height > button.Bounds.Width)
+						buttonSize = button.Bounds.Width - (contentEdgeInsets.Left + contentEdgeInsets.Right);
+					else
+						buttonSize = button.Bounds.Height - (contentEdgeInsets.Top + contentEdgeInsets.Bottom);
+				}
 
 				try
 				{
-					platformImage = ResizeImageSource(platformImage, buttonSize, buttonSize);
+					if (buttonSize != 0)
+						platformImage = ResizeImageSource(platformImage, buttonSize, buttonSize);
+
 					platformImage = platformImage?.ImageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
 
 					button.SetImage(platformImage, UIControlState.Normal);
