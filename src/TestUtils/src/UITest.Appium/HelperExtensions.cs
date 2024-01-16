@@ -76,6 +76,13 @@ namespace UITest.Appium
 			return (bool)responseValue;
 		}
 
+		/// <summary>
+		/// (Android Only) Sends a device key event with meta state.
+		/// </summary>
+		/// <param name="app"></param>
+		/// <param name="keyCode"> Code for the key pressed on the Android device</param>
+		/// <param name="metastate">metastate for the key press</param>
+		/// <exception cref="InvalidOperationException"></exception>
 		public static void SendKeys(this IApp app, int keyCode, int metastate = 0)
 		{
 			if (app is not AppiumApp aaa)

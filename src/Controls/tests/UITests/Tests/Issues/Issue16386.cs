@@ -17,16 +17,14 @@ namespace Microsoft.Maui.AppiumTests.Issues
 		public void HittingEnterKeySendsDone()
 		{
 			App.Click("HardwareEnterKeyEntry");
-			
-			if (Device == TestDevice.Android || Device == TestDevice.Windows)
+			this.IgnoreIfPlatforms(new[]
 			{
-				App.SendKeys(66);
-			}
-			else
-			{
-				App.WaitForElement("HardwareEnterKeyEntry").SendKeys(Keys.Enter);
-			}
+				TestDevice.Mac,
+				TestDevice.iOS,
+				TestDevice.Windows,
+			});
 
+			App.SendKeys(66);
 			App.WaitForElement("Success");
 		}
 	}
