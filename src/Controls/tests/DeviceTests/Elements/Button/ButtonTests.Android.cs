@@ -27,7 +27,8 @@ namespace Microsoft.Maui.DeviceTests
 			{
 				await handler.PlatformView.AttachAndRun(async () =>
 				{
-					bool iconLoaded = await AssertionExtensions.Wait(() => ButtonIconLoaded(handler));
+					await Task.Delay(1000);
+					bool iconLoaded = ButtonIconLoaded(handler);
 					Assert.True(iconLoaded);
 
 					var platformButtonSize = GetPlatformButtonSize(handler);
