@@ -28,11 +28,13 @@ namespace Microsoft.Maui.Hosting
 			return builder;
 		}
 
-		public static MauiAppBuilder ConfigureImageSources(this MauiAppBuilder builder, Action<IImageSourceServiceCollection>? configureDelegate)
+		public static MauiAppBuilder ConfigureImageSources(this MauiAppBuilder builder, Action<IImageSourceServiceCollection>? configureDelegate, bool transitionToKeyedServices = false)
 		{
 			if (configureDelegate != null)
 			{
-				builder.Services.RegisterConfigureDelegateKeyedServices(configureDelegate);
+				if (transitionToKeyedServices)
+					builder.Services.RegisterConfigureDelegateKeyedServices(configureDelegate);
+
 				builder.Services.AddSingleton<ImageSourceRegistration>(new ImageSourceRegistration(configureDelegate));
 			}
 
