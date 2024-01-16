@@ -494,7 +494,7 @@ namespace Microsoft.Maui.Controls.Core.UnitTests
 					raised = true;
 			};
 
-			bindable.ItemsSource = new object[0];
+			bindable.ItemsSource = Array.Empty<object>();
 
 			Assert.True(raised, "INPC not raised for ItemsSource");
 		}
