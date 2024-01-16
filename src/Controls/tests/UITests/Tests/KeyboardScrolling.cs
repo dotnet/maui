@@ -10,17 +10,17 @@ namespace Microsoft.Maui.AppiumTests
 	{
 		internal static readonly string IgnoreMessage = "These tests take a while and we are more interested in iOS Scrolling Behavior since it is not out-of-the-box.";
 
-		internal static void EntriesScrollingTest(IApp app, string galleryName)
+		internal static async void EntriesScrollingTest(IApp app, string galleryName)
 		{
-			RunScrollingTest(app, galleryName, false);
+			await RunScrollingTest(app, galleryName, false);
 		}
 
-		internal static void EditorsScrollingTest(IApp app, string galleryName)
+		internal static async void EditorsScrollingTest(IApp app, string galleryName)
 		{
-			RunScrollingTest(app, galleryName, true);
+			await RunScrollingTest(app, galleryName, true);
 		}
 
-		static void RunScrollingTest(IApp app, string galleryName, bool isEditor)
+		static async Task RunScrollingTest(IApp app, string galleryName, bool isEditor)
 		{
 			var App = (app as AppiumApp);
 			if (App is null)
@@ -40,9 +40,9 @@ namespace Microsoft.Maui.AppiumTests
 			{
 				var didReachEndofPage = false;
 				if (isEditor)
-					ClickText(app, $"Editor{i}", isEditor, out didReachEndofPage);
+					await ClickText(app, $"Editor{i}", isEditor, out didReachEndofPage);
 				else
-					ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
+					await ClickText(app, $"Entry{i}", isEditor, out didReachEndofPage);
 
 				// Scroll to the top of the page
 				var actions = new TouchAction(App.Driver);
@@ -53,16 +53,16 @@ namespace Microsoft.Maui.AppiumTests
 			}
 		}
 
-		static void ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
+		static async Task ClickText(IApp app, string marked, bool isEditor, out bool didReachEndofPage)
 		{
 			app.Click(marked);
-			didReachEndofPage = CheckIfViewAboveKeyboard(app, marked, isEditor);
+			didReachEndofPage = await CheckIfViewAboveKeyboard(app, marked, isEditor);
 			if (didReachEndofPage)
 				HideKeyboard(app, (app as AppiumApp)?.Driver, isEditor);
 		}
 
 		// will return a bool showing if the view is visible
-		static bool CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
+		static async Task<bool> CheckIfViewAboveKeyboard(IApp app, string marked, bool isEditor)
 		{
 			var views = app.WaitForElement(marked);
 
@@ -87,8 +87,11 @@ namespace Microsoft.Maui.AppiumTests
 				keyboardPosition.Y -= defaultSizeAccessoryView;
 
 			}
-			if (rect.CenterY() > keyboardPosition.Y)
+			if (rect.CenterY() > keyboardPosition.Y) {
 				testApp!.Screenshot("TJTest.png");
+				await Task.Delay(100);
+				testApp!.Screenshot("TJTest2.png");
+			}
 
 			Assert.Less(rect.CenterY(), keyboardPosition.Y);
 
@@ -119,7 +122,7 @@ namespace Microsoft.Maui.AppiumTests
 			keyboardDoneButton?.Click();
 		}
 
-		internal static void EntryNextEditorScrollingTest(IApp app, string galleryName)
+		internal static async Task EntryNextEditorScrollingTest(IApp app, string galleryName)
 		{
 			app.WaitForElement("TargetView");
 			app.EnterText("TargetView", "KeyboardScrollingEntryNextEditorPage");
@@ -127,16 +130,16 @@ namespace Microsoft.Maui.AppiumTests
 
 			app.WaitForElement("Entry1");
 			app.Click("Entry1");
-			CheckIfViewAboveKeyboard(app, "Entry1", false);
+			await CheckIfViewAboveKeyboard(app, "Entry1", false);
 			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
-			CheckIfViewAboveKeyboard(app, "Entry2", false);
+			await CheckIfViewAboveKeyboard(app, "Entry2", false);
 			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
-			CheckIfViewAboveKeyboard(app, "Entry3", false);
+			await CheckIfViewAboveKeyboard(app, "Entry3", false);
 			NextiOSKeyboardPress((app as AppiumApp)?.Driver);
 
-			CheckIfViewAboveKeyboard(app, "Editor", true);
+			await CheckIfViewAboveKeyboard(app, "Editor", true);
 		}
 
 		// Unintentionally types a 'V' but also presses the next keyboard key
@@ -146,14 +149,14 @@ namespace Microsoft.Maui.AppiumTests
 			keyboard?.SendKeys("\n");
 		}
 
-		internal static void GridStarRowScrollingTest (IApp app)
+		internal static async Task GridStarRowScrollingTest (IApp app)
 		{
 			for (int i = 1; i <= 7; i++)
 			{
 				var entry = $"Entry{i}";
 				app.WaitForElement(entry);
 				app.Click(entry);
-				CheckIfViewAboveKeyboard(app, entry, false);
+				await CheckIfViewAboveKeyboard(app, entry, false);
 				HideKeyboard(app, (app as AppiumApp)?.Driver, false);
 			}
 		}
