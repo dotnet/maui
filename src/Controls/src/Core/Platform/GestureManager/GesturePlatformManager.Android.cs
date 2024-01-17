@@ -148,7 +148,7 @@ namespace Microsoft.Maui.Controls.Platform
 				throw new InvalidOperationException("Context cannot be null here");
 
 			var context = Control.Context;
-			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), context.FromPixels);
+			var listener = new InnerScaleListener(new PinchGestureHandler(() => View), Control, context.FromPixels);
 			var detector = new ScaleGestureDetector(context, listener, Control.Handler);
 			ScaleGestureDetectorCompat.SetQuickScaleEnabled(detector, true);
 

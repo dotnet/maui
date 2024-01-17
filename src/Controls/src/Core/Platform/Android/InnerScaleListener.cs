@@ -2,7 +2,9 @@
 using System;
 using Android.Runtime;
 using Android.Views;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Graphics;
+using AView = Android.Views.View;
 
 namespace Microsoft.Maui.Controls.Platform
 {
@@ -12,8 +14,9 @@ namespace Microsoft.Maui.Controls.Platform
 		Action _pinchEndedDelegate;
 		readonly Func<double, double> _fromPixels;
 		Func<Point, bool> _pinchStartedDelegate;
+		readonly MauiCarouselRecyclerView _mauiCarouselRecyclerView;
 
-		public InnerScaleListener(PinchGestureHandler pinchGestureHandler, Func<double, double> fromPixels)
+		public InnerScaleListener(PinchGestureHandler pinchGestureHandler, AView control, Func<double, double> fromPixels)
 		{
 			if (pinchGestureHandler == null)
 			{
@@ -24,6 +27,7 @@ namespace Microsoft.Maui.Controls.Platform
 			_pinchStartedDelegate = pinchGestureHandler.OnPinchStarted;
 			_pinchEndedDelegate = pinchGestureHandler.OnPinchEnded;
 			_fromPixels = fromPixels;
+			_mauiCarouselRecyclerView = control.Parent.GetParentOfType<MauiCarouselRecyclerView>();
 		}
 
 		// This is needed because GestureRecognizer callbacks can be delayed several hundred milliseconds
@@ -46,11 +50,20 @@ namespace Microsoft.Maui.Controls.Platform
 
 		public override bool OnScaleBegin(ScaleGestureDetector detector)
 		{
+			if (_mauiCarouselRecyclerView is not null)
+			{
+				_mauiCarouselRecyclerView.Parent.RequestDisallowInterceptTouchEvent(true);
+				_mauiCarouselRecyclerView.IsSwipeEnabled = false;
+			}
+
 			return _pinchStartedDelegate(new Point(_fromPixels(detector.FocusX), _fromPixels(detector.FocusY)));
 		}
 
 		public override void OnScaleEnd(ScaleGestureDetector detector)
 		{
+			if (_mauiCarouselRecyclerView is not null)
+				_mauiCarouselRecyclerView.IsSwipeEnabled = true;
+
 			_pinchEndedDelegate();
 		}
 
