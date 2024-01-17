@@ -1,5 +1,6 @@
 #nullable disable
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.ComponentModel;
@@ -348,8 +349,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			{
 				Cell oldCell = Cell;
 				bool isGroupHeader = IsGroupHeader;
-				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 				object bindingContext = newContext;
+
+				DataTemplate template = isGroupHeader ? lv.GroupHeaderTemplate : lv.ItemTemplate;
 
 				bool sameTemplate = false;
 				if (template is DataTemplateSelector dataTemplateSelector)
@@ -375,7 +377,23 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				}
 				else if (template != null)
 				{
-					cell = template.CreateContent() as Cell;
+					// Reuse the templated items from the parent ListView
+					var templatedItems = lv.TemplatedItems;
+					if (isGroupHeader)
+					{
+						var idx = templatedItems.GetGlobalIndexOfGroup(bindingContext);
+						cell = templatedItems[idx];
+					}
+					else
+					{
+						var groupAndIndex = templatedItems.GetGroupAndIndexOfItem(bindingContext);
+
+						if (lv.IsGroupingEnabled)
+						{
+							templatedItems = templatedItems.GetGroup(groupAndIndex.Item1);
+						}
+						cell = templatedItems[groupAndIndex.Item2];
+					}
 				}
 				else
 				{
@@ -401,8 +419,9 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			// Note: The cleanup (SendDisappearing(), etc.) is done by the Cell propertychanged callback so we do not need to do any cleanup ourselves.
 
 			if (Cell != cell)
+			{
 				Cell = cell;
-
+			}
 			// 🚀 Even if the cell did not change, we **must** call SendDisappearing() and SendAppearing()
 			// because frameworks such as Reactive UI rely on this! (this.WhenActivated())
 			else if (Cell != null)
