@@ -122,6 +122,18 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 
 			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
 			navBar.Translucent = appearance.BackgroundColor.Alpha < 1.0f ? true : false;
+
+			// navBar.Translucent = true;
+
+			// var vc = controller.TopViewController;
+
+			// vc.EdgesForExtendedLayout = UIRectEdge.All;
+			// vc.ExtendedLayoutIncludesOpaqueBars = true;
+
+			// navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
+			// // var vc1 = controller.ViewControllers[0];
+			// var edges = vc.EdgesForExtendedLayout;
+			// var extended = vc.ExtendedLayoutIncludesOpaqueBars;
 		}
 
 		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
@@ -144,7 +156,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 				};
 			}
 
-			if (appearance.BackgroundColor == Colors.Transparent)
+			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
+			if (appearance.BackgroundColor.Alpha < 1.0f)
 			{
 				// save the shadow image
 				_defaultNavBarShadowImage = navBar.ShadowImage;
