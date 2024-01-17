@@ -102,8 +102,6 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			var navigationBarAppearance = new UINavigationBarAppearance();
 			navigationBarAppearance.ConfigureWithOpaqueBackground();
 
-			navBar.Translucent = false;
-
 			// Set ForegroundColor
 			var foreground = appearance.ForegroundColor;
 
@@ -122,17 +120,8 @@ namespace Microsoft.Maui.Controls.Platform.Compatibility
 			if (titleColor != null)
 				navigationBarAppearance.TitleTextAttributes = new UIStringAttributes() { ForegroundColor = titleColor.ToPlatform() };
 
-			// if the BackgroundColor is set to transparent, let's apply translucence as well
-			// since we cannot call this directly in .NET 8
-			if (appearance.BackgroundColor == Colors.Transparent)
-			{
-				// save the shadow image
-				_defaultNavBarShadowImage = navBar.ShadowImage;
-				navigationBarAppearance.ConfigureWithTransparentBackground();
-				navBar.Translucent = true;
-			}
-
-			navBar.StandardAppearance = navBar.ScrollEdgeAppearance = navigationBarAppearance;
+			// since we cannot set the Background Image directly, let's use the alpha in the background color to determine translucence
+			navBar.Translucent = appearance.BackgroundColor.Alpha < 1.0f ? true : false;
 		}
 
 		void UpdateNavigationBarAppearance(UINavigationController controller, ShellAppearance appearance)
